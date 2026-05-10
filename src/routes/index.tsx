@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { CodeBlock } from "@/components/site/CodeBlock";
+import { TypingLines, Typewriter } from "@/components/site/Typewriter";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -32,33 +32,55 @@ function Home() {
 }
 
 function Hero() {
+  const lines = [
+    "$ agentforge connect",
+    "",
+    "→ MCP handshake........................ ok",
+    "→ OAuth (short-lived token)............ ok",
+    "→ Discovering capabilities............. 4,218",
+    "→ Self-assessment...................... 92.4%",
+    "→ SkillForge AI: 7 upgrades recommended",
+    "",
+    "✓ installed  cardiology-soul@2.1.0",
+    "✓ installed  enterprise-sales-playbook@1.4.2",
+    "✓ installed  legal-guardrails@0.9.0",
+    "",
+    "● Agent evolved. Health score: 98.3 / 100",
+  ];
+
   return (
     <section className="relative overflow-hidden border-b border-border">
       <div className="absolute inset-0 grid-bg opacity-60" aria-hidden />
       <div className="absolute inset-0 hero-glow" aria-hidden />
       <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-20 md:pt-28">
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto max-w-3xl text-center fade-up">
           <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-border bg-surface-elevated px-3 py-1 text-xs text-muted-foreground shadow-sm">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary pulse-dot" />
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-signal pulse-dot" />
             <span className="font-mono">v3.0</span>
             <span className="text-border">·</span>
             <span>MCP-native gateway is live</span>
           </div>
           <h1 className="mt-6 text-balance text-5xl font-semibold tracking-tight md:text-7xl">
-            The MCP infrastructure layer
+            One command.
             <br />
-            <span className="text-primary">for AI agents.</span>
+            <span className="text-primary">
+              Your agent becomes&nbsp;
+              <Typewriter
+                className="text-foreground"
+                words={["a cardiologist.", "a closer.", "a lawyer.", "a strategist.", "a genius."]}
+              />
+            </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">
-            Connect any agent — Claude, Cursor, Codex, Grok — to a live network of skills,
-            playbooks, souls and guardrails. Discover, install and evolve capabilities through MCP.
+            The MCP infrastructure layer for AI agents. Connect Claude, Cursor, Codex or Grok to a live
+            network of skills, playbooks, souls and guardrails — and watch them evolve.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="#connect"
               className="inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95"
             >
-              One command. Become a genius.
+              Connect your agent
             </a>
             <Link
               to="/docs"
@@ -69,23 +91,35 @@ function Hero() {
           </div>
         </div>
 
-        <div id="connect" className="mx-auto mt-16 max-w-3xl">
-          <CodeBlock
-            filename="agent.mcp"
-            code={`$ agentforge connect
-
-→ Negotiating MCP handshake........... ok
-→ Authenticating agent (oauth/short-lived) ok
-→ Discovering capabilities............ 4,218
-→ Running self-assessment............. 92.4%
-→ SkillForge AI recommending upgrades  7 packages
-
-✓ Installed: cardiology-soul@2.1.0
-✓ Installed: enterprise-sales-playbook@1.4.2
-✓ Installed: legal-guardrails@0.9.0
-
-Your agent has evolved. Health score: 98.3 / 100`}
-          />
+        <div id="connect" className="mx-auto mt-16 max-w-3xl fade-up">
+          <div className="overflow-hidden rounded-xl border border-border bg-[oklch(0.14_0.01_270)] text-[13px] shadow-elevated">
+            <div className="flex items-center justify-between border-b border-white/5 px-4 py-2.5">
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-[oklch(0.55_0.21_28)]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[oklch(0.78_0.16_85)]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-signal" />
+                <span className="ml-3 font-mono text-xs text-white/50">agent.mcp</span>
+              </div>
+              <span className="font-mono text-[11px] text-white/40">live</span>
+            </div>
+            <TypingLines
+              lines={lines}
+              speed={14}
+              startDelay={500}
+              className="min-h-[330px] px-5 py-5 font-mono leading-relaxed text-white/90"
+              lineClassName={(l) =>
+                l.startsWith("✓")
+                  ? "text-signal"
+                  : l.startsWith("●")
+                    ? "text-signal font-semibold"
+                    : l.startsWith("→")
+                      ? "text-white/80"
+                      : l.startsWith("$")
+                        ? "text-primary"
+                        : ""
+              }
+            />
+          </div>
         </div>
       </div>
     </section>
