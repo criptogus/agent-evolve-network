@@ -133,6 +133,8 @@ function GeneratePage() {
   const [presetTagsInput, setPresetTagsInput] = useState("");
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [kindFilter, setKindFilter] = useState<Kind | "all">("all");
+  const [leadOpen, setLeadOpen] = useState(false);
+  const [leadUnlocked, setLeadUnlocked] = useState(false);
   const lineId = useRef(0);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
