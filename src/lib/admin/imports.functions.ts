@@ -1,93 +1,33 @@
 import { createServerFn } from "@tanstack/react-start";
-import { generateText, Output } from "ai";
 import { z } from "zod";
-import { getGatewayModel } from "@/lib/ai-gateway";
-import { PackageDraftSchema } from "@/lib/skills/schemas";
 import { requireAdmin } from "./middleware";
-import { webResearch } from "./research.server";
+import { generateDraft, insertDraftPackage, inferType } from "./author.server";
 
-const META_SYSTEM = `You are SkillForge Author, a proprietary meta-agent that designs production-grade agent packages.
-You output strict JSON conforming to the PackageDraft schema. Every package must be:
-- Executable: system_prompt is a complete operational instruction set with reasoning steps and output format.
-- Verifiable: rules.input_schema/output_schema use JSON-schema-like fields; must/must_not are testable invariants.
-- Realistic: at least 2 examples covering happy path and edge case.
-- Domain-specific: reflect the brief's vertical, tools, and constraints. No filler.
+// ---------- Wizard: author from a brief ----------
 
-Type semantics: skill = capability; playbook = multi-step decision flow; soul = personality/values layer; guardrail = safety boundary.
-Slug must be lowercase-kebab.`;
+const WizardInput = z.object({
+  type: z.enum(["skill", "playbook", "soul", "guardrail"]),
+  industry: z.string().max(120).optional(),
+  technology: z.string().max(120).optional(),
+  business_area: z.string().max(120).optional(),
+  brief: z.string().min(20).max(4000),
+  publish: z.boolean().default(false),
+});
 
-async function generateDraft(brief: string, type: string, vertical?: string, grounding?: string) {
-  const model = getGatewayModel("google/gemini-3-flash-preview");
-  const prompt = `Brief:\n${brief}\n\nType: ${type}${vertical ? `\nVertical: ${vertical}` : ""}${
-    grounding ? `\n\nGrounding research (use as ground truth):\n${grounding.slice(0, 8000)}` : ""
-  }\n\nDesign a complete, production-ready ${type} package. Return ONLY the JSON.`;
-
-  const { experimental_output } = await generateText({
-    model,
-    system: META_SYSTEM,
-    prompt,
-    experimental_output: Output.object({ schema: PackageDraftSchema }),
+export const wizardCreatePackage = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) => WizardInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    const vertical = [data.industry, data.technology, data.business_area].filter(Boolean).join(" / ");
+    const draft = await generateDraft(data.brief, data.type, vertical || undefined);
+    const pkg = await insertDraftPackage(supabase, userId, draft, {
+      source_kind: "wizard",
+      source_ref: vertical || "wizard",
+      publish: data.publish,
+    });
+    return { package: pkg, draft };
   });
-  return experimental_output;
-}
-
-async function insertDraftPackage(
-  supabase: any,
-  userId: string,
-  draft: any,
-  meta: { source_kind: "github" | "markdown" | "request"; source_ref: string; publish?: boolean }
-) {
-  // ensure unique slug
-  const baseSlug = draft.slug;
-  let slug = baseSlug;
-  let n = 1;
-  while (true) {
-    const { data: existing } = await supabase
-      .from("packages")
-      .select("id")
-      .eq("slug", slug)
-      .maybeSingle();
-    if (!existing) break;
-    n += 1;
-    slug = `${baseSlug}-${n}`;
-    if (n > 50) break;
-  }
-
-  const { data: pkg, error: pkgErr } = await supabase
-    .from("packages")
-    .insert({
-      slug,
-      name: draft.name,
-      type: draft.type,
-      description: draft.description,
-      long_description: draft.long_description,
-      author_id: userId,
-      author_handle: "@admin",
-      author_verified: true,
-      is_published: !!meta.publish,
-      latest_version: "0.1.0",
-      scopes: draft.scopes,
-      source_kind: meta.source_kind,
-      source_ref: meta.source_ref,
-    })
-    .select()
-    .single();
-  if (pkgErr) throw new Response(`Insert package failed: ${pkgErr.message}`, { status: 500 });
-
-  const { error: verErr } = await supabase.from("package_versions").insert({
-    package_id: pkg.id,
-    version: "0.1.0",
-    status: meta.publish ? "stable" : "beta",
-    notes: `Imported from ${meta.source_kind}: ${meta.source_ref}`,
-    system_prompt: draft.system_prompt,
-    rules: draft.rules,
-    examples: draft.examples,
-    compatibility: draft.compatibility,
-  });
-  if (verErr) throw new Response(`Insert version failed: ${verErr.message}`, { status: 500 });
-
-  return pkg;
-}
 
 // ---------- GitHub importer ----------
 
@@ -125,7 +65,6 @@ export const importFromGithub = createServerFn({ method: "POST" })
       const apiHeaders: Record<string, string> = { Accept: "application/vnd.github+json" };
       if (process.env.GITHUB_TOKEN) apiHeaders.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
 
-      // Resolve default branch
       const repoMeta = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers: apiHeaders });
       if (!repoMeta.ok) throw new Error(`GitHub repo fetch failed: ${repoMeta.status}`);
       const repoJson = await repoMeta.json();
@@ -187,15 +126,6 @@ export const importFromGithub = createServerFn({ method: "POST" })
     }
   });
 
-function inferType(path: string, content: string): "skill" | "playbook" | "soul" | "guardrail" {
-  const p = path.toLowerCase();
-  const c = content.slice(0, 1000).toLowerCase();
-  if (p.includes("guardrail") || c.includes("guardrail") || c.includes("policy")) return "guardrail";
-  if (p.includes("playbook") || c.includes("step 1") || c.includes("workflow")) return "playbook";
-  if (p.includes("soul") || c.includes("persona") || c.includes("tone of voice")) return "soul";
-  return "skill";
-}
-
 // ---------- Markdown importer ----------
 
 const MarkdownInput = z.object({
@@ -253,6 +183,3 @@ export const importMarkdown = createServerFn({ method: "POST" })
 
     return { staged };
   });
-
-// re-export helpers for requests fn
-export { generateDraft, insertDraftPackage, webResearch };
