@@ -26,6 +26,7 @@ const NAV = [
   { to: "/admin/import/github", label: "Import · GitHub" },
   { to: "/admin/import/markdown", label: "Import · Markdown" },
   { to: "/admin/requests", label: "Requests" },
+  { to: "/admin/review", label: "Review queue" },
 ];
 
 function AdminLayout() {
