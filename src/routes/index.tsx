@@ -25,6 +25,7 @@ function Home() {
       <PlainEnglish />
       <CoreConcepts />
       <SkillForgeSection />
+      <SocialProof />
       <NetworkSection />
       <CTASection />
       <Footer />
