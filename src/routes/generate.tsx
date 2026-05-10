@@ -2,6 +2,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { supabase } from "@/integrations/supabase/client";
+
+const FREE_PROVIDERS = new Set([
+  "gmail.com","googlemail.com","yahoo.com","yahoo.co.uk","ymail.com","hotmail.com","outlook.com","live.com","msn.com","icloud.com","me.com","mac.com","aol.com","proton.me","protonmail.com","pm.me","gmx.com","gmx.net","mail.com","zoho.com","yandex.com","yandex.ru","qq.com","163.com","126.com","duck.com","tutanota.com","fastmail.com","hey.com"
+]);
+function isBusinessEmail(email: string): { ok: boolean; domain: string; reason?: string } {
+  const e = email.trim().toLowerCase();
+  const m = /^[^\s@]+@([^\s@]+\.[^\s@]+)$/.exec(e);
+  if (!m) return { ok: false, domain: "", reason: "Enter a valid email address." };
+  const domain = m[1];
+  if (FREE_PROVIDERS.has(domain)) return { ok: false, domain, reason: "Please use your work email — free providers aren't accepted." };
+  return { ok: true, domain };
+}
 
 export const Route = createFileRoute("/generate")({
   component: GeneratePage,
@@ -120,6 +133,8 @@ function GeneratePage() {
   const [presetTagsInput, setPresetTagsInput] = useState("");
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [kindFilter, setKindFilter] = useState<Kind | "all">("all");
+  const [leadOpen, setLeadOpen] = useState(false);
+  const [leadUnlocked, setLeadUnlocked] = useState(false);
   const lineId = useRef(0);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
@@ -681,21 +696,34 @@ function GeneratePage() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() =>
-                    downloadHealthReport({
-                      prompt: input,
-                      baseline,
-                      score,
-                      governance,
-                      artifacts,
-                      implicit: implicitGuardrails(governance, artifacts),
-                    })
-                  }
-                  className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
-                >
-                  ↓ Download Health Score report
-                </button>
+                {(() => {
+                  const skillCount = artifacts.filter((a) => a.kind === "skill").length;
+                  const isFree = skillCount === 1 || leadUnlocked;
+                  const reportPayload = {
+                    prompt: input,
+                    baseline,
+                    score,
+                    governance,
+                    artifacts,
+                    implicit: implicitGuardrails(governance, artifacts),
+                  };
+                  const handleClick = () => {
+                    if (isFree) downloadHealthReport(reportPayload);
+                    else setLeadOpen(true);
+                  };
+                  return (
+                    <button
+                      onClick={handleClick}
+                      title={isFree ? "Free download" : "Free for qualified leads"}
+                      className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
+                    >
+                      ↓ Download Health Score report
+                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${isFree ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-primary/15 text-primary"}`}>
+                        {isFree ? "FREE" : "Unlock"}
+                      </span>
+                    </button>
+                  );
+                })()}
                 <button
                   onClick={reset}
                   className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
@@ -711,6 +739,33 @@ function GeneratePage() {
               </div>
             </div>
           </section>
+        )}
+        {leadOpen && (
+          <LeadGateModal
+            onClose={() => setLeadOpen(false)}
+            onUnlock={async (lead) => {
+              await supabase.from("report_leads").insert({
+                email: lead.email,
+                email_domain: lead.domain,
+                company: lead.company,
+                role: lead.role,
+                prompt: input,
+                stack_size: artifacts.length,
+                governance,
+                health_score: score.health,
+              });
+              setLeadUnlocked(true);
+              setLeadOpen(false);
+              downloadHealthReport({
+                prompt: input,
+                baseline,
+                score,
+                governance,
+                artifacts,
+                implicit: implicitGuardrails(governance, artifacts),
+              });
+            }}
+          />
         )}
       </main>
       <Footer />
@@ -1433,4 +1488,81 @@ function relTime(t: number): string {
   if (h < 24) return `${h}h ago`;
   const d = Math.floor(h / 24);
   return `${d}d ago`;
+}
+
+/* ---------- lead gate modal ---------- */
+
+interface LeadInput { email: string; domain: string; company: string; role: string }
+
+function LeadGateModal({ onClose, onUnlock }: { onClose: () => void; onUnlock: (lead: LeadInput) => Promise<void> | void }) {
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [role, setRole] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!company.trim()) return setError("Company is required.");
+    if (!role.trim()) return setError("Role is required.");
+    const v = isBusinessEmail(email);
+    if (!v.ok) return setError(v.reason ?? "Invalid email.");
+    setBusy(true);
+    try {
+      await onUnlock({ email: email.trim().toLowerCase(), domain: v.domain, company: company.trim(), role: role.trim() });
+    } catch {
+      setError("Could not save your details. Please try again.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-semibold tracking-tight">Unlock the Health Score report</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Single-skill reports are free. For multi-skill stacks, share your work email — we&apos;ll unlock the full PDF-grade report.
+            </p>
+          </div>
+          <button onClick={onClose} aria-label="Close" className="text-muted-foreground hover:text-foreground">×</button>
+        </div>
+        <form onSubmit={submit} className="mt-5 space-y-3">
+          <label className="block text-xs font-medium text-muted-foreground">
+            Work email
+            <input
+              type="email" required value={email} onChange={(e) => setEmail(e.target.value)} maxLength={255}
+              placeholder="you@company.com"
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
+            />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block text-xs font-medium text-muted-foreground">
+              Company
+              <input value={company} onChange={(e) => setCompany(e.target.value)} maxLength={120} required
+                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary" />
+            </label>
+            <label className="block text-xs font-medium text-muted-foreground">
+              Role
+              <input value={role} onChange={(e) => setRole(e.target.value)} maxLength={120} required
+                placeholder="Head of AI"
+                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary" />
+            </label>
+          </div>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <p className="text-[11px] text-muted-foreground">
+            Free providers (gmail, yahoo, outlook, …) aren&apos;t accepted. We use your email only to send product updates — unsubscribe anytime.
+          </p>
+          <div className="flex justify-end gap-2 pt-2">
+            <button type="button" onClick={onClose} className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent">Cancel</button>
+            <button type="submit" disabled={busy} className="inline-flex h-9 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-95 disabled:opacity-60">
+              {busy ? "Unlocking…" : "Unlock & download"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }

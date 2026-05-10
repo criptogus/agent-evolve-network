@@ -400,6 +400,45 @@ export type Database = {
         }
         Relationships: []
       }
+      report_leads: {
+        Row: {
+          company: string
+          created_at: string
+          email: string
+          email_domain: string
+          governance: string | null
+          health_score: number | null
+          id: string
+          prompt: string | null
+          role: string
+          stack_size: number
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          email: string
+          email_domain: string
+          governance?: string | null
+          health_score?: number | null
+          id?: string
+          prompt?: string | null
+          role: string
+          stack_size?: number
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          email?: string
+          email_domain?: string
+          governance?: string | null
+          health_score?: number | null
+          id?: string
+          prompt?: string | null
+          role?: string
+          stack_size?: number
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           body: string | null
