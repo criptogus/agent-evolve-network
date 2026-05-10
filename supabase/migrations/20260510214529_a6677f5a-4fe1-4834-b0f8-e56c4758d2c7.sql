@@ -1,0 +1,1 @@
+DROP VIEW IF EXISTS public.packages_review_queue;
