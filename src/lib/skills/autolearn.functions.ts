@@ -62,7 +62,7 @@ export const autoLearnPackage = createServerFn({ method: "POST" })
       }>,
     });
 
-    let createdVersion: unknown = null;
+    let createdVersion: { id: string; version: string; status: string } | null = null;
     if (data.apply && !result.regression) {
       const mergedRules = JSON.parse(
         JSON.stringify({ ...(ver.rules as object), ...(result.patch.patched_rules as object) })
