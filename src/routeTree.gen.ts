@@ -28,6 +28,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as SoulsSlugRouteImport } from './routes/souls.$slug'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
 import { Route as LlmsTxtRouteImport } from './routes/llms.txt'
 import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
@@ -140,6 +141,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRoute,
+} as any)
+const SoulsSlugRoute = SoulsSlugRouteImport.update({
+  id: '/souls/$slug',
+  path: '/souls/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
   id: '/marketplace/$packageId',
@@ -258,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/docs/mcp': typeof DocsMcpRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/souls/$slug': typeof SoulsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
@@ -295,6 +302,7 @@ export interface FileRoutesByTo {
   '/docs/mcp': typeof DocsMcpRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/souls/$slug': typeof SoulsSlugRoute
   '/admin': typeof AdminIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
@@ -334,6 +342,7 @@ export interface FileRoutesById {
   '/docs/mcp': typeof DocsMcpRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/souls/$slug': typeof SoulsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
@@ -374,6 +383,7 @@ export interface FileRouteTypes {
     | '/docs/mcp'
     | '/llms/txt'
     | '/marketplace/$packageId'
+    | '/souls/$slug'
     | '/admin/'
     | '/marketplace/'
     | '/admin/import/github'
@@ -411,6 +421,7 @@ export interface FileRouteTypes {
     | '/docs/mcp'
     | '/llms/txt'
     | '/marketplace/$packageId'
+    | '/souls/$slug'
     | '/admin'
     | '/marketplace'
     | '/admin/import/github'
@@ -449,6 +460,7 @@ export interface FileRouteTypes {
     | '/docs/mcp'
     | '/llms/txt'
     | '/marketplace/$packageId'
+    | '/souls/$slug'
     | '/admin/'
     | '/marketplace/'
     | '/admin/import/github'
@@ -483,6 +495,7 @@ export interface RootRouteChildren {
   ApiMcpRoute: typeof ApiMcpRoute
   LlmsTxtRoute: typeof LlmsTxtRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
+  SoulsSlugRoute: typeof SoulsSlugRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
@@ -621,6 +634,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/souls/$slug': {
+      id: '/souls/$slug'
+      path: '/souls/$slug'
+      fullPath: '/souls/$slug'
+      preLoaderRoute: typeof SoulsSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/marketplace/$packageId': {
       id: '/marketplace/$packageId'
@@ -823,6 +843,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMcpRoute: ApiMcpRoute,
   LlmsTxtRoute: LlmsTxtRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
+  SoulsSlugRoute: SoulsSlugRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }

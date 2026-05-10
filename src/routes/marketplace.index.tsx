@@ -198,10 +198,14 @@ function Marketplace() {
 }
 
 function Card({ p }: { p: MarketplaceItem }) {
+  const linkProps =
+    p.type === "soul"
+      ? ({ to: "/souls/$slug", params: { slug: p.slug } } as const)
+      : ({ to: "/marketplace/$packageId", params: { packageId: p.slug } } as const);
   return (
     <Link
-      to="/marketplace/$packageId"
-      params={{ packageId: p.slug }}
+      key={p.id}
+      {...linkProps}
       className="group flex flex-col rounded-xl border border-border bg-background p-5 transition-all hover:border-primary/40 hover:shadow-elevated"
     >
       <div className="flex items-center justify-between gap-2">
