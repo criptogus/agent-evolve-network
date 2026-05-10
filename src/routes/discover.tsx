@@ -1,7 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useMutation } from "@tanstack/react-query";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { autoCreateMissing } from "@/lib/skills/forge-loop.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
@@ -102,6 +106,23 @@ function DiscoverPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [openItem, setOpenItem] = useState<Item | null>(null);
+  const [authMessage, setAuthMessage] = useState<string | null>(null);
+
+  const autoCreateFn = useServerFn(autoCreateMissing);
+  const autoCreateM = useMutation({
+    mutationFn: (input: { brief: string; type: Type }) =>
+      autoCreateFn({ data: { brief: input.brief, type: input.type } }),
+  });
+
+  const requestAutoCreate = async (brief: string) => {
+    setAuthMessage(null);
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) {
+      setAuthMessage("Sign in to auto-create — we research the state of the art and ship a beta.");
+      return;
+    }
+    autoCreateM.mutate({ brief, type });
+  };
 
   const itemsOfType = useMemo(() => ITEMS.filter((i) => i.type === type), [type]);
 
@@ -228,7 +249,15 @@ function DiscoverPage() {
             </div>
 
             {filtered.length === 0 ? (
-              <EmptyState type={type} query={query} onGenerate={() => setOpenItem(makeBlank(type, query))} />
+              <EmptyState
+                type={type}
+                query={query}
+                isPending={autoCreateM.isPending}
+                result={autoCreateM.data ?? null}
+                error={(autoCreateM.error as Error | null)?.message ?? authMessage ?? null}
+                onAutoCreate={() => requestAutoCreate(query || `A ${type} for general use`)}
+                onUseLocal={() => setOpenItem(makeBlank(type, query))}
+              />
             ) : (
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {filtered
@@ -369,11 +398,19 @@ function FacetGroup({
 function EmptyState({
   type,
   query,
-  onGenerate,
+  isPending,
+  result,
+  error,
+  onAutoCreate,
+  onUseLocal,
 }: {
   type: Type;
   query: string;
-  onGenerate: () => void;
+  isPending: boolean;
+  result: Awaited<ReturnType<typeof autoCreateMissing>> | null;
+  error: string | null;
+  onAutoCreate: () => void;
+  onUseLocal: () => void;
 }) {
   return (
     <div className="rounded-xl border border-dashed border-border bg-surface p-10 text-center">
@@ -382,15 +419,46 @@ function EmptyState({
       </div>
       <h3 className="mt-4 text-lg font-semibold">No matching {TYPE_META[type].plural.toLowerCase()} yet.</h3>
       <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-        SkillForge can generate one tailored to your industry, style and data — usually in under
-        a minute.
+        SkillForge can research the state of the art and ship a beta — usually in under a minute.
       </p>
-      <button
-        onClick={onGenerate}
-        className="mt-5 inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-95"
-      >
-        Generate "{query || `a custom ${type}`}"
-      </button>
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+        <button
+          onClick={onAutoCreate}
+          disabled={isPending}
+          className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-95 disabled:opacity-60"
+        >
+          {isPending ? "Researching → authoring → evaluating…" : `Auto-create "${query || `custom ${type}`}"`}
+        </button>
+        <button
+          onClick={onUseLocal}
+          className="inline-flex h-9 items-center rounded-md border border-border px-4 text-sm font-medium hover:bg-muted/40"
+        >
+          Open blank customizer
+        </button>
+      </div>
+      {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
+      {result && (
+        <div className="mx-auto mt-4 max-w-xl rounded-md border border-border bg-background p-4 text-left text-sm">
+          <p className="font-medium">Shipped: {result.package.name}</p>
+          <p className="text-xs text-muted-foreground">
+            slug <code>{result.package.slug}</code> · research {result.research_used ? "✓" : "—"} ·
+            {" "}{result.stages.length} pipeline stages
+          </p>
+          {result.evaluation && (
+            <p className="mt-1 text-xs">
+              Evaluator: overall {Math.round(result.evaluation.overall_score)} ·
+              verdict <strong>{result.evaluation.verdict}</strong>
+            </p>
+          )}
+          <Link
+            to="/marketplace/$packageId"
+            params={{ packageId: result.package.slug }}
+            className="mt-2 inline-block text-xs text-primary underline"
+          >
+            View in marketplace →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { listAllPackages, setPackagePublished, deletePackage } from "@/lib/admin/packages.functions";
+import { runForgeLoop } from "@/lib/skills/forge-loop.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,10 +19,12 @@ function PackagesPage() {
   const listFn = useServerFn(listAllPackages);
   const setPub = useServerFn(setPackagePublished);
   const del = useServerFn(deletePackage);
+  const loop = useServerFn(runForgeLoop);
   const qc = useQueryClient();
 
   const [search, setSearch] = useState("");
   const [kind, setKind] = useState<string>("");
+  const [loopResult, setLoopResult] = useState<{ slug: string; data: Awaited<ReturnType<typeof loop>> } | null>(null);
 
   const pkgs = useQuery({
     queryKey: ["admin", "packages", search, kind],
@@ -35,6 +38,14 @@ function PackagesPage() {
   const delM = useMutation({
     mutationFn: (id: string) => del({ data: { id } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "packages"] }),
+  });
+  const loopM = useMutation({
+    mutationFn: (input: { slug: string; hotswap: boolean }) =>
+      loop({ data: { package_slug: input.slug, hotswap: input.hotswap } }).then((d) => ({ slug: input.slug, data: d })),
+    onSuccess: (r) => {
+      setLoopResult(r);
+      qc.invalidateQueries({ queryKey: ["admin", "packages"] });
+    },
   });
 
   return (
@@ -104,15 +115,33 @@ function PackagesPage() {
                     />
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        if (confirm(`Delete ${p.name}?`)) delM.mutate(p.id);
-                      }}
-                    >
-                      Delete
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={loopM.isPending}
+                        onClick={() => loopM.mutate({ slug: p.slug, hotswap: false })}
+                      >
+                        Evaluate
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        disabled={loopM.isPending}
+                        onClick={() => loopM.mutate({ slug: p.slug, hotswap: true })}
+                      >
+                        Forge loop
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          if (confirm(`Delete ${p.name}?`)) delM.mutate(p.id);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -127,6 +156,54 @@ function PackagesPage() {
           </table>
         </CardContent>
       </Card>
+
+      {loopM.isPending && (
+        <Card><CardContent className="py-6 text-sm text-muted-foreground">Running Forge loop · evaluate → learn → re-evaluate…</CardContent></Card>
+      )}
+      {loopM.error && (
+        <Card><CardContent className="py-4 text-sm text-destructive">{(loopM.error as Error).message}</CardContent></Card>
+      )}
+      {loopResult && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Forge loop · {loopResult.slug}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge>before {Math.round(loopResult.data.before.overall_score)}</Badge>
+              <Badge variant="secondary">verdict: {loopResult.data.before.verdict}</Badge>
+              {loopResult.data.hotswapped && loopResult.data.after && (
+                <>
+                  <span className="text-muted-foreground">→</span>
+                  <Badge>after {Math.round(loopResult.data.after.overall_score)}</Badge>
+                  <Badge variant="secondary">v{loopResult.data.new_version?.version}</Badge>
+                </>
+              )}
+              {loopResult.data.regression && (
+                <Badge variant="destructive">regression detected · hot-swap skipped</Badge>
+              )}
+            </div>
+            <div>
+              <p className="font-medium">Top weaknesses</p>
+              <ul className="list-disc pl-5 text-muted-foreground">
+                {loopResult.data.before.weaknesses.slice(0, 4).map((w: string, i: number) => (
+                  <li key={i}>{w}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="font-medium">Patch rationale</p>
+              <p className="text-muted-foreground">{loopResult.data.patch.rationale}</p>
+            </div>
+            <details>
+              <summary className="cursor-pointer text-xs text-muted-foreground">Pipeline stages</summary>
+              <pre className="mt-2 whitespace-pre-wrap rounded bg-muted/40 p-2 text-xs">
+{JSON.stringify(loopResult.data.stages, null, 2)}
+              </pre>
+            </details>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
