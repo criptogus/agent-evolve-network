@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 
-type ToolKey = "list_packages" | "search_registry" | "get_package";
+type ToolKey =
+  | "list_packages"
+  | "search_registry"
+  | "get_package"
+  | "request_primitive"
+  | "upload_packages";
 
 type Result = {
   status: number;
@@ -13,15 +18,28 @@ type Result = {
 };
 
 const ENDPOINT = "/api/mcp";
+const TOKEN_LS_KEY = "sas_mcp_test_token";
 
 const TOOL_DEFAULTS: Record<ToolKey, Record<string, any>> = {
   list_packages: { type: "", query: "", limit: 10 },
   search_registry: { query: "soul", limit: 5 },
   get_package: { slug: "" },
+  request_primitive: { type: "skill", brief: "", industry: "" },
+  upload_packages: {
+    publish: false,
+    files: [{ name: "example.md", type: "skill", content: "" }],
+  },
+};
+
+const TOOL_REQUIRES_AUTH: Record<ToolKey, boolean> = {
+  list_packages: false,
+  search_registry: false,
+  get_package: false,
+  request_primitive: false,
+  upload_packages: true,
 };
 
 function parseMcpResponse(text: string): any {
-  // MCP Streamable HTTP can return application/json or text/event-stream.
   const trimmed = text.trim();
   if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
     try {
@@ -30,7 +48,6 @@ function parseMcpResponse(text: string): any {
       /* fallthrough */
     }
   }
-  // SSE: collect last data: line(s)
   const dataLines = trimmed
     .split("\n")
     .filter((l) => l.startsWith("data:"))
@@ -47,7 +64,6 @@ function parseMcpResponse(text: string): any {
 }
 
 function unwrapToolResult(parsed: any): any {
-  // tools/call envelope: { result: { content: [{ type:"text", text:"..." }] } }
   const content = parsed?.result?.content;
   if (Array.isArray(content)) {
     const text = content.find((c: any) => c?.type === "text")?.text;
@@ -66,17 +82,57 @@ export function McpTester() {
   const [tool, setTool] = useState<ToolKey>("list_packages");
   const [args, setArgs] = useState<Record<string, any>>(TOOL_DEFAULTS.list_packages);
   const [token, setToken] = useState("");
+  const [rememberToken, setRememberToken] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [pending, setPending] = useState(false);
 
-  const setTool2 = (t: ToolKey) => {
+  // Load persisted token on mount.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const t = window.localStorage.getItem(TOKEN_LS_KEY);
+    if (t) {
+      setToken(t);
+      setRememberToken(true);
+    }
+  }, []);
+
+  // Persist when toggled.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (rememberToken && token.trim()) {
+      window.localStorage.setItem(TOKEN_LS_KEY, token.trim());
+    } else if (!rememberToken) {
+      window.localStorage.removeItem(TOKEN_LS_KEY);
+    }
+  }, [token, rememberToken]);
+
+  const switchTool = (t: ToolKey) => {
     setTool(t);
-    setArgs(TOOL_DEFAULTS[t]);
+    setArgs(structuredClone(TOOL_DEFAULTS[t]));
     setResult(null);
   };
 
   const updateArg = (k: string, v: any) =>
     setArgs((prev) => ({ ...prev, [k]: v }));
+
+  const updateFile = (i: number, k: string, v: any) =>
+    setArgs((prev) => {
+      const files = [...(prev.files ?? [])];
+      files[i] = { ...files[i], [k]: v };
+      return { ...prev, files };
+    });
+
+  const addFile = () =>
+    setArgs((prev) => ({
+      ...prev,
+      files: [...(prev.files ?? []), { name: "", type: "skill", content: "" }],
+    }));
+
+  const removeFile = (i: number) =>
+    setArgs((prev) => ({
+      ...prev,
+      files: (prev.files ?? []).filter((_: any, idx: number) => idx !== i),
+    }));
 
   const cleanArgs = () => {
     const out: Record<string, any> = {};
@@ -87,50 +143,105 @@ export function McpTester() {
         if (Number.isFinite(n) && n > 0) out[k] = n;
         continue;
       }
+      if (k === "files" && Array.isArray(v)) {
+        out[k] = v
+          .filter((f: any) => f?.name && f?.content)
+          .map((f: any) => ({
+            name: String(f.name),
+            content: String(f.content),
+            ...(f.type ? { type: f.type } : {}),
+          }));
+        continue;
+      }
       out[k] = v;
+    }
+    if (tool === "upload_packages" && token.trim()) {
+      out.auth_token = token.trim();
     }
     return out;
   };
 
-  const run = async () => {
-    setPending(true);
-    setResult(null);
+  async function callRpc(body: Record<string, any>): Promise<Result> {
     const started = performance.now();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json, text/event-stream",
+    };
+    if (token.trim()) headers.Authorization = `Bearer ${token.trim()}`;
     try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        Accept: "application/json, text/event-stream",
-      };
-      if (token.trim()) headers.Authorization = `Bearer ${token.trim()}`;
-
-      const body = {
-        jsonrpc: "2.0",
-        id: Date.now(),
-        method: "tools/call",
-        params: { name: tool, arguments: cleanArgs() },
-      };
-
       const res = await fetch(ENDPOINT, {
         method: "POST",
         headers,
-        body: JSON.stringify(body),
+        body: JSON.stringify({ jsonrpc: "2.0", id: Date.now(), ...body }),
       });
       const text = await res.text();
       const latencyMs = Math.round(performance.now() - started);
       const parsed = parseMcpResponse(text);
-      const unwrapped = parsed ? unwrapToolResult(parsed) : null;
-      setResult({
+      const unwrapped =
+        body.method === "tools/call" && parsed
+          ? unwrapToolResult(parsed)
+          : (parsed?.result ?? parsed);
+      return {
         status: res.status,
         latencyMs,
         ok: res.ok,
         raw: text,
         parsed: unwrapped,
+      };
+    } catch (e: any) {
+      return {
+        status: 0,
+        latencyMs: Math.round(performance.now() - started),
+        ok: false,
+        raw: "",
+        error: e?.message ?? "Network error",
+      };
+    }
+  }
+
+  const run = async () => {
+    setPending(true);
+    setResult(null);
+    setResult(
+      await callRpc({
+        method: "tools/call",
+        params: { name: tool, arguments: cleanArgs() },
+      })
+    );
+    setPending(false);
+  };
+
+  const listTools = async () => {
+    setPending(true);
+    setResult(null);
+    setResult(await callRpc({ method: "tools/list" }));
+    setPending(false);
+  };
+
+  const checkHealth = async () => {
+    setPending(true);
+    setResult(null);
+    const started = performance.now();
+    try {
+      const res = await fetch("/api/public/mcp/health");
+      const text = await res.text();
+      let parsed: any = null;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        /* keep raw */
+      }
+      setResult({
+        status: res.status,
+        latencyMs: Math.round(performance.now() - started),
+        ok: res.ok,
+        raw: text,
+        parsed,
       });
     } catch (e: any) {
-      const latencyMs = Math.round(performance.now() - started);
       setResult({
         status: 0,
-        latencyMs,
+        latencyMs: Math.round(performance.now() - started),
         ok: false,
         raw: "",
         error: e?.message ?? "Network error",
@@ -139,6 +250,9 @@ export function McpTester() {
       setPending(false);
     }
   };
+
+  const needsAuth = TOOL_REQUIRES_AUTH[tool];
+  const missingToken = needsAuth && !token.trim();
 
   return (
     <section
@@ -162,12 +276,38 @@ export function McpTester() {
         .
       </p>
 
+      {/* Quick actions */}
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button
+          onClick={listTools}
+          disabled={pending}
+          className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-primary/40 disabled:opacity-50"
+        >
+          📜 tools/list
+        </button>
+        <button
+          onClick={checkHealth}
+          disabled={pending}
+          className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-primary/40 disabled:opacity-50"
+        >
+          ❤️ /api/public/mcp/health
+        </button>
+      </div>
+
       {/* Tool tabs */}
       <div className="mt-4 flex flex-wrap gap-2">
-        {(["list_packages", "search_registry", "get_package"] as ToolKey[]).map((t) => (
+        {(
+          [
+            "list_packages",
+            "search_registry",
+            "get_package",
+            "request_primitive",
+            "upload_packages",
+          ] as ToolKey[]
+        ).map((t) => (
           <button
             key={t}
-            onClick={() => setTool2(t)}
+            onClick={() => switchTool(t)}
             className={`rounded-md border px-3 py-1.5 text-xs font-mono transition ${
               tool === t
                 ? "border-primary bg-primary/10 text-primary"
@@ -175,6 +315,9 @@ export function McpTester() {
             }`}
           >
             {t}
+            {TOOL_REQUIRES_AUTH[t] && (
+              <span className="ml-1.5 text-[10px] opacity-60">🔒</span>
+            )}
           </button>
         ))}
       </div>
@@ -248,21 +391,127 @@ export function McpTester() {
             />
           </Field>
         )}
+        {tool === "request_primitive" && (
+          <>
+            <Field label="type">
+              <select
+                value={args.type ?? "skill"}
+                onChange={(e) => updateArg("type", e.target.value)}
+                className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm"
+              >
+                <option value="skill">skill</option>
+                <option value="playbook">playbook</option>
+                <option value="soul">soul</option>
+                <option value="guardrail">guardrail</option>
+              </select>
+            </Field>
+            <Field label="industry (optional)">
+              <input
+                value={args.industry ?? ""}
+                onChange={(e) => updateArg("industry", e.target.value)}
+                placeholder="e.g. fintech"
+                className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm"
+              />
+            </Field>
+            <Field label="brief (≥20 chars)" wide>
+              <textarea
+                value={args.brief ?? ""}
+                onChange={(e) => updateArg("brief", e.target.value)}
+                placeholder="Describe the missing primitive, the use case, and the industry context."
+                rows={4}
+                className="w-full rounded-md border border-border bg-background p-2 text-sm"
+              />
+            </Field>
+          </>
+        )}
+        {tool === "upload_packages" && (
+          <>
+            <Field label="publish on upload" wide>
+              <label className="inline-flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={!!args.publish}
+                  onChange={(e) => updateArg("publish", e.target.checked)}
+                />
+                Publish immediately (otherwise saved as draft for review)
+              </label>
+            </Field>
+            <div className="md:col-span-3 space-y-3">
+              {(args.files ?? []).map((f: any, i: number) => (
+                <div
+                  key={i}
+                  className="rounded-lg border border-border bg-background p-3"
+                >
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <input
+                      value={f.name}
+                      onChange={(e) => updateFile(i, "name", e.target.value)}
+                      placeholder="file name (e.g. cardiology.md)"
+                      className="h-8 flex-1 rounded-md border border-border bg-card px-2 font-mono text-xs"
+                    />
+                    <select
+                      value={f.type ?? "skill"}
+                      onChange={(e) => updateFile(i, "type", e.target.value)}
+                      className="h-8 rounded-md border border-border bg-card px-2 text-xs"
+                    >
+                      <option value="skill">skill</option>
+                      <option value="playbook">playbook</option>
+                      <option value="soul">soul</option>
+                      <option value="guardrail">guardrail</option>
+                    </select>
+                    <button
+                      onClick={() => removeFile(i)}
+                      className="text-xs text-muted-foreground hover:text-destructive"
+                    >
+                      remove
+                    </button>
+                  </div>
+                  <textarea
+                    value={f.content}
+                    onChange={(e) => updateFile(i, "content", e.target.value)}
+                    placeholder="Paste markdown / prompt / JSON (≥20 chars)"
+                    rows={5}
+                    className="w-full rounded-md border border-border bg-card p-2 font-mono text-xs"
+                  />
+                </div>
+              ))}
+              <button
+                onClick={addFile}
+                className="rounded-md border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground"
+              >
+                + add file
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
-      <details className="mt-3">
+      {/* Auth */}
+      <details className="mt-3" open={needsAuth}>
         <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
-          Authorization (optional, for write tools)
+          Authorization {needsAuth ? "(required)" : "(optional)"}
         </summary>
-        <div className="mt-2">
+        <div className="mt-2 space-y-2">
           <input
             value={token}
             onChange={(e) => setToken(e.target.value)}
             placeholder="sas_..."
             className="h-9 w-full rounded-md border border-border bg-background px-2 font-mono text-xs"
           />
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            Sent as <code>Authorization: Bearer …</code>. Not stored.
+          <label className="inline-flex items-center gap-2 text-[11px] text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={rememberToken}
+              onChange={(e) => setRememberToken(e.target.checked)}
+            />
+            Remember on this device (localStorage)
+          </label>
+          <p className="text-[11px] text-muted-foreground">
+            Sent as <code>Authorization: Bearer …</code>. Mint one at{" "}
+            <Link to="/account/tokens" className="text-primary hover:underline">
+              /account/tokens
+            </Link>
+            .
           </p>
         </div>
       </details>
@@ -271,8 +520,9 @@ export function McpTester() {
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           onClick={run}
-          disabled={pending}
+          disabled={pending || missingToken}
           className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-95 disabled:opacity-50"
+          title={missingToken ? "This tool requires a token" : ""}
         >
           {pending ? "Calling…" : `▶ Run ${tool}`}
         </button>
@@ -307,6 +557,11 @@ export function McpTester() {
         >
           Copy as curl
         </button>
+        {missingToken && (
+          <span className="text-[11px] text-amber-600 dark:text-amber-400">
+            Add a token above to enable {tool}.
+          </span>
+        )}
       </div>
 
       {/* Output */}
@@ -320,7 +575,7 @@ export function McpTester() {
           {result.parsed !== undefined && result.parsed !== null && (
             <div>
               <div className="mb-1 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                Tool result
+                Result
               </div>
               <pre className="max-h-[420px] overflow-auto rounded-md border border-border bg-background p-3 font-mono text-xs leading-relaxed">
                 {typeof result.parsed === "string"

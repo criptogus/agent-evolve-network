@@ -47,6 +47,7 @@ import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.ne
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicMcpHealthRouteImport } from './routes/api/public/mcp.health'
 
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
@@ -239,6 +240,11 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicMcpHealthRoute = ApiPublicMcpHealthRouteImport.update({
+  id: '/api/public/mcp/health',
+  path: '/api/public/mcp/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -278,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -317,6 +324,7 @@ export interface FileRoutesByTo {
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
@@ -358,6 +366,7 @@ export interface FileRoutesById {
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -400,6 +409,7 @@ export interface FileRouteTypes {
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/forge/report/$slug'
+    | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -439,6 +449,7 @@ export interface FileRouteTypes {
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/forge/report/$slug'
+    | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
@@ -479,6 +490,7 @@ export interface FileRouteTypes {
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/forge/report/$slug'
+    | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -509,6 +521,7 @@ export interface RootRouteChildren {
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
   SoulsSlugRoute: typeof SoulsSlugRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
+  ApiPublicMcpHealthRoute: typeof ApiPublicMcpHealthRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
@@ -780,6 +793,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/mcp/health': {
+      id: '/api/public/mcp/health'
+      path: '/api/public/mcp/health'
+      fullPath: '/api/public/mcp/health'
+      preLoaderRoute: typeof ApiPublicMcpHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -866,6 +886,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
   SoulsSlugRoute: SoulsSlugRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
+  ApiPublicMcpHealthRoute: ApiPublicMcpHealthRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
