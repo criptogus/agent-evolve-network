@@ -147,6 +147,69 @@ export type Database = {
         }
         Relationships: []
       }
+      package_evaluations: {
+        Row: {
+          adversarial_results: Json
+          created_at: string
+          example_results: Json
+          hallucination_rate: number | null
+          health_score: number | null
+          id: string
+          improvement_actions: Json
+          overall_score: number | null
+          package_id: string
+          pipeline_stages: Json
+          precision_score: number | null
+          safety_score: number | null
+          strengths: Json
+          trigger_kind: string
+          triggered_by: string | null
+          verdict: string | null
+          version_id: string | null
+          weaknesses: Json
+        }
+        Insert: {
+          adversarial_results?: Json
+          created_at?: string
+          example_results?: Json
+          hallucination_rate?: number | null
+          health_score?: number | null
+          id?: string
+          improvement_actions?: Json
+          overall_score?: number | null
+          package_id: string
+          pipeline_stages?: Json
+          precision_score?: number | null
+          safety_score?: number | null
+          strengths?: Json
+          trigger_kind?: string
+          triggered_by?: string | null
+          verdict?: string | null
+          version_id?: string | null
+          weaknesses?: Json
+        }
+        Update: {
+          adversarial_results?: Json
+          created_at?: string
+          example_results?: Json
+          hallucination_rate?: number | null
+          health_score?: number | null
+          id?: string
+          improvement_actions?: Json
+          overall_score?: number | null
+          package_id?: string
+          pipeline_stages?: Json
+          precision_score?: number | null
+          safety_score?: number | null
+          strengths?: Json
+          trigger_kind?: string
+          triggered_by?: string | null
+          verdict?: string | null
+          version_id?: string | null
+          weaknesses?: Json
+        }
+        Relationships: []
+      }
       package_imports: {
         Row: {
           created_at: string
@@ -275,6 +338,7 @@ export type Database = {
       }
       package_requests: {
         Row: {
+          auto_resolved: boolean
           brief: string
           created_at: string
           evaluation: Json | null
@@ -289,6 +353,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          auto_resolved?: boolean
           brief: string
           created_at?: string
           evaluation?: Json | null
@@ -303,6 +368,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          auto_resolved?: boolean
           brief?: string
           created_at?: string
           evaluation?: Json | null
