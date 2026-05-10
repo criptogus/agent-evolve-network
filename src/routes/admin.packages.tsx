@@ -115,15 +115,33 @@ function PackagesPage() {
                     />
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        if (confirm(`Delete ${p.name}?`)) delM.mutate(p.id);
-                      }}
-                    >
-                      Delete
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={loopM.isPending}
+                        onClick={() => loopM.mutate({ slug: p.slug, hotswap: false })}
+                      >
+                        Evaluate
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        disabled={loopM.isPending}
+                        onClick={() => loopM.mutate({ slug: p.slug, hotswap: true })}
+                      >
+                        Forge loop
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          if (confirm(`Delete ${p.name}?`)) delM.mutate(p.id);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
