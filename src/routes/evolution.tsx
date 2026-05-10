@@ -48,6 +48,26 @@ interface RunRecord {
 }
 
 const HISTORY_KEY = "agentforge.evolution.history.v1";
+const AUTORUN_KEY = "agentforge.evolution.autorun.v1";
+
+function loadAutorun(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const raw = window.localStorage.getItem(AUTORUN_KEY);
+    return raw === null ? true : raw === "1";
+  } catch {
+    return true;
+  }
+}
+
+function saveAutorun(v: boolean) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(AUTORUN_KEY, v ? "1" : "0");
+  } catch {
+    /* ignore */
+  }
+}
 
 function loadHistory(): RunRecord[] {
   if (typeof window === "undefined") return [];
