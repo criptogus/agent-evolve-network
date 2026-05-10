@@ -21,6 +21,7 @@ import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
 
 const SkillforgeRoute = SkillforgeRouteImport.update({
@@ -83,6 +84,11 @@ const MarketplaceIndexRoute = MarketplaceIndexRouteImport.update({
   path: '/marketplace/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
   id: '/marketplace/$packageId',
   path: '/marketplace/$packageId',
@@ -91,7 +97,7 @@ const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRoute
   '/evaluation': typeof EvaluationRoute
@@ -102,11 +108,11 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRoute
   '/evaluation': typeof EvaluationRoute
@@ -117,12 +123,13 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/admin': typeof AdminIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRoute
   '/evaluation': typeof EvaluationRoute
@@ -133,6 +140,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
 }
 export interface FileRouteTypes {
@@ -150,11 +158,11 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/skillforge'
     | '/marketplace/$packageId'
+    | '/admin/'
     | '/marketplace/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/discover'
     | '/docs'
     | '/evaluation'
@@ -165,6 +173,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/skillforge'
     | '/marketplace/$packageId'
+    | '/admin'
     | '/marketplace'
   id:
     | '__root__'
@@ -180,12 +189,13 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/skillforge'
     | '/marketplace/$packageId'
+    | '/admin/'
     | '/marketplace/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   DiscoverRoute: typeof DiscoverRoute
   DocsRoute: typeof DocsRoute
   EvaluationRoute: typeof EvaluationRoute
@@ -285,6 +295,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketplaceIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/marketplace/$packageId': {
       id: '/marketplace/$packageId'
       path: '/marketplace/$packageId'
@@ -295,9 +312,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   DiscoverRoute: DiscoverRoute,
   DocsRoute: DocsRoute,
   EvaluationRoute: EvaluationRoute,
