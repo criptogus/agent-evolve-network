@@ -1231,3 +1231,188 @@ function jitter(scale: number) {
 function clamp(v: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, v));
 }
+
+function seedTraces(): Trace[] {
+  return [
+    {
+      id: "seed-1",
+      t: 0,
+      source: "gateway",
+      kind: "observation",
+      text: "MCP gateway connected · awaiting traces from client agent",
+    },
+  ];
+}
+
+function McpTracePanel({
+  traces,
+  running,
+}: {
+  traces: Trace[];
+  running: boolean;
+}) {
+  const [filter, setFilter] = useState<"all" | "client-agent" | "registry">("all");
+  const filtered =
+    filter === "all" ? traces : traces.filter((tr) => tr.source === filter);
+
+  const learnings = traces.filter(
+    (tr) => tr.kind === "learning" && tr.source === "client-agent" && tr.learning,
+  );
+
+  const clientCount = traces.filter((tr) => tr.source === "client-agent").length;
+  const registryCount = traces.filter((tr) => tr.source === "registry").length;
+
+  return (
+    <section className="mt-8 grid gap-4 lg:grid-cols-5">
+      <div className="lg:col-span-3 overflow-hidden rounded-2xl border border-border bg-surface/40">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <span
+                className={
+                  "size-1.5 rounded-full " +
+                  (running ? "bg-signal pulse-dot" : "bg-muted-foreground/50")
+                }
+                aria-hidden
+              />
+              MCP trace stream
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Live from your agent over MCP · {clientCount} client · {registryCount} registry
+            </div>
+          </div>
+          <div className="flex h-8 items-center rounded-md border border-border bg-background p-0.5 text-[11px] font-mono">
+            {(["all", "client-agent", "registry"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={
+                  "h-7 rounded-[4px] px-2 transition-colors " +
+                  (filter === f
+                    ? "bg-surface text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground")
+                }
+              >
+                {f === "all" ? "All" : f === "client-agent" ? "Your agent" : "Registry"}
+              </button>
+            ))}
+          </div>
+        </header>
+        <ol className="max-h-[360px] overflow-y-auto px-3 py-2 font-mono text-[12px]">
+          {filtered.length === 0 ? (
+            <li className="px-3 py-6 text-center text-muted-foreground">
+              No traces match this filter yet.
+            </li>
+          ) : (
+            filtered
+              .slice(-50)
+              .reverse()
+              .map((tr) => <TraceRow key={tr.id} tr={tr} />)
+          )}
+        </ol>
+      </div>
+
+      <div className="lg:col-span-2 overflow-hidden rounded-2xl border border-border bg-surface/40">
+        <header className="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
+          <div>
+            <div className="text-sm font-medium">Learnings from your agent</div>
+            <div className="text-xs text-muted-foreground">
+              Extracted from client traces · feeds the next upgrade
+            </div>
+          </div>
+          <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary">
+            {learnings.length}
+          </span>
+        </header>
+        <ul className="max-h-[360px] space-y-2 overflow-y-auto px-4 py-3">
+          {learnings.length === 0 ? (
+            <li className="rounded-md border border-dashed border-border px-3 py-6 text-center text-xs text-muted-foreground">
+              Waiting for the agent to emit enough traces to extract a learning…
+            </li>
+          ) : (
+            learnings
+              .slice(-12)
+              .reverse()
+              .map((tr) => (
+                <li
+                  key={tr.id}
+                  className="rounded-lg border border-border bg-background p-3"
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-md bg-primary/10 font-mono text-[10px] text-primary">
+                      ◆
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[13px] leading-snug text-foreground">
+                        {tr.learning!.title}
+                      </div>
+                      <div className="mt-1 flex items-center gap-2 text-[11px]">
+                        <span className="rounded-full bg-signal/15 px-1.5 py-0.5 font-mono text-signal-foreground">
+                          {tr.learning!.impact}
+                        </span>
+                        <span className="font-mono text-muted-foreground">
+                          via {tr.text}
+                        </span>
+                        <span className="ml-auto font-mono text-[10px] text-muted-foreground">
+                          t+{tr.t}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              ))
+          )}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function TraceRow({ tr }: { tr: Trace }) {
+  const sourceMeta: Record<TraceSource, { label: string; cls: string }> = {
+    "client-agent": {
+      label: "your agent",
+      cls: "border-primary/40 bg-primary/10 text-primary",
+    },
+    registry: {
+      label: "registry",
+      cls: "border-signal/40 bg-signal/15 text-signal-foreground",
+    },
+    gateway: {
+      label: "gateway",
+      cls: "border-border bg-background text-muted-foreground",
+    },
+  };
+  const kindGlyph: Record<TraceKind, string> = {
+    tool_call: "→",
+    observation: "·",
+    learning: "◆",
+    eval: "✓",
+    swap: "⇄",
+  };
+  const meta = sourceMeta[tr.source];
+  return (
+    <li className="flex items-start gap-2 rounded-md px-2 py-1.5 hover:bg-background/60">
+      <span className="mt-0.5 w-10 shrink-0 text-right text-[10px] text-muted-foreground">
+        t+{tr.t}
+      </span>
+      <span
+        className={
+          "mt-0.5 inline-flex shrink-0 items-center rounded-full border px-1.5 py-0.5 text-[9px] uppercase tracking-wider " +
+          meta.cls
+        }
+      >
+        {meta.label}
+      </span>
+      <span className="mt-0.5 w-3 shrink-0 text-center text-muted-foreground">
+        {kindGlyph[tr.kind]}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-foreground">{tr.text}</div>
+        {tr.detail && (
+          <div className="truncate text-[11px] text-muted-foreground">{tr.detail}</div>
+        )}
+      </div>
+    </li>
+  );
+}
