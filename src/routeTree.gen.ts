@@ -23,6 +23,7 @@ import { Route as EvolutionRouteImport } from './routes/evolution'
 import { Route as EvaluationRouteImport } from './routes/evaluation'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
@@ -113,6 +114,11 @@ const DocsRoute = DocsRouteImport.update({
 const DiscoverRoute = DiscoverRouteImport.update({
   id: '/discover',
   path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectRoute = ConnectRouteImport.update({
+  id: '/connect',
+  path: '/connect',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -225,6 +231,7 @@ const ApiPublicPaymentsWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/connect': typeof ConnectRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/connect': typeof ConnectRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
@@ -299,6 +307,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/connect': typeof ConnectRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/connect'
     | '/discover'
     | '/docs'
     | '/evaluation'
@@ -374,6 +384,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/connect'
     | '/discover'
     | '/docs'
     | '/evaluation'
@@ -411,6 +422,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/connect'
     | '/discover'
     | '/docs'
     | '/evaluation'
@@ -449,6 +461,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  ConnectRoute: typeof ConnectRoute
   DiscoverRoute: typeof DiscoverRoute
   DocsRoute: typeof DocsRouteWithChildren
   EvaluationRoute: typeof EvaluationRoute
@@ -572,6 +585,13 @@ declare module '@tanstack/react-router' {
       path: '/discover'
       fullPath: '/discover'
       preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connect': {
+      id: '/connect'
+      path: '/connect'
+      fullPath: '/connect'
+      preLoaderRoute: typeof ConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -781,6 +801,7 @@ const ForgeRouteWithChildren = ForgeRoute._addFileChildren(ForgeRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  ConnectRoute: ConnectRoute,
   DiscoverRoute: DiscoverRoute,
   DocsRoute: DocsRouteWithChildren,
   EvaluationRoute: EvaluationRoute,
