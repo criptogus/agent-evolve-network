@@ -144,7 +144,7 @@ function EvolutionPage() {
       ...l.slice(-40),
       { t: tickRef.current, kind: "info", text: `› Command received: "${prompt}"` },
     ]);
-    setRunning(true);
+    setRunning(autorun);
     startRun(prompt);
   }, [prompt, activePrompt, startRun]);
 
