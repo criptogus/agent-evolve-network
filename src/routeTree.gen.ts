@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SkillforgeRouteImport } from './routes/skillforge'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as DocsRouteImport } from './routes/docs'
@@ -16,6 +17,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
 
+const SkillforgeRoute = SkillforgeRouteImport.update({
+  id: '/skillforge',
+  path: '/skillforge',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/docs': typeof DocsRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/skillforge': typeof SkillforgeRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/': typeof MarketplaceIndexRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/skillforge': typeof SkillforgeRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace': typeof MarketplaceIndexRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/docs': typeof DocsRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/skillforge': typeof SkillforgeRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/': typeof MarketplaceIndexRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/onboarding'
     | '/pricing'
+    | '/skillforge'
     | '/marketplace/$packageId'
     | '/marketplace/'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/onboarding'
     | '/pricing'
+    | '/skillforge'
     | '/marketplace/$packageId'
     | '/marketplace'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/onboarding'
     | '/pricing'
+    | '/skillforge'
     | '/marketplace/$packageId'
     | '/marketplace/'
   fileRoutesById: FileRoutesById
@@ -104,12 +116,20 @@ export interface RootRouteChildren {
   DocsRoute: typeof DocsRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
+  SkillforgeRoute: typeof SkillforgeRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/skillforge': {
+      id: '/skillforge'
+      path: '/skillforge'
+      fullPath: '/skillforge'
+      preLoaderRoute: typeof SkillforgeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsRoute: DocsRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
+  SkillforgeRoute: SkillforgeRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
 }
