@@ -803,6 +803,89 @@ function KindBadge({ kind }: { kind: Kind }) {
   );
 }
 
+/* ---------- guardrail explanations ---------- */
+
+const GUARDRAIL_BLURBS: Array<{ match: RegExp; blurb: string }> = [
+  { match: /pii|redact|privacy/i, blurb: "Detects names, emails, phone numbers, IDs and PHI; redacts before logging or sending to third parties." },
+  { match: /medical|clinical|hippocratic|fda/i, blurb: "Blocks unsafe drug doses, requires citation of authoritative source, escalates to a clinician above an uncertainty threshold." },
+  { match: /no-?halluc|grounding|citation/i, blurb: "Rejects claims with no retrievable source. Every factual statement must carry a citation." },
+  { match: /competit|brand|legal/i, blurb: "Refuses to recommend competitors, mention disallowed brands, or speculate on litigation." },
+  { match: /jailbreak|injection|prompt/i, blurb: "Filters prompt-injection attempts in tool inputs and untrusted documents before the model sees them." },
+];
+
+function explainGuardrail(name: string) {
+  return (
+    GUARDRAIL_BLURBS.find((g) => g.match.test(name))?.blurb ??
+    "Hard boundary: outputs that violate the rule are blocked or require human approval before sending."
+  );
+}
+
+function GuardrailExplain({ name, level }: { name: string; level: Governance }) {
+  const blurb = explainGuardrail(name);
+  return (
+    <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/5 p-2.5">
+      <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-destructive">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        Why this is safe
+      </div>
+      <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{blurb}</p>
+      <p className="mt-1 text-[11px] text-muted-foreground/80">
+        Enforcement under <span className="text-foreground">{GOVERNANCE[level].label}</span>:{" "}
+        {level === "lockdown"
+          ? "block + human review + audit log."
+          : level === "strict"
+            ? "block + dual-LLM judge confirmation."
+            : "redact or refuse with reason."}
+      </p>
+    </div>
+  );
+}
+
+interface ImplicitGuardrail {
+  id: string;
+  name: string;
+  why: string;
+}
+
+function implicitGuardrails(level: Governance, current: Artifact[]): ImplicitGuardrail[] {
+  const have = new Set(current.filter((a) => a.kind === "guardrail").map((a) => a.name.toLowerCase()));
+  const pool: ImplicitGuardrail[] = [];
+
+  pool.push({
+    id: "pii-baseline",
+    name: "pii-redactor",
+    why: "Auto-redacts personal data before it leaves the agent — applied to every output and tool call.",
+  });
+  if (level === "strict" || level === "lockdown") {
+    pool.push({
+      id: "grounding",
+      name: "no-hallucination",
+      why: "Every factual claim is checked by a second model and dropped if no source can be cited.",
+    });
+    pool.push({
+      id: "injection",
+      name: "prompt-injection-shield",
+      why: "Strips instructions hidden inside retrieved documents and untrusted tool outputs.",
+    });
+  }
+  if (level === "lockdown") {
+    pool.push({
+      id: "hitl",
+      name: "human-in-the-loop-writes",
+      why: "Any tool call that mutates external state (send, charge, deploy) requires explicit human approval.",
+    });
+    pool.push({
+      id: "audit",
+      name: "full-audit-trail",
+      why: "Every prompt, tool call and output is signed and stored for regulator-grade replay.",
+    });
+  }
+
+  return pool.filter((g) => !have.has(g.name.toLowerCase()));
+}
+
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
