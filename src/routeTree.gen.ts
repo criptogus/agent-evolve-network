@@ -31,6 +31,7 @@ import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
+import { Route as AccountUsageRouteImport } from './routes/account.usage'
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
@@ -145,6 +146,11 @@ const AdminAccountsRoute = AdminAccountsRouteImport.update({
   path: '/accounts',
   getParentRoute: () => AdminRoute,
 } as any)
+const AccountUsageRoute = AccountUsageRouteImport.update({
+  id: '/account/usage',
+  path: '/account/usage',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminPackagesNewRoute = AdminPackagesNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
+  '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
@@ -199,6 +206,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
+  '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
@@ -227,6 +235,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
+  '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
@@ -256,6 +265,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/skillforge'
+    | '/account/usage'
     | '/admin/accounts'
     | '/admin/packages'
     | '/admin/plans'
@@ -282,6 +292,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/skillforge'
+    | '/account/usage'
     | '/admin/accounts'
     | '/admin/packages'
     | '/admin/plans'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/skillforge'
+    | '/account/usage'
     | '/admin/accounts'
     | '/admin/packages'
     | '/admin/plans'
@@ -337,6 +349,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   SkillforgeRoute: typeof SkillforgeRoute
+  AccountUsageRoute: typeof AccountUsageRoute
   AgentsMdRoute: typeof AgentsMdRoute
   ApiMcpRoute: typeof ApiMcpRoute
   LlmsTxtRoute: typeof LlmsTxtRoute
@@ -500,6 +513,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAccountsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/account/usage': {
+      id: '/account/usage'
+      path: '/account/usage'
+      fullPath: '/account/usage'
+      preLoaderRoute: typeof AccountUsageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/packages/new': {
       id: '/admin/packages/new'
       path: '/new'
@@ -580,6 +600,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   SkillforgeRoute: SkillforgeRoute,
+  AccountUsageRoute: AccountUsageRoute,
   AgentsMdRoute: AgentsMdRoute,
   ApiMcpRoute: ApiMcpRoute,
   LlmsTxtRoute: LlmsTxtRoute,
