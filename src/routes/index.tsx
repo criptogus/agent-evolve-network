@@ -202,24 +202,132 @@ function HowItWorks() {
 }
 
 function PlainEnglish() {
-  const examples = [
+  const industries: {
+    id: string;
+    label: string;
+    blurb: string;
+    examples: { prompt: string; result: string }[];
+  }[] = [
     {
-      prompt: "Make my agent a cardiologist trained on the latest 2026 ESC guidelines.",
-      result: "Installed cardiology-diagnostics@2.1 + medical-guardrails. Health +6.4.",
+      id: "healthcare",
+      label: "Healthcare",
+      blurb: "Clinical-grade specialists with citation-required guardrails.",
+      examples: [
+        {
+          prompt: "Make my agent a cardiologist trained on the latest 2026 ESC guidelines.",
+          result: "Installed cardiology-diagnostics@2.1 + medical-guardrails. Health +6.4.",
+        },
+        {
+          prompt: "Hematology specialist for a São Paulo clinic, conservative tone, always cite sources.",
+          result: "Installed hematology-specialist@1.3 + cite-required guardrail. Safety +5.6.",
+        },
+        {
+          prompt: "Build a triage flow for chest-pain intake at our ER.",
+          result: "Generated chest-pain-triage@0.1 from your last 30 protocols. Latency −30ms.",
+        },
+        {
+          prompt: "Block any answer that gives a dose without patient weight.",
+          result: "Generated dose-safety-shield@0.1. 14 unsafe patterns blocked, 0 false positives.",
+        },
+      ],
     },
     {
-      prompt: "I sell to CFOs of mid-market SaaS. Give it the right playbook.",
-      result: "Installed enterprise-sales-flow + mckinsey-consultant soul. +12% close rate.",
+      id: "saas",
+      label: "Sales & SaaS",
+      blurb: "Revenue agents that prospect, qualify and close in your stack.",
+      examples: [
+        {
+          prompt: "I sell to CFOs of mid-market SaaS. Give it the right playbook.",
+          result: "Installed enterprise-sales-flow + cfo-whisperer soul. +12% close rate.",
+        },
+        {
+          prompt: "Make my agent an SDR: prospect on LinkedIn, qualify, book demos in HubSpot.",
+          result: "Installed linkedin-prospecting@1.2 + hubspot-sync. +18% reply rate.",
+        },
+        {
+          prompt: "Create a custom soul that sounds like a Challenger rep, not a script reader.",
+          result: "Generated challenger-rep-soul@0.1 from 240 of your won-deal calls.",
+        },
+        {
+          prompt: "Build a guardrail so it never recommends a competitor.",
+          result: "Generated competitor-shield@0.1. Blocks 14 brand mentions, 0 false positives.",
+        },
+      ],
     },
     {
-      prompt: "Create a custom soul that talks like our founder, Marina.",
-      result: "Generated marina-soul@0.1 from 412 of her transcripts. Ready to install.",
+      id: "legal",
+      label: "Legal",
+      blurb: "Junior associates that triage contracts with privilege protection.",
+      examples: [
+        {
+          prompt: "Make my agent a junior associate that reviews NDAs and MSAs.",
+          result: "Installed legal-due-diligence@1.6 + legal-compliance. Precision +5.0.",
+        },
+        {
+          prompt: "Custom playbook for our M&A deal-room prep, modeled on the last 30 closings.",
+          result: "Generated deal-room-prep@0.1. 11-step checklist + memo template.",
+        },
+        {
+          prompt: "Never give legal advice — always defer to the partner of record.",
+          result: "Installed attorney-review guardrail. 100% deferral on advice queries.",
+        },
+        {
+          prompt: "Compare this MSA against our standard paper and flag deviations.",
+          result: "Installed clause-redline@2.3. Found 7 deviations in 12s, 3 high-risk.",
+        },
+      ],
     },
     {
-      prompt: "Build a guardrail so it never recommends a competitor.",
-      result: "Generated competitor-shield@0.1. Blocks 14 brand mentions, 0 false positives.",
+      id: "marketing",
+      label: "Marketing & Brand",
+      blurb: "On-voice writers, ad operators and brand-safety guardrails.",
+      examples: [
+        {
+          prompt: "Create a custom soul that talks like our founder, Marina.",
+          result: "Generated marina-soul@0.1 from 412 of her transcripts. Tone fidelity 0.91.",
+        },
+        {
+          prompt: "Run our Google Ads + Meta Ads with weekly experiments and budget rebalancing.",
+          result: "Installed google-ads-pilot + meta-ads-pilot. +2.4× experiment velocity.",
+        },
+        {
+          prompt: "SEO + blog writing tuned to our pillar pages and tone of voice.",
+          result: "Installed seo-pro@1.5 + brand-voice-writer@1.2. +34% organic CTR.",
+        },
+        {
+          prompt: "Flag any draft that drifts from our brand voice before it ships.",
+          result: "Generated off-brand-shield@0.1. Catches drift below 0.85 fidelity.",
+        },
+      ],
+    },
+    {
+      id: "fintech",
+      label: "Fintech",
+      blurb: "Compliance-first agents for support, KYC and risk ops.",
+      examples: [
+        {
+          prompt: "Customer-support agent for a Brazilian neobank, in PT-BR, escalates fraud cases.",
+          result: "Installed support-pro + bacen-compliance. CSAT +14, escalation lift +22%.",
+        },
+        {
+          prompt: "KYC analyst that reviews docs and explains rejections in plain language.",
+          result: "Installed kyc-analyst@2.0 + plain-rejection-writer. Review time −38%.",
+        },
+        {
+          prompt: "Build a guardrail so it never gives investment advice.",
+          result: "Generated no-advice-shield@0.1. 0 advice violations across 12k chats.",
+        },
+        {
+          prompt: "Custom soul: precise, calm, never overpromises a refund.",
+          result: "Generated trust-soul@0.1. Refund-related complaints −41%.",
+        },
+      ],
     },
   ];
+
+  const [activeId, setActiveId] = useState(industries[0].id);
+  const active = industries.find((i) => i.id === activeId)!;
+
   return (
     <section className="border-b border-border bg-surface/40 py-24">
       <div className="mx-auto max-w-7xl px-6">
@@ -232,9 +340,42 @@ function PlainEnglish() {
             — skills, playbooks and souls custom-built from your data — on demand.
           </p>
         </div>
-        <div className="mt-12 grid gap-4 md:grid-cols-2">
-          {examples.map((e, i) => (
-            <div key={i} className="flex flex-col rounded-2xl border border-border bg-background p-5 shadow-sm">
+
+        {/* Industry selector */}
+        <div className="mt-10">
+          <div className="mb-3 flex items-center gap-2 text-xs">
+            <span className="font-mono uppercase tracking-[0.2em] text-muted-foreground">Industry</span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Industry selector">
+            {industries.map((i) => {
+              const isActive = i.id === activeId;
+              return (
+                <button
+                  key={i.id}
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveId(i.id)}
+                  className={
+                    "inline-flex h-9 items-center rounded-full border px-4 text-sm font-medium transition-all " +
+                    (isActive
+                      ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                      : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground")
+                  }
+                >
+                  {i.label}
+                </button>
+              );
+            })}
+          </div>
+          <p key={active.id} className="mt-4 animate-fade-in text-sm text-muted-foreground">
+            {active.blurb}
+          </p>
+        </div>
+
+        <div key={active.id} className="mt-8 grid animate-fade-in gap-4 md:grid-cols-2">
+          {active.examples.map((e, i) => (
+            <div key={`${active.id}-${i}`} className="flex flex-col rounded-2xl border border-border bg-background p-5 shadow-sm">
               <div className="flex items-start gap-3">
                 <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 font-mono text-[11px] text-primary">
                   ›_
