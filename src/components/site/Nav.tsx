@@ -15,6 +15,7 @@ const NAV_LINKS = [
   { to: "/forge", label: "Forge" },
   { to: "/evolution", label: "Evolution" },
   { to: "/evaluation", label: "Evaluation" },
+  { to: "/connect", label: "Connect" },
   { to: "/docs", label: "Docs" },
   { to: "/pricing", label: "Pricing" },
 ] as const;
