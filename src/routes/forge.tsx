@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Nav } from "@/components/site/Nav";
+import { ForgeProgress, AUTHOR_STAGES, EVAL_STAGES, EVOLVE_STAGES } from "@/components/forge/ForgeProgress";
 
 export const Route = createFileRoute("/forge")({
   head: () => ({
@@ -185,6 +186,12 @@ function AuthorTab() {
         <Button disabled={m.isPending || brief.length < 20} onClick={() => m.mutate()}>
           {m.isPending ? "Authoring…" : "Author package"}
         </Button>
+        <ForgeProgress
+          active={m.isPending}
+          done={!!m.data}
+          stages={AUTHOR_STAGES}
+          title="Criando o pacote (pesquisa → método SkillForge → refino até 9+/10)"
+        />
         {m.error && <p className="text-sm text-destructive">{(m.error as Error).message}</p>}
         {m.data && (
           <div className="mt-4 rounded-md border p-4">
@@ -230,6 +237,14 @@ function EvaluateTab({ packages }: { packages: Array<{ slug: string; name: strin
         <Button disabled={!slug || m.isPending} onClick={() => m.mutate()}>
           {m.isPending ? "Evaluating…" : "Run evaluation"}
         </Button>
+        <ForgeProgress
+          active={m.isPending}
+          done={!!m.data}
+          stages={EVAL_STAGES}
+          title="Avaliando o skill (multi-modelo · adversarial · safety)"
+          finalScore={m.data?.evaluation.overall_score ?? null}
+          verdict={m.data?.evaluation.verdict ?? null}
+        />
         {m.error && <p className="text-sm text-destructive">{(m.error as Error).message}</p>}
         {m.data && (
           <div className="mt-2 rounded-md border p-4 space-y-3">
@@ -296,6 +311,12 @@ function EvolveTab({ packages, allPackages }: {
         <Button disabled={!slug || m.isPending} onClick={() => m.mutate()}>
           {m.isPending ? "Analyzing…" : apply ? "Patch & publish beta" : "Propose patch"}
         </Button>
+        <ForgeProgress
+          active={m.isPending}
+          done={!!m.data}
+          stages={EVOLVE_STAGES}
+          title="Aprimorando o skill até virar campeão"
+        />
         {m.error && <p className="text-sm text-destructive">{(m.error as Error).message}</p>}
         {m.data && (
           <div className="mt-2 rounded-md border p-4 space-y-3">
