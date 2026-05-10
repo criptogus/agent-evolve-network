@@ -343,7 +343,23 @@ function EvolutionPage() {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <label
+              className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-md border border-border bg-surface px-3 text-xs font-medium text-muted-foreground hover:text-foreground"
+              title="When on, the loop starts automatically. When off, you press Run to start."
+            >
+              <span className="relative inline-flex h-4 w-7 shrink-0 items-center">
+                <input
+                  type="checkbox"
+                  checked={autorun}
+                  onChange={(e) => setAutorun(e.target.checked)}
+                  className="peer sr-only"
+                />
+                <span className="absolute inset-0 rounded-full bg-border transition-colors peer-checked:bg-primary" />
+                <span className="absolute left-0.5 size-3 rounded-full bg-background shadow transition-transform peer-checked:translate-x-3" />
+              </span>
+              <span className="font-mono uppercase tracking-wider">Auto-run</span>
+            </label>
             <div className="flex h-9 items-center rounded-md border border-border bg-surface p-0.5 text-xs font-mono">
               {[1, 2, 4].map((s) => (
                 <button
