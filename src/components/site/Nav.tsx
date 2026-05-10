@@ -11,6 +11,7 @@ export function Nav() {
             <span className="text-[15px] font-semibold tracking-tight">AgentForge</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
+            <Link to="/discover" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Discover</Link>
             <Link to="/marketplace" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Marketplace</Link>
             <Link to="/skillforge" className="text-sm text-muted-foreground transition-colors hover:text-foreground">SkillForge</Link>
             <Link to="/evolution" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Evolution</Link>
