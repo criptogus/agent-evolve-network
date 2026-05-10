@@ -20,8 +20,8 @@ export type SoulDetail = {
     version: string;
     status: string;
     system_prompt: string;
-    rules: Record<string, unknown>;
-    examples: Array<Record<string, unknown>>;
+    rules: any;
+    examples: any[];
     notes: string | null;
     created_at: string;
   } | null;
