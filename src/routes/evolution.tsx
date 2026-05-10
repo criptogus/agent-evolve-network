@@ -304,6 +304,27 @@ function EvolutionPage() {
     setLog((l) => [...l.slice(-40), { t: tickRef.current, kind, text }]);
   }
 
+  function pushTrace(
+    source: TraceSource,
+    kind: TraceKind,
+    text: string,
+    detail?: string,
+    learning?: { title: string; impact: string },
+  ) {
+    setTraces((tr) => [
+      ...tr.slice(-80),
+      {
+        id: `tr_${tickRef.current}_${Math.random().toString(36).slice(2, 7)}`,
+        t: tickRef.current,
+        source,
+        kind,
+        text,
+        detail,
+        learning,
+      },
+    ]);
+  }
+
   function reset() {
     tickRef.current = 0;
     phaseIdxRef.current = 0;
@@ -311,6 +332,7 @@ function EvolutionPage() {
     setGeneration(1);
     setSeries(seedSeries());
     setInstalled([]);
+    setTraces(seedTraces());
     setLog([{ t: 0, kind: "info", text: "Engine reset. Standing by." }]);
   }
 
