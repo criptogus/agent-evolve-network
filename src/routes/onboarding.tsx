@@ -215,7 +215,7 @@ function StepConfig({ agent, agentName }: { agent: AgentId; agentName: string })
   const config = `{
   "mcpServers": {
     "superagentskill": {
-      "url": "https://gateway.superagentskill.dev/mcp",
+      "url": "https://superagentskill.com/api/mcp",
       "auth": {
         "type": "oauth",
         "scopes": ["registry:read", "agent:upgrade", "feedback:write"]
