@@ -14,6 +14,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
+import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
 
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
@@ -40,12 +41,18 @@ const MarketplaceIndexRoute = MarketplaceIndexRouteImport.update({
   path: '/marketplace/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
+  id: '/marketplace/$packageId',
+  path: '/marketplace/$packageId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/docs': typeof DocsRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/': typeof MarketplaceIndexRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace': typeof MarketplaceIndexRoute
 }
 export interface FileRoutesById {
@@ -61,14 +69,34 @@ export interface FileRoutesById {
   '/docs': typeof DocsRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/': typeof MarketplaceIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/docs' | '/onboarding' | '/pricing' | '/marketplace/'
+  fullPaths:
+    | '/'
+    | '/docs'
+    | '/onboarding'
+    | '/pricing'
+    | '/marketplace/$packageId'
+    | '/marketplace/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/docs' | '/onboarding' | '/pricing' | '/marketplace'
-  id: '__root__' | '/' | '/docs' | '/onboarding' | '/pricing' | '/marketplace/'
+  to:
+    | '/'
+    | '/docs'
+    | '/onboarding'
+    | '/pricing'
+    | '/marketplace/$packageId'
+    | '/marketplace'
+  id:
+    | '__root__'
+    | '/'
+    | '/docs'
+    | '/onboarding'
+    | '/pricing'
+    | '/marketplace/$packageId'
+    | '/marketplace/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +104,7 @@ export interface RootRouteChildren {
   DocsRoute: typeof DocsRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
+  MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
 }
 
@@ -116,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketplaceIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/marketplace/$packageId': {
+      id: '/marketplace/$packageId'
+      path: '/marketplace/$packageId'
+      fullPath: '/marketplace/$packageId'
+      preLoaderRoute: typeof MarketplacePackageIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -124,6 +160,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsRoute: DocsRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
+  MarketplacePackageIdRoute: MarketplacePackageIdRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
 }
 export const routeTree = rootRouteImport
