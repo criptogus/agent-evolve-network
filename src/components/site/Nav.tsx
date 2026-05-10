@@ -17,6 +17,7 @@ export function Nav() {
             <Link to="/skillforge" className="text-sm text-muted-foreground transition-colors hover:text-foreground">SkillForge</Link>
             <Link to="/forge" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Forge</Link>
             <Link to="/evolution" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Evolution</Link>
+            <Link to="/evaluation" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Evaluation</Link>
             <Link to="/docs" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Docs</Link>
             <Link to="/pricing" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Pricing</Link>
             <a href="https://github.com" className="text-sm text-muted-foreground transition-colors hover:text-foreground">GitHub</a>
