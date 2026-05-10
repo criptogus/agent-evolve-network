@@ -223,7 +223,7 @@ function UploadPage() {
                       <td className="px-4 py-3 font-mono text-xs">{r.slug ?? "—"}</td>
                       <td className="px-4 py-3 text-xs">
                         {r.forge_report_url ? (
-                          <Link to={r.forge_report_url} className="text-primary hover:underline">View →</Link>
+                          <a href={r.forge_report_url} className="text-primary hover:underline">View →</a>
                         ) : (
                           r.error ?? "—"
                         )}
