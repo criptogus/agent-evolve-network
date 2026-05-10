@@ -23,6 +23,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
+import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
@@ -101,6 +102,11 @@ const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
   path: '/marketplace/$packageId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMcpRoute = ApiMcpRouteImport.update({
+  id: '/api/mcp',
+  path: '/api/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRequestsRoute = AdminRequestsRouteImport.update({
   id: '/requests',
   path: '/requests',
@@ -153,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
+  '/api/mcp': typeof ApiMcpRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
+  '/api/mcp': typeof ApiMcpRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin': typeof AdminIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
+  '/api/mcp': typeof ApiMcpRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
+    | '/api/mcp'
     | '/marketplace/$packageId'
     | '/admin/'
     | '/marketplace/'
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
+    | '/api/mcp'
     | '/marketplace/$packageId'
     | '/admin'
     | '/marketplace'
@@ -269,6 +280,7 @@ export interface FileRouteTypes {
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
+    | '/api/mcp'
     | '/marketplace/$packageId'
     | '/admin/'
     | '/marketplace/'
@@ -289,6 +301,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   SkillforgeRoute: typeof SkillforgeRoute
+  ApiMcpRoute: typeof ApiMcpRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
 }
@@ -393,6 +406,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketplacePackageIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/mcp': {
+      id: '/api/mcp'
+      path: '/api/mcp'
+      fullPath: '/api/mcp'
+      preLoaderRoute: typeof ApiMcpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/requests': {
       id: '/admin/requests'
       path: '/requests'
@@ -491,6 +511,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   SkillforgeRoute: SkillforgeRoute,
+  ApiMcpRoute: ApiMcpRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
 }
