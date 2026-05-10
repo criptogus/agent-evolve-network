@@ -27,6 +27,7 @@ function Home() {
       <CompareIndustries />
       <CoreConcepts />
       <SkillForgeSection />
+      <EvalLoopSection />
       <SocialProof />
       <NetworkSection />
       <FAQ />
