@@ -494,6 +494,228 @@ function EvolutionPage() {
 
 /* ---------------- pipeline ---------------- */
 
+function EvolutionSummary({
+  log,
+  generation,
+  delta,
+  last,
+  running,
+  autorun,
+}: {
+  log: { t: number; kind: "info" | "ok" | "warn" | "evolve"; text: string }[];
+  generation: number;
+  delta: { health: number; precision: number; latency: number; hallucination: number };
+  last: Tick;
+  running: boolean;
+  autorun: boolean;
+}) {
+  const summary = useMemo(() => {
+    const recommended: { name: string; t: number }[] = [];
+    const installed: { name: string; t: number }[] = [];
+    let verified = 0;
+
+    for (const entry of log) {
+      if (entry.kind === "warn") {
+        const m = entry.text.match(/recommend\s+(.+)$/i);
+        if (m) recommended.push({ name: m[1].trim(), t: entry.t });
+      } else if (entry.kind === "ok") {
+        const m = entry.text.match(/installed\s+(.+)$/i);
+        if (m) installed.push({ name: m[1].trim(), t: entry.t });
+      } else if (entry.kind === "evolve") {
+        verified += 1;
+      }
+    }
+
+    // Dedupe by package name, keep latest occurrence
+    const dedupe = (arr: { name: string; t: number }[]) => {
+      const seen = new Map<string, number>();
+      for (const item of arr) seen.set(item.name, item.t);
+      return [...seen.entries()].map(([name, t]) => ({ name, t })).sort((a, b) => b.t - a.t);
+    };
+
+    return {
+      recommended: dedupe(recommended),
+      installed: dedupe(installed),
+      verified,
+    };
+  }, [log]);
+
+  const status = !autorun && !running
+    ? "Paused — click Run to resume"
+    : running
+      ? `Live · gen ${generation}`
+      : `Paused · gen ${generation}`;
+
+  const empty =
+    summary.recommended.length === 0 && summary.installed.length === 0 && summary.verified === 0;
+
+  return (
+    <section className="mt-10 overflow-hidden rounded-2xl border border-border bg-surface/40">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
+        <div>
+          <div className="text-sm font-medium">Evolution summary</div>
+          <div className="text-xs text-muted-foreground">
+            Snapshot derived from the live log. Updates every loop.
+          </div>
+        </div>
+        <span
+          className={
+            "inline-flex items-center gap-2 rounded-full border px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider " +
+            (running
+              ? "border-signal/40 bg-signal/10 text-signal-foreground"
+              : "border-border bg-background text-muted-foreground")
+          }
+        >
+          <span
+            className={"size-1.5 rounded-full " + (running ? "bg-signal pulse-dot" : "bg-muted-foreground/50")}
+            aria-hidden
+          />
+          {status}
+        </span>
+      </header>
+
+      {empty ? (
+        <div className="px-5 py-10 text-center text-sm text-muted-foreground">
+          No upgrade events yet. Let the loop run a few cycles to populate the summary.
+        </div>
+      ) : (
+        <>
+          <div className="grid gap-px bg-border/60 sm:grid-cols-4">
+            <SummaryStat label="Recommended" value={summary.recommended.length.toString()} />
+            <SummaryStat label="Installed" value={summary.installed.length.toString()} accent />
+            <SummaryStat label="Verified loops" value={summary.verified.toString()} />
+            <SummaryStat label="Generation" value={`#${generation}`} />
+          </div>
+
+          <div className="grid gap-px bg-border/60 md:grid-cols-2">
+            <SummaryColumn
+              title="Recommended upgrades"
+              emptyLabel="No recommendations yet."
+              items={summary.recommended}
+              kind="recommend"
+            />
+            <SummaryColumn
+              title="Installed & hot-swapped"
+              emptyLabel="Nothing installed yet."
+              items={summary.installed}
+              kind="install"
+            />
+          </div>
+
+          <div className="grid gap-px bg-border/60 sm:grid-cols-4">
+            <DeltaPill label="Health" value={delta.health} suffix="" current={last.health.toFixed(1)} />
+            <DeltaPill
+              label="Precision"
+              value={delta.precision}
+              suffix="pp"
+              current={last.precision.toFixed(1)}
+            />
+            <DeltaPill
+              label="Latency"
+              value={delta.latency}
+              suffix="ms"
+              current={Math.round(last.latency).toString()}
+            />
+            <DeltaPill
+              label="Hallucination"
+              value={delta.hallucination}
+              suffix="pp"
+              current={last.hallucination.toFixed(2)}
+            />
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+function SummaryStat({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="bg-surface/60 px-5 py-4">
+      <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{label}</div>
+      <div className={"mt-1 font-mono text-2xl font-semibold " + (accent ? "text-primary" : "text-foreground")}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function SummaryColumn({
+  title,
+  items,
+  emptyLabel,
+  kind,
+}: {
+  title: string;
+  items: { name: string; t: number }[];
+  emptyLabel: string;
+  kind: "recommend" | "install";
+}) {
+  return (
+    <div className="bg-surface/60 px-5 py-4">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="text-xs font-medium text-muted-foreground">{title}</div>
+        <span className="font-mono text-[10px] text-muted-foreground">{items.length}</span>
+      </div>
+      {items.length === 0 ? (
+        <div className="text-xs text-muted-foreground">{emptyLabel}</div>
+      ) : (
+        <ul className="space-y-1.5">
+          {items.slice(0, 6).map((it) => (
+            <li key={it.name} className="flex items-center gap-2 font-mono text-[12px]">
+              <span
+                className={
+                  "inline-block size-1.5 shrink-0 rounded-full " +
+                  (kind === "install" ? "bg-signal" : "bg-primary")
+                }
+                aria-hidden
+              />
+              <span className="truncate text-foreground" title={it.name}>
+                {it.name}
+              </span>
+              <span className="ml-auto text-[10px] text-muted-foreground">t+{it.t}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function DeltaPill({
+  label,
+  value,
+  suffix,
+  current,
+}: {
+  label: string;
+  value: number;
+  suffix: string;
+  current: string;
+}) {
+  const positive = value > 0.05;
+  const negative = value < -0.05;
+  const sign = value > 0 ? "+" : value < 0 ? "" : "±";
+  const tone = positive
+    ? "text-signal"
+    : negative
+      ? "text-destructive"
+      : "text-muted-foreground";
+  return (
+    <div className="bg-surface/60 px-5 py-3">
+      <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{label}</div>
+      <div className="mt-1 flex items-baseline gap-2">
+        <span className="font-mono text-base text-foreground">{current}</span>
+        <span className={"font-mono text-xs " + tone}>
+          {sign}
+          {Math.abs(value).toFixed(label === "Hallucination" ? 2 : 1)}
+          {suffix}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function HistoryPanel({
   history,
   activeId,
