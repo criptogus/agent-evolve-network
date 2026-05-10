@@ -8,7 +8,6 @@ export type UsageSnapshot = {
     price_cents: number;
     monthly_runs_limit: number;
     max_installed_packages: number;
-    features: unknown;
   } | null;
   period: { month_start: string; month_end_exclusive: string };
   runs: {
