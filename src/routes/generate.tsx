@@ -83,6 +83,26 @@ const SAMPLES = [
   "Make my agent an SDR for a Series B fintech: prospect on LinkedIn, qualify, book demos in HubSpot.",
 ];
 
+type Governance = "standard" | "strict" | "lockdown";
+
+const GOVERNANCE: Record<Governance, { label: string; blurb: string; safetyBoost: number }> = {
+  standard: {
+    label: "Standard",
+    blurb: "Balanced defaults: PII redaction, citation enforcement, refusal on out-of-scope asks.",
+    safetyBoost: 0,
+  },
+  strict: {
+    label: "Strict",
+    blurb: "Adds dual-LLM judge on every output, blocks ungrounded claims, requires source for any number.",
+    safetyBoost: 4,
+  },
+  lockdown: {
+    label: "Lockdown",
+    blurb: "Regulated-industry mode: human-in-the-loop on writes, full audit log, jailbreak & prompt-injection shields.",
+    safetyBoost: 8,
+  },
+};
+
 function GeneratePage() {
   const { prompt: initialPrompt } = Route.useSearch();
   const [input, setInput] = useState<string>(initialPrompt ?? "");
@@ -93,6 +113,7 @@ function GeneratePage() {
   const [phase, setPhase] = useState<string>("idle");
   const [score, setScore] = useState({ health: 71, precision: 74, safety: 88, latency: 920 });
   const [baseline] = useState({ health: 71, precision: 74, safety: 88, latency: 920 });
+  const [governance, setGovernance] = useState<Governance>("standard");
   const [presets, setPresets] = useState<Preset[]>([]);
   const [presetFormOpen, setPresetFormOpen] = useState(false);
   const [presetName, setPresetName] = useState("");
@@ -479,7 +500,7 @@ function GeneratePage() {
 
           {/* Artifacts */}
           <div className="rounded-2xl border border-border bg-background p-4">
-            <div className="flex items-center justify-between border-b border-border pb-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
               <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                 Generated stack
               </span>
@@ -487,8 +508,50 @@ function GeneratePage() {
                 {artifacts.length} package{artifacts.length === 1 ? "" : "s"}
               </span>
             </div>
+
+            {/* Governance level selector */}
+            <div className="mt-3 rounded-xl border border-border bg-surface/40 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Governance level
+                </span>
+                <span className="font-mono text-[10px] text-muted-foreground">
+                  safety {(score.safety + GOVERNANCE[governance].safetyBoost).toFixed(0)}%
+                </span>
+              </div>
+              <div
+                role="radiogroup"
+                aria-label="Governance level"
+                className="mt-2 grid grid-cols-3 gap-1.5"
+              >
+                {(Object.keys(GOVERNANCE) as Governance[]).map((g) => {
+                  const active = governance === g;
+                  return (
+                    <button
+                      key={g}
+                      role="radio"
+                      aria-checked={active}
+                      type="button"
+                      onClick={() => setGovernance(g)}
+                      className={
+                        "rounded-md border px-2 py-1.5 text-[12px] font-medium transition-colors " +
+                        (active
+                          ? "border-primary/60 bg-primary/10 text-foreground"
+                          : "border-border bg-background text-muted-foreground hover:text-foreground")
+                      }
+                    >
+                      {GOVERNANCE[g].label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[12px] leading-snug text-muted-foreground">
+                {GOVERNANCE[governance].blurb}
+              </p>
+            </div>
+
             {artifacts.length === 0 ? (
-              <div className="flex h-[380px] items-center justify-center text-center">
+              <div className="flex h-[300px] items-center justify-center text-center">
                 <p className="max-w-sm text-sm text-muted-foreground">
                   Skills, playbooks, souls and guardrails will appear here as they are forged.
                 </p>
@@ -517,6 +580,9 @@ function GeneratePage() {
                             </li>
                           ))}
                         </ul>
+                        {a.kind === "guardrail" && (
+                          <GuardrailExplain name={a.name} level={governance} />
+                        )}
                       </div>
                       <span
                         className={
@@ -528,6 +594,31 @@ function GeneratePage() {
                       >
                         {a.source}
                       </span>
+                    </div>
+                  </li>
+                ))}
+
+                {/* Implicit guardrails injected by governance level */}
+                {implicitGuardrails(governance, artifacts).map((g) => (
+                  <li
+                    key={g.id}
+                    className="animate-fade-in rounded-xl border border-dashed border-destructive/30 bg-destructive/5 p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <KindBadge kind="guardrail" />
+                          <span className="truncate font-mono text-[13px] text-foreground">
+                            {g.name}
+                          </span>
+                          <span className="rounded-full bg-background px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
+                            from {GOVERNANCE[governance].label.toLowerCase()}
+                          </span>
+                        </div>
+                        <p className="mt-1.5 text-[12px] leading-snug text-muted-foreground">
+                          {g.why}
+                        </p>
+                      </div>
                     </div>
                   </li>
                 ))}
@@ -710,6 +801,89 @@ function KindBadge({ kind }: { kind: Kind }) {
       {v.label}
     </span>
   );
+}
+
+/* ---------- guardrail explanations ---------- */
+
+const GUARDRAIL_BLURBS: Array<{ match: RegExp; blurb: string }> = [
+  { match: /pii|redact|privacy/i, blurb: "Detects names, emails, phone numbers, IDs and PHI; redacts before logging or sending to third parties." },
+  { match: /medical|clinical|hippocratic|fda/i, blurb: "Blocks unsafe drug doses, requires citation of authoritative source, escalates to a clinician above an uncertainty threshold." },
+  { match: /no-?halluc|grounding|citation/i, blurb: "Rejects claims with no retrievable source. Every factual statement must carry a citation." },
+  { match: /competit|brand|legal/i, blurb: "Refuses to recommend competitors, mention disallowed brands, or speculate on litigation." },
+  { match: /jailbreak|injection|prompt/i, blurb: "Filters prompt-injection attempts in tool inputs and untrusted documents before the model sees them." },
+];
+
+function explainGuardrail(name: string) {
+  return (
+    GUARDRAIL_BLURBS.find((g) => g.match.test(name))?.blurb ??
+    "Hard boundary: outputs that violate the rule are blocked or require human approval before sending."
+  );
+}
+
+function GuardrailExplain({ name, level }: { name: string; level: Governance }) {
+  const blurb = explainGuardrail(name);
+  return (
+    <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/5 p-2.5">
+      <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-destructive">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        Why this is safe
+      </div>
+      <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{blurb}</p>
+      <p className="mt-1 text-[11px] text-muted-foreground/80">
+        Enforcement under <span className="text-foreground">{GOVERNANCE[level].label}</span>:{" "}
+        {level === "lockdown"
+          ? "block + human review + audit log."
+          : level === "strict"
+            ? "block + dual-LLM judge confirmation."
+            : "redact or refuse with reason."}
+      </p>
+    </div>
+  );
+}
+
+interface ImplicitGuardrail {
+  id: string;
+  name: string;
+  why: string;
+}
+
+function implicitGuardrails(level: Governance, current: Artifact[]): ImplicitGuardrail[] {
+  const have = new Set(current.filter((a) => a.kind === "guardrail").map((a) => a.name.toLowerCase()));
+  const pool: ImplicitGuardrail[] = [];
+
+  pool.push({
+    id: "pii-baseline",
+    name: "pii-redactor",
+    why: "Auto-redacts personal data before it leaves the agent — applied to every output and tool call.",
+  });
+  if (level === "strict" || level === "lockdown") {
+    pool.push({
+      id: "grounding",
+      name: "no-hallucination",
+      why: "Every factual claim is checked by a second model and dropped if no source can be cited.",
+    });
+    pool.push({
+      id: "injection",
+      name: "prompt-injection-shield",
+      why: "Strips instructions hidden inside retrieved documents and untrusted tool outputs.",
+    });
+  }
+  if (level === "lockdown") {
+    pool.push({
+      id: "hitl",
+      name: "human-in-the-loop-writes",
+      why: "Any tool call that mutates external state (send, charge, deploy) requires explicit human approval.",
+    });
+    pool.push({
+      id: "audit",
+      name: "full-audit-trail",
+      why: "Every prompt, tool call and output is signed and stored for regulator-grade replay.",
+    });
+  }
+
+  return pool.filter((g) => !have.has(g.name.toLowerCase()));
 }
 
 function clamp(n: number, min: number, max: number) {
