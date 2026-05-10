@@ -38,6 +38,44 @@ interface StreamLine {
   tone: "muted" | "info" | "ok" | "warn" | "evolve";
 }
 
+interface Preset {
+  id: string;
+  name: string;
+  tags: string[];
+  prompt: string;
+  createdAt: number;
+  lastRun?: {
+    at: number;
+    artifacts: number;
+    healthDelta: number;
+    precisionDelta: number;
+    latencyDelta: number;
+  };
+}
+
+const PRESETS_KEY = "agentforge.generate.presets.v1";
+
+function loadPresets(): Preset[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(PRESETS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function savePresets(p: Preset[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(PRESETS_KEY, JSON.stringify(p));
+  } catch {
+    /* ignore */
+  }
+}
+
 const SAMPLES = [
   "I run a cardiology clinic and want my agent to triage chest-pain cases using the latest 2026 ESC guidelines.",
   "I sell to CFOs of mid-market SaaS. Build the playbook and give it a McKinsey soul.",
@@ -55,8 +93,17 @@ function GeneratePage() {
   const [phase, setPhase] = useState<string>("idle");
   const [score, setScore] = useState({ health: 71, precision: 74, safety: 88, latency: 920 });
   const [baseline] = useState({ health: 71, precision: 74, safety: 88, latency: 920 });
+  const [presets, setPresets] = useState<Preset[]>([]);
+  const [presetFormOpen, setPresetFormOpen] = useState(false);
+  const [presetName, setPresetName] = useState("");
+  const [presetTagsInput, setPresetTagsInput] = useState("");
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
   const lineId = useRef(0);
   const taRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    setPresets(loadPresets());
+  }, []);
 
   // Auto-run from URL ?prompt=
   useEffect(() => {
@@ -132,6 +179,35 @@ function GeneratePage() {
     setRunning(false);
     setDone(true);
     setPhase("done");
+
+    // Update lastRun for any preset matching this exact prompt
+    const totalArtifacts = plan.enrich.length + plan.generate.length;
+    const sumDelta = [...plan.enrich, ...plan.generate].reduce(
+      (acc, a) => ({
+        health: acc.health + a.delta.health,
+        precision: acc.precision + a.delta.precision,
+        latency: acc.latency + a.delta.latency,
+      }),
+      { health: 0, precision: 0, latency: 0 },
+    );
+    setPresets((prev) => {
+      const next = prev.map((p) =>
+        p.prompt.trim() === promptText.trim()
+          ? {
+              ...p,
+              lastRun: {
+                at: Date.now(),
+                artifacts: totalArtifacts,
+                healthDelta: round(sumDelta.health),
+                precisionDelta: round(sumDelta.precision),
+                latencyDelta: Math.round(-sumDelta.latency),
+              },
+            }
+          : p,
+      );
+      savePresets(next);
+      return next;
+    });
   }
 
   function bumpScore(d: Artifact["delta"]) {
@@ -212,10 +288,82 @@ function GeneratePage() {
                 Reset
               </button>
               <ShareButton prompt={input} />
+              <button
+                type="button"
+                onClick={() => {
+                  if (!input.trim()) return;
+                  // Pre-fill name from prompt if empty
+                  setPresetName((n) => n || truncate(input.trim(), 48));
+                  setPresetFormOpen((v) => !v);
+                }}
+                disabled={!input.trim()}
+                className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent disabled:opacity-50"
+                title="Save this prompt as a reusable preset"
+              >
+                <span aria-hidden>★</span>
+                Save preset
+              </button>
               <span className="ml-auto font-mono text-[11px] text-muted-foreground">
                 ⌘ ↵ to run
               </span>
             </div>
+
+            {presetFormOpen && (
+              <div className="mt-3 rounded-lg border border-dashed border-border bg-background/60 p-3">
+                <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                  <input
+                    value={presetName}
+                    onChange={(e) => setPresetName(e.target.value)}
+                    placeholder="Preset name (e.g. Cardiology v1)"
+                    className="h-9 rounded-md border border-border bg-background px-2.5 text-sm focus:border-primary/50 focus:outline-none"
+                  />
+                  <input
+                    value={presetTagsInput}
+                    onChange={(e) => setPresetTagsInput(e.target.value)}
+                    placeholder="Tags, comma-separated (healthcare, triage)"
+                    className="h-9 rounded-md border border-border bg-background px-2.5 text-sm focus:border-primary/50 focus:outline-none"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!presetName.trim() || !input.trim()) return;
+                        const tags = presetTagsInput
+                          .split(",")
+                          .map((t) => t.trim().toLowerCase())
+                          .filter(Boolean);
+                        const next: Preset[] = [
+                          {
+                            id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                            name: presetName.trim(),
+                            tags,
+                            prompt: input.trim(),
+                            createdAt: Date.now(),
+                          },
+                          ...presets,
+                        ].slice(0, 30);
+                        setPresets(next);
+                        savePresets(next);
+                        setPresetFormOpen(false);
+                        setPresetName("");
+                        setPresetTagsInput("");
+                      }}
+                      disabled={!presetName.trim()}
+                      className="h-9 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPresetFormOpen(false)}
+                      className="h-9 rounded-md border border-border bg-background px-3 text-sm hover:bg-accent"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="mt-4 flex flex-wrap gap-2">
               {SAMPLES.map((s) => (
                 <button
@@ -258,6 +406,28 @@ function GeneratePage() {
             </div>
           </div>
         </section>
+
+        {/* Presets */}
+        <PresetsPanel
+          presets={presets}
+          tagFilter={tagFilter}
+          setTagFilter={setTagFilter}
+          onLoad={(p) => {
+            setInput(p.prompt);
+            taRef.current?.focus();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          onRun={(p) => {
+            setInput(p.prompt);
+            start(p.prompt);
+          }}
+          onDelete={(id) => {
+            const next = presets.filter((p) => p.id !== id);
+            setPresets(next);
+            savePresets(next);
+          }}
+          running={running}
+        />
 
         {/* Stream + Artifacts */}
         <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_1.1fr]">
@@ -767,4 +937,176 @@ function artifact(
   rest: { summary: string; bullets: string[]; delta: Artifact["delta"] },
 ): Artifact {
   return { kind, name, version, source, ...rest };
+}
+
+function PresetsPanel({
+  presets,
+  tagFilter,
+  setTagFilter,
+  onLoad,
+  onRun,
+  onDelete,
+  running,
+}: {
+  presets: Preset[];
+  tagFilter: string | null;
+  setTagFilter: (t: string | null) => void;
+  onLoad: (p: Preset) => void;
+  onRun: (p: Preset) => void;
+  onDelete: (id: string) => void;
+  running: boolean;
+}) {
+  const allTags = Array.from(new Set(presets.flatMap((p) => p.tags))).sort();
+  const filtered = tagFilter ? presets.filter((p) => p.tags.includes(tagFilter)) : presets;
+
+  return (
+    <section className="mt-8 overflow-hidden rounded-2xl border border-border bg-surface/40">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
+        <div>
+          <div className="text-sm font-medium">Presets</div>
+          <div className="text-xs text-muted-foreground">
+            Save commands with name + tags. Re-run any time and compare last results side by side.
+          </div>
+        </div>
+        {allTags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setTagFilter(null)}
+              className={
+                "rounded-full border px-2.5 py-1 text-[11px] font-mono uppercase tracking-wider " +
+                (tagFilter === null
+                  ? "border-primary/50 bg-primary/10 text-foreground"
+                  : "border-border bg-background text-muted-foreground hover:text-foreground")
+              }
+            >
+              All
+            </button>
+            {allTags.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setTagFilter(t === tagFilter ? null : t)}
+                className={
+                  "rounded-full border px-2.5 py-1 text-[11px] font-mono " +
+                  (tagFilter === t
+                    ? "border-primary/50 bg-primary/10 text-foreground"
+                    : "border-border bg-background text-muted-foreground hover:text-foreground")
+                }
+              >
+                #{t}
+              </button>
+            ))}
+          </div>
+        )}
+      </header>
+
+      {presets.length === 0 ? (
+        <div className="px-5 py-8 text-center text-sm text-muted-foreground">
+          No presets yet. Click <span className="text-foreground">★ Save preset</span> above to bookmark
+          a command for later.
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="px-5 py-8 text-center text-sm text-muted-foreground">
+          No presets match the filter <span className="text-foreground">#{tagFilter}</span>.
+        </div>
+      ) : (
+        <ul className="divide-y divide-border">
+          {filtered.map((p) => (
+            <li key={p.id} className="grid gap-3 px-5 py-4 md:grid-cols-[1fr_auto] md:items-start">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium text-foreground">{p.name}</span>
+                  {p.tags.map((t) => (
+                    <span
+                      key={t}
+                      className="rounded-full bg-background px-2 py-0.5 font-mono text-[10px] text-muted-foreground"
+                    >
+                      #{t}
+                    </span>
+                  ))}
+                  <span className="ml-auto font-mono text-[10px] text-muted-foreground md:ml-0">
+                    {new Date(p.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="mt-1 line-clamp-2 text-[13px] text-muted-foreground">{p.prompt}</p>
+                {p.lastRun ? (
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] text-muted-foreground">
+                    <span>
+                      last run · <span className="text-foreground">{relTime(p.lastRun.at)}</span>
+                    </span>
+                    <span>
+                      pkgs <span className="text-foreground">{p.lastRun.artifacts}</span>
+                    </span>
+                    <span>
+                      Δhealth{" "}
+                      <span className={p.lastRun.healthDelta >= 0 ? "text-signal-foreground" : "text-destructive"}>
+                        {p.lastRun.healthDelta >= 0 ? "+" : ""}
+                        {p.lastRun.healthDelta.toFixed(1)}
+                      </span>
+                    </span>
+                    <span>
+                      Δprecision{" "}
+                      <span className={p.lastRun.precisionDelta >= 0 ? "text-signal-foreground" : "text-destructive"}>
+                        {p.lastRun.precisionDelta >= 0 ? "+" : ""}
+                        {p.lastRun.precisionDelta.toFixed(1)}
+                      </span>
+                    </span>
+                    <span>
+                      Δlatency{" "}
+                      <span className={p.lastRun.latencyDelta >= 0 ? "text-signal-foreground" : "text-destructive"}>
+                        {p.lastRun.latencyDelta >= 0 ? "-" : "+"}
+                        {Math.abs(p.lastRun.latencyDelta)}ms
+                      </span>
+                    </span>
+                  </div>
+                ) : (
+                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">
+                    not run yet
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                <button
+                  type="button"
+                  onClick={() => onRun(p)}
+                  disabled={running}
+                  className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground disabled:opacity-50"
+                >
+                  Run
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onLoad(p)}
+                  className="inline-flex h-8 items-center rounded-md border border-border bg-background px-3 text-xs font-medium hover:bg-accent"
+                >
+                  Load
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDelete(p.id)}
+                  className="inline-flex h-8 items-center rounded-md border border-border bg-background px-2 text-xs text-muted-foreground hover:text-destructive"
+                  title="Delete preset"
+                >
+                  ✕
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function relTime(t: number): string {
+  const diff = Date.now() - t;
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
 }
