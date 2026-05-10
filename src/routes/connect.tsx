@@ -301,6 +301,22 @@ function ConnectPage() {
         {/* Live test */}
         <McpTester />
 
+        {/* Health check from terminal */}
+        <section className="mb-10 rounded-2xl border border-border bg-card p-5 md:p-6">
+          <h2 className="text-xl font-semibold">Verify from your terminal</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Hit the public health endpoint to confirm the registry is reachable from your network
+            and to enumerate the live tool catalog — no auth required.
+          </p>
+          <div className="mt-3">
+            <CodeBlock
+              filename="shell"
+              lang="bash"
+              code={`curl -s ${ENDPOINT.replace("/api/mcp", "/api/public/mcp/health")} | jq`}
+            />
+          </div>
+        </section>
+
         {/* Quick jump */}
         <nav className="mb-10 flex flex-wrap gap-2">
           <a
