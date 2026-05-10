@@ -12,6 +12,7 @@ export function Nav() {
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
             <Link to="/discover" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Discover</Link>
+            <Link to="/generate" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Generate</Link>
             <Link to="/marketplace" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Marketplace</Link>
             <Link to="/skillforge" className="text-sm text-muted-foreground transition-colors hover:text-foreground">SkillForge</Link>
             <Link to="/evolution" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Evolution</Link>

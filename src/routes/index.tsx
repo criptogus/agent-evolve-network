@@ -246,13 +246,20 @@ function PlainEnglish() {
                 </span>
                 <p className="font-mono text-[12.5px] leading-relaxed text-muted-foreground">{e.result}</p>
               </div>
-              <div className="mt-4 flex items-center justify-end border-t border-border pt-3">
+              <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-3">
                 <Link
                   to="/evolution"
                   search={{ prompt: e.prompt }}
+                  className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Watch evolve →
+                </Link>
+                <Link
+                  to="/generate"
+                  search={{ prompt: e.prompt }}
                   className="group inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-95"
                 >
-                  Send command & watch demo
+                  Forge live
                   <span className="transition-transform group-hover:translate-x-0.5">→</span>
                 </Link>
               </div>
