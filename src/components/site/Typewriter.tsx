@@ -11,9 +11,9 @@ interface TypewriterProps {
 export function Typewriter({
   words,
   className,
-  typeSpeed = 65,
-  deleteSpeed = 30,
-  pause = 1400,
+  typeSpeed = 130,
+  deleteSpeed = 70,
+  pause = 2200,
 }: TypewriterProps) {
   const [index, setIndex] = useState(0);
   const [text, setText] = useState("");
@@ -60,8 +60,8 @@ interface TypingLinesProps {
 /** Types one line at a time, then keeps it and moves to the next. */
 export function TypingLines({
   lines,
-  speed = 18,
-  startDelay = 300,
+  speed = 42,
+  startDelay = 400,
   className,
   lineClassName,
 }: TypingLinesProps) {
@@ -84,7 +84,7 @@ export function TypingLines({
     const t = setTimeout(() => {
       setLineIdx((i) => i + 1);
       setCharIdx(0);
-    }, 120);
+    }, 280);
     return () => clearTimeout(t);
   }, [charIdx, lineIdx, lines, speed, started]);
 
