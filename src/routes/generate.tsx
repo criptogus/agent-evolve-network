@@ -684,6 +684,16 @@ function GeneratePage() {
           </div>
         </section>
 
+        {artifacts.length > 0 && (
+          <HealthBreakdownPanel
+            artifacts={artifacts}
+            governance={governance}
+            baseline={baseline}
+            score={score}
+            delta={delta}
+          />
+        )}
+
         {done && (
           <section className="mt-8 animate-fade-in rounded-2xl border border-primary/30 bg-primary/5 p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
