@@ -71,9 +71,9 @@ Produce the Patch JSON.`;
 
     let createdVersion = null;
     if (data.apply) {
-      const mergedRules = { ...(ver.rules as object), ...(patch.patched_rules as object) };
+      const mergedRules = JSON.parse(JSON.stringify({ ...(ver.rules as object), ...(patch.patched_rules as object) }));
       const existingExamples = Array.isArray(ver.examples) ? (ver.examples as unknown[]) : [];
-      const mergedExamples = [...existingExamples, ...patch.new_examples] as unknown as object[];
+      const mergedExamples = JSON.parse(JSON.stringify([...existingExamples, ...patch.new_examples]));
       const { data: nv, error: nvErr } = await supabase
         .from("package_versions").insert({
           package_id: pkg.id,
