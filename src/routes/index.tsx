@@ -28,6 +28,7 @@ function Home() {
       <SkillForgeSection />
       <SocialProof />
       <NetworkSection />
+      <FAQ />
       <CTASection />
       <Footer />
     </div>
