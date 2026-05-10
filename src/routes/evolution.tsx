@@ -49,17 +49,36 @@ const UPGRADES = [
 const MAX_POINTS = 60;
 
 function EvolutionPage() {
+  const { prompt } = Route.useSearch();
   const [running, setRunning] = useState(true);
   const [speed, setSpeed] = useState<1 | 2 | 4>(2);
   const [phase, setPhase] = useState<Phase>("observe");
   const [generation, setGeneration] = useState(1);
   const [series, setSeries] = useState<Tick[]>(() => seedSeries());
-  const [log, setLog] = useState<{ t: number; kind: "info" | "ok" | "warn" | "evolve"; text: string }[]>([
-    { t: 0, kind: "info", text: "Evolution engine standing by. Press Run to start." },
-  ]);
+  const [activePrompt, setActivePrompt] = useState<string | undefined>(prompt);
+  const [log, setLog] = useState<{ t: number; kind: "info" | "ok" | "warn" | "evolve"; text: string }[]>(() =>
+    prompt
+      ? [
+          { t: 0, kind: "info", text: `› Command received: "${prompt}"` },
+          { t: 0, kind: "info", text: "Routing to Evolution Engine…" },
+        ]
+      : [{ t: 0, kind: "info", text: "Evolution engine standing by. Press Run to start." }],
+  );
   const [installed, setInstalled] = useState<string[]>([]);
   const tickRef = useRef(0);
   const phaseIdxRef = useRef(0);
+
+  // Echo new prompts coming via URL changes
+  useEffect(() => {
+    if (!prompt || prompt === activePrompt) return;
+    setActivePrompt(prompt);
+    setLog((l) => [
+      ...l.slice(-40),
+      { t: tickRef.current, kind: "info", text: `› Command received: "${prompt}"` },
+    ]);
+    setRunning(true);
+  }, [prompt, activePrompt]);
+
 
   // Main loop
   useEffect(() => {
