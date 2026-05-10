@@ -50,7 +50,7 @@ export const listReviewQueue = createServerFn({ method: "GET" })
       .order("review_status", { ascending: true })
       .order("updated_at", { ascending: false })
       .limit(500);
-    if (data.type !== "all") q = q.eq("type", data.type);
+    if (data.type !== "all") q = q.eq("type", data.type as any);
     const { data: rows, error } = await q;
     if (error) throw new Response(error.message, { status: 500 });
     return { items: (rows ?? []) as ReviewQueueItem[] };
