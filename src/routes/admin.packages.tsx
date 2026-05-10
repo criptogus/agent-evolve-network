@@ -19,10 +19,12 @@ function PackagesPage() {
   const listFn = useServerFn(listAllPackages);
   const setPub = useServerFn(setPackagePublished);
   const del = useServerFn(deletePackage);
+  const loop = useServerFn(runForgeLoop);
   const qc = useQueryClient();
 
   const [search, setSearch] = useState("");
   const [kind, setKind] = useState<string>("");
+  const [loopResult, setLoopResult] = useState<{ slug: string; data: Awaited<ReturnType<typeof loop>> } | null>(null);
 
   const pkgs = useQuery({
     queryKey: ["admin", "packages", search, kind],
@@ -36,6 +38,14 @@ function PackagesPage() {
   const delM = useMutation({
     mutationFn: (id: string) => del({ data: { id } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "packages"] }),
+  });
+  const loopM = useMutation({
+    mutationFn: (input: { slug: string; hotswap: boolean }) =>
+      loop({ data: { package_slug: input.slug, hotswap: input.hotswap } }).then((d) => ({ slug: input.slug, data: d })),
+    onSuccess: (r) => {
+      setLoopResult(r);
+      qc.invalidateQueries({ queryKey: ["admin", "packages"] });
+    },
   });
 
   return (
