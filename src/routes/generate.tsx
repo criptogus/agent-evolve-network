@@ -682,6 +682,21 @@ function GeneratePage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
+                  onClick={() =>
+                    downloadHealthReport({
+                      prompt: input,
+                      baseline,
+                      score,
+                      governance,
+                      artifacts,
+                      implicit: implicitGuardrails(governance, artifacts),
+                    })
+                  }
+                  className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
+                >
+                  ↓ Download Health Score report
+                </button>
+                <button
                   onClick={reset}
                   className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
                 >
