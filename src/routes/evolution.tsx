@@ -200,6 +200,56 @@ function EvolutionPage() {
     [last, first],
   );
 
+  // Sync live stats into the current history record
+  useEffect(() => {
+    const id = runIdRef.current;
+    if (!id) return;
+    setHistory((prev) => {
+      let touched = false;
+      const next = prev.map((r) => {
+        if (r.id !== id) return r;
+        const updated: RunRecord = {
+          ...r,
+          generations: generation,
+          health: round1(last.health),
+          installs: installed.length,
+          ticks: tickRef.current,
+        };
+        if (
+          updated.generations === r.generations &&
+          updated.health === r.health &&
+          updated.installs === r.installs
+        ) {
+          return r;
+        }
+        touched = true;
+        return updated;
+      });
+      if (touched) saveHistory(next);
+      return touched ? next : prev;
+    });
+  }, [generation, installed.length, last.health]);
+
+  function rerun(p: string) {
+    // Reset engine, then activate the prompt via URL — triggers prompt effect
+    reset();
+    setActivePrompt(undefined);
+    navigate({ search: { prompt: p } });
+  }
+
+  function clearHistory() {
+    setHistory([]);
+    saveHistory([]);
+  }
+
+  function removeRun(id: string) {
+    setHistory((prev) => {
+      const next = prev.filter((r) => r.id !== id);
+      saveHistory(next);
+      return next;
+    });
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Nav />
