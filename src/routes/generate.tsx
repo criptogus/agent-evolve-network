@@ -500,7 +500,7 @@ function GeneratePage() {
 
           {/* Artifacts */}
           <div className="rounded-2xl border border-border bg-background p-4">
-            <div className="flex items-center justify-between border-b border-border pb-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
               <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                 Generated stack
               </span>
@@ -508,8 +508,50 @@ function GeneratePage() {
                 {artifacts.length} package{artifacts.length === 1 ? "" : "s"}
               </span>
             </div>
+
+            {/* Governance level selector */}
+            <div className="mt-3 rounded-xl border border-border bg-surface/40 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Governance level
+                </span>
+                <span className="font-mono text-[10px] text-muted-foreground">
+                  safety {(score.safety + GOVERNANCE[governance].safetyBoost).toFixed(0)}%
+                </span>
+              </div>
+              <div
+                role="radiogroup"
+                aria-label="Governance level"
+                className="mt-2 grid grid-cols-3 gap-1.5"
+              >
+                {(Object.keys(GOVERNANCE) as Governance[]).map((g) => {
+                  const active = governance === g;
+                  return (
+                    <button
+                      key={g}
+                      role="radio"
+                      aria-checked={active}
+                      type="button"
+                      onClick={() => setGovernance(g)}
+                      className={
+                        "rounded-md border px-2 py-1.5 text-[12px] font-medium transition-colors " +
+                        (active
+                          ? "border-primary/60 bg-primary/10 text-foreground"
+                          : "border-border bg-background text-muted-foreground hover:text-foreground")
+                      }
+                    >
+                      {GOVERNANCE[g].label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[12px] leading-snug text-muted-foreground">
+                {GOVERNANCE[governance].blurb}
+              </p>
+            </div>
+
             {artifacts.length === 0 ? (
-              <div className="flex h-[380px] items-center justify-center text-center">
+              <div className="flex h-[300px] items-center justify-center text-center">
                 <p className="max-w-sm text-sm text-muted-foreground">
                   Skills, playbooks, souls and guardrails will appear here as they are forged.
                 </p>
@@ -538,6 +580,9 @@ function GeneratePage() {
                             </li>
                           ))}
                         </ul>
+                        {a.kind === "guardrail" && (
+                          <GuardrailExplain name={a.name} level={governance} />
+                        )}
                       </div>
                       <span
                         className={
@@ -549,6 +594,31 @@ function GeneratePage() {
                       >
                         {a.source}
                       </span>
+                    </div>
+                  </li>
+                ))}
+
+                {/* Implicit guardrails injected by governance level */}
+                {implicitGuardrails(governance, artifacts).map((g) => (
+                  <li
+                    key={g.id}
+                    className="animate-fade-in rounded-xl border border-dashed border-destructive/30 bg-destructive/5 p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <KindBadge kind="guardrail" />
+                          <span className="truncate font-mono text-[13px] text-foreground">
+                            {g.name}
+                          </span>
+                          <span className="rounded-full bg-background px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
+                            from {GOVERNANCE[governance].label.toLowerCase()}
+                          </span>
+                        </div>
+                        <p className="mt-1.5 text-[12px] leading-snug text-muted-foreground">
+                          {g.why}
+                        </p>
+                      </div>
                     </div>
                   </li>
                 ))}
