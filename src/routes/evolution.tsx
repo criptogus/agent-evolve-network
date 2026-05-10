@@ -87,7 +87,14 @@ const MAX_POINTS = 60;
 
 function EvolutionPage() {
   const { prompt } = Route.useSearch();
-  const [running, setRunning] = useState(true);
+  const [autorun, setAutorunState] = useState<boolean>(() => loadAutorun());
+  const [running, setRunning] = useState(autorun);
+  function setAutorun(v: boolean) {
+    setAutorunState(v);
+    saveAutorun(v);
+    // Sync running state with the new preference
+    setRunning(v);
+  }
   const [speed, setSpeed] = useState<1 | 2 | 4>(2);
   const [phase, setPhase] = useState<Phase>("observe");
   const [generation, setGeneration] = useState(1);
