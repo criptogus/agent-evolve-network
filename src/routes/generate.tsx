@@ -640,7 +640,8 @@ function GeneratePage() {
                 ))}
 
                 {/* Implicit guardrails injected by governance level */}
-                {implicitGuardrails(governance, artifacts).map((g) => (
+                {(kindFilter === "all" || kindFilter === "guardrail") &&
+                  implicitGuardrails(governance, artifacts).map((g) => (
                   <li
                     key={g.id}
                     className="animate-fade-in rounded-xl border border-dashed border-destructive/30 bg-destructive/5 p-4"
