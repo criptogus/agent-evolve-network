@@ -231,20 +231,43 @@ function EvolutionPage() {
         if (next === "observe") {
           setGeneration((g) => g + 1);
           pushLog("info", "—— New generation ——");
+          pushTrace("gateway", "observation", "MCP session opened · streaming live agent traces");
         }
-        if (next === "assess") pushLog("info", "Self-assessment running across 412 traces…");
+        if (next === "assess") {
+          pushLog("info", "Self-assessment running across 412 traces…");
+          const learn = CLIENT_LEARNINGS[Math.floor(Math.random() * CLIENT_LEARNINGS.length)];
+          pushTrace(
+            "client-agent",
+            "learning",
+            "self-assess on 412 client traces",
+            undefined,
+            learn,
+          );
+        }
         if (next === "recommend") {
           const u = UPGRADES[Math.floor(Math.random() * UPGRADES.length)];
           pushLog("warn", `Gap detected → recommend ${u.name}`);
+          pushTrace("registry", "eval", `match ${u.name}`, u.note);
         }
         if (next === "install") {
           const u = UPGRADES[Math.floor(Math.random() * UPGRADES.length)];
           pushLog("ok", `Hot-swap: installed ${u.name}`);
           setInstalled((arr) => [u.name, ...arr].slice(0, 5));
+          pushTrace("gateway", "swap", `hot-swap committed · ${u.name}`, "zero downtime");
         }
         if (next === "verify") {
           pushLog("evolve", "● Agent evolved. Improvements locked in.");
+          pushTrace("client-agent", "eval", "replay benchmark suite passed", "412/412 traces");
         }
+      }
+
+      // Inter-phase tool calls and observations from the client agent
+      if (t % 2 === 0) {
+        const call = CLIENT_TOOL_CALLS[Math.floor(Math.random() * CLIENT_TOOL_CALLS.length)];
+        pushTrace("client-agent", "tool_call", call.tool, call.detail);
+      } else if (t % 3 === 0) {
+        const obs = CLIENT_OBSERVATIONS[Math.floor(Math.random() * CLIENT_OBSERVATIONS.length)];
+        pushTrace("client-agent", "observation", obs);
       }
 
       setSeries((prev) => {
