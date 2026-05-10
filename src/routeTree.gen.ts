@@ -23,11 +23,16 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
+import { Route as LlmsTxtRouteImport } from './routes/llms.txt'
+import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
+import { Route as AgentsMdRouteImport } from './routes/agents.md'
 import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
+import { Route as AccountUsageRouteImport } from './routes/account.usage'
+import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug'
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
@@ -102,9 +107,24 @@ const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
   path: '/marketplace/$packageId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LlmsTxtRoute = LlmsTxtRouteImport.update({
+  id: '/llms/txt',
+  path: '/llms/txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsMcpRoute = DocsMcpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => DocsRoute,
+} as any)
 const ApiMcpRoute = ApiMcpRouteImport.update({
   id: '/api/mcp',
   path: '/api/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsMdRoute = AgentsMdRouteImport.update({
+  id: '/agents/md',
+  path: '/agents/md',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRequestsRoute = AdminRequestsRouteImport.update({
@@ -127,6 +147,16 @@ const AdminAccountsRoute = AdminAccountsRouteImport.update({
   path: '/accounts',
   getParentRoute: () => AdminRoute,
 } as any)
+const AccountUsageRoute = AccountUsageRouteImport.update({
+  id: '/account/usage',
+  path: '/account/usage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgeReportSlugRoute = ForgeReportSlugRouteImport.update({
+  id: '/report/$slug',
+  path: '/report/$slug',
+  getParentRoute: () => ForgeRoute,
+} as any)
 const AdminPackagesNewRoute = AdminPackagesNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -147,73 +177,88 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/discover': typeof DiscoverRoute
-  '/docs': typeof DocsRoute
+  '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
   '/evolution': typeof EvolutionRoute
-  '/forge': typeof ForgeRoute
+  '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
+  '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
+  '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
+  '/docs/mcp': typeof DocsMcpRoute
+  '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/forge/report/$slug': typeof ForgeReportSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/discover': typeof DiscoverRoute
-  '/docs': typeof DocsRoute
+  '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
   '/evolution': typeof EvolutionRoute
-  '/forge': typeof ForgeRoute
+  '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
+  '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
+  '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
+  '/docs/mcp': typeof DocsMcpRoute
+  '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin': typeof AdminIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/forge/report/$slug': typeof ForgeReportSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/discover': typeof DiscoverRoute
-  '/docs': typeof DocsRoute
+  '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
   '/evolution': typeof EvolutionRoute
-  '/forge': typeof ForgeRoute
+  '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
+  '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
+  '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
+  '/docs/mcp': typeof DocsMcpRoute
+  '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/forge/report/$slug': typeof ForgeReportSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -229,17 +274,22 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/skillforge'
+    | '/account/usage'
     | '/admin/accounts'
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
+    | '/agents/md'
     | '/api/mcp'
+    | '/docs/mcp'
+    | '/llms/txt'
     | '/marketplace/$packageId'
     | '/admin/'
     | '/marketplace/'
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/forge/report/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -252,17 +302,22 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/skillforge'
+    | '/account/usage'
     | '/admin/accounts'
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
+    | '/agents/md'
     | '/api/mcp'
+    | '/docs/mcp'
+    | '/llms/txt'
     | '/marketplace/$packageId'
     | '/admin'
     | '/marketplace'
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/forge/report/$slug'
   id:
     | '__root__'
     | '/'
@@ -276,32 +331,40 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/skillforge'
+    | '/account/usage'
     | '/admin/accounts'
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
+    | '/agents/md'
     | '/api/mcp'
+    | '/docs/mcp'
+    | '/llms/txt'
     | '/marketplace/$packageId'
     | '/admin/'
     | '/marketplace/'
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/forge/report/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   DiscoverRoute: typeof DiscoverRoute
-  DocsRoute: typeof DocsRoute
+  DocsRoute: typeof DocsRouteWithChildren
   EvaluationRoute: typeof EvaluationRoute
   EvolutionRoute: typeof EvolutionRoute
-  ForgeRoute: typeof ForgeRoute
+  ForgeRoute: typeof ForgeRouteWithChildren
   GenerateRoute: typeof GenerateRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   SkillforgeRoute: typeof SkillforgeRoute
+  AccountUsageRoute: typeof AccountUsageRoute
+  AgentsMdRoute: typeof AgentsMdRoute
   ApiMcpRoute: typeof ApiMcpRoute
+  LlmsTxtRoute: typeof LlmsTxtRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
 }
@@ -406,11 +469,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketplacePackageIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/llms/txt': {
+      id: '/llms/txt'
+      path: '/llms/txt'
+      fullPath: '/llms/txt'
+      preLoaderRoute: typeof LlmsTxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/mcp': {
+      id: '/docs/mcp'
+      path: '/mcp'
+      fullPath: '/docs/mcp'
+      preLoaderRoute: typeof DocsMcpRouteImport
+      parentRoute: typeof DocsRoute
+    }
     '/api/mcp': {
       id: '/api/mcp'
       path: '/api/mcp'
       fullPath: '/api/mcp'
       preLoaderRoute: typeof ApiMcpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents/md': {
+      id: '/agents/md'
+      path: '/agents/md'
+      fullPath: '/agents/md'
+      preLoaderRoute: typeof AgentsMdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/requests': {
@@ -440,6 +524,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/accounts'
       preLoaderRoute: typeof AdminAccountsRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/account/usage': {
+      id: '/account/usage'
+      path: '/account/usage'
+      fullPath: '/account/usage'
+      preLoaderRoute: typeof AccountUsageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forge/report/$slug': {
+      id: '/forge/report/$slug'
+      path: '/report/$slug'
+      fullPath: '/forge/report/$slug'
+      preLoaderRoute: typeof ForgeReportSlugRouteImport
+      parentRoute: typeof ForgeRoute
     }
     '/admin/packages/new': {
       id: '/admin/packages/new'
@@ -499,19 +597,42 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface DocsRouteChildren {
+  DocsMcpRoute: typeof DocsMcpRoute
+}
+
+const DocsRouteChildren: DocsRouteChildren = {
+  DocsMcpRoute: DocsMcpRoute,
+}
+
+const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
+
+interface ForgeRouteChildren {
+  ForgeReportSlugRoute: typeof ForgeReportSlugRoute
+}
+
+const ForgeRouteChildren: ForgeRouteChildren = {
+  ForgeReportSlugRoute: ForgeReportSlugRoute,
+}
+
+const ForgeRouteWithChildren = ForgeRoute._addFileChildren(ForgeRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   DiscoverRoute: DiscoverRoute,
-  DocsRoute: DocsRoute,
+  DocsRoute: DocsRouteWithChildren,
   EvaluationRoute: EvaluationRoute,
   EvolutionRoute: EvolutionRoute,
-  ForgeRoute: ForgeRoute,
+  ForgeRoute: ForgeRouteWithChildren,
   GenerateRoute: GenerateRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   SkillforgeRoute: SkillforgeRoute,
+  AccountUsageRoute: AccountUsageRoute,
+  AgentsMdRoute: AgentsMdRoute,
   ApiMcpRoute: ApiMcpRoute,
+  LlmsTxtRoute: LlmsTxtRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
 }
