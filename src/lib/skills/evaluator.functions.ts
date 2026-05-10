@@ -64,18 +64,3 @@ export const evaluatePackage = createServerFn({ method: "POST" })
 
     return { package: pkg, version: ver, ...result };
   });
-
-export const listEvaluations = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) => z.object({ package_slug: z.string() }).parse(d))
-  .handler(async ({ data }) => {
-    const { supabase } = await import("@/integrations/supabase/client.server").then((m) => ({ supabase: m.supabaseAdmin }));
-    const { data: pkg } = await supabase.from("packages").select("id").eq("slug", data.package_slug).maybeSingle();
-    if (!pkg) return { evaluations: [] };
-    const { data: rows } = await supabase
-      .from("package_evaluations")
-      .select("id, created_at, trigger_kind, overall_score, precision_score, health_score, hallucination_rate, safety_score, verdict, strengths, weaknesses, improvement_actions, pipeline_stages")
-      .eq("package_id", pkg.id)
-      .order("created_at", { ascending: false })
-      .limit(20);
-    return { evaluations: rows || [] };
-  });
