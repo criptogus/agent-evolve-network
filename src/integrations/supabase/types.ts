@@ -462,10 +462,15 @@ export type Database = {
           license: string
           long_description: string | null
           name: string
+          review_notes: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
           scopes: string[]
           slug: string
           source_kind: string
           source_ref: string | null
+          submitted_at: string | null
           type: Database["public"]["Enums"]["package_type"]
           updated_at: string
         }
@@ -482,10 +487,15 @@ export type Database = {
           license?: string
           long_description?: string | null
           name: string
+          review_notes?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           scopes?: string[]
           slug: string
           source_kind?: string
           source_ref?: string | null
+          submitted_at?: string | null
           type: Database["public"]["Enums"]["package_type"]
           updated_at?: string
         }
@@ -502,10 +512,15 @@ export type Database = {
           license?: string
           long_description?: string | null
           name?: string
+          review_notes?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           scopes?: string[]
           slug?: string
           source_kind?: string
           source_ref?: string | null
+          submitted_at?: string | null
           type?: Database["public"]["Enums"]["package_type"]
           updated_at?: string
         }
