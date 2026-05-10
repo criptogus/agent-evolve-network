@@ -1,7 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useMutation } from "@tanstack/react-query";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { autoCreateMissing } from "@/lib/skills/forge-loop.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
