@@ -328,6 +328,9 @@ function PlainEnglish() {
 
   const [activeId, setActiveId] = useState(industries[0].id);
   const active = industries.find((i) => i.id === activeId)!;
+  const [edits, setEdits] = useState<Record<string, string>>({});
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
 
   return (
     <section className="border-b border-border bg-surface/40 py-24">
@@ -375,39 +378,93 @@ function PlainEnglish() {
         </div>
 
         <div key={active.id} className="mt-8 grid animate-fade-in gap-4 md:grid-cols-2">
-          {active.examples.map((e, i) => (
-            <div key={`${active.id}-${i}`} className="flex flex-col rounded-2xl border border-border bg-background p-5 shadow-sm">
-              <div className="flex items-start gap-3">
-                <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 font-mono text-[11px] text-primary">
-                  ›_
-                </span>
-                <p className="text-[15px] font-medium text-foreground">{e.prompt}</p>
+          {active.examples.map((e, i) => {
+            const key = `${active.id}-${i}`;
+            const currentPrompt = edits[key] ?? e.prompt;
+            const isEditing = editingKey === key;
+            return (
+              <div key={key} className="flex flex-col rounded-2xl border border-border bg-background p-5 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 font-mono text-[11px] text-primary">
+                    ›_
+                  </span>
+                  {isEditing ? (
+                    <textarea
+                      value={draft}
+                      onChange={(ev) => setDraft(ev.target.value)}
+                      rows={3}
+                      autoFocus
+                      className="w-full resize-none rounded-md border border-primary/40 bg-background p-2 text-[15px] font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    />
+                  ) : (
+                    <p className="text-[15px] font-medium text-foreground">{currentPrompt}</p>
+                  )}
+                </div>
+                <div className="mt-3 flex items-start gap-3 border-t border-border pt-3">
+                  <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-signal/20 font-mono text-[11px] text-signal-foreground">
+                    ✓
+                  </span>
+                  <p className="font-mono text-[12.5px] leading-relaxed text-muted-foreground">{e.result}</p>
+                </div>
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+                  {isEditing ? (
+                    <div className="flex w-full items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setEditingKey(null)}
+                        className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-accent"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const v = draft.trim();
+                          setEdits((prev) => ({ ...prev, [key]: v || e.prompt }));
+                          setEditingKey(null);
+                        }}
+                        className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-95"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <Link
+                        to="/evolution"
+                        search={{ prompt: currentPrompt }}
+                        className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        Watch evolve →
+                      </Link>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDraft(currentPrompt);
+                            setEditingKey(key);
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                          title="Edit this command before forging"
+                        >
+                          <span aria-hidden>✎</span>
+                          Edit
+                        </button>
+                        <Link
+                          to="/generate"
+                          search={{ prompt: currentPrompt }}
+                          className="group inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-95"
+                        >
+                          Forge live
+                          <span className="transition-transform group-hover:translate-x-0.5">→</span>
+                        </Link>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
-              <div className="mt-3 flex items-start gap-3 border-t border-border pt-3">
-                <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-signal/20 font-mono text-[11px] text-signal-foreground">
-                  ✓
-                </span>
-                <p className="font-mono text-[12.5px] leading-relaxed text-muted-foreground">{e.result}</p>
-              </div>
-              <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-3">
-                <Link
-                  to="/evolution"
-                  search={{ prompt: e.prompt }}
-                  className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Watch evolve →
-                </Link>
-                <Link
-                  to="/generate"
-                  search={{ prompt: e.prompt }}
-                  className="group inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-95"
-                >
-                  Forge live
-                  <span className="transition-transform group-hover:translate-x-0.5">→</span>
-                </Link>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
