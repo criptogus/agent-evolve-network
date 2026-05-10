@@ -1,92 +1,60 @@
-## PRD — Super Agent Skill (status atual + pendências)
+## Páginas legais para destravar o Paddle (Privacy, Terms, Refund)
 
-> Substitui `.lovable/plan.md`. Estrutura: visão → módulos → estado por módulo → backlog priorizado.
+Paddle bloqueou o go-live por falta dos três documentos obrigatórios. Vou criar as três rotas, linkar no footer e adaptar o conteúdo ao produto (registry + MCP server + IA generativa).
 
----
+### 1. Rotas novas (TanStack Start, file-based)
 
-### 1. Visão
+- `src/routes/privacy.tsx` — `/privacy`
+- `src/routes/terms.tsx` — `/terms`
+- `src/routes/refunds.tsx` — `/refunds`
 
-Registry + MCP server de **skills, playbooks, souls e guardrails** para agentes. Autores publicam pacotes versionados; consumidores descobrem via marketplace web ou via MCP no Cursor/Claude/Codex/VS Code, com tokens pessoais para escrita.
+Cada rota com `head()` próprio (title + description + og:title + og:description), layout consistente com `Nav` + `Footer`, conteúdo em prosa legível (sem componentes pesados).
 
-Loop alvo: **mint token → conectar cliente MCP → testar no navegador → usar no agente → ver métricas/insights**.
+### 2. Conteúdo (cobre os "must have" do Paddle)
 
----
+**Terms & Conditions** (`/terms`)
+- Nome legal do vendedor (a fornecer).
+- Aceitação por uso continuado.
+- Descrição do serviço: registry + MCP server de skills/playbooks/souls/guardrails para agentes de IA.
+- Misuse: ilegal, fraude/spam, infração de IP, scraping, malware, jailbreak.
+- Propriedade intelectual do serviço pela vendedora; licença limitada de uso.
+- Sem garantia de uptime/erro-zero.
+- Pagamento e assinaturas: remete a Paddle Buyer Terms (https://www.paddle.com/legal/checkout-buyer-terms).
+- **Disclosure Paddle MoR** (texto exigido): "Our order process is conducted by our online reseller Paddle.com…".
+- Suspensão/término por violação, fraude, não pagamento.
+- **Cláusulas obrigatórias por categoria (GenAI)**: uso aceitável/proibido, responsabilidade do usuário por prompts/outputs/direitos sobre inputs, IP de inputs/outputs + takedown, moderação de conteúdo, disclaimer de precisão (não substitui aconselhamento profissional regulado).
+- Boas-práticas: credenciais, accuracy, warranties disclaimer, restrições, user content licence, cap de responsabilidade (12 meses de fees), exclusão de danos indiretos, indenização do usuário, governing law, força maior.
 
-### 2. Módulos e estado
+**Privacy Notice** (`/privacy`)
+- Nome legal + papel como controller.
+- Categorias coletadas: nome, email, credenciais, conteúdo de pacotes enviados, tokens MCP (hash), telemetria de runs, logs, IP.
+- Finalidades + base legal (contrato, legítimo interesse, consentimento quando aplicável).
+- Compartilhamento: provedores de hosting/infra (Lovable Cloud), Paddle como MoR, autoridades quando exigido por lei.
+- Retenção e exclusão.
+- Direitos do usuário (acesso, correção, exclusão, portabilidade, objeção; menção GDPR/UK para usuários EEA).
+- Segurança (criptografia em trânsito, hash de tokens, RLS).
+- Cookies essenciais (sessão de auth) — sem cookies de marketing por padrão.
+- Transferências internacionais com SCCs/adequacy.
 
-Legenda: ✅ entregue · 🟡 parcial · ⛔ não iniciado
+**Refund Policy** (`/refunds`)
+- Janela de 30 dias money-back.
+- Como solicitar: paddle.net + suporte do vendedor.
+- Sem "all sales are final".
 
-#### 2.1 Marketplace e descoberta
-- ✅ `/marketplace` com filtros por `type` (skill/playbook/soul/guardrail), por `vertical`, busca por texto (nome, slug, autor).
-- ✅ Página de detalhe `/marketplace/$packageId` e `/souls/$slug` com download/duplicate.
-- ✅ `llms.txt` público.
-- 🟡 Ordenação por `install_count` (campo existe na tabela; UI ainda não expõe sort).
-- ⛔ `sitemap.xml` dinâmico.
-- ⛔ `og:image` por pacote (hoje herda do root e sobrescreve).
+### 3. Linkagem
 
-#### 2.2 Autoria e versionamento
-- ✅ Versionamento de souls com histórico, `package_versions` (system_prompt, rules, examples, compatibility, status) e rollback.
-- ✅ Workflow de revisão (`/admin/review`) com `review_status` pending/approved/rejected, publish/pause.
-- ✅ Upload UI (`/upload`) e import admin (markdown / GitHub).
-- ⛔ Página `/account/submissions` para o autor acompanhar status/notas das próprias submissões.
-- ⛔ Badge no Nav quando há mudança de review desde a última visita.
-- ⛔ E-mail transacional em approve/reject.
+Editar `src/components/site/Footer.tsx` para adicionar uma coluna "Legal" com `Privacy`, `Terms`, `Refunds` apontando para as três rotas (usando `<Link>` do TanStack Router).
 
-#### 2.3 MCP server e tokens
-- ✅ `/api/mcp` (streamable-http) com 5 tools: `list_packages`, `search_registry`, `get_package`, `request_primitive`, `upload_packages`.
-- ✅ `/api/public/mcp/health` retornando version + tools.
-- ✅ `/account/tokens`: mint, revoke, copy + validate por snippet, guia `Authorization: Bearer`, configs prontas para Cursor/Claude/VS Code.
-- ✅ `/connect` com **Test MCP live** cobrindo as 5 tools + `tools/list` + health, com persistência de token em `localStorage`.
-- 🟡 Onboarding de cliente MCP: snippets prontos existem, mas falta bloco "one-click copy com token recém-criado embutido" e snippet `mcp-inspector` para debug terminal.
+### 4. Verificação
 
-#### 2.4 Métricas e observabilidade
-- ✅ Tabela `package_metrics_daily` populada (runs, ok/error/blocked, health, latency, hallucination, precision).
-- ✅ `runs` + `run_events` por usuário.
-- ⛔ Aba **Insights** em `/souls/$slug` (visível ao autor/admin) com runs/dia, latência, health, hallucination.
-- ⛔ Card "últimas 7d" no futuro `/account/submissions`.
+Após editar, esperar o build automático e confirmar no preview que `/privacy`, `/terms`, `/refunds` carregam e os links do footer funcionam. Em seguida, sugerir ao usuário rodar **Re-run check** no Payments dashboard.
 
-#### 2.5 Billing
-- ✅ `/pricing` e `/account/billing` com Paddle (sandbox + live), webhook em `/api/public/payments/webhook`.
-- ✅ Tabelas `plans`, `subscriptions`, `account_plans`, `payment_events`.
-- ⛔ Enforcement em runtime: middleware que conte runs do mês contra `monthly_runs_limit` e retorne **402** quando estourar.
-- ⛔ Enforcement de `max_installed_packages`.
+### 5. O que NÃO está no escopo
 
-#### 2.6 Segurança
-- ✅ RLS em todas as tabelas (autor/admin/self) e `has_role()` security definer.
-- ✅ Tokens MCP armazenados como hash sha256 com prefix exibível.
-- ⛔ Throttle por IP em `validateMcpToken` (hoje é oráculo de hashes).
-- ⛔ Rate-limit por token em `upload_packages` (tem `max(10)` arquivos, sem limite de bytes/taxa).
-- ⛔ Rodar `security--run_security_scan` antes do próximo release.
+- Nenhuma mudança em código de pagamento, billing ou webhook.
+- Sem mudanças de schema.
+- Sem alterações em UI fora do footer + 3 rotas novas.
 
-#### 2.7 IA assistida (forge / autor / evaluator)
-- ✅ Pipelines de geração (`forge-loop`, `author`, `evaluator`, `autolearn`) e relatórios `/forge/report/$slug`.
-- ✅ `package_evaluations` com scores e adversarial results.
-- ✅ Página `/evaluation`, `/evolution`, `/skillforge`.
+### Pré-requisito antes de implementar
 
----
-
-### 3. Backlog priorizado (próximos blocos)
-
-**P0 — Fechar loop autor↔consumidor (alto impacto, sem schema novo)**
-1. `/account/submissions` + badge no Nav (status/notas + últimos runs 7d).
-2. Aba **Insights** em `/souls/$slug` consumindo `package_metrics_daily`.
-3. Onboarding "one-click MCP" em `/connect`: bloco que injeta o último token mintado nos JSONs de Cursor/Claude/VS Code + snippet `mcp-inspector`.
-
-**P1 — Discoverability pública**
-4. Sort por `install_count` no `/marketplace`.
-5. `sitemap.xml` dinâmico com pacotes publicados.
-6. `og:image` por pacote em `/souls/$slug` e `/marketplace/$packageId`.
-
-**P2 — Billing e segurança real**
-7. Middleware de enforcement (`monthly_runs_limit`, `max_installed_packages`) retornando 402.
-8. Throttle por IP em `validateMcpToken` + rate-limit/bytes em `upload_packages`.
-9. Rodar `security--run_security_scan` e tratar achados.
-
-**P3 — Notificações**
-10. E-mail transacional em approve/reject de revisão.
-
----
-
-### 4. O que muda no arquivo
-
-Reescrever `.lovable/plan.md` com este conteúdo (mesmas seções), removendo a antiga lista "O que ainda falta" duplicada. Nenhuma mudança em código fora do markdown.
+Você me passa o **nome legal do vendedor** (e jurisdição/país, se quiser que eu use no governing law). Sem isso, deixo um placeholder `[LEGAL ENTITY NAME]` no texto e você substitui depois — mas o Paddle pode reprovar se ficar literal.

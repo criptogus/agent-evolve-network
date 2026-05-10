@@ -10,9 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SkillforgeRouteImport } from './routes/skillforge'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as RefundsRouteImport } from './routes/refunds'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MatchRouteImport } from './routes/match'
@@ -54,6 +57,11 @@ const UploadRoute = UploadRouteImport.update({
   path: '/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SkillforgeRoute = SkillforgeRouteImport.update({
   id: '/skillforge',
   path: '/skillforge',
@@ -67,6 +75,16 @@ const SignupRoute = SignupRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundsRoute = RefundsRouteImport.update({
+  id: '/refunds',
+  path: '/refunds',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -260,9 +278,12 @@ export interface FileRoutesByFullPath {
   '/match': typeof MatchRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/skillforge': typeof SkillforgeRoute
+  '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/tokens': typeof AccountTokensRoute
@@ -300,9 +321,12 @@ export interface FileRoutesByTo {
   '/match': typeof MatchRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/skillforge': typeof SkillforgeRoute
+  '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/tokens': typeof AccountTokensRoute
@@ -342,9 +366,12 @@ export interface FileRoutesById {
   '/match': typeof MatchRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/skillforge': typeof SkillforgeRoute
+  '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/tokens': typeof AccountTokensRoute
@@ -385,9 +412,12 @@ export interface FileRouteTypes {
     | '/match'
     | '/onboarding'
     | '/pricing'
+    | '/privacy'
+    | '/refunds'
     | '/reset-password'
     | '/signup'
     | '/skillforge'
+    | '/terms'
     | '/upload'
     | '/account/billing'
     | '/account/tokens'
@@ -425,9 +455,12 @@ export interface FileRouteTypes {
     | '/match'
     | '/onboarding'
     | '/pricing'
+    | '/privacy'
+    | '/refunds'
     | '/reset-password'
     | '/signup'
     | '/skillforge'
+    | '/terms'
     | '/upload'
     | '/account/billing'
     | '/account/tokens'
@@ -466,9 +499,12 @@ export interface FileRouteTypes {
     | '/match'
     | '/onboarding'
     | '/pricing'
+    | '/privacy'
+    | '/refunds'
     | '/reset-password'
     | '/signup'
     | '/skillforge'
+    | '/terms'
     | '/upload'
     | '/account/billing'
     | '/account/tokens'
@@ -508,9 +544,12 @@ export interface RootRouteChildren {
   MatchRoute: typeof MatchRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
+  RefundsRoute: typeof RefundsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
   SkillforgeRoute: typeof SkillforgeRoute
+  TermsRoute: typeof TermsRoute
   UploadRoute: typeof UploadRoute
   AccountBillingRoute: typeof AccountBillingRoute
   AccountTokensRoute: typeof AccountTokensRoute
@@ -534,6 +573,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UploadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/skillforge': {
       id: '/skillforge'
       path: '/skillforge'
@@ -553,6 +599,20 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refunds': {
+      id: '/refunds'
+      path: '/refunds'
+      fullPath: '/refunds'
+      preLoaderRoute: typeof RefundsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -873,9 +933,12 @@ const rootRouteChildren: RootRouteChildren = {
   MatchRoute: MatchRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
+  RefundsRoute: RefundsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
   SkillforgeRoute: SkillforgeRoute,
+  TermsRoute: TermsRoute,
   UploadRoute: UploadRoute,
   AccountBillingRoute: AccountBillingRoute,
   AccountTokensRoute: AccountTokensRoute,
