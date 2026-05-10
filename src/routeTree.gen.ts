@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UploadRouteImport } from './routes/upload'
 import { Route as SkillforgeRouteImport } from './routes/skillforge'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -32,11 +33,17 @@ import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
 import { Route as AccountUsageRouteImport } from './routes/account.usage'
+import { Route as AccountTokensRouteImport } from './routes/account.tokens'
 import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug'
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
 
+const UploadRoute = UploadRouteImport.update({
+  id: '/upload',
+  path: '/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SkillforgeRoute = SkillforgeRouteImport.update({
   id: '/skillforge',
   path: '/skillforge',
@@ -152,6 +159,11 @@ const AccountUsageRoute = AccountUsageRouteImport.update({
   path: '/account/usage',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountTokensRoute = AccountTokensRouteImport.update({
+  id: '/account/tokens',
+  path: '/account/tokens',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgeReportSlugRoute = ForgeReportSlugRouteImport.update({
   id: '/report/$slug',
   path: '/report/$slug',
@@ -185,6 +197,8 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
+  '/upload': typeof UploadRoute
+  '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
@@ -213,6 +227,8 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
+  '/upload': typeof UploadRoute
+  '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
@@ -243,6 +259,8 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
+  '/upload': typeof UploadRoute
+  '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
@@ -274,6 +292,8 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/skillforge'
+    | '/upload'
+    | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
     | '/admin/packages'
@@ -302,6 +322,8 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/skillforge'
+    | '/upload'
+    | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
     | '/admin/packages'
@@ -331,6 +353,8 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/skillforge'
+    | '/upload'
+    | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
     | '/admin/packages'
@@ -361,6 +385,8 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   SkillforgeRoute: typeof SkillforgeRoute
+  UploadRoute: typeof UploadRoute
+  AccountTokensRoute: typeof AccountTokensRoute
   AccountUsageRoute: typeof AccountUsageRoute
   AgentsMdRoute: typeof AgentsMdRoute
   ApiMcpRoute: typeof ApiMcpRoute
@@ -371,6 +397,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/upload': {
+      id: '/upload'
+      path: '/upload'
+      fullPath: '/upload'
+      preLoaderRoute: typeof UploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/skillforge': {
       id: '/skillforge'
       path: '/skillforge'
@@ -532,6 +565,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountUsageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/tokens': {
+      id: '/account/tokens'
+      path: '/account/tokens'
+      fullPath: '/account/tokens'
+      preLoaderRoute: typeof AccountTokensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forge/report/$slug': {
       id: '/forge/report/$slug'
       path: '/report/$slug'
@@ -629,6 +669,8 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   SkillforgeRoute: SkillforgeRoute,
+  UploadRoute: UploadRoute,
+  AccountTokensRoute: AccountTokensRoute,
   AccountUsageRoute: AccountUsageRoute,
   AgentsMdRoute: AgentsMdRoute,
   ApiMcpRoute: ApiMcpRoute,
@@ -639,3 +681,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
