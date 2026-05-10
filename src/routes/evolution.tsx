@@ -37,6 +37,43 @@ interface Tick {
   hallucination: number; // lower = better
 }
 
+interface RunRecord {
+  id: string;
+  prompt: string;
+  startedAt: number;
+  generations: number;
+  health: number;
+  installs: number;
+  ticks: number;
+}
+
+const HISTORY_KEY = "agentforge.evolution.history.v1";
+
+function loadHistory(): RunRecord[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as RunRecord[]).slice(0, 12) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(items: RunRecord[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, 12)));
+  } catch {
+    /* quota or disabled — ignore */
+  }
+}
+
+function round1(n: number) {
+  return Math.round(n * 10) / 10;
+}
+
 const UPGRADES = [
   { name: "cardiology-diagnostics@2.1.0", note: "+6% precision on rare arrhythmias" },
   { name: "no-hallucination@1.4.0", note: "−0.3pp hallucination rate" },
