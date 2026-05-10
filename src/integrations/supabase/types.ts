@@ -511,6 +511,36 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_events: {
+        Row: {
+          created_at: string
+          env: string
+          event_id: string
+          event_type: string
+          id: string
+          payload: Json
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          env: string
+          event_id: string
+          event_type: string
+          id?: string
+          payload: Json
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          env?: string
+          event_id?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       plans: {
         Row: {
           created_at: string
@@ -519,6 +549,8 @@ export type Database = {
           max_installed_packages: number
           monthly_runs_limit: number
           name: string
+          paddle_price_external_id: string | null
+          paddle_product_external_id: string | null
           price_cents: number
           slug: string
           sort_order: number
@@ -531,6 +563,8 @@ export type Database = {
           max_installed_packages?: number
           monthly_runs_limit?: number
           name: string
+          paddle_price_external_id?: string | null
+          paddle_product_external_id?: string | null
           price_cents?: number
           slug: string
           sort_order?: number
@@ -543,6 +577,8 @@ export type Database = {
           max_installed_packages?: number
           monthly_runs_limit?: number
           name?: string
+          paddle_price_external_id?: string | null
+          paddle_product_external_id?: string | null
           price_cents?: number
           slug?: string
           sort_order?: number
@@ -810,6 +846,60 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          canceled_at: string | null
+          created_at: string
+          currency: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          paddle_customer_id: string | null
+          paddle_price_id: string | null
+          paddle_subscription_id: string | null
+          plan_slug: string
+          price_cents: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          canceled_at?: string | null
+          created_at?: string
+          currency?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          paddle_customer_id?: string | null
+          paddle_price_id?: string | null
+          paddle_subscription_id?: string | null
+          plan_slug: string
+          price_cents?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          canceled_at?: string | null
+          created_at?: string
+          currency?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          paddle_customer_id?: string | null
+          paddle_price_id?: string | null
+          paddle_subscription_id?: string | null
+          plan_slug?: string
+          price_cents?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -855,6 +945,7 @@ export type Database = {
       }
     }
     Functions: {
+      has_active_subscription: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
