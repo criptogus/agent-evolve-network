@@ -34,6 +34,7 @@ import { Route as LlmsTxtRouteImport } from './routes/llms.txt'
 import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as AgentsMdRouteImport } from './routes/agents.md'
+import { Route as AdminReviewRouteImport } from './routes/admin.review'
 import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
@@ -172,6 +173,11 @@ const AgentsMdRoute = AgentsMdRouteImport.update({
   path: '/agents/md',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminReviewRoute = AdminReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminRequestsRoute = AdminRequestsRouteImport.update({
   id: '/requests',
   path: '/requests',
@@ -259,6 +265,7 @@ export interface FileRoutesByFullPath {
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
+  '/admin/review': typeof AdminReviewRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
   '/docs/mcp': typeof DocsMcpRoute
@@ -297,6 +304,7 @@ export interface FileRoutesByTo {
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
+  '/admin/review': typeof AdminReviewRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
   '/docs/mcp': typeof DocsMcpRoute
@@ -337,6 +345,7 @@ export interface FileRoutesById {
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
+  '/admin/review': typeof AdminReviewRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
   '/docs/mcp': typeof DocsMcpRoute
@@ -378,6 +387,7 @@ export interface FileRouteTypes {
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
+    | '/admin/review'
     | '/agents/md'
     | '/api/mcp'
     | '/docs/mcp'
@@ -416,6 +426,7 @@ export interface FileRouteTypes {
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
+    | '/admin/review'
     | '/agents/md'
     | '/api/mcp'
     | '/docs/mcp'
@@ -455,6 +466,7 @@ export interface FileRouteTypes {
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
+    | '/admin/review'
     | '/agents/md'
     | '/api/mcp'
     | '/docs/mcp'
@@ -677,6 +689,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentsMdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/review': {
+      id: '/admin/review'
+      path: '/review'
+      fullPath: '/admin/review'
+      preLoaderRoute: typeof AdminReviewRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/requests': {
       id: '/admin/requests'
       path: '/requests'
@@ -781,6 +800,7 @@ interface AdminRouteChildren {
   AdminPackagesRoute: typeof AdminPackagesRouteWithChildren
   AdminPlansRoute: typeof AdminPlansRoute
   AdminRequestsRoute: typeof AdminRequestsRoute
+  AdminReviewRoute: typeof AdminReviewRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminImportGithubRoute: typeof AdminImportGithubRoute
   AdminImportMarkdownRoute: typeof AdminImportMarkdownRoute
@@ -791,6 +811,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminPackagesRoute: AdminPackagesRouteWithChildren,
   AdminPlansRoute: AdminPlansRoute,
   AdminRequestsRoute: AdminRequestsRoute,
+  AdminReviewRoute: AdminReviewRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminImportGithubRoute: AdminImportGithubRoute,
   AdminImportMarkdownRoute: AdminImportMarkdownRoute,
