@@ -447,6 +447,15 @@ function EvolutionPage() {
           </div>
         </section>
 
+        <EvolutionSummary
+          log={log}
+          generation={generation}
+          delta={delta}
+          last={last}
+          running={running}
+          autorun={autorun}
+        />
+
         <HistoryPanel
           history={history}
           activeId={runIdRef.current}
