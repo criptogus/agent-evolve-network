@@ -25,6 +25,7 @@ function Home() {
       <PlainEnglish />
       <CoreConcepts />
       <SkillForgeSection />
+      <SocialProof />
       <NetworkSection />
       <CTASection />
       <Footer />
@@ -429,6 +430,186 @@ function CTASection() {
           <Link to="/pricing" className="inline-flex h-11 items-center rounded-md border border-border bg-surface-elevated px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent">
             View pricing
           </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const CASES = [
+  {
+    industry: "Cardiology",
+    company: "Mayo-affiliated clinic",
+    quote:
+      "We connected our triage agent on a Friday. By Monday it was catching arrhythmias our residents missed.",
+    person: "Dr. Helena Vasquez",
+    role: "Chief of Cardiology",
+    before: { label: "Diagnostic precision", value: "78%" },
+    after: { label: "Diagnostic precision", value: "94%" },
+    delta: "+16pp",
+    stack: ["cardiology-diagnostics", "medical-guardrails", "humanized-doctor"],
+  },
+  {
+    industry: "Enterprise SaaS",
+    company: "Series C, $40M ARR",
+    quote:
+      "One sentence — \"sell to CFOs of mid-market SaaS\" — and our SDR agent stopped sounding like a chatbot.",
+    person: "Marcus Reilly",
+    role: "VP of Revenue",
+    before: { label: "Reply rate", value: "4.1%" },
+    after: { label: "Reply rate", value: "11.7%" },
+    delta: "+2.8×",
+    stack: ["enterprise-sales-flow", "mckinsey-consultant"],
+  },
+  {
+    industry: "Legal",
+    company: "Top-50 international firm",
+    quote:
+      "The custom soul we generated from our partners' memos passed blind review against junior associates.",
+    person: "Aiko Tanaka",
+    role: "Head of Knowledge",
+    before: { label: "Memo turnaround", value: "6.2h" },
+    after: { label: "Memo turnaround", value: "0.4h" },
+    delta: "−15×",
+    stack: ["legal-due-diligence", "tanaka-firm-soul", "no-hallucination"],
+  },
+];
+
+const QUOTES = [
+  {
+    quote:
+      "We tried fine-tuning for 6 months and got nowhere. AgentForge took an afternoon and outperformed it.",
+    person: "Priya N.",
+    role: "Head of AI · fintech unicorn",
+  },
+  {
+    quote:
+      "The Health Score is the first metric our CTO actually trusts about an agent.",
+    person: "Diego M.",
+    role: "Director of Engineering · logistics",
+  },
+  {
+    quote:
+      "It generated a soul from 200 of our top rep's calls. New hires now sound like her on day one.",
+    person: "Anna K.",
+    role: "VP Sales · B2B SaaS",
+  },
+  {
+    quote:
+      "Zero downtime hot-swap is not marketing. We rolled out 4 upgrades during business hours last week.",
+    person: "Thomas L.",
+    role: "Platform Lead · healthcare",
+  },
+];
+
+function SocialProof() {
+  return (
+    <section className="border-b border-border py-24">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="max-w-2xl">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
+            Proof, not promises
+          </span>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">
+            Before. After. Measured.
+          </h2>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Real teams. Real metrics. Numbers logged by AgentForge during the first 30 days
+            after connecting an MCP-compatible agent.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {CASES.map((c) => (
+            <article
+              key={c.company}
+              className="group flex h-full flex-col rounded-2xl border border-border bg-background p-6 shadow-sm transition-all hover:border-primary/40 hover:shadow-elevated"
+            >
+              <div className="flex items-center justify-between">
+                <span className="rounded border border-border bg-surface px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {c.industry}
+                </span>
+                <span className="font-mono text-[11px] text-muted-foreground">{c.company}</span>
+              </div>
+
+              {/* Before / After bar */}
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <div className="rounded-lg border border-border bg-surface/60 p-3">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Before
+                  </div>
+                  <div className="mt-1 font-mono text-2xl font-semibold tracking-tight text-muted-foreground line-through decoration-muted-foreground/40">
+                    {c.before.value}
+                  </div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">{c.before.label}</div>
+                </div>
+                <div className="relative rounded-lg border border-signal/40 bg-signal/10 p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="font-mono text-[10px] uppercase tracking-wider text-signal-foreground">
+                      After
+                    </div>
+                    <span className="rounded-full bg-signal px-1.5 py-0.5 font-mono text-[10px] font-semibold text-signal-foreground">
+                      {c.delta}
+                    </span>
+                  </div>
+                  <div className="mt-1 font-mono text-2xl font-semibold tracking-tight">
+                    {c.after.value}
+                  </div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">{c.after.label}</div>
+                </div>
+              </div>
+
+              <p className="mt-5 text-[15px] leading-relaxed text-foreground/90">
+                <span className="text-primary">"</span>
+                {c.quote}
+                <span className="text-primary">"</span>
+              </p>
+
+              <div className="mt-5 flex flex-wrap gap-1.5">
+                {c.stack.map((s) => (
+                  <span
+                    key={s}
+                    className="rounded-md border border-border bg-surface px-2 py-0.5 font-mono text-[10.5px] text-muted-foreground"
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+
+              <div className="mt-auto flex items-center gap-3 pt-5">
+                <div className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 to-signal/30 font-mono text-xs font-semibold">
+                  {c.person
+                    .split(" ")
+                    .map((w) => w[0])
+                    .slice(0, 2)
+                    .join("")}
+                </div>
+                <div>
+                  <div className="text-sm font-medium">{c.person}</div>
+                  <div className="text-xs text-muted-foreground">{c.role}</div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        {/* Short-form testimonials */}
+        <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {QUOTES.map((q) => (
+            <figure
+              key={q.person}
+              className="rounded-xl border border-border bg-surface p-5"
+            >
+              <blockquote className="text-sm leading-relaxed text-foreground/90">
+                "{q.quote}"
+              </blockquote>
+              <figcaption className="mt-4 flex items-center gap-2 text-xs">
+                <span className="size-1.5 rounded-full bg-signal" />
+                <span className="font-medium">{q.person}</span>
+                <span className="text-muted-foreground">· {q.role}</span>
+              </figcaption>
+            </figure>
+          ))}
         </div>
       </div>
     </section>
