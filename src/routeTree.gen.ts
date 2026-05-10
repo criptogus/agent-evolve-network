@@ -23,7 +23,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
+import { Route as LlmsTxtRouteImport } from './routes/llms.txt'
+import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
+import { Route as AgentsMdRouteImport } from './routes/agents.md'
 import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
@@ -102,9 +105,24 @@ const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
   path: '/marketplace/$packageId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LlmsTxtRoute = LlmsTxtRouteImport.update({
+  id: '/llms/txt',
+  path: '/llms/txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsMcpRoute = DocsMcpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => DocsRoute,
+} as any)
 const ApiMcpRoute = ApiMcpRouteImport.update({
   id: '/api/mcp',
   path: '/api/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsMdRoute = AgentsMdRouteImport.update({
+  id: '/agents/md',
+  path: '/agents/md',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRequestsRoute = AdminRequestsRouteImport.update({
@@ -147,7 +165,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/discover': typeof DiscoverRoute
-  '/docs': typeof DocsRoute
+  '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
   '/evolution': typeof EvolutionRoute
   '/forge': typeof ForgeRoute
@@ -159,7 +177,10 @@ export interface FileRoutesByFullPath {
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
+  '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
+  '/docs/mcp': typeof DocsMcpRoute
+  '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
@@ -170,7 +191,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/discover': typeof DiscoverRoute
-  '/docs': typeof DocsRoute
+  '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
   '/evolution': typeof EvolutionRoute
   '/forge': typeof ForgeRoute
@@ -182,7 +203,10 @@ export interface FileRoutesByTo {
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
+  '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
+  '/docs/mcp': typeof DocsMcpRoute
+  '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin': typeof AdminIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
@@ -195,7 +219,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/discover': typeof DiscoverRoute
-  '/docs': typeof DocsRoute
+  '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
   '/evolution': typeof EvolutionRoute
   '/forge': typeof ForgeRoute
@@ -207,7 +231,10 @@ export interface FileRoutesById {
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
+  '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
+  '/docs/mcp': typeof DocsMcpRoute
+  '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
@@ -233,7 +260,10 @@ export interface FileRouteTypes {
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
+    | '/agents/md'
     | '/api/mcp'
+    | '/docs/mcp'
+    | '/llms/txt'
     | '/marketplace/$packageId'
     | '/admin/'
     | '/marketplace/'
@@ -256,7 +286,10 @@ export interface FileRouteTypes {
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
+    | '/agents/md'
     | '/api/mcp'
+    | '/docs/mcp'
+    | '/llms/txt'
     | '/marketplace/$packageId'
     | '/admin'
     | '/marketplace'
@@ -280,7 +313,10 @@ export interface FileRouteTypes {
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
+    | '/agents/md'
     | '/api/mcp'
+    | '/docs/mcp'
+    | '/llms/txt'
     | '/marketplace/$packageId'
     | '/admin/'
     | '/marketplace/'
@@ -293,7 +329,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   DiscoverRoute: typeof DiscoverRoute
-  DocsRoute: typeof DocsRoute
+  DocsRoute: typeof DocsRouteWithChildren
   EvaluationRoute: typeof EvaluationRoute
   EvolutionRoute: typeof EvolutionRoute
   ForgeRoute: typeof ForgeRoute
@@ -301,7 +337,9 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   SkillforgeRoute: typeof SkillforgeRoute
+  AgentsMdRoute: typeof AgentsMdRoute
   ApiMcpRoute: typeof ApiMcpRoute
+  LlmsTxtRoute: typeof LlmsTxtRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
 }
@@ -406,11 +444,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketplacePackageIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/llms/txt': {
+      id: '/llms/txt'
+      path: '/llms/txt'
+      fullPath: '/llms/txt'
+      preLoaderRoute: typeof LlmsTxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/mcp': {
+      id: '/docs/mcp'
+      path: '/mcp'
+      fullPath: '/docs/mcp'
+      preLoaderRoute: typeof DocsMcpRouteImport
+      parentRoute: typeof DocsRoute
+    }
     '/api/mcp': {
       id: '/api/mcp'
       path: '/api/mcp'
       fullPath: '/api/mcp'
       preLoaderRoute: typeof ApiMcpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents/md': {
+      id: '/agents/md'
+      path: '/agents/md'
+      fullPath: '/agents/md'
+      preLoaderRoute: typeof AgentsMdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/requests': {
@@ -499,11 +558,21 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface DocsRouteChildren {
+  DocsMcpRoute: typeof DocsMcpRoute
+}
+
+const DocsRouteChildren: DocsRouteChildren = {
+  DocsMcpRoute: DocsMcpRoute,
+}
+
+const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   DiscoverRoute: DiscoverRoute,
-  DocsRoute: DocsRoute,
+  DocsRoute: DocsRouteWithChildren,
   EvaluationRoute: EvaluationRoute,
   EvolutionRoute: EvolutionRoute,
   ForgeRoute: ForgeRoute,
@@ -511,10 +580,22 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   SkillforgeRoute: SkillforgeRoute,
+  AgentsMdRoute: AgentsMdRoute,
   ApiMcpRoute: ApiMcpRoute,
+  LlmsTxtRoute: LlmsTxtRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
