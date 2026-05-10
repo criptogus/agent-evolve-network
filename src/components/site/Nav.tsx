@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Logo } from "./Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
+import { useAuth } from "@/hooks/use-auth";
 
 const NAV_LINKS = [
   { to: "/discover", label: "Discover" },
@@ -15,11 +16,11 @@ const NAV_LINKS = [
   { to: "/evaluation", label: "Evaluation" },
   { to: "/docs", label: "Docs" },
   { to: "/pricing", label: "Pricing" },
-  { to: "/admin", label: "Admin" },
 ] as const;
 
 export function Nav() {
   const [open, setOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/80 backdrop-blur-md">
@@ -44,16 +45,45 @@ export function Nav() {
           </nav>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <a href="#" className="hidden whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline">
-            Sign in
-          </a>
-          <Link
-            to="/onboarding"
-            className="inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
-          >
-            <span className="hidden sm:inline">Connect agent</span>
-            <span className="sm:hidden">Connect</span>
-          </Link>
+          {user ? (
+            <>
+              <Link
+                to="/account/billing"
+                className="hidden whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline"
+              >
+                Account
+              </Link>
+              <button
+                onClick={() => signOut()}
+                className="hidden whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline"
+              >
+                Sign out
+              </button>
+              <Link
+                to="/onboarding"
+                className="inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
+              >
+                <span className="hidden sm:inline">Connect agent</span>
+                <span className="sm:hidden">Connect</span>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="hidden whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline"
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/signup"
+                className="inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
+              >
+                <span className="hidden sm:inline">Get started</span>
+                <span className="sm:hidden">Start</span>
+              </Link>
+            </>
+          )}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <button
@@ -81,18 +111,31 @@ export function Nav() {
                     {l.label}
                   </Link>
                 ))}
-                <a
-                  href="https://github.com"
-                  className="rounded-md px-3 py-2.5 text-[15px] text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
-                >
-                  GitHub
-                </a>
-                <a
-                  href="#"
-                  className="rounded-md px-3 py-2.5 text-[15px] text-muted-foreground transition-colors hover:bg-surface hover:text-foreground sm:hidden"
-                >
-                  Sign in
-                </a>
+                {user ? (
+                  <>
+                    <Link
+                      to="/account/billing"
+                      onClick={() => setOpen(false)}
+                      className="rounded-md px-3 py-2.5 text-[15px] text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+                    >
+                      Account & Billing
+                    </Link>
+                    <button
+                      onClick={() => { setOpen(false); signOut(); }}
+                      className="rounded-md px-3 py-2.5 text-left text-[15px] text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+                    >
+                      Sign out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={() => setOpen(false)}
+                    className="rounded-md px-3 py-2.5 text-[15px] text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+                  >
+                    Sign in
+                  </Link>
+                )}
               </nav>
             </SheetContent>
           </Sheet>

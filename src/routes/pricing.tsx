@@ -1,6 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { useAuth } from "@/hooks/use-auth";
+import { useSubscription } from "@/hooks/use-subscription";
+import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -43,8 +48,30 @@ const TIERS = [
 ];
 
 function Pricing() {
+  const { user } = useAuth();
+  const { isActive } = useSubscription();
+  const { openCheckout, loading } = usePaddleCheckout();
+
+  const onCta = async (tierName: string) => {
+    if (tierName === "Hacker") return window.location.assign(user ? "/account/billing" : "/signup");
+    if (tierName === "Enterprise") return window.location.assign("mailto:sales@superagentskill.com?subject=Enterprise%20inquiry");
+    if (!user) return window.location.assign("/signup?next=/pricing");
+    if (isActive) return window.location.assign("/account/billing");
+    try {
+      await openCheckout({
+        priceId: "agent_pass_pro_monthly",
+        customerEmail: user.email ?? undefined,
+        customData: { userId: user.id },
+        successUrl: `${window.location.origin}/account/billing?checkout=success`,
+      });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not open checkout");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <PaymentTestModeBanner />
       <Nav />
       <section className="relative border-b border-border">
         <div className="absolute inset-0 hero-glow" aria-hidden />
@@ -77,10 +104,14 @@ function Pricing() {
                 <span className="pb-2 text-sm text-muted-foreground">/ {t.cadence}</span>
               </div>
               <p className="mt-3 text-sm text-muted-foreground">{t.blurb}</p>
-              <button className={`mt-6 inline-flex h-10 w-full items-center justify-center rounded-md text-sm font-medium transition-all ${
-                t.highlight ? "bg-primary text-primary-foreground hover:opacity-95" : "border border-border bg-surface-elevated text-foreground hover:bg-accent"
-              }`}>
-                {t.cta}
+              <button
+                onClick={() => onCta(t.name)}
+                disabled={loading}
+                className={`mt-6 inline-flex h-10 w-full items-center justify-center rounded-md text-sm font-medium transition-all disabled:opacity-50 ${
+                  t.highlight ? "bg-primary text-primary-foreground hover:opacity-95" : "border border-border bg-surface-elevated text-foreground hover:bg-accent"
+                }`}
+              >
+                {isActive && t.name === "Agent Pass" ? "Manage subscription" : t.cta}
               </button>
               <ul className="mt-6 space-y-2.5 text-sm">
                 {t.features.map((f) => (
