@@ -23,6 +23,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
+import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
 
 const SkillforgeRoute = SkillforgeRouteImport.update({
@@ -95,6 +96,11 @@ const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
   path: '/marketplace/$packageId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPlansRoute = AdminPlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAccountsRoute = AdminAccountsRouteImport.update({
   id: '/accounts',
   path: '/accounts',
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/plans': typeof AdminPlansRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
@@ -130,6 +137,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/plans': typeof AdminPlansRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin': typeof AdminIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/plans': typeof AdminPlansRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/skillforge'
     | '/admin/accounts'
+    | '/admin/plans'
     | '/marketplace/$packageId'
     | '/admin/'
     | '/marketplace/'
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/skillforge'
     | '/admin/accounts'
+    | '/admin/plans'
     | '/marketplace/$packageId'
     | '/admin'
     | '/marketplace'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/skillforge'
     | '/admin/accounts'
+    | '/admin/plans'
     | '/marketplace/$packageId'
     | '/admin/'
     | '/marketplace/'
@@ -321,6 +333,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketplacePackageIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/plans': {
+      id: '/admin/plans'
+      path: '/plans'
+      fullPath: '/admin/plans'
+      preLoaderRoute: typeof AdminPlansRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/accounts': {
       id: '/admin/accounts'
       path: '/accounts'
@@ -333,11 +352,13 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAccountsRoute: typeof AdminAccountsRoute
+  AdminPlansRoute: typeof AdminPlansRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAccountsRoute: AdminAccountsRoute,
+  AdminPlansRoute: AdminPlansRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
