@@ -48,6 +48,26 @@ interface RunRecord {
 }
 
 const HISTORY_KEY = "agentforge.evolution.history.v1";
+const AUTORUN_KEY = "agentforge.evolution.autorun.v1";
+
+function loadAutorun(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const raw = window.localStorage.getItem(AUTORUN_KEY);
+    return raw === null ? true : raw === "1";
+  } catch {
+    return true;
+  }
+}
+
+function saveAutorun(v: boolean) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(AUTORUN_KEY, v ? "1" : "0");
+  } catch {
+    /* ignore */
+  }
+}
 
 function loadHistory(): RunRecord[] {
   if (typeof window === "undefined") return [];
@@ -87,7 +107,14 @@ const MAX_POINTS = 60;
 
 function EvolutionPage() {
   const { prompt } = Route.useSearch();
-  const [running, setRunning] = useState(true);
+  const [autorun, setAutorunState] = useState<boolean>(() => loadAutorun());
+  const [running, setRunning] = useState(autorun);
+  function setAutorun(v: boolean) {
+    setAutorunState(v);
+    saveAutorun(v);
+    // Sync running state with the new preference
+    setRunning(v);
+  }
   const [speed, setSpeed] = useState<1 | 2 | 4>(2);
   const [phase, setPhase] = useState<Phase>("observe");
   const [generation, setGeneration] = useState(1);
@@ -137,7 +164,7 @@ function EvolutionPage() {
       ...l.slice(-40),
       { t: tickRef.current, kind: "info", text: `› Command received: "${prompt}"` },
     ]);
-    setRunning(true);
+    setRunning(autorun);
     startRun(prompt);
   }, [prompt, activePrompt, startRun]);
 
@@ -316,7 +343,23 @@ function EvolutionPage() {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <label
+              className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-md border border-border bg-surface px-3 text-xs font-medium text-muted-foreground hover:text-foreground"
+              title="When on, the loop starts automatically. When off, you press Run to start."
+            >
+              <span className="relative inline-flex h-4 w-7 shrink-0 items-center">
+                <input
+                  type="checkbox"
+                  checked={autorun}
+                  onChange={(e) => setAutorun(e.target.checked)}
+                  className="peer sr-only"
+                />
+                <span className="absolute inset-0 rounded-full bg-border transition-colors peer-checked:bg-primary" />
+                <span className="absolute left-0.5 size-3 rounded-full bg-background shadow transition-transform peer-checked:translate-x-3" />
+              </span>
+              <span className="font-mono uppercase tracking-wider">Auto-run</span>
+            </label>
             <div className="flex h-9 items-center rounded-md border border-border bg-surface p-0.5 text-xs font-mono">
               {[1, 2, 4].map((s) => (
                 <button
