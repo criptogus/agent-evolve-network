@@ -442,6 +442,143 @@ function EvolutionPage() {
 
 /* ---------------- pipeline ---------------- */
 
+function HistoryPanel({
+  history,
+  activeId,
+  onRerun,
+  onRemove,
+  onClear,
+}: {
+  history: RunRecord[];
+  activeId: string | null;
+  onRerun: (prompt: string) => void;
+  onRemove: (id: string) => void;
+  onClear: () => void;
+}) {
+  return (
+    <section className="mt-10 rounded-2xl border border-border bg-surface/40">
+      <header className="flex items-center justify-between border-b border-border px-5 py-3">
+        <div>
+          <div className="text-sm font-medium">Run history</div>
+          <div className="text-xs text-muted-foreground">
+            Last {history.length} {history.length === 1 ? "run" : "runs"} on this browser. One click re-runs the prompt.
+          </div>
+        </div>
+        {history.length > 0 && (
+          <button
+            type="button"
+            onClick={onClear}
+            className="inline-flex h-8 items-center rounded-md border border-border bg-background px-3 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
+            Clear all
+          </button>
+        )}
+      </header>
+
+      {history.length === 0 ? (
+        <div className="px-5 py-10 text-center text-sm text-muted-foreground">
+          No runs yet. Send a prompt from{" "}
+          <Link to="/" className="text-primary hover:underline">
+            the homepage examples
+          </Link>{" "}
+          or{" "}
+          <Link to="/generate" className="text-primary hover:underline">
+            the live generator
+          </Link>
+          .
+        </div>
+      ) : (
+        <ul className="divide-y divide-border">
+          {history.map((run) => {
+            const isActive = run.id === activeId;
+            return (
+              <li
+                key={run.id}
+                className={
+                  "group flex items-start gap-4 px-5 py-3 transition-colors " +
+                  (isActive ? "bg-primary/[0.04]" : "hover:bg-surface/60")
+                }
+              >
+                <div className="mt-1 flex shrink-0 items-center gap-2">
+                  <span
+                    className={
+                      "size-1.5 rounded-full " +
+                      (isActive ? "bg-signal pulse-dot" : "bg-muted-foreground/40")
+                    }
+                    aria-hidden
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm text-foreground" title={run.prompt}>
+                    {run.prompt}
+                  </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-muted-foreground">
+                    <span>{formatRelative(run.startedAt)}</span>
+                    <span>·</span>
+                    <span>gen {run.generations}</span>
+                    <span>·</span>
+                    <span>health {run.health.toFixed(1)}</span>
+                    <span>·</span>
+                    <span>{run.installs} install{run.installs === 1 ? "" : "s"}</span>
+                    {isActive && (
+                      <>
+                        <span>·</span>
+                        <span className="text-signal">live</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-1.5 opacity-80 group-hover:opacity-100">
+                  <button
+                    type="button"
+                    onClick={() => onRerun(run.prompt)}
+                    disabled={isActive}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-2.5 text-xs font-medium text-primary-foreground transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
+                    title={isActive ? "This run is currently active" : "Re-run this prompt"}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8" />
+                      <path d="M21 3v5h-5" />
+                      <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" />
+                      <path d="M3 21v-5h5" />
+                    </svg>
+                    Re-run
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onRemove(run.id)}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                    title="Remove from history"
+                    aria-label="Remove run"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M18 6 6 18" />
+                      <path d="m6 6 12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function formatRelative(ts: number): string {
+  const diff = Date.now() - ts;
+  const s = Math.floor(diff / 1000);
+  if (s < 30) return "just now";
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
+}
+
 function PhasePipeline({ phase }: { phase: Phase }) {
   const activeIdx = PHASES.findIndex((p) => p.id === phase);
   return (
