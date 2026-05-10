@@ -696,21 +696,34 @@ function GeneratePage() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() =>
-                    downloadHealthReport({
-                      prompt: input,
-                      baseline,
-                      score,
-                      governance,
-                      artifacts,
-                      implicit: implicitGuardrails(governance, artifacts),
-                    })
-                  }
-                  className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
-                >
-                  ↓ Download Health Score report
-                </button>
+                {(() => {
+                  const skillCount = artifacts.filter((a) => a.kind === "skill").length;
+                  const isFree = skillCount === 1 || leadUnlocked;
+                  const reportPayload = {
+                    prompt: input,
+                    baseline,
+                    score,
+                    governance,
+                    artifacts,
+                    implicit: implicitGuardrails(governance, artifacts),
+                  };
+                  const handleClick = () => {
+                    if (isFree) downloadHealthReport(reportPayload);
+                    else setLeadOpen(true);
+                  };
+                  return (
+                    <button
+                      onClick={handleClick}
+                      title={isFree ? "Free download" : "Free for qualified leads"}
+                      className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
+                    >
+                      ↓ Download Health Score report
+                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${isFree ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-primary/15 text-primary"}`}>
+                        {isFree ? "FREE" : "Unlock"}
+                      </span>
+                    </button>
+                  );
+                })()}
                 <button
                   onClick={reset}
                   className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
