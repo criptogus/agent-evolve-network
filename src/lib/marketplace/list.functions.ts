@@ -23,6 +23,7 @@ export const listMarketplace = createServerFn({ method: "GET" }).handler(
         "id, slug, name, type, description, author_handle, author_verified, install_count, latest_version, created_at"
       )
       .eq("is_published", true)
+      .eq("review_status", "approved")
       .order("install_count", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(2000);
