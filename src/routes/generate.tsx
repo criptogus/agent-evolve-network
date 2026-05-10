@@ -93,8 +93,17 @@ function GeneratePage() {
   const [phase, setPhase] = useState<string>("idle");
   const [score, setScore] = useState({ health: 71, precision: 74, safety: 88, latency: 920 });
   const [baseline] = useState({ health: 71, precision: 74, safety: 88, latency: 920 });
+  const [presets, setPresets] = useState<Preset[]>([]);
+  const [presetFormOpen, setPresetFormOpen] = useState(false);
+  const [presetName, setPresetName] = useState("");
+  const [presetTagsInput, setPresetTagsInput] = useState("");
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
   const lineId = useRef(0);
   const taRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    setPresets(loadPresets());
+  }, []);
 
   // Auto-run from URL ?prompt=
   useEffect(() => {
