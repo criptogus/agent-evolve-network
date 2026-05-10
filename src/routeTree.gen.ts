@@ -15,6 +15,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as MatchRouteImport } from './routes/match'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as ForgeRouteImport } from './routes/forge'
@@ -72,6 +73,11 @@ const PricingRoute = PricingRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MatchRoute = MatchRouteImport.update({
+  id: '/match',
+  path: '/match',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/login': typeof LoginRoute
+  '/match': typeof MatchRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/login': typeof LoginRoute
+  '/match': typeof MatchRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -298,6 +306,7 @@ export interface FileRoutesById {
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/login': typeof LoginRoute
+  '/match': typeof MatchRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -336,6 +345,7 @@ export interface FileRouteTypes {
     | '/forge'
     | '/generate'
     | '/login'
+    | '/match'
     | '/onboarding'
     | '/pricing'
     | '/reset-password'
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/forge'
     | '/generate'
     | '/login'
+    | '/match'
     | '/onboarding'
     | '/pricing'
     | '/reset-password'
@@ -407,6 +418,7 @@ export interface FileRouteTypes {
     | '/forge'
     | '/generate'
     | '/login'
+    | '/match'
     | '/onboarding'
     | '/pricing'
     | '/reset-password'
@@ -444,6 +456,7 @@ export interface RootRouteChildren {
   ForgeRoute: typeof ForgeRouteWithChildren
   GenerateRoute: typeof GenerateRoute
   LoginRoute: typeof LoginRoute
+  MatchRoute: typeof MatchRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -503,6 +516,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/match': {
+      id: '/match'
+      path: '/match'
+      fullPath: '/match'
+      preLoaderRoute: typeof MatchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -768,6 +788,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgeRoute: ForgeRouteWithChildren,
   GenerateRoute: GenerateRoute,
   LoginRoute: LoginRoute,
+  MatchRoute: MatchRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   ResetPasswordRoute: ResetPasswordRoute,

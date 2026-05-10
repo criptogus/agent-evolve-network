@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 const NAV_LINKS = [
   { to: "/discover", label: "Discover" },
   { to: "/generate", label: "Generate" },
+  { to: "/match", label: "Match" },
   { to: "/marketplace", label: "Marketplace" },
   { to: "/upload", label: "Upload" },
   { to: "/skillforge", label: "SkillForge" },

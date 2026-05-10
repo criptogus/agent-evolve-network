@@ -1,0 +1,129 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { generateText, Output } from "ai";
+import { getGatewayModel } from "@/lib/ai-gateway";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+const Input = z.object({
+  brief: z.string().min(20).max(4000),
+  vertical: z.string().max(80).optional(),
+  desired: z
+    .object({
+      skills: z.number().int().min(1).max(8).default(5),
+      playbooks: z.number().int().min(0).max(4).default(2),
+      souls: z.number().int().min(0).max(2).default(1),
+      guardrails: z.number().int().min(0).max(4).default(2),
+    })
+    .default({ skills: 5, playbooks: 2, souls: 1, guardrails: 2 }),
+});
+
+const RecItem = z.object({
+  slug: z.string(),
+  score: z.number().min(0).max(10),
+  why: z.string().max(280),
+  role: z.string().max(80).describe("the specific role this plays in the agent"),
+});
+
+const MatchSchema = z.object({
+  agent_summary: z.object({
+    one_liner: z.string().max(200),
+    primary_jobs: z.array(z.string()).min(1).max(6),
+    target_user: z.string().max(160),
+    success_metric: z.string().max(160),
+  }),
+  recommended_kit: z.object({
+    skills: z.array(RecItem),
+    playbooks: z.array(RecItem),
+    souls: z.array(RecItem),
+    guardrails: z.array(RecItem),
+  }),
+  coverage: z.object({
+    overall_fit_score: z.number().min(0).max(100),
+    strengths: z.array(z.string()).max(6),
+    risks: z.array(z.string()).max(6),
+  }),
+  gaps: z
+    .array(
+      z.object({
+        capability: z.string().max(160),
+        suggestion: z.string().max(240),
+        recommended_type: z.enum(["skill", "playbook", "soul", "guardrail"]),
+      })
+    )
+    .max(8),
+  rationale: z.string().max(1200),
+});
+
+export type AgentMatchResult = z.infer<typeof MatchSchema>;
+
+type CatalogRow = {
+  slug: string;
+  name: string;
+  type: "skill" | "playbook" | "soul" | "guardrail";
+  description: string;
+};
+
+export const matchAgentToPackages = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => Input.parse(d))
+  .handler(async ({ data }): Promise<AgentMatchResult & { catalog_size: number }> => {
+    const { data: rows, error } = await supabaseAdmin
+      .from("packages")
+      .select("slug,name,type,description")
+      .eq("is_published", true)
+      .order("install_count", { ascending: false })
+      .limit(800);
+    if (error) throw new Response(`Catalog read failed: ${error.message}`, { status: 500 });
+    const catalog = (rows ?? []) as CatalogRow[];
+
+    const compact = catalog
+      .map((p) => `- [${p.type}] ${p.slug} :: ${p.name} — ${p.description.slice(0, 180)}`)
+      .join("\n");
+
+    const validSlugs = new Set(catalog.map((p) => p.slug));
+    const slugByType: Record<string, Set<string>> = {
+      skill: new Set(), playbook: new Set(), soul: new Set(), guardrail: new Set(),
+    };
+    for (const p of catalog) slugByType[p.type].add(p.slug);
+
+    const sys = `You are SkillForge's Agent Match Evaluator. Given a brief describing what an AI agent should do, you select the best combination of SKILLS, PLAYBOOKS, SOULS and GUARDRAILS from the provided catalog to make that agent excellent.
+
+Definitions:
+- skill: a single sharply-scoped capability the agent gains.
+- playbook: a multi-step decision graph for a recurring scenario.
+- soul: a personality/heuristic layer that biases tone and decisions.
+- guardrail: a refusal/safety/compliance layer.
+
+Rules:
+- ONLY pick slugs that appear in the catalog. Never invent slugs.
+- Score 0-10 per item: 10 = essential, 7-9 = strong, 5-6 = nice-to-have. Drop anything <5.
+- Pick a balanced kit close to the requested counts; less is more.
+- "role" = the specific job this package does inside the agent (e.g. "lead qualification engine", "voice of taste").
+- "gaps" = capabilities the agent needs that the catalog does NOT cover well — recommend the type to author next.
+- Be opinionated and concise. No hedging, no marketing language.`;
+
+    const user = `AGENT BRIEF:
+${data.brief}
+
+${data.vertical ? `VERTICAL: ${data.vertical}\n` : ""}DESIRED COUNTS: skills≈${data.desired.skills}, playbooks≈${data.desired.playbooks}, souls≈${data.desired.souls}, guardrails≈${data.desired.guardrails}
+
+CATALOG (${catalog.length} packages):
+${compact}`;
+
+    const { output } = await generateText({
+      model: getGatewayModel("openai/gpt-5.2"),
+      system: sys,
+      prompt: user,
+      output: Output.object({ schema: MatchSchema }),
+    });
+
+    // sanitize: drop any hallucinated slugs / wrong types
+    const clean = (arr: typeof output.recommended_kit.skills, type: keyof typeof slugByType) =>
+      arr.filter((x) => slugByType[type].has(x.slug)).slice(0, data.desired[type === "skill" ? "skills" : type === "playbook" ? "playbooks" : type === "soul" ? "souls" : "guardrails"] + 1);
+
+    output.recommended_kit.skills = clean(output.recommended_kit.skills, "skill");
+    output.recommended_kit.playbooks = clean(output.recommended_kit.playbooks, "playbook");
+    output.recommended_kit.souls = clean(output.recommended_kit.souls, "soul");
+    output.recommended_kit.guardrails = clean(output.recommended_kit.guardrails, "guardrail");
+
+    return { ...output, catalog_size: catalog.length };
+  });
