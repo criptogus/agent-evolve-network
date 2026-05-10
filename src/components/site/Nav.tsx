@@ -20,6 +20,7 @@ export function Nav() {
             <Link to="/evaluation" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Evaluation</Link>
             <Link to="/docs" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Docs</Link>
             <Link to="/pricing" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Pricing</Link>
+            <Link to="/admin" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Admin</Link>
             <a href="https://github.com" className="text-sm text-muted-foreground transition-colors hover:text-foreground">GitHub</a>
           </nav>
         </div>
