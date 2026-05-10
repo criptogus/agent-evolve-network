@@ -24,6 +24,7 @@ function Home() {
       <Logos />
       <HowItWorks />
       <PlainEnglish />
+      <CompareIndustries />
       <CoreConcepts />
       <SkillForgeSection />
       <SocialProof />
