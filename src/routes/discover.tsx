@@ -106,6 +106,23 @@ function DiscoverPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [openItem, setOpenItem] = useState<Item | null>(null);
+  const [authMessage, setAuthMessage] = useState<string | null>(null);
+
+  const autoCreateFn = useServerFn(autoCreateMissing);
+  const autoCreateM = useMutation({
+    mutationFn: (input: { brief: string; type: Type }) =>
+      autoCreateFn({ data: { brief: input.brief, type: input.type } }),
+  });
+
+  const requestAutoCreate = async (brief: string) => {
+    setAuthMessage(null);
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) {
+      setAuthMessage("Sign in to auto-create — we research the state of the art and ship a beta.");
+      return;
+    }
+    autoCreateM.mutate({ brief, type });
+  };
 
   const itemsOfType = useMemo(() => ITEMS.filter((i) => i.type === type), [type]);
 
