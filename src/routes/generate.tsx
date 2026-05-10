@@ -711,17 +711,33 @@ function GeneratePage() {
                     if (isFree) downloadHealthReport(reportPayload);
                     else setLeadOpen(true);
                   };
+                  const handleClickPDF = () => {
+                    if (isFree) void downloadHealthReportPDF(reportPayload);
+                    else setLeadOpen(true);
+                  };
                   return (
-                    <button
-                      onClick={handleClick}
-                      title={isFree ? "Free download" : "Free for qualified leads"}
-                      className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
-                    >
-                      ↓ Download Health Score report
-                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${isFree ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-primary/15 text-primary"}`}>
-                        {isFree ? "FREE" : "Unlock"}
-                      </span>
-                    </button>
+                    <>
+                      <button
+                        onClick={handleClick}
+                        title={isFree ? "Free download" : "Free for qualified leads"}
+                        className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
+                      >
+                        ↓ Markdown report
+                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${isFree ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-primary/15 text-primary"}`}>
+                          {isFree ? "FREE" : "Unlock"}
+                        </span>
+                      </button>
+                      <button
+                        onClick={handleClickPDF}
+                        title={isFree ? "Free PDF download — command + Health Score" : "Free for qualified leads"}
+                        className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
+                      >
+                        ↓ Export PDF
+                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${isFree ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-primary/15 text-primary"}`}>
+                          {isFree ? "FREE" : "Unlock"}
+                        </span>
+                      </button>
+                    </>
                   );
                 })()}
                 <button
