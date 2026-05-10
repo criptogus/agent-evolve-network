@@ -87,7 +87,7 @@ function PackageDetail() {
                 onChange={(e) => setSelectedVersion(e.target.value)}
                 className="mt-2 h-10 w-full rounded-md border border-border bg-background px-3 font-mono text-sm outline-none focus:border-primary"
               >
-                {pkg.versions.map((v) => (
+                {pkg.versions.map((v: Package["versions"][number]) => (
                   <option key={v.version} value={v.version}>
                     {v.version} · {v.status}
                   </option>
