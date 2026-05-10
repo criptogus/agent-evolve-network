@@ -740,6 +740,33 @@ function GeneratePage() {
             </div>
           </section>
         )}
+        {leadOpen && (
+          <LeadGateModal
+            onClose={() => setLeadOpen(false)}
+            onUnlock={async (lead) => {
+              await supabase.from("report_leads").insert({
+                email: lead.email,
+                email_domain: lead.domain,
+                company: lead.company,
+                role: lead.role,
+                prompt: input,
+                stack_size: artifacts.length,
+                governance,
+                health_score: score.health,
+              });
+              setLeadUnlocked(true);
+              setLeadOpen(false);
+              downloadHealthReport({
+                prompt: input,
+                baseline,
+                score,
+                governance,
+                artifacts,
+                implicit: implicitGuardrails(governance, artifacts),
+              });
+            }}
+          />
+        )}
       </main>
       <Footer />
     </div>
