@@ -404,6 +404,14 @@ function EvolutionPage() {
           </div>
         </section>
 
+        <HistoryPanel
+          history={history}
+          activeId={runIdRef.current}
+          onRerun={rerun}
+          onRemove={removeRun}
+          onClear={clearHistory}
+        />
+
         <div className="mt-10 flex items-center justify-between rounded-xl border border-border bg-surface px-5 py-4">
           <div>
             <div className="text-sm font-medium">Want this in your stack?</div>
