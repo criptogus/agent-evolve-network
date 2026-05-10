@@ -249,7 +249,15 @@ function DiscoverPage() {
             </div>
 
             {filtered.length === 0 ? (
-              <EmptyState type={type} query={query} onGenerate={() => setOpenItem(makeBlank(type, query))} />
+              <EmptyState
+                type={type}
+                query={query}
+                isPending={autoCreateM.isPending}
+                result={autoCreateM.data ?? null}
+                error={(autoCreateM.error as Error | null)?.message ?? authMessage ?? null}
+                onAutoCreate={() => requestAutoCreate(query || `A ${type} for general use`)}
+                onUseLocal={() => setOpenItem(makeBlank(type, query))}
+              />
             ) : (
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {filtered
