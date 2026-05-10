@@ -237,6 +237,14 @@ function EvaluateTab({ packages }: { packages: Array<{ slug: string; name: strin
         <Button disabled={!slug || m.isPending} onClick={() => m.mutate()}>
           {m.isPending ? "Evaluating…" : "Run evaluation"}
         </Button>
+        <ForgeProgress
+          active={m.isPending}
+          done={!!m.data}
+          stages={EVAL_STAGES}
+          title="Avaliando o skill (multi-modelo · adversarial · safety)"
+          finalScore={m.data?.evaluation.overall_score ?? null}
+          verdict={m.data?.evaluation.verdict ?? null}
+        />
         {m.error && <p className="text-sm text-destructive">{(m.error as Error).message}</p>}
         {m.data && (
           <div className="mt-2 rounded-md border p-4 space-y-3">
