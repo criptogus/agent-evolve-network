@@ -37,6 +37,44 @@ interface Tick {
   hallucination: number; // lower = better
 }
 
+type TraceSource = "client-agent" | "registry" | "gateway";
+type TraceKind = "tool_call" | "observation" | "learning" | "eval" | "swap";
+interface Trace {
+  id: string;
+  t: number;
+  source: TraceSource;
+  kind: TraceKind;
+  text: string;
+  detail?: string;
+  // Set when this trace produced a learning extracted from the client agent
+  learning?: { title: string; impact: string };
+}
+
+const CLIENT_TOOL_CALLS = [
+  { tool: "ehr.lookup_patient", detail: "patient_id=pt_8821 · scope=cardio" },
+  { tool: "calendar.find_slot", detail: "duration=30m · tz=America/Sao_Paulo" },
+  { tool: "crm.search_account", detail: "domain=acme.io · status=open" },
+  { tool: "billing.fetch_invoice", detail: "invoice=INV-44219 · period=Q2" },
+  { tool: "docs.semantic_search", detail: "q=\"refund policy edge cases\"" },
+  { tool: "tickets.classify", detail: "channel=email · lang=pt-BR" },
+];
+
+const CLIENT_OBSERVATIONS = [
+  "Agent retried tool 3× on transient 502 from CRM",
+  "User rephrased the request after first answer was too generic",
+  "Hand-off to human triggered on policy keyword \"chargeback\"",
+  "Tool call returned 27 results — agent only used top 3",
+  "Latency spike: 1180ms on docs.semantic_search",
+];
+
+const CLIENT_LEARNINGS = [
+  { title: "Tone too formal for SMB segment", impact: "+4.1pp CSAT in test cohort" },
+  { title: "Missing intent: \"pause subscription\"", impact: "covers 6.2% of unmatched turns" },
+  { title: "Refund flow skips eligibility check", impact: "−1.8pp safety on adversarial set" },
+  { title: "Agent over-asks for confirmation", impact: "−180ms median latency" },
+  { title: "Domain term \"NPI\" misclassified as ID", impact: "+3.4pp precision in triage" },
+];
+
 interface RunRecord {
   id: string;
   prompt: string;
