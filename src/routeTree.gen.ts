@@ -26,6 +26,8 @@ import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
+import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
+import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
 
 const SkillforgeRoute = SkillforgeRouteImport.update({
   id: '/skillforge',
@@ -112,6 +114,16 @@ const AdminAccountsRoute = AdminAccountsRouteImport.update({
   path: '/accounts',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPackagesNewRoute = AdminPackagesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AdminPackagesRoute,
+} as any)
+const AdminImportGithubRoute = AdminImportGithubRouteImport.update({
+  id: '/import/github',
+  path: '/import/github',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -126,11 +138,13 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
   '/admin/accounts': typeof AdminAccountsRoute
-  '/admin/packages': typeof AdminPackagesRoute
+  '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
+  '/admin/import/github': typeof AdminImportGithubRoute
+  '/admin/packages/new': typeof AdminPackagesNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -144,11 +158,13 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
   '/admin/accounts': typeof AdminAccountsRoute
-  '/admin/packages': typeof AdminPackagesRoute
+  '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin': typeof AdminIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
+  '/admin/import/github': typeof AdminImportGithubRoute
+  '/admin/packages/new': typeof AdminPackagesNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -164,11 +180,13 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
   '/admin/accounts': typeof AdminAccountsRoute
-  '/admin/packages': typeof AdminPackagesRoute
+  '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
+  '/admin/import/github': typeof AdminImportGithubRoute
+  '/admin/packages/new': typeof AdminPackagesNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -190,6 +208,8 @@ export interface FileRouteTypes {
     | '/marketplace/$packageId'
     | '/admin/'
     | '/marketplace/'
+    | '/admin/import/github'
+    | '/admin/packages/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -208,6 +228,8 @@ export interface FileRouteTypes {
     | '/marketplace/$packageId'
     | '/admin'
     | '/marketplace'
+    | '/admin/import/github'
+    | '/admin/packages/new'
   id:
     | '__root__'
     | '/'
@@ -227,6 +249,8 @@ export interface FileRouteTypes {
     | '/marketplace/$packageId'
     | '/admin/'
     | '/marketplace/'
+    | '/admin/import/github'
+    | '/admin/packages/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -366,21 +390,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAccountsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/packages/new': {
+      id: '/admin/packages/new'
+      path: '/new'
+      fullPath: '/admin/packages/new'
+      preLoaderRoute: typeof AdminPackagesNewRouteImport
+      parentRoute: typeof AdminPackagesRoute
+    }
+    '/admin/import/github': {
+      id: '/admin/import/github'
+      path: '/import/github'
+      fullPath: '/admin/import/github'
+      preLoaderRoute: typeof AdminImportGithubRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminPackagesRouteChildren {
+  AdminPackagesNewRoute: typeof AdminPackagesNewRoute
+}
+
+const AdminPackagesRouteChildren: AdminPackagesRouteChildren = {
+  AdminPackagesNewRoute: AdminPackagesNewRoute,
+}
+
+const AdminPackagesRouteWithChildren = AdminPackagesRoute._addFileChildren(
+  AdminPackagesRouteChildren,
+)
+
 interface AdminRouteChildren {
   AdminAccountsRoute: typeof AdminAccountsRoute
-  AdminPackagesRoute: typeof AdminPackagesRoute
+  AdminPackagesRoute: typeof AdminPackagesRouteWithChildren
   AdminPlansRoute: typeof AdminPlansRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminImportGithubRoute: typeof AdminImportGithubRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAccountsRoute: AdminAccountsRoute,
-  AdminPackagesRoute: AdminPackagesRoute,
+  AdminPackagesRoute: AdminPackagesRouteWithChildren,
   AdminPlansRoute: AdminPlansRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminImportGithubRoute: AdminImportGithubRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -403,3 +455,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
