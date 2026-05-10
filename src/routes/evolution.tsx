@@ -5,6 +5,9 @@ import { Footer } from "@/components/site/Footer";
 
 export const Route = createFileRoute("/evolution")({
   component: EvolutionPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    prompt: typeof search.prompt === "string" ? search.prompt : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Evolution Engine · AgentForge" },
