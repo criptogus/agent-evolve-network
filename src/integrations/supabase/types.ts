@@ -109,6 +109,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "learnings_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages_review_queue"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "learnings_run_id_fkey"
             columns: ["run_id"]
             isOneToOne: false
@@ -280,6 +287,13 @@ export type Database = {
             referencedRelation: "packages"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "package_installs_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages_review_queue"
+            referencedColumns: ["id"]
+          },
         ]
       }
       package_metrics_daily: {
@@ -332,6 +346,13 @@ export type Database = {
             columns: ["package_id"]
             isOneToOne: false
             referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_metrics_daily_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages_review_queue"
             referencedColumns: ["id"]
           },
         ]
@@ -440,6 +461,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "package_versions_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages_review_queue"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "package_versions_parent_version_id_fkey"
             columns: ["parent_version_id"]
             isOneToOne: false
@@ -462,10 +490,15 @@ export type Database = {
           license: string
           long_description: string | null
           name: string
+          review_notes: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
           scopes: string[]
           slug: string
           source_kind: string
           source_ref: string | null
+          submitted_at: string | null
           type: Database["public"]["Enums"]["package_type"]
           updated_at: string
         }
@@ -482,10 +515,15 @@ export type Database = {
           license?: string
           long_description?: string | null
           name: string
+          review_notes?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           scopes?: string[]
           slug: string
           source_kind?: string
           source_ref?: string | null
+          submitted_at?: string | null
           type: Database["public"]["Enums"]["package_type"]
           updated_at?: string
         }
@@ -502,10 +540,15 @@ export type Database = {
           license?: string
           long_description?: string | null
           name?: string
+          review_notes?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           scopes?: string[]
           slug?: string
           source_kind?: string
           source_ref?: string | null
+          submitted_at?: string | null
           type?: Database["public"]["Enums"]["package_type"]
           updated_at?: string
         }
@@ -746,6 +789,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "reviews_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages_review_queue"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "reviews_run_id_ref_fkey"
             columns: ["run_id_ref"]
             isOneToOne: false
@@ -949,6 +999,60 @@ export type Database = {
           slug: string | null
           total_runs: number | null
           type: Database["public"]["Enums"]["package_type"] | null
+        }
+        Relationships: []
+      }
+      packages_review_queue: {
+        Row: {
+          author_handle: string | null
+          author_id: string | null
+          created_at: string | null
+          id: string | null
+          is_published: boolean | null
+          latest_version: string | null
+          name: string | null
+          review_notes: string | null
+          review_status: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          slug: string | null
+          submitted_at: string | null
+          type: Database["public"]["Enums"]["package_type"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          author_handle?: string | null
+          author_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_published?: boolean | null
+          latest_version?: string | null
+          name?: string | null
+          review_notes?: string | null
+          review_status?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          slug?: string | null
+          submitted_at?: string | null
+          type?: Database["public"]["Enums"]["package_type"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          author_handle?: string | null
+          author_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_published?: boolean | null
+          latest_version?: string | null
+          name?: string | null
+          review_notes?: string | null
+          review_status?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          slug?: string | null
+          submitted_at?: string | null
+          type?: Database["public"]["Enums"]["package_type"] | null
+          updated_at?: string | null
         }
         Relationships: []
       }
