@@ -311,6 +311,12 @@ function EvolveTab({ packages, allPackages }: {
         <Button disabled={!slug || m.isPending} onClick={() => m.mutate()}>
           {m.isPending ? "Analyzing…" : apply ? "Patch & publish beta" : "Propose patch"}
         </Button>
+        <ForgeProgress
+          active={m.isPending}
+          done={!!m.data}
+          stages={EVOLVE_STAGES}
+          title="Aprimorando o skill até virar campeão"
+        />
         {m.error && <p className="text-sm text-destructive">{(m.error as Error).message}</p>}
         {m.data && (
           <div className="mt-2 rounded-md border p-4 space-y-3">
