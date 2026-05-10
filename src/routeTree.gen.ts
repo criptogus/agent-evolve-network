@@ -15,6 +15,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as ForgeRouteImport } from './routes/forge'
 import { Route as EvolutionRouteImport } from './routes/evolution'
+import { Route as EvaluationRouteImport } from './routes/evaluation'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as IndexRouteImport } from './routes/index'
@@ -51,6 +52,11 @@ const EvolutionRoute = EvolutionRouteImport.update({
   path: '/evolution',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EvaluationRoute = EvaluationRouteImport.update({
+  id: '/evaluation',
+  path: '/evaluation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRoute
+  '/evaluation': typeof EvaluationRoute
   '/evolution': typeof EvolutionRoute
   '/forge': typeof ForgeRoute
   '/generate': typeof GenerateRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRoute
+  '/evaluation': typeof EvaluationRoute
   '/evolution': typeof EvolutionRoute
   '/forge': typeof ForgeRoute
   '/generate': typeof GenerateRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRoute
+  '/evaluation': typeof EvaluationRoute
   '/evolution': typeof EvolutionRoute
   '/forge': typeof ForgeRoute
   '/generate': typeof GenerateRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/discover'
     | '/docs'
+    | '/evaluation'
     | '/evolution'
     | '/forge'
     | '/generate'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/'
     | '/discover'
     | '/docs'
+    | '/evaluation'
     | '/evolution'
     | '/forge'
     | '/generate'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/'
     | '/discover'
     | '/docs'
+    | '/evaluation'
     | '/evolution'
     | '/forge'
     | '/generate'
@@ -163,6 +175,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DiscoverRoute: typeof DiscoverRoute
   DocsRoute: typeof DocsRoute
+  EvaluationRoute: typeof EvaluationRoute
   EvolutionRoute: typeof EvolutionRoute
   ForgeRoute: typeof ForgeRoute
   GenerateRoute: typeof GenerateRoute
@@ -217,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EvolutionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/evaluation': {
+      id: '/evaluation'
+      path: '/evaluation'
+      fullPath: '/evaluation'
+      preLoaderRoute: typeof EvaluationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/docs': {
       id: '/docs'
       path: '/docs'
@@ -259,6 +279,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DiscoverRoute: DiscoverRoute,
   DocsRoute: DocsRoute,
+  EvaluationRoute: EvaluationRoute,
   EvolutionRoute: EvolutionRoute,
   ForgeRoute: ForgeRoute,
   GenerateRoute: GenerateRoute,
