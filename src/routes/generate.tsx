@@ -407,6 +407,28 @@ function GeneratePage() {
           </div>
         </section>
 
+        {/* Presets */}
+        <PresetsPanel
+          presets={presets}
+          tagFilter={tagFilter}
+          setTagFilter={setTagFilter}
+          onLoad={(p) => {
+            setInput(p.prompt);
+            taRef.current?.focus();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          onRun={(p) => {
+            setInput(p.prompt);
+            start(p.prompt);
+          }}
+          onDelete={(id) => {
+            const next = presets.filter((p) => p.id !== id);
+            setPresets(next);
+            savePresets(next);
+          }}
+          running={running}
+        />
+
         {/* Stream + Artifacts */}
         <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_1.1fr]">
           {/* Stream */}
