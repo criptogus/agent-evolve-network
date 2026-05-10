@@ -854,12 +854,15 @@ export type Database = {
           currency: string | null
           current_period_end: string | null
           current_period_start: string | null
+          environment: string
           id: string
           paddle_customer_id: string | null
           paddle_price_id: string | null
           paddle_subscription_id: string | null
           plan_slug: string
           price_cents: number | null
+          price_id: string | null
+          product_id: string | null
           status: string
           updated_at: string
           user_id: string
@@ -871,12 +874,15 @@ export type Database = {
           currency?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
+          environment?: string
           id?: string
           paddle_customer_id?: string | null
           paddle_price_id?: string | null
           paddle_subscription_id?: string | null
           plan_slug: string
           price_cents?: number | null
+          price_id?: string | null
+          product_id?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -888,12 +894,15 @@ export type Database = {
           currency?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
+          environment?: string
           id?: string
           paddle_customer_id?: string | null
           paddle_price_id?: string | null
           paddle_subscription_id?: string | null
           plan_slug?: string
           price_cents?: number | null
+          price_id?: string | null
+          product_id?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -945,7 +954,9 @@ export type Database = {
       }
     }
     Functions: {
-      has_active_subscription: { Args: { _user_id: string }; Returns: boolean }
+      has_active_subscription:
+        | { Args: { _user_id: string }; Returns: boolean }
+        | { Args: { _user_id: string; check_env?: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
