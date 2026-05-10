@@ -119,6 +119,7 @@ function GeneratePage() {
   const [presetName, setPresetName] = useState("");
   const [presetTagsInput, setPresetTagsInput] = useState("");
   const [tagFilter, setTagFilter] = useState<string | null>(null);
+  const [kindFilter, setKindFilter] = useState<Kind | "all">("all");
   const lineId = useRef(0);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
@@ -550,6 +551,43 @@ function GeneratePage() {
               </p>
             </div>
 
+            {/* Kind filter / grouping tabs */}
+            {artifacts.length > 0 && (
+              <div
+                role="tablist"
+                aria-label="Filter by kind"
+                className="mt-3 flex flex-wrap gap-1.5"
+              >
+                {(["all", "skill", "playbook", "soul", "guardrail"] as const).map((k) => {
+                  const count =
+                    k === "all"
+                      ? artifacts.length + implicitGuardrails(governance, artifacts).length
+                      : artifacts.filter((a) => a.kind === k).length +
+                        (k === "guardrail" ? implicitGuardrails(governance, artifacts).length : 0);
+                  const active = kindFilter === k;
+                  const label = k === "all" ? "All" : KIND_LABELS[k];
+                  return (
+                    <button
+                      key={k}
+                      role="tab"
+                      aria-selected={active}
+                      type="button"
+                      onClick={() => setKindFilter(k)}
+                      className={
+                        "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[12px] font-medium transition-colors " +
+                        (active
+                          ? "border-primary/60 bg-primary/10 text-foreground"
+                          : "border-border bg-background text-muted-foreground hover:text-foreground")
+                      }
+                    >
+                      {label}
+                      <span className="font-mono text-[10px] text-muted-foreground">{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             {artifacts.length === 0 ? (
               <div className="flex h-[300px] items-center justify-center text-center">
                 <p className="max-w-sm text-sm text-muted-foreground">
@@ -558,7 +596,10 @@ function GeneratePage() {
               </div>
             ) : (
               <ul className="mt-3 space-y-3">
-                {artifacts.map((a, i) => (
+                {artifacts
+                  .map((a, i) => ({ a, i }))
+                  .filter(({ a }) => kindFilter === "all" || a.kind === kindFilter)
+                  .map(({ a, i }) => (
                   <li
                     key={i}
                     className="animate-fade-in rounded-xl border border-border bg-surface/40 p-4"
@@ -599,7 +640,8 @@ function GeneratePage() {
                 ))}
 
                 {/* Implicit guardrails injected by governance level */}
-                {implicitGuardrails(governance, artifacts).map((g) => (
+                {(kindFilter === "all" || kindFilter === "guardrail") &&
+                  implicitGuardrails(governance, artifacts).map((g) => (
                   <li
                     key={g.id}
                     className="animate-fade-in rounded-xl border border-dashed border-destructive/30 bg-destructive/5 p-4"
@@ -787,6 +829,13 @@ function Metric({
     </div>
   );
 }
+
+const KIND_LABELS: Record<Kind, string> = {
+  skill: "Skills",
+  playbook: "Playbooks",
+  soul: "Souls",
+  guardrail: "Guardrails",
+};
 
 function KindBadge({ kind }: { kind: Kind }) {
   const map: Record<Kind, { label: string; cls: string }> = {
