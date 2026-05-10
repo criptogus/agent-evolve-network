@@ -83,6 +83,26 @@ const SAMPLES = [
   "Make my agent an SDR for a Series B fintech: prospect on LinkedIn, qualify, book demos in HubSpot.",
 ];
 
+type Governance = "standard" | "strict" | "lockdown";
+
+const GOVERNANCE: Record<Governance, { label: string; blurb: string; safetyBoost: number }> = {
+  standard: {
+    label: "Standard",
+    blurb: "Balanced defaults: PII redaction, citation enforcement, refusal on out-of-scope asks.",
+    safetyBoost: 0,
+  },
+  strict: {
+    label: "Strict",
+    blurb: "Adds dual-LLM judge on every output, blocks ungrounded claims, requires source for any number.",
+    safetyBoost: 4,
+  },
+  lockdown: {
+    label: "Lockdown",
+    blurb: "Regulated-industry mode: human-in-the-loop on writes, full audit log, jailbreak & prompt-injection shields.",
+    safetyBoost: 8,
+  },
+};
+
 function GeneratePage() {
   const { prompt: initialPrompt } = Route.useSearch();
   const [input, setInput] = useState<string>(initialPrompt ?? "");
@@ -93,6 +113,7 @@ function GeneratePage() {
   const [phase, setPhase] = useState<string>("idle");
   const [score, setScore] = useState({ health: 71, precision: 74, safety: 88, latency: 920 });
   const [baseline] = useState({ health: 71, precision: 74, safety: 88, latency: 920 });
+  const [governance, setGovernance] = useState<Governance>("standard");
   const [presets, setPresets] = useState<Preset[]>([]);
   const [presetFormOpen, setPresetFormOpen] = useState(false);
   const [presetName, setPresetName] = useState("");
