@@ -1,100 +1,98 @@
 import { createServerFn } from "@tanstack/react-start";
-import { generateText, Output } from "ai";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { getGatewayModel } from "@/lib/ai-gateway";
-import { PatchSchema } from "./schemas";
+import { autoLearnPipeline } from "./pipelines.server";
 
 const Input = z.object({
   package_slug: z.string(),
   apply: z.boolean().default(false),
 });
 
-const MAINTAINER_SYSTEM = `You are SkillForge Auto-Learner, a proprietary maintainer that evolves agent packages.
-Inputs: current package definition, aggregated daily metrics, recent learnings (misses, hallucinations, wins, suggestions from real runs and MCP feedback).
-Goal: produce the SMALLEST coherent patch that materially improves precision, reduces hallucination, and addresses the most frequent learning clusters — without breaking existing examples.
-Rules:
-- Preserve the package's intent and type.
-- Add explicit instructions to the system_prompt addressing the top 3 weaknesses.
-- Tighten rules.must / rules.must_not when learnings show repeated violations.
-- Add 1-3 new examples that codify recovery from the top failures.
-- Bump version: patch for prompt tweaks, minor for rule/schema changes, major for breaking output shape.
-Return STRICT JSON only.`;
-
 export const autoLearnPackage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { supabase } = context;
+
     const { data: pkg, error: pErr } = await supabase
-      .from("packages").select("*").eq("slug", data.package_slug).single();
+      .from("packages")
+      .select("*")
+      .eq("slug", data.package_slug)
+      .single();
     if (pErr || !pkg) throw new Response("Package not found", { status: 404 });
 
     const { data: ver } = await supabase
-      .from("package_versions").select("*")
-      .eq("package_id", pkg.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      .from("package_versions")
+      .select("*")
+      .eq("package_id", pkg.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
     if (!ver) throw new Response("Current version not found", { status: 404 });
 
     const { data: metrics } = await supabase
-      .from("package_metrics_daily").select("*")
-      .eq("package_id", pkg.id).order("day", { ascending: false }).limit(30);
+      .from("package_metrics_daily")
+      .select("*")
+      .eq("package_id", pkg.id)
+      .order("day", { ascending: false })
+      .limit(30);
 
     const { data: learnings } = await supabase
-      .from("learnings").select("kind, evidence, suggested_patch, weight, created_at")
-      .eq("package_id", pkg.id).order("created_at", { ascending: false }).limit(80);
+      .from("learnings")
+      .select("kind, evidence, suggested_patch, weight, created_at")
+      .eq("package_id", pkg.id)
+      .order("created_at", { ascending: false })
+      .limit(80);
 
-    const model = getGatewayModel("google/gemini-3-flash-preview");
-    const prompt = `CURRENT PACKAGE:
-name: ${pkg.name}
-type: ${pkg.type}
-version: ${ver.version}
-system_prompt:
-${ver.system_prompt}
-
-rules: ${JSON.stringify(ver.rules)}
-examples: ${JSON.stringify(ver.examples)}
-
-METRICS (last 30 days): ${JSON.stringify(metrics || [])}
-
-LEARNINGS (recent ${learnings?.length || 0}): ${JSON.stringify(learnings || [])}
-
-Produce the Patch JSON.`;
-
-    const { experimental_output } = await generateText({
-      model,
-      system: MAINTAINER_SYSTEM,
-      prompt,
-      experimental_output: Output.object({ schema: PatchSchema }),
+    const result = await autoLearnPipeline({
+      pkg: { name: pkg.name, type: pkg.type },
+      version: {
+        version: ver.version,
+        system_prompt: ver.system_prompt,
+        rules: ver.rules,
+        examples: ver.examples,
+      },
+      metrics: metrics || [],
+      learnings: (learnings || []) as Array<{
+        kind: string;
+        evidence: unknown;
+        suggested_patch: string | null;
+        weight: number;
+        created_at: string;
+      }>,
     });
 
-    const patch = experimental_output;
-
-    let createdVersion = null;
-    if (data.apply) {
-      const mergedRules = JSON.parse(JSON.stringify({ ...(ver.rules as object), ...(patch.patched_rules as object) }));
+    let createdVersion: unknown = null;
+    if (data.apply && !result.regression) {
+      const mergedRules = JSON.parse(
+        JSON.stringify({ ...(ver.rules as object), ...(result.patch.patched_rules as object) })
+      );
       const existingExamples = Array.isArray(ver.examples) ? (ver.examples as unknown[]) : [];
-      const mergedExamples = JSON.parse(JSON.stringify([...existingExamples, ...patch.new_examples]));
+      const mergedExamples = JSON.parse(JSON.stringify([...existingExamples, ...result.patch.new_examples]));
       const { data: nv, error: nvErr } = await supabase
-        .from("package_versions").insert({
+        .from("package_versions")
+        .insert({
           package_id: pkg.id,
-          version: patch.next_version,
+          version: result.patch.next_version,
           status: "beta",
-          notes: `Auto-learned: ${patch.rationale}`.slice(0, 500),
-          system_prompt: patch.patched_system_prompt,
+          notes: `Auto-learned · ${result.patch.rationale}`.slice(0, 500),
+          system_prompt: result.patch.patched_system_prompt,
           rules: mergedRules,
           examples: mergedExamples,
           compatibility: ver.compatibility,
           parent_version_id: ver.id,
-        }).select().single();
+        })
+        .select()
+        .single();
       if (nvErr) throw new Response(`Apply patch failed: ${nvErr.message}`, { status: 500 });
       createdVersion = nv;
 
-      // mark learnings as applied
-      await supabase.from("learnings")
-        .update({ applied_in_version_id: nv.id })
+      await supabase
+        .from("learnings")
+        .update({ applied_in_version_id: (nv as { id: string }).id })
         .eq("package_id", pkg.id)
         .is("applied_in_version_id", null);
     }
 
-    return { package: pkg, current_version: ver, patch, applied: createdVersion, by: userId };
+    return { package: pkg, current_version: ver, ...result, applied: createdVersion };
   });
