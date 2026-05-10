@@ -186,6 +186,12 @@ function AuthorTab() {
         <Button disabled={m.isPending || brief.length < 20} onClick={() => m.mutate()}>
           {m.isPending ? "Authoring…" : "Author package"}
         </Button>
+        <ForgeProgress
+          active={m.isPending}
+          done={!!m.data}
+          stages={AUTHOR_STAGES}
+          title="Criando o pacote (pesquisa → método SkillForge → refino até 9+/10)"
+        />
         {m.error && <p className="text-sm text-destructive">{(m.error as Error).message}</p>}
         {m.data && (
           <div className="mt-4 rounded-md border p-4">
