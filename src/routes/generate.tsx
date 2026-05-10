@@ -288,10 +288,82 @@ function GeneratePage() {
                 Reset
               </button>
               <ShareButton prompt={input} />
+              <button
+                type="button"
+                onClick={() => {
+                  if (!input.trim()) return;
+                  // Pre-fill name from prompt if empty
+                  setPresetName((n) => n || truncate(input.trim(), 48));
+                  setPresetFormOpen((v) => !v);
+                }}
+                disabled={!input.trim()}
+                className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent disabled:opacity-50"
+                title="Save this prompt as a reusable preset"
+              >
+                <span aria-hidden>★</span>
+                Save preset
+              </button>
               <span className="ml-auto font-mono text-[11px] text-muted-foreground">
                 ⌘ ↵ to run
               </span>
             </div>
+
+            {presetFormOpen && (
+              <div className="mt-3 rounded-lg border border-dashed border-border bg-background/60 p-3">
+                <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                  <input
+                    value={presetName}
+                    onChange={(e) => setPresetName(e.target.value)}
+                    placeholder="Preset name (e.g. Cardiology v1)"
+                    className="h-9 rounded-md border border-border bg-background px-2.5 text-sm focus:border-primary/50 focus:outline-none"
+                  />
+                  <input
+                    value={presetTagsInput}
+                    onChange={(e) => setPresetTagsInput(e.target.value)}
+                    placeholder="Tags, comma-separated (healthcare, triage)"
+                    className="h-9 rounded-md border border-border bg-background px-2.5 text-sm focus:border-primary/50 focus:outline-none"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!presetName.trim() || !input.trim()) return;
+                        const tags = presetTagsInput
+                          .split(",")
+                          .map((t) => t.trim().toLowerCase())
+                          .filter(Boolean);
+                        const next: Preset[] = [
+                          {
+                            id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                            name: presetName.trim(),
+                            tags,
+                            prompt: input.trim(),
+                            createdAt: Date.now(),
+                          },
+                          ...presets,
+                        ].slice(0, 30);
+                        setPresets(next);
+                        savePresets(next);
+                        setPresetFormOpen(false);
+                        setPresetName("");
+                        setPresetTagsInput("");
+                      }}
+                      disabled={!presetName.trim()}
+                      className="h-9 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPresetFormOpen(false)}
+                      className="h-9 rounded-md border border-border bg-background px-3 text-sm hover:bg-accent"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="mt-4 flex flex-wrap gap-2">
               {SAMPLES.map((s) => (
                 <button
