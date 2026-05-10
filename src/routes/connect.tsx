@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { CodeBlock } from "@/components/site/CodeBlock";
+import { McpTester } from "@/components/site/McpTester";
 
 export const Route = createFileRoute("/connect")({
   head: () => ({
@@ -297,8 +298,17 @@ function ConnectPage() {
           </div>
         </header>
 
+        {/* Live test */}
+        <McpTester />
+
         {/* Quick jump */}
         <nav className="mb-10 flex flex-wrap gap-2">
+          <a
+            href="#test-mcp"
+            className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-700 transition hover:border-emerald-500/60 dark:text-emerald-400"
+          >
+            ▶ Test MCP
+          </a>
           {CLIENTS.map((c) => (
             <a
               key={c.id}
