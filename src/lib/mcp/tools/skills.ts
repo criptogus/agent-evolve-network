@@ -1,7 +1,7 @@
 import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { hashToken } from "@/lib/account/tokens.functions";
+import { hashToken } from "@/lib/account/tokens.server";
 import { processBulkUpload } from "@/lib/uploads/uploads.server";
 
 const json = (v: unknown) => JSON.stringify(v, null, 2);

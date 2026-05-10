@@ -1,16 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { createHash, randomBytes } from "crypto";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-export function hashToken(token: string): string {
-  return createHash("sha256").update(token).digest("hex");
-}
-
-function newToken(): { token: string; prefix: string } {
-  const raw = "sas_" + randomBytes(24).toString("base64url");
-  return { token: raw, prefix: raw.slice(0, 10) };
-}
+import { hashToken, newToken } from "./tokens.server";
 
 export const listMcpTokens = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
