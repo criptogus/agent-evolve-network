@@ -711,17 +711,33 @@ function GeneratePage() {
                     if (isFree) downloadHealthReport(reportPayload);
                     else setLeadOpen(true);
                   };
+                  const handleClickPDF = () => {
+                    if (isFree) void downloadHealthReportPDF(reportPayload);
+                    else setLeadOpen(true);
+                  };
                   return (
-                    <button
-                      onClick={handleClick}
-                      title={isFree ? "Free download" : "Free for qualified leads"}
-                      className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
-                    >
-                      ↓ Download Health Score report
-                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${isFree ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-primary/15 text-primary"}`}>
-                        {isFree ? "FREE" : "Unlock"}
-                      </span>
-                    </button>
+                    <>
+                      <button
+                        onClick={handleClick}
+                        title={isFree ? "Free download" : "Free for qualified leads"}
+                        className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
+                      >
+                        ↓ Markdown report
+                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${isFree ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-primary/15 text-primary"}`}>
+                          {isFree ? "FREE" : "Unlock"}
+                        </span>
+                      </button>
+                      <button
+                        onClick={handleClickPDF}
+                        title={isFree ? "Free PDF download — command + Health Score" : "Free for qualified leads"}
+                        className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
+                      >
+                        ↓ Export PDF
+                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${isFree ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-primary/15 text-primary"}`}>
+                          {isFree ? "FREE" : "Unlock"}
+                        </span>
+                      </button>
+                    </>
                   );
                 })()}
                 <button
@@ -859,6 +875,129 @@ function downloadHealthReport(r: ReportInput) {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+}
+
+async function downloadHealthReportPDF(r: ReportInput) {
+  if (typeof window === "undefined") return;
+  const { jsPDF } = await import("jspdf");
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 48;
+  const maxW = pageW - margin * 2;
+  let y = margin;
+
+  const newPageIfNeeded = (delta: number) => {
+    if (y + delta > pageH - margin) {
+      doc.addPage();
+      y = margin;
+    }
+  };
+  const writeText = (text: string, opts: { size?: number; bold?: boolean; color?: [number, number, number]; gap?: number } = {}) => {
+    const { size = 11, bold = false, color = [30, 30, 30], gap = 4 } = opts;
+    doc.setFont("helvetica", bold ? "bold" : "normal");
+    doc.setFontSize(size);
+    doc.setTextColor(color[0], color[1], color[2]);
+    const lines = doc.splitTextToSize(text, maxW) as string[];
+    for (const line of lines) {
+      newPageIfNeeded(size + gap);
+      doc.text(line, margin, y);
+      y += size + gap;
+    }
+  };
+  const hr = () => {
+    newPageIfNeeded(12);
+    doc.setDrawColor(220);
+    doc.line(margin, y, pageW - margin, y);
+    y += 12;
+  };
+
+  const fmt = (n: number) => n.toFixed(1);
+  const sign = (n: number) => (n >= 0 ? "+" : "");
+  const dH = r.score.health - r.baseline.health;
+  const dP = r.score.precision - r.baseline.precision;
+  const dS = r.score.safety + GOVERNANCE[r.governance].safetyBoost - r.baseline.safety;
+  const dL = r.score.latency - r.baseline.latency;
+
+  // Header
+  writeText("AgentForge — Health Score Report", { size: 20, bold: true, gap: 6 });
+  writeText(`Generated: ${new Date().toLocaleString()}`, { size: 9, color: [120, 120, 120], gap: 2 });
+  writeText(`Governance: ${GOVERNANCE[r.governance].label}`, { size: 10, color: [80, 80, 80], gap: 2 });
+  writeText(GOVERNANCE[r.governance].blurb, { size: 9, color: [120, 120, 120] });
+  hr();
+
+  // Brief / command
+  writeText("Command", { size: 13, bold: true, gap: 6 });
+  writeText(r.prompt.trim() || "(no prompt)", { size: 11, color: [40, 40, 40] });
+  y += 8;
+
+  // Score table
+  writeText("Score deltas", { size: 13, bold: true, gap: 6 });
+  const rows: [string, string, string, string][] = [
+    ["Metric", "Baseline", "Final", "Δ"],
+    ["Health", fmt(r.baseline.health), fmt(r.score.health), `${sign(dH)}${fmt(dH)}`],
+    ["Precision", fmt(r.baseline.precision), fmt(r.score.precision), `${sign(dP)}${fmt(dP)}`],
+    ["Safety", fmt(r.baseline.safety), fmt(r.score.safety + GOVERNANCE[r.governance].safetyBoost), `${sign(dS)}${fmt(dS)}`],
+    ["Latency (ms)", String(Math.round(r.baseline.latency)), String(Math.round(r.score.latency)), `${sign(dL)}${Math.round(dL)}`],
+  ];
+  const colX = [margin, margin + 200, margin + 300, margin + 400];
+  rows.forEach((row, idx) => {
+    newPageIfNeeded(18);
+    doc.setFont("helvetica", idx === 0 ? "bold" : "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(40, 40, 40);
+    row.forEach((cell, i) => doc.text(cell, colX[i], y));
+    y += 16;
+    if (idx === 0) {
+      doc.setDrawColor(230);
+      doc.line(margin, y - 12, pageW - margin, y - 12);
+    }
+  });
+  y += 8;
+  hr();
+
+  // Stack composition
+  const groups: Kind[] = ["skill", "playbook", "soul", "guardrail"];
+  const counts = Object.fromEntries(groups.map((k) => [k, r.artifacts.filter((a) => a.kind === k).length])) as Record<Kind, number>;
+  writeText("Stack composition", { size: 13, bold: true, gap: 6 });
+  writeText(
+    `Skills ${counts.skill} · Playbooks ${counts.playbook} · Souls ${counts.soul} · Guardrails ${counts.guardrail} (+${r.implicit.length} implicit)`,
+    { size: 10, color: [80, 80, 80] },
+  );
+  y += 6;
+
+  for (const k of groups) {
+    const items = r.artifacts.filter((a) => a.kind === k);
+    if (!items.length) continue;
+    writeText(`${KIND_LABELS[k]} (${items.length})`, { size: 12, bold: true, gap: 4 });
+    for (const a of items) {
+      writeText(`• ${a.name}@${a.version}  (${a.source})`, { size: 10, bold: true, color: [40, 40, 40] });
+      writeText(`   ${a.summary}`, { size: 10, color: [70, 70, 70] });
+      for (const b of a.bullets) writeText(`   – ${b}`, { size: 9, color: [110, 110, 110] });
+      y += 2;
+    }
+    y += 4;
+  }
+
+  if (r.implicit.length) {
+    writeText(`Implicit guardrails (from ${GOVERNANCE[r.governance].label})`, { size: 12, bold: true, gap: 4 });
+    for (const g of r.implicit) {
+      writeText(`• ${g.name}`, { size: 10, bold: true, color: [40, 40, 40] });
+      writeText(`   ${g.why}`, { size: 9, color: [110, 110, 110] });
+    }
+  }
+
+  // Footer on each page
+  const total = doc.getNumberOfPages();
+  for (let i = 1; i <= total; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(160, 160, 160);
+    doc.text(`AgentForge · Health Score Report · Page ${i} / ${total}`, margin, pageH - 24);
+  }
+
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  doc.save(`agentforge-health-report-${stamp}.pdf`);
 }
 
 function ShareButton({ prompt }: { prompt: string }) {
