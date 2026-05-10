@@ -167,6 +167,7 @@ function EvolutionPage() {
       : [{ t: 0, kind: "info", text: "Evolution engine standing by. Press Run to start." }],
   );
   const [installed, setInstalled] = useState<string[]>([]);
+  const [traces, setTraces] = useState<Trace[]>(() => seedTraces());
   const tickRef = useRef(0);
   const phaseIdxRef = useRef(0);
 
