@@ -326,11 +326,50 @@ function PlainEnglish() {
     },
   ];
 
+  const FAVORITES_KEY = "agentforge.industries.favorites.v1";
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favReady, setFavReady] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = typeof window !== "undefined" ? window.localStorage.getItem(FAVORITES_KEY) : null;
+      const parsed = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(parsed)) setFavorites(parsed.filter((x) => typeof x === "string"));
+    } catch {
+      /* ignore */
+    }
+    setFavReady(true);
+  }, []);
+
+  function toggleFavorite(id: string) {
+    setFavorites((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [id, ...prev];
+      try {
+        window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }
+
+  const orderedIndustries = useMemo(() => {
+    const favSet = new Set(favorites);
+    const favs = favorites
+      .map((id) => industries.find((i) => i.id === id))
+      .filter((x): x is (typeof industries)[number] => Boolean(x));
+    const rest = industries.filter((i) => !favSet.has(i.id));
+    return [...favs, ...rest];
+  }, [favorites, industries]);
+
   const [activeId, setActiveId] = useState(industries[0].id);
+  useEffect(() => {
+    if (favReady && orderedIndustries.length > 0) {
+      setActiveId((curr) => (orderedIndustries.some((i) => i.id === curr) ? curr : orderedIndustries[0].id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [favReady]);
   const active = industries.find((i) => i.id === activeId)!;
-  const [edits, setEdits] = useState<Record<string, string>>({});
-  const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [draft, setDraft] = useState("");
 
   return (
     <section className="border-b border-border bg-surface/40 py-24">
