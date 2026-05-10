@@ -1069,6 +1069,288 @@ function SkillForgeSection() {
   );
 }
 
+type LoopPhase = "observe" | "assess" | "recommend" | "swap" | "verify";
+
+const LOOP_PHASES: {
+  id: LoopPhase;
+  label: string;
+  blurb: string;
+  glyph: string;
+}[] = [
+  { id: "observe", label: "Observe", blurb: "Stream live traces from the MCP gateway.", glyph: "◉" },
+  { id: "assess", label: "Self-assess", blurb: "Score every primitive on its own benchmark suite.", glyph: "◆" },
+  { id: "recommend", label: "Recommend", blurb: "Pick the upgrade with the highest expected lift.", glyph: "▲" },
+  { id: "swap", label: "Hot-swap", blurb: "Install the new version through MCP — zero downtime.", glyph: "⇄" },
+  { id: "verify", label: "Verify", blurb: "Replay benchmarks. Lock in the gains. Roll back if not.", glyph: "✓" },
+];
+
+const PRIMITIVE_EXAMPLES: {
+  kind: "skill" | "playbook" | "soul" | "guardrail";
+  cls: string;
+  label: string;
+  glyph: string;
+  example: string;
+  signals: { phase: LoopPhase; text: string }[];
+}[] = [
+  {
+    kind: "skill",
+    cls: "border-primary/40 bg-primary/10 text-primary",
+    label: "skill",
+    glyph: "◆",
+    example: "cardiology-triage@2.1.0",
+    signals: [
+      { phase: "observe", text: "412 traces · 3 rare arrhythmia patterns" },
+      { phase: "assess", text: "Precision 91.4% · −1.8pp vs last week" },
+      { phase: "swap", text: "Hot-swap → 2.1.1 (pediatric ECG fix)" },
+    ],
+  },
+  {
+    kind: "playbook",
+    cls: "border-signal/40 bg-signal/15 text-signal-foreground",
+    label: "playbook",
+    glyph: "▶",
+    example: "saas-cold-outreach@1.4.2",
+    signals: [
+      { phase: "observe", text: "1.2k sequences · 18% reply rate" },
+      { phase: "recommend", text: "Add CFO-track variant for >1k FTE" },
+      { phase: "verify", text: "+4.2pp reply rate locked in" },
+    ],
+  },
+  {
+    kind: "soul",
+    cls: "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    label: "soul",
+    glyph: "✦",
+    example: "steve-jobs-soul@3.0.1",
+    signals: [
+      { phase: "assess", text: "Verbosity score 0.62 — over budget" },
+      { phase: "recommend", text: "Auto-tune: preamble v3 → v4 (concise)" },
+      { phase: "verify", text: "−42% tokens · taste held at 0.88" },
+    ],
+  },
+  {
+    kind: "guardrail",
+    cls: "border-destructive/40 bg-destructive/10 text-destructive",
+    label: "guardrail",
+    glyph: "■",
+    example: "pii-redactor@1.2.0",
+    signals: [
+      { phase: "observe", text: "27 PII candidates flagged · 0 leaked" },
+      { phase: "assess", text: "Block rate 99.7% on adversarial set" },
+      { phase: "swap", text: "Strict mode kept — no swap needed" },
+    ],
+  },
+];
+
+function EvalLoopSection() {
+  const [active, setActive] = useState<LoopPhase>("observe");
+  const [running, setRunning] = useState(true);
+
+  useEffect(() => {
+    if (!running) return;
+    const id = setInterval(() => {
+      setActive((prev) => {
+        const idx = LOOP_PHASES.findIndex((p) => p.id === prev);
+        return LOOP_PHASES[(idx + 1) % LOOP_PHASES.length].id;
+      });
+    }, 1800);
+    return () => clearInterval(id);
+  }, [running]);
+
+  return (
+    <section className="border-b border-border bg-background py-24">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+          <div>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">
+              <span className="size-1.5 rounded-full bg-signal pulse-dot" />
+              <span className="font-mono uppercase tracking-wider text-muted-foreground">
+                Continuous evaluation loop
+              </span>
+            </div>
+            <h2 className="max-w-2xl text-3xl font-semibold tracking-tight md:text-4xl">
+              Your stack evaluates itself, every minute, forever.
+            </h2>
+            <p className="mt-3 max-w-2xl text-muted-foreground">
+              Five phases run on every primitive in your stack — skills, playbooks, souls and
+              guardrails — without retraining and without downtime. You see the signal, AgentForge
+              acts on it.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setRunning((r) => !r)}
+              className="inline-flex h-9 items-center rounded-md border border-border bg-surface px-3 text-sm font-medium hover:bg-accent"
+              aria-pressed={!running}
+            >
+              {running ? "Pause loop" : "Play loop"}
+            </button>
+            <Link
+              to="/evaluation"
+              className="inline-flex h-9 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-95"
+            >
+              Open evaluation panel
+            </Link>
+          </div>
+        </div>
+
+        {/* Animated loop diagram */}
+        <div className="mt-10 overflow-hidden rounded-2xl border border-border bg-surface/40 p-6">
+          <div className="grid gap-3 md:grid-cols-5">
+            {LOOP_PHASES.map((p, i) => {
+              const isActive = p.id === active;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => {
+                    setActive(p.id);
+                    setRunning(false);
+                  }}
+                  className={
+                    "group relative text-left rounded-xl border px-4 py-4 transition-all " +
+                    (isActive
+                      ? "border-primary/60 bg-primary/5 shadow-[0_0_0_1px_var(--ring)]"
+                      : "border-border bg-background hover:border-border/80")
+                  }
+                >
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={
+                        "inline-flex size-7 items-center justify-center rounded-md font-mono text-sm transition-colors " +
+                        (isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-surface text-muted-foreground")
+                      }
+                      aria-hidden
+                    >
+                      {p.glyph}
+                    </span>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <div className="mt-3 text-sm font-semibold text-foreground">{p.label}</div>
+                  <div className="mt-1 text-[12px] leading-snug text-muted-foreground">
+                    {p.blurb}
+                  </div>
+                  {isActive && (
+                    <span className="pointer-events-none absolute inset-x-3 -bottom-px h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Connector with traveling pulse */}
+          <div
+            className="relative mt-4 h-1.5 overflow-hidden rounded-full bg-border/60"
+            aria-hidden
+          >
+            <div
+              className="absolute inset-y-0 w-[20%] rounded-full bg-gradient-to-r from-transparent via-primary to-transparent transition-[left] duration-700 ease-out"
+              style={{
+                left: `${LOOP_PHASES.findIndex((p) => p.id === active) * 20}%`,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Examples per primitive */}
+        <div className="mt-10">
+          <div className="mb-4 flex items-end justify-between">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                What the loop does to each primitive
+              </div>
+              <h3 className="mt-1 text-xl font-semibold tracking-tight">
+                The same five phases — different signals per type.
+              </h3>
+            </div>
+            <span className="hidden font-mono text-[11px] text-muted-foreground md:inline">
+              highlighting · {LOOP_PHASES.find((p) => p.id === active)?.label.toLowerCase()}
+            </span>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {PRIMITIVE_EXAMPLES.map((p) => {
+              const matched = p.signals.find((s) => s.phase === active);
+              return (
+                <article
+                  key={p.kind}
+                  className="flex flex-col rounded-2xl border border-border bg-surface/40 p-4"
+                >
+                  <header className="flex items-center justify-between">
+                    <span
+                      className={
+                        "inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider " +
+                        p.cls
+                      }
+                    >
+                      <span aria-hidden>{p.glyph}</span>
+                      {p.label}
+                    </span>
+                    <span className="font-mono text-[10px] text-muted-foreground">live</span>
+                  </header>
+                  <div
+                    className="mt-2 truncate font-mono text-[12.5px] text-foreground"
+                    title={p.example}
+                  >
+                    {p.example}
+                  </div>
+
+                  <ul className="mt-3 space-y-1.5">
+                    {p.signals.map((s) => {
+                      const isHot = s.phase === active;
+                      const phaseMeta = LOOP_PHASES.find((ph) => ph.id === s.phase)!;
+                      return (
+                        <li
+                          key={s.phase}
+                          className={
+                            "flex items-start gap-2 rounded-md border px-2 py-1.5 text-[12px] transition-all " +
+                            (isHot
+                              ? "border-primary/40 bg-primary/5 text-foreground animate-fade-in"
+                              : "border-transparent bg-transparent text-muted-foreground")
+                          }
+                        >
+                          <span
+                            className={
+                              "mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-sm font-mono text-[10px] " +
+                              (isHot
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-surface text-muted-foreground")
+                            }
+                            aria-hidden
+                          >
+                            {phaseMeta.glyph}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-mono text-[10px] uppercase tracking-wider opacity-70">
+                              {phaseMeta.label}
+                            </div>
+                            <div className="leading-snug">{s.text}</div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+
+                  <div className="mt-auto pt-3 text-[11px] text-muted-foreground">
+                    {matched
+                      ? `Now: ${matched.text}`
+                      : `Idle this phase — no action needed.`}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function NetworkSection() {
   const stats = [
     { v: "4,218", k: "Packages in registry" },
