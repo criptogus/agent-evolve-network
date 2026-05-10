@@ -38,6 +38,44 @@ interface StreamLine {
   tone: "muted" | "info" | "ok" | "warn" | "evolve";
 }
 
+interface Preset {
+  id: string;
+  name: string;
+  tags: string[];
+  prompt: string;
+  createdAt: number;
+  lastRun?: {
+    at: number;
+    artifacts: number;
+    healthDelta: number;
+    precisionDelta: number;
+    latencyDelta: number;
+  };
+}
+
+const PRESETS_KEY = "agentforge.generate.presets.v1";
+
+function loadPresets(): Preset[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(PRESETS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function savePresets(p: Preset[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(PRESETS_KEY, JSON.stringify(p));
+  } catch {
+    /* ignore */
+  }
+}
+
 const SAMPLES = [
   "I run a cardiology clinic and want my agent to triage chest-pain cases using the latest 2026 ESC guidelines.",
   "I sell to CFOs of mid-market SaaS. Build the playbook and give it a McKinsey soul.",
