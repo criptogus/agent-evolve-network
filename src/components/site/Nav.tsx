@@ -19,12 +19,12 @@ export function Nav() {
         </div>
         <div className="flex items-center gap-2">
           <a href="#" className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground md:inline">Sign in</a>
-          <a
-            href="#connect"
+          <Link
+            to="/onboarding"
             className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
           >
             Connect agent
-          </a>
+          </Link>
         </div>
       </div>
     </header>
