@@ -1,8 +1,22 @@
 import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { hashToken } from "@/lib/account/tokens.functions";
+import { processBulkUpload } from "@/lib/uploads/uploads.server";
 
 const json = (v: unknown) => JSON.stringify(v, null, 2);
+
+async function resolveUserFromToken(token: string): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from("mcp_tokens")
+    .select("user_id,id")
+    .eq("token_hash", hashToken(token))
+    .maybeSingle();
+  if (!data) return null;
+  // best-effort touch last_used_at
+  await supabaseAdmin.from("mcp_tokens").update({ last_used_at: new Date().toISOString() }).eq("id", data.id);
+  return data.user_id;
+}
 
 export const listPackagesTool = defineTool({
   name: "list_packages",
