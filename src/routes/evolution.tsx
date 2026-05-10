@@ -189,6 +189,14 @@ function EvolutionPage() {
               Observe → assess → recommend → hot-swap → verify. Every loop locks in measurable
               improvements. No retraining. No downtime.
             </p>
+            {activePrompt && (
+              <div className="mt-4 flex max-w-2xl items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
+                <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 font-mono text-[11px] text-primary">
+                  ›_
+                </span>
+                <p className="text-sm text-foreground">{activePrompt}</p>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <div className="flex h-9 items-center rounded-md border border-border bg-surface p-0.5 text-xs font-mono">
