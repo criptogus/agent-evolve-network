@@ -32,6 +32,7 @@ import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
 import { Route as AccountUsageRouteImport } from './routes/account.usage'
+import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug'
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
@@ -151,6 +152,11 @@ const AccountUsageRoute = AccountUsageRouteImport.update({
   path: '/account/usage',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgeReportSlugRoute = ForgeReportSlugRouteImport.update({
+  id: '/report/$slug',
+  path: '/report/$slug',
+  getParentRoute: () => ForgeRoute,
+} as any)
 const AdminPackagesNewRoute = AdminPackagesNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -174,7 +180,7 @@ export interface FileRoutesByFullPath {
   '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
   '/evolution': typeof EvolutionRoute
-  '/forge': typeof ForgeRoute
+  '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
@@ -194,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/forge/report/$slug': typeof ForgeReportSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -201,7 +208,7 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
   '/evolution': typeof EvolutionRoute
-  '/forge': typeof ForgeRoute
+  '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
@@ -221,6 +228,7 @@ export interface FileRoutesByTo {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/forge/report/$slug': typeof ForgeReportSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -230,7 +238,7 @@ export interface FileRoutesById {
   '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
   '/evolution': typeof EvolutionRoute
-  '/forge': typeof ForgeRoute
+  '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
@@ -250,6 +258,7 @@ export interface FileRoutesById {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/forge/report/$slug': typeof ForgeReportSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -280,6 +289,7 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/forge/report/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -307,6 +317,7 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/forge/report/$slug'
   id:
     | '__root__'
     | '/'
@@ -335,6 +346,7 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/forge/report/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -344,7 +356,7 @@ export interface RootRouteChildren {
   DocsRoute: typeof DocsRouteWithChildren
   EvaluationRoute: typeof EvaluationRoute
   EvolutionRoute: typeof EvolutionRoute
-  ForgeRoute: typeof ForgeRoute
+  ForgeRoute: typeof ForgeRouteWithChildren
   GenerateRoute: typeof GenerateRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
@@ -520,6 +532,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountUsageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forge/report/$slug': {
+      id: '/forge/report/$slug'
+      path: '/report/$slug'
+      fullPath: '/forge/report/$slug'
+      preLoaderRoute: typeof ForgeReportSlugRouteImport
+      parentRoute: typeof ForgeRoute
+    }
     '/admin/packages/new': {
       id: '/admin/packages/new'
       path: '/new'
@@ -588,6 +607,16 @@ const DocsRouteChildren: DocsRouteChildren = {
 
 const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
 
+interface ForgeRouteChildren {
+  ForgeReportSlugRoute: typeof ForgeReportSlugRoute
+}
+
+const ForgeRouteChildren: ForgeRouteChildren = {
+  ForgeReportSlugRoute: ForgeReportSlugRoute,
+}
+
+const ForgeRouteWithChildren = ForgeRoute._addFileChildren(ForgeRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -595,7 +624,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsRoute: DocsRouteWithChildren,
   EvaluationRoute: EvaluationRoute,
   EvolutionRoute: EvolutionRoute,
-  ForgeRoute: ForgeRoute,
+  ForgeRoute: ForgeRouteWithChildren,
   GenerateRoute: GenerateRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
@@ -610,3 +639,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
