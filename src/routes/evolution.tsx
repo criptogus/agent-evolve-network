@@ -531,6 +531,8 @@ function EvolutionPage() {
           </div>
         </section>
 
+        <McpTracePanel traces={traces} running={running} />
+
         <EvolutionSummary
           log={log}
           generation={generation}
