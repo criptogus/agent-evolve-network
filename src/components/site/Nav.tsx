@@ -22,27 +22,36 @@ export function Nav() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <div className="flex items-center gap-6 lg:gap-8">
-          <Link to="/" className="flex items-center gap-2 shrink-0">
-            <Logo className="h-6 w-6" />
-            <span className="text-[15px] font-semibold tracking-tight">Super Agent Skill</span>
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="flex min-w-0 items-center gap-6 lg:gap-8">
+          <Link to="/" className="flex shrink-0 items-center gap-2">
+            <Logo className="h-6 w-6 shrink-0" />
+            <span className="whitespace-nowrap text-[15px] font-semibold tracking-tight">
+              Super Agent Skill
+            </span>
           </Link>
-          <nav className="hidden items-center gap-5 xl:flex">
+          <nav className="hidden min-w-0 items-center gap-5 xl:flex">
             {NAV_LINKS.map((l) => (
-              <Link key={l.to} to={l.to} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              <Link
+                key={l.to}
+                to={l.to}
+                className="whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
                 {l.label}
               </Link>
             ))}
           </nav>
         </div>
-        <div className="flex items-center gap-2">
-          <a href="#" className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline">Sign in</a>
+        <div className="flex shrink-0 items-center gap-2">
+          <a href="#" className="hidden whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline">
+            Sign in
+          </a>
           <Link
             to="/onboarding"
-            className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
+            className="inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
           >
-            Connect agent
+            <span className="hidden sm:inline">Connect agent</span>
+            <span className="sm:hidden">Connect</span>
           </Link>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
