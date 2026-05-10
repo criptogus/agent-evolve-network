@@ -28,10 +28,10 @@ export function Footer() {
           { label: "Skill Registry", href: "#" },
           { label: "Evolution Engine", href: "#" },
         ]} />
-        <FooterCol title="Company" links={[
-          { label: "Creators", href: "#" },
-          { label: "Enterprise", href: "#" },
-          { label: "Changelog", href: "#" },
+        <FooterCol title="Legal" links={[
+          { label: "Terms", to: "/terms" },
+          { label: "Privacy", to: "/privacy" },
+          { label: "Refunds", to: "/refunds" },
         ]} />
       </div>
       <div className="border-t border-border">
