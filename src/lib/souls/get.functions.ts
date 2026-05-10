@@ -76,8 +76,8 @@ export const getSoul = createServerFn({ method: "GET" })
             version: current.version,
             status: current.status,
             system_prompt: current.system_prompt,
-            rules: (current.rules ?? {}) as Record<string, unknown>,
-            examples: (current.examples ?? []) as Array<Record<string, unknown>>,
+            rules: (current.rules ?? {}) as any,
+            examples: (current.examples ?? []) as any[],
             notes: current.notes,
             created_at: current.created_at,
           }
