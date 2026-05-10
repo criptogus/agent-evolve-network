@@ -23,6 +23,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
+import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
@@ -100,6 +101,11 @@ const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
   path: '/marketplace/$packageId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRequestsRoute = AdminRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPlansRoute = AdminPlansRouteImport.update({
   id: '/plans',
   path: '/plans',
@@ -146,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/requests': typeof AdminRequestsRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
@@ -167,6 +174,7 @@ export interface FileRoutesByTo {
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/requests': typeof AdminRequestsRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin': typeof AdminIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/requests': typeof AdminRequestsRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
@@ -214,6 +223,7 @@ export interface FileRouteTypes {
     | '/admin/accounts'
     | '/admin/packages'
     | '/admin/plans'
+    | '/admin/requests'
     | '/marketplace/$packageId'
     | '/admin/'
     | '/marketplace/'
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
     | '/admin/accounts'
     | '/admin/packages'
     | '/admin/plans'
+    | '/admin/requests'
     | '/marketplace/$packageId'
     | '/admin'
     | '/marketplace'
@@ -257,6 +268,7 @@ export interface FileRouteTypes {
     | '/admin/accounts'
     | '/admin/packages'
     | '/admin/plans'
+    | '/admin/requests'
     | '/marketplace/$packageId'
     | '/admin/'
     | '/marketplace/'
@@ -381,6 +393,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketplacePackageIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/requests': {
+      id: '/admin/requests'
+      path: '/requests'
+      fullPath: '/admin/requests'
+      preLoaderRoute: typeof AdminRequestsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/plans': {
       id: '/admin/plans'
       path: '/plans'
@@ -442,6 +461,7 @@ interface AdminRouteChildren {
   AdminAccountsRoute: typeof AdminAccountsRoute
   AdminPackagesRoute: typeof AdminPackagesRouteWithChildren
   AdminPlansRoute: typeof AdminPlansRoute
+  AdminRequestsRoute: typeof AdminRequestsRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminImportGithubRoute: typeof AdminImportGithubRoute
   AdminImportMarkdownRoute: typeof AdminImportMarkdownRoute
@@ -451,6 +471,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAccountsRoute: AdminAccountsRoute,
   AdminPackagesRoute: AdminPackagesRouteWithChildren,
   AdminPlansRoute: AdminPlansRoute,
+  AdminRequestsRoute: AdminRequestsRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminImportGithubRoute: AdminImportGithubRoute,
   AdminImportMarkdownRoute: AdminImportMarkdownRoute,
