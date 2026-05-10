@@ -1,0 +1,743 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  public: {
+    Tables: {
+      learnings: {
+        Row: {
+          applied_in_version_id: string | null
+          cluster_key: string | null
+          created_at: string
+          evidence: Json
+          id: string
+          kind: Database["public"]["Enums"]["learning_kind"]
+          package_id: string
+          package_slug: string
+          run_id: string | null
+          suggested_patch: string | null
+          user_id: string | null
+          weight: number
+        }
+        Insert: {
+          applied_in_version_id?: string | null
+          cluster_key?: string | null
+          created_at?: string
+          evidence?: Json
+          id?: string
+          kind: Database["public"]["Enums"]["learning_kind"]
+          package_id: string
+          package_slug: string
+          run_id?: string | null
+          suggested_patch?: string | null
+          user_id?: string | null
+          weight?: number
+        }
+        Update: {
+          applied_in_version_id?: string | null
+          cluster_key?: string | null
+          created_at?: string
+          evidence?: Json
+          id?: string
+          kind?: Database["public"]["Enums"]["learning_kind"]
+          package_id?: string
+          package_slug?: string
+          run_id?: string | null
+          suggested_patch?: string | null
+          user_id?: string | null
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learnings_applied_in_version_id_fkey"
+            columns: ["applied_in_version_id"]
+            isOneToOne: false
+            referencedRelation: "package_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learnings_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learnings_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learnings_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mcp_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          last_used_at: string | null
+          name: string
+          prefix: string
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_used_at?: string | null
+          name: string
+          prefix: string
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_used_at?: string | null
+          name?: string
+          prefix?: string
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      package_installs: {
+        Row: {
+          installed_at: string
+          package_id: string
+          user_id: string
+        }
+        Insert: {
+          installed_at?: string
+          package_id: string
+          user_id: string
+        }
+        Update: {
+          installed_at?: string
+          package_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_installs_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_installs_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      package_metrics_daily: {
+        Row: {
+          avg_hallucination: number | null
+          avg_health: number | null
+          avg_latency_ms: number | null
+          avg_precision: number | null
+          blocked_runs: number
+          day: string
+          error_runs: number
+          ok_runs: number
+          package_id: string
+          runs: number
+        }
+        Insert: {
+          avg_hallucination?: number | null
+          avg_health?: number | null
+          avg_latency_ms?: number | null
+          avg_precision?: number | null
+          blocked_runs?: number
+          day: string
+          error_runs?: number
+          ok_runs?: number
+          package_id: string
+          runs?: number
+        }
+        Update: {
+          avg_hallucination?: number | null
+          avg_health?: number | null
+          avg_latency_ms?: number | null
+          avg_precision?: number | null
+          blocked_runs?: number
+          day?: string
+          error_runs?: number
+          ok_runs?: number
+          package_id?: string
+          runs?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_metrics_daily_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_metrics_daily_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      package_versions: {
+        Row: {
+          compatibility: Json
+          created_at: string
+          examples: Json
+          id: string
+          notes: string | null
+          package_id: string
+          parent_version_id: string | null
+          rules: Json
+          status: Database["public"]["Enums"]["version_status"]
+          system_prompt: string
+          version: string
+        }
+        Insert: {
+          compatibility?: Json
+          created_at?: string
+          examples?: Json
+          id?: string
+          notes?: string | null
+          package_id: string
+          parent_version_id?: string | null
+          rules?: Json
+          status?: Database["public"]["Enums"]["version_status"]
+          system_prompt: string
+          version: string
+        }
+        Update: {
+          compatibility?: Json
+          created_at?: string
+          examples?: Json
+          id?: string
+          notes?: string | null
+          package_id?: string
+          parent_version_id?: string | null
+          rules?: Json
+          status?: Database["public"]["Enums"]["version_status"]
+          system_prompt?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_versions_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_versions_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_versions_parent_version_id_fkey"
+            columns: ["parent_version_id"]
+            isOneToOne: false
+            referencedRelation: "package_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      packages: {
+        Row: {
+          author_handle: string
+          author_id: string | null
+          author_verified: boolean
+          created_at: string
+          description: string
+          id: string
+          install_count: number
+          is_published: boolean
+          latest_version: string
+          license: string
+          long_description: string | null
+          name: string
+          scopes: string[]
+          slug: string
+          type: Database["public"]["Enums"]["package_type"]
+          updated_at: string
+        }
+        Insert: {
+          author_handle?: string
+          author_id?: string | null
+          author_verified?: boolean
+          created_at?: string
+          description: string
+          id?: string
+          install_count?: number
+          is_published?: boolean
+          latest_version?: string
+          license?: string
+          long_description?: string | null
+          name: string
+          scopes?: string[]
+          slug: string
+          type: Database["public"]["Enums"]["package_type"]
+          updated_at?: string
+        }
+        Update: {
+          author_handle?: string
+          author_id?: string | null
+          author_verified?: boolean
+          created_at?: string
+          description?: string
+          id?: string
+          install_count?: number
+          is_published?: boolean
+          latest_version?: string
+          license?: string
+          long_description?: string | null
+          name?: string
+          scopes?: string[]
+          slug?: string
+          type?: Database["public"]["Enums"]["package_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      presets: {
+        Row: {
+          created_at: string
+          id: string
+          last_run_at: string | null
+          last_run_id: string | null
+          name: string
+          package_slugs: string[]
+          prompt: string
+          tags: string[]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_run_at?: string | null
+          last_run_id?: string | null
+          name: string
+          package_slugs?: string[]
+          prompt: string
+          tags?: string[]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_run_at?: string | null
+          last_run_id?: string | null
+          name?: string
+          package_slugs?: string[]
+          prompt?: string
+          tags?: string[]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presets_last_run_id_fkey"
+            columns: ["last_run_id"]
+            isOneToOne: false
+            referencedRelation: "runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          handle: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          handle?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          handle?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          body: string | null
+          created_at: string
+          helpful_count: number
+          id: string
+          package_id: string
+          rating: number
+          run_id_ref: string | null
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          helpful_count?: number
+          id?: string
+          package_id: string
+          rating: number
+          run_id_ref?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          helpful_count?: number
+          id?: string
+          package_id?: string
+          rating?: number
+          run_id_ref?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_run_id_ref_fkey"
+            columns: ["run_id_ref"]
+            isOneToOne: false
+            referencedRelation: "runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      run_events: {
+        Row: {
+          id: number
+          kind: string
+          payload: Json
+          run_id: string
+          ts: string
+        }
+        Insert: {
+          id?: number
+          kind: string
+          payload?: Json
+          run_id: string
+          ts?: string
+        }
+        Update: {
+          id?: number
+          kind?: string
+          payload?: Json
+          run_id?: string
+          ts?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "run_events_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      runs: {
+        Row: {
+          ended_at: string | null
+          error: string | null
+          guardrail_blocks: Json | null
+          hallucination_rate: number | null
+          health: number | null
+          id: string
+          latency_ms: number | null
+          output: string | null
+          package_slugs: string[]
+          package_versions: Json
+          precision_score: number | null
+          prompt: string
+          started_at: string
+          status: Database["public"]["Enums"]["run_status"]
+          tokens_in: number | null
+          tokens_out: number | null
+          user_id: string
+        }
+        Insert: {
+          ended_at?: string | null
+          error?: string | null
+          guardrail_blocks?: Json | null
+          hallucination_rate?: number | null
+          health?: number | null
+          id?: string
+          latency_ms?: number | null
+          output?: string | null
+          package_slugs?: string[]
+          package_versions?: Json
+          precision_score?: number | null
+          prompt: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["run_status"]
+          tokens_in?: number | null
+          tokens_out?: number | null
+          user_id: string
+        }
+        Update: {
+          ended_at?: string | null
+          error?: string | null
+          guardrail_blocks?: Json | null
+          hallucination_rate?: number | null
+          health?: number | null
+          id?: string
+          latency_ms?: number | null
+          output?: string | null
+          package_slugs?: string[]
+          package_versions?: Json
+          precision_score?: number | null
+          prompt?: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["run_status"]
+          tokens_in?: number | null
+          tokens_out?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      package_rankings: {
+        Row: {
+          author_handle: string | null
+          author_verified: boolean | null
+          avg_hallucination: number | null
+          avg_health: number | null
+          avg_latency_ms: number | null
+          avg_precision: number | null
+          description: string | null
+          id: string | null
+          install_count: number | null
+          latest_version: string | null
+          name: string | null
+          score: number | null
+          slug: string | null
+          total_runs: number | null
+          type: Database["public"]["Enums"]["package_type"] | null
+        }
+        Relationships: []
+      }
+    }
+    Functions: {
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+    }
+    Enums: {
+      app_role: "admin" | "publisher" | "user"
+      learning_kind: "miss" | "hallucination" | "win" | "suggestion" | "block"
+      package_type: "skill" | "playbook" | "soul" | "guardrail"
+      run_status: "running" | "ok" | "error" | "blocked"
+      version_status: "stable" | "beta" | "deprecated" | "candidate"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: ["admin", "publisher", "user"],
+      learning_kind: ["miss", "hallucination", "win", "suggestion", "block"],
+      package_type: ["skill", "playbook", "soul", "guardrail"],
+      run_status: ["running", "ok", "error", "blocked"],
+      version_status: ["stable", "beta", "deprecated", "candidate"],
+    },
+  },
+} as const
