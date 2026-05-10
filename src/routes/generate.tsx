@@ -830,6 +830,13 @@ function Metric({
   );
 }
 
+const KIND_LABELS: Record<Kind, string> = {
+  skill: "Skills",
+  playbook: "Playbooks",
+  soul: "Souls",
+  guardrail: "Guardrails",
+};
+
 function KindBadge({ kind }: { kind: Kind }) {
   const map: Record<Kind, { label: string; cls: string }> = {
     skill: { label: "SKILL", cls: "bg-primary/10 text-primary" },
