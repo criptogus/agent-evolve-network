@@ -25,7 +25,14 @@ export type SoulDetail = {
     notes: string | null;
     created_at: string;
   } | null;
-  versions: Array<{ id: string; version: string; status: string; created_at: string }>;
+  versions: Array<{
+    id: string;
+    version: string;
+    status: string;
+    created_at: string;
+    notes: string | null;
+    is_current: boolean;
+  }>;
 };
 
 export const getSoul = createServerFn({ method: "GET" })
@@ -87,6 +94,8 @@ export const getSoul = createServerFn({ method: "GET" })
         version: v.version,
         status: v.status,
         created_at: v.created_at,
+        notes: v.notes,
+        is_current: v.version === pkg.latest_version,
       })),
     };
   });
