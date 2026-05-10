@@ -1,8 +1,22 @@
 import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { hashToken } from "@/lib/account/tokens.server";
+import { processBulkUpload } from "@/lib/uploads/uploads.server";
 
 const json = (v: unknown) => JSON.stringify(v, null, 2);
+
+async function resolveUserFromToken(token: string): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from("mcp_tokens")
+    .select("user_id,id")
+    .eq("token_hash", hashToken(token))
+    .maybeSingle();
+  if (!data) return null;
+  // best-effort touch last_used_at
+  await supabaseAdmin.from("mcp_tokens").update({ last_used_at: new Date().toISOString() }).eq("id", data.id);
+  return data.user_id;
+}
 
 export const listPackagesTool = defineTool({
   name: "list_packages",
@@ -95,5 +109,36 @@ export const requestPrimitiveTool = defineTool({
       status: data.status,
       note: "Queued for the Super Agent Skill forge pipeline.",
     });
+  },
+});
+
+export const uploadPackagesTool = defineTool({
+  name: "upload_packages",
+  description:
+    "Bulk-upload skill/playbook/soul/guardrail definitions (markdown, prompt or JSON text). Each file is normalised by the SkillForge author pipeline and inserted as a draft package owned by the token holder. Drafts are unpublished by default; admins or the author can publish later. Requires a personal MCP token (see /account/tokens). Mirrors the /upload UI 1:1.",
+  parameters: z.object({
+    auth_token: z.string().min(8).describe("Personal MCP token. Mint one at /account/tokens."),
+    files: z
+      .array(
+        z.object({
+          name: z.string().min(1).max(200),
+          content: z.string().min(20).max(120_000),
+          type: z.enum(["skill", "playbook", "soul", "guardrail"]).optional(),
+        })
+      )
+      .min(1)
+      .max(10),
+    publish: z.boolean().optional().default(false),
+  }),
+  execute: async ({ auth_token, files, publish }) => {
+    const userId = await resolveUserFromToken(auth_token);
+    if (!userId) return json({ error: "invalid_token", hint: "Mint a token at /account/tokens" });
+    try {
+      const results = await processBulkUpload(supabaseAdmin as any, userId, files, { publish });
+      const ok = results.filter((r) => r.ok).length;
+      return json({ uploaded: ok, failed: results.length - ok, results });
+    } catch (e: any) {
+      return json({ error: e?.message ?? "upload_failed" });
+    }
   },
 });

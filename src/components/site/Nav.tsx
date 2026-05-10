@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { to: "/discover", label: "Discover" },
   { to: "/generate", label: "Generate" },
   { to: "/marketplace", label: "Marketplace" },
+  { to: "/upload", label: "Upload" },
   { to: "/skillforge", label: "SkillForge" },
   { to: "/forge", label: "Forge" },
   { to: "/evolution", label: "Evolution" },
