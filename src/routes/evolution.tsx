@@ -10,11 +10,11 @@ export const Route = createFileRoute("/evolution")({
   }),
   head: () => ({
     meta: [
-      { title: "Evolution Engine · AgentForge" },
+      { title: "Evolution Engine · Super Agent Skill" },
       {
         name: "description",
         content:
-          "Watch the AgentForge Evolution Engine run live: observe → assess → recommend → install → verify, with metrics rising in real time.",
+          "Watch the Super Agent Skill Evolution Engine run live: observe → assess → recommend → install → verify, with metrics rising in real time.",
       },
     ],
   }),
@@ -85,8 +85,8 @@ interface RunRecord {
   ticks: number;
 }
 
-const HISTORY_KEY = "agentforge.evolution.history.v1";
-const AUTORUN_KEY = "agentforge.evolution.autorun.v1";
+const HISTORY_KEY = "superagentskill.evolution.history.v1";
+const AUTORUN_KEY = "superagentskill.evolution.autorun.v1";
 
 function loadAutorun(): boolean {
   if (typeof window === "undefined") return true;

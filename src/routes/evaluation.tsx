@@ -8,7 +8,7 @@ export const Route = createFileRoute("/evaluation")({
   component: EvaluationPage,
   head: () => ({
     meta: [
-      { title: "Evaluation · AgentForge" },
+      { title: "Evaluation · Super Agent Skill" },
       {
         name: "description",
         content:
@@ -346,7 +346,7 @@ function EvaluationPage() {
           <div>
             <div className="text-sm font-medium">Want this on your stack?</div>
             <div className="text-sm text-muted-foreground">
-              Connect via MCP and AgentForge starts the evaluation loop automatically.
+              Connect via MCP and Super Agent Skill starts the evaluation loop automatically.
             </div>
           </div>
           <div className="flex items-center gap-2">

@@ -7,7 +7,7 @@ import { PACKAGES, type PackageType } from "@/data/packages";
 export const Route = createFileRoute("/marketplace/")({
   head: () => ({
     meta: [
-      { title: "Marketplace — AgentForge" },
+      { title: "Marketplace — Super Agent Skill" },
       { name: "description", content: "Browse the global registry of skills, playbooks, souls and guardrails for AI agents." },
     ],
   }),

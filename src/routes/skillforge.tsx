@@ -9,7 +9,7 @@ export const Route = createFileRoute("/skillforge")({
   component: SkillForgePage,
   head: () => ({
     meta: [
-      { title: "SkillForge AI · AgentForge" },
+      { title: "SkillForge AI · Super Agent Skill" },
       {
         name: "description",
         content:

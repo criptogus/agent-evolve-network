@@ -1,5 +1,5 @@
 /**
- * Proprietary multi-stage skill pipelines — the core differentiator of AgentForge.
+ * Proprietary multi-stage skill pipelines — the core differentiator of Super Agent Skill.
  *
  *  AUTHOR    : research → multi-candidate draft → judge-pick → constitution → critique → refine → adversarial pre-test → verify
  *  EVALUATOR : per-case baseline → categorized adversarial → judge ensemble → calibration
