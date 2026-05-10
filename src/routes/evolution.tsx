@@ -5,6 +5,9 @@ import { Footer } from "@/components/site/Footer";
 
 export const Route = createFileRoute("/evolution")({
   component: EvolutionPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    prompt: typeof search.prompt === "string" ? search.prompt : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Evolution Engine · AgentForge" },
@@ -46,17 +49,36 @@ const UPGRADES = [
 const MAX_POINTS = 60;
 
 function EvolutionPage() {
+  const { prompt } = Route.useSearch();
   const [running, setRunning] = useState(true);
   const [speed, setSpeed] = useState<1 | 2 | 4>(2);
   const [phase, setPhase] = useState<Phase>("observe");
   const [generation, setGeneration] = useState(1);
   const [series, setSeries] = useState<Tick[]>(() => seedSeries());
-  const [log, setLog] = useState<{ t: number; kind: "info" | "ok" | "warn" | "evolve"; text: string }[]>([
-    { t: 0, kind: "info", text: "Evolution engine standing by. Press Run to start." },
-  ]);
+  const [activePrompt, setActivePrompt] = useState<string | undefined>(prompt);
+  const [log, setLog] = useState<{ t: number; kind: "info" | "ok" | "warn" | "evolve"; text: string }[]>(() =>
+    prompt
+      ? [
+          { t: 0, kind: "info", text: `› Command received: "${prompt}"` },
+          { t: 0, kind: "info", text: "Routing to Evolution Engine…" },
+        ]
+      : [{ t: 0, kind: "info", text: "Evolution engine standing by. Press Run to start." }],
+  );
   const [installed, setInstalled] = useState<string[]>([]);
   const tickRef = useRef(0);
   const phaseIdxRef = useRef(0);
+
+  // Echo new prompts coming via URL changes
+  useEffect(() => {
+    if (!prompt || prompt === activePrompt) return;
+    setActivePrompt(prompt);
+    setLog((l) => [
+      ...l.slice(-40),
+      { t: tickRef.current, kind: "info", text: `› Command received: "${prompt}"` },
+    ]);
+    setRunning(true);
+  }, [prompt, activePrompt]);
+
 
   // Main loop
   useEffect(() => {
@@ -167,6 +189,14 @@ function EvolutionPage() {
               Observe → assess → recommend → hot-swap → verify. Every loop locks in measurable
               improvements. No retraining. No downtime.
             </p>
+            {activePrompt && (
+              <div className="mt-4 flex max-w-2xl items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
+                <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 font-mono text-[11px] text-primary">
+                  ›_
+                </span>
+                <p className="text-sm text-foreground">{activePrompt}</p>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <div className="flex h-9 items-center rounded-md border border-border bg-surface p-0.5 text-xs font-mono">
