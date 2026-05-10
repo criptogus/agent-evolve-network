@@ -27,6 +27,7 @@ import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
+import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
 
 const SkillforgeRoute = SkillforgeRouteImport.update({
@@ -119,6 +120,11 @@ const AdminPackagesNewRoute = AdminPackagesNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AdminPackagesRoute,
 } as any)
+const AdminImportMarkdownRoute = AdminImportMarkdownRouteImport.update({
+  id: '/import/markdown',
+  path: '/import/markdown',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminImportGithubRoute = AdminImportGithubRouteImport.update({
   id: '/import/github',
   path: '/import/github',
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
+  '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
 }
 export interface FileRoutesByTo {
@@ -164,6 +171,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
+  '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
 }
 export interface FileRoutesById {
@@ -186,6 +194,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
+  '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
 }
 export interface FileRouteTypes {
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/marketplace/'
     | '/admin/import/github'
+    | '/admin/import/markdown'
     | '/admin/packages/new'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/marketplace'
     | '/admin/import/github'
+    | '/admin/import/markdown'
     | '/admin/packages/new'
   id:
     | '__root__'
@@ -250,6 +261,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/marketplace/'
     | '/admin/import/github'
+    | '/admin/import/markdown'
     | '/admin/packages/new'
   fileRoutesById: FileRoutesById
 }
@@ -397,6 +409,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPackagesNewRouteImport
       parentRoute: typeof AdminPackagesRoute
     }
+    '/admin/import/markdown': {
+      id: '/admin/import/markdown'
+      path: '/import/markdown'
+      fullPath: '/admin/import/markdown'
+      preLoaderRoute: typeof AdminImportMarkdownRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/import/github': {
       id: '/admin/import/github'
       path: '/import/github'
@@ -425,6 +444,7 @@ interface AdminRouteChildren {
   AdminPlansRoute: typeof AdminPlansRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminImportGithubRoute: typeof AdminImportGithubRoute
+  AdminImportMarkdownRoute: typeof AdminImportMarkdownRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -433,6 +453,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminPlansRoute: AdminPlansRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminImportGithubRoute: AdminImportGithubRoute,
+  AdminImportMarkdownRoute: AdminImportMarkdownRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
