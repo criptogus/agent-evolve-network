@@ -11,8 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as SkillforgeRouteImport } from './routes/skillforge'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as ForgeRouteImport } from './routes/forge'
 import { Route as EvolutionRouteImport } from './routes/evolution'
@@ -34,10 +37,12 @@ import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
 import { Route as AccountUsageRouteImport } from './routes/account.usage'
 import { Route as AccountTokensRouteImport } from './routes/account.tokens'
+import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug'
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
@@ -49,6 +54,16 @@ const SkillforgeRoute = SkillforgeRouteImport.update({
   path: '/skillforge',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -57,6 +72,11 @@ const PricingRoute = PricingRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GenerateRoute = GenerateRouteImport.update({
@@ -164,6 +184,11 @@ const AccountTokensRoute = AccountTokensRouteImport.update({
   path: '/account/tokens',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountBillingRoute = AccountBillingRouteImport.update({
+  id: '/account/billing',
+  path: '/account/billing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgeReportSlugRoute = ForgeReportSlugRouteImport.update({
   id: '/report/$slug',
   path: '/report/$slug',
@@ -184,6 +209,12 @@ const AdminImportGithubRoute = AdminImportGithubRouteImport.update({
   path: '/import/github',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -194,10 +225,14 @@ export interface FileRoutesByFullPath {
   '/evolution': typeof EvolutionRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
   '/skillforge': typeof SkillforgeRoute
   '/upload': typeof UploadRoute
+  '/account/billing': typeof AccountBillingRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
@@ -215,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -224,10 +260,14 @@ export interface FileRoutesByTo {
   '/evolution': typeof EvolutionRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
   '/skillforge': typeof SkillforgeRoute
   '/upload': typeof UploadRoute
+  '/account/billing': typeof AccountBillingRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
@@ -245,6 +285,7 @@ export interface FileRoutesByTo {
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -256,10 +297,14 @@ export interface FileRoutesById {
   '/evolution': typeof EvolutionRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
   '/skillforge': typeof SkillforgeRoute
   '/upload': typeof UploadRoute
+  '/account/billing': typeof AccountBillingRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
@@ -277,6 +322,7 @@ export interface FileRoutesById {
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -289,10 +335,14 @@ export interface FileRouteTypes {
     | '/evolution'
     | '/forge'
     | '/generate'
+    | '/login'
     | '/onboarding'
     | '/pricing'
+    | '/reset-password'
+    | '/signup'
     | '/skillforge'
     | '/upload'
+    | '/account/billing'
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
@@ -310,6 +360,7 @@ export interface FileRouteTypes {
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/forge/report/$slug'
+    | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -319,10 +370,14 @@ export interface FileRouteTypes {
     | '/evolution'
     | '/forge'
     | '/generate'
+    | '/login'
     | '/onboarding'
     | '/pricing'
+    | '/reset-password'
+    | '/signup'
     | '/skillforge'
     | '/upload'
+    | '/account/billing'
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
@@ -340,6 +395,7 @@ export interface FileRouteTypes {
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/forge/report/$slug'
+    | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
@@ -350,10 +406,14 @@ export interface FileRouteTypes {
     | '/evolution'
     | '/forge'
     | '/generate'
+    | '/login'
     | '/onboarding'
     | '/pricing'
+    | '/reset-password'
+    | '/signup'
     | '/skillforge'
     | '/upload'
+    | '/account/billing'
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
@@ -371,6 +431,7 @@ export interface FileRouteTypes {
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/forge/report/$slug'
+    | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -382,10 +443,14 @@ export interface RootRouteChildren {
   EvolutionRoute: typeof EvolutionRoute
   ForgeRoute: typeof ForgeRouteWithChildren
   GenerateRoute: typeof GenerateRoute
+  LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  SignupRoute: typeof SignupRoute
   SkillforgeRoute: typeof SkillforgeRoute
   UploadRoute: typeof UploadRoute
+  AccountBillingRoute: typeof AccountBillingRoute
   AccountTokensRoute: typeof AccountTokensRoute
   AccountUsageRoute: typeof AccountUsageRoute
   AgentsMdRoute: typeof AgentsMdRoute
@@ -393,6 +458,7 @@ export interface RootRouteChildren {
   LlmsTxtRoute: typeof LlmsTxtRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -411,6 +477,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SkillforgeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
@@ -423,6 +503,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/generate': {
@@ -572,6 +659,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountTokensRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/billing': {
+      id: '/account/billing'
+      path: '/account/billing'
+      fullPath: '/account/billing'
+      preLoaderRoute: typeof AccountBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forge/report/$slug': {
       id: '/forge/report/$slug'
       path: '/report/$slug'
@@ -599,6 +693,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/import/github'
       preLoaderRoute: typeof AdminImportGithubRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -666,10 +767,14 @@ const rootRouteChildren: RootRouteChildren = {
   EvolutionRoute: EvolutionRoute,
   ForgeRoute: ForgeRouteWithChildren,
   GenerateRoute: GenerateRoute,
+  LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  SignupRoute: SignupRoute,
   SkillforgeRoute: SkillforgeRoute,
   UploadRoute: UploadRoute,
+  AccountBillingRoute: AccountBillingRoute,
   AccountTokensRoute: AccountTokensRoute,
   AccountUsageRoute: AccountUsageRoute,
   AgentsMdRoute: AgentsMdRoute,
@@ -677,17 +782,8 @@ const rootRouteChildren: RootRouteChildren = {
   LlmsTxtRoute: LlmsTxtRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
