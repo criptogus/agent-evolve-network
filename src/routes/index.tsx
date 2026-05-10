@@ -328,6 +328,9 @@ function PlainEnglish() {
 
   const [activeId, setActiveId] = useState(industries[0].id);
   const active = industries.find((i) => i.id === activeId)!;
+  const [edits, setEdits] = useState<Record<string, string>>({});
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
 
   return (
     <section className="border-b border-border bg-surface/40 py-24">
