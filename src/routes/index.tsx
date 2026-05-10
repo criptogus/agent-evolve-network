@@ -392,25 +392,53 @@ function PlainEnglish() {
           <div className="mb-3 flex items-center gap-2 text-xs">
             <span className="font-mono uppercase tracking-[0.2em] text-muted-foreground">Industry</span>
             <span className="h-px flex-1 bg-border" />
+            <span className="font-mono text-[11px] text-muted-foreground">
+              {favorites.length > 0 ? `${favorites.length} favorited` : "★ to pin favorites"}
+            </span>
           </div>
           <div className="flex flex-wrap gap-2" role="tablist" aria-label="Industry selector">
-            {industries.map((i) => {
+            {orderedIndustries.map((i) => {
               const isActive = i.id === activeId;
+              const isFav = favorites.includes(i.id);
               return (
-                <button
+                <div
                   key={i.id}
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => setActiveId(i.id)}
                   className={
-                    "inline-flex h-9 items-center rounded-full border px-4 text-sm font-medium transition-all " +
+                    "inline-flex h-9 items-center rounded-full border pl-1 pr-3 text-sm font-medium transition-all " +
                     (isActive
                       ? "border-primary bg-primary text-primary-foreground shadow-sm"
                       : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground")
                   }
                 >
-                  {i.label}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleFavorite(i.id)}
+                    aria-label={isFav ? `Unpin ${i.label}` : `Pin ${i.label} as favorite`}
+                    aria-pressed={isFav}
+                    title={isFav ? "Unpin favorite" : "Pin as favorite"}
+                    className={
+                      "mr-1 flex size-6 items-center justify-center rounded-full text-[13px] transition-colors " +
+                      (isFav
+                        ? isActive
+                          ? "text-primary-foreground"
+                          : "text-amber-500"
+                        : isActive
+                          ? "text-primary-foreground/60 hover:text-primary-foreground"
+                          : "text-muted-foreground/50 hover:text-amber-500")
+                    }
+                  >
+                    {isFav ? "★" : "☆"}
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setActiveId(i.id)}
+                    className="flex h-full items-center"
+                  >
+                    {i.label}
+                  </button>
+                </div>
               );
             })}
           </div>
