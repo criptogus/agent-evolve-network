@@ -85,11 +85,11 @@ export const autoLearnPackage = createServerFn({ method: "POST" })
         .select()
         .single();
       if (nvErr) throw new Response(`Apply patch failed: ${nvErr.message}`, { status: 500 });
-      createdVersion = nv;
+      createdVersion = nv as { id: string; version: string; status: string };
 
       await supabase
         .from("learnings")
-        .update({ applied_in_version_id: (nv as { id: string }).id })
+        .update({ applied_in_version_id: createdVersion.id })
         .eq("package_id", pkg.id)
         .is("applied_in_version_id", null);
     }
