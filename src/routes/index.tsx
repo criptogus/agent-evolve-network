@@ -711,7 +711,7 @@ function FAQItem({ q, children, defaultOpen = false }: { q: string; children: Re
   );
 }
 
-
+function CTASection() {
   return (
     <section className="relative overflow-hidden py-28">
       <div className="absolute inset-0 grid-bg opacity-50" aria-hidden />
