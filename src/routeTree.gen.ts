@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SkillforgeRouteImport } from './routes/skillforge'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as EvolutionRouteImport } from './routes/evolution'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
@@ -30,6 +31,11 @@ const PricingRoute = PricingRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EvolutionRoute = EvolutionRouteImport.update({
+  id: '/evolution',
+  path: '/evolution',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -56,6 +62,7 @@ const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/docs': typeof DocsRoute
+  '/evolution': typeof EvolutionRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/docs': typeof DocsRoute
+  '/evolution': typeof EvolutionRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/docs': typeof DocsRoute
+  '/evolution': typeof EvolutionRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/skillforge': typeof SkillforgeRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/docs'
+    | '/evolution'
     | '/onboarding'
     | '/pricing'
     | '/skillforge'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/docs'
+    | '/evolution'
     | '/onboarding'
     | '/pricing'
     | '/skillforge'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/docs'
+    | '/evolution'
     | '/onboarding'
     | '/pricing'
     | '/skillforge'
@@ -114,6 +126,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DocsRoute: typeof DocsRoute
+  EvolutionRoute: typeof EvolutionRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   SkillforgeRoute: typeof SkillforgeRoute
@@ -142,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evolution': {
+      id: '/evolution'
+      path: '/evolution'
+      fullPath: '/evolution'
+      preLoaderRoute: typeof EvolutionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -178,6 +198,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DocsRoute: DocsRoute,
+  EvolutionRoute: EvolutionRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   SkillforgeRoute: SkillforgeRoute,
@@ -187,3 +208,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
