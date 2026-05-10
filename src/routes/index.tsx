@@ -22,6 +22,7 @@ function Home() {
       <Hero />
       <Logos />
       <HowItWorks />
+      <PlainEnglish />
       <CoreConcepts />
       <SkillForgeSection />
       <NetworkSection />
@@ -61,7 +62,7 @@ function Hero() {
             <span>MCP-native gateway is live</span>
           </div>
           <h1 className="mt-6 text-balance text-5xl font-semibold tracking-tight md:text-7xl">
-            One command.
+            One sentence.
             <br />
             <span className="text-primary">
               Your agent becomes&nbsp;
@@ -72,8 +73,9 @@ function Hero() {
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">
-            The MCP infrastructure layer for AI agents. Connect Claude, Cursor, Codex or Grok to a live
-            network of skills, playbooks, souls and guardrails — and watch them evolve.
+            AgentForge is the living OS for AI agents. Connect Claude, Cursor, Codex or Grok and,
+            in plain English, install state-of-the-art skills, playbooks, souls and guardrails for
+            your industry — or generate brand-new ones, made just for you.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
@@ -151,19 +153,36 @@ function Logos() {
 
 function HowItWorks() {
   const steps = [
-    { n: "01", title: "Connect via MCP", body: "Secure OAuth handshake with short-lived tokens. Your agent registers its current capabilities." },
-    { n: "02", title: "Self-assess", body: "SkillForge AI scans context, installed skills and historical performance. Identifies weaknesses." },
-    { n: "03", title: "Install upgrades", body: "Skills, playbooks, souls and guardrails install automatically — no human in the loop." },
-    { n: "04", title: "Evolve continuously", body: "Anonymous feedback flows into the network. Improved versions ship to every agent." },
+    {
+      n: "01",
+      title: "Connect in 30 seconds",
+      body: "One MCP handshake links your agent to AgentForge. No SDKs, no retraining, no DevOps. Works with Claude, Cursor, Codex, Grok and any MCP-compatible runtime.",
+    },
+    {
+      n: "02",
+      title: "Tell it what you do",
+      body: "In plain English: \"I run a cardiology clinic\" or \"I close enterprise SaaS deals.\" AgentForge maps your domain and picks the state-of-the-art skills, playbooks, souls and guardrails for it.",
+    },
+    {
+      n: "03",
+      title: "Install — or generate — on command",
+      body: "Pre-built packages install instantly. Need something unique? Say \"create a soul that negotiates like our top rep\" and SkillForge generates a custom skill, playbook or soul tailored to your data.",
+    },
+    {
+      n: "04",
+      title: "Evolves while you sleep",
+      body: "Every interaction feeds the loop. Better versions ship automatically, guardrails tighten, and your agent's Health Score climbs — without anyone touching a config file.",
+    },
   ];
   return (
     <section className="border-b border-border py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="max-w-2xl">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">The Evolution Loop</span>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">From generic assistant to elite specialist.</h2>
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">How it works</span>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">Powerful underneath. Stupidly simple to use.</h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            AgentForge runs a continuous improvement pipeline across millions of agents. The more it's used, the smarter every connected agent becomes.
+            No prompt engineering. No fine-tuning pipelines. Just talk to your agent like a teammate
+            and AgentForge handles the rest — from discovery to installation to continuous evolution.
           </p>
         </div>
         <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-2 lg:grid-cols-4">
@@ -172,6 +191,60 @@ function HowItWorks() {
               <div className="font-mono text-xs text-primary">{s.n}</div>
               <h3 className="mt-3 text-lg font-semibold tracking-tight">{s.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PlainEnglish() {
+  const examples = [
+    {
+      prompt: "Make my agent a cardiologist trained on the latest 2026 ESC guidelines.",
+      result: "Installed cardiology-diagnostics@2.1 + medical-guardrails. Health +6.4.",
+    },
+    {
+      prompt: "I sell to CFOs of mid-market SaaS. Give it the right playbook.",
+      result: "Installed enterprise-sales-flow + mckinsey-consultant soul. +12% close rate.",
+    },
+    {
+      prompt: "Create a custom soul that talks like our founder, Marina.",
+      result: "Generated marina-soul@0.1 from 412 of her transcripts. Ready to install.",
+    },
+    {
+      prompt: "Build a guardrail so it never recommends a competitor.",
+      result: "Generated competitor-shield@0.1. Blocks 14 brand mentions, 0 false positives.",
+    },
+  ];
+  return (
+    <section className="border-b border-border bg-surface/40 py-24">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="max-w-2xl">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Plain-English commands</span>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">If you can write a sentence, you can ship a specialist.</h2>
+          <p className="mt-4 text-lg text-muted-foreground">
+            AgentForge does two things at once: it <span className="text-foreground">enriches</span> your
+            agent with the best existing packages for your industry, and it <span className="text-foreground">creates new ones</span>{" "}
+            — skills, playbooks and souls custom-built from your data — on demand.
+          </p>
+        </div>
+        <div className="mt-12 grid gap-4 md:grid-cols-2">
+          {examples.map((e, i) => (
+            <div key={i} className="rounded-2xl border border-border bg-background p-5 shadow-sm">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 font-mono text-[11px] text-primary">
+                  ›_
+                </span>
+                <p className="text-[15px] font-medium text-foreground">{e.prompt}</p>
+              </div>
+              <div className="mt-3 flex items-start gap-3 border-t border-border pt-3">
+                <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-signal/20 font-mono text-[11px] text-signal-foreground">
+                  ✓
+                </span>
+                <p className="font-mono text-[12.5px] leading-relaxed text-muted-foreground">{e.result}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -341,12 +414,13 @@ function CTASection() {
       <div className="absolute inset-0 hero-glow" aria-hidden />
       <div className="relative mx-auto max-w-3xl px-6 text-center">
         <h2 className="text-4xl font-semibold tracking-tight md:text-6xl">
-          One command.
+          One sentence.
           <br />
           Your agent becomes a genius.
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">
-          LLMs will become commodities. Specialized agents will become empires.
+          Install the best of your industry. Generate what doesn't exist yet. All from a chat box —
+          no engineers required.
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <a href="#" className="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95">
