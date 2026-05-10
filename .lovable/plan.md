@@ -1,133 +1,98 @@
 
-## Objetivo
+# Admin area for AgentForge
 
-Sair do mock. Cada execução real treina o ranking, cada feedback via MCP gera sugestões de upgrade de pacote, e a primeira série de 6 pacotes (skill/playbook/soul/guardrail) é executável de verdade pela IA.
+A new `/admin` section, reachable only by users with the `admin` role, with all admin tooling. The proprietary skill-author/evaluator/auto-learn pipeline already exists in `src/lib/skills/`; the admin tools wrap and extend it. Real auth, real DB, real Lovable AI Gateway calls — no mocks.
 
-## 1. Infra: Lovable Cloud + Auth
-
-- Habilitar Lovable Cloud.
-- Auth: email/senha + Google.
-- Tabela `profiles` (id → auth.users, display_name, avatar_url, handle) + trigger de criação.
-- Tabela `user_roles` separada (`app_role` enum: admin, publisher, user) + função `has_role` SECURITY DEFINER (padrão anti-recursão RLS).
-- Rota `/login`, `/reset-password`, layout `_authenticated` com guard `beforeLoad`.
-
-## 2. Catálogo real (6 pacotes curados)
-
-Tabelas:
-- `packages` (id, slug, name, type, author_id, description, long_description, license, latest_version, scopes[], is_published, created_at)
-- `package_versions` (id, package_id, version, status, notes, system_prompt, rules_json, examples_json, compatibility_json, created_at) — **conteúdo executável real**
-- `package_dependencies` (package_id, depends_on_slug, version_range)
-
-Seed inicial (3 verticais × 2 tipos cada para cobrir os 4 tipos):
-1. **skill** `cardiology-triage` — prompt clínico estruturado + JSON schema de output (GRACE score, diferencial).
-2. **skill** `enterprise-discovery` — MEDDPICC tool calls com schema.
-3. **playbook** `saas-cold-outreach` — sequência de passos com decisão por estado.
-4. **playbook** `incident-response-sev1` — runbook com escalonamento.
-5. **soul** `jobs-product-taste` — system prompt de personalidade + heurísticas de decisão.
-6. **guardrail** `pii-redactor` — regex + LLM judge para PII; bloqueia/redige outputs.
-
-Cada pacote: `system_prompt` real, `rules_json` (input/output schema Zod-like), `examples_json` (3+ exemplos com expected output), `compatibility_json`.
-
-## 3. Execução real (IA via Lovable AI Gateway)
-
-Server functions em `src/lib/`:
-- `runs.functions.ts` → `executeAgent({ packageSlugs[], userPrompt })`:
-  - Carrega versions ativas dos pacotes selecionados.
-  - Compõe system prompt (souls + skills + playbooks) + injeta guardrails como pre/post processors.
-  - Chama `streamText` com `google/gemini-3-flash-preview`, tools derivadas do `rules_json`.
-  - Mede latência, tokens, eventual `judge` call para precision/hallucination score.
-  - Persiste em `runs` + `run_events`.
-- `/generate` chama isso de verdade (substitui o gerador mock).
-- `/evolution` consome um stream real do mesmo endpoint, mostrando steps reais.
-
-Tabelas:
-- `runs` (id, user_id, prompt, package_ids[], started_at, ended_at, status, latency_ms, tokens_in, tokens_out, health, precision, hallucination_rate, output_text)
-- `run_events` (run_id, ts, kind, payload_json) — para timeline real.
-
-## 4. Network effect — três mecânicas combinadas
-
-### a) Telemetria + ranking adaptativo
-- `package_metrics_daily` (package_id, day, runs, avg_latency, avg_health, avg_precision, hallucination_rate, install_count) — atualizada por trigger ao fechar `run`.
-- View `package_rankings` ordenando marketplace por score híbrido: `0.4*precision + 0.3*health + 0.2*log(runs+1) + 0.1*recency`.
-- Marketplace e `/discover` passam a ler dessa view (ordem muda com uso real).
-
-### b) MCP feedback loop (auto-evolução)
-- Server route `POST /api/public/mcp/feedback` com auth via API token + Zod (verifica `signature` HMAC do agente).
-- Recebe `{ run_id?, package_slug, kind: "miss"|"hallucination"|"win"|"suggestion", evidence, suggested_patch? }`.
-- Insere em `learnings` (package_id, kind, evidence_json, embedding via gateway embeddings, weight).
-- Job server function `evolvePackages()` (cron via pg_cron chamando `/api/public/cron/evolve`):
-  - Agrupa learnings por package + cluster semântico (cosine sim).
-  - Quando cluster atinge threshold (≥10 sinais consistentes), chama IA com prompt de "patch maintainer" → gera `package_versions` em status `beta` com diff de prompt/rules.
-  - Notifica autor; promoção a `stable` requer aprovação ou auto-promove se métricas em A/B sandbox melhorarem.
-- Página `/evolution` mostra o **loop real** (não mais sintético): origem dos learnings, candidate versions, A/B results.
-
-### c) Reviews + uso verificado
-- `reviews` (id, package_id, user_id, rating 1-5, body, run_id_ref, created_at) — apenas usuários com `runs.status='ok'` para o package podem inserir (RLS check).
-- `review_helpfulness` para ponderar.
-- Score público = média ponderada por (helpfulness + número de runs do reviewer com aquele package).
-
-## 5. UI — substituir mocks
-
-- `/marketplace` → query real (`packages` + `package_rankings`), filtros por tipo/runtime/score.
-- `/marketplace/$packageId` → versions reais, métricas reais agregadas, reviews reais, botão "Try in /generate" pré-seleciona o pacote.
-- `/generate` → composer agora aceita seleção multi-package, run real com streaming, salva `run` no histórico do usuário; presets agora persistem na nuvem (tabela `presets`) com sync entre devices. Mantém share-link.
-- `/evolution` → consome `learnings` + `candidate_versions` reais; auto-run/manual continuam.
-- `/discover` → feed ordenado por ranking adaptativo + "trending learnings" (clusters quentes).
-- `/skillforge` → editor para autores publicarem pacotes (system_prompt, rules schema, examples, compat); submit cria `package_versions` em `beta`.
-
-## 6. Endpoint MCP do AgentForge
-
-Usar `mcp-tanstack-start` em `src/routes/api/mcp.ts` expondo tools reais:
-- `search_packages({ query, type })`
-- `install_package({ slug, version })` (registra install no usuário autenticado via bearer)
-- `report_learning({ package_slug, kind, evidence, suggested_patch? })`
-- `run_agent({ package_slugs, prompt })`
-Auth via `MCP_TOKEN` por usuário (gerado em `/settings/api`).
-
-## 7. Segurança e qualidade
-
-- RLS em todas as tabelas; políticas via `has_role` para admin/publisher.
-- `LOVABLE_API_KEY` apenas em server fns / server routes.
-- Validação Zod em todos os inputs (server fns e MCP).
-- Rate limit por user_id no `/api/public/mcp/feedback` (tabela `rate_limits`).
-- Embeddings via `google/gemini-3-flash-preview` ou modelo embeddings disponível no gateway.
-
-## 8. Detalhes técnicos (resumo)
+## Surface map
 
 ```text
-src/
-  routes/
-    _authenticated/
-      generate.tsx           (move; era /generate)
-      evolution.tsx
-      skillforge.tsx
-      settings.api.tsx       (MCP token mgmt)
-    login.tsx, reset-password.tsx
-    marketplace.index.tsx, marketplace.$packageId.tsx, discover.tsx  (públicas)
-    api/
-      mcp.ts                          (mcp-tanstack-start)
-      public/mcp/feedback.ts          (HMAC + bearer)
-      public/cron/evolve.ts           (HMAC do cron)
-  lib/
-    packages.functions.ts   (list/get/publish)
-    runs.functions.ts       (executeAgent streaming)
-    learnings.functions.ts  (ingest + cluster + evolve)
-    reviews.functions.ts
-    ai-gateway.ts           (helper Lovable AI Gateway)
-  integrations/supabase/{client,client.server,auth-middleware}.ts
+/admin                          Dashboard (counts: users, packages, runs, leads, plans)
+/admin/accounts                 List users, see plan, role, lifetime runs; promote/demote, change plan
+/admin/plans                    Manage plan tiers (free / pro / enterprise) and per-plan limits
+/admin/packages                 List every package across the registry; publish / unpublish / delete
+/admin/packages/new             Wizard: create skill | playbook | soul | guardrail
+                                Steps: Type → Industry/Tech/Business area → Brief → AI draft → Review → Publish
+/admin/import/github            Paste a public GitHub repo URL; system analyses repo, extracts
+                                candidate skills/playbooks/.md/.json/.yaml definitions,
+                                runs them through the proprietary author+evaluator pipeline,
+                                and stages them for review before publishing
+/admin/import/markdown          Drag-and-drop one or many `*.md` (skills.md, playbook.md, soul.md, guardrail.md)
+                                files; each is parsed, transformed, categorised and queued for review
+/admin/requests                 Queue of "missing primitive" requests coming from clients/agents.
+                                Admin can approve "auto-create with web research", monitor progress,
+                                review the generated package and publish.
 ```
 
-Migrações SQL: enums (`package_type`, `app_role`, `run_status`, `learning_kind`), tabelas, índices (vector index para embeddings via pgvector), políticas RLS, trigger de profile, trigger de update de `package_metrics_daily`, função `has_role`.
+Client-facing flow that feeds `/admin/requests`: when discover/generate cannot find a primitive that satisfies a query, the client UI POSTs the missing brief to a server function. The pipeline:
+1. uses Lovable AI to draft a research plan,
+2. calls a web research server function (Perplexity if `PERPLEXITY_API_KEY` is set, otherwise Lovable AI with grounded prompt) to gather state-of-the-art references,
+3. feeds the grounded context into `authorPackage` to generate a real package,
+4. runs `evaluatePackage` for a fitness score,
+5. writes a row in `package_requests` with status `draft_ready`,
+6. notifies the client UI when the package is published.
 
-## 9. Entregáveis desta rodada
+## Database changes (one migration)
 
-1. Cloud + auth (email/Google) + profiles/roles.
-2. Schema completo + seed dos 6 pacotes reais.
-3. Execução real `/generate` via gateway com persistência.
-4. Marketplace lendo ranking real.
-5. `/evolution` mostrando loop real (mesmo que com poucos dados no início).
-6. Endpoint MCP `/api/mcp` com 4 tools + token por usuário.
-7. Cron de evolução + ingest de learnings + cluster por embedding.
-8. Reviews verificados.
+- `app_role`: confirm `admin` exists (it does — keep as is).
+- New table `plans` — id, slug (`free`|`pro`|`enterprise`), name, monthly_runs_limit, max_installed_packages, price_cents, features jsonb. Public read, admin write.
+- New table `account_plans` — user_id (PK), plan_id, status (`active`|`past_due`|`cancelled`), updated_at. RLS: user can read own row; admin can read/write all.
+- New table `package_imports` — id, source_kind (`github`|`markdown`|`request`), source_ref (URL or filename), status (`pending`|`analysing`|`drafted`|`published`|`failed`), created_by, generated_package_id (nullable), notes, raw_input text, created_at, updated_at. RLS: admin only.
+- New table `package_requests` — id, requester_id (nullable for anon agent calls via MCP), brief text, kind (skill/playbook/soul/guardrail), industry, status (`new`|`researching`|`drafting`|`evaluating`|`draft_ready`|`published`|`rejected`), research_summary text, evaluation jsonb, generated_package_id, created_at, updated_at. RLS: admin read/write all; authenticated user can insert and read own.
+- Extend existing `packages` with `source_kind` (`native`|`github`|`markdown`|`request`) and `source_ref` text — both nullable, default `native`. No data migration needed.
+- Trigger to bump `updated_at` on the new tables.
 
-Posso começar a implementar quando você aprovar.
+The migration tool runs first, before any code. The user must approve it.
+
+## Server functions (`createServerFn`, all under `src/lib/admin/`)
+
+- `requireAdmin` middleware: extends `requireSupabaseAuth`; calls `has_role(uid, 'admin')`; throws 403 otherwise.
+- `listAccounts` — paginated users with plan + role, search by email/handle.
+- `setUserRole` — promote/demote (admin only).
+- `setUserPlan` — change a user's `account_plans` row.
+- `listPlans` / `upsertPlan` / `deletePlan`.
+- `listAllPackages` / `setPackagePublished` / `deletePackage`.
+- `importFromGithub({ repoUrl })` — fetches repo via GitHub REST (`https://api.github.com/repos/{owner}/{repo}/git/trees/HEAD?recursive=1`), filters `*.md`, `skills/**`, `playbooks/**`, `prompts/**`, `*.prompt.*`, `*.json` schema files, downloads each via `https://raw.githubusercontent.com/...`, then for each candidate calls `authorPackage` to refine and `evaluatePackage` to score. Writes a `package_imports` row + a draft `packages`/`package_versions` row not yet published. Returns the staged list.
+- `importMarkdown({ files: [{ name, content }] })` — same idea but skipping the GitHub fetch; the admin uploads files in the browser, content is sent to the server fn.
+- `enrichPackage(pkgId)` — re-runs the proprietary pipeline (author → evaluator → autolearn) on a draft to upgrade it before publishing.
+- `publishStagedPackage(pkgId)` — flips `is_published = true`.
+- `requestMissingPrimitive({ brief, kind, industry })` — public-facing fn called from `/discover` and `/generate` when a search returns nothing; inserts a `package_requests` row with status `new`.
+- `processRequest(reqId)` — admin-triggered; runs research → author → evaluate, populates `research_summary`, `evaluation`, `generated_package_id`, sets status to `draft_ready`.
+- `webResearch({ topic })` — server-only helper. Uses Perplexity if `PERPLEXITY_API_KEY` is configured (asked via `add_secret` only after the admin chooses to enable it); otherwise falls back to Lovable AI `google/gemini-3-flash-preview` with an explicit "cite sources you know to exist" prompt. Returns `{ summary, sources[] }`.
+
+All server fns chain `.middleware([requireSupabaseAuth, requireAdmin])` (except `requestMissingPrimitive`, which only needs auth, and the public read fns).
+
+## UI structure
+
+- `src/routes/_admin.tsx` — pathless guard. `beforeLoad` checks the session via the browser client and the user's role via `listMyRoles` server fn; redirects to `/login` or `/` accordingly.
+- All admin pages live under `src/routes/_admin/admin.*.tsx`.
+- Reuses existing design tokens (power red / signal lime), Nav, Footer; adds an `<AdminSidebar>` for navigation between the admin sub-pages.
+- The wizard (`/admin/packages/new`) is a 5-step controlled component with the same visual language as `/onboarding`.
+- The GitHub importer shows a live progress list (one row per candidate file, status: queued → analysing → drafted → failed).
+- The Requests queue auto-refreshes via TanStack Query polling every 5s while a request is `researching|drafting|evaluating`.
+
+## Lovable AI usage
+
+All AI calls go through the existing `createLovableAiGatewayProvider` in `src/lib/ai-gateway.ts` with model `google/gemini-3-flash-preview` (default) and `openai/gpt-5.2` for the harder evaluator step. `LOVABLE_API_KEY` is already provisioned.
+
+## Web research — secrets
+
+Web research runs by default with Lovable AI grounding only. If the admin clicks "Enable Perplexity for higher-fidelity research" in `/admin/import/github` or `/admin/requests`, ask the user to add `PERPLEXITY_API_KEY` via the secret tool before proceeding — no premature secret prompts.
+
+## Out of scope for this pass
+
+- Real billing/Stripe integration for plans (UI + DB only).
+- Email notifications when a request is fulfilled (queued for a follow-up).
+- Org-level multi-tenant accounts (single-user accounts only for now).
+- Public MCP endpoint for `requestMissingPrimitive` from external agents (will be a follow-up `/api/public/mcp/request-primitive` route).
+
+## Order of work
+
+1. Run migration (new tables + columns) and wait for approval.
+2. Add `requireAdmin` middleware and admin-only server fns.
+3. Build `/admin` shell with sidebar + dashboard + accounts + plans + packages list.
+4. Build wizard `/admin/packages/new`.
+5. Build GitHub importer + Markdown importer.
+6. Wire `requestMissingPrimitive` into `/discover` and `/generate` empty-state CTAs.
+7. Build `/admin/requests` queue with the research+author+evaluator pipeline.
+8. Add a "Make me admin" one-time bootstrap for the project owner if no admin exists yet.
+

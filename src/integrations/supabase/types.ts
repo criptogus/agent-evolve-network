@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_plans: {
+        Row: {
+          plan_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          plan_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          plan_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_plans_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       learnings: {
         Row: {
           applied_in_version_id: string | null
@@ -118,6 +147,45 @@ export type Database = {
         }
         Relationships: []
       }
+      package_imports: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          generated_package_id: string | null
+          id: string
+          notes: string | null
+          raw_input: string | null
+          source_kind: string
+          source_ref: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          generated_package_id?: string | null
+          id?: string
+          notes?: string | null
+          raw_input?: string | null
+          source_kind: string
+          source_ref: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          generated_package_id?: string | null
+          id?: string
+          notes?: string | null
+          raw_input?: string | null
+          source_kind?: string
+          source_ref?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       package_installs: {
         Row: {
           installed_at: string
@@ -205,6 +273,51 @@ export type Database = {
           },
         ]
       }
+      package_requests: {
+        Row: {
+          brief: string
+          created_at: string
+          evaluation: Json | null
+          generated_package_id: string | null
+          id: string
+          industry: string | null
+          kind: string
+          requester_id: string | null
+          research_sources: Json
+          research_summary: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          brief: string
+          created_at?: string
+          evaluation?: Json | null
+          generated_package_id?: string | null
+          id?: string
+          industry?: string | null
+          kind: string
+          requester_id?: string | null
+          research_sources?: Json
+          research_summary?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          brief?: string
+          created_at?: string
+          evaluation?: Json | null
+          generated_package_id?: string | null
+          id?: string
+          industry?: string | null
+          kind?: string
+          requester_id?: string | null
+          research_sources?: Json
+          research_summary?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       package_versions: {
         Row: {
           compatibility: Json
@@ -285,6 +398,8 @@ export type Database = {
           name: string
           scopes: string[]
           slug: string
+          source_kind: string
+          source_ref: string | null
           type: Database["public"]["Enums"]["package_type"]
           updated_at: string
         }
@@ -303,6 +418,8 @@ export type Database = {
           name: string
           scopes?: string[]
           slug: string
+          source_kind?: string
+          source_ref?: string | null
           type: Database["public"]["Enums"]["package_type"]
           updated_at?: string
         }
@@ -321,7 +438,48 @@ export type Database = {
           name?: string
           scopes?: string[]
           slug?: string
+          source_kind?: string
+          source_ref?: string | null
           type?: Database["public"]["Enums"]["package_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      plans: {
+        Row: {
+          created_at: string
+          features: Json
+          id: string
+          max_installed_packages: number
+          monthly_runs_limit: number
+          name: string
+          price_cents: number
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          features?: Json
+          id?: string
+          max_installed_packages?: number
+          monthly_runs_limit?: number
+          name: string
+          price_cents?: number
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          features?: Json
+          id?: string
+          max_installed_packages?: number
+          monthly_runs_limit?: number
+          name?: string
+          price_cents?: number
+          slug?: string
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
