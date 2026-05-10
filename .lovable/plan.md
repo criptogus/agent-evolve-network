@@ -1,55 +1,92 @@
-## O que já está pronto
+## PRD — Super Agent Skill (status atual + pendências)
 
-- Marketplace + página de detalhe de soul (`/souls/$slug`) com download/duplicate.
-- Workflow de revisão (`/admin/review`) com publish/pause antes de virar público.
-- Versionamento de souls com histórico e rollback.
-- `/account/tokens`: criação, guia de uso (`Authorization: Bearer`), copy + validate por snippet.
-- `/connect`: painel **Test MCP live** chamando `list_packages`, `search_registry`, `get_package`.
-- MCP server (`/api/mcp`) com 5 tools, incluindo `upload_packages` autenticado por token.
-
-## O que ainda falta (proposta priorizada)
-
-### 1. Fechar o loop do MCP no Test MCP
-Hoje o tester só cobre 3 read tools. Faltam:
-- `request_primitive` (form com `type` + `brief` + `industry`).
-- `upload_packages` (textarea com nome+conteúdo+type, toggle `publish`, exige token).
-- Botão **"List tools"** que chama `tools/list` e mostra o catálogo real do servidor — prova viva de que o MCP está no ar.
-- Persistir o último token usado em `localStorage` (opt-in) para não recolar.
-
-### 2. Onboarding de cliente MCP de ponta-a-ponta
-Hoje `/connect` documenta config, mas não fecha o ciclo:
-- Bloco **"Conecte seu Cursor/Claude/VS Code"** com JSON pronto contendo o token recém-criado (one-click copy).
-- Health check público (`GET /api/public/mcp/health`) retornando `{ ok, version, tools: [...] }` para o usuário validar do terminal.
-- Snippet `mcp-inspector` para debug.
-
-### 3. Notificações de revisão
-O autor sobe um pacote via `upload_packages` mas não sabe quando foi aprovado:
-- Página `/account/submissions` listando os próprios pacotes com `review_status` (pending/approved/rejected) e `review_notes`.
-- Badge no Nav quando houver mudança desde a última visita.
-- (Opcional) E-mail transacional no approve/reject.
-
-### 4. Métricas por pacote para o autor
-A tabela `package_metrics_daily` já existe e ninguém consome:
-- Aba **"Insights"** em `/souls/$slug` (visível só ao autor/admin) com runs/dia, latência média, health, hallucination.
-- Card "últimas 7d" no `/account/submissions`.
-
-### 5. Discoverability pública
-- `/marketplace` hoje só lista. Falta filtro por `type` (skill/playbook/soul/guardrail), busca por texto e ordenação por `install_count`.
-- Sitemap dinâmico (`/sitemap.xml`) listando todos os pacotes publicados — hoje só existe `llms.txt`.
-- `og:image` por pacote em `/souls/$slug` e `/marketplace/$packageId` (atualmente herdam o do root, sobrescrevendo).
-
-### 6. Billing real
-- `pricing.tsx` e `account.billing.tsx` existem mas o gating de plano (`monthly_runs_limit`, `max_installed_packages`) não bloqueia nada em runtime. Falta middleware que conte runs do mês e retorne 402 quando estourar.
-
-### 7. Higiene de segurança
-- `validateMcpToken` faz lookup via `supabaseAdmin` sem rate-limit — fácil de virar oráculo de hashes. Adicionar throttle por IP.
-- `upload_packages` tem `max(10)` files mas sem limite agregado de bytes nem de taxa por token.
-- Rodar `security--run_security_scan` antes de publicar a próxima versão.
+> Substitui `.lovable/plan.md`. Estrutura: visão → módulos → estado por módulo → backlog priorizado.
 
 ---
 
-## Recomendação
+### 1. Visão
 
-Se for escolher **um** próximo bloco, faria o **#1 + #2 juntos** (1–2 telas, alto impacto demo) — fecha a história "minto token → conecto cliente → testo no navegador → uso no Cursor" sem precisar de schema novo.
+Registry + MCP server de **skills, playbooks, souls e guardrails** para agentes. Autores publicam pacotes versionados; consumidores descobrem via marketplace web ou via MCP no Cursor/Claude/Codex/VS Code, com tokens pessoais para escrita.
 
-Me diga qual desses blocos quer que eu detalhe num plano de implementação (ou se prefere combinar dois).
+Loop alvo: **mint token → conectar cliente MCP → testar no navegador → usar no agente → ver métricas/insights**.
+
+---
+
+### 2. Módulos e estado
+
+Legenda: ✅ entregue · 🟡 parcial · ⛔ não iniciado
+
+#### 2.1 Marketplace e descoberta
+- ✅ `/marketplace` com filtros por `type` (skill/playbook/soul/guardrail), por `vertical`, busca por texto (nome, slug, autor).
+- ✅ Página de detalhe `/marketplace/$packageId` e `/souls/$slug` com download/duplicate.
+- ✅ `llms.txt` público.
+- 🟡 Ordenação por `install_count` (campo existe na tabela; UI ainda não expõe sort).
+- ⛔ `sitemap.xml` dinâmico.
+- ⛔ `og:image` por pacote (hoje herda do root e sobrescreve).
+
+#### 2.2 Autoria e versionamento
+- ✅ Versionamento de souls com histórico, `package_versions` (system_prompt, rules, examples, compatibility, status) e rollback.
+- ✅ Workflow de revisão (`/admin/review`) com `review_status` pending/approved/rejected, publish/pause.
+- ✅ Upload UI (`/upload`) e import admin (markdown / GitHub).
+- ⛔ Página `/account/submissions` para o autor acompanhar status/notas das próprias submissões.
+- ⛔ Badge no Nav quando há mudança de review desde a última visita.
+- ⛔ E-mail transacional em approve/reject.
+
+#### 2.3 MCP server e tokens
+- ✅ `/api/mcp` (streamable-http) com 5 tools: `list_packages`, `search_registry`, `get_package`, `request_primitive`, `upload_packages`.
+- ✅ `/api/public/mcp/health` retornando version + tools.
+- ✅ `/account/tokens`: mint, revoke, copy + validate por snippet, guia `Authorization: Bearer`, configs prontas para Cursor/Claude/VS Code.
+- ✅ `/connect` com **Test MCP live** cobrindo as 5 tools + `tools/list` + health, com persistência de token em `localStorage`.
+- 🟡 Onboarding de cliente MCP: snippets prontos existem, mas falta bloco "one-click copy com token recém-criado embutido" e snippet `mcp-inspector` para debug terminal.
+
+#### 2.4 Métricas e observabilidade
+- ✅ Tabela `package_metrics_daily` populada (runs, ok/error/blocked, health, latency, hallucination, precision).
+- ✅ `runs` + `run_events` por usuário.
+- ⛔ Aba **Insights** em `/souls/$slug` (visível ao autor/admin) com runs/dia, latência, health, hallucination.
+- ⛔ Card "últimas 7d" no futuro `/account/submissions`.
+
+#### 2.5 Billing
+- ✅ `/pricing` e `/account/billing` com Paddle (sandbox + live), webhook em `/api/public/payments/webhook`.
+- ✅ Tabelas `plans`, `subscriptions`, `account_plans`, `payment_events`.
+- ⛔ Enforcement em runtime: middleware que conte runs do mês contra `monthly_runs_limit` e retorne **402** quando estourar.
+- ⛔ Enforcement de `max_installed_packages`.
+
+#### 2.6 Segurança
+- ✅ RLS em todas as tabelas (autor/admin/self) e `has_role()` security definer.
+- ✅ Tokens MCP armazenados como hash sha256 com prefix exibível.
+- ⛔ Throttle por IP em `validateMcpToken` (hoje é oráculo de hashes).
+- ⛔ Rate-limit por token em `upload_packages` (tem `max(10)` arquivos, sem limite de bytes/taxa).
+- ⛔ Rodar `security--run_security_scan` antes do próximo release.
+
+#### 2.7 IA assistida (forge / autor / evaluator)
+- ✅ Pipelines de geração (`forge-loop`, `author`, `evaluator`, `autolearn`) e relatórios `/forge/report/$slug`.
+- ✅ `package_evaluations` com scores e adversarial results.
+- ✅ Página `/evaluation`, `/evolution`, `/skillforge`.
+
+---
+
+### 3. Backlog priorizado (próximos blocos)
+
+**P0 — Fechar loop autor↔consumidor (alto impacto, sem schema novo)**
+1. `/account/submissions` + badge no Nav (status/notas + últimos runs 7d).
+2. Aba **Insights** em `/souls/$slug` consumindo `package_metrics_daily`.
+3. Onboarding "one-click MCP" em `/connect`: bloco que injeta o último token mintado nos JSONs de Cursor/Claude/VS Code + snippet `mcp-inspector`.
+
+**P1 — Discoverability pública**
+4. Sort por `install_count` no `/marketplace`.
+5. `sitemap.xml` dinâmico com pacotes publicados.
+6. `og:image` por pacote em `/souls/$slug` e `/marketplace/$packageId`.
+
+**P2 — Billing e segurança real**
+7. Middleware de enforcement (`monthly_runs_limit`, `max_installed_packages`) retornando 402.
+8. Throttle por IP em `validateMcpToken` + rate-limit/bytes em `upload_packages`.
+9. Rodar `security--run_security_scan` e tratar achados.
+
+**P3 — Notificações**
+10. E-mail transacional em approve/reject de revisão.
+
+---
+
+### 4. O que muda no arquivo
+
+Reescrever `.lovable/plan.md` com este conteúdo (mesmas seções), removendo a antiga lista "O que ainda falta" duplicada. Nenhuma mudança em código fora do markdown.
