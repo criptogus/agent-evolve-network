@@ -24,6 +24,7 @@ function Home() {
       <Logos />
       <HowItWorks />
       <PlainEnglish />
+      <CompareIndustries />
       <CoreConcepts />
       <SkillForgeSection />
       <SocialProof />
@@ -535,6 +536,405 @@ function PlainEnglish() {
               </div>
             );
           })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CompareIndustries() {
+  type Adaptation = {
+    prompt: string;
+    summary: string;
+    packages: { name: string; kind: "skill" | "playbook" | "soul" | "guardrail" }[];
+    metric: string;
+  };
+  type Industry = { id: string; label: string; accent: string };
+
+  const INDUSTRIES: Industry[] = [
+    { id: "healthcare", label: "Healthcare", accent: "from-rose-500/15 to-rose-500/0" },
+    { id: "saas", label: "Sales & SaaS", accent: "from-blue-500/15 to-blue-500/0" },
+    { id: "legal", label: "Legal", accent: "from-amber-500/15 to-amber-500/0" },
+    { id: "marketing", label: "Marketing", accent: "from-violet-500/15 to-violet-500/0" },
+    { id: "fintech", label: "Fintech", accent: "from-emerald-500/15 to-emerald-500/0" },
+  ];
+
+  const OBJECTIVES: { id: string; label: string; blurb: string }[] = [
+    { id: "triage", label: "Triage incoming requests", blurb: "First-touch routing with the right level of caution." },
+    { id: "qualify", label: "Qualify a new lead or case", blurb: "Score, rank, and decide what gets human attention." },
+    { id: "review", label: "Review a document", blurb: "Read, flag deviations, summarize for a busy decision-maker." },
+    { id: "write", label: "Write on-brand content", blurb: "Draft something a stakeholder would actually approve." },
+    { id: "block", label: "Block an unsafe answer", blurb: "Hard guardrail that stops a specific class of failure." },
+  ];
+
+  const MATRIX: Record<string, Record<string, Adaptation>> = {
+    healthcare: {
+      triage: {
+        prompt: "Triage chest-pain intake at our ER, conservative tone, always cite the 2026 ESC guideline used.",
+        summary: "Routes to STEMI vs non-STEMI vs musculoskeletal, blocks dosing without weight, escalates ambiguous cases to the on-call cardiologist.",
+        packages: [
+          { name: "cardiology-diagnostics@2.1", kind: "skill" },
+          { name: "chest-pain-triage@0.1", kind: "playbook" },
+          { name: "medical-guardrails", kind: "guardrail" },
+        ],
+        metric: "Latency −30ms · Safety +6 · 0 unsafe outputs",
+      },
+      qualify: {
+        prompt: "Score new patient referrals by acuity and confirm insurance + prior records before scheduling.",
+        summary: "Calculates an acuity score, verifies coverage, flags missing imaging — never quotes prognosis.",
+        packages: [
+          { name: "patient-intake@1.4", kind: "skill" },
+          { name: "no-prognosis-shield@0.1", kind: "guardrail" },
+        ],
+        metric: "Review time −38% · 100% deferral on prognosis",
+      },
+      review: {
+        prompt: "Summarize a discharge summary for the primary care physician in 5 bullets, citing every claim.",
+        summary: "Extracts diagnosis, meds, follow-ups, red flags. Citations link back to the source page in the chart.",
+        packages: [
+          { name: "clinical-summarizer@1.2", kind: "skill" },
+          { name: "cite-required", kind: "guardrail" },
+        ],
+        metric: "Precision 94% · 0 ungrounded claims",
+      },
+      write: {
+        prompt: "Draft a patient-friendly explanation of a new prescription, plain language, 6th-grade reading level.",
+        summary: "Plain-language draft with dosing, side effects, when to call. Reviewer-friendly diff against the medical source.",
+        packages: [
+          { name: "plain-language-writer@1.0", kind: "skill" },
+          { name: "calm-clinician-soul@0.1", kind: "soul" },
+        ],
+        metric: "Readability 6.2 grade · Tone fidelity 0.93",
+      },
+      block: {
+        prompt: "Block any answer that gives a dose without patient weight.",
+        summary: "Hard refusal + structured request for the missing fields. Logs the attempted prompt for audit.",
+        packages: [{ name: "dose-safety-shield@0.1", kind: "guardrail" }],
+        metric: "14 unsafe patterns blocked · 0 false positives",
+      },
+    },
+    saas: {
+      triage: {
+        prompt: "Triage inbound from our website form: route ICP fits to AE, others to nurture, flag procurement-shaped asks.",
+        summary: "Scores ICP fit, detects procurement language, books the right person — never invents pricing.",
+        packages: [
+          { name: "icp-router@1.3", kind: "skill" },
+          { name: "no-pricing-fabrication", kind: "guardrail" },
+        ],
+        metric: "+22% reply rate · 0 invented price quotes",
+      },
+      qualify: {
+        prompt: "I sell to CFOs of mid-market SaaS. Qualify on MEDDPICC and identify 3 stakeholders to multi-thread.",
+        summary: "Runs MEDDPICC discovery, surfaces hidden champions, drafts a multi-threading plan.",
+        packages: [
+          { name: "enterprise-sales-flow@1.4", kind: "playbook" },
+          { name: "cfo-whisperer-soul", kind: "soul" },
+        ],
+        metric: "+12% close rate · 3.4 stakeholders threaded",
+      },
+      review: {
+        prompt: "Review a deal desk request and tell me what's missing before I send it to legal.",
+        summary: "Checks discount thresholds, term anomalies, missing approvals. Returns a punch-list, not a verdict.",
+        packages: [{ name: "deal-desk-reviewer@1.1", kind: "skill" }],
+        metric: "Cycle compression −18 days",
+      },
+      write: {
+        prompt: "Write a 3-line follow-up to a CFO who ghosted after the demo. Direct, specific, no fluff.",
+        summary: "Reuses the demo's strongest moment, names the business outcome, asks one decision question.",
+        packages: [
+          { name: "challenger-rep-soul@0.1", kind: "soul" },
+          { name: "follow-up-writer@1.5", kind: "skill" },
+        ],
+        metric: "+18% reply rate · −42% words per email",
+      },
+      block: {
+        prompt: "Build a guardrail so it never recommends a competitor.",
+        summary: "Detects 14 brand mentions and reframes as a value question. Logs every block for sales ops.",
+        packages: [{ name: "competitor-shield@0.1", kind: "guardrail" }],
+        metric: "0 competitor mentions · 0 false positives",
+      },
+    },
+    legal: {
+      triage: {
+        prompt: "Triage incoming contracts: NDAs to junior, MSAs to me, anything with privacy clauses to the data team.",
+        summary: "Classifies contract type, surfaces high-risk clauses, never gives advice — always defers to the partner of record.",
+        packages: [
+          { name: "contract-classifier@1.6", kind: "skill" },
+          { name: "attorney-review", kind: "guardrail" },
+        ],
+        metric: "100% deferral on advice · 0 misroutes in 200 docs",
+      },
+      qualify: {
+        prompt: "Qualify whether a new matter fits our practice and budget before partner intake.",
+        summary: "Conflicts check + scope estimate + budget bracket. Flags anything that needs a malpractice review.",
+        packages: [{ name: "matter-intake@1.2", kind: "skill" }],
+        metric: "Intake time −40%",
+      },
+      review: {
+        prompt: "Compare this MSA against our standard paper and flag deviations, ranked by risk.",
+        summary: "Clause-level redline with severity, fallback language, and the partner who owns each issue.",
+        packages: [
+          { name: "clause-redline@2.3", kind: "skill" },
+          { name: "legal-due-diligence@1.6", kind: "playbook" },
+        ],
+        metric: "7 deviations in 12s · 3 high-risk surfaced",
+      },
+      write: {
+        prompt: "Draft a polite pushback on a client's request to remove our limitation of liability.",
+        summary: "Cites the standard rationale, offers two fallback positions, never concedes the cap.",
+        packages: [{ name: "negotiation-writer@1.0", kind: "skill" }],
+        metric: "+34% acceptance on first reply",
+      },
+      block: {
+        prompt: "Never give legal advice — always defer to the partner of record.",
+        summary: "Recognizes advice-seeking patterns, returns a deferral with the right partner's name attached.",
+        packages: [{ name: "attorney-review", kind: "guardrail" }],
+        metric: "100% deferral · 0 advice violations",
+      },
+    },
+    marketing: {
+      triage: {
+        prompt: "Triage incoming brand asks: founder's voice to me, ad copy to the team, PR to comms.",
+        summary: "Routes by voice and channel, blocks anything that drifts below 0.85 brand fidelity.",
+        packages: [
+          { name: "brand-router@1.1", kind: "skill" },
+          { name: "off-brand-shield@0.1", kind: "guardrail" },
+        ],
+        metric: "0 off-brand drafts shipped",
+      },
+      qualify: {
+        prompt: "Qualify which experiments to run this sprint using ICE and our north-star metric.",
+        summary: "Generates an ICE-ranked backlog tied to activation rate, kills experiments that won't move the metric.",
+        packages: [{ name: "growth-hacking-pro@1.6", kind: "skill" }],
+        metric: "Experiment velocity +2.4×",
+      },
+      review: {
+        prompt: "Review this blog draft against our pillar pages and tone of voice.",
+        summary: "Checks SEO alignment, voice fidelity, factual claims. Returns a clean diff with rationale.",
+        packages: [
+          { name: "seo-pro@1.5", kind: "skill" },
+          { name: "brand-voice-writer@1.2", kind: "skill" },
+        ],
+        metric: "+34% organic CTR",
+      },
+      write: {
+        prompt: "Create a custom soul that talks like our founder, Marina.",
+        summary: "Distilled from 412 transcripts. Captures her cadence, no clichés, never overpromises.",
+        packages: [{ name: "marina-soul@0.1", kind: "soul" }],
+        metric: "Tone fidelity 0.91",
+      },
+      block: {
+        prompt: "Flag any draft that drifts from our brand voice before it ships.",
+        summary: "Realtime fidelity score on every draft, blocks publishing below threshold.",
+        packages: [{ name: "off-brand-shield@0.1", kind: "guardrail" }],
+        metric: "Catches drift below 0.85 · 0 false blocks",
+      },
+    },
+    fintech: {
+      triage: {
+        prompt: "Triage support tickets in PT-BR for our neobank, escalate fraud, hand routine to self-service.",
+        summary: "Detects fraud signals, routes by intent, never gives investment advice or promises refunds.",
+        packages: [
+          { name: "support-pro@1.4", kind: "skill" },
+          { name: "no-advice-shield@0.1", kind: "guardrail" },
+        ],
+        metric: "CSAT +14 · escalation lift +22%",
+      },
+      qualify: {
+        prompt: "KYC analyst that reviews docs and decides approve / request more / reject with a reason.",
+        summary: "Document checks, sanctions screening, plain-language rejection. BACEN-aligned audit trail.",
+        packages: [
+          { name: "kyc-analyst@2.0", kind: "skill" },
+          { name: "bacen-compliance", kind: "guardrail" },
+        ],
+        metric: "Review time −38% · 0 compliance breaches",
+      },
+      review: {
+        prompt: "Review a flagged transaction and explain the risk score in 4 lines for the analyst.",
+        summary: "Surfaces the contributing signals, similar past cases, and the recommended next action.",
+        packages: [{ name: "risk-explainer@1.3", kind: "skill" }],
+        metric: "Analyst time per case −44%",
+      },
+      write: {
+        prompt: "Custom soul: precise, calm, never overpromises a refund.",
+        summary: "Trust-first tone, acknowledges before it acts, hands off escalations cleanly.",
+        packages: [
+          { name: "trust-soul@0.1", kind: "soul" },
+          { name: "plain-rejection-writer", kind: "skill" },
+        ],
+        metric: "Refund-related complaints −41%",
+      },
+      block: {
+        prompt: "Build a guardrail so it never gives investment advice.",
+        summary: "Pattern + intent detection. Returns a regulator-safe deferral with the right disclosures.",
+        packages: [{ name: "no-advice-shield@0.1", kind: "guardrail" }],
+        metric: "0 advice violations across 12k chats",
+      },
+    },
+  };
+
+  const [leftId, setLeftId] = useState("healthcare");
+  const [rightId, setRightId] = useState("saas");
+  const [objectiveId, setObjectiveId] = useState("triage");
+
+  const left = INDUSTRIES.find((i) => i.id === leftId)!;
+  const right = INDUSTRIES.find((i) => i.id === rightId)!;
+  const objective = OBJECTIVES.find((o) => o.id === objectiveId)!;
+  const leftAdapt = MATRIX[leftId][objectiveId];
+  const rightAdapt = MATRIX[rightId][objectiveId];
+
+  const kindBadge: Record<Adaptation["packages"][number]["kind"], string> = {
+    skill: "bg-primary/10 text-primary",
+    playbook: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    soul: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
+    guardrail: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  };
+
+  return (
+    <section className="border-b border-border bg-background py-24">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="max-w-2xl">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Same goal, different industry</span>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">
+            Pick two industries. Watch the same objective become two different agents.
+          </h2>
+          <p className="mt-4 text-lg text-muted-foreground">
+            AgentForge doesn't translate — it re-stacks. Same goal, different packages, different soul, different guardrails.
+          </p>
+        </div>
+
+        {/* Objective selector */}
+        <div className="mt-10">
+          <div className="mb-3 flex items-center gap-2 text-xs">
+            <span className="font-mono uppercase tracking-[0.2em] text-muted-foreground">Objective</span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {OBJECTIVES.map((o) => {
+              const active = o.id === objectiveId;
+              return (
+                <button
+                  key={o.id}
+                  type="button"
+                  onClick={() => setObjectiveId(o.id)}
+                  aria-pressed={active}
+                  className={
+                    "inline-flex h-9 items-center rounded-full border px-4 text-sm font-medium transition-all " +
+                    (active
+                      ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                      : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground")
+                  }
+                >
+                  {o.label}
+                </button>
+              );
+            })}
+          </div>
+          <p key={objective.id} className="mt-4 animate-fade-in text-sm text-muted-foreground">
+            {objective.blurb}
+          </p>
+        </div>
+
+        {/* Industry pickers */}
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
+          {[
+            { side: "A", value: leftId, set: setLeftId, other: rightId },
+            { side: "B", value: rightId, set: setRightId, other: leftId },
+          ].map((slot) => (
+            <div key={slot.side} className="rounded-2xl border border-border bg-surface/40 p-4">
+              <div className="mb-2 flex items-center gap-2">
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Industry {slot.side}</span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {INDUSTRIES.map((i) => {
+                  const active = i.id === slot.value;
+                  const same = i.id === slot.other;
+                  return (
+                    <button
+                      key={i.id}
+                      type="button"
+                      onClick={() => slot.set(i.id)}
+                      disabled={same}
+                      title={same ? "Already selected on the other side" : undefined}
+                      className={
+                        "inline-flex h-8 items-center rounded-full border px-3 text-xs font-medium transition-all " +
+                        (active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : same
+                            ? "border-border bg-background text-muted-foreground/30 cursor-not-allowed"
+                            : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground")
+                      }
+                    >
+                      {i.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Side-by-side comparison */}
+        <div key={`${leftId}-${rightId}-${objectiveId}`} className="mt-6 grid animate-fade-in gap-4 md:grid-cols-2">
+          {[
+            { ind: left, adapt: leftAdapt, side: "A" },
+            { ind: right, adapt: rightAdapt, side: "B" },
+          ].map(({ ind, adapt, side }) => (
+            <article
+              key={side}
+              className={`relative overflow-hidden rounded-2xl border border-border bg-background p-6 shadow-sm`}
+            >
+              <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${ind.accent}`} aria-hidden />
+              <div className="relative">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                    Industry {side}
+                  </span>
+                  <span className="rounded-full border border-border bg-background px-2.5 py-0.5 text-[11px] font-medium text-foreground">
+                    {ind.label}
+                  </span>
+                </div>
+
+                <div className="mt-4">
+                  <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Adapted command</div>
+                  <p className="mt-1.5 text-[15px] font-medium text-foreground">{adapt.prompt}</p>
+                </div>
+
+                <div className="mt-4 border-t border-border pt-4">
+                  <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">What the agent does</div>
+                  <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted-foreground">{adapt.summary}</p>
+                </div>
+
+                <div className="mt-4 border-t border-border pt-4">
+                  <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Stack</div>
+                  <ul className="mt-2 flex flex-wrap gap-1.5">
+                    {adapt.packages.map((p) => (
+                      <li
+                        key={p.name}
+                        className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[11px] ${kindBadge[p.kind]}`}
+                      >
+                        <span className="uppercase tracking-wider opacity-70">{p.kind}</span>
+                        <span className="text-foreground/90">{p.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-4">
+                  <span className="font-mono text-[11.5px] text-signal-foreground">{adapt.metric}</span>
+                  <Link
+                    to="/generate"
+                    search={{ prompt: adapt.prompt }}
+                    className="group inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-95"
+                  >
+                    Forge live
+                    <span className="transition-transform group-hover:translate-x-0.5">→</span>
+                  </Link>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
       </div>
     </section>
