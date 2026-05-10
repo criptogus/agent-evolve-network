@@ -179,6 +179,35 @@ function GeneratePage() {
     setRunning(false);
     setDone(true);
     setPhase("done");
+
+    // Update lastRun for any preset matching this exact prompt
+    const totalArtifacts = plan.enrich.length + plan.generate.length;
+    const sumDelta = [...plan.enrich, ...plan.generate].reduce(
+      (acc, a) => ({
+        health: acc.health + a.delta.health,
+        precision: acc.precision + a.delta.precision,
+        latency: acc.latency + a.delta.latency,
+      }),
+      { health: 0, precision: 0, latency: 0 },
+    );
+    setPresets((prev) => {
+      const next = prev.map((p) =>
+        p.prompt.trim() === promptText.trim()
+          ? {
+              ...p,
+              lastRun: {
+                at: Date.now(),
+                artifacts: totalArtifacts,
+                healthDelta: round(sumDelta.health),
+                precisionDelta: round(sumDelta.precision),
+                latencyDelta: Math.round(-sumDelta.latency),
+              },
+            }
+          : p,
+      );
+      savePresets(next);
+      return next;
+    });
   }
 
   function bumpScore(d: Artifact["delta"]) {
