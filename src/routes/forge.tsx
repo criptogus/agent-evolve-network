@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import Nav from "@/components/site/Nav";
+import { Nav } from "@/components/site/Nav";
 
 export const Route = createFileRoute("/forge")({
   head: () => ({

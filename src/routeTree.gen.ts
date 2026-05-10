@@ -13,6 +13,7 @@ import { Route as SkillforgeRouteImport } from './routes/skillforge'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as GenerateRouteImport } from './routes/generate'
+import { Route as ForgeRouteImport } from './routes/forge'
 import { Route as EvolutionRouteImport } from './routes/evolution'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DiscoverRouteImport } from './routes/discover'
@@ -38,6 +39,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const GenerateRoute = GenerateRouteImport.update({
   id: '/generate',
   path: '/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgeRoute = ForgeRouteImport.update({
+  id: '/forge',
+  path: '/forge',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EvolutionRoute = EvolutionRouteImport.update({
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRoute
   '/evolution': typeof EvolutionRoute
+  '/forge': typeof ForgeRoute
   '/generate': typeof GenerateRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRoute
   '/evolution': typeof EvolutionRoute
+  '/forge': typeof ForgeRoute
   '/generate': typeof GenerateRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRoute
   '/evolution': typeof EvolutionRoute
+  '/forge': typeof ForgeRoute
   '/generate': typeof GenerateRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/docs'
     | '/evolution'
+    | '/forge'
     | '/generate'
     | '/onboarding'
     | '/pricing'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/docs'
     | '/evolution'
+    | '/forge'
     | '/generate'
     | '/onboarding'
     | '/pricing'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/docs'
     | '/evolution'
+    | '/forge'
     | '/generate'
     | '/onboarding'
     | '/pricing'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   DocsRoute: typeof DocsRoute
   EvolutionRoute: typeof EvolutionRoute
+  ForgeRoute: typeof ForgeRoute
   GenerateRoute: typeof GenerateRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
@@ -188,6 +201,13 @@ declare module '@tanstack/react-router' {
       path: '/generate'
       fullPath: '/generate'
       preLoaderRoute: typeof GenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forge': {
+      id: '/forge'
+      path: '/forge'
+      fullPath: '/forge'
+      preLoaderRoute: typeof ForgeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/evolution': {
@@ -240,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   DocsRoute: DocsRoute,
   EvolutionRoute: EvolutionRoute,
+  ForgeRoute: ForgeRoute,
   GenerateRoute: GenerateRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
