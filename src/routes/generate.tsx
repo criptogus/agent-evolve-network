@@ -119,6 +119,7 @@ function GeneratePage() {
   const [presetName, setPresetName] = useState("");
   const [presetTagsInput, setPresetTagsInput] = useState("");
   const [tagFilter, setTagFilter] = useState<string | null>(null);
+  const [kindFilter, setKindFilter] = useState<Kind | "all">("all");
   const lineId = useRef(0);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
