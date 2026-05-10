@@ -233,7 +233,7 @@ function PlainEnglish() {
         </div>
         <div className="mt-12 grid gap-4 md:grid-cols-2">
           {examples.map((e, i) => (
-            <div key={i} className="rounded-2xl border border-border bg-background p-5 shadow-sm">
+            <div key={i} className="flex flex-col rounded-2xl border border-border bg-background p-5 shadow-sm">
               <div className="flex items-start gap-3">
                 <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 font-mono text-[11px] text-primary">
                   ›_
@@ -245,6 +245,16 @@ function PlainEnglish() {
                   ✓
                 </span>
                 <p className="font-mono text-[12.5px] leading-relaxed text-muted-foreground">{e.result}</p>
+              </div>
+              <div className="mt-4 flex items-center justify-end border-t border-border pt-3">
+                <Link
+                  to="/evolution"
+                  search={{ prompt: e.prompt }}
+                  className="group inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-95"
+                >
+                  Send command & watch demo
+                  <span className="transition-transform group-hover:translate-x-0.5">→</span>
+                </Link>
               </div>
             </div>
           ))}
