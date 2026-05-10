@@ -68,7 +68,31 @@ function EvolutionPage() {
   const tickRef = useRef(0);
   const phaseIdxRef = useRef(0);
 
-  // Echo new prompts coming via URL changes
+  // History (per-prompt) persisted to localStorage
+  const [history, setHistory] = useState<RunRecord[]>(() => loadHistory());
+  const runIdRef = useRef<string | null>(null);
+  const navigate = useNavigate({ from: "/evolution" });
+
+  const startRun = useCallback((p: string) => {
+    const id = `run_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+    runIdRef.current = id;
+    const record: RunRecord = {
+      id,
+      prompt: p,
+      startedAt: Date.now(),
+      generations: 1,
+      health: 0,
+      installs: 0,
+      ticks: 0,
+    };
+    setHistory((prev) => {
+      const next = [record, ...prev].slice(0, 12);
+      saveHistory(next);
+      return next;
+    });
+  }, []);
+
+  // Echo new prompts coming via URL changes — start a new history run
   useEffect(() => {
     if (!prompt || prompt === activePrompt) return;
     setActivePrompt(prompt);
@@ -77,7 +101,14 @@ function EvolutionPage() {
       { t: tickRef.current, kind: "info", text: `› Command received: "${prompt}"` },
     ]);
     setRunning(true);
-  }, [prompt, activePrompt]);
+    startRun(prompt);
+  }, [prompt, activePrompt, startRun]);
+
+  // First-mount: if there's already a prompt from URL, register it
+  useEffect(() => {
+    if (prompt && !runIdRef.current) startRun(prompt);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
   // Main loop
