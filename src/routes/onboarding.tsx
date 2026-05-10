@@ -8,8 +8,8 @@ import { Logo } from "@/components/site/Logo";
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "Connect your agent — AgentForge" },
-      { name: "description", content: "Securely connect any AI agent to AgentForge through MCP in under 60 seconds." },
+      { title: "Connect your agent — Super Agent Skill" },
+      { name: "description", content: "Securely connect any AI agent to Super Agent Skill through MCP in under 60 seconds." },
     ],
   }),
   component: Onboarding,
@@ -160,7 +160,7 @@ function StepAgent({
     <div>
       <h2 className="text-xl font-semibold tracking-tight">Pick your agent runtime</h2>
       <p className="mt-1.5 text-sm text-muted-foreground">
-        AgentForge speaks MCP natively. Any modern agent runtime works.
+        Super Agent Skill speaks MCP natively. Any modern agent runtime works.
       </p>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -214,8 +214,8 @@ function StepConfig({ agent, agentName }: { agent: AgentId; agentName: string })
   const slug = (agentName || "my-agent").toLowerCase().replace(/[^a-z0-9-]+/g, "-");
   const config = `{
   "mcpServers": {
-    "agentforge": {
-      "url": "https://gateway.agentforge.dev/mcp",
+    "superagentskill": {
+      "url": "https://gateway.superagentskill.dev/mcp",
       "auth": {
         "type": "oauth",
         "scopes": ["registry:read", "agent:upgrade", "feedback:write"]
@@ -230,7 +230,7 @@ function StepConfig({ agent, agentName }: { agent: AgentId; agentName: string })
 
   return (
     <div>
-      <h2 className="text-xl font-semibold tracking-tight">Add the AgentForge MCP server</h2>
+      <h2 className="text-xl font-semibold tracking-tight">Add the Super Agent Skill MCP server</h2>
       <p className="mt-1.5 text-sm text-muted-foreground">
         Drop this into your <span className="font-mono text-foreground">mcp.config.json</span>. Restart your
         agent runtime so it discovers the new server.
@@ -305,7 +305,7 @@ function StepAuth({ onComplete }: { onComplete: () => void }) {
             Approve in browser →
           </a>
           <p className="mt-2 text-center text-[11px] text-muted-foreground">
-            Opens <span className="font-mono">agentforge.dev/device</span>
+            Opens <span className="font-mono">superagentskill.dev/device</span>
           </p>
         </div>
 
@@ -364,7 +364,7 @@ function StepVerify({ onComplete }: { onComplete: () => void }) {
   }, [onComplete]);
 
   const lines = [
-    "$ agentforge verify",
+    "$ superagentskill verify",
     "",
     "→ Fetching agent identity........... ok",
     "→ Validating JWT signature.......... ok",
@@ -379,7 +379,7 @@ function StepVerify({ onComplete }: { onComplete: () => void }) {
     <div>
       <h2 className="text-xl font-semibold tracking-tight">Verifying your agent</h2>
       <p className="mt-1.5 text-sm text-muted-foreground">
-        AgentForge is performing the first capability probe and self-assessment.
+        Super Agent Skill is performing the first capability probe and self-assessment.
       </p>
       <div className="mt-6 overflow-hidden rounded-xl border border-border bg-[oklch(0.14_0.01_270)]">
         <div className="flex items-center justify-between border-b border-white/5 px-4 py-2.5">
@@ -424,7 +424,7 @@ function StepDone({ agentName }: { agentName: string }) {
       </div>
       <h2 className="mt-5 text-3xl font-semibold tracking-tight">Your agent is alive.</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        <span className="font-mono text-foreground">{slug}</span> is connected to the AgentForge network.
+        <span className="font-mono text-foreground">{slug}</span> is connected to the Super Agent Skill network.
       </p>
 
       <div className="mx-auto mt-7 grid max-w-md gap-3 text-left">

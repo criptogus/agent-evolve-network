@@ -7,9 +7,9 @@ import { TypingLines, Typewriter } from "@/components/site/Typewriter";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AgentForge — MCP Infrastructure for AI Agents" },
+      { title: "Super Agent Skill — MCP Infrastructure for AI Agents" },
       { name: "description", content: "The MCP infrastructure layer for AI agents. Connect any agent to a live network of skills, playbooks, souls, and guardrails. One command, your agent becomes a genius." },
-      { property: "og:title", content: "AgentForge — MCP Infrastructure for AI Agents" },
+      { property: "og:title", content: "Super Agent Skill — MCP Infrastructure for AI Agents" },
       { property: "og:description", content: "Twilio for agent-to-agent intelligence. The living operating system for AI agents." },
     ],
   }),
@@ -39,7 +39,7 @@ function Home() {
 
 function Hero() {
   const lines = [
-    "$ agentforge connect",
+    "$ superagentskill connect",
     "",
     "→ MCP handshake........................ ok",
     "→ OAuth (short-lived token)............ ok",
@@ -78,7 +78,7 @@ function Hero() {
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">
-            AgentForge is the living OS for AI agents. Connect Claude, Cursor, Codex or Grok and,
+            Super Agent Skill is the living OS for AI agents. Connect Claude, Cursor, Codex or Grok and,
             in plain English, install state-of-the-art skills, playbooks, souls and guardrails for
             your industry — or generate brand-new ones, made just for you.
           </p>
@@ -161,12 +161,12 @@ function HowItWorks() {
     {
       n: "01",
       title: "Connect in 30 seconds",
-      body: "One MCP handshake links your agent to AgentForge. No SDKs, no retraining, no DevOps. Works with Claude, Cursor, Codex, Grok and any MCP-compatible runtime.",
+      body: "One MCP handshake links your agent to Super Agent Skill. No SDKs, no retraining, no DevOps. Works with Claude, Cursor, Codex, Grok and any MCP-compatible runtime.",
     },
     {
       n: "02",
       title: "Tell it what you do",
-      body: "In plain English: \"I run a cardiology clinic\" or \"I close enterprise SaaS deals.\" AgentForge maps your domain and picks the state-of-the-art skills, playbooks, souls and guardrails for it.",
+      body: "In plain English: \"I run a cardiology clinic\" or \"I close enterprise SaaS deals.\" Super Agent Skill maps your domain and picks the state-of-the-art skills, playbooks, souls and guardrails for it.",
     },
     {
       n: "03",
@@ -187,7 +187,7 @@ function HowItWorks() {
           <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">Powerful underneath. Stupidly simple to use.</h2>
           <p className="mt-4 text-lg text-muted-foreground">
             No prompt engineering. No fine-tuning pipelines. Just talk to your agent like a teammate
-            and AgentForge handles the rest — from discovery to installation to continuous evolution.
+            and Super Agent Skill handles the rest — from discovery to installation to continuous evolution.
           </p>
         </div>
         <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-2 lg:grid-cols-4">
@@ -328,7 +328,7 @@ function PlainEnglish() {
     },
   ];
 
-  const FAVORITES_KEY = "agentforge.industries.favorites.v1";
+  const FAVORITES_KEY = "superagentskill.industries.favorites.v1";
   const [favorites, setFavorites] = useState<string[]>([]);
   const [favReady, setFavReady] = useState(false);
 
@@ -383,7 +383,7 @@ function PlainEnglish() {
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Plain-English commands</span>
           <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">If you can write a sentence, you can ship a specialist.</h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            AgentForge does two things at once: it <span className="text-foreground">enriches</span> your
+            Super Agent Skill does two things at once: it <span className="text-foreground">enriches</span> your
             agent with the best existing packages for your industry, and it <span className="text-foreground">creates new ones</span>{" "}
             — skills, playbooks and souls custom-built from your data — on demand.
           </p>
@@ -800,7 +800,7 @@ function CompareIndustries() {
             Pick two industries. Watch the same objective become two different agents.
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            AgentForge doesn't translate — it re-stacks. Same goal, different packages, different soul, different guardrails.
+            Super Agent Skill doesn't translate — it re-stacks. Same goal, different packages, different soul, different guardrails.
           </p>
         </div>
 
@@ -1173,7 +1173,7 @@ function EvalLoopSection() {
             </h2>
             <p className="mt-3 max-w-2xl text-muted-foreground">
               Five phases run on every primitive in your stack — skills, playbooks, souls and
-              guardrails — without retraining and without downtime. You see the signal, AgentForge
+              guardrails — without retraining and without downtime. You see the signal, Super Agent Skill
               acts on it.
             </p>
           </div>
@@ -1385,8 +1385,8 @@ function FAQ() {
       a: (
         <>
           MCP (Model Context Protocol) is a standard way for an AI agent to talk to external tools.
-          You point your agent at AgentForge once — it shows up as a connected tool. From then on,
-          every command you send (in plain English) flows through that connection: AgentForge
+          You point your agent at Super Agent Skill once — it shows up as a connected tool. From then on,
+          every command you send (in plain English) flows through that connection: Super Agent Skill
           installs, generates and hot-swaps packages without you touching code or restarting the agent.
           If your agent already speaks MCP (Claude, Cursor, OpenAI agents, custom), you're 60 seconds away.
         </>
@@ -1407,10 +1407,10 @@ function FAQ() {
       ),
     },
     {
-      q: "Does AgentForge only enrich, or does it also create custom packages?",
+      q: "Does Super Agent Skill only enrich, or does it also create custom packages?",
       a: (
         <>
-          Both. For your industry, AgentForge installs the state-of-the-art packages from the
+          Both. For your industry, Super Agent Skill installs the state-of-the-art packages from the
           registry — already maintained, versioned and benchmarked. When you need something specific
           (your tone, your protocols, your competitor list), SkillForge generates a custom skill,
           playbook, soul or guardrail from your context and signs it as a private package only your
@@ -1450,7 +1450,7 @@ function FAQ() {
       a: (
         <>
           No. Packages install through MCP at runtime — zero retraining, zero downtime, zero code
-          changes in your agent. If a package underperforms, AgentForge hot-swaps it back. Every
+          changes in your agent. If a package underperforms, Super Agent Skill hot-swaps it back. Every
           install is reversible and audited.
         </>
       ),
@@ -1477,7 +1477,7 @@ function FAQ() {
             Plain answers to the obvious questions.
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            How the MCP connection works, what AgentForge actually creates, and how you start with a single sentence.
+            How the MCP connection works, what Super Agent Skill actually creates, and how you start with a single sentence.
           </p>
         </div>
         <ul className="mt-12 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-background">
@@ -1591,7 +1591,7 @@ const CASES = [
 const QUOTES = [
   {
     quote:
-      "We tried fine-tuning for 6 months and got nowhere. AgentForge took an afternoon and outperformed it.",
+      "We tried fine-tuning for 6 months and got nowhere. Super Agent Skill took an afternoon and outperformed it.",
     person: "Priya N.",
     role: "Head of AI · fintech unicorn",
   },
@@ -1627,7 +1627,7 @@ function SocialProof() {
             Before. After. Measured.
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Real teams. Real metrics. Numbers logged by AgentForge during the first 30 days
+            Real teams. Real metrics. Numbers logged by Super Agent Skill during the first 30 days
             after connecting an MCP-compatible agent.
           </p>
         </div>

@@ -11,7 +11,7 @@ export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
   head: () => ({
     meta: [
-      { title: "Discover · AgentForge" },
+      { title: "Discover · Super Agent Skill" },
       {
         name: "description",
         content:
@@ -39,7 +39,7 @@ const ITEMS: Item[] = [
   { id: "seo-pro", name: "seo-pro", type: "skill", category: "Marketing", tags: ["seo", "content", "growth"], description: "On-page + technical SEO audits, keyword clustering, intent mapping.", popularity: 412000, author: "@reforge" },
   { id: "blog-writing", name: "blog-writing", type: "skill", category: "Marketing", tags: ["content", "writing", "long-form"], description: "Long-form posts with structure, citations and brand-voice locking.", popularity: 318000, author: "@verge-lab" },
   { id: "linkedin-writing", name: "linkedin-writing", type: "skill", category: "Marketing", tags: ["social", "writing", "personal-brand"], description: "Hook → narrative → CTA frameworks tuned to LinkedIn distribution.", popularity: 284000, author: "@justin-welsh" },
-  { id: "image-creation", name: "image-creation", type: "skill", category: "Design", tags: ["images", "generation", "brand"], description: "Brand-aware prompts, ratio packs and reference-image controls.", popularity: 512000, author: "@agentforge" },
+  { id: "image-creation", name: "image-creation", type: "skill", category: "Design", tags: ["images", "generation", "brand"], description: "Brand-aware prompts, ratio packs and reference-image controls.", popularity: 512000, author: "@superagentskill" },
   { id: "ui-design", name: "ui-design", type: "skill", category: "Design", tags: ["ui", "figma", "tokens"], description: "Token-driven UI specs, component naming and Figma-ready exports.", popularity: 174000, author: "@vercel-labs" },
   { id: "sdr-outbound", name: "sdr-outbound", type: "skill", category: "Sales", tags: ["sdr", "outbound", "email"], description: "Account research, multi-touch sequences, objection handling.", popularity: 392000, author: "@apollo" },
   { id: "lawyer-contracts", name: "lawyer-contracts", type: "skill", category: "Legal", tags: ["legal", "contracts", "due-diligence"], description: "Clause extraction, risk scoring and redlining against playbooks.", popularity: 86000, author: "@harvey" },
@@ -59,17 +59,17 @@ const ITEMS: Item[] = [
   { id: "tiktok-organic", name: "tiktok-organic", type: "playbook", category: "Social", tags: ["tiktok", "organic", "creator"], description: "Hook patterns, retention curves and posting cadence by niche.", popularity: 154000, author: "@later" },
 
   // SOULS
-  { id: "steve-jobs-soul", name: "steve-jobs-soul", type: "soul", category: "Product", tags: ["taste", "clarity", "decisive"], description: "Reality distortion field, taste, brutal product clarity.", popularity: 1200000, author: "@agentforge" },
+  { id: "steve-jobs-soul", name: "steve-jobs-soul", type: "soul", category: "Product", tags: ["taste", "clarity", "decisive"], description: "Reality distortion field, taste, brutal product clarity.", popularity: 1200000, author: "@superagentskill" },
   { id: "mckinsey-consultant", name: "mckinsey-consultant", type: "soul", category: "Strategy", tags: ["mece", "pyramid", "executive"], description: "MECE thinking, pyramid principle, executive communication.", popularity: 402000, author: "@strategy-co" },
   { id: "humanized-doctor", name: "humanized-doctor", type: "soul", category: "Healthcare", tags: ["empathy", "clinical", "calm"], description: "Calm, empathetic clinical voice with explicit uncertainty.", popularity: 51000, author: "@hippocratic-ai" },
   { id: "ogilvy-copywriter", name: "ogilvy-copywriter", type: "soul", category: "Marketing", tags: ["copy", "advertising", "long-form"], description: "Ogilvy-school copywriting principles and headline craft.", popularity: 187000, author: "@copylab" },
   { id: "founder-grit", name: "founder-grit", type: "soul", category: "Leadership", tags: ["bias-to-action", "blunt", "ownership"], description: "Bias to action, blunt feedback, deep ownership.", popularity: 92000, author: "@yc-archive" },
 
   // GUARDRAILS
-  { id: "no-hallucination", name: "no-hallucination", type: "guardrail", category: "Universal", tags: ["citations", "uncertainty"], description: "Forces citation of sources and explicit uncertainty when low confidence.", popularity: 940000, author: "@agentforge" },
+  { id: "no-hallucination", name: "no-hallucination", type: "guardrail", category: "Universal", tags: ["citations", "uncertainty"], description: "Forces citation of sources and explicit uncertainty when low confidence.", popularity: 940000, author: "@superagentskill" },
   { id: "medical-guardrails", name: "medical-guardrails", type: "guardrail", category: "Healthcare", tags: ["medical", "fda", "escalation"], description: "FDA-aligned safety. Blocks unsafe dosing, escalates to clinicians.", popularity: 94000, author: "@hippocratic-ai" },
   { id: "finance-compliance", name: "finance-compliance", type: "guardrail", category: "Finance", tags: ["finra", "advice", "kyc"], description: "FINRA-aligned. Blocks unlicensed advice, enforces disclaimers.", popularity: 61000, author: "@regtech" },
-  { id: "pii-shield", name: "pii-shield", type: "guardrail", category: "Privacy", tags: ["pii", "redaction", "gdpr"], description: "Detects and redacts PII before tools, logs and external calls.", popularity: 312000, author: "@agentforge" },
+  { id: "pii-shield", name: "pii-shield", type: "guardrail", category: "Privacy", tags: ["pii", "redaction", "gdpr"], description: "Detects and redacts PII before tools, logs and external calls.", popularity: 312000, author: "@superagentskill" },
   { id: "competitor-shield", name: "competitor-shield", type: "guardrail", category: "Brand", tags: ["brand", "competitors"], description: "Blocks recommendations of named competitors. Configurable allowlist.", popularity: 21000, author: "@brandwatch" },
 ];
 
@@ -485,9 +485,9 @@ function Customizer({ item, onClose }: { item: Item; onClose: () => void }) {
   const [draft, setDraft] = useState("");
   const [governance, setGovernance] = useState("L2");
   const [mode, setMode] = useState<"chat" | "mcp">("chat");
-  const [chat, setChat] = useState<{ from: "you" | "agentforge"; text: string }[]>([
+  const [chat, setChat] = useState<{ from: "you" | "superagentskill"; text: string }[]>([
     {
-      from: "agentforge",
+      from: "superagentskill",
       text: `Got it — let's tailor ${item.name}. Tell me your industry, style and what matters most. You can also paste examples or links.`,
     },
   ]);
@@ -500,7 +500,7 @@ function Customizer({ item, onClose }: { item: Item; onClose: () => void }) {
         ...c,
         { from: "you", text: v },
         {
-          from: "agentforge",
+          from: "superagentskill",
           text: `Noted. I'll bias this ${item.type} toward "${v}" for ${industry} with a ${style.toLowerCase()} tone.`,
         },
       ]);
@@ -521,7 +521,7 @@ function Customizer({ item, onClose }: { item: Item; onClose: () => void }) {
       `--governance ${governance}`,
       ...priorities.map((p) => `--priority "${p}"`),
     ];
-    return `agentforge install ${item.type} ${safeName} \\\n  ${opts.join(" \\\n  ")}`;
+    return `superagentskill install ${item.type} ${safeName} \\\n  ${opts.join(" \\\n  ")}`;
   }, [item, industry, style, governance, priorities]);
 
   return (
@@ -662,7 +662,7 @@ function Customizer({ item, onClose }: { item: Item; onClose: () => void }) {
           {mode === "chat" ? (
             <div className="mt-6">
               <div className="mb-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                Tell AgentForge what to optimize for
+                Tell Super Agent Skill what to optimize for
               </div>
               <div className="space-y-2 rounded-lg border border-border bg-surface p-3">
                 {chat.map((m, i) => (

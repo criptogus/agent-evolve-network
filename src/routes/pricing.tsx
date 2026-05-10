@@ -5,7 +5,7 @@ import { Footer } from "@/components/site/Footer";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — AgentForge" },
+      { title: "Pricing — Super Agent Skill" },
       { name: "description", content: "Simple, usage-aligned pricing. From individual agents to enterprise-wide synchronization." },
     ],
   }),
@@ -52,7 +52,7 @@ function Pricing() {
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Pricing</span>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-6xl">Aligned with the value your agent ships.</h1>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Creators keep 80–85% on every package sold. AgentForge takes 15–20% to power the gateway, registry and Evolution Engine.
+            Creators keep 80–85% on every package sold. Super Agent Skill takes 15–20% to power the gateway, registry and Evolution Engine.
           </p>
         </div>
       </section>

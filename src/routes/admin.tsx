@@ -10,7 +10,7 @@ import { getMyAdminStatus, claimAdminBootstrap } from "@/lib/admin/accounts.func
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin — AgentForge" },
+      { title: "Admin — Super Agent Skill" },
       { name: "description", content: "Manage accounts, plans, packages, and on-demand primitive creation." },
     ],
   }),

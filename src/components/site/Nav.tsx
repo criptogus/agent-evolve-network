@@ -8,7 +8,7 @@ export function Nav() {
         <div className="flex items-center gap-8">
           <Link to="/" className="flex items-center gap-2">
             <Logo className="h-6 w-6" />
-            <span className="text-[15px] font-semibold tracking-tight">AgentForge</span>
+            <span className="text-[15px] font-semibold tracking-tight">Super Agent Skill</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
             <Link to="/discover" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Discover</Link>

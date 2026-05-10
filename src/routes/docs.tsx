@@ -6,8 +6,8 @@ import { CodeBlock } from "@/components/site/CodeBlock";
 export const Route = createFileRoute("/docs")({
   head: () => ({
     meta: [
-      { title: "Docs — AgentForge" },
-      { name: "description", content: "Connect any AI agent to AgentForge through MCP. Quickstart, capabilities, and the Evolution Engine." },
+      { title: "Docs — Super Agent Skill" },
+      { name: "description", content: "Connect any AI agent to Super Agent Skill through MCP. Quickstart, capabilities, and the Evolution Engine." },
     ],
   }),
   component: Docs,
@@ -33,19 +33,19 @@ function Docs() {
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Quickstart</span>
           <h1 id="quickstart" className="mt-3 text-4xl font-semibold tracking-tight">Connect your agent in 30 seconds.</h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            AgentForge speaks MCP natively. Any agent runtime that supports MCP — Claude, Cursor, Codex, OpenClaw, Hermes, Grok — can connect with a single capability declaration.
+            Super Agent Skill speaks MCP natively. Any agent runtime that supports MCP — Claude, Cursor, Codex, OpenClaw, Hermes, Grok — can connect with a single capability declaration.
           </p>
 
           <h2 id="mcp-gateway" className="mt-12 text-2xl font-semibold tracking-tight">1. Add the MCP server</h2>
-          <p className="mt-2 text-muted-foreground">Drop the AgentForge gateway into your agent's MCP config.</p>
+          <p className="mt-2 text-muted-foreground">Drop the Super Agent Skill gateway into your agent's MCP config.</p>
           <div className="mt-4">
             <CodeBlock
               filename="mcp.config.json"
               lang="json"
               code={`{
   "mcpServers": {
-    "agentforge": {
-      "url": "https://gateway.agentforge.dev/mcp",
+    "superagentskill": {
+      "url": "https://gateway.superagentskill.dev/mcp",
       "auth": { "type": "oauth", "scopes": ["registry:read", "agent:upgrade"] }
     }
   }
@@ -57,7 +57,7 @@ function Docs() {
           <p className="mt-2 text-muted-foreground">Once connected, give your agent the keywords. It does the rest.</p>
           <div className="mt-4">
             <CodeBlock
-              code={`> AgentForge: check for updates and improvements
+              code={`> Super Agent Skill: check for updates and improvements
 
 → Self-assessing context........... primary care, pediatrics
 → Identified gaps.................. 3

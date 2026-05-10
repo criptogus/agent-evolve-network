@@ -132,7 +132,7 @@ export const PACKAGES: Package[] = [
     id: "steve-jobs-soul",
     name: "steve-jobs-soul",
     type: "soul",
-    author: "@agentforge",
+    author: "@superagentskill",
     authorVerified: true,
     downloads: "1.2M",
     rating: 4.7,

@@ -8,7 +8,7 @@ export function Footer() {
         <div className="col-span-2">
           <div className="flex items-center gap-2">
             <Logo className="h-6 w-6" />
-            <span className="text-[15px] font-semibold tracking-tight">AgentForge</span>
+            <span className="text-[15px] font-semibold tracking-tight">Super Agent Skill</span>
           </div>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
             The MCP infrastructure layer for AI agents. One command, your agent becomes a genius.
@@ -36,7 +36,7 @@ export function Footer() {
       </div>
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 text-xs text-muted-foreground">
-          <span>© {new Date().getFullYear()} AgentForge, Inc.</span>
+          <span>© {new Date().getFullYear()} Super Agent Skill, Inc.</span>
           <span className="font-mono">v3.0 · MCP-native</span>
         </div>
       </div>

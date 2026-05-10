@@ -16,9 +16,9 @@ export const Route = createFileRoute("/marketplace/$packageId")({
   head: ({ loaderData }) => ({
     meta: loaderData
       ? [
-          { title: `${loaderData.pkg.name} — AgentForge` },
+          { title: `${loaderData.pkg.name} — Super Agent Skill` },
           { name: "description", content: loaderData.pkg.description },
-          { property: "og:title", content: `${loaderData.pkg.name} — AgentForge` },
+          { property: "og:title", content: `${loaderData.pkg.name} — Super Agent Skill` },
           { property: "og:description", content: loaderData.pkg.description },
         ]
       : [],
@@ -180,7 +180,7 @@ function OverviewTab({ pkg }: { pkg: Package }) {
         <div className="mt-4">
           <CodeBlock
             filename="agent terminal"
-            code={`> AgentForge: install ${pkg.name}@${pkg.latest}\n\n→ Resolving dependencies........... ok\n→ Checking compatibility........... ok\n→ Negotiating scopes............... ${pkg.scopes.join(", ")}\n→ Installing....................... ok\n\n● Ready. Health score updated.`}
+            code={`> Super Agent Skill: install ${pkg.name}@${pkg.latest}\n\n→ Resolving dependencies........... ok\n→ Checking compatibility........... ok\n→ Negotiating scopes............... ${pkg.scopes.join(", ")}\n→ Installing....................... ok\n\n● Ready. Health score updated.`}
           />
         </div>
       </div>
@@ -409,7 +409,7 @@ function InstallModal({
   const blocked = compat.status === "unsupported";
 
   const installLines = [
-    `> AgentForge: ${isUpgrade ? "upgrade" : "install"} ${pkg.name}@${version}`,
+    `> Super Agent Skill: ${isUpgrade ? "upgrade" : "install"} ${pkg.name}@${version}`,
     "",
     `→ Target runtime................. ${runtime}`,
     `→ Resolving dependencies......... ${pkg.dependencies.length || "0"} packages`,
