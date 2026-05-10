@@ -370,6 +370,9 @@ function PlainEnglish() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [favReady]);
   const active = industries.find((i) => i.id === activeId)!;
+  const [edits, setEdits] = useState<Record<string, string>>({});
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
 
   return (
     <section className="border-b border-border bg-surface/40 py-24">
