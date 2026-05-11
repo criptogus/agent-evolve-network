@@ -320,6 +320,7 @@ function Marketplace() {
                   setQ("");
                   setType("all");
                   setVertical("all");
+                  setVerticalGroup("all");
                   setVerifiedOnly(false);
                   setInstallBucket("any");
                   setSort("installs_desc");
