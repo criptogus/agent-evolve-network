@@ -237,7 +237,7 @@ export type AuditRow = {
   package_id: string | null;
   review_id: string | null;
   reason: string | null;
-  metadata: Record<string, unknown>;
+  metadata: Record<string, string | number | boolean | null>;
   created_at: string;
 };
 
