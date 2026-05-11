@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
 import { BuyButton, PriceBadge } from "@/components/marketplace/BuyButton";
 import { Stars } from "@/components/reviews/Stars";
