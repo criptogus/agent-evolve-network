@@ -45,6 +45,50 @@
 
   --gradient-radial-red: radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 70%);
   --gradient-mesh: radial-gradient(circle at 20% 0%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 50%), radial-gradient(circle at 80% 30%, color-mix(in oklab, var(--primary) 6%, transparent), transparent 50%);
+
+  /* Tailwind v4 keyframes — exposed as `animate-*` utilities */
+  --animate-fade-in: fade-in 0.3s ease-out both;
+  --animate-fade-out: fade-out 0.3s ease-out both;
+  --animate-fade-up: fade-up 0.6s ease-out both;
+  --animate-scale-in: scale-in 0.2s ease-out both;
+  --animate-scale-out: scale-out 0.2s ease-out both;
+  --animate-slide-in-right: slide-in-right 0.3s ease-out both;
+  --animate-slide-out-right: slide-out-right 0.3s ease-out both;
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade-out {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(10px); }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes scale-out {
+    from { opacity: 1; transform: scale(1); }
+    to   { opacity: 0; transform: scale(0.95); }
+  }
+  @keyframes slide-in-right {
+    from { transform: translateX(100%); }
+    to   { transform: translateX(0); }
+  }
+  @keyframes slide-out-right {
+    from { transform: translateX(0); }
+    to   { transform: translateX(100%); }
+  }
+  @keyframes accordion-down {
+    from { height: 0; opacity: 0; }
+    to   { height: var(--radix-accordion-content-height); opacity: 1; }
+  }
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height); opacity: 1; }
+    to   { height: 0; opacity: 0; }
+  }
 }
 
 :root {
