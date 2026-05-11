@@ -90,6 +90,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "canonical", href: "https://superagentskill.com/" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "alternate", type: "application/xml", title: "Sitemap", href: "/sitemap.xml" },
     ],
   }),
   shellComponent: RootShell,
@@ -117,7 +121,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <a href="#main" className="skip-link">Skip to main content</a>
+      <div id="main">
+        <Outlet />
+      </div>
     </QueryClientProvider>
   );
 }
