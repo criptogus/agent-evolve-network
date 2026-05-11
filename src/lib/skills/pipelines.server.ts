@@ -13,6 +13,7 @@ import { z } from "zod";
 import { getGatewayModel } from "@/lib/ai-gateway";
 import { PackageDraftSchema, EvaluationSchema, PatchSchema, type PackageDraft } from "./schemas";
 import { webResearch } from "@/lib/admin/research.server";
+import { validateAnthropicSpec } from "./anthropic-spec";
 
 const FAST = "google/gemini-3-flash-preview" as const;
 const DEEP = "openai/gpt-5.2" as const;
@@ -279,6 +280,40 @@ ${constitution.map((c) => `- ${c}`).join("\n")}`,
     notes: preTestTotal === 0 ? "no probes" : `${preTestPass}/${preTestTotal} probes safely handled`,
   });
 
+  // Stage 6.5 — Anthropic spec auto-fix (description triggers, slug, no XML chars)
+  const tSpec = Date.now();
+  let specViolations = validateAnthropicSpec({ slug: draft.slug, name: draft.name, description: draft.description });
+  if (specViolations.length > 0) {
+    try {
+      const FixSchema = z.object({
+        slug: z.string(),
+        name: z.string(),
+        description: z.string().max(1024),
+      });
+      const { experimental_output: fixed } = await generateText({
+        model: getGatewayModel(FAST),
+        system:
+          "You are SkillForge Spec Fixer. Rewrite slug/name/description to satisfy Anthropic's Skills spec. Description MUST be ≤1024 chars, contain NO `<` or `>`, state WHAT the skill does AND WHEN to use it (include phrases like 'Use when user asks…', 'Trigger on…'). Slug must be lowercase-kebab. No 'claude' or 'anthropic' in slug/name. Output strict JSON only.",
+        prompt: `Current:\nslug: ${draft.slug}\nname: ${draft.name}\ndescription: ${draft.description}\n\nViolations:\n${specViolations
+          .map((v) => `- ${v.field}: ${v.message}`)
+          .join("\n")}\n\nReturn the corrected JSON.`,
+        experimental_output: Output.object({ schema: FixSchema }),
+      });
+      draft.slug = fixed.slug;
+      draft.name = fixed.name;
+      draft.description = fixed.description;
+      specViolations = validateAnthropicSpec(draft);
+    } catch {
+      /* keep partial fix */
+    }
+  }
+  stages.push({
+    name: "anthropic-spec",
+    ms: Date.now() - tSpec,
+    ok: specViolations.length === 0,
+    notes: specViolations.length === 0 ? "spec-compliant" : `${specViolations.length} remaining: ${specViolations.map((v) => v.field).join(", ")}`,
+  });
+
   // Stage 7 — verify (structural)
   const t6 = Date.now();
   const verifyOk =
@@ -320,7 +355,7 @@ const ADVERSARIAL_CATEGORIES = [
 ] as const;
 
 export async function evaluatorPipeline(opts: {
-  pkg: { name: string; type: string };
+  pkg: { name: string; type: string; description?: string };
   version: z.infer<typeof VersionLite>;
   extraCases?: Array<{ title: string; input: string; expected_output: string }>;
 }) {
@@ -458,7 +493,70 @@ Produce the Evaluation JSON.`;
     notes: `${judgements.length} judges · verdict=${evaluation.verdict} · score=${evaluation.overall_score}`,
   });
 
-  return { evaluation, actuals, adversarial, stages };
+  // Stage 4 — trigger-rate (Anthropic spec quantitative metric)
+  // Goal: skill triggers on >=90% of relevant queries, <=20% of irrelevant.
+  const t3 = Date.now();
+  let triggerRate: {
+    relevant: string[];
+    irrelevant: string[];
+    relevant_triggered: number;
+    irrelevant_triggered: number;
+    trigger_rate: number;
+    false_positive_rate: number;
+  } | null = null;
+  try {
+    const ProbeGen = z.object({
+      relevant: z.array(z.string()).length(5),
+      irrelevant: z.array(z.string()).length(5),
+    });
+    const description = opts.pkg.description ?? opts.pkg.name;
+    const { experimental_output: probes } = await generateText({
+      model: getGatewayModel(FAST),
+      system:
+        "You generate test queries to measure skill activation. Output 5 RELEVANT user queries that should obviously trigger this skill, and 5 IRRELEVANT user queries from completely different domains that must NOT trigger it. Strict JSON.",
+      prompt: `Skill: ${opts.pkg.name} (${opts.pkg.type})\nDescription: ${description}`,
+      experimental_output: Output.object({ schema: ProbeGen }),
+    });
+    const Decide = z.object({ would_trigger: z.boolean(), confidence: z.number().min(0).max(1) });
+    const judgeOne = async (q: string) => {
+      try {
+        const { experimental_output: d } = await generateText({
+          model: getGatewayModel(FAST),
+          system:
+            "You are an MCP router deciding whether to load a skill. Given the skill description and a user query, decide if the skill is clearly relevant. Strict JSON.",
+          prompt: `Skill description: ${description}\n\nUser query: "${q}"\n\nWould you load this skill?`,
+          experimental_output: Output.object({ schema: Decide }),
+        });
+        return d.would_trigger;
+      } catch {
+        return false;
+      }
+    };
+    const [relTrig, irrTrig] = await Promise.all([
+      Promise.all(probes.relevant.map(judgeOne)),
+      Promise.all(probes.irrelevant.map(judgeOne)),
+    ]);
+    const rT = relTrig.filter(Boolean).length;
+    const iT = irrTrig.filter(Boolean).length;
+    triggerRate = {
+      relevant: probes.relevant,
+      irrelevant: probes.irrelevant,
+      relevant_triggered: rT,
+      irrelevant_triggered: iT,
+      trigger_rate: Math.round((rT / probes.relevant.length) * 100),
+      false_positive_rate: Math.round((iT / probes.irrelevant.length) * 100),
+    };
+    stages.push({
+      name: "trigger-rate",
+      ms: Date.now() - t3,
+      ok: triggerRate.trigger_rate >= 80 && triggerRate.false_positive_rate <= 20,
+      notes: `triggers ${triggerRate.trigger_rate}% relevant · ${triggerRate.false_positive_rate}% false positives (Anthropic target ≥90% / ≤20%)`,
+    });
+  } catch (e) {
+    stages.push({ name: "trigger-rate", ms: Date.now() - t3, ok: false, notes: (e as Error).message });
+  }
+
+  return { evaluation, actuals, adversarial, triggerRate, stages };
 }
 
 /* ============================================================

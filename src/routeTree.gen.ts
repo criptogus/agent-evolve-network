@@ -58,6 +58,7 @@ import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
+import { Route as ApiSkillsSlugExportRouteImport } from './routes/api/skills.$slug.export'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicMcpHealthRouteImport } from './routes/api/public/mcp.health'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
@@ -307,6 +308,11 @@ const AdminImportGithubRoute = AdminImportGithubRouteImport.update({
   path: '/import/github',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiSkillsSlugExportRoute = ApiSkillsSlugExportRouteImport.update({
+  id: '/api/skills/$slug/export',
+  path: '/api/skills/$slug/export',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -377,6 +383,7 @@ export interface FileRoutesByFullPath {
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRoutesByTo {
@@ -430,6 +437,7 @@ export interface FileRoutesByTo {
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRoutesById {
@@ -485,6 +493,7 @@ export interface FileRoutesById {
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRouteTypes {
@@ -541,6 +550,7 @@ export interface FileRouteTypes {
     | '/packs/$slug/customize'
     | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
+    | '/api/skills/$slug/export'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -594,6 +604,7 @@ export interface FileRouteTypes {
     | '/packs/$slug/customize'
     | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
+    | '/api/skills/$slug/export'
     | '/api/packs/customization/$id/download/$ext'
   id:
     | '__root__'
@@ -648,6 +659,7 @@ export interface FileRouteTypes {
     | '/packs/$slug/customize'
     | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
+    | '/api/skills/$slug/export'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
 }
@@ -688,6 +700,7 @@ export interface RootRouteChildren {
   PacksIndexRoute: typeof PacksIndexRoute
   ApiPublicMcpHealthRoute: typeof ApiPublicMcpHealthRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiSkillsSlugExportRoute: typeof ApiSkillsSlugExportRoute
   ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 
@@ -1036,6 +1049,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminImportGithubRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/skills/$slug/export': {
+      id: '/api/skills/$slug/export'
+      path: '/api/skills/$slug/export'
+      fullPath: '/api/skills/$slug/export'
+      preLoaderRoute: typeof ApiSkillsSlugExportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -1171,6 +1191,7 @@ const rootRouteChildren: RootRouteChildren = {
   PacksIndexRoute: PacksIndexRoute,
   ApiPublicMcpHealthRoute: ApiPublicMcpHealthRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiSkillsSlugExportRoute: ApiSkillsSlugExportRoute,
   ApiPacksCustomizationIdDownloadExtRoute:
     ApiPacksCustomizationIdDownloadExtRoute,
 }

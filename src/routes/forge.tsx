@@ -195,10 +195,17 @@ function AuthorTab() {
         {m.error && <p className="text-sm text-destructive">{(m.error as Error).message}</p>}
         {m.data && (
           <div className="mt-4 rounded-md border p-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Badge>{m.data.draft.type}</Badge>
               <strong>{m.data.draft.name}</strong>
               <span className="text-muted-foreground text-sm">@ v0.1.0</span>
+              <a
+                href={`/api/skills/${m.data.package.slug}/export`}
+                className="ml-auto inline-flex h-8 items-center rounded-md border border-border bg-surface px-3 text-xs font-medium hover:bg-background"
+                download
+              >
+                ⬇ Download SKILL.md (Anthropic format)
+              </a>
             </div>
             <p className="text-sm text-muted-foreground mt-1">{m.data.draft.description}</p>
             <details className="mt-3"><summary className="cursor-pointer text-sm">System prompt</summary>
