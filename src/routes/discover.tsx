@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { autoCreateMissing } from "@/lib/skills/forge-loop.functions";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -380,6 +381,7 @@ function DiscoverPage() {
       <Nav />
 
       <main className="mx-auto max-w-7xl px-6 pb-24 pt-10">
+        <TermsStatusBanner className="mb-6" />
         {/* Header */}
         <div className="border-b border-border/70 pb-6">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">

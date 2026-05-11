@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
 import { BuyButton, PriceBadge } from "@/components/marketplace/BuyButton";
 import { Stars } from "@/components/reviews/Stars";
@@ -140,6 +141,7 @@ function Marketplace() {
       <Nav />
       <section className="border-b border-border bg-surface/50">
         <div className="mx-auto max-w-7xl px-6 py-12 md:py-14">
+          <TermsStatusBanner className="mb-6" />
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Registry</span>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">Marketplace</h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">

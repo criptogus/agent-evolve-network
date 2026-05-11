@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { CodeBlock } from "@/components/site/CodeBlock";
 import { CopyButton } from "@/components/site/CopyButton";
@@ -115,6 +116,7 @@ function PackageDetail() {
       {/* Header */}
       <section className="border-b border-border bg-surface/40">
         <div className="mx-auto max-w-7xl px-6 py-10">
+          <TermsStatusBanner className="mb-5" />
           <Link to="/marketplace" className="text-xs text-muted-foreground transition-colors hover:text-foreground">
             ← Marketplace
           </Link>
