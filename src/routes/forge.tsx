@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Nav } from "@/components/site/Nav";
 import { ForgeProgress, AUTHOR_STAGES, EVAL_STAGES, EVOLVE_STAGES } from "@/components/forge/ForgeProgress";
+import { SkillWizard, type WizardSubmit } from "@/components/forge/SkillWizard";
 
 export const Route = createFileRoute("/forge")({
   head: () => ({
