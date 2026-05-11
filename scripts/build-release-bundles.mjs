@@ -177,7 +177,9 @@ writeFileSync(join(allStage, "MANIFEST.json"), JSON.stringify(allManifest, null,
 writeFileSync(join(allStage, "README.md"), renderRootReadme({ version: VERSION, totals }));
 writeFileSync(join(allStage, "LICENSE-CONTENT.md"), licenseContentText());
 
-const allZipName = `super-agent-skill-content-${VERSION}.zip`;
+// Strip a leading "content-" so the file name doesn't read "...content-content-v1.0".
+const FILE_VERSION = VERSION.replace(/^content-/, "");
+const allZipName = `super-agent-skill-content-${FILE_VERSION}.zip`;
 const allZipPath = join(OUT, allZipName);
 zipDir(allStage, allZipPath);
 const allBytes = statSync(allZipPath).size;
