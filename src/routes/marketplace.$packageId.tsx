@@ -12,6 +12,7 @@ import { getPackageDetail } from "@/lib/marketplace/detail.functions";
 import {
   installPackageBySlug,
   uninstallPackageBySlug,
+  updatePackageBySlug,
   getInstallStatus,
   type InstallStatus,
 } from "@/lib/marketplace/telemetry.functions";
@@ -59,8 +60,10 @@ function PackageDetail() {
   const [installOpen, setInstallOpen] = useState(false);
   const [status, setStatus] = useState<InstallStatus | null>(null);
   const [uninstalling, setUninstalling] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const statusFn = useServerFn(getInstallStatus);
   const uninstallFn = useServerFn(uninstallPackageBySlug);
+  const updateFn = useServerFn(updatePackageBySlug);
 
   useEffect(() => {
     if (!user) {
@@ -74,16 +77,32 @@ function PackageDetail() {
 
   const installed = status?.installed ? status.version ?? undefined : undefined;
   const isUpgrade = !!installed && selectedVersion !== installed;
+  const isOutdated = !!installed && installed !== pkg.latest;
+
+  const refreshStatus = async () => {
+    const fresh = await statusFn({ data: { slug: pkg.id } });
+    setStatus(fresh);
+  };
 
   const handleUninstall = async () => {
     if (!confirm(`Uninstall ${pkg.name}?`)) return;
     setUninstalling(true);
     try {
       await uninstallFn({ data: { slug: pkg.id } });
-      const fresh = await statusFn({ data: { slug: pkg.id } });
-      setStatus(fresh);
+      await refreshStatus();
     } finally {
       setUninstalling(false);
+    }
+  };
+
+  const handleUpdateToLatest = async () => {
+    setUpdating(true);
+    try {
+      await updateFn({ data: { slug: pkg.id } });
+      await refreshStatus();
+      setSelectedVersion(pkg.latest);
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -141,24 +160,51 @@ function PackageDetail() {
               </select>
 
               {installed && (
-                <div className="mt-3 flex items-center justify-between rounded-md bg-surface px-3 py-2 font-mono text-[11px]">
-                  <span className="text-muted-foreground">installed</span>
-                  <span className="text-foreground">v{installed}</span>
+                <div className="mt-3 rounded-md border border-border bg-surface px-3 py-2 font-mono text-[11px]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">installed</span>
+                    <span className="text-foreground">v{installed}</span>
+                  </div>
+                  {isOutdated ? (
+                    <div className="mt-1 flex items-center justify-between text-amber-600 dark:text-amber-400">
+                      <span>update available</span>
+                      <span>v{pkg.latest}</span>
+                    </div>
+                  ) : (
+                    <div className="mt-1 flex items-center justify-between text-signal">
+                      <span>up to date</span>
+                      <span>✓</span>
+                    </div>
+                  )}
                 </div>
+              )}
+
+              {isOutdated && (
+                <button
+                  onClick={handleUpdateToLatest}
+                  disabled={updating}
+                  className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-95 disabled:opacity-60"
+                >
+                  {updating ? "Updating…" : `Update to v${pkg.latest}`}
+                </button>
               )}
 
               <button
                 onClick={() => setInstallOpen(true)}
-                className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-95"
+                className={`${isOutdated ? "mt-2 h-10 border border-border bg-background text-foreground hover:bg-accent" : "mt-4 h-11 bg-primary text-primary-foreground hover:opacity-95 shadow-sm"} inline-flex w-full items-center justify-center rounded-md text-sm font-semibold transition-all`}
               >
-                {isUpgrade ? `Upgrade → v${selectedVersion}` : installed ? `Reinstall v${selectedVersion}` : `Install v${selectedVersion}`}
+                {isUpgrade
+                  ? `Upgrade → v${selectedVersion}`
+                  : installed
+                    ? `Reinstall v${selectedVersion}`
+                    : `Install v${selectedVersion}`}
               </button>
 
               {installed && (
                 <button
                   onClick={handleUninstall}
                   disabled={uninstalling}
-                  className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-border bg-background text-xs font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-50"
+                  className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-destructive/30 bg-background text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
                 >
                   {uninstalling ? "Uninstalling…" : "Uninstall"}
                 </button>
