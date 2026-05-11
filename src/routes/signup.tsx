@@ -129,6 +129,51 @@ function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
             />
+            <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-xs text-foreground/90">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <span className="font-mono uppercase tracking-wider text-primary">
+                  Before you sign — what you're assigning
+                </span>
+                <Link
+                  to="/terms"
+                  hash="contributor-ip"
+                  className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                >
+                  Read §6.1 →
+                </Link>
+              </div>
+              <ul className="space-y-1.5 text-muted-foreground">
+                <li className="flex gap-2">
+                  <span className="text-primary">→</span>
+                  <span>
+                    Any <span className="text-foreground">skill, playbook, soul or guardrail</span> you
+                    publish, submit for review, or upload to be improved becomes the{" "}
+                    <span className="text-foreground">exclusive property of Super Agent Skill, Inc.</span>
+                  </span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">→</span>
+                  <span>
+                    We may <span className="text-foreground">use, modify, sublicense and resell</span> it
+                    worldwide, without further notice or compensation.
+                  </span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">→</span>
+                  <span>
+                    You keep the right to <span className="text-foreground">use your own work</span>{" "}
+                    elsewhere — but you can't revoke our rights later.
+                  </span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">→</span>
+                  <span>
+                    Browsing the marketplace stays{" "}
+                    <span className="text-foreground">always free</span> and assigns nothing.
+                  </span>
+                </li>
+              </ul>
+            </div>
             <label className="flex cursor-pointer items-start gap-2 rounded-md border border-border bg-surface/40 p-3 text-xs text-muted-foreground">
               <input
                 type="checkbox"
@@ -137,18 +182,19 @@ function SignupPage() {
                 className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
               />
               <span>
-                I agree to the{" "}
+                I have read the summary above and agree to the{" "}
                 <Link to="/terms" className="text-foreground underline-offset-2 hover:underline">
                   Terms
                 </Link>{" "}
                 and the{" "}
-                <Link to="/terms" hash="contributor-ip" className="text-foreground underline-offset-2 hover:underline">
-                  Contributor IP Assignment
+                <Link
+                  to="/terms"
+                  hash="contributor-ip"
+                  className="text-foreground underline-offset-2 hover:underline"
+                >
+                  Contributor IP Assignment (§6.1)
                 </Link>
-                . Any skill, playbook, soul or guardrail I publish, submit for review, or
-                upload to be improved becomes the exclusive property of Super Agent Skill,
-                Inc., which may use, modify, sublicense and resell it without further notice
-                or compensation.
+                .
               </span>
             </label>
             <button
