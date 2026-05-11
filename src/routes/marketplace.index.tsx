@@ -25,6 +25,24 @@ export const Route = createFileRoute("/marketplace/")({
 const TYPES = ["all", "skill", "playbook", "soul", "guardrail"] as const;
 type TypeFilter = (typeof TYPES)[number];
 
+const SORTS = [
+  { value: "installs_desc", label: "Most installed" },
+  { value: "installs_asc", label: "Least installed" },
+  { value: "rating_desc", label: "Top rated" },
+  { value: "recent", label: "Newest" },
+  { value: "name_asc", label: "Name A→Z" },
+] as const;
+type SortKey = (typeof SORTS)[number]["value"];
+
+const INSTALL_BUCKETS = [
+  { value: "any", label: "Any installs", min: 0, max: Infinity },
+  { value: "1plus", label: "1+", min: 1, max: Infinity },
+  { value: "100plus", label: "100+", min: 100, max: Infinity },
+  { value: "1k", label: "1k+", min: 1000, max: Infinity },
+  { value: "10k", label: "10k+", min: 10000, max: Infinity },
+] as const;
+type InstallBucket = (typeof INSTALL_BUCKETS)[number]["value"];
+
 function Marketplace() {
   const fetchFn = useServerFn(listMarketplace);
   const { data, isLoading, isError } = useQuery({
