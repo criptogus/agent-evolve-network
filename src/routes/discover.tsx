@@ -1,23 +1,51 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
+import { z } from "zod";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { autoCreateMissing } from "@/lib/skills/forge-loop.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
+import {
+  listDiscoverPage,
+  type DiscoverItem,
+  type DiscoverType,
+} from "@/lib/marketplace/discover.functions";
 import { useRequireAuth } from "@/lib/require-auth";
+
+const SearchSchema = z.object({
+  type: z.enum(["skill", "playbook", "soul", "guardrail"]).catch("skill").default("skill"),
+  category: z.string().nullish().catch(null),
+  q: z.string().nullish().catch(null),
+  page: z.number().int().min(1).catch(1).default(1),
+});
+
+const PAGE_SIZE = 24;
 
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
-  // Always re-fetch from the database — no SWR cache, no stale data.
   staleTime: 0,
   gcTime: 0,
   shouldReload: true,
-  loader: async () => {
-    const { items } = await listMarketplace();
-    return { items: items as MarketplaceItem[], fetchedAt: Date.now() };
+  validateSearch: (s) => SearchSchema.parse(s),
+  loaderDeps: ({ search }) => ({
+    type: search.type,
+    category: search.category ?? null,
+    q: search.q ?? null,
+    page: search.page,
+  }),
+  loader: async ({ deps }) => {
+    const data = await listDiscoverPage({
+      data: {
+        type: deps.type,
+        category: deps.category,
+        q: deps.q,
+        page: deps.page,
+        pageSize: PAGE_SIZE,
+      },
+    });
+    return data;
   },
   head: () => ({
     meta: [
@@ -31,22 +59,7 @@ export const Route = createFileRoute("/discover")({
   }),
 });
 
-type Type = "skill" | "playbook" | "soul" | "guardrail";
-
-interface Item {
-  id: string;
-  name: string;
-  type: Type;
-  category: string;
-  tags: string[];
-  description: string;
-  popularity: number;
-  author: string;
-}
-
-// Items now come from the database via the route loader. The static demo array
-// has been removed in favour of `useLoaderData()` + a DB→Item adapter below.
-
+type Type = DiscoverType;
 
 const TYPE_META: Record<Type, { label: string; plural: string; tone: string }> = {
   skill: { label: "Skill", plural: "Skills", tone: "skill" },
@@ -67,7 +80,13 @@ const INDUSTRIES = [
   "Media & Creator",
 ];
 
-const STYLES = ["Concise & direct", "Warm & empathetic", "Executive / boardroom", "Playful & punchy", "Technical & precise"];
+const STYLES = [
+  "Concise & direct",
+  "Warm & empathetic",
+  "Executive / boardroom",
+  "Playful & punchy",
+  "Technical & precise",
+];
 
 const GOVERNANCE_LEVELS = [
   { key: "L1", label: "L1 · Observability", body: "Logs decisions and outputs. No blocking." },
@@ -76,45 +95,123 @@ const GOVERNANCE_LEVELS = [
   { key: "L4", label: "L4 · Sandboxed", body: "Read-only mode. No writes, no external calls." },
 ];
 
-function dbToItem(p: MarketplaceItem): Item {
-  const vertical = p.vertical || "General";
-  const category = vertical
-    .split(/[-_/]/)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
+function Pagination({
+  page,
+  totalPages,
+  onPage,
+}: {
+  page: number;
+  totalPages: number;
+  onPage: (p: number) => void;
+}) {
+  const window = 2;
+  const pages: (number | "…")[] = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= page - window && i <= page + window)) {
+      pages.push(i);
+    } else if (pages[pages.length - 1] !== "…") {
+      pages.push("…");
+    }
+  }
+  const btn =
+    "h-9 min-w-9 rounded-md border border-border bg-surface px-3 font-mono text-xs transition-colors disabled:opacity-40 hover:border-primary/50";
+  return (
+    <nav className="mt-8 flex items-center justify-center gap-1.5" aria-label="Pagination">
+      <button className={btn} disabled={page <= 1} onClick={() => onPage(page - 1)}>
+        ‹ prev
+      </button>
+      {pages.map((p, i) =>
+        p === "…" ? (
+          <span key={`e-${i}`} className="px-1 font-mono text-xs text-muted-foreground">
+            …
+          </span>
+        ) : (
+          <button
+            key={p}
+            onClick={() => onPage(p)}
+            className={
+              btn + (p === page ? " border-primary bg-primary/10 text-foreground" : "")
+            }
+          >
+            {p}
+          </button>
+        ),
+      )}
+      <button className={btn} disabled={page >= totalPages} onClick={() => onPage(page + 1)}>
+        next ›
+      </button>
+    </nav>
+  );
+}
+
+interface Item {
+  id: string;
+  name: string;
+  type: Type;
+  category: string;
+  tags: string[];
+  description: string;
+  popularity: number;
+  author: string;
+}
+
+function pageItemToItem(p: DiscoverItem): Item {
   const tags = Array.from(
     new Set(
       [
-        vertical.toLowerCase(),
-        ...p.name.toLowerCase().split(/[\s-]+/).filter((w) => w.length > 2),
-      ].slice(0, 5)
-    )
+        (p.vertical ?? "general").toLowerCase(),
+        ...p.slug.toLowerCase().split(/[\s-]+/).filter((w) => w.length > 2),
+      ].slice(0, 5),
+    ),
   );
   return {
     id: p.slug,
     name: p.slug,
-    type: (p.type as Type) ?? "skill",
-    category,
+    type: p.type,
+    category: p.category,
     tags,
     description: p.description,
-    popularity: p.install_count ?? 0,
+    popularity: p.install_count,
     author: p.author_handle,
   };
 }
 
 function DiscoverPage() {
-  const { items: dbItems, fetchedAt } = Route.useLoaderData();
+  const loaderData = Route.useLoaderData() as import("@/lib/marketplace/discover.functions").DiscoverPage;
+  const search = Route.useSearch();
   const router = useRouter();
-  const ITEMS: Item[] = useMemo(() => dbItems.map(dbToItem), [dbItems]);
+  const navigate = useNavigate({ from: "/discover" });
 
-  // Live counts per type from the freshest loader payload.
-  const countsByType = useMemo(() => {
-    const acc: Record<Type, number> = { skill: 0, playbook: 0, soul: 0, guardrail: 0 };
-    for (const i of ITEMS) acc[i.type] = (acc[i.type] ?? 0) + 1;
-    return acc;
-  }, [ITEMS]);
+  const type = search.type;
+  const category = search.category ?? null;
+  const page = loaderData.page;
+  const totalsByType = loaderData.totalsByType;
+  const facetCats: { name: string; count: number }[] = loaderData.categories;
+  const total = loaderData.total;
+  const fetchedAt = loaderData.fetchedAt;
 
-  // Revalidate the loader on tab focus and every 30s while visible.
+  const items: Item[] = useMemo(
+    () => loaderData.items.map(pageItemToItem),
+    [loaderData.items],
+  );
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // Local search input mirrors `?q=` with debounce.
+  const [query, setQuery] = useState(search.q ?? "");
+  useEffect(() => setQuery(search.q ?? ""), [search.q]);
+  useEffect(() => {
+    const current = search.q ?? "";
+    if (query === current) return;
+    const id = window.setTimeout(() => {
+      navigate({
+        search: (s: Record<string, unknown>) => ({ ...s, q: query.trim() ? query.trim() : undefined, page: 1 }),
+        replace: true,
+      });
+    }, 300);
+    return () => window.clearTimeout(id);
+  }, [query, search.q, navigate]);
+
+  // Refetch on focus / interval for live counts.
   useEffect(() => {
     const refetch = () => {
       if (document.visibilityState === "visible") router.invalidate();
@@ -129,13 +226,12 @@ function DiscoverPage() {
     };
   }, [router]);
 
-  const [type, setType] = useState<Type>("skill");
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<string | null>(null);
   const [openItem, setOpenItem] = useState<Item | null>(null);
   const [authMessage, setAuthMessage] = useState<string | null>(null);
   const requireAuth = useRequireAuth();
-  const tryOpen = (it: Item | null) => { if (!it || requireAuth("customize and install")) setOpenItem(it); };
+  const tryOpen = (it: Item | null) => {
+    if (!it || requireAuth("customize and install")) setOpenItem(it);
+  };
 
   const autoCreateFn = useServerFn(autoCreateMissing);
   const autoCreateM = useMutation({
@@ -153,28 +249,23 @@ function DiscoverPage() {
     autoCreateM.mutate({ brief, type });
   };
 
-  const itemsOfType = useMemo(() => ITEMS.filter((i) => i.type === type), [ITEMS, type]);
-
-
-  const categories = useMemo(() => {
-    const set = new Set<string>();
-    itemsOfType.forEach((i) => set.add(i.category));
-    return Array.from(set).sort();
-  }, [itemsOfType]);
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return itemsOfType.filter((i) => {
-      if (category && i.category !== category) return false;
-      if (!q) return true;
-      return (
-        i.name.toLowerCase().includes(q) ||
-        i.description.toLowerCase().includes(q) ||
-        i.tags.some((t) => t.includes(q)) ||
-        i.category.toLowerCase().includes(q)
-      );
+  const setType = (t: Type) =>
+    navigate({
+      search: (s: Record<string, unknown>) => ({ ...s, type: t, category: undefined, page: 1 }),
+      replace: true,
     });
-  }, [itemsOfType, query, category]);
+
+  const setCategory = (c: string | null) =>
+    navigate({
+      search: (s: Record<string, unknown>) => ({ ...s, category: c ?? undefined, page: 1 }),
+      replace: true,
+    });
+
+  const goToPage = (p: number) =>
+    navigate({ search: (s: Record<string, unknown>) => ({ ...s, page: p }), replace: false });
+
+  const grandTotal =
+    totalsByType.skill + totalsByType.playbook + totalsByType.soul + totalsByType.guardrail;
 
   return (
     <div className="min-h-screen bg-background">
@@ -186,9 +277,9 @@ function DiscoverPage() {
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">
             <span className="size-1.5 rounded-full bg-signal pulse-dot" />
             <span className="font-mono uppercase tracking-wider text-muted-foreground">
-              Live · {ITEMS.length} packages ·{" "}
-              {countsByType.skill}&nbsp;skills · {countsByType.playbook}&nbsp;playbooks ·{" "}
-              {countsByType.soul}&nbsp;souls · {countsByType.guardrail}&nbsp;guardrails
+              Live · {grandTotal} packages · {totalsByType.skill}&nbsp;skills ·{" "}
+              {totalsByType.playbook}&nbsp;playbooks · {totalsByType.soul}&nbsp;souls ·{" "}
+              {totalsByType.guardrail}&nbsp;guardrails
             </span>
             <button
               onClick={() => router.invalidate()}
@@ -216,28 +307,25 @@ function DiscoverPage() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={`Search ${TYPE_META[type].plural.toLowerCase()} — e.g. "linkedin", "google ads", "medical"…`}
+              placeholder={`Search ${type}s — e.g. "linkedin", "google ads", "medical"…`}
               className="h-11 w-full rounded-md border border-border bg-surface pl-9 pr-3 text-[14px] outline-none transition-colors focus:border-primary"
             />
           </div>
           <div className="flex h-11 items-center rounded-md border border-border bg-surface p-0.5">
-            {(Object.keys(TYPE_META) as Type[]).map((t) => (
+            {(["skill", "playbook", "soul", "guardrail"] as Type[]).map((t) => (
               <button
                 key={t}
-                onClick={() => {
-                  setType(t);
-                  setCategory(null);
-                }}
+                onClick={() => setType(t)}
                 className={
-                  "h-10 rounded-[5px] px-3 text-sm font-medium transition-colors " +
+                  "h-10 rounded-[5px] px-3 text-sm font-medium capitalize transition-colors " +
                   (type === t
                     ? "bg-background shadow-sm"
                     : "text-muted-foreground hover:text-foreground")
                 }
               >
-                {TYPE_META[t].plural}
+                {t}s
                 <span className="ml-1.5 rounded bg-muted px-1 font-mono text-[10px] text-muted-foreground">
-                  {countsByType[t]}
+                  {totalsByType[t]}
                 </span>
               </button>
             ))}
@@ -251,19 +339,17 @@ function DiscoverPage() {
             <div className="sticky top-20 space-y-6">
               <FacetGroup
                 label={type === "guardrail" ? "Domain" : "Category"}
-                options={categories}
+                options={facetCats.map((c) => c.name)}
                 value={category}
                 onChange={setCategory}
-                count={(c) => itemsOfType.filter((i) => i.category === c).length}
-                allCount={itemsOfType.length}
+                count={(c) => facetCats.find((x) => x.name === c)?.count ?? 0}
+                allCount={totalsByType[type as Type]}
               />
 
               <div className="rounded-lg border border-border bg-surface p-4 text-xs text-muted-foreground">
-                <div className="mb-1 font-mono uppercase tracking-wider text-foreground">
-                  Tip
-                </div>
+                <div className="mb-1 font-mono uppercase tracking-wider text-foreground">Tip</div>
                 Don't see what you need? Type the gap into the customize panel — SkillForge will
-                generate a brand-new {TYPE_META[type].label.toLowerCase()} for you.
+                generate a brand-new {type} for you.
               </div>
             </div>
           </aside>
@@ -272,10 +358,11 @@ function DiscoverPage() {
           <section>
             <div className="mb-4 flex items-center justify-between text-sm">
               <div className="text-muted-foreground">
-                {filtered.length} {TYPE_META[type].plural.toLowerCase()}{" "}
+                {total.toLocaleString()} {type}
+                {total === 1 ? "" : "s"}
                 {category && (
                   <>
-                    in <span className="text-foreground">{category}</span>
+                    {" "}in <span className="text-foreground">{category}</span>
                     <button
                       onClick={() => setCategory(null)}
                       className="ml-2 text-xs text-muted-foreground underline hover:text-foreground"
@@ -284,13 +371,18 @@ function DiscoverPage() {
                     </button>
                   </>
                 )}
+                {total > 0 && (
+                  <span className="ml-2 font-mono text-[11px]">
+                    · page {page} of {totalPages}
+                  </span>
+                )}
               </div>
               <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
                 Sorted by popularity
               </div>
             </div>
 
-            {filtered.length === 0 ? (
+            {items.length === 0 ? (
               <EmptyState
                 type={type}
                 query={query}
@@ -301,14 +393,21 @@ function DiscoverPage() {
                 onUseLocal={() => tryOpen(makeBlank(type, query))}
               />
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {filtered
-                  .slice()
-                  .sort((a, b) => b.popularity - a.popularity)
-                  .map((it) => (
+              <>
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {items.map((it) => (
                     <ResultCard key={it.id} item={it} onCustomize={() => tryOpen(it)} />
                   ))}
-              </div>
+                </div>
+
+                {totalPages > 1 && (
+                  <Pagination
+                    page={page}
+                    totalPages={totalPages}
+                    onPage={goToPage}
+                  />
+                )}
+              </>
             )}
           </section>
         </div>
