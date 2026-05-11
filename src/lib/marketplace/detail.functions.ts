@@ -64,7 +64,7 @@ export const getPackageDetail = createServerFn({ method: "GET" })
 
     const { data: versions } = await supabaseAdmin
       .from("package_versions")
-      .select("version, status, notes, created_at, examples, compatibility, rules, permissions")
+      .select("version, status, notes, created_at, examples, compatibility, rules, permissions, system_prompt")
       .eq("package_id", pkg.id)
       .order("created_at", { ascending: false });
 
@@ -121,6 +121,9 @@ export const getPackageDetail = createServerFn({ method: "GET" })
       license: (pkg.license as string) ?? "—",
       examples,
       metrics: [],
+      vertical: typeof rules.vertical === "string" ? (rules.vertical as string) : undefined,
+      reviewStatus: (pkg.review_status as string) ?? undefined,
+      systemPrompt: typeof latest?.system_prompt === "string" ? (latest.system_prompt as string) : undefined,
     };
     return { pkg: out };
   });

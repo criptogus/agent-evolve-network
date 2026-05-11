@@ -106,6 +106,14 @@ function PackageDetail() {
               </div>
               <h1 className="mt-3 truncate font-mono text-3xl font-semibold tracking-tight md:text-4xl">{pkg.name}</h1>
               <p className="mt-2 text-base text-muted-foreground">{pkg.description}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {pkg.vertical && (
+                  <span className="rounded-md border border-border bg-muted/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {pkg.vertical}
+                  </span>
+                )}
+                {pkg.reviewStatus && <ReviewStatusPill status={pkg.reviewStatus} />}
+              </div>
               <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   {pkg.author}
@@ -229,6 +237,18 @@ function OverviewTab({ pkg }: { pkg: Package }) {
       <div>
         <h2 className="text-xl font-semibold tracking-tight">About this package</h2>
         <p className="mt-3 leading-relaxed text-muted-foreground">{pkg.longDescription}</p>
+
+        {pkg.systemPrompt && (
+          <>
+            <h3 className="mt-10 text-base font-semibold tracking-tight">System prompt</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              The exact instructions this skill installs into your agent.
+            </p>
+            <div className="mt-3">
+              <CodeBlock filename={`${pkg.id}.system-prompt.md`} lang="md" code={pkg.systemPrompt} />
+            </div>
+          </>
+        )}
 
         <h3 className="mt-10 text-base font-semibold tracking-tight">Real-world examples</h3>
         <div className="mt-4 space-y-3">
@@ -421,6 +441,20 @@ function VerifiedBadge() {
   return (
     <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground" title="Verified author">
       ✓
+    </span>
+  );
+}
+
+function ReviewStatusPill({ status }: { status: string }) {
+  const map: Record<string, { label: string; cls: string }> = {
+    approved: { label: "✓ Approved", cls: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" },
+    pending: { label: "⏳ Pending review", cls: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400" },
+    rejected: { label: "✕ Rejected", cls: "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400" },
+  };
+  const conf = map[status] ?? { label: status, cls: "border-border bg-muted/40 text-muted-foreground" };
+  return (
+    <span className={`rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${conf.cls}`}>
+      {conf.label}
     </span>
   );
 }
