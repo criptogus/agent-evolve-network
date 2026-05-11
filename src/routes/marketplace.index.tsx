@@ -205,6 +205,43 @@ function Marketplace() {
             </div>
           </div>
 
+          {/* Quick filters: vertical groups */}
+          <div className="mt-4 flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+              Quick filters
+            </span>
+            {VERTICAL_GROUPS.map((g) => {
+              const active = verticalGroup === g.value;
+              const count =
+                g.value === "all"
+                  ? items.length
+                  : items.filter(
+                      (it) =>
+                        it.vertical && (g.verticals as readonly string[]).includes(it.vertical),
+                    ).length;
+              return (
+                <button
+                  key={g.value}
+                  onClick={() => {
+                    setVerticalGroup(g.value);
+                    setVertical("all");
+                  }}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    active
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <span aria-hidden>{g.emoji}</span>
+                  <span>{g.label}</span>
+                  <span className={`text-[10px] ${active ? "opacity-80" : "opacity-60"}`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
           {/* Category chips */}
           {verticals.length > 0 && (
             <div className="mt-4 flex flex-wrap items-center gap-1.5">
