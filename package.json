@@ -11,7 +11,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "validate:content": "node scripts/validate-content.mjs",
-    "sync:content": "node scripts/sync-content-to-registry.mjs"
+    "sync:content": "node scripts/sync-content-to-registry.mjs",
+    "release:bundles": "node scripts/build-release-bundles.mjs",
+    "release:changelog": "node scripts/generate-changelog.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",
