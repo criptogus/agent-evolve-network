@@ -112,6 +112,58 @@ export const requestPrimitiveTool = defineTool({
   },
 });
 
+export const reportExecutionTool = defineTool({
+  name: "report_execution",
+  description:
+    "Report an execution of a Super Agent Skill primitive (skill/playbook/soul/guardrail) so it gets a public trust score, model heatmap and battle-tested badge. Anonymous calls are accepted: pass an opaque agent_fp (e.g. sha256 of your install id) to enable per-agent rate limiting without revealing identity. Use this whenever you finish using a primitive in production — call it best-effort and ignore failures.",
+  parameters: z.object({
+    slug: z.string().min(1),
+    success: z.boolean(),
+    model: z.string().max(80).optional().describe("e.g. claude-sonnet-4-5, gpt-5, gemini-2.5-pro"),
+    version: z.string().max(40).optional(),
+    latency_ms: z.number().int().min(0).max(10 * 60 * 1000).optional(),
+    tokens_in: z.number().int().min(0).max(2_000_000).optional(),
+    tokens_out: z.number().int().min(0).max(2_000_000).optional(),
+    error_kind: z.string().max(80).optional().describe("Short tag like timeout, refusal, hallucination, tool_error"),
+    agent_fp: z.string().max(128).optional().describe("Opaque per-agent fingerprint hash for rate limiting"),
+  }),
+  execute: async (input) => {
+    const { data, error } = await supabaseAdmin.rpc("report_skill_execution", {
+      _slug: input.slug,
+      _success: input.success,
+      _model: input.model,
+      _version: input.version,
+      _latency_ms: input.latency_ms,
+      _tokens_in: input.tokens_in,
+      _tokens_out: input.tokens_out,
+      _error_kind: input.error_kind,
+      _agent_fp: input.agent_fp,
+    } as any);
+    if (error) return json({ ok: false, error: error.message });
+    return json({ ok: true, execution_id: data });
+  },
+});
+
+export const getTrustTool = defineTool({
+  name: "get_skill_trust",
+  description:
+    "Get the public Trust Report for a primitive: lifetime / 30d / 7d success rate, p50/p95 latency, per-model heatmap, public robustness findings (CVE-style) and the composite trust_score (0-100). Use this before recommending or installing a skill so the user knows it is battle-tested.",
+  parameters: z.object({ slug: z.string().min(1) }),
+  execute: async ({ slug }) => {
+    const { data, error } = await supabaseAdmin.rpc("get_skill_trust", { _slug: slug });
+    if (error) return json({ error: error.message });
+    if (!data) return json({ error: "not_found" });
+    const { data: findings } = await supabaseAdmin
+      .from("skill_robustness_findings")
+      .select("code,severity,category,summary,fixed_in_version,published_at")
+      .eq("package_slug", slug)
+      .eq("status", "public")
+      .order("published_at", { ascending: false })
+      .limit(20);
+    return json({ trust: data, findings: findings ?? [] });
+  },
+});
+
 export const uploadPackagesTool = defineTool({
   name: "upload_packages",
   description:
