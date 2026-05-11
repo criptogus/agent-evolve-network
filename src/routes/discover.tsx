@@ -32,6 +32,32 @@ const SearchSchema = z.object({
 
 const PAGE_SIZE = 24;
 
+function DiscoverPending() {
+  return (
+    <div className="min-h-screen bg-background">
+      <Nav />
+      <main className="mx-auto max-w-7xl px-6 pb-24 pt-10">
+        <div className="border-b border-border/70 pb-6">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">
+            <span className="size-1.5 animate-pulse rounded-full bg-primary" />
+            <span className="font-mono uppercase tracking-wider text-muted-foreground">
+              Loading registry…
+            </span>
+          </div>
+          <div className="h-9 w-2/3 animate-pulse rounded bg-muted" />
+          <div className="mt-3 h-4 w-1/2 animate-pulse rounded bg-muted" />
+        </div>
+        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
   staleTime: 0,
