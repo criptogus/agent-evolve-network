@@ -351,6 +351,7 @@ function Marketplace() {
                   setQ("");
                   setType("all");
                   setVertical("all");
+                  setVerticalGroup("all");
                 }}
                 className="text-primary hover:underline"
               >
