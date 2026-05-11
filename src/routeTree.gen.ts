@@ -56,6 +56,7 @@ import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.m
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicMcpHealthRouteImport } from './routes/api/public/mcp.health'
+import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
@@ -293,6 +294,12 @@ const ApiPublicMcpHealthRoute = ApiPublicMcpHealthRouteImport.update({
   path: '/api/public/mcp/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPacksCustomizationIdDownloadExtRoute =
+  ApiPacksCustomizationIdDownloadExtRouteImport.update({
+    id: '/api/packs/customization/$id/download/$ext',
+    path: '/api/packs/customization/$id/download/$ext',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -342,6 +349,7 @@ export interface FileRoutesByFullPath {
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -390,6 +398,7 @@ export interface FileRoutesByTo {
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -440,6 +449,7 @@ export interface FileRoutesById {
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -491,6 +501,7 @@ export interface FileRouteTypes {
     | '/packs/$slug/customize'
     | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
+    | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -539,6 +550,7 @@ export interface FileRouteTypes {
     | '/packs/$slug/customize'
     | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
+    | '/api/packs/customization/$id/download/$ext'
   id:
     | '__root__'
     | '/'
@@ -588,6 +600,7 @@ export interface FileRouteTypes {
     | '/packs/$slug/customize'
     | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
+    | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -626,6 +639,7 @@ export interface RootRouteChildren {
   PacksIndexRoute: typeof PacksIndexRoute
   ApiPublicMcpHealthRoute: typeof ApiPublicMcpHealthRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -959,6 +973,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMcpHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/packs/customization/$id/download/$ext': {
+      id: '/api/packs/customization/$id/download/$ext'
+      path: '/api/packs/customization/$id/download/$ext'
+      fullPath: '/api/packs/customization/$id/download/$ext'
+      preLoaderRoute: typeof ApiPacksCustomizationIdDownloadExtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1066,6 +1087,8 @@ const rootRouteChildren: RootRouteChildren = {
   PacksIndexRoute: PacksIndexRoute,
   ApiPublicMcpHealthRoute: ApiPublicMcpHealthRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPacksCustomizationIdDownloadExtRoute:
+    ApiPacksCustomizationIdDownloadExtRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
