@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { TypingLines, Typewriter } from "@/components/site/Typewriter";
+import { Typewriter } from "@/components/site/Typewriter";
+import { McpInstallAnimation } from "@/components/site/McpInstallAnimation";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -99,34 +100,7 @@ function Hero() {
         </div>
 
         <div id="connect" className="mx-auto mt-16 max-w-3xl fade-up">
-          <div className="overflow-hidden rounded-xl border border-border bg-[oklch(0.14_0.01_270)] text-[13px] shadow-elevated">
-            <div className="flex items-center justify-between border-b border-white/5 px-4 py-2.5">
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-[oklch(0.55_0.21_28)]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[oklch(0.78_0.16_85)]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-signal" />
-                <span className="ml-3 font-mono text-xs text-white/50">agent.mcp</span>
-              </div>
-              <span className="font-mono text-[11px] text-white/40">live</span>
-            </div>
-            <TypingLines
-              lines={lines}
-              speed={14}
-              startDelay={500}
-              className="min-h-[330px] px-5 py-5 font-mono leading-relaxed text-white/90"
-              lineClassName={(l) =>
-                l.startsWith("✓")
-                  ? "text-signal"
-                  : l.startsWith("●")
-                    ? "text-signal font-semibold"
-                    : l.startsWith("→")
-                      ? "text-white/80"
-                      : l.startsWith("$")
-                        ? "text-primary"
-                        : ""
-              }
-            />
-          </div>
+          <McpInstallAnimation />
         </div>
       </div>
     </section>
