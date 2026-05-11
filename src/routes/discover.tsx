@@ -102,8 +102,31 @@ function dbToItem(p: MarketplaceItem): Item {
 }
 
 function DiscoverPage() {
-  const { items: dbItems } = Route.useLoaderData();
+  const { items: dbItems, fetchedAt } = Route.useLoaderData();
+  const router = useRouter();
   const ITEMS: Item[] = useMemo(() => dbItems.map(dbToItem), [dbItems]);
+
+  // Live counts per type from the freshest loader payload.
+  const countsByType = useMemo(() => {
+    const acc: Record<Type, number> = { skill: 0, playbook: 0, soul: 0, guardrail: 0 };
+    for (const i of ITEMS) acc[i.type] = (acc[i.type] ?? 0) + 1;
+    return acc;
+  }, [ITEMS]);
+
+  // Revalidate the loader on tab focus and every 30s while visible.
+  useEffect(() => {
+    const refetch = () => {
+      if (document.visibilityState === "visible") router.invalidate();
+    };
+    window.addEventListener("focus", refetch);
+    document.addEventListener("visibilitychange", refetch);
+    const id = window.setInterval(refetch, 30_000);
+    return () => {
+      window.removeEventListener("focus", refetch);
+      document.removeEventListener("visibilitychange", refetch);
+      window.clearInterval(id);
+    };
+  }, [router]);
 
   const [type, setType] = useState<Type>("skill");
   const [query, setQuery] = useState("");
