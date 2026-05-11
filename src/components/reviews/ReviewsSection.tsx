@@ -157,12 +157,48 @@ export function ReviewsSection({ slug }: { slug: string }) {
         )}
       </div>
 
+      {/* Sort + pagination header */}
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <div
+          className="inline-flex flex-wrap gap-1 rounded-md border border-border bg-background p-1"
+          role="tablist"
+          aria-label="Sort reviews"
+        >
+          {REVIEW_SORTS.map((s) => (
+            <button
+              key={s.value}
+              role="tab"
+              aria-selected={sort === s.value}
+              onClick={() => setSort(s.value)}
+              className={`rounded px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider transition-colors ${
+                sort === s.value
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+        {total > 0 && (
+          <span className="font-mono text-[11px] text-muted-foreground">
+            {Math.min((page + 1) * PAGE_SIZE, total)} of {total} · {sortLabel}
+          </span>
+        )}
+      </div>
+
       {/* Reviews list */}
-      <div className="mt-6 space-y-3">
-        {ratingsQ.isLoading && <div className="text-xs text-muted-foreground">Loading reviews…</div>}
-        {!ratingsQ.isLoading && reviews.length === 0 && (
+      <div className="mt-3 space-y-3">
+        {reviewsQ.isLoading && (
+          <div className="text-xs text-muted-foreground">Loading reviews…</div>
+        )}
+        {!reviewsQ.isLoading && reviews.length === 0 && (
           <div className="rounded-md border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
-            No reviews yet. Be the first.
+            {sort === "best_human"
+              ? "No human ratings yet."
+              : sort === "best_agent"
+                ? "No agent ratings yet."
+                : "No reviews yet. Be the first."}
           </div>
         )}
         {reviews.map((r) => (
@@ -172,6 +208,30 @@ export function ReviewsSection({ slug }: { slug: string }) {
             canReport={!!authed && currentUserId !== r.user_id}
           />
         ))}
+
+        {(hasMore || page > 0) && (
+          <div className="flex items-center justify-between gap-3 pt-2">
+            <button
+              type="button"
+              disabled={page === 0 || reviewsQ.isFetching}
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              className="rounded-md border border-border px-3 py-1.5 text-xs disabled:opacity-40"
+            >
+              ← Previous
+            </button>
+            <span className="font-mono text-[11px] text-muted-foreground">
+              Page {page + 1}
+            </span>
+            <button
+              type="button"
+              disabled={!hasMore || reviewsQ.isFetching}
+              onClick={() => setPage((p) => p + 1)}
+              className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-40"
+            >
+              {reviewsQ.isFetching ? "Loading…" : "Load more →"}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
