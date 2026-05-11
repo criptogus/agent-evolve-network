@@ -171,6 +171,6 @@ export const installPackageBySlug = createServerFn({ method: "POST" })
       .from("package_installs")
       .upsert({ user_id: userId, package_id: pkg.id }, { onConflict: "user_id,package_id" });
     if (error) throw new Response(error.message, { status: 500 });
-    await supabaseAdmin.rpc("increment_install_count" as never).then(() => {}).catch(() => {});
+    // (Install count is updated via purchase flows / triggers; skipped here.)
     return { ok: true };
   });
