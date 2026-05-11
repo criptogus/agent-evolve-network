@@ -23,6 +23,18 @@ export type Finding = {
   published_at: string | null;
 };
 
+export type Compat = {
+  model: string;
+  pass_rate: number;
+  total_cases: number;
+  passed_cases: number;
+  judge_score: number | null;
+  status: "pass" | "warn" | "fail";
+  notes: string | null;
+  version: string | null;
+  evaluated_at: string;
+};
+
 export const getSkillTrust = createServerFn({ method: "GET" })
   .inputValidator((d: { slug: string }) => z.object({ slug: z.string().min(1) }).parse(d))
   .handler(async ({ data }) => {
