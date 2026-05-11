@@ -55,7 +55,7 @@ export const getPackageDetail = createServerFn({ method: "GET" })
     const { data: pkg, error } = await supabaseAdmin
       .from("packages")
       .select(
-        "id, slug, name, type, description, long_description, author_handle, author_verified, install_count, latest_version, price_credits, license, is_published, review_status"
+        "id, slug, name, type, description, long_description, author_handle, author_verified, install_count, latest_version, price_credits, license, scopes, is_published, review_status"
       )
       .eq("slug", data.slug)
       .maybeSingle();
