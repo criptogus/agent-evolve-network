@@ -259,7 +259,7 @@ function Rankings() {
                       {p.name}
                     </Link>
                     <div className="truncate text-[11px] text-muted-foreground">
-                      {p.author_handle}
+                      <AuthorLink handle={p.author_handle} verified={p.author_verified} />
                       {p.vertical && <span className="opacity-60"> · {p.vertical}</span>}
                     </div>
                   </div>
