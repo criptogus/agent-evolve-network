@@ -48,6 +48,7 @@ export function Footer() {
           <FooterCol title="Company" links={[
             { label: "Terms", to: "/terms" },
             { label: "Privacy", to: "/privacy" },
+            { label: "Contributor FAQ", to: "/contributor-faq" },
             { label: "Refunds", to: "/refunds" },
             { label: "Contact sales", href: "mailto:sales@superagentskill.com" },
           ]} />
