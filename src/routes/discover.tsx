@@ -343,7 +343,7 @@ function DiscoverPage() {
                 value={category}
                 onChange={setCategory}
                 count={(c) => facetCats.find((x) => x.name === c)?.count ?? 0}
-                allCount={totalsByType[type]}
+                allCount={totalsByType[type as Type]}
               />
 
               <div className="rounded-lg border border-border bg-surface p-4 text-xs text-muted-foreground">
