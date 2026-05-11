@@ -186,6 +186,149 @@ export type Database = {
         }
         Relationships: []
       }
+      pack_customizations: {
+        Row: {
+          audience: string | null
+          brief: string
+          created_at: string
+          error: string | null
+          id: string
+          items: Json
+          niche: string | null
+          pack_id: string
+          research_sources: Json
+          research_summary: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          voice: string | null
+        }
+        Insert: {
+          audience?: string | null
+          brief: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          items?: Json
+          niche?: string | null
+          pack_id: string
+          research_sources?: Json
+          research_summary?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          voice?: string | null
+        }
+        Update: {
+          audience?: string | null
+          brief?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          items?: Json
+          niche?: string | null
+          pack_id?: string
+          research_sources?: Json
+          research_summary?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          voice?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_customizations_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pack_items: {
+        Row: {
+          pack_id: string
+          package_id: string
+          role: string
+          sort_order: number
+        }
+        Insert: {
+          pack_id: string
+          package_id: string
+          role?: string
+          sort_order?: number
+        }
+        Update: {
+          pack_id?: string
+          package_id?: string
+          role?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_items_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_items_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_items_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pack_purchases: {
+        Row: {
+          author_credits: number
+          author_id: string | null
+          buyer_id: string
+          created_at: string
+          credits_paid: number
+          id: string
+          pack_id: string
+          platform_credits: number
+        }
+        Insert: {
+          author_credits?: number
+          author_id?: string | null
+          buyer_id: string
+          created_at?: string
+          credits_paid: number
+          id?: string
+          pack_id: string
+          platform_credits?: number
+        }
+        Update: {
+          author_credits?: number
+          author_id?: string | null
+          buyer_id?: string
+          created_at?: string
+          credits_paid?: number
+          id?: string
+          pack_id?: string
+          platform_credits?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_purchases_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       package_evaluations: {
         Row: {
           adversarial_results: Json
@@ -597,6 +740,63 @@ export type Database = {
           source_ref?: string | null
           submitted_at?: string | null
           type?: Database["public"]["Enums"]["package_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      packs: {
+        Row: {
+          author_handle: string
+          author_id: string | null
+          cover_emoji: string | null
+          created_at: string
+          description: string
+          id: string
+          install_count: number
+          is_published: boolean
+          latest_version: string
+          long_description: string | null
+          name: string
+          price_credits: number
+          review_status: string
+          slug: string
+          theme: string
+          updated_at: string
+        }
+        Insert: {
+          author_handle?: string
+          author_id?: string | null
+          cover_emoji?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          install_count?: number
+          is_published?: boolean
+          latest_version?: string
+          long_description?: string | null
+          name: string
+          price_credits?: number
+          review_status?: string
+          slug: string
+          theme?: string
+          updated_at?: string
+        }
+        Update: {
+          author_handle?: string
+          author_id?: string | null
+          cover_emoji?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          install_count?: number
+          is_published?: boolean
+          latest_version?: string
+          long_description?: string | null
+          name?: string
+          price_credits?: number
+          review_status?: string
+          slug?: string
+          theme?: string
           updated_at?: string
         }
         Relationships: []
@@ -1066,6 +1266,7 @@ export type Database = {
         Returns: number
       }
       get_credit_balance: { Args: { _user_id: string }; Returns: number }
+      get_pack_with_items: { Args: { _slug: string }; Returns: Json }
       get_package_ratings: { Args: { _package_id: string }; Returns: Json }
       get_review_eligibility: { Args: { _package_id: string }; Returns: Json }
       grant_signup_bonus: { Args: { _user_id: string }; Returns: undefined }
@@ -1093,6 +1294,7 @@ export type Database = {
           verified_purchase: boolean
         }[]
       }
+      purchase_pack: { Args: { _pack_id: string }; Returns: Json }
       purchase_package: { Args: { _package_id: string }; Returns: Json }
       submit_review: {
         Args: {
