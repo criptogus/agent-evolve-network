@@ -56,6 +56,7 @@ type Tab = "overview" | "versions" | "compatibility" | "changelog";
 function PackageDetail() {
   const { pkg } = Route.useLoaderData();
   const { user } = useAuth();
+  const requireAuth = useRequireAuth();
   const [tab, setTab] = useState<Tab>("overview");
   const [selectedVersion, setSelectedVersion] = useState(pkg.latest);
   const [installOpen, setInstallOpen] = useState(false);
