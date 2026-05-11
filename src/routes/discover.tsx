@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { Nav } from "@/components/site/Nav";
@@ -10,9 +10,13 @@ import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.fu
 
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
+  // Always re-fetch from the database — no SWR cache, no stale data.
+  staleTime: 0,
+  gcTime: 0,
+  shouldReload: true,
   loader: async () => {
     const { items } = await listMarketplace();
-    return { items: items as MarketplaceItem[] };
+    return { items: items as MarketplaceItem[], fetchedAt: Date.now() };
   },
   head: () => ({
     meta: [
@@ -98,8 +102,31 @@ function dbToItem(p: MarketplaceItem): Item {
 }
 
 function DiscoverPage() {
-  const { items: dbItems } = Route.useLoaderData();
+  const { items: dbItems, fetchedAt } = Route.useLoaderData();
+  const router = useRouter();
   const ITEMS: Item[] = useMemo(() => dbItems.map(dbToItem), [dbItems]);
+
+  // Live counts per type from the freshest loader payload.
+  const countsByType = useMemo(() => {
+    const acc: Record<Type, number> = { skill: 0, playbook: 0, soul: 0, guardrail: 0 };
+    for (const i of ITEMS) acc[i.type] = (acc[i.type] ?? 0) + 1;
+    return acc;
+  }, [ITEMS]);
+
+  // Revalidate the loader on tab focus and every 30s while visible.
+  useEffect(() => {
+    const refetch = () => {
+      if (document.visibilityState === "visible") router.invalidate();
+    };
+    window.addEventListener("focus", refetch);
+    document.addEventListener("visibilitychange", refetch);
+    const id = window.setInterval(refetch, 30_000);
+    return () => {
+      window.removeEventListener("focus", refetch);
+      document.removeEventListener("visibilitychange", refetch);
+      window.clearInterval(id);
+    };
+  }, [router]);
 
   const [type, setType] = useState<Type>("skill");
   const [query, setQuery] = useState("");
@@ -156,8 +183,17 @@ function DiscoverPage() {
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">
             <span className="size-1.5 rounded-full bg-signal pulse-dot" />
             <span className="font-mono uppercase tracking-wider text-muted-foreground">
-              Discover · {ITEMS.length} packages indexed
+              Live · {ITEMS.length} packages ·{" "}
+              {countsByType.skill}&nbsp;skills · {countsByType.playbook}&nbsp;playbooks ·{" "}
+              {countsByType.soul}&nbsp;souls · {countsByType.guardrail}&nbsp;guardrails
             </span>
+            <button
+              onClick={() => router.invalidate()}
+              title={`Updated ${new Date(fetchedAt).toLocaleTimeString()}`}
+              className="ml-1 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
+            >
+              ↻ refresh
+            </button>
           </div>
           <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
             Find any capability. Make it yours.
@@ -197,6 +233,9 @@ function DiscoverPage() {
                 }
               >
                 {TYPE_META[t].plural}
+                <span className="ml-1.5 rounded bg-muted px-1 font-mono text-[10px] text-muted-foreground">
+                  {countsByType[t]}
+                </span>
               </button>
             ))}
           </div>
