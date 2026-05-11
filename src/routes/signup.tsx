@@ -93,7 +93,8 @@ function SignupPage() {
           <button
             type="button"
             onClick={onGoogle}
-            disabled={busy}
+            disabled={busy || !accepted}
+            title={!accepted ? "Accept the Terms below first" : undefined}
             className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-border bg-background text-sm font-medium hover:bg-surface disabled:opacity-50"
           >
             Continue with Google
