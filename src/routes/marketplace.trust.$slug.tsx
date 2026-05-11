@@ -126,7 +126,7 @@ function TrustPage() {
             </p>
           ) : (
             <div className="mt-4 grid gap-2">
-              {t.models.map((m) => (
+              {t.models.map((m: { model: string; runs: number; success_rate: number }) => (
                 <div key={m.model} className="flex items-center gap-3">
                   <div className="w-44 truncate font-mono text-xs">{m.model}</div>
                   <div className="h-2 flex-1 rounded bg-border/40">
@@ -156,7 +156,7 @@ function TrustPage() {
             </div>
           ) : (
             <ul className="mt-4 divide-y divide-border rounded-lg border border-border bg-surface/40">
-              {data.findings.map((f) => (
+              {(data.findings as Finding[]).map((f) => (
                 <li key={f.code} className="flex flex-col gap-1 p-4 md:flex-row md:items-center md:gap-4">
                   <span className={`inline-flex w-fit shrink-0 rounded border px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest ${SEV_BADGE[f.severity]}`}>
                     {f.severity}

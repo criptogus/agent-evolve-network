@@ -54,6 +54,7 @@ import { Route as AccountTokensRouteImport } from './routes/account.tokens'
 import { Route as AccountCreditsRouteImport } from './routes/account.credits'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as PacksSlugCustomizeRouteImport } from './routes/packs.$slug.customize'
+import { Route as MarketplaceTrustSlugRouteImport } from './routes/marketplace.trust.$slug'
 import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug'
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
@@ -288,6 +289,11 @@ const PacksSlugCustomizeRoute = PacksSlugCustomizeRouteImport.update({
   path: '/customize',
   getParentRoute: () => PacksSlugRoute,
 } as any)
+const MarketplaceTrustSlugRoute = MarketplaceTrustSlugRouteImport.update({
+  id: '/marketplace/trust/$slug',
+  path: '/marketplace/trust/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgeReportSlugRoute = ForgeReportSlugRouteImport.update({
   id: '/report/$slug',
   path: '/report/$slug',
@@ -380,6 +386,7 @@ export interface FileRoutesByFullPath {
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -434,6 +441,7 @@ export interface FileRoutesByTo {
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -490,6 +498,7 @@ export interface FileRoutesById {
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -547,6 +556,7 @@ export interface FileRouteTypes {
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/forge/report/$slug'
+    | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
     | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
@@ -601,6 +611,7 @@ export interface FileRouteTypes {
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/forge/report/$slug'
+    | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
     | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
@@ -656,6 +667,7 @@ export interface FileRouteTypes {
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/forge/report/$slug'
+    | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
     | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
@@ -698,6 +710,7 @@ export interface RootRouteChildren {
   SoulsSlugRoute: typeof SoulsSlugRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   PacksIndexRoute: typeof PacksIndexRoute
+  MarketplaceTrustSlugRoute: typeof MarketplaceTrustSlugRoute
   ApiPublicMcpHealthRoute: typeof ApiPublicMcpHealthRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiSkillsSlugExportRoute: typeof ApiSkillsSlugExportRoute
@@ -1021,6 +1034,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PacksSlugCustomizeRouteImport
       parentRoute: typeof PacksSlugRoute
     }
+    '/marketplace/trust/$slug': {
+      id: '/marketplace/trust/$slug'
+      path: '/marketplace/trust/$slug'
+      fullPath: '/marketplace/trust/$slug'
+      preLoaderRoute: typeof MarketplaceTrustSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forge/report/$slug': {
       id: '/forge/report/$slug'
       path: '/report/$slug'
@@ -1189,6 +1209,7 @@ const rootRouteChildren: RootRouteChildren = {
   SoulsSlugRoute: SoulsSlugRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   PacksIndexRoute: PacksIndexRoute,
+  MarketplaceTrustSlugRoute: MarketplaceTrustSlugRoute,
   ApiPublicMcpHealthRoute: ApiPublicMcpHealthRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiSkillsSlugExportRoute: ApiSkillsSlugExportRoute,
