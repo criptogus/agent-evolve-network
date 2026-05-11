@@ -96,12 +96,12 @@ function Home() {
       <Logos />
       <HowItWorks />
       <PlainEnglish />
-      <CompareIndustries />
+      <ClientOnly minHeight={900}><CompareIndustries /></ClientOnly>
       <CoreConcepts />
       <SkillForgeSection />
-      <EvalLoopSection />
+      <ClientOnly minHeight={700}><EvalLoopSection /></ClientOnly>
       <SocialProof />
-      <NetworkSection />
+      <ClientOnly minHeight={500}><NetworkSection /></ClientOnly>
       <FAQ />
       <CTASection />
       <Footer />
