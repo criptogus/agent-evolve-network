@@ -134,13 +134,21 @@ function SignupPage() {
                 <span className="font-mono uppercase tracking-wider text-primary">
                   Before you sign — what you're assigning
                 </span>
-                <Link
-                  to="/terms"
-                  hash="contributor-ip"
-                  className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-                >
-                  Read §6.1 →
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link
+                    to="/contributor-faq"
+                    className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                  >
+                    FAQ
+                  </Link>
+                  <Link
+                    to="/terms"
+                    hash="contributor-ip"
+                    className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                  >
+                    Read §6.1 →
+                  </Link>
+                </div>
               </div>
               <ul className="space-y-1.5 text-muted-foreground">
                 <li className="flex gap-2">

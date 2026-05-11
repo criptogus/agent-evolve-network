@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 
@@ -123,6 +123,13 @@ function TermsPage() {
             <h2 className="mt-8 text-lg font-semibold tracking-tight text-foreground">
               6.1 Contributor IP Assignment (read carefully)
             </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Plain-English version:{" "}
+              <Link to="/contributor-faq" className="text-primary underline-offset-2 hover:underline">
+                Contributor FAQ — improved skills, updates &amp; redistribution
+              </Link>
+              .
+            </p>
             <div className="mt-2 space-y-3">
               <p>
                 <strong>By creating an account and by submitting any Contribution to the Service,
