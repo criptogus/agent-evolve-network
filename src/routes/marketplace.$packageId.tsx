@@ -238,6 +238,18 @@ function OverviewTab({ pkg }: { pkg: Package }) {
         <h2 className="text-xl font-semibold tracking-tight">About this package</h2>
         <p className="mt-3 leading-relaxed text-muted-foreground">{pkg.longDescription}</p>
 
+        {pkg.systemPrompt && (
+          <>
+            <h3 className="mt-10 text-base font-semibold tracking-tight">System prompt</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              The exact instructions this skill installs into your agent.
+            </p>
+            <div className="mt-3">
+              <CodeBlock filename={`${pkg.id}.system-prompt.md`} lang="md" code={pkg.systemPrompt} />
+            </div>
+          </>
+        )}
+
         <h3 className="mt-10 text-base font-semibold tracking-tight">Real-world examples</h3>
         <div className="mt-4 space-y-3">
           {pkg.examples.map((ex) => (
