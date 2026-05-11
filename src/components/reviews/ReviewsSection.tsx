@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
@@ -10,6 +10,11 @@ import {
   type RaterKind,
   type ReviewItem,
 } from "@/lib/reviews/reviews.functions";
+import {
+  reportReview,
+  REPORT_REASONS,
+  type ReportReason,
+} from "@/lib/reviews/reports.functions";
 import { Stars, StarPicker } from "./Stars";
 
 export function ReviewsSection({ slug }: { slug: string }) {
