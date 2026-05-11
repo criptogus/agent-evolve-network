@@ -1244,6 +1244,141 @@ export type Database = {
         }
         Relationships: []
       }
+      skill_executions: {
+        Row: {
+          agent_fp: string | null
+          created_at: string
+          error_kind: string | null
+          id: string
+          latency_ms: number | null
+          model: string | null
+          package_id: string
+          package_slug: string
+          success: boolean
+          tokens_in: number | null
+          tokens_out: number | null
+          user_id: string | null
+          version: string | null
+        }
+        Insert: {
+          agent_fp?: string | null
+          created_at?: string
+          error_kind?: string | null
+          id?: string
+          latency_ms?: number | null
+          model?: string | null
+          package_id: string
+          package_slug: string
+          success: boolean
+          tokens_in?: number | null
+          tokens_out?: number | null
+          user_id?: string | null
+          version?: string | null
+        }
+        Update: {
+          agent_fp?: string | null
+          created_at?: string
+          error_kind?: string | null
+          id?: string
+          latency_ms?: number | null
+          model?: string | null
+          package_id?: string
+          package_slug?: string
+          success?: boolean
+          tokens_in?: number | null
+          tokens_out?: number | null
+          user_id?: string | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_executions_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_executions_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skill_robustness_findings: {
+        Row: {
+          affected_version: string | null
+          category: string
+          code: string
+          created_at: string
+          details: string | null
+          evidence: Json
+          fixed_in_version: string | null
+          id: string
+          package_id: string
+          package_slug: string
+          published_at: string | null
+          severity: string
+          source: string
+          status: string
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          affected_version?: string | null
+          category: string
+          code: string
+          created_at?: string
+          details?: string | null
+          evidence?: Json
+          fixed_in_version?: string | null
+          id?: string
+          package_id: string
+          package_slug: string
+          published_at?: string | null
+          severity: string
+          source?: string
+          status?: string
+          summary: string
+          updated_at?: string
+        }
+        Update: {
+          affected_version?: string | null
+          category?: string
+          code?: string
+          created_at?: string
+          details?: string | null
+          evidence?: Json
+          fixed_in_version?: string | null
+          id?: string
+          package_id?: string
+          package_slug?: string
+          published_at?: string | null
+          severity?: string
+          source?: string
+          status?: string
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_robustness_findings_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_robustness_findings_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean
@@ -1419,6 +1554,7 @@ export type Database = {
       get_pack_with_items: { Args: { _slug: string }; Returns: Json }
       get_package_ratings: { Args: { _package_id: string }; Returns: Json }
       get_review_eligibility: { Args: { _package_id: string }; Returns: Json }
+      get_skill_trust: { Args: { _slug: string }; Returns: Json }
       grant_signup_bonus: { Args: { _user_id: string }; Returns: undefined }
       has_active_subscription:
         | { Args: { _user_id: string }; Returns: boolean }
@@ -1453,15 +1589,34 @@ export type Database = {
         }
         Returns: undefined
       }
+      next_sas_code: { Args: never; Returns: string }
       purchase_pack: { Args: { _pack_id: string }; Returns: Json }
       purchase_package: { Args: { _package_id: string }; Returns: Json }
       report_review: {
         Args: { _details?: string; _reason: string; _review_id: string }
         Returns: string
       }
+      report_skill_execution: {
+        Args: {
+          _agent_fp?: string
+          _error_kind?: string
+          _latency_ms?: number
+          _model?: string
+          _slug: string
+          _success: boolean
+          _tokens_in?: number
+          _tokens_out?: number
+          _version?: string
+        }
+        Returns: string
+      }
       resolve_report: {
         Args: { _report_id: string; _resolution?: string; _status: string }
         Returns: undefined
+      }
+      seed_robustness_findings_for: {
+        Args: { _package_id: string }
+        Returns: number
       }
       submit_review: {
         Args: {
