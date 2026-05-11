@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { matchAgentToPackages, type AgentMatchResult } from "@/lib/match/match.functions";
+import { McpRecommendations } from "@/components/match/McpRecommendations";
 
 type FullResult = AgentMatchResult & { catalog_size: number };
 
