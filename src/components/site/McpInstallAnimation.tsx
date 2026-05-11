@@ -119,8 +119,8 @@ export function McpInstallAnimation() {
             </div>
           ))}
           <span className="ml-3 text-white/40">
-            {step === 0 && "Copy the URL"}
-            {step === 1 && `Paste into ${client.name}`}
+            {step === 0 && "Paste URL into client"}
+            {step === 1 && `Authorize ${client.name} (OAuth)`}
             {step === 2 && "Tools are live"}
           </span>
         </div>
@@ -160,31 +160,42 @@ export function McpInstallAnimation() {
           </div>
         </div>
 
-        {/* Step 2 — paste into client */}
+        {/* Step 2 — OAuth popup */}
         {step === 1 && (
           <div className="animate-fade-in">
             <div className="text-[11px] uppercase tracking-[0.18em] text-white/40">
-              {client.name} · Settings → Connectors
+              {client.name} → Browser opens automatically
             </div>
-            <div className="mt-2 rounded-md border border-white/10 bg-black/30 p-3">
-              <div className="text-white/40">{`{`}</div>
-              <div className="pl-4 text-white/70">
-                <span className="text-[oklch(0.78_0.16_85)]">"mcpServers"</span>: {`{`}
+            <div className="mt-2 overflow-hidden rounded-md border border-white/10 bg-black/40">
+              <div className="flex items-center gap-2 border-b border-white/5 bg-white/5 px-3 py-1.5">
+                <span className="h-2 w-2 rounded-full bg-[oklch(0.55_0.21_28)]" />
+                <span className="h-2 w-2 rounded-full bg-[oklch(0.78_0.16_85)]" />
+                <span className="h-2 w-2 rounded-full bg-signal" />
+                <span className="ml-2 truncate font-mono text-[10px] text-white/40">
+                  superagentskill.com/oauth/authorize
+                </span>
               </div>
-              <div className="pl-8 text-white/70">
-                <span className="text-[oklch(0.78_0.16_85)]">"super-agent-skill"</span>: {`{`}
+              <div className="p-4">
+                <div className="text-[11px] text-white/50">Authorize MCP client</div>
+                <div className="mt-1 text-white">
+                  Connect <span className="text-primary">{client.name}</span> to your skills?
+                </div>
+                <div className="mt-2 text-[11px] text-white/50">
+                  Scopes: <span className="font-mono text-white/70">mcp:read mcp:write</span>
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <span className="rounded border border-white/15 px-2 py-1 text-[10px] text-white/60">
+                    Deny
+                  </span>
+                  <span className="rounded bg-primary px-3 py-1 text-[10px] font-medium text-primary-foreground shadow-elevated">
+                    Authorize ✓
+                  </span>
+                </div>
               </div>
-              <div className="pl-12">
-                <span className="text-[oklch(0.78_0.16_85)]">"url"</span>:{" "}
-                <span className="text-signal">"{MCP_URL}"</span>
-              </div>
-              <div className="pl-8 text-white/70">{`}`}</div>
-              <div className="pl-4 text-white/70">{`}`}</div>
-              <div className="text-white/40">{`}`}</div>
             </div>
             <div className="mt-3 flex items-center gap-2 text-white/50">
               <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-              Handshake… authenticating…
+              Issuing access token via OAuth 2.1 + PKCE…
             </div>
           </div>
         )}
