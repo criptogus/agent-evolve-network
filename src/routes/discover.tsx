@@ -177,7 +177,7 @@ function pageItemToItem(p: DiscoverItem): Item {
 }
 
 function DiscoverPage() {
-  const loaderData = Route.useLoaderData();
+  const loaderData = Route.useLoaderData() as import("@/lib/marketplace/discover.functions").DiscoverPage;
   const search = Route.useSearch();
   const router = useRouter();
   const navigate = useNavigate({ from: "/discover" });
@@ -185,9 +185,15 @@ function DiscoverPage() {
   const type = search.type;
   const category = search.category ?? null;
   const page = loaderData.page;
-  const { totalsByType, categories: facetCats, total, fetchedAt } = loaderData;
+  const totalsByType = loaderData.totalsByType;
+  const facetCats: { name: string; count: number }[] = loaderData.categories;
+  const total = loaderData.total;
+  const fetchedAt = loaderData.fetchedAt;
 
-  const items = useMemo(() => loaderData.items.map(pageItemToItem), [loaderData.items]);
+  const items: Item[] = useMemo(
+    () => loaderData.items.map(pageItemToItem),
+    [loaderData.items],
+  );
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   // Local search input mirrors `?q=` with debounce.
