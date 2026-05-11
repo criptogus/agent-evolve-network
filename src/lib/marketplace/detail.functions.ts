@@ -81,7 +81,9 @@ export const getPackageDetail = createServerFn({ method: "GET" })
     const compatibility = latest ? normCompat(latest.compatibility) : [];
     const examples = latest ? normExamples(latest.examples) : [];
     const rules = (latest?.rules ?? {}) as Record<string, unknown>;
-    const scopes = asArr<string>(latest?.permissions).filter((s): s is string => typeof s === "string");
+    const versionPerms = asArr<string>(latest?.permissions).filter((s): s is string => typeof s === "string");
+    const pkgScopes = Array.isArray(pkg.scopes) ? (pkg.scopes as string[]) : [];
+    const scopes = versionPerms.length ? versionPerms : pkgScopes;
 
     // ratings + reviews count via reviews aggregate
     const { data: rs } = await supabaseAdmin
