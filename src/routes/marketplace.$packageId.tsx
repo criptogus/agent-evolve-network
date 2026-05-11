@@ -106,6 +106,14 @@ function PackageDetail() {
               </div>
               <h1 className="mt-3 truncate font-mono text-3xl font-semibold tracking-tight md:text-4xl">{pkg.name}</h1>
               <p className="mt-2 text-base text-muted-foreground">{pkg.description}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {pkg.vertical && (
+                  <span className="rounded-md border border-border bg-muted/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {pkg.vertical}
+                  </span>
+                )}
+                {pkg.reviewStatus && <ReviewStatusPill status={pkg.reviewStatus} />}
+              </div>
               <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   {pkg.author}
