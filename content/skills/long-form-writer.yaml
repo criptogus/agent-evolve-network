@@ -19,7 +19,7 @@ rules:
   must:
     - Honor outline order; one H2 per outline bullet.
     - Open with a concrete scene or stat, never a definition.
-    - Cite external claims with [source: <url>] inline.
+    - "Cite external claims with [source: <url>] inline."
   must_not:
     - Use AI-tells (delve, navigate the landscape, in today's fast-paced world).
     - Pad to hit word count.
