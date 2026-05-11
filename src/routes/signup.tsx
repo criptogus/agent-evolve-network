@@ -8,7 +8,16 @@ import { Logo } from "@/components/site/Logo";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/signup")({
-  head: () => ({ meta: [{ title: "Create account — Super Agent Skill" }] }),
+  head: () => ({
+    meta: [
+      { title: "Create account — Super Agent Skill" },
+      { name: "description", content: "Create your Super Agent Skill account and connect any MCP-compatible agent in 30 seconds." },
+      { property: "og:title", content: "Create account — Super Agent Skill" },
+      { property: "og:description", content: "Create your account and connect Claude, Cursor, Codex or Grok via MCP in 30 seconds." },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "https://superagentskill.com/signup" }],
+  }),
   validateSearch: (s: Record<string, unknown>) => ({ next: typeof s.next === "string" ? s.next : undefined }),
   component: SignupPage,
 });

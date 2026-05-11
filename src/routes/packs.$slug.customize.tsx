@@ -22,7 +22,13 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/packs/$slug/customize")({
   component: CustomizePack,
-  head: () => ({ meta: [{ title: "Customize pack" }] }),
+  head: ({ params }) => ({
+    meta: [
+      { title: `Customize ${params.slug} — Super Agent Skill` },
+      { name: "description", content: `Adapt the ${params.slug} pack to your data, voice and constraints — ship a private, signed version only your agent uses.` },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
 });
 
 function CustomizePack() {

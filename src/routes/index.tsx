@@ -1,25 +1,95 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Typewriter } from "@/components/site/Typewriter";
-import { McpInstallAnimation } from "@/components/site/McpInstallAnimation";
+import { CodeBlockCopy } from "@/components/site/CopyButton";
+import { CountUp } from "@/components/site/CountUp";
+import { JsonLd } from "@/components/site/JsonLd";
+
+const McpInstallAnimation = lazy(() =>
+  import("@/components/site/McpInstallAnimation").then((m) => ({ default: m.McpInstallAnimation })),
+);
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Super Agent Skill — MCP Infrastructure for AI Agents" },
-      { name: "description", content: "The MCP infrastructure layer for AI agents. Connect any agent to a live network of skills, playbooks, souls, and guardrails. One command, your agent becomes a genius." },
-      { property: "og:title", content: "Super Agent Skill — MCP Infrastructure for AI Agents" },
-      { property: "og:description", content: "Twilio for agent-to-agent intelligence. The living operating system for AI agents." },
+      { title: "Super Agent Skill — MCP for AI agents that actually do the job" },
+      { name: "description", content: "Connect Claude, Cursor, Codex or Grok in 30 seconds. One sentence installs the right skills, playbooks, souls and guardrails for your agent. No SDK, no retraining." },
+      { property: "og:title", content: "Super Agent Skill — MCP for AI agents that actually do the job" },
+      { property: "og:description", content: "30s to connect. One sentence to specialize. Health Score climbs while you sleep." },
+      { name: "twitter:title", content: "Super Agent Skill — MCP for AI agents that actually do the job" },
+      { name: "twitter:description", content: "30s to connect. One sentence to specialize. Health Score climbs while you sleep." },
     ],
+    links: [{ rel: "canonical", href: "https://superagentskill.com/" }],
   }),
   component: Home,
 });
 
+const ORG_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Super Agent Skill",
+  url: "https://superagentskill.com",
+  logo: "https://superagentskill.com/favicon.ico",
+  sameAs: ["https://github.com/criptogus/agent-evolve-network"],
+};
+
+const SOFTWARE_LD = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Super Agent Skill",
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Any (MCP-compatible)",
+  description:
+    "MCP gateway and registry of skills, playbooks, souls and guardrails for AI agents. Continuously evolves connected agents.",
+  url: "https://superagentskill.com",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+};
+
+const FAQ_LD = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "How does the MCP connection actually work?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "MCP (Model Context Protocol) lets your agent talk to external tools. You point your agent at Super Agent Skill once and it shows up as a connected tool. Every command flows through it — installs, generations and hot-swaps happen at runtime, no restart.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Do I need to retrain my agent or change my code?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No. Packages install through MCP at runtime — zero retraining, zero downtime, zero code changes. Every install is reversible and audited.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Which agent runtimes are supported?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Any MCP-compatible runtime: Claude, Cursor, Codex, Grok, Hermes, OpenClaw, LangChain, Replit and custom agents.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How much does it cost?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Hacker is free forever. Agent Pass is $19 per agent per month with unlimited upgrades. Enterprise is custom with private registry, SSO and audit logs.",
+      },
+    },
+  ],
+};
+
 function Home() {
   return (
     <div className="min-h-screen bg-background">
+      <JsonLd data={[ORG_LD, SOFTWARE_LD, FAQ_LD]} />
       <Nav />
       <Hero />
       <Logos />
@@ -39,22 +109,6 @@ function Home() {
 }
 
 function Hero() {
-  const lines = [
-    "$ superagentskill connect",
-    "",
-    "→ MCP handshake........................ ok",
-    "→ OAuth (short-lived token)............ ok",
-    "→ Discovering capabilities............. 4,218",
-    "→ Self-assessment...................... 92.4%",
-    "→ SkillForge AI: 7 upgrades recommended",
-    "",
-    "✓ installed  cardiology-soul@2.1.0",
-    "✓ installed  enterprise-sales-playbook@1.4.2",
-    "✓ installed  legal-guardrails@0.9.0",
-    "",
-    "● Agent evolved. Health score: 98.3 / 100",
-  ];
-
   return (
     <section className="relative overflow-hidden border-b border-border">
       <div className="absolute inset-0 grid-bg opacity-60" aria-hidden />
@@ -65,49 +119,78 @@ function Hero() {
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-signal pulse-dot" />
             <span className="font-mono">v3.0</span>
             <span className="text-border">·</span>
-            <span>MCP-native gateway is live</span>
+            <span>MCP-native · works with Claude, Cursor, Codex, Grok</span>
           </div>
           <h1 className="mt-6 text-balance text-5xl font-semibold tracking-tight md:text-7xl">
-            One sentence.
+            Your AI agent,
             <br />
             <span className="text-primary">
-              Your agent becomes&nbsp;
+              but actually&nbsp;
               <span className="relative inline-block align-baseline">
                 {/* Invisible spacer reserves space for the longest word so the layout doesn't jump */}
                 <span aria-hidden className="invisible whitespace-nowrap">
-                  a cardiologist.
+                  good at the job.
                 </span>
                 <Typewriter
                   className="absolute left-0 top-0 whitespace-nowrap text-foreground"
-                  words={["a cardiologist.", "a closer.", "a lawyer.", "a strategist.", "a genius."]}
+                  words={["good at the job.", "a cardiologist.", "a closer.", "a lawyer.", "a strategist."]}
                 />
               </span>
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">
-            Connect Claude, Cursor, Codex or Grok in 30 seconds. Then just ask:
-            <span className="text-foreground"> "make me a cardiologist."</span> Your
-            agent installs the skills, playbooks and guardrails it needs — or builds new
-            ones from scratch. No prompts to write. No setup.
+            <span className="text-foreground">30 seconds</span> to connect via MCP.
+            <span className="text-foreground"> One sentence</span> to specialize. Skills, playbooks,
+            souls and guardrails install at runtime — and keep evolving while you ship.
+            No SDK, no retraining, no DevOps.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a
-              href="#connect"
+            <Link
+              to="/connect"
               className="inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95"
             >
-              Connect your agent
-            </a>
+              Connect your agent →
+            </Link>
             <Link
-              to="/docs"
+              to="/docs/mcp"
               className="inline-flex h-11 items-center rounded-md border border-border bg-surface-elevated px-5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
             >
-              Read the docs →
+              Read the MCP docs
             </Link>
+          </div>
+          <div className="mx-auto mt-6 max-w-xl">
+            <CodeBlockCopy code="https://superagentskill.com/api/mcp" label="copy MCP url" />
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Drop this URL into any MCP-compatible agent — Claude, Cursor, Codex, Grok.
+            </p>
           </div>
         </div>
 
         <div id="connect" className="mx-auto mt-16 max-w-3xl fade-up">
-          <McpInstallAnimation />
+          <Suspense
+            fallback={
+              <div className="h-[420px] animate-pulse rounded-xl border border-border bg-surface" aria-hidden />
+            }
+          >
+            <McpInstallAnimation />
+          </Suspense>
+        </div>
+
+        {/* Trust metrics */}
+        <div className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-4 md:grid-cols-4">
+          {[
+            { v: 4218, suffix: "+", label: "Packages in registry" },
+            { v: 91, suffix: "k connected", label: "Live agents" },
+            { v: 30, suffix: "s", label: "Median time to connect" },
+            { v: 99.99, decimals: 2, suffix: "%", label: "Gateway uptime" },
+          ].map((m) => (
+            <div key={m.label} className="rounded-xl border border-border bg-surface/60 p-4 text-center">
+              <div className="font-mono text-2xl font-semibold tracking-tight text-foreground">
+                <CountUp to={m.v} suffix={m.suffix} decimals={m.decimals ?? 0} />
+              </div>
+              <div className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">{m.label}</div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -1508,20 +1591,23 @@ function CTASection() {
       <div className="absolute inset-0 hero-glow" aria-hidden />
       <div className="relative mx-auto max-w-3xl px-6 text-center">
         <h2 className="text-4xl font-semibold tracking-tight md:text-6xl">
-          One sentence.
+          One MCP URL.
           <br />
-          Your agent becomes a genius.
+          One sentence. Done.
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">
-          Install the best of your industry. Generate what doesn't exist yet. All from a chat box —
-          no engineers required.
+          Install the best packages of your industry, generate what doesn't exist yet, and let
+          the Evolution Engine ship better versions for you — week after week.
         </p>
-        <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <a href="#" className="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95">
-            Connect your agent
-          </a>
-          <Link to="/pricing" className="inline-flex h-11 items-center rounded-md border border-border bg-surface-elevated px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent">
-            View pricing
+        <div className="mx-auto mt-7 max-w-md">
+          <CodeBlockCopy code="https://superagentskill.com/api/mcp" label="copy MCP url" />
+        </div>
+        <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link to="/connect" className="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95">
+            Connect your agent →
+          </Link>
+          <Link to="/marketplace" className="inline-flex h-11 items-center rounded-md border border-border bg-surface-elevated px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent">
+            Browse the registry
           </Link>
         </div>
       </div>

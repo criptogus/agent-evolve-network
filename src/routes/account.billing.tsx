@@ -10,7 +10,13 @@ import { createPortalSession } from "@/lib/payments.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/account/billing")({
-  head: () => ({ meta: [{ title: "Billing — Super Agent Skill" }] }),
+  head: () => ({
+    meta: [
+      { title: "Billing — Super Agent Skill" },
+      { name: "description", content: "Manage your Super Agent Skill subscription, plan and invoices." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   validateSearch: (s: Record<string, unknown>) => ({
     checkout: typeof s.checkout === "string" ? s.checkout : undefined,
     session_id: typeof s.session_id === "string" ? s.session_id : undefined,
