@@ -250,14 +250,20 @@ function Marketplace() {
               </span>
               <CategoryChip
                 active={vertical === "all"}
-                onClick={() => setVertical("all")}
+                onClick={() => {
+                  setVertical("all");
+                  setVerticalGroup("all");
+                }}
                 label="All"
               />
               {verticals.map((v) => (
                 <CategoryChip
                   key={v}
                   active={vertical === v}
-                  onClick={() => setVertical(v)}
+                  onClick={() => {
+                    setVertical(v);
+                    setVerticalGroup("all");
+                  }}
                   label={v}
                 />
               ))}
