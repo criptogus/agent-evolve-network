@@ -7,6 +7,7 @@ import { Footer } from "@/components/site/Footer";
 import { autoCreateMissing } from "@/lib/skills/forge-loop.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
+import { useRequireAuth } from "@/lib/require-auth";
 
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
@@ -133,6 +134,8 @@ function DiscoverPage() {
   const [category, setCategory] = useState<string | null>(null);
   const [openItem, setOpenItem] = useState<Item | null>(null);
   const [authMessage, setAuthMessage] = useState<string | null>(null);
+  const requireAuth = useRequireAuth();
+  const tryOpen = (it: Item | null) => { if (!it || requireAuth("customize and install")) setOpenItem(it); };
 
   const autoCreateFn = useServerFn(autoCreateMissing);
   const autoCreateM = useMutation({
@@ -295,7 +298,7 @@ function DiscoverPage() {
                 result={autoCreateM.data ?? null}
                 error={(autoCreateM.error as Error | null)?.message ?? authMessage ?? null}
                 onAutoCreate={() => requestAutoCreate(query || `A ${type} for general use`)}
-                onUseLocal={() => setOpenItem(makeBlank(type, query))}
+                onUseLocal={() => tryOpen(makeBlank(type, query))}
               />
             ) : (
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -303,7 +306,7 @@ function DiscoverPage() {
                   .slice()
                   .sort((a, b) => b.popularity - a.popularity)
                   .map((it) => (
-                    <ResultCard key={it.id} item={it} onCustomize={() => setOpenItem(it)} />
+                    <ResultCard key={it.id} item={it} onCustomize={() => tryOpen(it)} />
                   ))}
               </div>
             )}
