@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Discreet status banner that tells the user, at a glance, whether they have
@@ -10,8 +13,9 @@ import { useAuth } from "@/hooks/use-auth";
  */
 export function TermsStatusBanner({ className = "" }: { className?: string }) {
   const { user, loading } = useAuth();
+  const [accepting, setAccepting] = useState(false);
+  const [justAccepted, setJustAccepted] = useState(false);
 
-  // Avoid SSR/hydration flicker — render nothing while we don't know yet.
   if (loading) return null;
 
   // Logged-out: browsing is free, install/customize requires an account.
@@ -29,7 +33,7 @@ export function TermsStatusBanner({ className = "" }: { className?: string }) {
           <span className="font-mono uppercase tracking-wider">Browsing only</span>
         </span>
         <span className="text-foreground/80">
-          You can preview every skill. <span className="text-muted-foreground">Locked:</span>{" "}
+          Preview every skill freely. <span className="text-muted-foreground">Locked:</span>{" "}
           <span className="font-medium text-foreground">install · customize · auto-create</span>.
         </span>
         <Link
@@ -46,8 +50,8 @@ export function TermsStatusBanner({ className = "" }: { className?: string }) {
     accepted_terms_at?: string | null;
     accepted_ip_assignment?: boolean | null;
   };
-  const acceptedTerms = Boolean(meta.accepted_terms_at);
-  const acceptedIp = Boolean(meta.accepted_ip_assignment);
+  const acceptedTerms = Boolean(meta.accepted_terms_at) || justAccepted;
+  const acceptedIp = Boolean(meta.accepted_ip_assignment) || justAccepted;
   const allAccepted = acceptedTerms && acceptedIp;
 
   if (allAccepted) {
@@ -62,28 +66,44 @@ export function TermsStatusBanner({ className = "" }: { className?: string }) {
         <span className="size-1.5 rounded-full bg-signal" />
         <span className="font-mono uppercase tracking-wider text-signal">Account ready</span>
         <span>
-          Terms &amp; IP Assignment accepted — install, customize and auto-create are unlocked.
+          Terms &amp; IP Assignment accepted — install, customize and auto-create unlocked.
         </span>
       </div>
     );
   }
 
-  // Signed in but missing one or both acceptances.
   const missing: string[] = [];
   if (!acceptedTerms) missing.push("Terms of Service");
   if (!acceptedIp) missing.push("Contributor IP Assignment");
+
+  async function acceptNow() {
+    setAccepting(true);
+    const { error } = await supabase.auth.updateUser({
+      data: {
+        accepted_terms_at: new Date().toISOString(),
+        accepted_ip_assignment: true,
+      },
+    });
+    setAccepting(false);
+    if (error) {
+      toast.error("Could not record acceptance. Try again.");
+      return;
+    }
+    setJustAccepted(true);
+    toast.success("Terms accepted — install and customize unlocked.");
+  }
 
   return (
     <div
       role="status"
       className={
-        "flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-warning/40 bg-warning/5 px-3 py-2 text-xs text-foreground/90 " +
+        "flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-xs text-foreground/90 " +
         className
       }
     >
       <span className="inline-flex items-center gap-1.5">
-        <span className="size-1.5 rounded-full bg-warning" />
-        <span className="font-mono uppercase tracking-wider text-warning">Action needed</span>
+        <span className="size-1.5 rounded-full bg-primary" />
+        <span className="font-mono uppercase tracking-wider text-primary">Action needed</span>
       </span>
       <span>
         Accept the {missing.join(" and ")} to unlock{" "}
@@ -96,12 +116,14 @@ export function TermsStatusBanner({ className = "" }: { className?: string }) {
         >
           Read terms
         </Link>
-        <Link
-          to="/account"
-          className="rounded border border-warning/60 bg-warning/10 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider text-warning hover:bg-warning/20"
+        <button
+          type="button"
+          onClick={acceptNow}
+          disabled={accepting}
+          className="rounded border border-primary/60 bg-primary/10 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider text-primary hover:bg-primary/20 disabled:opacity-50"
         >
-          Accept now
-        </Link>
+          {accepting ? "Saving…" : "Accept now"}
+        </button>
       </div>
     </div>
   );
