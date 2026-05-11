@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "validate:content": "node scripts/validate-content.mjs"
+    "validate:content": "node scripts/validate-content.mjs",
+    "sync:content": "node scripts/sync-content-to-registry.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",
