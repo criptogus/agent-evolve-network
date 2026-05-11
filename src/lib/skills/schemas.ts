@@ -27,6 +27,33 @@ export const PackageDraftSchema = z.object({
     detail: z.string().optional(),
   })).default([]),
   scopes: z.array(z.string()).default(["agent:upgrade", "registry:read"]),
+
+  // Optional real-world dependencies a recipe may declare
+  mcp_servers: z.array(z.object({
+    name: z.string().min(1),
+    transport: z.enum(["http", "stdio", "sse"]).default("http"),
+    url: z.string().url().optional(),
+    command: z.string().optional(),
+    args: z.array(z.string()).default([]),
+    env: z.array(z.string()).default([]),
+    scopes: z.array(z.string()).default([]),
+    required: z.boolean().default(true),
+    description: z.string().optional(),
+  })).default([]),
+
+  permissions: z.array(z.object({
+    scope: z.string().min(1),
+    reason: z.string().optional(),
+    required: z.boolean().default(true),
+  })).default([]),
+
+  live_resources: z.array(z.object({
+    uri: z.string().min(1),
+    kind: z.enum(["mcp", "http", "db"]).default("mcp"),
+    purpose: z.string().optional(),
+    refresh: z.enum(["on_call", "cached"]).default("on_call"),
+    required: z.boolean().default(true),
+  })).default([]),
 });
 
 export type PackageDraft = z.infer<typeof PackageDraftSchema>;
