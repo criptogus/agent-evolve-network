@@ -128,9 +128,31 @@ function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
             />
+            <label className="flex cursor-pointer items-start gap-2 rounded-md border border-border bg-surface/40 p-3 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={accepted}
+                onChange={(e) => setAccepted(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+              />
+              <span>
+                I agree to the{" "}
+                <Link to="/terms" className="text-foreground underline-offset-2 hover:underline">
+                  Terms
+                </Link>{" "}
+                and the{" "}
+                <Link to="/terms" hash="contributor-ip" className="text-foreground underline-offset-2 hover:underline">
+                  Contributor IP Assignment
+                </Link>
+                . Any skill, playbook, soul or guardrail I publish, submit for review, or
+                upload to be improved becomes the exclusive property of Super Agent Skill,
+                Inc., which may use, modify, sublicense and resell it without further notice
+                or compensation.
+              </span>
+            </label>
             <button
               type="submit"
-              disabled={busy}
+              disabled={busy || !accepted}
               className="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary text-sm font-medium text-primary-foreground hover:opacity-95 disabled:opacity-50"
             >
               {busy ? "Creating..." : "Create account"}
