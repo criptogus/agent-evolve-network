@@ -72,10 +72,16 @@ function Hero() {
             <br />
             <span className="text-primary">
               Your agent becomes&nbsp;
-              <Typewriter
-                className="text-foreground"
-                words={["a cardiologist.", "a closer.", "a lawyer.", "a strategist.", "a genius."]}
-              />
+              <span className="relative inline-block align-baseline">
+                {/* Invisible spacer reserves space for the longest word so the layout doesn't jump */}
+                <span aria-hidden className="invisible whitespace-nowrap">
+                  a cardiologist.
+                </span>
+                <Typewriter
+                  className="absolute left-0 top-0 whitespace-nowrap text-foreground"
+                  words={["a cardiologist.", "a closer.", "a lawyer.", "a strategist.", "a genius."]}
+                />
+              </span>
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">
