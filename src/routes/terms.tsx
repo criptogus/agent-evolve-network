@@ -117,13 +117,69 @@ function TermsPage() {
               non-transferable, revocable right to use the Service in accordance with these Terms
               and the plan you have purchased. No other rights are granted.
             </p>
-            <p>
-              You retain ownership of the content you publish. By publishing a package on the
-              Service you grant us and other users the rights stated in the package’s licence
-              (e.g. MIT) and grant us a worldwide, non-exclusive licence to host, display,
-              distribute and index it as part of the registry.
-            </p>
           </Section>
+
+          <section id="contributor-ip" className="scroll-mt-24">
+            <h2 className="mt-8 text-lg font-semibold tracking-tight text-foreground">
+              6.1 Contributor IP Assignment (read carefully)
+            </h2>
+            <div className="mt-2 space-y-3">
+              <p>
+                <strong>By creating an account and by submitting any Contribution to the Service,
+                you irrevocably assign to {SELLER} all right, title and interest — worldwide and
+                for the full term of protection — in and to that Contribution</strong>, including
+                all copyrights, database rights, patent rights, trade-secret rights, moral rights
+                (waived to the maximum extent permitted by law) and any related rights.
+              </p>
+              <p>
+                <strong>“Contribution”</strong> means any skill, playbook, soul, guardrail, pack,
+                prompt, system prompt, evaluation, dataset, configuration, code, documentation,
+                feedback, idea or other material that you publish, upload, submit for review,
+                submit to be improved, or otherwise make available through the Service — whether
+                in draft, private, or public form, and whether originated by you or generated with
+                the help of the Service.
+              </p>
+              <p>
+                As assignee, {SELLER} may use, reproduce, modify, adapt, translate, fork, combine,
+                relicense, sublicense, distribute, sell, resell, monetise and exploit each
+                Contribution in any medium and for any purpose, with no obligation of attribution,
+                royalties, revenue share, notice or further consent, except as expressly stated in
+                a separate written agreement signed by an officer of {SELLER} (for example, the
+                70/30 split paid through the marketplace once a Contribution is published and
+                purchased).
+              </p>
+              <p>
+                You represent and warrant that (a) you have full authority to make this
+                assignment, (b) each Contribution is your original work or you have all rights
+                necessary to assign it, (c) the Contribution does not infringe any third-party
+                intellectual property, privacy, publicity or contractual right, and (d) no
+                employer, client or collaborator retains rights that would be inconsistent with
+                this assignment.
+              </p>
+              <p>
+                <strong>Why this exists.</strong> Multiple users iterate on, evaluate and improve
+                the same primitives. To run the registry, ship updates, harden skills and resell
+                them on your behalf, {SELLER} needs unambiguous ownership of the assets in the
+                catalogue. This clause prevents disputes from contributors who later claim that an
+                improved version of a skill they uploaded was “copied”. By signing up you accept
+                that any work you place into the Service becomes platform IP, and you waive any
+                claim of authorship, derivative-work infringement, or unfair competition based on
+                {SELLER}’s subsequent use of that work.
+              </p>
+              <p>
+                <strong>Browsing remains free.</strong> You do not need an account to read, search
+                or evaluate listings. The assignment above only attaches to material you actively
+                submit while signed in. If you do not agree with this clause, do not create an
+                account and do not upload Contributions.
+              </p>
+              <p>
+                Further assurances: you agree to sign any additional documents and take any
+                further actions reasonably required to perfect or record this assignment, and you
+                appoint {SELLER} as your attorney-in-fact, coupled with an interest, to do so on
+                your behalf if you fail to act within thirty (30) days of a written request.
+              </p>
+            </div>
+          </section>
 
           <Section title="7. Payments, subscriptions and billing">
             <p>
