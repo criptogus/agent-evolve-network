@@ -59,20 +59,33 @@ function verticalToCategory(v: string | null): string {
 export const listDiscoverPage = createServerFn({ method: "GET" })
   .inputValidator((data) => Input.parse(data))
   .handler(async ({ data }): Promise<DiscoverPage> => {
-    const { type, category, q, page, pageSize } = data;
+    const { type, category, q, sort, page, pageSize } = data;
     const term = (q ?? "").trim().toLowerCase();
 
     // 1) Lightweight index of every approved package (counts/facets/sorting).
     const { data: idx, error: idxErr } = await supabaseAdmin
       .from("packages")
-      .select("id, slug, type, install_count, latest_version")
+      .select("id, slug, type, install_count, latest_version, created_at")
       .eq("is_published", true)
       .eq("review_status", "approved")
-      .order("install_count", { ascending: false })
-      .order("created_at", { ascending: false })
       .limit(5000);
     if (idxErr) throw new Response(idxErr.message, { status: 500 });
-    const allIndex = idx ?? [];
+    const allIndex = (idx ?? []).slice().sort((a, b) => {
+      switch (sort) {
+        case "newest":
+          return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+        case "oldest":
+          return (a.created_at ?? "").localeCompare(b.created_at ?? "");
+        case "name":
+          return a.slug.localeCompare(b.slug);
+        case "popular":
+        default:
+          return (
+            (b.install_count ?? 0) - (a.install_count ?? 0) ||
+            (b.created_at ?? "").localeCompare(a.created_at ?? "")
+          );
+      }
+    });
 
     // 2) Vertical map from latest version's rules.
     const verticalByPkg = new Map<string, string | null>();
