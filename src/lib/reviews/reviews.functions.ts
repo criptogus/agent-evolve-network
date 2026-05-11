@@ -105,12 +105,51 @@ export const submitReview = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data, context }): Promise<{ id: string }> => {
+    // 1) Per-user rate limit (counts both allowed + blocked attempts).
+    const blocked = await evaluateRateLimit({
+      userId: context.userId,
+      kind: "review_submit",
+      rules: REVIEW_RATE_RULES,
+    });
+    if (blocked) {
+      await logAuditAttempt({
+        userId: context.userId,
+        kind: "review_submit",
+        outcome: "blocked",
+        packageId: data.packageId,
+        reason: blocked.reason,
+        metadata: { rating: data.rating, rater_kind: data.raterKind },
+      });
+      throw new Response(`RATE_LIMITED:${blocked.reason}`, { status: 429 });
+    }
+
+    // 2) Hand off to the DB RPC, which runs the eligibility + cooldown triggers.
     const { data: rid, error } = await context.supabase.rpc("submit_review", {
       _package_id: data.packageId,
       _rating: data.rating,
       _body: data.body,
       _rater_kind: data.raterKind,
     });
-    if (error) throw new Response(error.message, { status: 400 });
+
+    if (error) {
+      await logAuditAttempt({
+        userId: context.userId,
+        kind: "review_submit",
+        outcome: "blocked",
+        packageId: data.packageId,
+        reason: error.message?.slice(0, 200) ?? "DB_REJECTED",
+        metadata: { rating: data.rating, rater_kind: data.raterKind },
+      });
+      throw new Response(error.message, { status: 400 });
+    }
+
+    await logAuditAttempt({
+      userId: context.userId,
+      kind: "review_submit",
+      outcome: "allowed",
+      packageId: data.packageId,
+      reviewId: rid as string,
+      metadata: { rating: data.rating, rater_kind: data.raterKind },
+    });
     return { id: rid as string };
   });
