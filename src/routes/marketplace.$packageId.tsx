@@ -611,6 +611,20 @@ function InstallModal({
           </div>
         )}
 
+        {phase === "failed" && (
+          <div className="space-y-5 p-6 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground">!</div>
+            <div>
+              <div className="text-lg font-semibold tracking-tight">Install failed</div>
+              <div className="mt-1 text-sm text-muted-foreground">{error ?? "Something went wrong."}</div>
+            </div>
+            <div className="flex justify-center gap-2 pt-2">
+              <button onClick={onClose} className="inline-flex h-10 items-center rounded-md border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-accent">Close</button>
+              <button onClick={() => { setError(null); setPhase("installing"); }} className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:opacity-95">Retry</button>
+            </div>
+          </div>
+        )}
+
         {phase === "done" && (
           <div className="space-y-5 p-6 text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-signal text-xl font-bold text-signal-foreground">
