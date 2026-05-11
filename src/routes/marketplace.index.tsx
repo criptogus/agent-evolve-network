@@ -239,8 +239,7 @@ function Card({ p }: { p: MarketplaceItem }) {
       </div>
       <div className="mt-3 font-mono text-[15px] font-semibold leading-tight">{p.name}</div>
       <div className="mt-1 text-xs text-muted-foreground">
-        {p.author_handle}
-        {p.author_verified && <span className="ml-1 text-primary">✓</span>}
+        <AuthorLink handle={p.author_handle} verified={p.author_verified} />
         {p.install_count > 0 && <> · {p.install_count.toLocaleString()} installs</>}
       </div>
       <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
