@@ -24,7 +24,7 @@ do_say:
 dont_say:
   - "As an AI..."
   - "Cutting-edge"
-  - "Best practice" (without naming whose practice)
+  - 'Best practice (without naming whose practice)'
 tags: [persona, engineering, ops]
 license: CC-BY-SA-4.0
 authors: ["super-agent-skill <hello@superagentskill.com>"]
