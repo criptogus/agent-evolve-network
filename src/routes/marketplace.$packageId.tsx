@@ -52,12 +52,39 @@ type Tab = "overview" | "versions" | "compatibility" | "changelog";
 
 function PackageDetail() {
   const { pkg } = Route.useLoaderData();
+  const { user } = useAuth();
   const [tab, setTab] = useState<Tab>("overview");
   const [selectedVersion, setSelectedVersion] = useState(pkg.latest);
   const [installOpen, setInstallOpen] = useState(false);
-  // Treat the second-newest version as currently installed for "upgrade" framing
-  const installed = pkg.versions[1]?.version;
+  const [status, setStatus] = useState<InstallStatus | null>(null);
+  const [uninstalling, setUninstalling] = useState(false);
+  const statusFn = useServerFn(getInstallStatus);
+  const uninstallFn = useServerFn(uninstallPackageBySlug);
+
+  useEffect(() => {
+    if (!user) {
+      setStatus(null);
+      return;
+    }
+    statusFn({ data: { slug: pkg.slug } })
+      .then((s) => setStatus(s))
+      .catch(() => setStatus(null));
+  }, [user, pkg.slug, statusFn]);
+
+  const installed = status?.installed ? status.version ?? undefined : undefined;
   const isUpgrade = !!installed && selectedVersion !== installed;
+
+  const handleUninstall = async () => {
+    if (!confirm(`Uninstall ${pkg.name}?`)) return;
+    setUninstalling(true);
+    try {
+      await uninstallFn({ data: { slug: pkg.slug } });
+      const fresh = await statusFn({ data: { slug: pkg.slug } });
+      setStatus(fresh);
+    } finally {
+      setUninstalling(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
