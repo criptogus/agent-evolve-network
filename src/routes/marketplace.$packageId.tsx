@@ -115,6 +115,7 @@ function PackageDetail() {
       {/* Header */}
       <section className="border-b border-border bg-surface/40">
         <div className="mx-auto max-w-7xl px-6 py-10">
+          <TermsStatusBanner className="mb-5" />
           <Link to="/marketplace" className="text-xs text-muted-foreground transition-colors hover:text-foreground">
             ← Marketplace
           </Link>
