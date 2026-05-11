@@ -328,18 +328,30 @@ function DiscoverPage() {
         {/* Header */}
         <div className="border-b border-border/70 pb-6">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">
-            <span className="size-1.5 rounded-full bg-signal pulse-dot" />
+            <span
+              className={
+                "size-1.5 rounded-full " +
+                (isLoading ? "bg-primary animate-pulse" : "bg-signal pulse-dot")
+              }
+            />
             <span className="font-mono uppercase tracking-wider text-muted-foreground">
-              Live · {grandTotal} packages · {totalsByType.skill}&nbsp;skills ·{" "}
-              {totalsByType.playbook}&nbsp;playbooks · {totalsByType.soul}&nbsp;souls ·{" "}
-              {totalsByType.guardrail}&nbsp;guardrails
+              {isLoading ? (
+                <>Updating counts…</>
+              ) : (
+                <>
+                  Live · {grandTotal} packages · {totalsByType.skill}&nbsp;skills ·{" "}
+                  {totalsByType.playbook}&nbsp;playbooks · {totalsByType.soul}&nbsp;souls ·{" "}
+                  {totalsByType.guardrail}&nbsp;guardrails
+                </>
+              )}
             </span>
             <button
               onClick={() => router.invalidate()}
+              disabled={isLoading}
               title={`Updated ${new Date(fetchedAt).toLocaleTimeString()}`}
-              className="ml-1 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
+              className="ml-1 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground disabled:opacity-50"
             >
-              ↻ refresh
+              {isLoading ? "…syncing" : "↻ refresh"}
             </button>
           </div>
           <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
