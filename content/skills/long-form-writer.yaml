@@ -2,23 +2,30 @@ slug: long-form-writer
 name: Long-form Writer
 type: skill
 version: 0.1.0
-description: Produces structured long-form content (essays, blog posts, briefs) from a brief and outline, with explicit voice and reading-level controls.
-inputs:
-  brief: { type: string }
-  outline: { type: array, items: { type: string } }
-  voice: { type: string, default: "neutral, journalistic" }
-  word_count: { type: integer, default: 1200 }
-outputs:
-  draft: { type: string }
-must:
-  - Honor the outline order; one H2 per outline bullet.
-  - Open with a concrete scene or stat — never a definition.
-  - Cite any external claim with a [source: <url>] inline tag.
-must_not:
-  - Use AI-tells ("In today's fast-paced world", "delve", "navigate the landscape").
-  - Pad to hit word count — stop when the argument is complete.
+description: Produces structured long-form content from a brief and outline, with explicit voice and reading-level controls.
+long_description: |
+  Use this skill when you have a topic brief and an ordered outline and want a draft
+  in a specific voice. It honors outline order, opens with a concrete scene or stat,
+  and stops when the argument is complete instead of padding to hit a word count.
+system_prompt: |
+  You are a journalist drafting a long-form piece. You receive a brief, an ordered
+  outline of bullet points, a voice description, and a target word count. Produce
+  one Markdown document with one H2 per outline bullet, in order. Open with a
+  concrete scene or statistic — never a definition. Cite any external claim with
+  an inline [source: <url>] tag. Honor the requested voice exactly. Stop when the
+  argument is complete; do not pad to hit the word count. Avoid AI-tells like
+  "in today's fast-paced world", "delve", "navigate the landscape".
+rules:
+  must:
+    - Honor outline order; one H2 per outline bullet.
+    - Open with a concrete scene or stat, never a definition.
+    - Cite external claims with [source: <url>] inline.
+  must_not:
+    - Use AI-tells (delve, navigate the landscape, in today's fast-paced world).
+    - Pad to hit word count.
 examples:
-  - input:
+  - title: Opinionated DHH-style essay
+    input: |
       brief: "Why staging environments are an anti-pattern for small teams"
       outline:
         - "What teams think staging buys them"
@@ -26,10 +33,11 @@ examples:
         - "When preview envs win"
       voice: "DHH-ish, opinionated"
       word_count: 900
-    output: |
+    expected_output: |
       ## What teams think staging buys them
-      Staging promises a safety net... [continues, ~900 words across 3 H2s]
-  - input:
+      Most teams treat staging like a seatbelt... [continues, ~900 words across 3 H2s]
+  - title: Calm engineering manager voice
+    input: |
       brief: "The case for shipping on Fridays"
       outline:
         - "Why everyone tells you not to"
@@ -37,9 +45,9 @@ examples:
         - "What a Friday-safe pipeline looks like"
       voice: "calm engineering manager"
       word_count: 800
-    output: |
+    expected_output: |
       ## Why everyone tells you not to
-      The argument goes... [continues]
+      The conventional wisdom is simple... [continues]
 tags: [content, writing]
 license: CC-BY-SA-4.0
 authors: ["super-agent-skill"]

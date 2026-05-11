@@ -1,27 +1,36 @@
 slug: sql-translator
-name: Natural-language → SQL
+name: Natural-language to SQL
 type: skill
 version: 0.1.0
 description: Translates a plain-English question into a single, safe, read-only SQL query against a known schema, with assumptions made explicit.
-inputs:
-  question: { type: string }
-  schema: { type: string, description: "DDL or compact schema description" }
-  dialect: { type: string, default: "postgres" }
-outputs:
-  sql: { type: string }
-  assumptions: { type: array, items: { type: string } }
-must:
-  - Emit exactly one SELECT statement; never INSERT/UPDATE/DELETE/DDL.
-  - Qualify every column with its table or alias.
-  - List every assumption made (date range, NULL handling, dedup key).
-must_not:
-  - Invent columns that aren't in the schema.
-  - Use SELECT * outside an explicit "preview" intent.
+long_description: |
+  Use this skill when a user asks a data question against a known schema and you
+  want a safe SELECT they can run as-is. The skill emits exactly one SELECT,
+  qualifies every column, and lists the assumptions it made (date ranges, NULL
+  handling, dedup keys) so the user can audit them.
+system_prompt: |
+  You are a careful data analyst. You receive a plain-English question, a schema
+  description (DDL or compact form), and a SQL dialect (default postgres).
+  Produce exactly one SELECT statement — never INSERT, UPDATE, DELETE, or DDL.
+  Qualify every column with its table or alias. Use SELECT * only when the
+  intent is an explicit "preview". Then list every assumption made: date range
+  interpretation, NULL handling, dedup key, timezone. Never invent columns
+  that aren't in the schema.
+rules:
+  must:
+    - Emit exactly one SELECT statement.
+    - Qualify every column with its table or alias.
+    - List every assumption made.
+  must_not:
+    - Use INSERT, UPDATE, DELETE, or any DDL.
+    - Invent columns absent from the schema.
 examples:
-  - input:
+  - title: Top customers last quarter
+    input: |
       question: "Top 5 customers by revenue last quarter"
       schema: "orders(id, customer_id, amount_cents, paid_at)"
-    output: |
+      dialect: "postgres"
+    expected_output: |
       SELECT o.customer_id, SUM(o.amount_cents)/100.0 AS revenue
       FROM orders o
       WHERE o.paid_at >= date_trunc('quarter', now()) - interval '3 months'
@@ -29,16 +38,19 @@ examples:
       GROUP BY o.customer_id
       ORDER BY revenue DESC
       LIMIT 5;
-      Assumptions: ["last quarter = previous calendar quarter", "amount_cents always non-null"]
-  - input:
+      Assumptions: ["last quarter = previous calendar quarter", "amount_cents non-null", "timezone = server default"]
+  - title: Daily signups
+    input: |
       question: "How many signups per day in the last 30 days?"
       schema: "users(id, created_at)"
-    output: |
+      dialect: "postgres"
+    expected_output: |
       SELECT date_trunc('day', u.created_at) AS day, COUNT(*) AS signups
       FROM users u
       WHERE u.created_at >= now() - interval '30 days'
-      GROUP BY 1 ORDER BY 1;
-      Assumptions: ["created_at is signup timestamp"]
+      GROUP BY 1
+      ORDER BY 1;
+      Assumptions: ["created_at is signup timestamp", "timezone = server default"]
 tags: [data, sql, analytics]
 license: CC-BY-SA-4.0
 authors: ["super-agent-skill"]
