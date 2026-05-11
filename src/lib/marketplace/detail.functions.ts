@@ -64,7 +64,7 @@ export const getPackageDetail = createServerFn({ method: "GET" })
 
     const { data: versions } = await supabaseAdmin
       .from("package_versions")
-      .select("version, status, notes, created_at, examples, compatibility, rules, permissions")
+      .select("version, status, notes, created_at, examples, compatibility, rules, permissions, system_prompt")
       .eq("package_id", pkg.id)
       .order("created_at", { ascending: false });
 
