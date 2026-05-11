@@ -39,44 +39,9 @@ interface Item {
   author: string;
 }
 
-const ITEMS: Item[] = [
-  // SKILLS
-  { id: "seo-pro", name: "seo-pro", type: "skill", category: "Marketing", tags: ["seo", "content", "growth"], description: "On-page + technical SEO audits, keyword clustering, intent mapping.", popularity: 412000, author: "@reforge" },
-  { id: "blog-writing", name: "blog-writing", type: "skill", category: "Marketing", tags: ["content", "writing", "long-form"], description: "Long-form posts with structure, citations and brand-voice locking.", popularity: 318000, author: "@verge-lab" },
-  { id: "linkedin-writing", name: "linkedin-writing", type: "skill", category: "Marketing", tags: ["social", "writing", "personal-brand"], description: "Hook → narrative → CTA frameworks tuned to LinkedIn distribution.", popularity: 284000, author: "@justin-welsh" },
-  { id: "image-creation", name: "image-creation", type: "skill", category: "Design", tags: ["images", "generation", "brand"], description: "Brand-aware prompts, ratio packs and reference-image controls.", popularity: 512000, author: "@superagentskill" },
-  { id: "ui-design", name: "ui-design", type: "skill", category: "Design", tags: ["ui", "figma", "tokens"], description: "Token-driven UI specs, component naming and Figma-ready exports.", popularity: 174000, author: "@vercel-labs" },
-  { id: "sdr-outbound", name: "sdr-outbound", type: "skill", category: "Sales", tags: ["sdr", "outbound", "email"], description: "Account research, multi-touch sequences, objection handling.", popularity: 392000, author: "@apollo" },
-  { id: "lawyer-contracts", name: "lawyer-contracts", type: "skill", category: "Legal", tags: ["legal", "contracts", "due-diligence"], description: "Clause extraction, risk scoring and redlining against playbooks.", popularity: 86000, author: "@harvey" },
-  { id: "hematology-specialist", name: "hematology-specialist", type: "skill", category: "Healthcare", tags: ["medical", "hematology", "diagnosis"], description: "CBC interpretation, clotting workups, oncology referral logic.", popularity: 42000, author: "@mayo-health" },
-  { id: "cardiology-diagnostics", name: "cardiology-diagnostics", type: "skill", category: "Healthcare", tags: ["medical", "cardiology"], description: "ECG interpretation, GRACE scoring and differential diagnosis.", popularity: 84200, author: "@mayo-health" },
-  { id: "data-analyst", name: "data-analyst", type: "skill", category: "Analytics", tags: ["sql", "stats", "dashboards"], description: "SQL generation, hypothesis testing, cohort and funnel analysis.", popularity: 261000, author: "@mode" },
-  { id: "growth-hacking-pro", name: "growth-hacking-pro", type: "skill", category: "Marketing", tags: ["growth", "experiments", "north-star"], description: "ICE prioritization, north-star metric design, retention loops.", popularity: 318000, author: "@reforge" },
+// Items now come from the database via the route loader. The static demo array
+// has been removed in favour of `useLoaderData()` + a DB→Item adapter below.
 
-  // PLAYBOOKS
-  { id: "google-ads", name: "google-ads", type: "playbook", category: "Paid media", tags: ["ads", "google", "ppc"], description: "Campaign structure, negative keywords, bidding strategy by funnel stage.", popularity: 221000, author: "@search-labs" },
-  { id: "meta-ads", name: "meta-ads", type: "playbook", category: "Paid media", tags: ["ads", "meta", "facebook", "instagram"], description: "Creative testing matrix, CBO setup, audience layering, signal hygiene.", popularity: 198000, author: "@common-thread" },
-  { id: "hubspot-ops", name: "hubspot-ops", type: "playbook", category: "Revenue ops", tags: ["crm", "hubspot", "automation"], description: "Lifecycle stages, lead scoring, workflow audits and dashboards.", popularity: 142000, author: "@hubspot-experts" },
-  { id: "whatsapp-flows", name: "whatsapp-flows", type: "playbook", category: "Conversational", tags: ["whatsapp", "messaging", "support"], description: "Template approval, opt-in flows, support routing and CSAT loops.", popularity: 96000, author: "@twilio" },
-  { id: "higgsfield-video", name: "higgsfield-video", type: "playbook", category: "Creative", tags: ["video", "ai", "ads"], description: "Hook framework, scene boarding, motion direction with Higgsfield.", popularity: 38000, author: "@higgsfield" },
-  { id: "amplitude-analytics", name: "amplitude-analytics", type: "playbook", category: "Analytics", tags: ["analytics", "amplitude", "events"], description: "Event taxonomy, cohort design, north-star dashboards and alerts.", popularity: 78000, author: "@amplitude" },
-  { id: "enterprise-sales-flow", name: "enterprise-sales-flow", type: "playbook", category: "Sales", tags: ["sales", "meddpicc", "enterprise"], description: "End-to-end MEDDPICC + multi-thread enterprise sales motion.", popularity: 212000, author: "@oracle-labs" },
-  { id: "tiktok-organic", name: "tiktok-organic", type: "playbook", category: "Social", tags: ["tiktok", "organic", "creator"], description: "Hook patterns, retention curves and posting cadence by niche.", popularity: 154000, author: "@later" },
-
-  // SOULS
-  { id: "steve-jobs-soul", name: "steve-jobs-soul", type: "soul", category: "Product", tags: ["taste", "clarity", "decisive"], description: "Reality distortion field, taste, brutal product clarity.", popularity: 1200000, author: "@superagentskill" },
-  { id: "mckinsey-consultant", name: "mckinsey-consultant", type: "soul", category: "Strategy", tags: ["mece", "pyramid", "executive"], description: "MECE thinking, pyramid principle, executive communication.", popularity: 402000, author: "@strategy-co" },
-  { id: "humanized-doctor", name: "humanized-doctor", type: "soul", category: "Healthcare", tags: ["empathy", "clinical", "calm"], description: "Calm, empathetic clinical voice with explicit uncertainty.", popularity: 51000, author: "@hippocratic-ai" },
-  { id: "ogilvy-copywriter", name: "ogilvy-copywriter", type: "soul", category: "Marketing", tags: ["copy", "advertising", "long-form"], description: "Ogilvy-school copywriting principles and headline craft.", popularity: 187000, author: "@copylab" },
-  { id: "founder-grit", name: "founder-grit", type: "soul", category: "Leadership", tags: ["bias-to-action", "blunt", "ownership"], description: "Bias to action, blunt feedback, deep ownership.", popularity: 92000, author: "@yc-archive" },
-
-  // GUARDRAILS
-  { id: "no-hallucination", name: "no-hallucination", type: "guardrail", category: "Universal", tags: ["citations", "uncertainty"], description: "Forces citation of sources and explicit uncertainty when low confidence.", popularity: 940000, author: "@superagentskill" },
-  { id: "medical-guardrails", name: "medical-guardrails", type: "guardrail", category: "Healthcare", tags: ["medical", "fda", "escalation"], description: "FDA-aligned safety. Blocks unsafe dosing, escalates to clinicians.", popularity: 94000, author: "@hippocratic-ai" },
-  { id: "finance-compliance", name: "finance-compliance", type: "guardrail", category: "Finance", tags: ["finra", "advice", "kyc"], description: "FINRA-aligned. Blocks unlicensed advice, enforces disclaimers.", popularity: 61000, author: "@regtech" },
-  { id: "pii-shield", name: "pii-shield", type: "guardrail", category: "Privacy", tags: ["pii", "redaction", "gdpr"], description: "Detects and redacts PII before tools, logs and external calls.", popularity: 312000, author: "@superagentskill" },
-  { id: "competitor-shield", name: "competitor-shield", type: "guardrail", category: "Brand", tags: ["brand", "competitors"], description: "Blocks recommendations of named competitors. Configurable allowlist.", popularity: 21000, author: "@brandwatch" },
-];
 
 const TYPE_META: Record<Type, { label: string; plural: string; tone: string }> = {
   skill: { label: "Skill", plural: "Skills", tone: "skill" },
