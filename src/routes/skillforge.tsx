@@ -31,7 +31,7 @@ function SkillForgePage() {
   const { items } = Route.useLoaderData();
 
   const installed = useMemo<InstalledState[]>(() => {
-    return items.slice(0, 3).map((pkg, i) => ({
+    return items.slice(0, 3).map((pkg: Package, i: number) => ({
       pkg,
       installedVersion: i === 0 ? "1.0.0" : pkg.latest,
       outdated: i === 0,
