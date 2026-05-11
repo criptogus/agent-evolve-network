@@ -5,14 +5,15 @@ import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { CodeBlock } from "@/components/site/CodeBlock";
 import { TypingLines } from "@/components/site/Typewriter";
 import { TypeBadge } from "./marketplace.index";
-import { getPackage, type Package, type CompatibilityCheck } from "@/data/packages";
+import type { Package, CompatibilityCheck } from "@/data/packages";
+import { getPackageDetail } from "@/lib/marketplace/detail.functions";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/marketplace/$packageId")({
-  loader: ({ params }) => {
-    const pkg = getPackage(params.packageId);
-    if (!pkg) throw notFound();
-    return { pkg };
+  loader: async ({ params }) => {
+    const result = await getPackageDetail({ data: { slug: params.packageId } });
+    if (!result) throw notFound();
+    return { pkg: result.pkg };
   },
   head: ({ loaderData }) => ({
     meta: loaderData

@@ -2,9 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { PACKAGES, type PackageType } from "@/data/packages";
+import { type PackageType, type Package } from "@/data/packages";
+import { listPackagesForDemo } from "@/lib/marketplace/detail.functions";
 
 export const Route = createFileRoute("/evaluation")({
+  loader: () => listPackagesForDemo(),
   component: EvaluationPage,
   head: () => ({
     meta: [
@@ -80,8 +82,8 @@ const SWAP_REASONS = [
   "Hallucination spike",
 ];
 
-function seedPanels(): PanelState[] {
-  return PACKAGES.map((p, i) => {
+function seedPanels(items: Package[]): PanelState[] {
+  return items.map((p, i) => {
     const baseFitness = 78 + Math.floor(Math.random() * 16); // 78-93
     const threshold = p.type === "guardrail" ? 88 : p.type === "soul" ? 78 : 82;
     const warnAt = threshold + 3;
@@ -124,7 +126,8 @@ function seedPanels(): PanelState[] {
 }
 
 function EvaluationPage() {
-  const [panels, setPanels] = useState<PanelState[]>(() => seedPanels());
+  const { items } = Route.useLoaderData();
+  const [panels, setPanels] = useState<PanelState[]>(() => seedPanels(items));
   const [running, setRunning] = useState(true);
   const [filter, setFilter] = useState<"all" | PackageType>("all");
   const [speed, setSpeed] = useState<1 | 2 | 4>(2);

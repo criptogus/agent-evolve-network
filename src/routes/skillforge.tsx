@@ -3,9 +3,11 @@ import { useMemo, useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { TypingLines } from "@/components/site/Typewriter";
-import { PACKAGES, type Package } from "@/data/packages";
+import { type Package } from "@/data/packages";
+import { listPackagesForDemo } from "@/lib/marketplace/detail.functions";
 
 export const Route = createFileRoute("/skillforge")({
+  loader: () => listPackagesForDemo(),
   component: SkillForgePage,
   head: () => ({
     meta: [
@@ -25,29 +27,18 @@ type InstalledState = {
   outdated: boolean;
 };
 
-const INSTALLED_IDS: Record<string, { version: string; outdated: boolean }> = {
-  "cardiology-diagnostics": { version: "2.0.4", outdated: true },
-  "medical-guardrails": { version: "0.9.0", outdated: false },
-  "mckinsey-consultant": { version: "2.3.0", outdated: false },
-};
-
-const RECOMMENDED_IDS = ["enterprise-sales-flow", "steve-jobs-soul", "growth-hacking-pro"];
-
 function SkillForgePage() {
-  const installed = useMemo<InstalledState[]>(
-    () =>
-      PACKAGES.filter((p) => INSTALLED_IDS[p.id]).map((p) => ({
-        pkg: p,
-        installedVersion: INSTALLED_IDS[p.id].version,
-        outdated: INSTALLED_IDS[p.id].outdated,
-      })),
-    [],
-  );
+  const { items } = Route.useLoaderData();
 
-  const recommended = useMemo(
-    () => PACKAGES.filter((p) => RECOMMENDED_IDS.includes(p.id)),
-    [],
-  );
+  const installed = useMemo<InstalledState[]>(() => {
+    return items.slice(0, 3).map((pkg: Package, i: number) => ({
+      pkg,
+      installedVersion: i === 0 ? "1.0.0" : pkg.latest,
+      outdated: i === 0,
+    }));
+  }, [items]);
+
+  const recommended = useMemo<Package[]>(() => items.slice(3, 6), [items]);
 
   const [scanning, setScanning] = useState(false);
   const [healthScore, setHealthScore] = useState(86.4);
