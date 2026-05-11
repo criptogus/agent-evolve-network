@@ -22,7 +22,6 @@ import { Route as MatchRouteImport } from './routes/match'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as ForgeRouteImport } from './routes/forge'
-import { Route as EvolutionRouteImport } from './routes/evolution'
 import { Route as EvaluationRouteImport } from './routes/evaluation'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DiscoverRouteImport } from './routes/discover'
@@ -132,11 +131,6 @@ const GenerateRoute = GenerateRouteImport.update({
 const ForgeRoute = ForgeRouteImport.update({
   id: '/forge',
   path: '/forge',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvolutionRoute = EvolutionRouteImport.update({
-  id: '/evolution',
-  path: '/evolution',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EvaluationRoute = EvaluationRouteImport.update({
@@ -375,7 +369,6 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
-  '/evolution': typeof EvolutionRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/login': typeof LoginRoute
@@ -435,7 +428,6 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
-  '/evolution': typeof EvolutionRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/login': typeof LoginRoute
@@ -497,7 +489,6 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
   '/evaluation': typeof EvaluationRoute
-  '/evolution': typeof EvolutionRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/login': typeof LoginRoute
@@ -560,7 +551,6 @@ export interface FileRouteTypes {
     | '/discover'
     | '/docs'
     | '/evaluation'
-    | '/evolution'
     | '/forge'
     | '/generate'
     | '/login'
@@ -620,7 +610,6 @@ export interface FileRouteTypes {
     | '/discover'
     | '/docs'
     | '/evaluation'
-    | '/evolution'
     | '/forge'
     | '/generate'
     | '/login'
@@ -681,7 +670,6 @@ export interface FileRouteTypes {
     | '/discover'
     | '/docs'
     | '/evaluation'
-    | '/evolution'
     | '/forge'
     | '/generate'
     | '/login'
@@ -743,7 +731,6 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   DocsRoute: typeof DocsRouteWithChildren
   EvaluationRoute: typeof EvaluationRoute
-  EvolutionRoute: typeof EvolutionRoute
   ForgeRoute: typeof ForgeRouteWithChildren
   GenerateRoute: typeof GenerateRoute
   LoginRoute: typeof LoginRoute
@@ -873,13 +860,6 @@ declare module '@tanstack/react-router' {
       path: '/forge'
       fullPath: '/forge'
       preLoaderRoute: typeof ForgeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evolution': {
-      id: '/evolution'
-      path: '/evolution'
-      fullPath: '/evolution'
-      preLoaderRoute: typeof EvolutionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/evaluation': {
@@ -1282,7 +1262,6 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   DocsRoute: DocsRouteWithChildren,
   EvaluationRoute: EvaluationRoute,
-  EvolutionRoute: EvolutionRoute,
   ForgeRoute: ForgeRouteWithChildren,
   GenerateRoute: GenerateRoute,
   LoginRoute: LoginRoute,
@@ -1324,3 +1303,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
