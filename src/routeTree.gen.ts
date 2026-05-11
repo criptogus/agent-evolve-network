@@ -44,6 +44,7 @@ import { Route as AdminReviewRouteImport } from './routes/admin.review'
 import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
+import { Route as AdminMetaAdsPackRouteImport } from './routes/admin.meta-ads-pack'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
 import { Route as AccountUsageRouteImport } from './routes/account.usage'
 import { Route as AccountTokensRouteImport } from './routes/account.tokens'
@@ -233,6 +234,11 @@ const AdminPackagesRoute = AdminPackagesRouteImport.update({
   path: '/packages',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminMetaAdsPackRoute = AdminMetaAdsPackRouteImport.update({
+  id: '/meta-ads-pack',
+  path: '/meta-ads-pack',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAccountsRoute = AdminAccountsRouteImport.update({
   id: '/accounts',
   path: '/accounts',
@@ -328,6 +334,7 @@ export interface FileRoutesByFullPath {
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
@@ -377,6 +384,7 @@ export interface FileRoutesByTo {
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
@@ -428,6 +436,7 @@ export interface FileRoutesById {
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
@@ -480,6 +489,7 @@ export interface FileRouteTypes {
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
+    | '/admin/meta-ads-pack'
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
@@ -529,6 +539,7 @@ export interface FileRouteTypes {
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
+    | '/admin/meta-ads-pack'
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
@@ -579,6 +590,7 @@ export interface FileRouteTypes {
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
+    | '/admin/meta-ads-pack'
     | '/admin/packages'
     | '/admin/plans'
     | '/admin/requests'
@@ -889,6 +901,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPackagesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/meta-ads-pack': {
+      id: '/admin/meta-ads-pack'
+      path: '/meta-ads-pack'
+      fullPath: '/admin/meta-ads-pack'
+      preLoaderRoute: typeof AdminMetaAdsPackRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/accounts': {
       id: '/admin/accounts'
       path: '/accounts'
@@ -997,6 +1016,7 @@ const AdminPackagesRouteWithChildren = AdminPackagesRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminAccountsRoute: typeof AdminAccountsRoute
+  AdminMetaAdsPackRoute: typeof AdminMetaAdsPackRoute
   AdminPackagesRoute: typeof AdminPackagesRouteWithChildren
   AdminPlansRoute: typeof AdminPlansRoute
   AdminRequestsRoute: typeof AdminRequestsRoute
@@ -1008,6 +1028,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAccountsRoute: AdminAccountsRoute,
+  AdminMetaAdsPackRoute: AdminMetaAdsPackRoute,
   AdminPackagesRoute: AdminPackagesRouteWithChildren,
   AdminPlansRoute: AdminPlansRoute,
   AdminRequestsRoute: AdminRequestsRoute,
