@@ -245,3 +245,38 @@ function Shell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+function DownloadButtons({ customizationId }: { customizationId: string }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const download = async (ext: "md" | "json") => {
+    setBusy(ext);
+    try {
+      const { data: s } = await supabase.auth.getSession();
+      const token = s.session?.access_token;
+      if (!token) { toast.error("Sign in again to download."); return; }
+      const res = await fetch(`/api/packs/customization/${customizationId}/download.${ext}`, {
+        headers: { authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) { toast.error(await res.text()); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `customized.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } finally { setBusy(null); }
+  };
+  return (
+    <div className="flex flex-wrap gap-2 pt-2">
+      <Button onClick={() => download("md")} disabled={busy !== null}>
+        {busy === "md" ? "Preparing…" : "Download Markdown bundle"}
+      </Button>
+      <Button variant="outline" onClick={() => download("json")} disabled={busy !== null}>
+        {busy === "json" ? "Preparing…" : "Download JSON bundle"}
+      </Button>
+    </div>
+  );
+}
