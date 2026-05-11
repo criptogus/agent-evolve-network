@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Nav } from "@/components/site/Nav";
