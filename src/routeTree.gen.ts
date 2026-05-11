@@ -33,11 +33,14 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PacksIndexRouteImport } from './routes/packs.index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as UHandleRouteImport } from './routes/u.$handle'
 import { Route as SoulsSlugRouteImport } from './routes/souls.$slug'
 import { Route as RobotsTxtRouteImport } from './routes/robots.txt'
 import { Route as PacksSlugRouteImport } from './routes/packs.$slug'
 import { Route as OauthAuthorizeRouteImport } from './routes/oauth.authorize'
 import { Route as MarketplaceRankingsRouteImport } from './routes/marketplace.rankings'
+import { Route as MarketplaceLeaderboardRouteImport } from './routes/marketplace.leaderboard'
+import { Route as MarketplaceCategoriesRouteImport } from './routes/marketplace.categories'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
 import { Route as LlmsTxtRouteImport } from './routes/llms.txt'
 import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
@@ -190,6 +193,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const UHandleRoute = UHandleRouteImport.update({
+  id: '/u/$handle',
+  path: '/u/$handle',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SoulsSlugRoute = SoulsSlugRouteImport.update({
   id: '/souls/$slug',
   path: '/souls/$slug',
@@ -213,6 +221,16 @@ const OauthAuthorizeRoute = OauthAuthorizeRouteImport.update({
 const MarketplaceRankingsRoute = MarketplaceRankingsRouteImport.update({
   id: '/marketplace/rankings',
   path: '/marketplace/rankings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceLeaderboardRoute = MarketplaceLeaderboardRouteImport.update({
+  id: '/marketplace/leaderboard',
+  path: '/marketplace/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceCategoriesRoute = MarketplaceCategoriesRouteImport.update({
+  id: '/marketplace/categories',
+  path: '/marketplace/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
@@ -413,11 +431,14 @@ export interface FileRoutesByFullPath {
   '/docs/mcp': typeof DocsMcpRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/marketplace/categories': typeof MarketplaceCategoriesRoute
+  '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
   '/robots/txt': typeof RobotsTxtRoute
   '/souls/$slug': typeof SoulsSlugRoute
+  '/u/$handle': typeof UHandleRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/packs/': typeof PacksIndexRoute
@@ -474,11 +495,14 @@ export interface FileRoutesByTo {
   '/docs/mcp': typeof DocsMcpRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/marketplace/categories': typeof MarketplaceCategoriesRoute
+  '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
   '/robots/txt': typeof RobotsTxtRoute
   '/souls/$slug': typeof SoulsSlugRoute
+  '/u/$handle': typeof UHandleRoute
   '/admin': typeof AdminIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
   '/packs': typeof PacksIndexRoute
@@ -537,11 +561,14 @@ export interface FileRoutesById {
   '/docs/mcp': typeof DocsMcpRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/marketplace/categories': typeof MarketplaceCategoriesRoute
+  '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
   '/robots/txt': typeof RobotsTxtRoute
   '/souls/$slug': typeof SoulsSlugRoute
+  '/u/$handle': typeof UHandleRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/packs/': typeof PacksIndexRoute
@@ -601,11 +628,14 @@ export interface FileRouteTypes {
     | '/docs/mcp'
     | '/llms/txt'
     | '/marketplace/$packageId'
+    | '/marketplace/categories'
+    | '/marketplace/leaderboard'
     | '/marketplace/rankings'
     | '/oauth/authorize'
     | '/packs/$slug'
     | '/robots/txt'
     | '/souls/$slug'
+    | '/u/$handle'
     | '/admin/'
     | '/marketplace/'
     | '/packs/'
@@ -662,11 +692,14 @@ export interface FileRouteTypes {
     | '/docs/mcp'
     | '/llms/txt'
     | '/marketplace/$packageId'
+    | '/marketplace/categories'
+    | '/marketplace/leaderboard'
     | '/marketplace/rankings'
     | '/oauth/authorize'
     | '/packs/$slug'
     | '/robots/txt'
     | '/souls/$slug'
+    | '/u/$handle'
     | '/admin'
     | '/marketplace'
     | '/packs'
@@ -724,11 +757,14 @@ export interface FileRouteTypes {
     | '/docs/mcp'
     | '/llms/txt'
     | '/marketplace/$packageId'
+    | '/marketplace/categories'
+    | '/marketplace/leaderboard'
     | '/marketplace/rankings'
     | '/oauth/authorize'
     | '/packs/$slug'
     | '/robots/txt'
     | '/souls/$slug'
+    | '/u/$handle'
     | '/admin/'
     | '/marketplace/'
     | '/packs/'
@@ -778,11 +814,14 @@ export interface RootRouteChildren {
   ApiMcpRoute: typeof ApiMcpRoute
   LlmsTxtRoute: typeof LlmsTxtRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
+  MarketplaceCategoriesRoute: typeof MarketplaceCategoriesRoute
+  MarketplaceLeaderboardRoute: typeof MarketplaceLeaderboardRoute
   MarketplaceRankingsRoute: typeof MarketplaceRankingsRoute
   OauthAuthorizeRoute: typeof OauthAuthorizeRoute
   PacksSlugRoute: typeof PacksSlugRouteWithChildren
   RobotsTxtRoute: typeof RobotsTxtRoute
   SoulsSlugRoute: typeof SoulsSlugRoute
+  UHandleRoute: typeof UHandleRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   PacksIndexRoute: typeof PacksIndexRoute
   MarketplaceTrustSlugRoute: typeof MarketplaceTrustSlugRoute
@@ -965,6 +1004,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/u/$handle': {
+      id: '/u/$handle'
+      path: '/u/$handle'
+      fullPath: '/u/$handle'
+      preLoaderRoute: typeof UHandleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/souls/$slug': {
       id: '/souls/$slug'
       path: '/souls/$slug'
@@ -998,6 +1044,20 @@ declare module '@tanstack/react-router' {
       path: '/marketplace/rankings'
       fullPath: '/marketplace/rankings'
       preLoaderRoute: typeof MarketplaceRankingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace/leaderboard': {
+      id: '/marketplace/leaderboard'
+      path: '/marketplace/leaderboard'
+      fullPath: '/marketplace/leaderboard'
+      preLoaderRoute: typeof MarketplaceLeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace/categories': {
+      id: '/marketplace/categories'
+      path: '/marketplace/categories'
+      fullPath: '/marketplace/categories'
+      preLoaderRoute: typeof MarketplaceCategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/marketplace/$packageId': {
@@ -1325,11 +1385,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMcpRoute: ApiMcpRoute,
   LlmsTxtRoute: LlmsTxtRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
+  MarketplaceCategoriesRoute: MarketplaceCategoriesRoute,
+  MarketplaceLeaderboardRoute: MarketplaceLeaderboardRoute,
   MarketplaceRankingsRoute: MarketplaceRankingsRoute,
   OauthAuthorizeRoute: OauthAuthorizeRoute,
   PacksSlugRoute: PacksSlugRouteWithChildren,
   RobotsTxtRoute: RobotsTxtRoute,
   SoulsSlugRoute: SoulsSlugRoute,
+  UHandleRoute: UHandleRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   PacksIndexRoute: PacksIndexRoute,
   MarketplaceTrustSlugRoute: MarketplaceTrustSlugRoute,

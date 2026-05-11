@@ -80,12 +80,24 @@ function Marketplace() {
             {data ? `${items.length} live packages` : "Loading registry…"} across the agent stack.
             Search by name, person (e.g. <em>Musk</em>, <em>Buffett</em>) or category.
           </p>
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link
+              to="/marketplace/leaderboard"
+              className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary hover:text-primary"
+            >
+              🏆 Top 50 leaderboard
+            </Link>
+            <Link
+              to="/marketplace/categories"
+              className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary hover:text-primary"
+            >
+              📂 Browse by category
+            </Link>
             <Link
               to="/marketplace/rankings"
               className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary hover:text-primary"
             >
-              🏆 View rankings · 🧑 Humans vs 🤖 Agents
+              🧑 Humans vs 🤖 Agents
             </Link>
           </div>
 
