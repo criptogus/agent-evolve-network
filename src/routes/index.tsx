@@ -1591,20 +1591,23 @@ function CTASection() {
       <div className="absolute inset-0 hero-glow" aria-hidden />
       <div className="relative mx-auto max-w-3xl px-6 text-center">
         <h2 className="text-4xl font-semibold tracking-tight md:text-6xl">
-          One sentence.
+          One MCP URL.
           <br />
-          Your agent becomes a genius.
+          One sentence. Done.
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">
-          Install the best of your industry. Generate what doesn't exist yet. All from a chat box —
-          no engineers required.
+          Install the best packages of your industry, generate what doesn't exist yet, and let
+          the Evolution Engine ship better versions for you — week after week.
         </p>
-        <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <a href="#" className="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95">
-            Connect your agent
-          </a>
-          <Link to="/pricing" className="inline-flex h-11 items-center rounded-md border border-border bg-surface-elevated px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent">
-            View pricing
+        <div className="mx-auto mt-7 max-w-md">
+          <CodeBlockCopy code="https://superagentskill.com/api/mcp" label="copy MCP url" />
+        </div>
+        <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link to="/connect" className="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95">
+            Connect your agent →
+          </Link>
+          <Link to="/marketplace" className="inline-flex h-11 items-center rounded-md border border-border bg-surface-elevated px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent">
+            Browse the registry
           </Link>
         </div>
       </div>
