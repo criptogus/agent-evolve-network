@@ -183,7 +183,7 @@ function PackageDetail() {
 
               {isOutdated && (
                 <button
-                  onClick={handleUpdateToLatest}
+                  onClick={() => { if (requireAuth("update this package")) handleUpdateToLatest(); }}
                   disabled={updating}
                   className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-95 disabled:opacity-60"
                 >
@@ -192,7 +192,7 @@ function PackageDetail() {
               )}
 
               <button
-                onClick={() => setInstallOpen(true)}
+                onClick={() => { if (requireAuth("install this package")) setInstallOpen(true); }}
                 className={`${isOutdated ? "mt-2 h-10 border border-border bg-background text-foreground hover:bg-accent" : "mt-4 h-11 bg-primary text-primary-foreground hover:opacity-95 shadow-sm"} inline-flex w-full items-center justify-center rounded-md text-sm font-semibold transition-all`}
               >
                 {isUpgrade
