@@ -71,7 +71,36 @@ const GOVERNANCE_LEVELS = [
   { key: "L4", label: "L4 · Sandboxed", body: "Read-only mode. No writes, no external calls." },
 ];
 
+function dbToItem(p: MarketplaceItem): Item {
+  const vertical = p.vertical || "General";
+  const category = vertical
+    .split(/[-_/]/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+  const tags = Array.from(
+    new Set(
+      [
+        vertical.toLowerCase(),
+        ...p.name.toLowerCase().split(/[\s-]+/).filter((w) => w.length > 2),
+      ].slice(0, 5)
+    )
+  );
+  return {
+    id: p.slug,
+    name: p.slug,
+    type: (p.type as Type) ?? "skill",
+    category,
+    tags,
+    description: p.description,
+    popularity: p.install_count ?? 0,
+    author: p.author_handle,
+  };
+}
+
 function DiscoverPage() {
+  const { items: dbItems } = Route.useLoaderData();
+  const ITEMS: Item[] = useMemo(() => dbItems.map(dbToItem), [dbItems]);
+
   const [type, setType] = useState<Type>("skill");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
@@ -94,7 +123,8 @@ function DiscoverPage() {
     autoCreateM.mutate({ brief, type });
   };
 
-  const itemsOfType = useMemo(() => ITEMS.filter((i) => i.type === type), [type]);
+  const itemsOfType = useMemo(() => ITEMS.filter((i) => i.type === type), [ITEMS, type]);
+
 
   const categories = useMemo(() => {
     const set = new Set<string>();
