@@ -28,6 +28,7 @@ function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
