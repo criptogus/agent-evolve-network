@@ -493,7 +493,70 @@ Produce the Evaluation JSON.`;
     notes: `${judgements.length} judges · verdict=${evaluation.verdict} · score=${evaluation.overall_score}`,
   });
 
-  return { evaluation, actuals, adversarial, stages };
+  // Stage 4 — trigger-rate (Anthropic spec quantitative metric)
+  // Goal: skill triggers on >=90% of relevant queries, <=20% of irrelevant.
+  const t3 = Date.now();
+  let triggerRate: {
+    relevant: string[];
+    irrelevant: string[];
+    relevant_triggered: number;
+    irrelevant_triggered: number;
+    trigger_rate: number;
+    false_positive_rate: number;
+  } | null = null;
+  try {
+    const ProbeGen = z.object({
+      relevant: z.array(z.string()).length(5),
+      irrelevant: z.array(z.string()).length(5),
+    });
+    const description = opts.pkg.description ?? opts.pkg.name;
+    const { experimental_output: probes } = await generateText({
+      model: getGatewayModel(FAST),
+      system:
+        "You generate test queries to measure skill activation. Output 5 RELEVANT user queries that should obviously trigger this skill, and 5 IRRELEVANT user queries from completely different domains that must NOT trigger it. Strict JSON.",
+      prompt: `Skill: ${opts.pkg.name} (${opts.pkg.type})\nDescription: ${description}`,
+      experimental_output: Output.object({ schema: ProbeGen }),
+    });
+    const Decide = z.object({ would_trigger: z.boolean(), confidence: z.number().min(0).max(1) });
+    const judgeOne = async (q: string) => {
+      try {
+        const { experimental_output: d } = await generateText({
+          model: getGatewayModel(FAST),
+          system:
+            "You are an MCP router deciding whether to load a skill. Given the skill description and a user query, decide if the skill is clearly relevant. Strict JSON.",
+          prompt: `Skill description: ${description}\n\nUser query: "${q}"\n\nWould you load this skill?`,
+          experimental_output: Output.object({ schema: Decide }),
+        });
+        return d.would_trigger;
+      } catch {
+        return false;
+      }
+    };
+    const [relTrig, irrTrig] = await Promise.all([
+      Promise.all(probes.relevant.map(judgeOne)),
+      Promise.all(probes.irrelevant.map(judgeOne)),
+    ]);
+    const rT = relTrig.filter(Boolean).length;
+    const iT = irrTrig.filter(Boolean).length;
+    triggerRate = {
+      relevant: probes.relevant,
+      irrelevant: probes.irrelevant,
+      relevant_triggered: rT,
+      irrelevant_triggered: iT,
+      trigger_rate: Math.round((rT / probes.relevant.length) * 100),
+      false_positive_rate: Math.round((iT / probes.irrelevant.length) * 100),
+    };
+    stages.push({
+      name: "trigger-rate",
+      ms: Date.now() - t3,
+      ok: triggerRate.trigger_rate >= 80 && triggerRate.false_positive_rate <= 20,
+      notes: `triggers ${triggerRate.trigger_rate}% relevant · ${triggerRate.false_positive_rate}% false positives (Anthropic target ≥90% / ≤20%)`,
+    });
+  } catch (e) {
+    stages.push({ name: "trigger-rate", ms: Date.now() - t3, ok: false, notes: (e as Error).message });
+  }
+
+  return { evaluation, actuals, adversarial, triggerRate, stages };
 }
 
 /* ============================================================
