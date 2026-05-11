@@ -918,10 +918,10 @@ function GeneratePage() {
                   Forge another
                 </button>
                 <a
-                  href="/evolution"
+                  href="/skillforge"
                   className="inline-flex h-9 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-95"
                 >
-                  Watch it evolve →
+                  Open SkillForge →
                 </a>
               </div>
             </div>

@@ -29,7 +29,7 @@ const CREATE: NavItem[] = [
   { to: "/generate", label: "Generate a skill", hint: "From a one-line idea" },
   { to: "/skillforge", label: "SkillForge", hint: "Guided builder" },
   { to: "/forge", label: "Forge", hint: "Advanced editor" },
-  { to: "/evolution", label: "Evolution", hint: "Improve over time" },
+  { to: "/discover", label: "Discover", hint: "AI auto-forges what's missing" },
   { to: "/evaluation", label: "Evaluation", hint: "Test & benchmark" },
   { to: "/match", label: "Match", hint: "Pair skills to a goal" },
 ];

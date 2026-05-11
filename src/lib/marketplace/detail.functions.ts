@@ -125,39 +125,3 @@ export const getPackageDetail = createServerFn({ method: "GET" })
     return { pkg: out };
   });
 
-export const listPackagesForDemo = createServerFn({ method: "GET" }).handler(
-  async (): Promise<{ items: Package[] }> => {
-    const { data: pkgs } = await supabaseAdmin
-      .from("packages")
-      .select(
-        "id, slug, name, type, description, long_description, author_handle, author_verified, install_count, latest_version, license, scopes"
-      )
-      .eq("is_published", true)
-      .eq("review_status", "approved")
-      .order("install_count", { ascending: false })
-      .limit(24);
-
-    const items: Package[] = (pkgs ?? []).map((p) => ({
-      id: p.slug,
-      name: p.name,
-      type: p.type as Package["type"],
-      author: p.author_handle ?? "@unknown",
-      authorVerified: !!p.author_verified,
-      downloads: fmtCount(p.install_count ?? 0),
-      rating: 0,
-      reviews: 0,
-      description: p.description ?? "",
-      longDescription: p.long_description ?? p.description ?? "",
-      latest: p.latest_version,
-      versions: [{ version: p.latest_version, date: "—", status: "stable", notes: "" }],
-      compatibility: [],
-      dependencies: [],
-      scopes: Array.isArray(p.scopes) ? (p.scopes as string[]) : ["registry:read"],
-      size: "—",
-      license: (p.license as string) ?? "—",
-      examples: [],
-      metrics: [],
-    }));
-    return { items };
-  }
-);

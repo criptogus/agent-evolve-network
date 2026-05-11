@@ -484,11 +484,10 @@ function PlainEnglish() {
                   ) : (
                     <>
                       <Link
-                        to="/evolution"
-                        search={{ prompt: currentPrompt }}
+                        to="/skillforge"
                         className="text-xs text-muted-foreground transition-colors hover:text-foreground"
                       >
-                        Watch evolve →
+                        Open SkillForge →
                       </Link>
                       <div className="flex items-center gap-2">
                         <button
