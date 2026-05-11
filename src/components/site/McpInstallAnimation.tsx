@@ -35,8 +35,7 @@ export function McpInstallAnimation() {
   // Step machine — runs forever, restarts cleanly
   useEffect(() => {
     let cancelled = false;
-    const sleep = (ms: number) =>
-      new Promise<void>((r) => setTimeout(() => (cancelled ? null : r()), ms));
+    const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
     async function run() {
       while (!cancelled) {
@@ -49,18 +48,22 @@ export function McpInstallAnimation() {
 
         // Step 1 — type the URL
         await sleep(600);
+        if (cancelled) return;
         for (let i = 1; i <= MCP_URL.length; i++) {
           if (cancelled) return;
           setTyped(i);
           await sleep(22);
         }
         await sleep(450);
+        if (cancelled) return;
         setCopied(true);
         await sleep(900);
+        if (cancelled) return;
 
         // Step 2 — paste into client
         setStep(1);
-        await sleep(1600);
+        await sleep(1800);
+        if (cancelled) return;
 
         // Step 3 — tools come online
         setStep(2);
