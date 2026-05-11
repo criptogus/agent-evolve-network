@@ -68,6 +68,7 @@ export type ForgeData = {
     name: string;
     type: string;
     version: string;
+    latestVersion: string;
     installedAt: string;
     runs30d: number;
     successRate30d: number | null;
