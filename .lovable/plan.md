@@ -84,8 +84,20 @@ Aproveita `permissions[]` + `guardrails` já no schema. Falta `cert_authority`, 
 | 5 | #9 Guardrails certificados (parcerias jurídicas) | XL | enterprise/regulatório |
 | 5 | #10 Open Protocol spec + branding "Powered by Super Agent Skill" | M | gravity well |
 
-## E. Próximo passo concreto
+## E. Status de implementação
 
-Sugiro implementar **#1 (Telemetry Network) + #5 (Hardening público)** primeiro: usam infra que já existe (`evaluator_runs`, MCP server), criam dataset proprietário desde a primeira semana e geram conteúdo SEO denso (uma página de "trust report" por skill = milhares de páginas indexáveis).
+- **Fase 1 — Telemetry Network + Robustness (CVE-style)**: ✅ entregue
+  (`skill_executions`, `skill_robustness_findings`, RPC `get_skill_trust`, MCP
+  tools `report_execution`/`get_skill_trust`, página pública `/marketplace/trust/$slug`).
 
-Confirma se faz sentido — posso já criar o plano de implementação técnica de #1+#5 com migrações, MCP tool nova e UI de trust report.
+- **Fase 2 — Compatibility Matrix + Drift Detection**: ✅ entregue
+  - `skill_compatibility` (matriz por skill × modelo) + probe leve
+    (`compatibility.server.ts`) que roda os exemplos da skill em vários modelos
+    e usa um judge neutro para classificar pass/warn/fail.
+  - Server fn admin `runCompatibilitySweep` + leitura pública via trust page
+    (`getSkillTrust` agora retorna `compat[]`).
+  - `skill_drift_alerts` + RPC `compute_skill_drift` + `detectSkillDrift`
+    (admin server fn) que detecta quedas de sucesso (≥5pp warn, ≥15pp critical)
+    com volume mínimo e gera **patch sugerido por IA** sobre o `system_prompt`.
+
+Próximo: agendar o sweep (cron) e expor inbox de drift no Forge.

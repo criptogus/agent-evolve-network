@@ -23,6 +23,18 @@ export type Finding = {
   published_at: string | null;
 };
 
+export type Compat = {
+  model: string;
+  pass_rate: number;
+  total_cases: number;
+  passed_cases: number;
+  judge_score: number | null;
+  status: "pass" | "warn" | "fail";
+  notes: string | null;
+  version: string | null;
+  evaluated_at: string;
+};
+
 export const getSkillTrust = createServerFn({ method: "GET" })
   .inputValidator((d: { slug: string }) => z.object({ slug: z.string().min(1) }).parse(d))
   .handler(async ({ data }) => {
@@ -41,11 +53,17 @@ export const getSkillTrust = createServerFn({ method: "GET" })
       .eq("status", "public")
       .order("published_at", { ascending: false })
       .limit(50);
+    const { data: compat } = await supabaseAdmin
+      .from("skill_compatibility")
+      .select("model,pass_rate,total_cases,passed_cases,judge_score,status,notes,version,evaluated_at")
+      .eq("package_slug", data.slug)
+      .order("judge_score", { ascending: false });
 
     return {
       ok: true as const,
       package: pkg,
       trust: (trust as unknown as TrustSummary) ?? null,
       findings: (findings ?? []) as Finding[],
+      compat: (compat ?? []) as Compat[],
     };
   });
