@@ -1,103 +1,141 @@
-# Super Agent Skill — Moats além do PRD v1.0
+# MCP OAuth: real install, like OAuth
 
-O PRD já cobre bem o básico (marketplace MCP-first, SkillForge AI, feedback agent-driven, network effects). O que falta é **moat estrutural** que cresça com o tempo e seja **caro de copiar** mesmo para Anthropic, OpenAI ou um clone bem financiado.
+## Goal
 
-A maioria dos pontos abaixo já tem alicerce no código atual (forge, evaluator, evolution, marketplace, MCP server, packs, customization, ranking, anti-fraud, SKILL.md export). A proposta é transformar esses alicerces em **vantagens compostas**.
+Paste `https://superagentskill.com/api/mcp` in any MCP client → client opens a browser popup → user logs in on our site → clicks "Authorize" → popup closes → agent has tools. No tokens copy-pasted, no JSON edited (JSON stays as a fallback for legacy clients).
 
-## A. Reposicionamento estratégico do PRD
+## How real MCP OAuth works (MCP spec 2025-06-18 / OAuth 2.1 + PKCE + DCR)
 
-1. **De "Hotmart de agentes" para "App Store + GitHub + Datadog dos agentes".**
-   Hotmart sugere infoproduto descartável. O que defende margem é a tríade: distribuição (App Store), versionamento aberto (GitHub) e observabilidade contínua (Datadog). O pitch passa a ser: *"o único lugar onde seu agente descobre, instala, versiona e mede skills — automaticamente, via MCP."*
+```text
+1. Client POSTs to /api/mcp without Authorization
+                  ↓
+2. Server → 401 + WWW-Authenticate: Bearer
+                  resource_metadata="https://.../.well-known/oauth-protected-resource"
+                  ↓
+3. Client fetches .well-known docs to discover auth endpoints
+                  ↓
+4. Client POSTs /oauth/register (Dynamic Client Registration, RFC 7591)
+                  → gets client_id (no secret — public client w/ PKCE)
+                  ↓
+5. Client opens user-agent at /oauth/authorize?...&code_challenge=...&state=...
+                  ↓
+6. User logs in on superagentskill.com (Google or email — existing auth)
+                  ↓
+7. Consent screen: "Allow <ClientName> to access your Super Agent Skill?"
+                  ↓
+8. Redirect to client's redirect_uri with ?code=...&state=...
+                  ↓
+9. Client POSTs /oauth/token with code + code_verifier → access_token + refresh_token
+                  ↓
+10. Client retries /api/mcp with Authorization: Bearer <token> → 200, tools list streams in
+```
 
-2. **Trocar "skills criados por experts" por "skills que aprendem com cada execução real".**
-   Experts humanos é commodity (qualquer marketplace contrata). O moat de verdade é o **dataset de execuções reais** (`evaluator_runs`, `adversarial_results`, feedback agent-driven) que ninguém mais possui. Sales pitch: *"cada skill aqui já foi executada N mil vezes em produção — o seu agente herda essa cicatriz."*
+## Build plan
 
-## B. 10 diferenciais competitivos sustentáveis
+### 1. Database (one migration)
 
-### 1. Skill Telemetry Network (moat de dados)
-Toda execução de skill via MCP retorna telemetria opcional anônima: latência, tokens, sucesso/erro, modelo usado, custo. Vira:
-- **"Trust score" público** por skill (precision em produção × benchmark do evaluator).
-- **Heatmap de modelos**: "este skill funciona 94% no Sonnet 4.5, 71% no GPT-5-mini" — ninguém mais tem esse dado.
-- **Skill Insurance**: skills com >10k execuções e >95% success ganham selo "Battle-tested" e podem custar premium.
+Three new tables, all scoped by user:
 
-Já temos `evaluator_runs` e `adversarial_results` — falta a coleta runtime via MCP `report_execution` tool.
+- **`mcp_oauth_clients`** — registered MCP clients (one row per Claude/Cursor/etc install)
+  - `client_id` (text, PK), `client_name`, `redirect_uris` (text[]), `token_endpoint_auth_method` ('none' for public), `created_at`
+  - Public registration (no auth required for DCR per spec), but rate-limited by IP via a separate table.
+- **`mcp_oauth_authorizations`** — short-lived auth codes (5 min TTL)
+  - `code_hash` (PK), `client_id`, `user_id`, `redirect_uri`, `scope`, `code_challenge`, `code_challenge_method`, `expires_at`, `used_at`
+- **`mcp_oauth_tokens`** — issued access + refresh tokens
+  - `token_hash` (PK), `kind` ('access' | 'refresh'), `client_id`, `user_id`, `scope`, `expires_at`, `revoked_at`, `parent_token_hash` (for refresh rotation)
 
-### 2. Compatibility Matrix automática (Anthropic não tem)
-Cada skill é re-avaliada semanalmente em **todos os modelos suportados** (Claude Sonnet/Opus/Haiku, GPT-5/mini/nano, Gemini 2.5/3, Grok). Resultado: badge "Works on: ✅ Claude ✅ GPT ⚠️ Gemini" antes da compra. Isso **trava** Anthropic/OpenAI — eles nunca vão validar contra concorrentes.
+RLS: only the owning user can list/revoke their own tokens via the account page. Server-side issuance uses `service_role` via a security-definer function.
 
-Aproveita o `evaluatorPipeline` atual + cron semanal.
+A pruning function `prune_mcp_oauth()` deletes expired codes + revoked/expired tokens (run via cron later).
 
-### 3. Forking + Genealogia de Skills (moat tipo GitHub)
-Cada skill tem árvore: `parent_id`, `forked_from`, diff visual entre versões. Usuário pode:
-- Forkar `cardiologist-soul` → criar `pediatric-cardiologist-soul`.
-- Receber royalties automáticos quando alguém usa o fork (via revenue share configurável).
-Isso copia o efeito GitHub: **comunidade gera o long-tail**, não os experts contratados.
+### 2. Public routes under `/oauth/*` and `/.well-known/*`
 
-### 4. Live Skill Composition (Pack Builder agent-driven)
-Hoje temos packs estáticos. Próximo passo: agente envia *"sou um agente de growth para SaaS B2B"* e o SkillForge **compõe um pack ao vivo** (soul + 4 skills + 2 playbooks + 3 guardrails) escolhidos por embeddings + telemetria. Pack vira efêmero ou pode ser salvo.
+| Route | Method | Purpose |
+|---|---|---|
+| `/.well-known/oauth-protected-resource` | GET | Points to `/api/mcp` as the resource + lists our auth server |
+| `/.well-known/oauth-authorization-server` | GET | Standard OAuth metadata (issuer, endpoints, PKCE methods, supported grants) |
+| `/api/public/oauth/register` | POST | RFC 7591 Dynamic Client Registration. Validates `redirect_uris` (http://localhost:* allowed, https:// required otherwise), returns `client_id`. |
+| `/oauth/authorize` | GET (page) | React route that loads session, shows login if logged out, then a Consent screen with client name + requested scopes |
+| `/api/public/oauth/consent` | POST | Called by the consent UI — generates a 10-min auth code bound to (client_id, user_id, code_challenge, redirect_uri), redirects to redirect_uri with `?code=&state=` |
+| `/api/public/oauth/token` | POST | Exchanges code + `code_verifier` for tokens, OR refresh_token for new tokens. Returns standard JSON. |
+| `/api/public/oauth/revoke` | POST | RFC 7009 revocation |
 
-Reutiliza `match.functions.ts` + `packs/pipeline.server.ts`.
+### 3. Update `/api/mcp` to be OAuth-aware
 
-### 5. Adversarial Skill Hardening (red team contínuo)
-Já temos adversarial no evaluator. Diferencial: rodar **prompt injection / jailbreak / data leakage** automatizado em todo skill antes de publicar, e **publicar o relatório de robustez** (CVE-style: `SAS-2026-0042: skill X vazava CPF em 3% dos casos, corrigido v1.2.0`). Cria confiança que Anthropic Skills nunca terá (eles não publicam falhas).
+- Currently anonymous-allowed for read tools, Bearer-required for write tools.
+- New behavior:
+  - If `Authorization: Bearer <token>` present → verify against `mcp_oauth_tokens` (and existing personal access tokens from `/account/tokens` — backward compatible).
+  - If token valid: attach `user_id`, allow all tools per the user's plan.
+  - If missing / invalid: still allow public read tools (so unauthenticated clients keep working). For write tools, return 401 with `WWW-Authenticate: Bearer resource_metadata="..."`. This makes write tools trigger OAuth automatically in compliant clients.
+- Add an "Authorized as <name>" hint to the `instructions` field on authenticated calls.
 
-### 6. Dual Pricing por Outcome (não por seat)
-Em vez de só assinatura, oferecer *"pague R$ 0,03 por execução bem-sucedida"* (success-based, validado pelo agente). Skills competem por **ROI mensurável**, não por marketing. Combina com Telemetry Network (#1).
+### 4. Frontend pages
 
-Stripe/Paddle já estão integrados — falta `usage-based meter` + webhook de execução.
+- **`/oauth/authorize`** route — handles the user-agent step:
+  - If logged out → redirect to `/login?next=/oauth/authorize?...` (existing login already supports Google + email).
+  - If logged in → render the Consent page: client name, requested scopes (`read:registry`, `write:registry`, `report:telemetry`), Authorize / Deny buttons. Includes a small "Heads up: this connects <ClientName> to your Super Agent Skill account" banner.
+  - Authorize → calls `/api/public/oauth/consent` which 302s back to the client's `redirect_uri` with `?code=&state=`.
+- **`/account/connections`** (new) — list issued OAuth tokens (client name, issued, last used) with a Revoke button. Linked from the existing account menu.
 
-### 7. Skill Drift Detection + Auto-PR
-Quando a telemetria detecta queda de qualidade (modelo novo lançado, API externa mudou, novo jailbreak surgiu), o SkillForge **abre um Pull Request automático** com patch sugerido. O autor aprova/rejeita — `forge-loop` já faz quase isso, falta a parte "drift detection" e o fluxo PR-style com diff visual.
+### 5. Home + Connect page UX update
 
-### 8. Cross-skill Memory Layer (Soul OS)
-Souls hoje são prompts de personalidade. Diferencial: soul carrega **memória persistente compartilhada** entre skills do mesmo agente (preferências do usuário, glossário do nicho, estilo). Vira o "iCloud do agente" — sai de uma plataforma com skills + memória, não só prompts.
+- Home `McpInstallAnimation`: replace step 2 ("paste config") with a real **OAuth popup flow**:
+  1. Copy the URL (already animated).
+  2. Client opens browser popup on `superagentskill.com/oauth/authorize` (animated mock that mirrors the real screen).
+  3. Tools light up — same ending as today.
+- `/connect` page: keep all the JSON snippets as a "manual install (fallback)" expandable section. Move "Connect with one URL" + OAuth explainer to the top with a list of clients that support MCP OAuth natively today (Claude Desktop, Claude Code, Cursor 0.45+, Windsurf, VS Code 1.95+) and a note that older Codex CLI versions still need the manual JSON.
 
-Requer nova tabela `soul_memory` com RLS por usuário/agente + MCP tool `recall_memory` / `save_memory`.
+### 6. Token validation: unified
 
-### 9. Marketplace de Guardrails certificados (moat regulatório)
-Guardrails LGPD/HIPAA/GDPR/SOC2 **assinados digitalmente por escritórios de advocacia ou auditores parceiros** (Pinheiro Neto, Mattos Filho, Big4). Empresa que usa skill com guardrail certificado tem **trilha de auditoria** automática. Vira pré-requisito enterprise.
+A single server helper `verifyMcpBearer(token)` checks:
+1. PAT prefix `sas_pat_…` → existing personal-access-token table.
+2. Else → OAuth access token table.
+Both return `{ user_id, scope, source }`. Used by `/api/mcp` and the MCP write tools.
 
-Aproveita `permissions[]` + `guardrails` já no schema. Falta `cert_authority`, `signature`, e fluxo de revisão jurídica.
+## Out of scope (this turn)
 
-### 10. Open Protocol + closed gravity well (estratégia tipo Docker Hub)
-**Publicar como padrão aberto** o formato Super Agent Skill (já estamos próximo com export SKILL.md compatível Anthropic) — qualquer registry pode hospedar. Mas o **SkillForge AI, a telemetria, o ranking cruzado, a compatibility matrix e os guardrails certificados ficam só aqui**. Mesmo padrão do Docker: imagem é portátil, mas todo mundo usa Docker Hub.
+- Refresh token rotation cleanup cron (we'll add later via pg_cron).
+- Per-client scope policies / scope upgrade dialogs.
+- Claude Desktop deep-link install (`claude://...`) — Claude will discover OAuth automatically from the URL.
+- Migration of existing PATs into OAuth — both keep working.
 
-## C. Anti-features (decisões caras de manter)
+## Technical notes for the implementer
 
-- **Não** vender skills sem evaluator score público ≥ 7. Volume vs. confiança — escolher confiança.
-- **Não** permitir skill sem reprodutibilidade (seed + modelo fixado no version).
-- **Não** entrar em "agent platform" (concorrer com Cursor/Claude). Manter foco em camada de skills neutra — é o que destrava parcerias com todos eles.
+- All OAuth routes live under `src/routes/api/public/oauth/*.ts` so they bypass auth middleware. The single user-facing page is `src/routes/oauth.authorize.tsx`.
+- Code/token storage: store only **SHA-256 hashes** of the raw codes/tokens; raw values are only ever returned in the issuing response. Use `crypto.subtle` in the Worker runtime.
+- PKCE: only `S256` accepted (reject `plain`). Code verifier 43-128 chars, base64url.
+- Access tokens: 1 hour TTL. Refresh tokens: 30 days, rotated on every use (old refresh marked revoked, new one issued).
+- `/.well-known/oauth-protected-resource` advertises `resource: "https://superagentskill.com/api/mcp"` and `authorization_servers: ["https://superagentskill.com"]`.
+- `/.well-known/oauth-authorization-server` advertises: `issuer`, `registration_endpoint`, `authorization_endpoint`, `token_endpoint`, `revocation_endpoint`, `response_types_supported: ["code"]`, `grant_types_supported: ["authorization_code","refresh_token"]`, `code_challenge_methods_supported: ["S256"]`, `token_endpoint_auth_methods_supported: ["none"]`.
+- CORS: all `/api/public/oauth/*` routes return `Access-Control-Allow-Origin: *`, `Access-Control-Allow-Methods: POST, OPTIONS`, `Access-Control-Allow-Headers: Content-Type, Authorization`. Pre-flight handled.
+- `/api/mcp` 401 response must include `WWW-Authenticate: Bearer resource_metadata="https://superagentskill.com/.well-known/oauth-protected-resource"` — clients use this header (not the body) to discover the auth server.
 
-## D. Roadmap sugerido (ordem por ROI/esforço)
+## Files (new)
 
-| Fase | Item | Esforço | Moat |
-|------|------|---------|------|
-| 0 (já feito) | Forge + Evaluator + Evolution + SKILL.md export + Marketplace + MCP | — | base |
-| 1 | #1 Telemetry Network (MCP `report_execution` + `trust_score`) | M | dados exclusivos |
-| 1 | #5 Adversarial Hardening público (CVE-style page por skill) | S | confiança |
-| 2 | #2 Compatibility Matrix multi-modelo (cron semanal) | M | fixa Anthropic/OpenAI |
-| 2 | #7 Drift Detection + Auto-PR (encima de `autolearn`) | M | retenção |
-| 3 | #3 Forking + Genealogia + Royalties | L | network long-tail |
-| 3 | #6 Pricing por outcome (Stripe meter) | M | diferenciação |
-| 4 | #8 Soul Memory OS (cross-skill state) | L | lock-in |
-| 4 | #4 Live Pack Composition agent-driven | M | UX wow |
-| 5 | #9 Guardrails certificados (parcerias jurídicas) | XL | enterprise/regulatório |
-| 5 | #10 Open Protocol spec + branding "Powered by Super Agent Skill" | M | gravity well |
+```text
+supabase/migrations/<ts>_mcp_oauth.sql
+src/lib/oauth/mcp-oauth.server.ts        # hash, validate, persist helpers
+src/lib/oauth/mcp-oauth.functions.ts     # consent + token-list server fns
+src/routes/api/public/oauth/register.ts
+src/routes/api/public/oauth/token.ts
+src/routes/api/public/oauth/revoke.ts
+src/routes/api/public/oauth/consent.ts   # called by /oauth/authorize page
+src/routes/api/public/.well-known/oauth-authorization-server.ts
+src/routes/api/public/.well-known/oauth-protected-resource.ts
+src/routes/oauth.authorize.tsx
+src/routes/account.connections.tsx
+```
 
-## E. Status de implementação
+## Files (edited)
 
-- **Fase 1 — Telemetry Network + Robustness (CVE-style)**: ✅ entregue
-  (`skill_executions`, `skill_robustness_findings`, RPC `get_skill_trust`, MCP
-  tools `report_execution`/`get_skill_trust`, página pública `/marketplace/trust/$slug`).
+```text
+src/routes/api/mcp.ts                    # 401 with WWW-Authenticate; Bearer validation
+src/lib/mcp/tools/skills.ts              # use unified verifyMcpBearer
+src/components/site/McpInstallAnimation.tsx  # show real OAuth popup step
+src/routes/connect.tsx                   # OAuth banner + collapsible JSON fallback
+src/routes/account.tokens.tsx            # link to /account/connections
+```
 
-- **Fase 2 — Compatibility Matrix + Drift Detection**: ✅ entregue
-  - `skill_compatibility` (matriz por skill × modelo) + probe leve
-    (`compatibility.server.ts`) que roda os exemplos da skill em vários modelos
-    e usa um judge neutro para classificar pass/warn/fail.
-  - Server fn admin `runCompatibilitySweep` + leitura pública via trust page
-    (`getSkillTrust` agora retorna `compat[]`).
-  - `skill_drift_alerts` + RPC `compute_skill_drift` + `detectSkillDrift`
-    (admin server fn) que detecta quedas de sucesso (≥5pp warn, ≥15pp critical)
-    com volume mínimo e gera **patch sugerido por IA** sobre o `system_prompt`.
+## Approval
 
-Próximo: agendar o sweep (cron) e expor inbox de drift no Forge.
+I'll start with the migration, then the OAuth endpoints, then the consent page, then wire it into `/api/mcp` and update the home/connect UX. Shall I proceed?

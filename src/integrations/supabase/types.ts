@@ -156,6 +156,148 @@ export type Database = {
           },
         ]
       }
+      mcp_oauth_authorizations: {
+        Row: {
+          client_id: string
+          code_challenge: string
+          code_challenge_method: string
+          code_hash: string
+          created_at: string
+          expires_at: string
+          redirect_uri: string
+          scope: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          code_challenge: string
+          code_challenge_method?: string
+          code_hash: string
+          created_at?: string
+          expires_at: string
+          redirect_uri: string
+          scope: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          code_challenge?: string
+          code_challenge_method?: string
+          code_hash?: string
+          created_at?: string
+          expires_at?: string
+          redirect_uri?: string
+          scope?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcp_oauth_authorizations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mcp_oauth_clients"
+            referencedColumns: ["client_id"]
+          },
+        ]
+      }
+      mcp_oauth_clients: {
+        Row: {
+          client_id: string
+          client_name: string
+          client_uri: string | null
+          created_at: string
+          created_ip: string | null
+          grant_types: string[]
+          logo_uri: string | null
+          redirect_uris: string[]
+          response_types: string[]
+          scope: string
+          software_id: string | null
+          software_version: string | null
+          token_endpoint_auth_method: string
+        }
+        Insert: {
+          client_id: string
+          client_name?: string
+          client_uri?: string | null
+          created_at?: string
+          created_ip?: string | null
+          grant_types?: string[]
+          logo_uri?: string | null
+          redirect_uris: string[]
+          response_types?: string[]
+          scope?: string
+          software_id?: string | null
+          software_version?: string | null
+          token_endpoint_auth_method?: string
+        }
+        Update: {
+          client_id?: string
+          client_name?: string
+          client_uri?: string | null
+          created_at?: string
+          created_ip?: string | null
+          grant_types?: string[]
+          logo_uri?: string | null
+          redirect_uris?: string[]
+          response_types?: string[]
+          scope?: string
+          software_id?: string | null
+          software_version?: string | null
+          token_endpoint_auth_method?: string
+        }
+        Relationships: []
+      }
+      mcp_oauth_tokens: {
+        Row: {
+          client_id: string
+          created_at: string
+          expires_at: string
+          kind: string
+          last_used_at: string | null
+          parent_token_hash: string | null
+          revoked_at: string | null
+          scope: string
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          expires_at: string
+          kind: string
+          last_used_at?: string | null
+          parent_token_hash?: string | null
+          revoked_at?: string | null
+          scope: string
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          expires_at?: string
+          kind?: string
+          last_used_at?: string | null
+          parent_token_hash?: string | null
+          revoked_at?: string | null
+          scope?: string
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcp_oauth_tokens_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mcp_oauth_clients"
+            referencedColumns: ["client_id"]
+          },
+        ]
+      }
       mcp_tokens: {
         Row: {
           created_at: string
@@ -1719,6 +1861,75 @@ export type Database = {
           verified_purchase: boolean
         }[]
       }
+      mcp_oauth_exchange_code: {
+        Args: {
+          _access_token_hash: string
+          _access_ttl_seconds?: number
+          _client_id: string
+          _code_hash: string
+          _redirect_uri: string
+          _refresh_token_hash: string
+          _refresh_ttl_seconds?: number
+        }
+        Returns: Json
+      }
+      mcp_oauth_get_client: { Args: { _client_id: string }; Returns: Json }
+      mcp_oauth_issue_code: {
+        Args: {
+          _client_id: string
+          _code_challenge: string
+          _code_challenge_method: string
+          _code_hash: string
+          _redirect_uri: string
+          _scope: string
+          _ttl_seconds?: number
+        }
+        Returns: undefined
+      }
+      mcp_oauth_list_user_connections: {
+        Args: never
+        Returns: {
+          active_access: number
+          active_refresh: number
+          client_id: string
+          client_name: string
+          first_granted: string
+          last_used: string
+          scope: string
+        }[]
+      }
+      mcp_oauth_refresh_token: {
+        Args: {
+          _access_ttl_seconds?: number
+          _client_id: string
+          _new_access_hash: string
+          _new_refresh_hash: string
+          _old_refresh_hash: string
+          _refresh_ttl_seconds?: number
+        }
+        Returns: Json
+      }
+      mcp_oauth_register_client: {
+        Args: {
+          _client_name: string
+          _client_uri?: string
+          _ip?: string
+          _logo_uri?: string
+          _redirect_uris: string[]
+          _software_id?: string
+          _software_version?: string
+        }
+        Returns: Json
+      }
+      mcp_oauth_revoke_client_for_user: {
+        Args: { _client_id: string }
+        Returns: number
+      }
+      mcp_oauth_revoke_token: {
+        Args: { _token_hash: string }
+        Returns: undefined
+      }
+      mcp_oauth_verify_access: { Args: { _token_hash: string }; Returns: Json }
       moderate_review: {
         Args: {
           _hide: boolean
