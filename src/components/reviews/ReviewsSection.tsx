@@ -25,12 +25,30 @@ const PAGE_SIZE = 10;
 export function ReviewsSection({ slug }: { slug: string }) {
   const fetchRatings = useServerFn(getPackageRatings);
   const fetchElig = useServerFn(getReviewEligibility);
+  const fetchReviews = useServerFn(listPackageReviews);
   const submit = useServerFn(submitReview);
   const qc = useQueryClient();
+
+  const [sort, setSort] = useState<ReviewSort>("recent");
+  const [page, setPage] = useState(0);
+
+  // When sort changes, reset to first page
+  useEffect(() => {
+    setPage(0);
+  }, [sort, slug]);
 
   const ratingsQ = useQuery({
     queryKey: ["ratings", slug],
     queryFn: () => fetchRatings({ data: { slug } }),
+    staleTime: 30_000,
+  });
+
+  const reviewsQ = useQuery({
+    queryKey: ["reviews", slug, sort, page],
+    queryFn: () =>
+      fetchReviews({
+        data: { slug, sort, offset: page * PAGE_SIZE, limit: PAGE_SIZE },
+      }),
     staleTime: 30_000,
   });
 
@@ -55,15 +73,22 @@ export function ReviewsSection({ slug }: { slug: string }) {
       submit({ data: vars }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ratings", slug] });
+      qc.invalidateQueries({ queryKey: ["reviews", slug] });
       qc.invalidateQueries({ queryKey: ["review-elig", slug] });
     },
   });
 
-  const data = ratingsQ.data;
-  const ratings = data?.ratings;
-  const reviews = data?.reviews ?? [];
-  const packageId = data?.packageId ?? null;
+  const ratings = ratingsQ.data?.ratings;
+  const packageId = ratingsQ.data?.packageId ?? null;
+  const reviews = reviewsQ.data?.reviews ?? [];
+  const total = reviewsQ.data?.total ?? 0;
+  const hasMore = reviewsQ.data?.hasMore ?? false;
   const elig = eligQ.data;
+
+  const sortLabel = useMemo(
+    () => REVIEW_SORTS.find((s) => s.value === sort)?.label ?? "",
+    [sort],
+  );
 
   return (
     <section className="rounded-xl border border-border bg-background p-6">
