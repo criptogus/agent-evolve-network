@@ -276,7 +276,7 @@ export const listReviewAudit = createServerFn({ method: "GET" })
         package_id: (r.package_id as string | null) ?? null,
         review_id: (r.review_id as string | null) ?? null,
         reason: (r.reason as string | null) ?? null,
-        metadata: (r.metadata as Record<string, unknown>) ?? {},
+        metadata: (r.metadata as Record<string, string | number | boolean | null>) ?? {},
         created_at: r.created_at as string,
       })),
     };
