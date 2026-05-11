@@ -156,12 +156,7 @@ ${compactMcpCatalogForLLM()}`;
 
 // --- MCP connections (per-user) -------------------------------------------------
 
-async function requireUser() {
-  const { getSupabaseUser } = await import("@/lib/auth/server");
-  const user = await getSupabaseUser();
-  if (!user) throw new Response("Unauthorized", { status: 401 });
-  return user;
-}
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const listMcpRegistry = createServerFn({ method: "GET" }).handler(async () => {
   return MCP_REGISTRY.map((m) => ({
@@ -171,15 +166,16 @@ export const listMcpRegistry = createServerFn({ method: "GET" }).handler(async (
   }));
 });
 
-export const listMyMcpConnections = createServerFn({ method: "GET" }).handler(async () => {
-  const user = await requireUser();
-  const { data, error } = await supabaseAdmin
-    .from("user_mcp_connections")
-    .select("id,registry_id,name,status,created_at,last_run_at")
-    .eq("user_id", user.id);
-  if (error) throw new Response(error.message, { status: 500 });
-  return data ?? [];
-});
+export const listMyMcpConnections = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await supabaseAdmin
+      .from("user_mcp_connections")
+      .select("id,registry_id,name,status,created_at,last_run_at")
+      .eq("user_id", context.userId);
+    if (error) throw new Response(error.message, { status: 500 });
+    return data ?? [];
+  });
 
 const ConnectInput = z.object({
   registry_id: z.string(),
@@ -187,9 +183,9 @@ const ConnectInput = z.object({
 });
 
 export const connectMcp = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => ConnectInput.parse(d))
-  .handler(async ({ data }) => {
-    const user = await requireUser();
+  .handler(async ({ data, context }) => {
     const entry = getMcpById(data.registry_id);
     if (!entry) throw new Response("Unknown MCP", { status: 404 });
     const missing = entry.env.filter((f) => f.required && !data.env[f.key]?.trim());
@@ -204,7 +200,7 @@ export const connectMcp = createServerFn({ method: "POST" })
       .from("user_mcp_connections")
       .upsert(
         {
-          user_id: user.id, registry_id: entry.id, name: entry.name,
+          user_id: context.userId, registry_id: entry.id, name: entry.name,
           transport: entry.transport, url: entry.url ?? null,
           command: entry.command ?? null, args: entry.args ?? [],
           env_provided: provided, scopes: entry.scopes, status: "connected",
@@ -218,13 +214,13 @@ export const connectMcp = createServerFn({ method: "POST" })
   });
 
 export const disconnectMcp = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ registry_id: z.string() }).parse(d))
-  .handler(async ({ data }) => {
-    const user = await requireUser();
+  .handler(async ({ data, context }) => {
     const { error } = await supabaseAdmin
       .from("user_mcp_connections")
       .delete()
-      .eq("user_id", user.id)
+      .eq("user_id", context.userId)
       .eq("registry_id", data.registry_id);
     if (error) throw new Response(error.message, { status: 500 });
     return { ok: true };
@@ -237,16 +233,16 @@ const RunInput = z.object({
 });
 
 export const runMcpWithKit = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => RunInput.parse(d))
-  .handler(async ({ data }) => {
-    const user = await requireUser();
+  .handler(async ({ data, context }) => {
     const entry = getMcpById(data.registry_id);
     if (!entry) throw new Response("Unknown MCP", { status: 404 });
 
     const { data: conn } = await supabaseAdmin
       .from("user_mcp_connections")
       .select("id")
-      .eq("user_id", user.id)
+      .eq("user_id", context.userId)
       .eq("registry_id", data.registry_id)
       .maybeSingle();
     if (!conn) throw new Response("MCP not connected", { status: 412 });
@@ -254,10 +250,10 @@ export const runMcpWithKit = createServerFn({ method: "POST" })
     const { data: run, error } = await supabaseAdmin
       .from("runs")
       .insert({
-        user_id: user.id,
+        user_id: context.userId,
         prompt: data.prompt,
         package_slugs: data.package_slugs,
-        status: "queued",
+        status: "running",
       })
       .select("id")
       .single();
