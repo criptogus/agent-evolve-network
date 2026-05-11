@@ -25,6 +25,24 @@ export const Route = createFileRoute("/marketplace/")({
 const TYPES = ["all", "skill", "playbook", "soul", "guardrail"] as const;
 type TypeFilter = (typeof TYPES)[number];
 
+const SORTS = [
+  { value: "installs_desc", label: "Most installed" },
+  { value: "installs_asc", label: "Least installed" },
+  { value: "rating_desc", label: "Top rated" },
+  { value: "recent", label: "Newest" },
+  { value: "name_asc", label: "Name A→Z" },
+] as const;
+type SortKey = (typeof SORTS)[number]["value"];
+
+const INSTALL_BUCKETS = [
+  { value: "any", label: "Any installs", min: 0, max: Infinity },
+  { value: "1plus", label: "1+", min: 1, max: Infinity },
+  { value: "100plus", label: "100+", min: 100, max: Infinity },
+  { value: "1k", label: "1k+", min: 1000, max: Infinity },
+  { value: "10k", label: "10k+", min: 10000, max: Infinity },
+] as const;
+type InstallBucket = (typeof INSTALL_BUCKETS)[number]["value"];
+
 function Marketplace() {
   const fetchFn = useServerFn(listMarketplace);
   const { data, isLoading, isError } = useQuery({
@@ -36,15 +54,21 @@ function Marketplace() {
   const [type, setType] = useState<TypeFilter>("all");
   const [vertical, setVertical] = useState<string>("all");
   const [q, setQ] = useState("");
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [installBucket, setInstallBucket] = useState<InstallBucket>("any");
+  const [sort, setSort] = useState<SortKey>("installs_desc");
 
   const items = data?.items ?? [];
   const verticals = data?.verticals ?? [];
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return items.filter((p) => {
+    const bucket = INSTALL_BUCKETS.find((b) => b.value === installBucket)!;
+    const result = items.filter((p) => {
       if (type !== "all" && p.type !== type) return false;
       if (vertical !== "all" && p.vertical !== vertical) return false;
+      if (verifiedOnly && !p.author_verified) return false;
+      if (p.install_count < bucket.min || p.install_count > bucket.max) return false;
       if (!needle) return true;
       return (
         p.name.toLowerCase().includes(needle) ||
@@ -54,7 +78,25 @@ function Marketplace() {
         (p.vertical?.toLowerCase().includes(needle) ?? false)
       );
     });
-  }, [items, type, vertical, q]);
+    const sorted = [...result];
+    sorted.sort((a, b) => {
+      switch (sort) {
+        case "installs_desc":
+          return b.install_count - a.install_count;
+        case "installs_asc":
+          return a.install_count - b.install_count;
+        case "rating_desc":
+          return (b.rating_avg || 0) - (a.rating_avg || 0) || b.rating_count - a.rating_count;
+        case "recent":
+          return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+        case "name_asc":
+          return a.name.localeCompare(b.name);
+        default:
+          return 0;
+      }
+    });
+    return sorted;
+  }, [items, type, vertical, q, verifiedOnly, installBucket, sort]);
 
   // Counts per type for chips
   const typeCounts = useMemo(() => {
@@ -161,8 +203,47 @@ function Marketplace() {
             </div>
           )}
 
+          {/* Advanced filters: verified, install range, sort */}
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs">
+              <input
+                type="checkbox"
+                checked={verifiedOnly}
+                onChange={(e) => setVerifiedOnly(e.target.checked)}
+                className="h-3.5 w-3.5 accent-primary"
+              />
+              <span>Verified authors only</span>
+            </label>
+
+            <div className="inline-flex items-center gap-2">
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Installs</span>
+              <select
+                value={installBucket}
+                onChange={(e) => setInstallBucket(e.target.value as InstallBucket)}
+                className="h-8 rounded-md border border-border bg-background px-2 text-xs outline-none focus:border-primary"
+              >
+                {INSTALL_BUCKETS.map((b) => (
+                  <option key={b.value} value={b.value}>{b.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="inline-flex items-center gap-2">
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Sort</span>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as SortKey)}
+                className="h-8 rounded-md border border-border bg-background px-2 text-xs outline-none focus:border-primary"
+              >
+                {SORTS.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           {/* Active filter summary + reset */}
-          {(q || type !== "all" || vertical !== "all") && (
+          {(q || type !== "all" || vertical !== "all" || verifiedOnly || installBucket !== "any" || sort !== "installs_desc") && (
             <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
               <span>
                 Showing <strong className="text-foreground">{filtered.length}</strong> of {items.length}
@@ -172,6 +253,9 @@ function Marketplace() {
                   setQ("");
                   setType("all");
                   setVertical("all");
+                  setVerifiedOnly(false);
+                  setInstallBucket("any");
+                  setSort("installs_desc");
                 }}
                 className="text-primary hover:underline"
               >
