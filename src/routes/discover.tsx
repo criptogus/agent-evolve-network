@@ -491,10 +491,20 @@ function DiscoverPage() {
               />
             ) : (
               <>
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div
+                  aria-busy={isLoading}
+                  className={
+                    "grid gap-4 transition-opacity duration-200 md:grid-cols-2 xl:grid-cols-3 " +
+                    (isLoading ? "pointer-events-none opacity-60" : "opacity-100")
+                  }
+                >
                   {items.map((it) => (
                     <ResultCard key={it.id} item={it} onCustomize={() => tryOpen(it)} />
                   ))}
+                  {isLoading &&
+                    Array.from({ length: Math.max(0, 6 - items.length) }).map((_, i) => (
+                      <SkeletonCard key={`sk-${i}`} />
+                    ))}
                 </div>
 
                 {totalPages > 1 && (
