@@ -54,15 +54,21 @@ function Marketplace() {
   const [type, setType] = useState<TypeFilter>("all");
   const [vertical, setVertical] = useState<string>("all");
   const [q, setQ] = useState("");
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [installBucket, setInstallBucket] = useState<InstallBucket>("any");
+  const [sort, setSort] = useState<SortKey>("installs_desc");
 
   const items = data?.items ?? [];
   const verticals = data?.verticals ?? [];
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return items.filter((p) => {
+    const bucket = INSTALL_BUCKETS.find((b) => b.value === installBucket)!;
+    const result = items.filter((p) => {
       if (type !== "all" && p.type !== type) return false;
       if (vertical !== "all" && p.vertical !== vertical) return false;
+      if (verifiedOnly && !p.author_verified) return false;
+      if (p.install_count < bucket.min || p.install_count > bucket.max) return false;
       if (!needle) return true;
       return (
         p.name.toLowerCase().includes(needle) ||
@@ -72,7 +78,25 @@ function Marketplace() {
         (p.vertical?.toLowerCase().includes(needle) ?? false)
       );
     });
-  }, [items, type, vertical, q]);
+    const sorted = [...result];
+    sorted.sort((a, b) => {
+      switch (sort) {
+        case "installs_desc":
+          return b.install_count - a.install_count;
+        case "installs_asc":
+          return a.install_count - b.install_count;
+        case "rating_desc":
+          return (b.rating_avg || 0) - (a.rating_avg || 0) || b.rating_count - a.rating_count;
+        case "recent":
+          return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+        case "name_asc":
+          return a.name.localeCompare(b.name);
+        default:
+          return 0;
+      }
+    });
+    return sorted;
+  }, [items, type, vertical, q, verifiedOnly, installBucket, sort]);
 
   // Counts per type for chips
   const typeCounts = useMemo(() => {
