@@ -30,9 +30,11 @@ import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as CommunityRouteImport } from './routes/community'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PacksIndexRouteImport } from './routes/packs.index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as SoulsSlugRouteImport } from './routes/souls.$slug'
+import { Route as PacksSlugRouteImport } from './routes/packs.$slug'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
 import { Route as LlmsTxtRouteImport } from './routes/llms.txt'
 import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
@@ -47,12 +49,14 @@ import { Route as AccountUsageRouteImport } from './routes/account.usage'
 import { Route as AccountTokensRouteImport } from './routes/account.tokens'
 import { Route as AccountCreditsRouteImport } from './routes/account.credits'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
+import { Route as PacksSlugCustomizeRouteImport } from './routes/packs.$slug.customize'
 import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug'
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicMcpHealthRouteImport } from './routes/api/public/mcp.health'
+import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
@@ -159,6 +163,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PacksIndexRoute = PacksIndexRouteImport.update({
+  id: '/packs/',
+  path: '/packs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MarketplaceIndexRoute = MarketplaceIndexRouteImport.update({
   id: '/marketplace/',
   path: '/marketplace/',
@@ -172,6 +181,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const SoulsSlugRoute = SoulsSlugRouteImport.update({
   id: '/souls/$slug',
   path: '/souls/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PacksSlugRoute = PacksSlugRouteImport.update({
+  id: '/packs/$slug',
+  path: '/packs/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
@@ -244,6 +258,11 @@ const AccountBillingRoute = AccountBillingRouteImport.update({
   path: '/account/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PacksSlugCustomizeRoute = PacksSlugCustomizeRouteImport.update({
+  id: '/customize',
+  path: '/customize',
+  getParentRoute: () => PacksSlugRoute,
+} as any)
 const ForgeReportSlugRoute = ForgeReportSlugRouteImport.update({
   id: '/report/$slug',
   path: '/report/$slug',
@@ -275,6 +294,12 @@ const ApiPublicMcpHealthRoute = ApiPublicMcpHealthRouteImport.update({
   path: '/api/public/mcp/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPacksCustomizationIdDownloadExtRoute =
+  ApiPacksCustomizationIdDownloadExtRouteImport.update({
+    id: '/api/packs/customization/$id/download/$ext',
+    path: '/api/packs/customization/$id/download/$ext',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -312,15 +337,19 @@ export interface FileRoutesByFullPath {
   '/docs/mcp': typeof DocsMcpRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/packs/$slug': typeof PacksSlugRouteWithChildren
   '/souls/$slug': typeof SoulsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
+  '/packs/': typeof PacksIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -357,15 +386,19 @@ export interface FileRoutesByTo {
   '/docs/mcp': typeof DocsMcpRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/packs/$slug': typeof PacksSlugRouteWithChildren
   '/souls/$slug': typeof SoulsSlugRoute
   '/admin': typeof AdminIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
+  '/packs': typeof PacksIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -404,15 +437,19 @@ export interface FileRoutesById {
   '/docs/mcp': typeof DocsMcpRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/packs/$slug': typeof PacksSlugRouteWithChildren
   '/souls/$slug': typeof SoulsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
+  '/packs/': typeof PacksIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -452,15 +489,19 @@ export interface FileRouteTypes {
     | '/docs/mcp'
     | '/llms/txt'
     | '/marketplace/$packageId'
+    | '/packs/$slug'
     | '/souls/$slug'
     | '/admin/'
     | '/marketplace/'
+    | '/packs/'
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/forge/report/$slug'
+    | '/packs/$slug/customize'
     | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
+    | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -497,15 +538,19 @@ export interface FileRouteTypes {
     | '/docs/mcp'
     | '/llms/txt'
     | '/marketplace/$packageId'
+    | '/packs/$slug'
     | '/souls/$slug'
     | '/admin'
     | '/marketplace'
+    | '/packs'
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/forge/report/$slug'
+    | '/packs/$slug/customize'
     | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
+    | '/api/packs/customization/$id/download/$ext'
   id:
     | '__root__'
     | '/'
@@ -543,15 +588,19 @@ export interface FileRouteTypes {
     | '/docs/mcp'
     | '/llms/txt'
     | '/marketplace/$packageId'
+    | '/packs/$slug'
     | '/souls/$slug'
     | '/admin/'
     | '/marketplace/'
+    | '/packs/'
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/forge/report/$slug'
+    | '/packs/$slug/customize'
     | '/api/public/mcp/health'
     | '/api/public/payments/webhook'
+    | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -584,10 +633,13 @@ export interface RootRouteChildren {
   ApiMcpRoute: typeof ApiMcpRoute
   LlmsTxtRoute: typeof LlmsTxtRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
+  PacksSlugRoute: typeof PacksSlugRouteWithChildren
   SoulsSlugRoute: typeof SoulsSlugRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
+  PacksIndexRoute: typeof PacksIndexRoute
   ApiPublicMcpHealthRoute: typeof ApiPublicMcpHealthRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -739,6 +791,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/packs/': {
+      id: '/packs/'
+      path: '/packs'
+      fullPath: '/packs/'
+      preLoaderRoute: typeof PacksIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/marketplace/': {
       id: '/marketplace/'
       path: '/marketplace'
@@ -758,6 +817,13 @@ declare module '@tanstack/react-router' {
       path: '/souls/$slug'
       fullPath: '/souls/$slug'
       preLoaderRoute: typeof SoulsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/packs/$slug': {
+      id: '/packs/$slug'
+      path: '/packs/$slug'
+      fullPath: '/packs/$slug'
+      preLoaderRoute: typeof PacksSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/marketplace/$packageId': {
@@ -858,6 +924,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountBillingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/packs/$slug/customize': {
+      id: '/packs/$slug/customize'
+      path: '/customize'
+      fullPath: '/packs/$slug/customize'
+      preLoaderRoute: typeof PacksSlugCustomizeRouteImport
+      parentRoute: typeof PacksSlugRoute
+    }
     '/forge/report/$slug': {
       id: '/forge/report/$slug'
       path: '/report/$slug'
@@ -898,6 +971,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/mcp/health'
       fullPath: '/api/public/mcp/health'
       preLoaderRoute: typeof ApiPublicMcpHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/packs/customization/$id/download/$ext': {
+      id: '/api/packs/customization/$id/download/$ext'
+      path: '/api/packs/customization/$id/download/$ext'
+      fullPath: '/api/packs/customization/$id/download/$ext'
+      preLoaderRoute: typeof ApiPacksCustomizationIdDownloadExtRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -959,6 +1039,18 @@ const ForgeRouteChildren: ForgeRouteChildren = {
 
 const ForgeRouteWithChildren = ForgeRoute._addFileChildren(ForgeRouteChildren)
 
+interface PacksSlugRouteChildren {
+  PacksSlugCustomizeRoute: typeof PacksSlugCustomizeRoute
+}
+
+const PacksSlugRouteChildren: PacksSlugRouteChildren = {
+  PacksSlugCustomizeRoute: PacksSlugCustomizeRoute,
+}
+
+const PacksSlugRouteWithChildren = PacksSlugRoute._addFileChildren(
+  PacksSlugRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -989,10 +1081,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMcpRoute: ApiMcpRoute,
   LlmsTxtRoute: LlmsTxtRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
+  PacksSlugRoute: PacksSlugRouteWithChildren,
   SoulsSlugRoute: SoulsSlugRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
+  PacksIndexRoute: PacksIndexRoute,
   ApiPublicMcpHealthRoute: ApiPublicMcpHealthRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPacksCustomizationIdDownloadExtRoute:
+    ApiPacksCustomizationIdDownloadExtRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
