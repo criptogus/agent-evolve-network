@@ -6,7 +6,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
 import { Stars } from "@/components/reviews/Stars";
-import { TypeBadge } from "@/routes/marketplace.index";
+import { TypeBadge, AuthorLink } from "@/routes/marketplace.index";
 
 export const Route = createFileRoute("/marketplace/rankings")({
   head: () => ({
@@ -259,7 +259,7 @@ function Rankings() {
                       {p.name}
                     </Link>
                     <div className="truncate text-[11px] text-muted-foreground">
-                      {p.author_handle}
+                      <AuthorLink handle={p.author_handle} verified={p.author_verified} />
                       {p.vertical && <span className="opacity-60"> · {p.vertical}</span>}
                     </div>
                   </div>

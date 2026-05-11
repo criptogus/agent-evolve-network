@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
-import { TypeBadge } from "@/routes/marketplace.index";
+import { TypeBadge, AuthorLink } from "@/routes/marketplace.index";
 import { PriceBadge } from "@/components/marketplace/BuyButton";
 
 export const Route = createFileRoute("/marketplace/leaderboard")({
@@ -130,8 +130,7 @@ function RankCard({ p, rank }: { p: MarketplaceItem; rank: number }) {
       </div>
       <div className="mt-3 font-mono text-[15px] font-semibold leading-tight">{p.name}</div>
       <div className="mt-1 text-xs text-muted-foreground">
-        {p.author_handle}
-        {p.author_verified && <span className="ml-1 text-primary">✓</span>}
+        <AuthorLink handle={p.author_handle} verified={p.author_verified} />
       </div>
       <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.description}</p>
       <div className="mt-auto flex items-center justify-between gap-2 pt-5">

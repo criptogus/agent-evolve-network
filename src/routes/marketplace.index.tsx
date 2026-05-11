@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -239,8 +239,7 @@ function Card({ p }: { p: MarketplaceItem }) {
       </div>
       <div className="mt-3 font-mono text-[15px] font-semibold leading-tight">{p.name}</div>
       <div className="mt-1 text-xs text-muted-foreground">
-        {p.author_handle}
-        {p.author_verified && <span className="ml-1 text-primary">✓</span>}
+        <AuthorLink handle={p.author_handle} verified={p.author_verified} />
         {p.install_count > 0 && <> · {p.install_count.toLocaleString()} installs</>}
       </div>
       <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
@@ -341,5 +340,24 @@ export function TypeBadge({ type }: { type: MarketplaceItem["type"] }) {
     <span className={`rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${cls}`}>
       {type}
     </span>
+  );
+}
+
+export function AuthorLink({ handle, verified }: { handle: string; verified?: boolean }) {
+  const navigate = useNavigate();
+  const slug = handle.replace(/^@/, "");
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigate({ to: "/u/$handle", params: { handle: slug } });
+      }}
+      className="font-medium text-muted-foreground hover:text-primary hover:underline"
+    >
+      {handle}
+      {verified && <span className="ml-1 text-primary">✓</span>}
+    </button>
   );
 }
