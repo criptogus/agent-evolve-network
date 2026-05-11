@@ -1,8 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { autoCreateMissing } from "@/lib/skills/forge-loop.functions";
 
 const FREE_PROVIDERS = new Set([
   "gmail.com","googlemail.com","yahoo.com","yahoo.co.uk","ymail.com","hotmail.com","outlook.com","live.com","msn.com","icloud.com","me.com","mac.com","aol.com","proton.me","protonmail.com","pm.me","gmx.com","gmx.net","mail.com","zoho.com","yandex.com","yandex.ru","qq.com","163.com","126.com","duck.com","tutanota.com","fastmail.com","hey.com"
@@ -138,6 +140,46 @@ function GeneratePage() {
   const lineId = useRef(0);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
+  const [realRunning, setRealRunning] = useState(false);
+  const [realResult, setRealResult] = useState<{
+    package: { slug: string; name: string; type: string; description?: string | null };
+    research_used: boolean;
+    evaluation: { overall_score: number; precision: number; safety: number; verdict: string; strengths?: string[]; weaknesses?: string[] } | null;
+    stages: { name: string; ms: number; ok: boolean; notes?: string }[];
+  } | null>(null);
+  const [realError, setRealError] = useState<string | null>(null);
+  const realForge = useServerFn(autoCreateMissing);
+
+  function detectKind(p: string): Kind {
+    const s = p.toLowerCase();
+    if (/(guardrail|never|don'?t|prevent|block|comply|complian|hipaa|gdpr|pii)/.test(s)) return "guardrail";
+    if (/(soul|tone|voice|personality|talks like|speaks like|persona)/.test(s)) return "soul";
+    if (/(playbook|process|step.?by.?step|workflow|pipeline|triage|sequence|qualify|book demos)/.test(s)) return "playbook";
+    return "skill";
+  }
+
+  async function runRealForge() {
+    if (!input.trim() || realRunning) return;
+    setRealError(null);
+    setRealResult(null);
+    setRealRunning(true);
+    try {
+      const kind = detectKind(input);
+      const res = await realForge({ data: { brief: input.trim(), type: kind } });
+      setRealResult(res as never);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (/Unauthorized|401/i.test(msg)) {
+        setRealError("Sign in to run the live Forge Loop — it creates a real package in your account.");
+      } else if (/402|credits?/i.test(msg)) {
+        setRealError("AI credits exhausted. Add credits in workspace settings to run the live Forge.");
+      } else {
+        setRealError(msg);
+      }
+    } finally {
+      setRealRunning(false);
+    }
+  }
   useEffect(() => {
     setPresets(loadPresets());
   }, []);
@@ -315,6 +357,21 @@ function GeneratePage() {
                   </>
                 ) : (
                   <>Forge agent →</>
+                )}
+              </button>
+              <button
+                onClick={runRealForge}
+                disabled={realRunning || !input.trim()}
+                title="Run the real Forge Loop: web research → multi-stage author → adversarial eval → publish to your account"
+                className="inline-flex h-9 items-center gap-2 rounded-md border border-primary/40 bg-primary/10 px-4 text-sm font-medium text-foreground hover:bg-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {realRunning ? (
+                  <>
+                    <span className="size-1.5 animate-pulse rounded-full bg-primary" />
+                    Researching + forging live…
+                  </>
+                ) : (
+                  <>⚡ Forge for real (live AI)</>
                 )}
               </button>
               <button
@@ -692,6 +749,110 @@ function GeneratePage() {
             score={score}
             delta={delta}
           />
+        )}
+
+        {(realRunning || realResult || realError) && (
+          <section className="mt-8 animate-fade-in rounded-2xl border border-primary/30 bg-surface/50 p-6">
+            <div className="flex items-center justify-between gap-4 border-b border-border pb-3">
+              <div>
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Live Forge Loop
+                </span>
+                <h2 className="mt-1 text-lg font-semibold tracking-tight">
+                  {realRunning
+                    ? "Researching the web → drafting → judging → adversarial → evaluating…"
+                    : realError
+                      ? "Live forge couldn't complete"
+                      : "Live agent forged & published"}
+                </h2>
+              </div>
+              {realRunning && <span className="size-2 animate-pulse rounded-full bg-primary" />}
+            </div>
+
+            {realError && (
+              <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-foreground">
+                {realError}{" "}
+                {/Sign in/.test(realError) && (
+                  <Link to="/login" className="ml-1 underline">Sign in →</Link>
+                )}
+              </div>
+            )}
+
+            {realResult && (
+              <div className="mt-4 grid gap-4 lg:grid-cols-[1.1fr_1fr]">
+                <div className="rounded-xl border border-border bg-background p-4">
+                  <div className="flex items-center gap-2">
+                    <KindBadge kind={realResult.package.type as Kind} />
+                    <span className="font-mono text-[13px]">{realResult.package.name}</span>
+                    <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary">
+                      live
+                    </span>
+                  </div>
+                  {realResult.package.description && (
+                    <p className="mt-2 text-sm text-muted-foreground">{realResult.package.description}</p>
+                  )}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link
+                      to="/marketplace/$packageId"
+                      params={{ packageId: realResult.package.slug }}
+                      className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-95"
+                    >
+                      Open package →
+                    </Link>
+                    <span className="inline-flex h-8 items-center rounded-md border border-border bg-surface px-3 font-mono text-[11px] text-muted-foreground">
+                      {realResult.research_used ? "✓ web research grounded" : "research skipped (fallback)"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-border bg-background p-4">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    Adversarial evaluation
+                  </span>
+                  {realResult.evaluation ? (
+                    <>
+                      <div className="mt-2 flex items-baseline gap-3">
+                        <span className="text-3xl font-semibold tabular-nums">
+                          {realResult.evaluation.overall_score.toFixed(0)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">/ 100 overall</span>
+                        <span className="ml-auto rounded-full border border-border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider">
+                          {realResult.evaluation.verdict}
+                        </span>
+                      </div>
+                      <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                        <div>Precision: <span className="text-foreground">{realResult.evaluation.precision.toFixed(0)}%</span></div>
+                        <div>Safety: <span className="text-foreground">{realResult.evaluation.safety.toFixed(0)}%</span></div>
+                      </div>
+                      {realResult.evaluation.strengths && realResult.evaluation.strengths.length > 0 && (
+                        <ul className="mt-3 space-y-1 text-[12px] text-muted-foreground">
+                          {realResult.evaluation.strengths.slice(0, 3).map((s, i) => (
+                            <li key={i}>+ {s}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </>
+                  ) : (
+                    <p className="mt-2 text-xs text-muted-foreground">No evaluation returned.</p>
+                  )}
+                  {realResult.stages?.length > 0 && (
+                    <div className="mt-3 border-t border-border pt-2">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                        Pipeline stages
+                      </span>
+                      <ul className="mt-1.5 space-y-0.5 font-mono text-[11px]">
+                        {realResult.stages.map((st, i) => (
+                          <li key={i} className={st.ok ? "text-foreground" : "text-destructive"}>
+                            {st.ok ? "✓" : "✗"} {st.name} <span className="text-muted-foreground">· {st.ms}ms</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </section>
         )}
 
         {done && (
