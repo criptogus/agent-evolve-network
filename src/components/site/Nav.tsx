@@ -120,6 +120,12 @@ export function Nav() {
                   <DropdownMenuItem asChild>
                     <Link to="/account/credits">Credits</Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/account/connections">Connections</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/account/tokens">API tokens</Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut()}>Sign out</DropdownMenuItem>
                 </DropdownMenuContent>
@@ -177,6 +183,12 @@ export function Nav() {
                       </MobileLink>
                       <MobileLink to="/account/credits" onNavigate={() => setOpen(false)}>
                         Credits
+                      </MobileLink>
+                      <MobileLink to="/account/connections" onNavigate={() => setOpen(false)}>
+                        Connections
+                      </MobileLink>
+                      <MobileLink to="/account/tokens" onNavigate={() => setOpen(false)}>
+                        API tokens
                       </MobileLink>
                       <button
                         onClick={() => { setOpen(false); signOut(); }}
