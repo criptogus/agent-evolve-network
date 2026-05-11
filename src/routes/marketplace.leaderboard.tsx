@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
-import { TypeBadge } from "@/routes/marketplace.index";
+import { TypeBadge, AuthorLink } from "@/routes/marketplace.index";
 import { PriceBadge } from "@/components/marketplace/BuyButton";
 
 export const Route = createFileRoute("/marketplace/leaderboard")({
