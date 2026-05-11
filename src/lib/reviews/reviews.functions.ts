@@ -1,6 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {
+  evaluateRateLimit,
+  logAuditAttempt,
+  REVIEW_RATE_RULES,
+} from "./anti-fraud.server";
 
 export type RaterKind = "human" | "agent";
 
