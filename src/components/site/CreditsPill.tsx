@@ -8,10 +8,18 @@ export function CreditsPill() {
   const { user } = useAuth();
   const fetchFn = useServerFn(getCreditSummary);
   const { data } = useQuery({
-    queryKey: ["credits-pill"],
-    queryFn: () => fetchFn(),
+    queryKey: ["credits-pill", user?.id ?? "anon"],
+    queryFn: async () => {
+      try {
+        return await fetchFn();
+      } catch {
+        return null;
+      }
+    },
     enabled: !!user,
     staleTime: 30_000,
+    retry: false,
+    throwOnError: false,
   });
   if (!user) return null;
   const balance = data?.balance ?? 0;
