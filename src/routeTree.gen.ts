@@ -33,6 +33,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PacksIndexRouteImport } from './routes/packs.index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as UHandleRouteImport } from './routes/u.$handle'
 import { Route as SoulsSlugRouteImport } from './routes/souls.$slug'
 import { Route as RobotsTxtRouteImport } from './routes/robots.txt'
 import { Route as PacksSlugRouteImport } from './routes/packs.$slug'
@@ -191,6 +192,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRoute,
+} as any)
+const UHandleRoute = UHandleRouteImport.update({
+  id: '/u/$handle',
+  path: '/u/$handle',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SoulsSlugRoute = SoulsSlugRouteImport.update({
   id: '/souls/$slug',
@@ -432,6 +438,7 @@ export interface FileRoutesByFullPath {
   '/packs/$slug': typeof PacksSlugRouteWithChildren
   '/robots/txt': typeof RobotsTxtRoute
   '/souls/$slug': typeof SoulsSlugRoute
+  '/u/$handle': typeof UHandleRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/packs/': typeof PacksIndexRoute
@@ -495,6 +502,7 @@ export interface FileRoutesByTo {
   '/packs/$slug': typeof PacksSlugRouteWithChildren
   '/robots/txt': typeof RobotsTxtRoute
   '/souls/$slug': typeof SoulsSlugRoute
+  '/u/$handle': typeof UHandleRoute
   '/admin': typeof AdminIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
   '/packs': typeof PacksIndexRoute
@@ -560,6 +568,7 @@ export interface FileRoutesById {
   '/packs/$slug': typeof PacksSlugRouteWithChildren
   '/robots/txt': typeof RobotsTxtRoute
   '/souls/$slug': typeof SoulsSlugRoute
+  '/u/$handle': typeof UHandleRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/packs/': typeof PacksIndexRoute
@@ -626,6 +635,7 @@ export interface FileRouteTypes {
     | '/packs/$slug'
     | '/robots/txt'
     | '/souls/$slug'
+    | '/u/$handle'
     | '/admin/'
     | '/marketplace/'
     | '/packs/'
@@ -689,6 +699,7 @@ export interface FileRouteTypes {
     | '/packs/$slug'
     | '/robots/txt'
     | '/souls/$slug'
+    | '/u/$handle'
     | '/admin'
     | '/marketplace'
     | '/packs'
@@ -753,6 +764,7 @@ export interface FileRouteTypes {
     | '/packs/$slug'
     | '/robots/txt'
     | '/souls/$slug'
+    | '/u/$handle'
     | '/admin/'
     | '/marketplace/'
     | '/packs/'
@@ -809,6 +821,7 @@ export interface RootRouteChildren {
   PacksSlugRoute: typeof PacksSlugRouteWithChildren
   RobotsTxtRoute: typeof RobotsTxtRoute
   SoulsSlugRoute: typeof SoulsSlugRoute
+  UHandleRoute: typeof UHandleRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   PacksIndexRoute: typeof PacksIndexRoute
   MarketplaceTrustSlugRoute: typeof MarketplaceTrustSlugRoute
@@ -990,6 +1003,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/u/$handle': {
+      id: '/u/$handle'
+      path: '/u/$handle'
+      fullPath: '/u/$handle'
+      preLoaderRoute: typeof UHandleRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/souls/$slug': {
       id: '/souls/$slug'
@@ -1372,6 +1392,7 @@ const rootRouteChildren: RootRouteChildren = {
   PacksSlugRoute: PacksSlugRouteWithChildren,
   RobotsTxtRoute: RobotsTxtRoute,
   SoulsSlugRoute: SoulsSlugRoute,
+  UHandleRoute: UHandleRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   PacksIndexRoute: PacksIndexRoute,
   MarketplaceTrustSlugRoute: MarketplaceTrustSlugRoute,
