@@ -43,6 +43,25 @@ const INSTALL_BUCKETS = [
 ] as const;
 type InstallBucket = (typeof INSTALL_BUCKETS)[number]["value"];
 
+const VERTICAL_GROUPS = [
+  { value: "all", label: "All", emoji: "✨", verticals: [] as string[] },
+  {
+    value: "shop_restaurant",
+    label: "Shop & Restaurant",
+    emoji: "🛍️",
+    verticals: ["retail", "restaurant", "operations", "customer-experience"],
+  },
+  { value: "data", label: "Data", emoji: "📊", verticals: ["data"] },
+  { value: "mobile", label: "Mobile", emoji: "📱", verticals: ["mobile"] },
+  {
+    value: "creative",
+    label: "Creative",
+    emoji: "🎨",
+    verticals: ["creative", "productivity", "strategy", "career", "marketing"],
+  },
+] as const;
+type VerticalGroupKey = (typeof VERTICAL_GROUPS)[number]["value"];
+
 function Marketplace() {
   const fetchFn = useServerFn(listMarketplace);
   const { data, isLoading, isError } = useQuery({
