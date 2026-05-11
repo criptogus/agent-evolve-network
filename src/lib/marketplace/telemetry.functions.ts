@@ -107,16 +107,18 @@ export const getSkillForgeData = createServerFn({ method: "GET" })
       const w30 = (t.window_30d ?? {}) as Record<string, unknown>;
       const ts = t.trust_score != null ? Number(t.trust_score) : null;
       if (ts != null) trustValues.push(ts);
+      const installedVersion = (r.version as string | null) ?? pkg.latest_version;
       installed.push({
         slug: pkg.slug,
         name: pkg.name,
         type: pkg.type,
-        version: pkg.latest_version,
+        version: installedVersion,
         installedAt: r.installed_at as string,
         runs30d: Number(w30.runs ?? 0),
         successRate30d: w30.success_rate != null ? Number(w30.success_rate) : null,
         trustScore: ts,
-        outdated: false,
+        outdated: installedVersion !== pkg.latest_version,
+        latestVersion: pkg.latest_version,
       });
     }
 
