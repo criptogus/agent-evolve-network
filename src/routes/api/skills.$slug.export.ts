@@ -70,8 +70,8 @@ export const Route = createFileRoute("/api/skills/$slug/export")({
           );
         }
 
-        const blob = await zip.generateAsync({ type: "uint8array" });
-        return new Response(blob, {
+        const bytes = await zip.generateAsync({ type: "uint8array" });
+        return new Response(bytes as unknown as BodyInit, {
           headers: {
             "Content-Type": "application/zip",
             "Content-Disposition": `attachment; filename="${pkg.slug}-skill.zip"`,
