@@ -49,6 +49,15 @@ export function Nav() {
           </nav>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="GitHub"
+            className="hidden h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+          >
+            <Github className="h-4 w-4" />
+          </a>
           {user ? (
             <>
               <Link
