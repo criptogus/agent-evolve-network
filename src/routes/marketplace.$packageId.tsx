@@ -17,6 +17,7 @@ import {
   type InstallStatus,
 } from "@/lib/marketplace/telemetry.functions";
 import { useAuth } from "@/hooks/use-auth";
+import { useRequireAuth } from "@/lib/require-auth";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/marketplace/$packageId")({
