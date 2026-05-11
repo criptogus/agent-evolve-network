@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { autoCreateMissing } from "@/lib/skills/forge-loop.functions";
 import { supabase } from "@/integrations/supabase/client";
 import {
