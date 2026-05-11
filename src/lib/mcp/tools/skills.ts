@@ -131,14 +131,14 @@ export const reportExecutionTool = defineTool({
     const { data, error } = await supabaseAdmin.rpc("report_skill_execution", {
       _slug: input.slug,
       _success: input.success,
-      _model: input.model ?? null,
-      _version: input.version ?? null,
-      _latency_ms: input.latency_ms ?? null,
-      _tokens_in: input.tokens_in ?? null,
-      _tokens_out: input.tokens_out ?? null,
-      _error_kind: input.error_kind ?? null,
-      _agent_fp: input.agent_fp ?? null,
-    });
+      _model: input.model,
+      _version: input.version,
+      _latency_ms: input.latency_ms,
+      _tokens_in: input.tokens_in,
+      _tokens_out: input.tokens_out,
+      _error_kind: input.error_kind,
+      _agent_fp: input.agent_fp,
+    } as any);
     if (error) return json({ ok: false, error: error.message });
     return json({ ok: true, execution_id: data });
   },
