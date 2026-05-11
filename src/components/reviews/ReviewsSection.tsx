@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
@@ -6,9 +6,12 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   getPackageRatings,
   getReviewEligibility,
+  listPackageReviews,
   submitReview,
+  REVIEW_SORTS,
   type RaterKind,
   type ReviewItem,
+  type ReviewSort,
 } from "@/lib/reviews/reviews.functions";
 import {
   reportReview,
@@ -16,6 +19,8 @@ import {
   type ReportReason,
 } from "@/lib/reviews/reports.functions";
 import { Stars, StarPicker } from "./Stars";
+
+const PAGE_SIZE = 10;
 
 export function ReviewsSection({ slug }: { slug: string }) {
   const fetchRatings = useServerFn(getPackageRatings);
