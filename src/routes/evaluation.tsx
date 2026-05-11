@@ -2,9 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { PACKAGES, type PackageType } from "@/data/packages";
+import { type PackageType, type Package } from "@/data/packages";
+import { listPackagesForDemo } from "@/lib/marketplace/detail.functions";
 
 export const Route = createFileRoute("/evaluation")({
+  loader: () => listPackagesForDemo(),
   component: EvaluationPage,
   head: () => ({
     meta: [
