@@ -335,6 +335,10 @@ function SoulView({
             </p>
           </Card>
         )}
+
+        <div className="mt-10">
+          <ReviewsSection slug={soul.slug} />
+        </div>
       </section>
       <Footer />
     </div>

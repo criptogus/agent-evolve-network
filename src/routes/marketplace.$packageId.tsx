@@ -148,6 +148,10 @@ function PackageDetail() {
         {tab === "changelog" && <ChangelogTab pkg={pkg} />}
       </section>
 
+      <section className="mx-auto max-w-7xl px-6 pb-12">
+        <ReviewsSection slug={pkg.slug} />
+      </section>
+
       <Footer />
 
       {installOpen && (
