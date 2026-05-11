@@ -1217,6 +1217,57 @@ export type Database = {
         }
         Relationships: []
       }
+      user_mcp_connections: {
+        Row: {
+          args: Json
+          command: string | null
+          created_at: string
+          env_provided: Json
+          id: string
+          last_run_at: string | null
+          name: string
+          registry_id: string
+          scopes: Json
+          status: string
+          transport: string
+          updated_at: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          args?: Json
+          command?: string | null
+          created_at?: string
+          env_provided?: Json
+          id?: string
+          last_run_at?: string | null
+          name: string
+          registry_id: string
+          scopes?: Json
+          status?: string
+          transport?: string
+          updated_at?: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          args?: Json
+          command?: string | null
+          created_at?: string
+          env_provided?: Json
+          id?: string
+          last_run_at?: string | null
+          name?: string
+          registry_id?: string
+          scopes?: Json
+          status?: string
+          transport?: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

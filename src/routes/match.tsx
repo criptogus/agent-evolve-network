@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { matchAgentToPackages, type AgentMatchResult } from "@/lib/match/match.functions";
+import { McpRecommendations } from "@/components/match/McpRecommendations";
 
 type FullResult = AgentMatchResult & { catalog_size: number };
 
@@ -269,6 +270,18 @@ function ResultPanel({ data }: { data: FullResult }) {
           </ul>
         </div>
       )}
+
+      {/* External MCP recommendations */}
+      <McpRecommendations
+        recommended={data.recommended_mcps ?? []}
+        kitSlugs={[
+          ...data.recommended_kit.skills,
+          ...data.recommended_kit.playbooks,
+          ...data.recommended_kit.souls,
+          ...data.recommended_kit.guardrails,
+        ].map((i) => i.slug)}
+        brief={data.agent_summary.one_liner}
+      />
 
       {/* Rationale */}
       <div className="rounded-2xl border border-border bg-card p-5">
