@@ -460,14 +460,18 @@ function InstallModal({
   version,
   isUpgrade,
   onClose,
+  onInstalled,
 }: {
   pkg: Package;
   version: string;
   isUpgrade: boolean;
   onClose: () => void;
+  onInstalled?: () => void | Promise<void>;
 }) {
   const [runtime, setRuntime] = useState(pkg.compatibility[0].runtime);
   const [phase, setPhase] = useState<InstallPhase>("preflight");
+  const [error, setError] = useState<string | null>(null);
+  const installFn = useServerFn(installPackageBySlug);
 
   const compat = pkg.compatibility.find((c) => c.runtime === runtime)!;
   const blocked = compat.status === "unsupported";
@@ -486,9 +490,25 @@ function InstallModal({
 
   useEffect(() => {
     if (phase !== "installing") return;
-    const t = setTimeout(() => setPhase("done"), 3200);
-    return () => clearTimeout(t);
-  }, [phase]);
+    let cancelled = false;
+    (async () => {
+      try {
+        await installFn({ data: { slug: pkg.slug, version } });
+        if (cancelled) return;
+        await onInstalled?.();
+        if (cancelled) return;
+        setPhase("done");
+      } catch (e: unknown) {
+        if (cancelled) return;
+        const msg = e instanceof Error ? e.message : "Install failed";
+        setError(msg);
+        setPhase("failed");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [phase, installFn, pkg.slug, version, onInstalled]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4 backdrop-blur-sm">
