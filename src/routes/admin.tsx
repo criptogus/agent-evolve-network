@@ -27,6 +27,7 @@ const NAV = [
   { to: "/admin/import/markdown", label: "Import · Markdown" },
   { to: "/admin/requests", label: "Requests" },
   { to: "/admin/review", label: "Review queue" },
+  { to: "/admin/meta-ads-pack", label: "Meta Ads Pack" },
 ];
 
 function AdminLayout() {
