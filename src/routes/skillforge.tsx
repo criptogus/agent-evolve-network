@@ -7,6 +7,8 @@ import { Footer } from "@/components/site/Footer";
 import {
   getSkillForgeData,
   installPackageBySlug,
+  uninstallPackageBySlug,
+  updatePackageBySlug,
   type ForgeData,
 } from "@/lib/marketplace/telemetry.functions";
 import { supabase } from "@/integrations/supabase/client";
