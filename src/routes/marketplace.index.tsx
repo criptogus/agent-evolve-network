@@ -342,3 +342,22 @@ export function TypeBadge({ type }: { type: MarketplaceItem["type"] }) {
     </span>
   );
 }
+
+export function AuthorLink({ handle, verified }: { handle: string; verified?: boolean }) {
+  const navigate = useNavigate();
+  const slug = handle.replace(/^@/, "");
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigate({ to: "/u/$handle", params: { handle: slug } });
+      }}
+      className="font-medium text-muted-foreground hover:text-primary hover:underline"
+    >
+      {handle}
+      {verified && <span className="ml-1 text-primary">✓</span>}
+    </button>
+  );
+}
