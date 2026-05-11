@@ -1238,7 +1238,7 @@ function EvalLoopSection() {
   }, [running, visible]);
 
   return (
-    <section className="border-b border-border bg-background py-24">
+    <section ref={sectionRef} className="border-b border-border bg-background py-24">
       <div className="mx-auto max-w-6xl px-6">
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <div>
