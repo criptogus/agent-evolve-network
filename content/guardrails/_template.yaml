@@ -1,0 +1,15 @@
+slug: my-guardrail
+name: My Guardrail
+type: guardrail
+version: 0.1.0
+description: One-sentence statement of the policy this guardrail enforces.
+applies_to: [skill, playbook]
+severity: warn
+rules:
+  - id: rule-1
+    description: Plain-English statement of what is being prevented.
+    match: "(?i)\\b(forbidden|term)\\b"
+    action: warn
+tags: [example]
+license: CC-BY-SA-4.0
+authors: ["your-handle <you@example.com>"]
