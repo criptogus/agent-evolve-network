@@ -355,7 +355,7 @@ const ADVERSARIAL_CATEGORIES = [
 ] as const;
 
 export async function evaluatorPipeline(opts: {
-  pkg: { name: string; type: string };
+  pkg: { name: string; type: string; description?: string };
   version: z.infer<typeof VersionLite>;
   extraCases?: Array<{ title: string; input: string; expected_output: string }>;
 }) {
