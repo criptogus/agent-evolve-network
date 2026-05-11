@@ -4,8 +4,7 @@ import { Footer } from "@/components/site/Footer";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
-import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
-import { toast } from "sonner";
+import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -50,23 +49,19 @@ const TIERS = [
 function Pricing() {
   const { user } = useAuth();
   const { isActive } = useSubscription();
-  const { openCheckout, loading } = usePaddleCheckout();
+  const { openCheckout, checkoutElement, isOpen, closeCheckout } = useStripeCheckout();
 
-  const onCta = async (tierName: string) => {
+  const onCta = (tierName: string) => {
     if (tierName === "Hacker") return window.location.assign(user ? "/account/billing" : "/signup");
     if (tierName === "Enterprise") return window.location.assign("mailto:sales@superagentskill.com?subject=Enterprise%20inquiry");
     if (!user) return window.location.assign("/signup?next=/pricing");
     if (isActive) return window.location.assign("/account/billing");
-    try {
-      await openCheckout({
-        priceId: "agent_pass_pro_monthly",
-        customerEmail: user.email ?? undefined,
-        customData: { userId: user.id },
-        successUrl: `${window.location.origin}/account/billing?checkout=success`,
-      });
-    } catch (e: any) {
-      toast.error(e?.message ?? "Could not open checkout");
-    }
+    openCheckout({
+      priceId: "agent_pass_pro_monthly",
+      customerEmail: user.email ?? undefined,
+      userId: user.id,
+      returnUrl: `${window.location.origin}/account/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+    });
   };
 
   return (
@@ -106,8 +101,7 @@ function Pricing() {
               <p className="mt-3 text-sm text-muted-foreground">{t.blurb}</p>
               <button
                 onClick={() => onCta(t.name)}
-                disabled={loading}
-                className={`mt-6 inline-flex h-10 w-full items-center justify-center rounded-md text-sm font-medium transition-all disabled:opacity-50 ${
+                className={`mt-6 inline-flex h-10 w-full items-center justify-center rounded-md text-sm font-medium transition-all ${
                   t.highlight ? "bg-primary text-primary-foreground hover:opacity-95" : "border border-border bg-surface-elevated text-foreground hover:bg-accent"
                 }`}
               >
@@ -133,11 +127,27 @@ function Pricing() {
               Doctors, lawyers, engineers, copywriters, consultants — package your know-how as installable skills, playbooks or souls. Earn 80–85% revenue share.
             </p>
           </div>
-          <a href="#" className="mt-5 inline-flex h-11 items-center rounded-md border border-border bg-background px-5 text-sm font-medium transition-colors hover:bg-accent md:mt-0">
+          <Link to="/forge" className="mt-5 inline-flex h-11 items-center rounded-md border border-border bg-background px-5 text-sm font-medium transition-colors hover:bg-accent md:mt-0">
             Become a creator →
-          </a>
+          </Link>
         </div>
       </section>
+
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={closeCheckout}>
+          <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-background shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={closeCheckout}
+              className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-md bg-background/90 text-sm hover:bg-accent"
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <div className="max-h-[90vh] overflow-y-auto p-2">{checkoutElement}</div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );

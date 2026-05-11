@@ -5,14 +5,15 @@ import { Footer } from "@/components/site/Footer";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
-import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
-import { getCustomerPortalUrl } from "@/lib/billing.functions";
+import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import { createPortalSession } from "@/lib/payments.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/account/billing")({
   head: () => ({ meta: [{ title: "Billing — Super Agent Skill" }] }),
   validateSearch: (s: Record<string, unknown>) => ({
     checkout: typeof s.checkout === "string" ? s.checkout : undefined,
+    session_id: typeof s.session_id === "string" ? s.session_id : undefined,
   }),
   component: BillingPage,
 });
@@ -21,7 +22,7 @@ function BillingPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { subscription, isActive, environment, refetch } = useSubscription();
-  const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
+  const { openCheckout, checkoutElement, isOpen, closeCheckout } = useStripeCheckout();
   const search = Route.useSearch();
 
   useEffect(() => {
@@ -37,23 +38,24 @@ function BillingPage() {
     }
   }, [search.checkout, refetch]);
 
-  const onSubscribe = async () => {
+  const onSubscribe = () => {
     if (!user) return;
-    try {
-      await openCheckout({
-        priceId: "agent_pass_pro_monthly",
-        customerEmail: user.email ?? undefined,
-        customData: { userId: user.id },
-        successUrl: `${window.location.origin}/account/billing?checkout=success`,
-      });
-    } catch (e: any) {
-      toast.error(e?.message ?? "Could not open checkout");
-    }
+    openCheckout({
+      priceId: "agent_pass_pro_monthly",
+      customerEmail: user.email ?? undefined,
+      userId: user.id,
+      returnUrl: `${window.location.origin}/account/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+    });
   };
 
   const onManage = async () => {
     try {
-      const { url } = await getCustomerPortalUrl({ data: { environment } });
+      const { url } = await createPortalSession({
+        data: {
+          environment,
+          returnUrl: `${window.location.origin}/account/billing`,
+        },
+      });
       window.open(url, "_blank");
     } catch (e: any) {
       toast.error(e?.message ?? "Could not open portal");
@@ -111,10 +113,9 @@ function BillingPage() {
               ) : (
                 <button
                   onClick={onSubscribe}
-                  disabled={checkoutLoading}
-                  className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-95 disabled:opacity-50"
+                  className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-95"
                 >
-                  {checkoutLoading ? "Opening..." : "Upgrade to Pro — $19/mo"}
+                  Upgrade to Pro — $19/mo
                 </button>
               )}
             </div>
@@ -129,9 +130,25 @@ function BillingPage() {
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          Payments are processed by our reseller. You can cancel anytime from the customer portal.
+          Payments are processed securely. You can cancel anytime from the customer portal.
         </p>
       </section>
+
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={closeCheckout}>
+          <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-background shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={closeCheckout}
+              className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-md bg-background/90 text-sm hover:bg-accent"
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <div className="max-h-[90vh] overflow-y-auto p-2">{checkoutElement}</div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );
