@@ -95,6 +95,36 @@ const GOVERNANCE_LEVELS = [
   { key: "L4", label: "L4 · Sandboxed", body: "Read-only mode. No writes, no external calls." },
 ];
 
+function VerticalChip({
+  label,
+  count,
+  active,
+  onClick,
+}: {
+  label: string;
+  count: number;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors " +
+        (active
+          ? "border-primary bg-primary/10 text-foreground"
+          : "border-border bg-surface text-muted-foreground hover:border-primary/50 hover:text-foreground")
+      }
+    >
+      <span className="truncate">{label}</span>
+      <span className="rounded bg-muted px-1 font-mono text-[10px] text-muted-foreground">
+        {count}
+      </span>
+    </button>
+  );
+}
+
 function Pagination({
   page,
   totalPages,
