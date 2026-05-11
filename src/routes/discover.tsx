@@ -204,7 +204,7 @@ function DiscoverPage() {
     if (query === current) return;
     const id = window.setTimeout(() => {
       navigate({
-        search: (s) => ({ ...s, q: query.trim() ? query.trim() : undefined, page: 1 }),
+        search: (s: Record<string, unknown>) => ({ ...s, q: query.trim() ? query.trim() : undefined, page: 1 }),
         replace: true,
       });
     }, 300);
@@ -251,18 +251,18 @@ function DiscoverPage() {
 
   const setType = (t: Type) =>
     navigate({
-      search: (s) => ({ ...s, type: t, category: undefined, page: 1 }),
+      search: (s: Record<string, unknown>) => ({ ...s, type: t, category: undefined, page: 1 }),
       replace: true,
     });
 
   const setCategory = (c: string | null) =>
     navigate({
-      search: (s) => ({ ...s, category: c ?? undefined, page: 1 }),
+      search: (s: Record<string, unknown>) => ({ ...s, category: c ?? undefined, page: 1 }),
       replace: true,
     });
 
   const goToPage = (p: number) =>
-    navigate({ search: (s) => ({ ...s, page: p }), replace: false });
+    navigate({ search: (s: Record<string, unknown>) => ({ ...s, page: p }), replace: false });
 
   const grandTotal =
     totalsByType.skill + totalsByType.playbook + totalsByType.soul + totalsByType.guardrail;
