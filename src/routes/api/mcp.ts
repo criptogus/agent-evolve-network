@@ -6,14 +6,16 @@ import {
   searchRegistryTool,
   requestPrimitiveTool,
   uploadPackagesTool,
+  reportExecutionTool,
+  getTrustTool,
 } from "@/lib/mcp/tools/skills";
 
 const mcp = createMcpServer({
   name: "super-agent-skill",
-  version: "1.1.0",
+  version: "1.2.0",
   instructions:
-    "Super Agent Skill registry. Use list_packages or search_registry to discover skills, playbooks, souls, and guardrails. Use get_package to retrieve the full manifest. Use request_primitive when a needed primitive is missing. Use upload_packages (requires a personal MCP token from /account/tokens) to bulk-import skills, playbooks, souls, or guardrails — mirrors the /upload UI exactly.",
-  tools: [listPackagesTool, getPackageTool, searchRegistryTool, requestPrimitiveTool, uploadPackagesTool],
+    "Super Agent Skill registry. Discover with list_packages / search_registry, fetch full manifest with get_package, request missing primitives with request_primitive, bulk-import via upload_packages (needs MCP token from /account/tokens). Trust layer: call get_skill_trust BEFORE recommending a skill (returns success rate, model heatmap, robustness findings, trust_score 0-100, battle_tested badge), and call report_execution AFTER each use to feed the public Telemetry Network.",
+  tools: [listPackagesTool, getPackageTool, searchRegistryTool, requestPrimitiveTool, uploadPackagesTool, reportExecutionTool, getTrustTool],
 });
 
 export const Route = createFileRoute("/api/mcp")({
