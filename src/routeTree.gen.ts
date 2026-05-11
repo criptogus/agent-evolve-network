@@ -45,6 +45,7 @@ import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
 import { Route as AccountUsageRouteImport } from './routes/account.usage'
 import { Route as AccountTokensRouteImport } from './routes/account.tokens'
+import { Route as AccountCreditsRouteImport } from './routes/account.credits'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug'
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
@@ -233,6 +234,11 @@ const AccountTokensRoute = AccountTokensRouteImport.update({
   path: '/account/tokens',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountCreditsRoute = AccountCreditsRouteImport.update({
+  id: '/account/credits',
+  path: '/account/credits',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountBillingRoute = AccountBillingRouteImport.update({
   id: '/account/billing',
   path: '/account/billing',
@@ -293,6 +299,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
   '/account/billing': typeof AccountBillingRoute
+  '/account/credits': typeof AccountCreditsRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
@@ -337,6 +344,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
   '/account/billing': typeof AccountBillingRoute
+  '/account/credits': typeof AccountCreditsRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
@@ -383,6 +391,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
   '/account/billing': typeof AccountBillingRoute
+  '/account/credits': typeof AccountCreditsRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
@@ -430,6 +439,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/upload'
     | '/account/billing'
+    | '/account/credits'
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
@@ -474,6 +484,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/upload'
     | '/account/billing'
+    | '/account/credits'
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
@@ -519,6 +530,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/upload'
     | '/account/billing'
+    | '/account/credits'
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
@@ -565,6 +577,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   UploadRoute: typeof UploadRoute
   AccountBillingRoute: typeof AccountBillingRoute
+  AccountCreditsRoute: typeof AccountCreditsRoute
   AccountTokensRoute: typeof AccountTokensRoute
   AccountUsageRoute: typeof AccountUsageRoute
   AgentsMdRoute: typeof AgentsMdRoute
@@ -831,6 +844,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountTokensRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/credits': {
+      id: '/account/credits'
+      path: '/account/credits'
+      fullPath: '/account/credits'
+      preLoaderRoute: typeof AccountCreditsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/billing': {
       id: '/account/billing'
       path: '/account/billing'
@@ -962,6 +982,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   UploadRoute: UploadRoute,
   AccountBillingRoute: AccountBillingRoute,
+  AccountCreditsRoute: AccountCreditsRoute,
   AccountTokensRoute: AccountTokensRoute,
   AccountUsageRoute: AccountUsageRoute,
   AgentsMdRoute: AgentsMdRoute,
