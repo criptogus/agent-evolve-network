@@ -106,6 +106,32 @@ const GOVERNANCE_LEVELS = [
   { key: "L4", label: "L4 · Sandboxed", body: "Read-only mode. No writes, no external calls." },
 ];
 
+function SkeletonCard() {
+  return (
+    <div className="flex h-full animate-pulse flex-col rounded-xl border border-border bg-surface p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="h-4 w-2/3 rounded bg-muted" />
+        <div className="h-4 w-12 rounded bg-muted" />
+      </div>
+      <div className="mt-2 h-3 w-1/3 rounded bg-muted" />
+      <div className="mt-4 space-y-2">
+        <div className="h-3 w-full rounded bg-muted" />
+        <div className="h-3 w-5/6 rounded bg-muted" />
+        <div className="h-3 w-3/4 rounded bg-muted" />
+      </div>
+      <div className="mt-3 flex gap-1.5">
+        <div className="h-4 w-12 rounded bg-muted" />
+        <div className="h-4 w-10 rounded bg-muted" />
+        <div className="h-4 w-14 rounded bg-muted" />
+      </div>
+      <div className="mt-auto flex items-center justify-between gap-2 pt-4">
+        <div className="h-3 w-10 rounded bg-muted" />
+        <div className="h-8 w-28 rounded bg-muted" />
+      </div>
+    </div>
+  );
+}
+
 function VerticalChip({
   label,
   count,
