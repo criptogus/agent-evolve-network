@@ -1208,9 +1208,25 @@ const PRIMITIVE_EXAMPLES: {
 function EvalLoopSection() {
   const [active, setActive] = useState<LoopPhase>("observe");
   const [running, setRunning] = useState(true);
+  const sectionRef = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!running) return;
+    const node = sectionRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => setVisible(entries.some((e) => e.isIntersecting)),
+      { threshold: 0.05 },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!running || !visible) return;
     const id = setInterval(() => {
       setActive((prev) => {
         const idx = LOOP_PHASES.findIndex((p) => p.id === prev);
@@ -1218,7 +1234,7 @@ function EvalLoopSection() {
       });
     }, 1800);
     return () => clearInterval(id);
-  }, [running]);
+  }, [running, visible]);
 
   return (
     <section className="border-b border-border bg-background py-24">
