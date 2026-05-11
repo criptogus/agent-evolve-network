@@ -1,21 +1,90 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Typewriter } from "@/components/site/Typewriter";
-import { McpInstallAnimation } from "@/components/site/McpInstallAnimation";
+import { CodeBlockCopy } from "@/components/site/CopyButton";
+import { CountUp } from "@/components/site/CountUp";
+import { JsonLd } from "@/components/site/JsonLd";
+
+const McpInstallAnimation = lazy(() =>
+  import("@/components/site/McpInstallAnimation").then((m) => ({ default: m.McpInstallAnimation })),
+);
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Super Agent Skill — MCP Infrastructure for AI Agents" },
-      { name: "description", content: "The MCP infrastructure layer for AI agents. Connect any agent to a live network of skills, playbooks, souls, and guardrails. One command, your agent becomes a genius." },
-      { property: "og:title", content: "Super Agent Skill — MCP Infrastructure for AI Agents" },
-      { property: "og:description", content: "Twilio for agent-to-agent intelligence. The living operating system for AI agents." },
+      { title: "Super Agent Skill — MCP for AI agents that actually do the job" },
+      { name: "description", content: "Connect Claude, Cursor, Codex or Grok in 30 seconds. One sentence installs the right skills, playbooks, souls and guardrails for your agent. No SDK, no retraining." },
+      { property: "og:title", content: "Super Agent Skill — MCP for AI agents that actually do the job" },
+      { property: "og:description", content: "30s to connect. One sentence to specialize. Health Score climbs while you sleep." },
+      { name: "twitter:title", content: "Super Agent Skill — MCP for AI agents that actually do the job" },
+      { name: "twitter:description", content: "30s to connect. One sentence to specialize. Health Score climbs while you sleep." },
     ],
+    links: [{ rel: "canonical", href: "https://superagentskill.com/" }],
   }),
   component: Home,
 });
+
+const ORG_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Super Agent Skill",
+  url: "https://superagentskill.com",
+  logo: "https://superagentskill.com/favicon.ico",
+  sameAs: ["https://github.com/criptogus/agent-evolve-network"],
+};
+
+const SOFTWARE_LD = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Super Agent Skill",
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Any (MCP-compatible)",
+  description:
+    "MCP gateway and registry of skills, playbooks, souls and guardrails for AI agents. Continuously evolves connected agents.",
+  url: "https://superagentskill.com",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+};
+
+const FAQ_LD = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "How does the MCP connection actually work?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "MCP (Model Context Protocol) lets your agent talk to external tools. You point your agent at Super Agent Skill once and it shows up as a connected tool. Every command flows through it — installs, generations and hot-swaps happen at runtime, no restart.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Do I need to retrain my agent or change my code?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No. Packages install through MCP at runtime — zero retraining, zero downtime, zero code changes. Every install is reversible and audited.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Which agent runtimes are supported?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Any MCP-compatible runtime: Claude, Cursor, Codex, Grok, Hermes, OpenClaw, LangChain, Replit and custom agents.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How much does it cost?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Hacker is free forever. Agent Pass is $19 per agent per month with unlimited upgrades. Enterprise is custom with private registry, SSO and audit logs.",
+      },
+    },
+  ],
+};
 
 function Home() {
   return (
