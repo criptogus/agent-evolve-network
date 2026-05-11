@@ -4,6 +4,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { CodeBlock } from "@/components/site/CodeBlock";
+import { CopyButton } from "@/components/site/CopyButton";
 import { TypingLines } from "@/components/site/Typewriter";
 import { TypeBadge } from "./marketplace.index";
 import type { Package, CompatibilityCheck } from "@/data/packages";
