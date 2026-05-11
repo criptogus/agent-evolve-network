@@ -87,6 +87,10 @@ function Marketplace() {
     const result = items.filter((p) => {
       if (type !== "all" && p.type !== type) return false;
       if (vertical !== "all" && p.vertical !== vertical) return false;
+      if (verticalGroup !== "all") {
+        const grp = VERTICAL_GROUPS.find((g) => g.value === verticalGroup);
+        if (grp && (!p.vertical || !grp.verticals.includes(p.vertical))) return false;
+      }
       if (verifiedOnly && !p.author_verified) return false;
       if (p.install_count < bucket.min || p.install_count > bucket.max) return false;
       if (!needle) return true;
