@@ -44,13 +44,17 @@ function SignupPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!accepted) {
+      toast.error("You must accept the Terms and Contributor IP Assignment to continue.");
+      return;
+    }
     setBusy(true);
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: name },
+        data: { full_name: name, accepted_terms_at: new Date().toISOString(), accepted_ip_assignment: true },
       },
     });
     setBusy(false);
@@ -60,6 +64,10 @@ function SignupPage() {
   };
 
   const onGoogle = async () => {
+    if (!accepted) {
+      toast.error("You must accept the Terms and Contributor IP Assignment to continue.");
+      return;
+    }
     setBusy(true);
     const { error } = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: `${window.location.origin}${next || "/account/billing"}`,
