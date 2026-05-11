@@ -24,9 +24,14 @@ function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    const target = next || "/account/billing";
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: next || "/account/billing" });
+      if (data.session) navigate({ to: target, replace: true });
     });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (s) navigate({ to: target, replace: true });
+    });
+    return () => sub.subscription.unsubscribe();
   }, [navigate, next]);
 
   const onEmailSignIn = async (e: React.FormEvent) => {
