@@ -13,6 +13,7 @@ import { z } from "zod";
 import { getGatewayModel } from "@/lib/ai-gateway";
 import { PackageDraftSchema, EvaluationSchema, PatchSchema, type PackageDraft } from "./schemas";
 import { webResearch } from "@/lib/admin/research.server";
+import { validateAnthropicSpec } from "./anthropic-spec";
 
 const FAST = "google/gemini-3-flash-preview" as const;
 const DEEP = "openai/gpt-5.2" as const;
