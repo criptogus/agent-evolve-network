@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
@@ -7,6 +8,13 @@ import { TypingLines } from "@/components/site/Typewriter";
 import { TypeBadge } from "./marketplace.index";
 import type { Package, CompatibilityCheck } from "@/data/packages";
 import { getPackageDetail } from "@/lib/marketplace/detail.functions";
+import {
+  installPackageBySlug,
+  uninstallPackageBySlug,
+  getInstallStatus,
+  type InstallStatus,
+} from "@/lib/marketplace/telemetry.functions";
+import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/marketplace/$packageId")({
@@ -44,12 +52,39 @@ type Tab = "overview" | "versions" | "compatibility" | "changelog";
 
 function PackageDetail() {
   const { pkg } = Route.useLoaderData();
+  const { user } = useAuth();
   const [tab, setTab] = useState<Tab>("overview");
   const [selectedVersion, setSelectedVersion] = useState(pkg.latest);
   const [installOpen, setInstallOpen] = useState(false);
-  // Treat the second-newest version as currently installed for "upgrade" framing
-  const installed = pkg.versions[1]?.version;
+  const [status, setStatus] = useState<InstallStatus | null>(null);
+  const [uninstalling, setUninstalling] = useState(false);
+  const statusFn = useServerFn(getInstallStatus);
+  const uninstallFn = useServerFn(uninstallPackageBySlug);
+
+  useEffect(() => {
+    if (!user) {
+      setStatus(null);
+      return;
+    }
+    statusFn({ data: { slug: pkg.id } })
+      .then((s) => setStatus(s))
+      .catch(() => setStatus(null));
+  }, [user, pkg.id, statusFn]);
+
+  const installed = status?.installed ? status.version ?? undefined : undefined;
   const isUpgrade = !!installed && selectedVersion !== installed;
+
+  const handleUninstall = async () => {
+    if (!confirm(`Uninstall ${pkg.name}?`)) return;
+    setUninstalling(true);
+    try {
+      await uninstallFn({ data: { slug: pkg.id } });
+      const fresh = await statusFn({ data: { slug: pkg.id } });
+      setStatus(fresh);
+    } finally {
+      setUninstalling(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -107,11 +142,25 @@ function PackageDetail() {
                 onClick={() => setInstallOpen(true)}
                 className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-95"
               >
-                {isUpgrade ? `Upgrade → v${selectedVersion}` : `Install v${selectedVersion}`}
+                {isUpgrade ? `Upgrade → v${selectedVersion}` : installed ? `Reinstall v${selectedVersion}` : `Install v${selectedVersion}`}
               </button>
 
+              {installed && (
+                <button
+                  onClick={handleUninstall}
+                  disabled={uninstalling}
+                  className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-border bg-background text-xs font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-50"
+                >
+                  {uninstalling ? "Uninstalling…" : "Uninstall"}
+                </button>
+              )}
+
               <div className="mt-3 text-center text-[11px] text-muted-foreground">
-                via MCP · scoped <span className="font-mono text-foreground">agent:upgrade</span>
+                {user ? (
+                  <>via MCP · scoped <span className="font-mono text-foreground">agent:upgrade</span></>
+                ) : (
+                  <Link to="/login" className="text-primary underline-offset-2 hover:underline">Sign in to install</Link>
+                )}
               </div>
 
               <CompatibilitySummary checks={pkg.compatibility} />
@@ -151,13 +200,22 @@ function PackageDetail() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-12">
-        <ReviewsSection slug={pkg.slug} />
+        <ReviewsSection slug={pkg.id} />
       </section>
 
       <Footer />
 
       {installOpen && (
-        <InstallModal pkg={pkg} version={selectedVersion} isUpgrade={isUpgrade} onClose={() => setInstallOpen(false)} />
+        <InstallModal
+          pkg={pkg}
+          version={selectedVersion}
+          isUpgrade={isUpgrade}
+          onClose={() => setInstallOpen(false)}
+          onInstalled={async () => {
+            const fresh = await statusFn({ data: { slug: pkg.id } });
+            setStatus(fresh);
+          }}
+        />
       )}
     </div>
   );
@@ -402,14 +460,18 @@ function InstallModal({
   version,
   isUpgrade,
   onClose,
+  onInstalled,
 }: {
   pkg: Package;
   version: string;
   isUpgrade: boolean;
   onClose: () => void;
+  onInstalled?: () => void | Promise<void>;
 }) {
   const [runtime, setRuntime] = useState(pkg.compatibility[0].runtime);
   const [phase, setPhase] = useState<InstallPhase>("preflight");
+  const [error, setError] = useState<string | null>(null);
+  const installFn = useServerFn(installPackageBySlug);
 
   const compat = pkg.compatibility.find((c) => c.runtime === runtime)!;
   const blocked = compat.status === "unsupported";
@@ -428,9 +490,25 @@ function InstallModal({
 
   useEffect(() => {
     if (phase !== "installing") return;
-    const t = setTimeout(() => setPhase("done"), 3200);
-    return () => clearTimeout(t);
-  }, [phase]);
+    let cancelled = false;
+    (async () => {
+      try {
+        await installFn({ data: { slug: pkg.id, version } });
+        if (cancelled) return;
+        await onInstalled?.();
+        if (cancelled) return;
+        setPhase("done");
+      } catch (e: unknown) {
+        if (cancelled) return;
+        const msg = e instanceof Error ? e.message : "Install failed";
+        setError(msg);
+        setPhase("failed");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [phase, installFn, pkg.id, version, onInstalled]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4 backdrop-blur-sm">
@@ -530,6 +608,20 @@ function InstallModal({
                       : ""
               }
             />
+          </div>
+        )}
+
+        {phase === "failed" && (
+          <div className="space-y-5 p-6 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground">!</div>
+            <div>
+              <div className="text-lg font-semibold tracking-tight">Install failed</div>
+              <div className="mt-1 text-sm text-muted-foreground">{error ?? "Something went wrong."}</div>
+            </div>
+            <div className="flex justify-center gap-2 pt-2">
+              <button onClick={onClose} className="inline-flex h-10 items-center rounded-md border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-accent">Close</button>
+              <button onClick={() => { setError(null); setPhase("installing"); }} className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:opacity-95">Retry</button>
+            </div>
           </div>
         )}
 

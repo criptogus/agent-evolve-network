@@ -598,17 +598,23 @@ export type Database = {
         Row: {
           installed_at: string
           package_id: string
+          updated_at: string
           user_id: string
+          version: string | null
         }
         Insert: {
           installed_at?: string
           package_id: string
+          updated_at?: string
           user_id: string
+          version?: string | null
         }
         Update: {
           installed_at?: string
           package_id?: string
+          updated_at?: string
           user_id?: string
+          version?: string | null
         }
         Relationships: [
           {

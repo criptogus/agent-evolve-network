@@ -7,6 +7,8 @@ import { Footer } from "@/components/site/Footer";
 import {
   getSkillForgeData,
   installPackageBySlug,
+  uninstallPackageBySlug,
+  updatePackageBySlug,
   type ForgeData,
 } from "@/lib/marketplace/telemetry.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,13 +42,31 @@ function fmtPct(v: number | null): string {
 function SkillForgePage() {
   const data = Route.useLoaderData() as ForgeData;
   const [installing, setInstalling] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
   const installFn = useServerFn(installPackageBySlug);
+  const uninstallFn = useServerFn(uninstallPackageBySlug);
+  const updateFn = useServerFn(updatePackageBySlug);
 
   const installMutation = useMutation({
     mutationFn: async (slug: string) => installFn({ data: { slug } }),
     onSettled: () => {
       setInstalling(null);
-      // re-run loader to reflect new state
+      window.location.reload();
+    },
+  });
+
+  const uninstallMutation = useMutation({
+    mutationFn: async (slug: string) => uninstallFn({ data: { slug } }),
+    onSettled: () => {
+      setBusy(null);
+      window.location.reload();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (slug: string) => updateFn({ data: { slug } }),
+    onSettled: () => {
+      setBusy(null);
       window.location.reload();
     },
   });
@@ -126,17 +146,28 @@ function SkillForgePage() {
           ) : (
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {data.installed.map((p) => (
-                <Link
+                <div
                   key={p.slug}
-                  to="/marketplace/$packageId"
-                  params={{ packageId: p.slug }}
-                  className="rounded-lg border border-border bg-surface p-4 transition hover:border-primary/40"
+                  className="flex flex-col rounded-lg border border-border bg-surface p-4 transition hover:border-primary/40"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div>
+                    <div className="min-w-0">
                       <div className="text-xs uppercase text-muted-foreground">{p.type}</div>
-                      <div className="mt-0.5 font-semibold">{p.name}</div>
-                      <div className="font-mono text-xs text-muted-foreground">v{p.version}</div>
+                      <Link
+                        to="/marketplace/$packageId"
+                        params={{ packageId: p.slug }}
+                        className="mt-0.5 block truncate font-semibold hover:text-primary"
+                      >
+                        {p.name}
+                      </Link>
+                      <div className="mt-0.5 flex items-center gap-2 font-mono text-xs text-muted-foreground">
+                        <span>v{p.version}</span>
+                        {p.outdated && (
+                          <span className="rounded-sm bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600">
+                            update → v{p.latestVersion}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="text-right">
                       <div className="text-[10px] uppercase text-muted-foreground">Trust</div>
@@ -155,7 +186,32 @@ function SkillForgePage() {
                       <span className="font-mono">{fmtPct(p.successRate30d)}</span>
                     </div>
                   </div>
-                </Link>
+                  <div className="mt-3 flex gap-2">
+                    {p.outdated && (
+                      <button
+                        onClick={() => {
+                          setBusy(p.slug);
+                          updateMutation.mutate(p.slug);
+                        }}
+                        disabled={busy === p.slug}
+                        className="inline-flex h-8 flex-1 items-center justify-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground disabled:opacity-50"
+                      >
+                        {busy === p.slug ? "Updating…" : `Update → v${p.latestVersion}`}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        if (!confirm(`Uninstall ${p.name}?`)) return;
+                        setBusy(p.slug);
+                        uninstallMutation.mutate(p.slug);
+                      }}
+                      disabled={busy === p.slug}
+                      className="inline-flex h-8 flex-1 items-center justify-center rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground hover:bg-accent disabled:opacity-50"
+                    >
+                      {busy === p.slug && !p.outdated ? "Removing…" : "Uninstall"}
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           )}
