@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/co
 import { useAuth } from "@/hooks/use-auth";
 import { CreditsPill } from "./CreditsPill";
 
-const GITHUB_URL = "https://github.com/super-agent-skill/super-agent-skill";
+const GITHUB_URL = "https://github.com/criptogus/agent-evolve-network";
 
 const NAV_LINKS = [
   { to: "/discover", label: "Discover" },
