@@ -93,7 +93,7 @@ export const getSkillForgeData = createServerFn({ method: "GET" })
 
     const { data: rawInstalls } = await supabaseAdmin
       .from("package_installs")
-      .select("package_id, installed_at, packages!inner(id, slug, name, type, latest_version)")
+      .select("package_id, installed_at, version, packages!inner(id, slug, name, type, latest_version)")
       .eq("user_id", userId);
 
     const installedIds = (rawInstalls ?? []).map((r) => r.package_id);
