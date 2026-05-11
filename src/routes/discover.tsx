@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
@@ -32,11 +32,40 @@ const SearchSchema = z.object({
 
 const PAGE_SIZE = 24;
 
+function DiscoverPending() {
+  return (
+    <div className="min-h-screen bg-background">
+      <Nav />
+      <main className="mx-auto max-w-7xl px-6 pb-24 pt-10">
+        <div className="border-b border-border/70 pb-6">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">
+            <span className="size-1.5 animate-pulse rounded-full bg-primary" />
+            <span className="font-mono uppercase tracking-wider text-muted-foreground">
+              Loading registry…
+            </span>
+          </div>
+          <div className="h-9 w-2/3 animate-pulse rounded bg-muted" />
+          <div className="mt-3 h-4 w-1/2 animate-pulse rounded bg-muted" />
+        </div>
+        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
   staleTime: 0,
   gcTime: 0,
   shouldReload: true,
+  pendingMs: 150,
+  pendingMinMs: 250,
+  pendingComponent: DiscoverPending,
   validateSearch: (s) => SearchSchema.parse(s),
   loaderDeps: ({ search }) => ({
     type: search.type,
@@ -105,6 +134,32 @@ const GOVERNANCE_LEVELS = [
   { key: "L3", label: "L3 · Hard block", body: "Blocks unsafe actions. Escalates to a human." },
   { key: "L4", label: "L4 · Sandboxed", body: "Read-only mode. No writes, no external calls." },
 ];
+
+function SkeletonCard() {
+  return (
+    <div className="flex h-full animate-pulse flex-col rounded-xl border border-border bg-surface p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="h-4 w-2/3 rounded bg-muted" />
+        <div className="h-4 w-12 rounded bg-muted" />
+      </div>
+      <div className="mt-2 h-3 w-1/3 rounded bg-muted" />
+      <div className="mt-4 space-y-2">
+        <div className="h-3 w-full rounded bg-muted" />
+        <div className="h-3 w-5/6 rounded bg-muted" />
+        <div className="h-3 w-3/4 rounded bg-muted" />
+      </div>
+      <div className="mt-3 flex gap-1.5">
+        <div className="h-4 w-12 rounded bg-muted" />
+        <div className="h-4 w-10 rounded bg-muted" />
+        <div className="h-4 w-14 rounded bg-muted" />
+      </div>
+      <div className="mt-auto flex items-center justify-between gap-2 pt-4">
+        <div className="h-3 w-10 rounded bg-muted" />
+        <div className="h-8 w-28 rounded bg-muted" />
+      </div>
+    </div>
+  );
+}
 
 function VerticalChip({
   label,
@@ -237,6 +292,11 @@ function DiscoverPage() {
   );
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  // Detect any in-flight loader/navigation so we can show subtle loading UI.
+  const isLoading = useRouterState({
+    select: (s) => s.isLoading || s.isTransitioning,
+  });
+
   // Local search input mirrors `?q=` with debounce.
   const [query, setQuery] = useState(search.q ?? "");
   useEffect(() => setQuery(search.q ?? ""), [search.q]);
@@ -323,18 +383,30 @@ function DiscoverPage() {
         {/* Header */}
         <div className="border-b border-border/70 pb-6">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">
-            <span className="size-1.5 rounded-full bg-signal pulse-dot" />
+            <span
+              className={
+                "size-1.5 rounded-full " +
+                (isLoading ? "bg-primary animate-pulse" : "bg-signal pulse-dot")
+              }
+            />
             <span className="font-mono uppercase tracking-wider text-muted-foreground">
-              Live · {grandTotal} packages · {totalsByType.skill}&nbsp;skills ·{" "}
-              {totalsByType.playbook}&nbsp;playbooks · {totalsByType.soul}&nbsp;souls ·{" "}
-              {totalsByType.guardrail}&nbsp;guardrails
+              {isLoading ? (
+                <>Updating counts…</>
+              ) : (
+                <>
+                  Live · {grandTotal} packages · {totalsByType.skill}&nbsp;skills ·{" "}
+                  {totalsByType.playbook}&nbsp;playbooks · {totalsByType.soul}&nbsp;souls ·{" "}
+                  {totalsByType.guardrail}&nbsp;guardrails
+                </>
+              )}
             </span>
             <button
               onClick={() => router.invalidate()}
+              disabled={isLoading}
               title={`Updated ${new Date(fetchedAt).toLocaleTimeString()}`}
-              className="ml-1 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
+              className="ml-1 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground disabled:opacity-50"
             >
-              ↻ refresh
+              {isLoading ? "…syncing" : "↻ refresh"}
             </button>
           </div>
           <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
@@ -474,10 +546,20 @@ function DiscoverPage() {
               />
             ) : (
               <>
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div
+                  aria-busy={isLoading}
+                  className={
+                    "grid gap-4 transition-opacity duration-200 md:grid-cols-2 xl:grid-cols-3 " +
+                    (isLoading ? "pointer-events-none opacity-60" : "opacity-100")
+                  }
+                >
                   {items.map((it) => (
                     <ResultCard key={it.id} item={it} onCustomize={() => tryOpen(it)} />
                   ))}
+                  {isLoading &&
+                    Array.from({ length: Math.max(0, 6 - items.length) }).map((_, i) => (
+                      <SkeletonCard key={`sk-${i}`} />
+                    ))}
                 </div>
 
                 {totalPages > 1 && (
