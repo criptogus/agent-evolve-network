@@ -1,6 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {
+  evaluateRateLimit,
+  logAuditAttempt,
+  REPORT_RATE_RULES,
+} from "./anti-fraud.server";
 
 export const REPORT_REASONS = [
   { value: "spam", label: "Spam or promotional" },
@@ -53,12 +58,46 @@ export const reportReview = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data, context }): Promise<{ id: string }> => {
+    const blocked = await evaluateRateLimit({
+      userId: context.userId,
+      kind: "review_report",
+      rules: REPORT_RATE_RULES,
+    });
+    if (blocked) {
+      await logAuditAttempt({
+        userId: context.userId,
+        kind: "review_report",
+        outcome: "blocked",
+        reviewId: data.reviewId,
+        reason: blocked.reason,
+        metadata: { reason_code: data.reason },
+      });
+      throw new Response(`RATE_LIMITED:${blocked.reason}`, { status: 429 });
+    }
+
     const { data: rid, error } = await (context.supabase as unknown as AnyRpc).rpc("report_review", {
       _review_id: data.reviewId,
       _reason: data.reason,
       _details: data.details,
     });
-    if (error) throw new Response(error.message, { status: 400 });
+    if (error) {
+      await logAuditAttempt({
+        userId: context.userId,
+        kind: "review_report",
+        outcome: "blocked",
+        reviewId: data.reviewId,
+        reason: error.message?.slice(0, 200) ?? "DB_REJECTED",
+        metadata: { reason_code: data.reason },
+      });
+      throw new Response(error.message, { status: 400 });
+    }
+    await logAuditAttempt({
+      userId: context.userId,
+      kind: "review_report",
+      outcome: "allowed",
+      reviewId: data.reviewId,
+      reason: data.reason,
+    });
     return { id: rid as string };
   });
 
@@ -187,4 +226,58 @@ export const resolveReport = createServerFn({ method: "POST" })
     });
     if (error) throw new Response(error.message, { status: 400 });
     return { ok: true };
+  });
+
+export type AuditRow = {
+  id: string;
+  user_id: string;
+  user_name: string | null;
+  kind: "review_submit" | "review_update" | "review_report";
+  outcome: "allowed" | "blocked";
+  package_id: string | null;
+  review_id: string | null;
+  reason: string | null;
+  metadata: Record<string, string | number | boolean | null>;
+  created_at: string;
+};
+
+export const listReviewAudit = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => {
+    const o = (d ?? {}) as { outcome?: "allowed" | "blocked" | "all"; limit?: number };
+    return {
+      outcome: (o.outcome ?? "blocked") as "allowed" | "blocked" | "all",
+      limit: Math.min(Math.max(Number(o.limit ?? 100), 1), 500),
+    };
+  })
+  .handler(async ({ data, context }): Promise<{ rows: AuditRow[] }> => {
+    await assertAdmin(context.userId);
+    let q = supabaseAdmin
+      .from("review_audit")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    if (data.outcome !== "all") q = q.eq("outcome", data.outcome);
+    const { data: rows, error } = await q;
+    if (error) throw new Response(error.message, { status: 500 });
+    const list = rows ?? [];
+    const ids = Array.from(new Set(list.map((r) => r.user_id)));
+    const profsRes = ids.length
+      ? await supabaseAdmin.from("profiles").select("id, display_name").in("id", ids)
+      : { data: [] as RawProfile[] };
+    const map = new Map(((profsRes.data ?? []) as RawProfile[]).map((p) => [p.id, p.display_name]));
+    return {
+      rows: list.map((r) => ({
+        id: r.id as string,
+        user_id: r.user_id as string,
+        user_name: map.get(r.user_id as string) ?? null,
+        kind: r.kind as AuditRow["kind"],
+        outcome: r.outcome as AuditRow["outcome"],
+        package_id: (r.package_id as string | null) ?? null,
+        review_id: (r.review_id as string | null) ?? null,
+        reason: (r.reason as string | null) ?? null,
+        metadata: (r.metadata as Record<string, string | number | boolean | null>) ?? {},
+        created_at: r.created_at as string,
+      })),
+    };
   });

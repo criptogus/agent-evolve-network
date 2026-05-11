@@ -28,6 +28,7 @@ const NAV = [
   { to: "/admin/requests", label: "Requests" },
   { to: "/admin/review", label: "Review queue" },
   { to: "/admin/review-reports", label: "Reports" },
+  { to: "/admin/review-audit", label: "Audit" },
   { to: "/admin/meta-ads-pack", label: "Meta Ads Pack" },
 ];
 
