@@ -58,12 +58,46 @@ export const reportReview = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data, context }): Promise<{ id: string }> => {
+    const blocked = await evaluateRateLimit({
+      userId: context.userId,
+      kind: "review_report",
+      rules: REPORT_RATE_RULES,
+    });
+    if (blocked) {
+      await logAuditAttempt({
+        userId: context.userId,
+        kind: "review_report",
+        outcome: "blocked",
+        reviewId: data.reviewId,
+        reason: blocked.reason,
+        metadata: { reason_code: data.reason },
+      });
+      throw new Response(`RATE_LIMITED:${blocked.reason}`, { status: 429 });
+    }
+
     const { data: rid, error } = await (context.supabase as unknown as AnyRpc).rpc("report_review", {
       _review_id: data.reviewId,
       _reason: data.reason,
       _details: data.details,
     });
-    if (error) throw new Response(error.message, { status: 400 });
+    if (error) {
+      await logAuditAttempt({
+        userId: context.userId,
+        kind: "review_report",
+        outcome: "blocked",
+        reviewId: data.reviewId,
+        reason: error.message?.slice(0, 200) ?? "DB_REJECTED",
+        metadata: { reason_code: data.reason },
+      });
+      throw new Response(error.message, { status: 400 });
+    }
+    await logAuditAttempt({
+      userId: context.userId,
+      kind: "review_report",
+      outcome: "allowed",
+      reviewId: data.reviewId,
+      reason: data.reason,
+    });
     return { id: rid as string };
   });
 
