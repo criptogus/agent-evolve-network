@@ -17,7 +17,7 @@ export type LedgerEntry = {
   ref_type: string | null;
   ref_id: string | null;
   description: string | null;
-  metadata: Record<string, unknown>;
+  metadata: Record<string, string | number | boolean | null>;
   created_at: string;
 };
 
