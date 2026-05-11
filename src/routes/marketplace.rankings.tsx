@@ -6,7 +6,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
 import { Stars } from "@/components/reviews/Stars";
-import { TypeBadge } from "@/routes/marketplace.index";
+import { TypeBadge, AuthorLink } from "@/routes/marketplace.index";
 
 export const Route = createFileRoute("/marketplace/rankings")({
   head: () => ({
