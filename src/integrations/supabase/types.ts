@@ -1244,6 +1244,141 @@ export type Database = {
         }
         Relationships: []
       }
+      skill_compatibility: {
+        Row: {
+          evaluated_at: string
+          id: string
+          judge_score: number | null
+          model: string
+          notes: string | null
+          package_id: string
+          package_slug: string
+          pass_rate: number
+          passed_cases: number
+          sample: Json
+          status: string
+          total_cases: number
+          version: string | null
+        }
+        Insert: {
+          evaluated_at?: string
+          id?: string
+          judge_score?: number | null
+          model: string
+          notes?: string | null
+          package_id: string
+          package_slug: string
+          pass_rate: number
+          passed_cases?: number
+          sample?: Json
+          status: string
+          total_cases?: number
+          version?: string | null
+        }
+        Update: {
+          evaluated_at?: string
+          id?: string
+          judge_score?: number | null
+          model?: string
+          notes?: string | null
+          package_id?: string
+          package_slug?: string
+          pass_rate?: number
+          passed_cases?: number
+          sample?: Json
+          status?: string
+          total_cases?: number
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_compatibility_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_compatibility_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skill_drift_alerts: {
+        Row: {
+          baseline_rate: number
+          baseline_runs: number
+          delta: number
+          detected_at: string
+          id: string
+          package_id: string
+          package_slug: string
+          rationale: string | null
+          recent_rate: number
+          recent_runs: number
+          severity: string
+          status: string
+          suggested_patch: string | null
+          triggered_by_model: string | null
+          updated_at: string
+          window_days: number
+        }
+        Insert: {
+          baseline_rate: number
+          baseline_runs: number
+          delta: number
+          detected_at?: string
+          id?: string
+          package_id: string
+          package_slug: string
+          rationale?: string | null
+          recent_rate: number
+          recent_runs: number
+          severity: string
+          status?: string
+          suggested_patch?: string | null
+          triggered_by_model?: string | null
+          updated_at?: string
+          window_days?: number
+        }
+        Update: {
+          baseline_rate?: number
+          baseline_runs?: number
+          delta?: number
+          detected_at?: string
+          id?: string
+          package_id?: string
+          package_slug?: string
+          rationale?: string | null
+          recent_rate?: number
+          recent_runs?: number
+          severity?: string
+          status?: string
+          suggested_patch?: string | null
+          triggered_by_model?: string | null
+          updated_at?: string
+          window_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_drift_alerts_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_drift_alerts_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       skill_executions: {
         Row: {
           agent_fp: string | null
@@ -1549,6 +1684,10 @@ export type Database = {
           _user_id: string
         }
         Returns: number
+      }
+      compute_skill_drift: {
+        Args: { _package_id: string; _window_days?: number }
+        Returns: Json
       }
       get_credit_balance: { Args: { _user_id: string }; Returns: number }
       get_pack_with_items: { Args: { _slug: string }; Returns: Json }
