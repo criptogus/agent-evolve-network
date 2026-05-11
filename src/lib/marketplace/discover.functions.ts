@@ -35,6 +35,7 @@ const Input = z.object({
   type: z.enum(["skill", "playbook", "soul", "guardrail"]).default("skill"),
   category: z.string().nullable().optional(),
   q: z.string().nullable().optional(),
+  sort: z.enum(["popular", "newest", "oldest", "name"]).default("popular"),
   page: z.number().int().min(1).default(1),
   pageSize: z.number().int().min(1).max(60).default(24),
 });
