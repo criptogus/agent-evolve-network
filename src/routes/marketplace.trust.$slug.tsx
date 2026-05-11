@@ -172,6 +172,52 @@ function TrustPage() {
           )}
         </div>
 
+        <div className="mt-8">
+          <h2 className="font-mono text-sm uppercase tracking-widest text-muted-foreground">Compatibility matrix</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Independent cross-model probe — runs every published example on each major frontier model and lets a neutral
+            judge score the outcome. Updated by the SkillForge compatibility sweep.
+          </p>
+          {data.compat.length === 0 ? (
+            <div className="mt-4 rounded-lg border border-dashed border-border bg-surface/40 p-6 text-sm text-muted-foreground">
+              No compatibility runs yet. The next sweep will populate Claude, GPT and Gemini results here.
+            </div>
+          ) : (
+            <ul className="mt-4 grid gap-2 md:grid-cols-2">
+              {(data.compat as Compat[]).map((c) => (
+                <li key={c.model} className="flex items-center gap-3 rounded-lg border border-border bg-surface/40 p-3">
+                  <span className={`inline-flex w-14 shrink-0 justify-center rounded border px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest ${
+                    c.status === "pass"
+                      ? "border-emerald-500/40 text-emerald-400"
+                      : c.status === "warn"
+                        ? "border-yellow-500/40 text-yellow-400"
+                        : "border-red-500/50 text-red-400"
+                  }`}>
+                    {c.status}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-mono text-xs">{c.model}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {c.passed_cases}/{c.total_cases} passed · judge {c.judge_score ?? "—"}/100
+                    </div>
+                  </div>
+                  <div className="w-24">
+                    <div className="h-1.5 rounded bg-border/40">
+                      <div
+                        className={`h-1.5 rounded ${c.status === "pass" ? "bg-emerald-500/70" : c.status === "warn" ? "bg-yellow-500/70" : "bg-red-500/70"}`}
+                        style={{ width: `${Math.round(c.pass_rate * 100)}%` }}
+                      />
+                    </div>
+                    <div className="mt-1 text-right font-mono text-[10px] text-muted-foreground">
+                      {Math.round(c.pass_rate * 100)}%
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         <div className="mt-10 rounded-lg border border-border bg-surface/40 p-5 text-sm text-muted-foreground">
           <h3 className="font-mono text-xs uppercase tracking-widest text-foreground">How this trust score is computed</h3>
           <p className="mt-2">
