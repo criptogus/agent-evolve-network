@@ -1,141 +1,92 @@
-# MCP OAuth: real install, like OAuth
+## Objetivo
 
-## Goal
+Elevar o site inteiro com foco em desenvolvedores que conectam agentes via MCP. CTA primário consistente: **"Connect your agent"**. Tom mais direto, benefício-primeiro, mantendo a estética atual (Stripe/Linear, vermelho, grade).
 
-Paste `https://superagentskill.com/api/mcp` in any MCP client → client opens a browser popup → user logs in on our site → clicks "Authorize" → popup closes → agent has tools. No tokens copy-pasted, no JSON edited (JSON stays as a fallback for legacy clients).
+## 1. Copy & CRO (benefício-primeiro, dev-céntrico)
 
-## How real MCP OAuth works (MCP spec 2025-06-18 / OAuth 2.1 + PKCE + DCR)
+**Hero (`/`)**
+- H1: "Your AI agent, but actually good at the job." (rotativo permanece)
+- Sub: começar com prova quantificada — ex.: *"30s para conectar. Um comando para virar especialista. Health Score sobe sozinho."*
+- CTAs: primário `Connect your agent` (vai para `/connect`, não `#connect`), secundário `npm i -g superagentskill` com botão de copy inline (atrito zero para dev).
+- Badge de prova: "MCP-native · works with Claude, Cursor, Codex, Grok" + microcopy "no SDK, no retraining".
 
-```text
-1. Client POSTs to /api/mcp without Authorization
-                  ↓
-2. Server → 401 + WWW-Authenticate: Bearer
-                  resource_metadata="https://.../.well-known/oauth-protected-resource"
-                  ↓
-3. Client fetches .well-known docs to discover auth endpoints
-                  ↓
-4. Client POSTs /oauth/register (Dynamic Client Registration, RFC 7591)
-                  → gets client_id (no secret — public client w/ PKCE)
-                  ↓
-5. Client opens user-agent at /oauth/authorize?...&code_challenge=...&state=...
-                  ↓
-6. User logs in on superagentskill.com (Google or email — existing auth)
-                  ↓
-7. Consent screen: "Allow <ClientName> to access your Super Agent Skill?"
-                  ↓
-8. Redirect to client's redirect_uri with ?code=...&state=...
-                  ↓
-9. Client POSTs /oauth/token with code + code_verifier → access_token + refresh_token
-                  ↓
-10. Client retries /api/mcp with Authorization: Bearer <token> → 200, tools list streams in
-```
+**Trust bar**: trocar marquee de logos de runtimes por linha estática (mais credível, melhor LCP) + 3 métricas reais ou plausíveis ("4.2k+ skills", "98% health médio", "30s setup").
 
-## Build plan
+**Seções**
+- Reescrever subtítulos para verbos de resultado ("Install", "Evolve", "Ship") em vez de descrição abstrata.
+- `CTASection` final: dois CTAs claros — `Connect your agent` (primário) + `Browse the registry` (secundário).
+- Adicionar mini "Quickstart" com bloco de código copiável acima do FAQ (alta intenção dev).
 
-### 1. Database (one migration)
+**Pricing (`/pricing`)**
+- Headline focada em ROI: "Pay per agent. Keep 80–85% as creator."
+- Adicionar comparação de features em tabela colapsável.
+- FAQ curto (3 perguntas) anti-objeção: "Sem retraining?", "Funciona com meu runtime?", "Cancelo quando?".
 
-Three new tables, all scoped by user:
+**Outras rotas públicas** (`/connect`, `/docs`, `/marketplace`, `/discover`, `/forge`, `/community`, `/skillforge`, `/evaluation`, `/match`, `/packs`, `/pricing`, `/terms`, `/privacy`, `/refunds`):
+- Cada uma ganha H1 único, intro de 1 frase com benefício, CTA secundário consistente apontando para `/connect`.
 
-- **`mcp_oauth_clients`** — registered MCP clients (one row per Claude/Cursor/etc install)
-  - `client_id` (text, PK), `client_name`, `redirect_uris` (text[]), `token_endpoint_auth_method` ('none' for public), `created_at`
-  - Public registration (no auth required for DCR per spec), but rate-limited by IP via a separate table.
-- **`mcp_oauth_authorizations`** — short-lived auth codes (5 min TTL)
-  - `code_hash` (PK), `client_id`, `user_id`, `redirect_uri`, `scope`, `code_challenge`, `code_challenge_method`, `expires_at`, `used_at`
-- **`mcp_oauth_tokens`** — issued access + refresh tokens
-  - `token_hash` (PK), `kind` ('access' | 'refresh'), `client_id`, `user_id`, `scope`, `expires_at`, `revoked_at`, `parent_token_hash` (for refresh rotation)
+## 2. UI & micro-animações
 
-RLS: only the owning user can list/revoke their own tokens via the account page. Server-side issuance uses `service_role` via a security-definer function.
+- Padronizar entrada de seções com IntersectionObserver + `animate-fade-in` (uma vez, não em cada scroll). Hoje tudo entra com `fade-up` no mount.
+- Hero: parallax suave no `hero-glow`, cursor blink no terminal, números do Health Score animando com count-up.
+- Cards (`HowItWorks`, `CompareIndustries`): hover com leve elevação + borda primária (já parcial).
+- Adicionar `prefers-reduced-motion` guards globais nas keyframes.
+- Botões: variant `cta` no `buttonVariants` com gradient sutil + shadow-glow no hover.
+- Footer: reorganizar em 4 colunas (Product / Creators / Company / Legal) com newsletter capture (email → Lovable Cloud table).
 
-A pruning function `prune_mcp_oauth()` deletes expired codes + revoked/expired tokens (run via cron later).
+## 3. SEO
 
-### 2. Public routes under `/oauth/*` and `/.well-known/*`
+- Cada rota com `head()` único: title <60 chars, description <160, og:title, og:description, og:image (usar imagem da rota quando existir).
+- Adicionar canonical link em todas via `links` no `head()`.
+- JSON-LD na home: `Organization` + `SoftwareApplication`. Em `/marketplace/$packageId`: `Product` + `AggregateRating` quando houver reviews. Em `/pricing`: `Offer`.
+- Garantir 1 H1 por rota; revisar hierarquia H2/H3.
+- Adicionar `<link rel="alternate" hreflang>` para PT/EN se aplicável (apenas EN por ora; deixar estrutura pronta).
+- Sitemap dinâmico em `src/routes/sitemap[.]xml.tsx` listando rotas estáticas + pacotes/souls publicados via loader.
+- `robots.txt` confirmando sitemap.
 
-| Route | Method | Purpose |
-|---|---|---|
-| `/.well-known/oauth-protected-resource` | GET | Points to `/api/mcp` as the resource + lists our auth server |
-| `/.well-known/oauth-authorization-server` | GET | Standard OAuth metadata (issuer, endpoints, PKCE methods, supported grants) |
-| `/api/public/oauth/register` | POST | RFC 7591 Dynamic Client Registration. Validates `redirect_uris` (http://localhost:* allowed, https:// required otherwise), returns `client_id`. |
-| `/oauth/authorize` | GET (page) | React route that loads session, shows login if logged out, then a Consent screen with client name + requested scopes |
-| `/api/public/oauth/consent` | POST | Called by the consent UI — generates a 10-min auth code bound to (client_id, user_id, code_challenge, redirect_uri), redirects to redirect_uri with `?code=&state=` |
-| `/api/public/oauth/token` | POST | Exchanges code + `code_verifier` for tokens, OR refresh_token for new tokens. Returns standard JSON. |
-| `/api/public/oauth/revoke` | POST | RFC 7009 revocation |
+## 4. GEO (AI/LLM search)
 
-### 3. Update `/api/mcp` to be OAuth-aware
+- Atualizar `/llms.txt` com seções: What it is, Who it's for, Key concepts (skills/playbooks/souls/guardrails), How to connect (curl/MCP snippet), Pricing, Links canônicos por rota.
+- `/agents.md` com instruções estruturadas para agentes consumirem o produto (ja existe — auditar e expandir).
+- Adicionar bloco "TL;DR" em cada rota pública (200–300 chars) que LLMs citam bem.
+- FAQ com `FAQPage` JSON-LD (ótimo para AI Overviews/Perplexity).
 
-- Currently anonymous-allowed for read tools, Bearer-required for write tools.
-- New behavior:
-  - If `Authorization: Bearer <token>` present → verify against `mcp_oauth_tokens` (and existing personal access tokens from `/account/tokens` — backward compatible).
-  - If token valid: attach `user_id`, allow all tools per the user's plan.
-  - If missing / invalid: still allow public read tools (so unauthenticated clients keep working). For write tools, return 401 with `WWW-Authenticate: Bearer resource_metadata="..."`. This makes write tools trigger OAuth automatically in compliant clients.
-- Add an "Authorized as <name>" hint to the `instructions` field on authenticated calls.
+## 5. Performance
 
-### 4. Frontend pages
+- Hero: `McpInstallAnimation` e `Typewriter` → `lazy()` + Suspense fallback (são pesados e abaixo da dobra crítica para LCP).
+- `marquee` de logos: trocar por SVG estático ou `content-visibility: auto`.
+- Imagens (og, screenshots): garantir `loading="lazy"`, `decoding="async"`, dimensões explícitas.
+- Fontes Inter/JetBrains Mono: `font-display: swap` + preconnect; subset latin only.
+- Code splitting: rotas `admin.*` já são separadas pelo TanStack; verificar que não importam nada da landing.
+- Remover `tw-animate-css` se subutilizado (já temos keyframes próprios) — economia de CSS.
+- Audit com `browser--performance_profile` antes/depois e reportar Web Vitals.
 
-- **`/oauth/authorize`** route — handles the user-agent step:
-  - If logged out → redirect to `/login?next=/oauth/authorize?...` (existing login already supports Google + email).
-  - If logged in → render the Consent page: client name, requested scopes (`read:registry`, `write:registry`, `report:telemetry`), Authorize / Deny buttons. Includes a small "Heads up: this connects <ClientName> to your Super Agent Skill account" banner.
-  - Authorize → calls `/api/public/oauth/consent` which 302s back to the client's `redirect_uri` with `?code=&state=`.
-- **`/account/connections`** (new) — list issued OAuth tokens (client name, issued, last used) with a Revoke button. Linked from the existing account menu.
+## 6. Acessibilidade & polish
 
-### 5. Home + Connect page UX update
+- Skip-link "Pular para conteúdo".
+- Focus rings visíveis no tema (já existe `--ring`, validar contraste).
+- Alt text em todas imagens; aria-labels em ícones-only buttons.
+- Verificar contraste do `text-muted-foreground` em fundo `surface/40`.
 
-- Home `McpInstallAnimation`: replace step 2 ("paste config") with a real **OAuth popup flow**:
-  1. Copy the URL (already animated).
-  2. Client opens browser popup on `superagentskill.com/oauth/authorize` (animated mock that mirrors the real screen).
-  3. Tools light up — same ending as today.
-- `/connect` page: keep all the JSON snippets as a "manual install (fallback)" expandable section. Move "Connect with one URL" + OAuth explainer to the top with a list of clients that support MCP OAuth natively today (Claude Desktop, Claude Code, Cursor 0.45+, Windsurf, VS Code 1.95+) and a note that older Codex CLI versions still need the manual JSON.
+## 7. Ordem de execução
 
-### 6. Token validation: unified
+1. **Copy & SEO global**: head() de cada rota, JSON-LD, sitemap, llms.txt.
+2. **Hero/Home**: nova H1, CTAs, copy block, code-copy button, animations refinadas.
+3. **Outras rotas públicas**: H1+intro+CTA secundário padronizado.
+4. **Performance**: lazy load animações pesadas, fonts, marquee.
+5. **Footer + newsletter** (Lovable Cloud table `newsletter_signups`).
+6. **A11y pass + reduced-motion**.
+7. **Audit final**: Lighthouse/perf profile + screenshot QA das rotas principais.
 
-A single server helper `verifyMcpBearer(token)` checks:
-1. PAT prefix `sas_pat_…` → existing personal-access-token table.
-2. Else → OAuth access token table.
-Both return `{ user_id, scope, source }`. Used by `/api/mcp` and the MCP write tools.
+## Detalhes técnicos
 
-## Out of scope (this turn)
+- Novos arquivos: `src/routes/sitemap[.]xml.tsx`, `src/components/site/CopyButton.tsx`, `src/components/site/CountUp.tsx`, `src/components/site/SectionReveal.tsx`, `src/components/site/JsonLd.tsx`.
+- Migration: `newsletter_signups (id, email unique, created_at)` com RLS `INSERT` aberto + `SELECT` admin-only.
+- Sem mudanças em business logic, auth, billing ou edge functions.
+- Nenhuma alteração em `routeTree.gen.ts`, `client.ts`, `types.ts`.
 
-- Refresh token rotation cleanup cron (we'll add later via pg_cron).
-- Per-client scope policies / scope upgrade dialogs.
-- Claude Desktop deep-link install (`claude://...`) — Claude will discover OAuth automatically from the URL.
-- Migration of existing PATs into OAuth — both keep working.
+## Fora de escopo
 
-## Technical notes for the implementer
-
-- All OAuth routes live under `src/routes/api/public/oauth/*.ts` so they bypass auth middleware. The single user-facing page is `src/routes/oauth.authorize.tsx`.
-- Code/token storage: store only **SHA-256 hashes** of the raw codes/tokens; raw values are only ever returned in the issuing response. Use `crypto.subtle` in the Worker runtime.
-- PKCE: only `S256` accepted (reject `plain`). Code verifier 43-128 chars, base64url.
-- Access tokens: 1 hour TTL. Refresh tokens: 30 days, rotated on every use (old refresh marked revoked, new one issued).
-- `/.well-known/oauth-protected-resource` advertises `resource: "https://superagentskill.com/api/mcp"` and `authorization_servers: ["https://superagentskill.com"]`.
-- `/.well-known/oauth-authorization-server` advertises: `issuer`, `registration_endpoint`, `authorization_endpoint`, `token_endpoint`, `revocation_endpoint`, `response_types_supported: ["code"]`, `grant_types_supported: ["authorization_code","refresh_token"]`, `code_challenge_methods_supported: ["S256"]`, `token_endpoint_auth_methods_supported: ["none"]`.
-- CORS: all `/api/public/oauth/*` routes return `Access-Control-Allow-Origin: *`, `Access-Control-Allow-Methods: POST, OPTIONS`, `Access-Control-Allow-Headers: Content-Type, Authorization`. Pre-flight handled.
-- `/api/mcp` 401 response must include `WWW-Authenticate: Bearer resource_metadata="https://superagentskill.com/.well-known/oauth-protected-resource"` — clients use this header (not the body) to discover the auth server.
-
-## Files (new)
-
-```text
-supabase/migrations/<ts>_mcp_oauth.sql
-src/lib/oauth/mcp-oauth.server.ts        # hash, validate, persist helpers
-src/lib/oauth/mcp-oauth.functions.ts     # consent + token-list server fns
-src/routes/api/public/oauth/register.ts
-src/routes/api/public/oauth/token.ts
-src/routes/api/public/oauth/revoke.ts
-src/routes/api/public/oauth/consent.ts   # called by /oauth/authorize page
-src/routes/api/public/.well-known/oauth-authorization-server.ts
-src/routes/api/public/.well-known/oauth-protected-resource.ts
-src/routes/oauth.authorize.tsx
-src/routes/account.connections.tsx
-```
-
-## Files (edited)
-
-```text
-src/routes/api/mcp.ts                    # 401 with WWW-Authenticate; Bearer validation
-src/lib/mcp/tools/skills.ts              # use unified verifyMcpBearer
-src/components/site/McpInstallAnimation.tsx  # show real OAuth popup step
-src/routes/connect.tsx                   # OAuth banner + collapsible JSON fallback
-src/routes/account.tokens.tsx            # link to /account/connections
-```
-
-## Approval
-
-I'll start with the migration, then the OAuth endpoints, then the consent page, then wire it into `/api/mcp` and update the home/connect UX. Shall I proceed?
+- Redesign visual radical (paleta, tipografia, layout system).
+- Novas features de produto (apenas marketing/landing/UX).
+- i18n completo (apenas estrutura preparada).
