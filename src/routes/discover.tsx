@@ -37,6 +37,9 @@ export const Route = createFileRoute("/discover")({
   staleTime: 0,
   gcTime: 0,
   shouldReload: true,
+  pendingMs: 150,
+  pendingMinMs: 250,
+  pendingComponent: DiscoverPending,
   validateSearch: (s) => SearchSchema.parse(s),
   loaderDeps: ({ search }) => ({
     type: search.type,
