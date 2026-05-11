@@ -254,7 +254,7 @@ function DownloadButtons({ customizationId }: { customizationId: string }) {
       const { data: s } = await supabase.auth.getSession();
       const token = s.session?.access_token;
       if (!token) { toast.error("Sign in again to download."); return; }
-      const res = await fetch(`/api/packs/customization/${customizationId}/download.${ext}`, {
+      const res = await fetch(`/api/packs/customization/${customizationId}/download/${ext}`, {
         headers: { authorization: `Bearer ${token}` },
       });
       if (!res.ok) { toast.error(await res.text()); return; }
