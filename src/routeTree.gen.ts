@@ -53,6 +53,7 @@ import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
 import { Route as AccountUsageRouteImport } from './routes/account.usage'
 import { Route as AccountTokensRouteImport } from './routes/account.tokens'
 import { Route as AccountCreditsRouteImport } from './routes/account.credits'
+import { Route as AccountConnectionsRouteImport } from './routes/account.connections'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as PacksSlugCustomizeRouteImport } from './routes/packs.$slug.customize'
 import { Route as MarketplaceTrustSlugRouteImport } from './routes/marketplace.trust.$slug'
@@ -288,6 +289,11 @@ const AccountCreditsRoute = AccountCreditsRouteImport.update({
   path: '/account/credits',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountConnectionsRoute = AccountConnectionsRouteImport.update({
+  id: '/account/connections',
+  path: '/account/connections',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountBillingRoute = AccountBillingRouteImport.update({
   id: '/account/billing',
   path: '/account/billing',
@@ -384,6 +390,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
   '/account/billing': typeof AccountBillingRoute
+  '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
@@ -443,6 +450,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
   '/account/billing': typeof AccountBillingRoute
+  '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
@@ -504,6 +512,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
   '/account/billing': typeof AccountBillingRoute
+  '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
@@ -566,6 +575,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/upload'
     | '/account/billing'
+    | '/account/connections'
     | '/account/credits'
     | '/account/tokens'
     | '/account/usage'
@@ -625,6 +635,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/upload'
     | '/account/billing'
+    | '/account/connections'
     | '/account/credits'
     | '/account/tokens'
     | '/account/usage'
@@ -685,6 +696,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/upload'
     | '/account/billing'
+    | '/account/connections'
     | '/account/credits'
     | '/account/tokens'
     | '/account/usage'
@@ -746,6 +758,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   UploadRoute: typeof UploadRoute
   AccountBillingRoute: typeof AccountBillingRoute
+  AccountConnectionsRoute: typeof AccountConnectionsRoute
   AccountCreditsRoute: typeof AccountCreditsRoute
   AccountTokensRoute: typeof AccountTokensRoute
   AccountUsageRoute: typeof AccountUsageRoute
@@ -1079,6 +1092,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountCreditsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/connections': {
+      id: '/account/connections'
+      path: '/account/connections'
+      fullPath: '/account/connections'
+      preLoaderRoute: typeof AccountConnectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/billing': {
       id: '/account/billing'
       path: '/account/billing'
@@ -1277,6 +1297,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   UploadRoute: UploadRoute,
   AccountBillingRoute: AccountBillingRoute,
+  AccountConnectionsRoute: AccountConnectionsRoute,
   AccountCreditsRoute: AccountCreditsRoute,
   AccountTokensRoute: AccountTokensRoute,
   AccountUsageRoute: AccountUsageRoute,
