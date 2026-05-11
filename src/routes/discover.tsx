@@ -14,10 +14,19 @@ import {
 } from "@/lib/marketplace/discover.functions";
 import { useRequireAuth } from "@/lib/require-auth";
 
+const SORT_OPTIONS = [
+  { value: "popular", label: "Most installed" },
+  { value: "newest", label: "Newest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "name", label: "Name (A–Z)" },
+] as const;
+type SortKey = (typeof SORT_OPTIONS)[number]["value"];
+
 const SearchSchema = z.object({
   type: z.enum(["skill", "playbook", "soul", "guardrail"]).catch("skill").default("skill"),
   category: z.string().nullish().catch(null),
   q: z.string().nullish().catch(null),
+  sort: z.enum(["popular", "newest", "oldest", "name"]).catch("popular").default("popular"),
   page: z.number().int().min(1).catch(1).default(1),
 });
 
@@ -33,6 +42,7 @@ export const Route = createFileRoute("/discover")({
     type: search.type,
     category: search.category ?? null,
     q: search.q ?? null,
+    sort: search.sort,
     page: search.page,
   }),
   loader: async ({ deps }) => {
@@ -41,6 +51,7 @@ export const Route = createFileRoute("/discover")({
         type: deps.type,
         category: deps.category,
         q: deps.q,
+        sort: deps.sort,
         page: deps.page,
         pageSize: PAGE_SIZE,
       },
@@ -294,6 +305,13 @@ function DiscoverPage() {
   const goToPage = (p: number) =>
     navigate({ search: (s: Record<string, unknown>) => ({ ...s, page: p }), replace: false });
 
+  const setSort = (sortValue: SortKey) =>
+    navigate({
+      search: (s: Record<string, unknown>) => ({ ...s, sort: sortValue, page: 1 }),
+      replace: true,
+    });
+  const sort: SortKey = (search.sort ?? "popular") as SortKey;
+
   const grandTotal =
     totalsByType.skill + totalsByType.playbook + totalsByType.soul + totalsByType.guardrail;
 
@@ -428,9 +446,20 @@ function DiscoverPage() {
                   </span>
                 )}
               </div>
-              <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                Sorted by popularity
-              </div>
+              <label className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                <span>Sort</span>
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as SortKey)}
+                  className="h-7 rounded-md border border-border bg-surface px-2 font-mono text-[11px] text-foreground outline-none transition-colors hover:border-primary/50 focus:border-primary"
+                >
+                  {SORT_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
 
             {items.length === 0 ? (
