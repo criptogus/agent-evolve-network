@@ -136,7 +136,11 @@ export function ReviewsSection({ slug }: { slug: string }) {
           </div>
         )}
         {reviews.map((r) => (
-          <ReviewRow key={r.id} review={r} />
+          <ReviewRow
+            key={r.id}
+            review={r}
+            canReport={!!authed && currentUserId !== r.user_id}
+          />
         ))}
       </div>
     </section>
