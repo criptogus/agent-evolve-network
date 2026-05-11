@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { getSkillTrust, type Finding } from "@/lib/marketplace/trust.functions";
+import { getSkillTrust, type Finding, type Compat } from "@/lib/marketplace/trust.functions";
 
 export const Route = createFileRoute("/marketplace/trust/$slug")({
   loader: async ({ params }) => {
