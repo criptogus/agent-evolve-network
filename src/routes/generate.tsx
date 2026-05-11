@@ -360,6 +360,21 @@ function GeneratePage() {
                 )}
               </button>
               <button
+                onClick={runRealForge}
+                disabled={realRunning || !input.trim()}
+                title="Run the real Forge Loop: web research → multi-stage author → adversarial eval → publish to your account"
+                className="inline-flex h-9 items-center gap-2 rounded-md border border-primary/40 bg-primary/10 px-4 text-sm font-medium text-foreground hover:bg-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {realRunning ? (
+                  <>
+                    <span className="size-1.5 animate-pulse rounded-full bg-primary" />
+                    Researching + forging live…
+                  </>
+                ) : (
+                  <>⚡ Forge for real (live AI)</>
+                )}
+              </button>
+              <button
                 onClick={reset}
                 disabled={running}
                 className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent disabled:opacity-50"
