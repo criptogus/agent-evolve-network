@@ -140,6 +140,46 @@ function GeneratePage() {
   const lineId = useRef(0);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
+  const [realRunning, setRealRunning] = useState(false);
+  const [realResult, setRealResult] = useState<{
+    package: { slug: string; name: string; type: string; description?: string | null };
+    research_used: boolean;
+    evaluation: { overall_score: number; precision: number; safety: number; verdict: string; strengths?: string[]; weaknesses?: string[] } | null;
+    stages: { name: string; ms: number; ok: boolean; notes?: string }[];
+  } | null>(null);
+  const [realError, setRealError] = useState<string | null>(null);
+  const realForge = useServerFn(autoCreateMissing);
+
+  function detectKind(p: string): Kind {
+    const s = p.toLowerCase();
+    if (/(guardrail|never|don'?t|prevent|block|comply|complian|hipaa|gdpr|pii)/.test(s)) return "guardrail";
+    if (/(soul|tone|voice|personality|talks like|speaks like|persona)/.test(s)) return "soul";
+    if (/(playbook|process|step.?by.?step|workflow|pipeline|triage|sequence|qualify|book demos)/.test(s)) return "playbook";
+    return "skill";
+  }
+
+  async function runRealForge() {
+    if (!input.trim() || realRunning) return;
+    setRealError(null);
+    setRealResult(null);
+    setRealRunning(true);
+    try {
+      const kind = detectKind(input);
+      const res = await realForge({ data: { brief: input.trim(), type: kind } });
+      setRealResult(res as never);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (/Unauthorized|401/i.test(msg)) {
+        setRealError("Sign in to run the live Forge Loop — it creates a real package in your account.");
+      } else if (/402|credits?/i.test(msg)) {
+        setRealError("AI credits exhausted. Add credits in workspace settings to run the live Forge.");
+      } else {
+        setRealError(msg);
+      }
+    } finally {
+      setRealRunning(false);
+    }
+  }
   useEffect(() => {
     setPresets(loadPresets());
   }, []);
