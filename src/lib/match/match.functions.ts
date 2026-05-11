@@ -111,6 +111,7 @@ Rules:
 - Pick a balanced kit close to the requested counts; less is more.
 - "role" = the specific job this package does inside the agent (e.g. "lead qualification engine", "voice of taste").
 - "gaps" = capabilities the agent needs that the catalog does NOT cover well — recommend the type to author next.
+- "recommended_mcps" = pick 0-4 EXTERNAL MCP servers from the MCP registry whose tools the agent will actually call to deliver the brief. ONLY use ids from the registry. Score 0-10 like above; drop anything <6. "pairs_with" must reference slugs you put in the kit.
 - Be opinionated and concise. No hedging, no marketing language.`;
 
     const user = `AGENT BRIEF:
@@ -119,7 +120,10 @@ ${data.brief}
 ${data.vertical ? `VERTICAL: ${data.vertical}\n` : ""}DESIRED COUNTS: skills≈${data.desired.skills}, playbooks≈${data.desired.playbooks}, souls≈${data.desired.souls}, guardrails≈${data.desired.guardrails}
 
 CATALOG (${catalog.length} packages):
-${compact}`;
+${compact}
+
+EXTERNAL MCP REGISTRY (${MCP_REGISTRY.length} servers):
+${compactMcpCatalogForLLM()}`;
 
     const { output } = await generateText({
       model: getGatewayModel("openai/gpt-5.2"),
