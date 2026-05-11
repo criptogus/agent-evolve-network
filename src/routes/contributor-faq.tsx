@@ -193,9 +193,12 @@ function ContributorFaqPage() {
 
         <div className="mt-10 rounded-md border border-primary/30 bg-primary/5 p-4 text-sm text-muted-foreground">
           Still unsure?{" "}
-          <Link to="/contact" className="text-primary underline-offset-2 hover:underline">
-            Contact us
-          </Link>{" "}
+          <a
+            href="mailto:legal@superagentskill.com"
+            className="text-primary underline-offset-2 hover:underline"
+          >
+            Email legal@superagentskill.com
+          </a>{" "}
           before submitting — we'd rather answer up front than fix it later.
         </div>
       </section>
