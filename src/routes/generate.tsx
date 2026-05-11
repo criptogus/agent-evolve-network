@@ -751,6 +751,110 @@ function GeneratePage() {
           />
         )}
 
+        {(realRunning || realResult || realError) && (
+          <section className="mt-8 animate-fade-in rounded-2xl border border-primary/30 bg-surface/50 p-6">
+            <div className="flex items-center justify-between gap-4 border-b border-border pb-3">
+              <div>
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Live Forge Loop
+                </span>
+                <h2 className="mt-1 text-lg font-semibold tracking-tight">
+                  {realRunning
+                    ? "Researching the web → drafting → judging → adversarial → evaluating…"
+                    : realError
+                      ? "Live forge couldn't complete"
+                      : "Live agent forged & published"}
+                </h2>
+              </div>
+              {realRunning && <span className="size-2 animate-pulse rounded-full bg-primary" />}
+            </div>
+
+            {realError && (
+              <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-foreground">
+                {realError}{" "}
+                {/Sign in/.test(realError) && (
+                  <Link to="/login" className="ml-1 underline">Sign in →</Link>
+                )}
+              </div>
+            )}
+
+            {realResult && (
+              <div className="mt-4 grid gap-4 lg:grid-cols-[1.1fr_1fr]">
+                <div className="rounded-xl border border-border bg-background p-4">
+                  <div className="flex items-center gap-2">
+                    <KindBadge kind={realResult.package.type as Kind} />
+                    <span className="font-mono text-[13px]">{realResult.package.name}</span>
+                    <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary">
+                      live
+                    </span>
+                  </div>
+                  {realResult.package.description && (
+                    <p className="mt-2 text-sm text-muted-foreground">{realResult.package.description}</p>
+                  )}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link
+                      to="/marketplace/$packageId"
+                      params={{ packageId: realResult.package.slug }}
+                      className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-95"
+                    >
+                      Open package →
+                    </Link>
+                    <span className="inline-flex h-8 items-center rounded-md border border-border bg-surface px-3 font-mono text-[11px] text-muted-foreground">
+                      {realResult.research_used ? "✓ web research grounded" : "research skipped (fallback)"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-border bg-background p-4">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    Adversarial evaluation
+                  </span>
+                  {realResult.evaluation ? (
+                    <>
+                      <div className="mt-2 flex items-baseline gap-3">
+                        <span className="text-3xl font-semibold tabular-nums">
+                          {realResult.evaluation.overall_score.toFixed(0)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">/ 100 overall</span>
+                        <span className="ml-auto rounded-full border border-border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider">
+                          {realResult.evaluation.verdict}
+                        </span>
+                      </div>
+                      <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                        <div>Precision: <span className="text-foreground">{realResult.evaluation.precision.toFixed(0)}%</span></div>
+                        <div>Safety: <span className="text-foreground">{realResult.evaluation.safety.toFixed(0)}%</span></div>
+                      </div>
+                      {realResult.evaluation.strengths && realResult.evaluation.strengths.length > 0 && (
+                        <ul className="mt-3 space-y-1 text-[12px] text-muted-foreground">
+                          {realResult.evaluation.strengths.slice(0, 3).map((s, i) => (
+                            <li key={i}>+ {s}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </>
+                  ) : (
+                    <p className="mt-2 text-xs text-muted-foreground">No evaluation returned.</p>
+                  )}
+                  {realResult.stages?.length > 0 && (
+                    <div className="mt-3 border-t border-border pt-2">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                        Pipeline stages
+                      </span>
+                      <ul className="mt-1.5 space-y-0.5 font-mono text-[11px]">
+                        {realResult.stages.map((st, i) => (
+                          <li key={i} className={st.ok ? "text-foreground" : "text-destructive"}>
+                            {st.ok ? "✓" : "✗"} {st.name} <span className="text-muted-foreground">· {st.ms}ms</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
         {done && (
           <section className="mt-8 animate-fade-in rounded-2xl border border-primary/30 bg-primary/5 p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
