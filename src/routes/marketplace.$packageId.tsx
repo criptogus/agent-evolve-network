@@ -12,6 +12,7 @@ import { getPackageDetail } from "@/lib/marketplace/detail.functions";
 import {
   installPackageBySlug,
   uninstallPackageBySlug,
+  updatePackageBySlug,
   getInstallStatus,
   type InstallStatus,
 } from "@/lib/marketplace/telemetry.functions";
