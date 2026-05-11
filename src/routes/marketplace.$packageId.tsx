@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { CodeBlock } from "@/components/site/CodeBlock";
 import { CopyButton } from "@/components/site/CopyButton";
