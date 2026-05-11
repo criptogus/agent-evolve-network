@@ -42,13 +42,31 @@ function fmtPct(v: number | null): string {
 function SkillForgePage() {
   const data = Route.useLoaderData() as ForgeData;
   const [installing, setInstalling] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
   const installFn = useServerFn(installPackageBySlug);
+  const uninstallFn = useServerFn(uninstallPackageBySlug);
+  const updateFn = useServerFn(updatePackageBySlug);
 
   const installMutation = useMutation({
     mutationFn: async (slug: string) => installFn({ data: { slug } }),
     onSettled: () => {
       setInstalling(null);
-      // re-run loader to reflect new state
+      window.location.reload();
+    },
+  });
+
+  const uninstallMutation = useMutation({
+    mutationFn: async (slug: string) => uninstallFn({ data: { slug } }),
+    onSettled: () => {
+      setBusy(null);
+      window.location.reload();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (slug: string) => updateFn({ data: { slug } }),
+    onSettled: () => {
+      setBusy(null);
       window.location.reload();
     },
   });
