@@ -36,4 +36,7 @@ export interface Package {
   license: string;
   examples: { title: string; body: string }[];
   metrics: { label: string; value: string; delta?: string }[];
+  vertical?: string;
+  reviewStatus?: string;
+  systemPrompt?: string;
 }
