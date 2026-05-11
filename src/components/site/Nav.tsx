@@ -4,6 +4,7 @@ import { Menu, Github } from "lucide-react";
 import { Logo } from "./Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
+import { CreditsPill } from "./CreditsPill";
 
 const GITHUB_URL = "https://github.com/super-agent-skill/super-agent-skill";
 
