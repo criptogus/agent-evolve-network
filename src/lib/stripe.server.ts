@@ -21,9 +21,9 @@ export function createStripeClient(env: StripeEnv): Stripe {
   const lovableApiKey = getEnv("LOVABLE_API_KEY");
 
   return new Stripe(connectionApiKey, {
-    apiVersion: "2026-03-25.dahlia" as Stripe.LatestApiVersion,
-    httpClient: Stripe.createFetchHttpClient((url: string | URL, init?: RequestInit) => {
-      const gatewayUrl = url.toString().replace("https://api.stripe.com", GATEWAY_STRIPE_BASE);
+    apiVersion: "2026-03-25.dahlia" as any,
+    httpClient: Stripe.createFetchHttpClient(((input: any, init?: RequestInit) => {
+      const gatewayUrl = input.toString().replace("https://api.stripe.com", GATEWAY_STRIPE_BASE);
       return fetch(gatewayUrl, {
         ...init,
         headers: {
