@@ -53,6 +53,7 @@ function Marketplace() {
 
   const [type, setType] = useState<TypeFilter>("all");
   const [vertical, setVertical] = useState<string>("all");
+  const [verticalGroup, setVerticalGroup] = useState<string>("all");
   const [q, setQ] = useState("");
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [installBucket, setInstallBucket] = useState<InstallBucket>("any");
