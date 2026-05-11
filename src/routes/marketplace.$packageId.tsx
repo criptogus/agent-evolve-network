@@ -206,7 +206,16 @@ function PackageDetail() {
       <Footer />
 
       {installOpen && (
-        <InstallModal pkg={pkg} version={selectedVersion} isUpgrade={isUpgrade} onClose={() => setInstallOpen(false)} />
+        <InstallModal
+          pkg={pkg}
+          version={selectedVersion}
+          isUpgrade={isUpgrade}
+          onClose={() => setInstallOpen(false)}
+          onInstalled={async () => {
+            const fresh = await statusFn({ data: { slug: pkg.slug } });
+            setStatus(fresh);
+          }}
+        />
       )}
     </div>
   );
