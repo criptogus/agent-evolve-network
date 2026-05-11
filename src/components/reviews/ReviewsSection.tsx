@@ -30,9 +30,13 @@ export function ReviewsSection({ slug }: { slug: string }) {
   });
 
   const [authed, setAuthed] = useState<boolean | null>(null);
-  if (authed === null) {
-    supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
-  }
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setAuthed(!!data.user);
+      setCurrentUserId(data.user?.id ?? null);
+    });
+  }, []);
 
   const eligQ = useQuery({
     queryKey: ["review-elig", slug],
