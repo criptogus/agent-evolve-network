@@ -55,7 +55,7 @@ function statusOf(row: EvalRow): "healthy" | "watch" | "drift" | "idle" {
 }
 
 function EvaluationPage() {
-  const { rows } = Route.useLoaderData();
+  const { rows } = Route.useLoaderData() as { rows: EvalRow[] };
   const [filter, setFilter] = useState<"all" | EvalRow["type"]>("all");
 
   const filtered = useMemo(
