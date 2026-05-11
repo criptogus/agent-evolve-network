@@ -4,6 +4,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { CodeBlock } from "@/components/site/CodeBlock";
+import { CopyButton } from "@/components/site/CopyButton";
 import { TypingLines } from "@/components/site/Typewriter";
 import { TypeBadge } from "./marketplace.index";
 import type { Package, CompatibilityCheck } from "@/data/packages";
@@ -240,10 +241,15 @@ function OverviewTab({ pkg }: { pkg: Package }) {
 
         {pkg.systemPrompt && (
           <>
-            <h3 className="mt-10 text-base font-semibold tracking-tight">System prompt</h3>
-            <p className="mt-1 text-xs text-muted-foreground">
-              The exact instructions this skill installs into your agent.
-            </p>
+            <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="text-base font-semibold tracking-tight">System prompt</h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  The exact instructions this skill installs into your agent.
+                </p>
+              </div>
+              <CopyButton value={pkg.systemPrompt} label="Copy system prompt" />
+            </div>
             <div className="mt-3">
               <CodeBlock filename={`${pkg.id}.system-prompt.md`} lang="md" code={pkg.systemPrompt} />
             </div>
