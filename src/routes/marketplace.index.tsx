@@ -120,7 +120,7 @@ function Marketplace() {
       }
     });
     return sorted;
-  }, [items, type, vertical, q, verifiedOnly, installBucket, sort]);
+  }, [items, type, vertical, verticalGroup, q, verifiedOnly, installBucket, sort]);
 
   // Counts per type for chips
   const typeCounts = useMemo(() => {
