@@ -206,18 +206,7 @@ function CustomizePack() {
                   </div>
                 )}
                 {status === "ready" && activeId && (
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    <Button asChild variant="default">
-                      <a href={`/api/packs/customization/${activeId}/download.md`} target="_blank" rel="noreferrer">
-                        Download Markdown bundle
-                      </a>
-                    </Button>
-                    <Button asChild variant="outline">
-                      <a href={`/api/packs/customization/${activeId}/download.json`} target="_blank" rel="noreferrer">
-                        Download JSON bundle
-                      </a>
-                    </Button>
-                  </div>
+                  <DownloadButtons customizationId={activeId} />
                 )}
                 {status === "error" && (
                   <p className="text-sm text-destructive">Error: {(cust as any).error}</p>
