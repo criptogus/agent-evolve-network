@@ -15,7 +15,7 @@ export const Route = createFileRoute("/skillforge")({
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) {
-      throw redirect({ to: "/login", search: { redirect: "/skillforge" } as never });
+      throw redirect({ to: "/login", search: { next: "/skillforge" } as never });
     }
   },
   loader: () => getSkillForgeData(),
