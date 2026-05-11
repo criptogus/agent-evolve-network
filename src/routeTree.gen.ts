@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SkillforgeRouteImport } from './routes/skillforge'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RefundsRouteImport } from './routes/refunds'
@@ -33,6 +34,7 @@ import { Route as PacksIndexRouteImport } from './routes/packs.index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as SoulsSlugRouteImport } from './routes/souls.$slug'
+import { Route as RobotsTxtRouteImport } from './routes/robots.txt'
 import { Route as PacksSlugRouteImport } from './routes/packs.$slug'
 import { Route as OauthAuthorizeRouteImport } from './routes/oauth.authorize'
 import { Route as MarketplaceRankingsRouteImport } from './routes/marketplace.rankings'
@@ -81,6 +83,11 @@ const TermsRoute = TermsRouteImport.update({
 const SkillforgeRoute = SkillforgeRouteImport.update({
   id: '/skillforge',
   path: '/skillforge',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -186,6 +193,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const SoulsSlugRoute = SoulsSlugRouteImport.update({
   id: '/souls/$slug',
   path: '/souls/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsTxtRoute = RobotsTxtRouteImport.update({
+  id: '/robots/txt',
+  path: '/robots/txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PacksSlugRoute = PacksSlugRouteImport.update({
@@ -379,6 +391,7 @@ export interface FileRoutesByFullPath {
   '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skillforge': typeof SkillforgeRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
@@ -403,6 +416,7 @@ export interface FileRoutesByFullPath {
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
+  '/robots/txt': typeof RobotsTxtRoute
   '/souls/$slug': typeof SoulsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
@@ -438,6 +452,7 @@ export interface FileRoutesByTo {
   '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skillforge': typeof SkillforgeRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
@@ -462,6 +477,7 @@ export interface FileRoutesByTo {
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
+  '/robots/txt': typeof RobotsTxtRoute
   '/souls/$slug': typeof SoulsSlugRoute
   '/admin': typeof AdminIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
@@ -499,6 +515,7 @@ export interface FileRoutesById {
   '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skillforge': typeof SkillforgeRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
@@ -523,6 +540,7 @@ export interface FileRoutesById {
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
+  '/robots/txt': typeof RobotsTxtRoute
   '/souls/$slug': typeof SoulsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
@@ -561,6 +579,7 @@ export interface FileRouteTypes {
     | '/refunds'
     | '/reset-password'
     | '/signup'
+    | '/sitemap.xml'
     | '/skillforge'
     | '/terms'
     | '/upload'
@@ -585,6 +604,7 @@ export interface FileRouteTypes {
     | '/marketplace/rankings'
     | '/oauth/authorize'
     | '/packs/$slug'
+    | '/robots/txt'
     | '/souls/$slug'
     | '/admin/'
     | '/marketplace/'
@@ -620,6 +640,7 @@ export interface FileRouteTypes {
     | '/refunds'
     | '/reset-password'
     | '/signup'
+    | '/sitemap.xml'
     | '/skillforge'
     | '/terms'
     | '/upload'
@@ -644,6 +665,7 @@ export interface FileRouteTypes {
     | '/marketplace/rankings'
     | '/oauth/authorize'
     | '/packs/$slug'
+    | '/robots/txt'
     | '/souls/$slug'
     | '/admin'
     | '/marketplace'
@@ -680,6 +702,7 @@ export interface FileRouteTypes {
     | '/refunds'
     | '/reset-password'
     | '/signup'
+    | '/sitemap.xml'
     | '/skillforge'
     | '/terms'
     | '/upload'
@@ -704,6 +727,7 @@ export interface FileRouteTypes {
     | '/marketplace/rankings'
     | '/oauth/authorize'
     | '/packs/$slug'
+    | '/robots/txt'
     | '/souls/$slug'
     | '/admin/'
     | '/marketplace/'
@@ -741,6 +765,7 @@ export interface RootRouteChildren {
   RefundsRoute: typeof RefundsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SkillforgeRoute: typeof SkillforgeRoute
   TermsRoute: typeof TermsRoute
   UploadRoute: typeof UploadRoute
@@ -756,6 +781,7 @@ export interface RootRouteChildren {
   MarketplaceRankingsRoute: typeof MarketplaceRankingsRoute
   OauthAuthorizeRoute: typeof OauthAuthorizeRoute
   PacksSlugRoute: typeof PacksSlugRouteWithChildren
+  RobotsTxtRoute: typeof RobotsTxtRoute
   SoulsSlugRoute: typeof SoulsSlugRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   PacksIndexRoute: typeof PacksIndexRoute
@@ -790,6 +816,13 @@ declare module '@tanstack/react-router' {
       path: '/skillforge'
       fullPath: '/skillforge'
       preLoaderRoute: typeof SkillforgeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -937,6 +970,13 @@ declare module '@tanstack/react-router' {
       path: '/souls/$slug'
       fullPath: '/souls/$slug'
       preLoaderRoute: typeof SoulsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots/txt': {
+      id: '/robots/txt'
+      path: '/robots/txt'
+      fullPath: '/robots/txt'
+      preLoaderRoute: typeof RobotsTxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/packs/$slug': {
@@ -1272,6 +1312,7 @@ const rootRouteChildren: RootRouteChildren = {
   RefundsRoute: RefundsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SkillforgeRoute: SkillforgeRoute,
   TermsRoute: TermsRoute,
   UploadRoute: UploadRoute,
@@ -1287,6 +1328,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketplaceRankingsRoute: MarketplaceRankingsRoute,
   OauthAuthorizeRoute: OauthAuthorizeRoute,
   PacksSlugRoute: PacksSlugRouteWithChildren,
+  RobotsTxtRoute: RobotsTxtRoute,
   SoulsSlugRoute: SoulsSlugRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   PacksIndexRoute: PacksIndexRoute,
