@@ -233,6 +233,9 @@ function DiscoverPage() {
                 }
               >
                 {TYPE_META[t].plural}
+                <span className="ml-1.5 rounded bg-muted px-1 font-mono text-[10px] text-muted-foreground">
+                  {countsByType[t]}
+                </span>
               </button>
             ))}
           </div>
