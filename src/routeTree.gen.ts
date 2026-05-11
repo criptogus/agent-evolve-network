@@ -61,6 +61,9 @@ import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.m
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
 import { Route as ApiSkillsSlugExportRouteImport } from './routes/api/skills.$slug.export'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicOauthTokenRouteImport } from './routes/api/public/oauth/token'
+import { Route as ApiPublicOauthRevokeRouteImport } from './routes/api/public/oauth/revoke'
+import { Route as ApiPublicOauthRegisterRouteImport } from './routes/api/public/oauth/register'
 import { Route as ApiPublicMcpHealthRouteImport } from './routes/api/public/mcp.health'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
@@ -325,6 +328,21 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicOauthTokenRoute = ApiPublicOauthTokenRouteImport.update({
+  id: '/api/public/oauth/token',
+  path: '/api/public/oauth/token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicOauthRevokeRoute = ApiPublicOauthRevokeRouteImport.update({
+  id: '/api/public/oauth/revoke',
+  path: '/api/public/oauth/revoke',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicOauthRegisterRoute = ApiPublicOauthRegisterRouteImport.update({
+  id: '/api/public/oauth/register',
+  path: '/api/public/oauth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicMcpHealthRoute = ApiPublicMcpHealthRouteImport.update({
   id: '/api/public/mcp/health',
   path: '/api/public/mcp/health',
@@ -389,6 +407,9 @@ export interface FileRoutesByFullPath {
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
+  '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
+  '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
+  '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
@@ -444,6 +465,9 @@ export interface FileRoutesByTo {
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
+  '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
+  '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
+  '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
@@ -501,6 +525,9 @@ export interface FileRoutesById {
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
+  '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
+  '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
+  '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
@@ -559,6 +586,9 @@ export interface FileRouteTypes {
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
     | '/api/public/mcp/health'
+    | '/api/public/oauth/register'
+    | '/api/public/oauth/revoke'
+    | '/api/public/oauth/token'
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/packs/customization/$id/download/$ext'
@@ -614,6 +644,9 @@ export interface FileRouteTypes {
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
     | '/api/public/mcp/health'
+    | '/api/public/oauth/register'
+    | '/api/public/oauth/revoke'
+    | '/api/public/oauth/token'
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/packs/customization/$id/download/$ext'
@@ -670,6 +703,9 @@ export interface FileRouteTypes {
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
     | '/api/public/mcp/health'
+    | '/api/public/oauth/register'
+    | '/api/public/oauth/revoke'
+    | '/api/public/oauth/token'
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/packs/customization/$id/download/$ext'
@@ -712,6 +748,9 @@ export interface RootRouteChildren {
   PacksIndexRoute: typeof PacksIndexRoute
   MarketplaceTrustSlugRoute: typeof MarketplaceTrustSlugRoute
   ApiPublicMcpHealthRoute: typeof ApiPublicMcpHealthRoute
+  ApiPublicOauthRegisterRoute: typeof ApiPublicOauthRegisterRoute
+  ApiPublicOauthRevokeRoute: typeof ApiPublicOauthRevokeRoute
+  ApiPublicOauthTokenRoute: typeof ApiPublicOauthTokenRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiSkillsSlugExportRoute: typeof ApiSkillsSlugExportRoute
   ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
@@ -1083,6 +1122,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/oauth/token': {
+      id: '/api/public/oauth/token'
+      path: '/api/public/oauth/token'
+      fullPath: '/api/public/oauth/token'
+      preLoaderRoute: typeof ApiPublicOauthTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/oauth/revoke': {
+      id: '/api/public/oauth/revoke'
+      path: '/api/public/oauth/revoke'
+      fullPath: '/api/public/oauth/revoke'
+      preLoaderRoute: typeof ApiPublicOauthRevokeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/oauth/register': {
+      id: '/api/public/oauth/register'
+      path: '/api/public/oauth/register'
+      fullPath: '/api/public/oauth/register'
+      preLoaderRoute: typeof ApiPublicOauthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/mcp/health': {
       id: '/api/public/mcp/health'
       path: '/api/public/mcp/health'
@@ -1211,6 +1271,9 @@ const rootRouteChildren: RootRouteChildren = {
   PacksIndexRoute: PacksIndexRoute,
   MarketplaceTrustSlugRoute: MarketplaceTrustSlugRoute,
   ApiPublicMcpHealthRoute: ApiPublicMcpHealthRoute,
+  ApiPublicOauthRegisterRoute: ApiPublicOauthRegisterRoute,
+  ApiPublicOauthRevokeRoute: ApiPublicOauthRevokeRoute,
+  ApiPublicOauthTokenRoute: ApiPublicOauthTokenRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiSkillsSlugExportRoute: ApiSkillsSlugExportRoute,
   ApiPacksCustomizationIdDownloadExtRoute:
