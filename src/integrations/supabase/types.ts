@@ -605,9 +605,12 @@ export type Database = {
           created_at: string
           examples: Json
           id: string
+          live_resources: Json
+          mcp_servers: Json
           notes: string | null
           package_id: string
           parent_version_id: string | null
+          permissions: Json
           rules: Json
           status: Database["public"]["Enums"]["version_status"]
           system_prompt: string
@@ -618,9 +621,12 @@ export type Database = {
           created_at?: string
           examples?: Json
           id?: string
+          live_resources?: Json
+          mcp_servers?: Json
           notes?: string | null
           package_id: string
           parent_version_id?: string | null
+          permissions?: Json
           rules?: Json
           status?: Database["public"]["Enums"]["version_status"]
           system_prompt: string
@@ -631,9 +637,12 @@ export type Database = {
           created_at?: string
           examples?: Json
           id?: string
+          live_resources?: Json
+          mcp_servers?: Json
           notes?: string | null
           package_id?: string
           parent_version_id?: string | null
+          permissions?: Json
           rules?: Json
           status?: Database["public"]["Enums"]["version_status"]
           system_prompt?: string
