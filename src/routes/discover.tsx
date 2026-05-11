@@ -356,6 +356,27 @@ function DiscoverPage() {
 
           {/* Results */}
           <section>
+            {/* Vertical quick filter — live counts, scrollable on mobile */}
+            {facetCats.length > 0 && (
+              <div className="-mx-1 mb-4 flex gap-1.5 overflow-x-auto pb-1">
+                <VerticalChip
+                  label="All"
+                  count={totalsByType[type as Type]}
+                  active={category === null}
+                  onClick={() => setCategory(null)}
+                />
+                {facetCats.map((c) => (
+                  <VerticalChip
+                    key={c.name}
+                    label={c.name}
+                    count={c.count}
+                    active={category === c.name}
+                    onClick={() => setCategory(category === c.name ? null : c.name)}
+                  />
+                ))}
+              </div>
+            )}
+
             <div className="mb-4 flex items-center justify-between text-sm">
               <div className="text-muted-foreground">
                 {total.toLocaleString()} {type}
