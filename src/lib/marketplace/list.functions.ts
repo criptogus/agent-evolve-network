@@ -13,6 +13,7 @@ export type MarketplaceItem = {
   latest_version: string;
   vertical: string | null;
   created_at: string;
+  price_credits: number;
 };
 
 export const listMarketplace = createServerFn({ method: "GET" }).handler(
@@ -20,7 +21,7 @@ export const listMarketplace = createServerFn({ method: "GET" }).handler(
     const { data: pkgs, error } = await supabaseAdmin
       .from("packages")
       .select(
-        "id, slug, name, type, description, author_handle, author_verified, install_count, latest_version, created_at"
+        "id, slug, name, type, description, author_handle, author_verified, install_count, latest_version, created_at, price_credits"
       )
       .eq("is_published", true)
       .eq("review_status", "approved")
@@ -53,6 +54,7 @@ export const listMarketplace = createServerFn({ method: "GET" }).handler(
       ...p,
       type: p.type as MarketplaceItem["type"],
       vertical: verticalByPkg.get(p.id) ?? null,
+      price_credits: p.price_credits ?? 0,
     }));
 
     const vs = new Set<string>();
@@ -60,3 +62,4 @@ export const listMarketplace = createServerFn({ method: "GET" }).handler(
     return { items, verticals: Array.from(vs).sort() };
   }
 );
+

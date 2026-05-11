@@ -43,6 +43,45 @@ export type Database = {
           },
         ]
       }
+      credit_ledger: {
+        Row: {
+          balance_after: number
+          created_at: string
+          delta: number
+          description: string | null
+          id: string
+          metadata: Json
+          reason: Database["public"]["Enums"]["credit_reason"]
+          ref_id: string | null
+          ref_type: string | null
+          user_id: string
+        }
+        Insert: {
+          balance_after: number
+          created_at?: string
+          delta: number
+          description?: string | null
+          id?: string
+          metadata?: Json
+          reason: Database["public"]["Enums"]["credit_reason"]
+          ref_id?: string | null
+          ref_type?: string | null
+          user_id: string
+        }
+        Update: {
+          balance_after?: number
+          created_at?: string
+          delta?: number
+          description?: string | null
+          id?: string
+          metadata?: Json
+          reason?: Database["public"]["Enums"]["credit_reason"]
+          ref_id?: string | null
+          ref_type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       learnings: {
         Row: {
           applied_in_version_id: string | null
@@ -336,6 +375,39 @@ export type Database = {
           },
         ]
       }
+      package_purchases: {
+        Row: {
+          author_credits: number
+          author_id: string | null
+          buyer_id: string
+          created_at: string
+          credits_paid: number
+          id: string
+          package_id: string
+          platform_credits: number
+        }
+        Insert: {
+          author_credits?: number
+          author_id?: string | null
+          buyer_id: string
+          created_at?: string
+          credits_paid: number
+          id?: string
+          package_id: string
+          platform_credits?: number
+        }
+        Update: {
+          author_credits?: number
+          author_id?: string | null
+          buyer_id?: string
+          created_at?: string
+          credits_paid?: number
+          id?: string
+          package_id?: string
+          platform_credits?: number
+        }
+        Relationships: []
+      }
       package_requests: {
         Row: {
           auto_resolved: boolean
@@ -462,6 +534,7 @@ export type Database = {
           license: string
           long_description: string | null
           name: string
+          price_credits: number
           review_notes: string | null
           review_status: string
           reviewed_at: string | null
@@ -487,6 +560,7 @@ export type Database = {
           license?: string
           long_description?: string | null
           name: string
+          price_credits?: number
           review_notes?: string | null
           review_status?: string
           reviewed_at?: string | null
@@ -512,6 +586,7 @@ export type Database = {
           license?: string
           long_description?: string | null
           name?: string
+          price_credits?: number
           review_notes?: string | null
           review_status?: string
           reviewed_at?: string | null
@@ -562,6 +637,7 @@ export type Database = {
           features: Json
           id: string
           max_installed_packages: number
+          monthly_credits: number
           monthly_runs_limit: number
           name: string
           paddle_price_external_id: string | null
@@ -576,6 +652,7 @@ export type Database = {
           features?: Json
           id?: string
           max_installed_packages?: number
+          monthly_credits?: number
           monthly_runs_limit?: number
           name: string
           paddle_price_external_id?: string | null
@@ -590,6 +667,7 @@ export type Database = {
           features?: Json
           id?: string
           max_installed_packages?: number
+          monthly_credits?: number
           monthly_runs_limit?: number
           name?: string
           paddle_price_external_id?: string | null
@@ -969,6 +1047,20 @@ export type Database = {
       }
     }
     Functions: {
+      _credit_apply: {
+        Args: {
+          _delta: number
+          _description: string
+          _metadata: Json
+          _reason: Database["public"]["Enums"]["credit_reason"]
+          _ref_id: string
+          _ref_type: string
+          _user_id: string
+        }
+        Returns: number
+      }
+      get_credit_balance: { Args: { _user_id: string }; Returns: number }
+      grant_signup_bonus: { Args: { _user_id: string }; Returns: undefined }
       has_active_subscription:
         | { Args: { _user_id: string }; Returns: boolean }
         | { Args: { _user_id: string; check_env?: string }; Returns: boolean }
@@ -979,9 +1071,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      purchase_package: { Args: { _package_id: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "publisher" | "user"
+      credit_reason:
+        | "signup_bonus"
+        | "subscription_grant"
+        | "purchase"
+        | "sale"
+        | "refund"
+        | "manual_adjustment"
+        | "promo"
       learning_kind: "miss" | "hallucination" | "win" | "suggestion" | "block"
       package_type: "skill" | "playbook" | "soul" | "guardrail"
       run_status: "running" | "ok" | "error" | "blocked"
@@ -1114,6 +1215,15 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "publisher", "user"],
+      credit_reason: [
+        "signup_bonus",
+        "subscription_grant",
+        "purchase",
+        "sale",
+        "refund",
+        "manual_adjustment",
+        "promo",
+      ],
       learning_kind: ["miss", "hallucination", "win", "suggestion", "block"],
       package_type: ["skill", "playbook", "soul", "guardrail"],
       run_status: ["running", "ok", "error", "blocked"],

@@ -4,6 +4,7 @@ import { Menu, Github } from "lucide-react";
 import { Logo } from "./Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
+import { CreditsPill } from "./CreditsPill";
 
 const GITHUB_URL = "https://github.com/super-agent-skill/super-agent-skill";
 
@@ -60,6 +61,7 @@ export function Nav() {
           </a>
           {user ? (
             <>
+              <CreditsPill />
               <Link
                 to="/account/billing"
                 className="hidden whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline"
@@ -126,6 +128,13 @@ export function Nav() {
                 ))}
                 {user ? (
                   <>
+                    <Link
+                      to="/account/credits"
+                      onClick={() => setOpen(false)}
+                      className="rounded-md px-3 py-2.5 text-[15px] text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+                    >
+                      Credits
+                    </Link>
                     <Link
                       to="/account/billing"
                       onClick={() => setOpen(false)}

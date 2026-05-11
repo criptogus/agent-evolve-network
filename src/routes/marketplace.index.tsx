@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
+import { BuyButton, PriceBadge } from "@/components/marketplace/BuyButton";
 
 export const Route = createFileRoute("/marketplace/")({
   head: () => ({
@@ -210,7 +211,10 @@ function Card({ p }: { p: MarketplaceItem }) {
     >
       <div className="flex items-center justify-between gap-2">
         <TypeBadge type={p.type} />
-        <span className="font-mono text-[10px] text-muted-foreground">v{p.latest_version}</span>
+        <div className="flex items-center gap-2">
+          <PriceBadge priceCredits={p.price_credits} />
+          <span className="font-mono text-[10px] text-muted-foreground">v{p.latest_version}</span>
+        </div>
       </div>
       <div className="mt-3 font-mono text-[15px] font-semibold leading-tight">{p.name}</div>
       <div className="mt-1 text-xs text-muted-foreground">
@@ -226,10 +230,13 @@ function Card({ p }: { p: MarketplaceItem }) {
           </span>
         </div>
       )}
-      <div className="mt-auto pt-5">
-        <div className="inline-flex h-9 w-full items-center justify-center rounded-md bg-foreground text-sm font-medium text-background transition-opacity group-hover:opacity-90">
-          View package →
+      <div className="mt-auto flex items-center gap-2 pt-5">
+        <div className="inline-flex h-9 flex-1 items-center justify-center rounded-md bg-foreground text-sm font-medium text-background transition-opacity group-hover:opacity-90">
+          {p.price_credits > 0 ? "View →" : "View package →"}
         </div>
+        {p.price_credits > 0 && (
+          <BuyButton packageId={p.id} priceCredits={p.price_credits} />
+        )}
       </div>
     </Link>
   );
