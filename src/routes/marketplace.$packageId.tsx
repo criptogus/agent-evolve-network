@@ -445,6 +445,20 @@ function VerifiedBadge() {
   );
 }
 
+function ReviewStatusPill({ status }: { status: string }) {
+  const map: Record<string, { label: string; cls: string }> = {
+    approved: { label: "✓ Approved", cls: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" },
+    pending: { label: "⏳ Pending review", cls: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400" },
+    rejected: { label: "✕ Rejected", cls: "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400" },
+  };
+  const conf = map[status] ?? { label: status, cls: "border-border bg-muted/40 text-muted-foreground" };
+  return (
+    <span className={`rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${conf.cls}`}>
+      {conf.label}
+    </span>
+  );
+}
+
 function CompatibilitySummary({ checks }: { checks: CompatibilityCheck[] }) {
   const supported = checks.filter((c) => c.status === "supported").length;
   const partial = checks.filter((c) => c.status === "partial").length;
