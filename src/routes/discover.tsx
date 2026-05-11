@@ -61,6 +61,89 @@ export const Route = createFileRoute("/discover")({
 
 type Type = DiscoverType;
 
+const TYPE_META: Record<Type, { label: string; plural: string; tone: string }> = {
+  skill: { label: "Skill", plural: "Skills", tone: "skill" },
+  playbook: { label: "Playbook", plural: "Playbooks", tone: "playbook" },
+  soul: { label: "Soul", plural: "Souls", tone: "soul" },
+  guardrail: { label: "Guardrail", plural: "Guardrails", tone: "guardrail" },
+};
+
+const INDUSTRIES = [
+  "Healthcare",
+  "Legal",
+  "B2B SaaS",
+  "Fintech",
+  "E-commerce",
+  "Education",
+  "Logistics",
+  "Real estate",
+  "Media & Creator",
+];
+
+const STYLES = [
+  "Concise & direct",
+  "Warm & empathetic",
+  "Executive / boardroom",
+  "Playful & punchy",
+  "Technical & precise",
+];
+
+const GOVERNANCE_LEVELS = [
+  { key: "L1", label: "L1 · Observability", body: "Logs decisions and outputs. No blocking." },
+  { key: "L2", label: "L2 · Soft warnings", body: "Flags risky outputs. User confirms to proceed." },
+  { key: "L3", label: "L3 · Hard block", body: "Blocks unsafe actions. Escalates to a human." },
+  { key: "L4", label: "L4 · Sandboxed", body: "Read-only mode. No writes, no external calls." },
+];
+
+function Pagination({
+  page,
+  totalPages,
+  onPage,
+}: {
+  page: number;
+  totalPages: number;
+  onPage: (p: number) => void;
+}) {
+  const window = 2;
+  const pages: (number | "…")[] = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= page - window && i <= page + window)) {
+      pages.push(i);
+    } else if (pages[pages.length - 1] !== "…") {
+      pages.push("…");
+    }
+  }
+  const btn =
+    "h-9 min-w-9 rounded-md border border-border bg-surface px-3 font-mono text-xs transition-colors disabled:opacity-40 hover:border-primary/50";
+  return (
+    <nav className="mt-8 flex items-center justify-center gap-1.5" aria-label="Pagination">
+      <button className={btn} disabled={page <= 1} onClick={() => onPage(page - 1)}>
+        ‹ prev
+      </button>
+      {pages.map((p, i) =>
+        p === "…" ? (
+          <span key={`e-${i}`} className="px-1 font-mono text-xs text-muted-foreground">
+            …
+          </span>
+        ) : (
+          <button
+            key={p}
+            onClick={() => onPage(p)}
+            className={
+              btn + (p === page ? " border-primary bg-primary/10 text-foreground" : "")
+            }
+          >
+            {p}
+          </button>
+        ),
+      )}
+      <button className={btn} disabled={page >= totalPages} onClick={() => onPage(page + 1)}>
+        next ›
+      </button>
+    </nav>
+  );
+}
+
 interface Item {
   id: string;
   name: string;
