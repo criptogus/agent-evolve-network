@@ -39,6 +39,7 @@ import { Route as PacksSlugRouteImport } from './routes/packs.$slug'
 import { Route as OauthAuthorizeRouteImport } from './routes/oauth.authorize'
 import { Route as MarketplaceRankingsRouteImport } from './routes/marketplace.rankings'
 import { Route as MarketplaceLeaderboardRouteImport } from './routes/marketplace.leaderboard'
+import { Route as MarketplaceCategoriesRouteImport } from './routes/marketplace.categories'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
 import { Route as LlmsTxtRouteImport } from './routes/llms.txt'
 import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
@@ -219,6 +220,11 @@ const MarketplaceRankingsRoute = MarketplaceRankingsRouteImport.update({
 const MarketplaceLeaderboardRoute = MarketplaceLeaderboardRouteImport.update({
   id: '/marketplace/leaderboard',
   path: '/marketplace/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceCategoriesRoute = MarketplaceCategoriesRouteImport.update({
+  id: '/marketplace/categories',
+  path: '/marketplace/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
@@ -419,6 +425,7 @@ export interface FileRoutesByFullPath {
   '/docs/mcp': typeof DocsMcpRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/marketplace/categories': typeof MarketplaceCategoriesRoute
   '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
@@ -481,6 +488,7 @@ export interface FileRoutesByTo {
   '/docs/mcp': typeof DocsMcpRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/marketplace/categories': typeof MarketplaceCategoriesRoute
   '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
@@ -545,6 +553,7 @@ export interface FileRoutesById {
   '/docs/mcp': typeof DocsMcpRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
+  '/marketplace/categories': typeof MarketplaceCategoriesRoute
   '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
@@ -610,6 +619,7 @@ export interface FileRouteTypes {
     | '/docs/mcp'
     | '/llms/txt'
     | '/marketplace/$packageId'
+    | '/marketplace/categories'
     | '/marketplace/leaderboard'
     | '/marketplace/rankings'
     | '/oauth/authorize'
@@ -672,6 +682,7 @@ export interface FileRouteTypes {
     | '/docs/mcp'
     | '/llms/txt'
     | '/marketplace/$packageId'
+    | '/marketplace/categories'
     | '/marketplace/leaderboard'
     | '/marketplace/rankings'
     | '/oauth/authorize'
@@ -735,6 +746,7 @@ export interface FileRouteTypes {
     | '/docs/mcp'
     | '/llms/txt'
     | '/marketplace/$packageId'
+    | '/marketplace/categories'
     | '/marketplace/leaderboard'
     | '/marketplace/rankings'
     | '/oauth/authorize'
@@ -790,6 +802,7 @@ export interface RootRouteChildren {
   ApiMcpRoute: typeof ApiMcpRoute
   LlmsTxtRoute: typeof LlmsTxtRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
+  MarketplaceCategoriesRoute: typeof MarketplaceCategoriesRoute
   MarketplaceLeaderboardRoute: typeof MarketplaceLeaderboardRoute
   MarketplaceRankingsRoute: typeof MarketplaceRankingsRoute
   OauthAuthorizeRoute: typeof OauthAuthorizeRoute
@@ -1018,6 +1031,13 @@ declare module '@tanstack/react-router' {
       path: '/marketplace/leaderboard'
       fullPath: '/marketplace/leaderboard'
       preLoaderRoute: typeof MarketplaceLeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace/categories': {
+      id: '/marketplace/categories'
+      path: '/marketplace/categories'
+      fullPath: '/marketplace/categories'
+      preLoaderRoute: typeof MarketplaceCategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/marketplace/$packageId': {
@@ -1345,6 +1365,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMcpRoute: ApiMcpRoute,
   LlmsTxtRoute: LlmsTxtRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
+  MarketplaceCategoriesRoute: MarketplaceCategoriesRoute,
   MarketplaceLeaderboardRoute: MarketplaceLeaderboardRoute,
   MarketplaceRankingsRoute: MarketplaceRankingsRoute,
   OauthAuthorizeRoute: OauthAuthorizeRoute,
