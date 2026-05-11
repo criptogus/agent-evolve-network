@@ -10,9 +10,13 @@ import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.fu
 
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
+  // Always re-fetch from the database — no SWR cache, no stale data.
+  staleTime: 0,
+  gcTime: 0,
+  shouldReload: true,
   loader: async () => {
     const { items } = await listMarketplace();
-    return { items: items as MarketplaceItem[] };
+    return { items: items as MarketplaceItem[], fetchedAt: Date.now() };
   },
   head: () => ({
     meta: [
