@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu } from "lucide-react";
+import { Menu, Github } from "lucide-react";
 import { Logo } from "./Logo";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
+
+const GITHUB_URL = "https://github.com/super-agent-skill/super-agent-skill";
 
 const NAV_LINKS = [
   { to: "/discover", label: "Discover" },
