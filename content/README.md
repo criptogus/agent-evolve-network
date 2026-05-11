@@ -29,7 +29,7 @@ Each package is a single YAML file. Filename = `<slug>.yaml`.
 
 ```bash
 # raw download
-curl -O https://raw.githubusercontent.com/<org>/super-agent-skill/main/content/skills/code-reviewer.yaml
+curl -O https://raw.githubusercontent.com/criptogus/agent-evolve-network/main/content/skills/code-reviewer.yaml
 
 # or stream the live, evolving version through MCP
 # https://www.superagentskill.com/api/mcp
