@@ -305,6 +305,13 @@ function DiscoverPage() {
   const goToPage = (p: number) =>
     navigate({ search: (s: Record<string, unknown>) => ({ ...s, page: p }), replace: false });
 
+  const setSort = (sortValue: SortKey) =>
+    navigate({
+      search: (s: Record<string, unknown>) => ({ ...s, sort: sortValue, page: 1 }),
+      replace: true,
+    });
+  const sort: SortKey = (search.sort ?? "popular") as SortKey;
+
   const grandTotal =
     totalsByType.skill + totalsByType.playbook + totalsByType.soul + totalsByType.guardrail;
 
