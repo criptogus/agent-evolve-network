@@ -146,14 +146,15 @@ function parseLog(raw) {
   const out = [];
   const blocks = raw.split("__COMMIT__\n").slice(1);
   for (const block of blocks) {
-    const [hash, author, subjectRest] = block.split("\n", 3);
-    const idx = block.indexOf("\n", block.indexOf("\n", block.indexOf("\n") + 1) + 1);
-    const tail = block.slice(idx + 1);
-    const files = tail
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    out.push({ hash, author, subject: subjectRest, files });
+    const lines = block.split("\n");
+    const hash = lines[0] ?? "";
+    const author = lines[1] ?? "";
+    const subject = lines[2] ?? "";
+    // Files are everything after the subject line (git log --name-only output),
+    // separated from the next commit by a blank line.
+    const files = lines.slice(3).map((s) => s.trim()).filter(Boolean);
+    if (!hash) continue;
+    out.push({ hash, author, subject, files });
   }
   return out;
 }
