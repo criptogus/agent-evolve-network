@@ -134,23 +134,8 @@ export const listDiscoverPage = createServerFn({ method: "GET" })
       }
     }
 
-    // 3) Totals per type — every approved package counts here.
-    const totalsByType: Record<DiscoverType, number> = {
-      skill: 0,
-      playbook: 0,
-      soul: 0,
-      guardrail: 0,
-    };
-    for (const r of allIndex) {
-      const t = r.type as DiscoverType;
-      if (t in totalsByType) totalsByType[t] += 1;
-    }
-
-    // 4) Filter by current type (always) and compute category facets.
-    const ofType = allIndex.filter((r) => r.type === type);
-
     const facetCounts = new Map<string, number>();
-    for (const r of ofType) {
+    for (const r of allOfType) {
       const cat = verticalToCategory(verticalByPkg.get(r.id) ?? null);
       facetCounts.set(cat, (facetCounts.get(cat) ?? 0) + 1);
     }
@@ -160,7 +145,7 @@ export const listDiscoverPage = createServerFn({ method: "GET" })
 
     // 5) Apply category + free-text filters (text matches slug here; full
     //    description match happens after hydration as a refinement).
-    let filtered = ofType;
+    let filtered = allOfType;
     if (category) {
       filtered = filtered.filter(
         (r) => verticalToCategory(verticalByPkg.get(r.id) ?? null) === category,
@@ -189,16 +174,9 @@ export const listDiscoverPage = createServerFn({ method: "GET" })
       };
     }
 
-    // 6) Hydrate the page slice with heavy fields.
-    const { data: full } = await supabaseAdmin
-      .from("packages")
-      .select(
-        "id, slug, name, type, description, author_handle, author_verified, install_count, latest_version, price_credits",
-      )
-      .in("id", pageIds);
-    const fullById = new Map((full ?? []).map((r) => [r.id, r]));
+    const fullById = new Map(pageRows.map((r) => [r.id, r]));
 
-    // 7) Ratings only for the visible page.
+    // Ratings only for the visible page.
     const ratingByPkg = new Map<string, { sum: number; count: number }>();
     const { data: rs } = await supabaseAdmin
       .from("reviews")
