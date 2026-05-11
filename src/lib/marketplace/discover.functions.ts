@@ -49,12 +49,9 @@ function verticalToCategory(v: string | null): string {
 }
 
 /**
- * Paginated catalog query. Keeps payload bounded by:
- *  1. fetching a lightweight index of approved packages (id, slug, type,
- *     install_count) to compute totals + facets,
- *  2. fetching version `rules` only for that index to derive verticals,
- *  3. hydrating heavy fields (description, author, ratings) only for the
- *     visible page slice.
+ * Paginated catalog query. Keeps navigation responsive by fetching counts for
+ * the tabs separately, then only loading the selected type's catalog and
+ * version metadata for facets.
  */
 export const listDiscoverPage = createServerFn({ method: "GET" })
   .inputValidator((data) => Input.parse(data))
@@ -62,22 +59,51 @@ export const listDiscoverPage = createServerFn({ method: "GET" })
     const { type, category, q, sort, page, pageSize } = data;
     const term = (q ?? "").trim().toLowerCase();
 
-    // 1) Lightweight index of every approved package (counts/facets/sorting).
-    const { data: idx, error: idxErr } = await supabaseAdmin
-      .from("packages")
-      .select("id, slug, type, install_count, latest_version, created_at")
-      .eq("is_published", true)
-      .eq("review_status", "approved")
-      .limit(5000);
-    if (idxErr) throw new Response(idxErr.message, { status: 500 });
-    const allIndex = (idx ?? []).slice().sort((a, b) => {
+    const countFor = async (t: DiscoverType) => {
+      const { count, error } = await supabaseAdmin
+        .from("packages")
+        .select("id", { count: "exact", head: true })
+        .eq("is_published", true)
+        .eq("review_status", "approved")
+        .eq("type", t);
+      if (error) throw new Response(error.message, { status: 500 });
+      return count ?? 0;
+    };
+
+    const [skillCount, playbookCount, soulCount, guardrailCount, packageResult] =
+      await Promise.all([
+        countFor("skill"),
+        countFor("playbook"),
+        countFor("soul"),
+        countFor("guardrail"),
+        supabaseAdmin
+          .from("packages")
+          .select(
+            "id, slug, name, type, description, author_handle, author_verified, install_count, latest_version, price_credits, created_at",
+          )
+          .eq("is_published", true)
+          .eq("review_status", "approved")
+          .eq("type", type)
+          .limit(5000),
+      ]);
+
+    if (packageResult.error) throw new Response(packageResult.error.message, { status: 500 });
+
+    const totalsByType: Record<DiscoverType, number> = {
+      skill: skillCount,
+      playbook: playbookCount,
+      soul: soulCount,
+      guardrail: guardrailCount,
+    };
+
+    const allOfType = (packageResult.data ?? []).slice().sort((a, b) => {
       switch (sort) {
         case "newest":
           return (b.created_at ?? "").localeCompare(a.created_at ?? "");
         case "oldest":
           return (a.created_at ?? "").localeCompare(b.created_at ?? "");
         case "name":
-          return a.slug.localeCompare(b.slug);
+          return a.name.localeCompare(b.name);
         case "popular":
         default:
           return (
@@ -87,11 +113,11 @@ export const listDiscoverPage = createServerFn({ method: "GET" })
       }
     });
 
-    // 2) Vertical map from latest version's rules.
+    // Vertical map from latest version's rules for the selected type only.
     const verticalByPkg = new Map<string, string | null>();
-    if (allIndex.length) {
-      const ids = allIndex.map((r) => r.id);
-      const latestByPkg = new Map(allIndex.map((r) => [r.id, r.latest_version]));
+    if (allOfType.length) {
+      const ids = allOfType.map((r) => r.id);
+      const latestByPkg = new Map(allOfType.map((r) => [r.id, r.latest_version]));
       const { data: vers } = await supabaseAdmin
         .from("package_versions")
         .select("package_id, version, rules")
@@ -108,23 +134,8 @@ export const listDiscoverPage = createServerFn({ method: "GET" })
       }
     }
 
-    // 3) Totals per type — every approved package counts here.
-    const totalsByType: Record<DiscoverType, number> = {
-      skill: 0,
-      playbook: 0,
-      soul: 0,
-      guardrail: 0,
-    };
-    for (const r of allIndex) {
-      const t = r.type as DiscoverType;
-      if (t in totalsByType) totalsByType[t] += 1;
-    }
-
-    // 4) Filter by current type (always) and compute category facets.
-    const ofType = allIndex.filter((r) => r.type === type);
-
     const facetCounts = new Map<string, number>();
-    for (const r of ofType) {
+    for (const r of allOfType) {
       const cat = verticalToCategory(verticalByPkg.get(r.id) ?? null);
       facetCounts.set(cat, (facetCounts.get(cat) ?? 0) + 1);
     }
@@ -134,7 +145,7 @@ export const listDiscoverPage = createServerFn({ method: "GET" })
 
     // 5) Apply category + free-text filters (text matches slug here; full
     //    description match happens after hydration as a refinement).
-    let filtered = ofType;
+    let filtered = allOfType;
     if (category) {
       filtered = filtered.filter(
         (r) => verticalToCategory(verticalByPkg.get(r.id) ?? null) === category,
@@ -163,16 +174,9 @@ export const listDiscoverPage = createServerFn({ method: "GET" })
       };
     }
 
-    // 6) Hydrate the page slice with heavy fields.
-    const { data: full } = await supabaseAdmin
-      .from("packages")
-      .select(
-        "id, slug, name, type, description, author_handle, author_verified, install_count, latest_version, price_credits",
-      )
-      .in("id", pageIds);
-    const fullById = new Map((full ?? []).map((r) => [r.id, r]));
+    const fullById = new Map(pageRows.map((r) => [r.id, r]));
 
-    // 7) Ratings only for the visible page.
+    // Ratings only for the visible page.
     const ratingByPkg = new Map<string, { sum: number; count: number }>();
     const { data: rs } = await supabaseAdmin
       .from("reviews")

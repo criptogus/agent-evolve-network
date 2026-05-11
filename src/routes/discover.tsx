@@ -61,9 +61,8 @@ function DiscoverPending() {
 
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
-  staleTime: 0,
-  gcTime: 0,
-  shouldReload: true,
+  staleTime: 30_000,
+  gcTime: 5 * 60_000,
   pendingMs: 150,
   pendingMinMs: 250,
   pendingComponent: DiscoverPending,
@@ -313,20 +312,10 @@ function DiscoverPage() {
     return () => window.clearTimeout(id);
   }, [query, search.q, navigate]);
 
-  // Refetch on focus / interval for live counts.
+  const [pendingType, setPendingType] = useState<Type | null>(null);
   useEffect(() => {
-    const refetch = () => {
-      if (document.visibilityState === "visible") router.invalidate();
-    };
-    window.addEventListener("focus", refetch);
-    document.addEventListener("visibilitychange", refetch);
-    const id = window.setInterval(refetch, 30_000);
-    return () => {
-      window.removeEventListener("focus", refetch);
-      document.removeEventListener("visibilitychange", refetch);
-      window.clearInterval(id);
-    };
-  }, [router]);
+    if (pendingType === search.type || !isLoading) setPendingType(null);
+  }, [isLoading, pendingType, search.type]);
 
   const [openItem, setOpenItem] = useState<Item | null>(null);
   const [authMessage, setAuthMessage] = useState<string | null>(null);
@@ -351,11 +340,14 @@ function DiscoverPage() {
     autoCreateM.mutate({ brief, type });
   };
 
-  const setType = (t: Type) =>
+  const setType = (t: Type) => {
+    if (t === type) return;
+    setPendingType(t);
     navigate({
       search: (s: Record<string, unknown>) => ({ ...s, type: t, category: undefined, page: 1 }),
       replace: true,
     });
+  };
 
   const setCategory = (c: string | null) =>
     navigate({
@@ -373,6 +365,7 @@ function DiscoverPage() {
     });
   const sort: SortKey = (search.sort ?? "popular") as SortKey;
 
+  const activeTabType = pendingType ?? type;
   const grandTotal =
     totalsByType.skill + totalsByType.playbook + totalsByType.soul + totalsByType.guardrail;
 
@@ -440,7 +433,7 @@ function DiscoverPage() {
                 onClick={() => setType(t)}
                 className={
                   "h-10 rounded-[5px] px-3 text-sm font-medium capitalize transition-colors " +
-                  (type === t
+                  (activeTabType === t
                     ? "bg-background shadow-sm"
                     : "text-muted-foreground hover:text-foreground")
                 }
