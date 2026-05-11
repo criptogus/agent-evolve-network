@@ -79,9 +79,10 @@ function Hero() {
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">
-            Super Agent Skill is the living OS for AI agents. Connect Claude, Cursor, Codex or Grok and,
-            in plain English, install state-of-the-art skills, playbooks, souls and guardrails for
-            your industry — or generate brand-new ones, made just for you.
+            Connect Claude, Cursor, Codex or Grok in 30 seconds. Then just ask:
+            <span className="text-foreground"> "make me a cardiologist."</span> Your
+            agent installs the skills, playbooks and guardrails it needs — or builds new
+            ones from scratch. No prompts to write. No setup.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
