@@ -298,7 +298,7 @@ function DiscoverPage() {
                 result={autoCreateM.data ?? null}
                 error={(autoCreateM.error as Error | null)?.message ?? authMessage ?? null}
                 onAutoCreate={() => requestAutoCreate(query || `A ${type} for general use`)}
-                onUseLocal={() => setOpenItem(makeBlank(type, query))}
+                onUseLocal={() => tryOpen(makeBlank(type, query))}
               />
             ) : (
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -306,7 +306,7 @@ function DiscoverPage() {
                   .slice()
                   .sort((a, b) => b.popularity - a.popularity)
                   .map((it) => (
-                    <ResultCard key={it.id} item={it} onCustomize={() => setOpenItem(it)} />
+                    <ResultCard key={it.id} item={it} onCustomize={() => tryOpen(it)} />
                   ))}
               </div>
             )}
