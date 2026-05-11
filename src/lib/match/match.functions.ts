@@ -141,5 +141,140 @@ ${compactMcpCatalogForLLM()}`;
     output.recommended_kit.souls = clean(output.recommended_kit.souls, "soul");
     output.recommended_kit.guardrails = clean(output.recommended_kit.guardrails, "guardrail");
 
+    // sanitize MCPs: only registry ids, dedupe, drop low scores, cap at 4
+    const seen = new Set<string>();
+    output.recommended_mcps = (output.recommended_mcps ?? [])
+      .filter((m) => {
+        if (!getMcpById(m.id) || seen.has(m.id) || m.score < 6) return false;
+        seen.add(m.id);
+        return true;
+      })
+      .slice(0, 4);
+
     return { ...output, catalog_size: catalog.length };
+  });
+
+// --- MCP connections (per-user) -------------------------------------------------
+
+async function requireUser() {
+  const { getSupabaseUser } = await import("@/lib/auth/server");
+  const user = await getSupabaseUser();
+  if (!user) throw new Response("Unauthorized", { status: 401 });
+  return user;
+}
+
+export const listMcpRegistry = createServerFn({ method: "GET" }).handler(async () => {
+  return MCP_REGISTRY.map((m) => ({
+    id: m.id, name: m.name, vendor: m.vendor, category: m.category,
+    description: m.description, transport: m.transport, url: m.url,
+    command: m.command, args: m.args, scopes: m.scopes, env: m.env, homepage: m.homepage,
+  }));
+});
+
+export const listMyMcpConnections = createServerFn({ method: "GET" }).handler(async () => {
+  const user = await requireUser();
+  const { data, error } = await supabaseAdmin
+    .from("user_mcp_connections")
+    .select("id,registry_id,name,status,created_at,last_run_at")
+    .eq("user_id", user.id);
+  if (error) throw new Response(error.message, { status: 500 });
+  return data ?? [];
+});
+
+const ConnectInput = z.object({
+  registry_id: z.string(),
+  env: z.record(z.string(), z.string()).default({}),
+});
+
+export const connectMcp = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => ConnectInput.parse(d))
+  .handler(async ({ data }) => {
+    const user = await requireUser();
+    const entry = getMcpById(data.registry_id);
+    if (!entry) throw new Response("Unknown MCP", { status: 404 });
+    const missing = entry.env.filter((f) => f.required && !data.env[f.key]?.trim());
+    if (missing.length) {
+      throw new Response(`Missing required env: ${missing.map((m) => m.key).join(", ")}`, { status: 400 });
+    }
+    // Persist only the env KEYS supplied (never the secret values).
+    const provided: Record<string, boolean> = {};
+    for (const k of Object.keys(data.env)) provided[k] = !!data.env[k]?.trim();
+
+    const { data: row, error } = await supabaseAdmin
+      .from("user_mcp_connections")
+      .upsert(
+        {
+          user_id: user.id, registry_id: entry.id, name: entry.name,
+          transport: entry.transport, url: entry.url ?? null,
+          command: entry.command ?? null, args: entry.args ?? [],
+          env_provided: provided, scopes: entry.scopes, status: "connected",
+        },
+        { onConflict: "user_id,registry_id" }
+      )
+      .select("id,registry_id,name,status")
+      .single();
+    if (error) throw new Response(error.message, { status: 500 });
+    return row;
+  });
+
+export const disconnectMcp = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ registry_id: z.string() }).parse(d))
+  .handler(async ({ data }) => {
+    const user = await requireUser();
+    const { error } = await supabaseAdmin
+      .from("user_mcp_connections")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("registry_id", data.registry_id);
+    if (error) throw new Response(error.message, { status: 500 });
+    return { ok: true };
+  });
+
+const RunInput = z.object({
+  registry_id: z.string(),
+  prompt: z.string().min(5).max(4000),
+  package_slugs: z.array(z.string()).max(20).default([]),
+});
+
+export const runMcpWithKit = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => RunInput.parse(d))
+  .handler(async ({ data }) => {
+    const user = await requireUser();
+    const entry = getMcpById(data.registry_id);
+    if (!entry) throw new Response("Unknown MCP", { status: 404 });
+
+    const { data: conn } = await supabaseAdmin
+      .from("user_mcp_connections")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("registry_id", data.registry_id)
+      .maybeSingle();
+    if (!conn) throw new Response("MCP not connected", { status: 412 });
+
+    const { data: run, error } = await supabaseAdmin
+      .from("runs")
+      .insert({
+        user_id: user.id,
+        prompt: data.prompt,
+        package_slugs: data.package_slugs,
+        status: "queued",
+      })
+      .select("id")
+      .single();
+    if (error) throw new Response(error.message, { status: 500 });
+
+    await supabaseAdmin.from("run_events").insert({
+      run_id: run.id,
+      kind: "mcp.attached",
+      payload: {
+        registry_id: entry.id, name: entry.name,
+        transport: entry.transport, scopes: entry.scopes,
+      },
+    });
+    await supabaseAdmin
+      .from("user_mcp_connections")
+      .update({ last_run_at: new Date().toISOString() })
+      .eq("id", conn.id);
+
+    return { run_id: run.id };
   });
