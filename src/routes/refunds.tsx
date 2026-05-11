@@ -13,12 +13,12 @@ export const Route = createFileRoute("/refunds")({
       {
         name: "description",
         content:
-          "30-day money-back guarantee on Super Agent Skill paid plans. Refunds are processed by Paddle, our Merchant of Record.",
+          "30-day money-back guarantee on Super Agent Skill paid plans.",
       },
       { property: "og:title", content: "Refund Policy — Super Agent Skill" },
       {
         property: "og:description",
-        content: "30-day money-back guarantee. Refunds processed by Paddle.",
+        content: "30-day money-back guarantee.",
       },
     ],
   }),
@@ -47,33 +47,13 @@ function RefundsPage() {
           <section>
             <h2 className="text-lg font-semibold">How to request a refund</h2>
             <p className="mt-2">
-              All payments are processed by our Merchant of Record, Paddle. To request a refund:
-            </p>
-            <ol className="ml-6 mt-2 list-decimal space-y-1">
-              <li>
-                Visit{" "}
-                <a
-                  href="https://paddle.net"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  paddle.net
-                </a>{" "}
-                and look up your order using the email used at checkout, or use the link in your
-                Paddle receipt.
-              </li>
-              <li>
-                Or contact us at{" "}
-                <a href={`mailto:${SUPPORT_EMAIL}`} className="text-primary hover:underline">
-                  {SUPPORT_EMAIL}
-                </a>{" "}
-                with your order ID and reason; we will coordinate the refund with Paddle.
-              </li>
-            </ol>
-            <p className="mt-2">
-              Refunds are returned to the original payment method. Processing typically takes
-              5–10 business days depending on your bank or card issuer.
+              To request a refund, contact us at{" "}
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-primary hover:underline">
+                {SUPPORT_EMAIL}
+              </a>{" "}
+              with your order ID and reason. We will review and process the refund to your
+              original payment method. Processing typically takes 5–10 business days depending
+              on your bank or card issuer.
             </p>
           </section>
 

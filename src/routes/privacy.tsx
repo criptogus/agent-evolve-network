@@ -13,13 +13,13 @@ export const Route = createFileRoute("/privacy")({
       {
         name: "description",
         content:
-          "How Super Agent Skill collects, uses, shares and protects your personal data, including data sharing with Paddle as Merchant of Record and your GDPR/UK rights.",
+          "How Super Agent Skill collects, uses, shares and protects your personal data, including your GDPR/UK rights.",
       },
       { property: "og:title", content: "Privacy Notice — Super Agent Skill" },
       {
         property: "og:description",
         content:
-          "Categories of personal data, purposes, legal basis, sharing with Paddle as MoR, retention and your rights.",
+          "Categories of personal data, purposes, legal basis, sharing with sub-processors, retention and your rights.",
       },
     ],
   }),
@@ -65,8 +65,8 @@ function PrivacyPage() {
               <li><strong>Support communications:</strong> messages you send us and our replies.</li>
             </ul>
             <p>
-              Payment data (card numbers, billing addresses, tax IDs) is collected and processed
-              <strong> directly by Paddle</strong> as our Merchant of Record. We do not receive
+              Payment data (card numbers, billing addresses) is collected and processed
+              <strong> directly by Stripe</strong>, our payment processor. We do not receive
               or store full card numbers.
             </p>
           </Section>
@@ -98,12 +98,11 @@ function PrivacyPage() {
               <li><strong>Hosting and infrastructure providers</strong> that operate the
                   application, database, file storage and AI gateway used to deliver the Service
                   (acting as our processors under written agreements).</li>
-              <li><strong>Paddle</strong> — our Merchant of Record — for the sale of the
-                  product, subscription management, payments, fraud prevention, tax compliance
-                  and invoicing. Paddle acts as an independent controller for the personal data
-                  it processes; see Paddle’s{" "}
+              <li><strong>Stripe</strong> — our payment processor — for card payments,
+                  subscription billing, fraud prevention, and invoicing. Stripe acts as an
+                  independent controller for the personal data it processes; see Stripe's{" "}
                   <a
-                    href="https://www.paddle.com/legal/privacy"
+                    href="https://stripe.com/privacy"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline"

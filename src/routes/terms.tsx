@@ -13,13 +13,13 @@ export const Route = createFileRoute("/terms")({
       {
         name: "description",
         content:
-          "Terms governing your use of the Super Agent Skill registry and MCP server, including Paddle Merchant of Record disclosure and acceptable use of generative AI features.",
+          "Terms governing your use of the Super Agent Skill registry and MCP server, including payment, acceptable use, and AI features.",
       },
       { property: "og:title", content: "Terms & Conditions — Super Agent Skill" },
       {
         property: "og:description",
         content:
-          "Seller identification, acceptable use, IP, payments via Paddle as Merchant of Record, and AI-specific terms.",
+          "Seller identification, acceptable use, IP, payments, and AI-specific terms.",
       },
     ],
   }),
@@ -125,25 +125,11 @@ function TermsPage() {
             </p>
           </Section>
 
-          <Section title="7. Payments, subscriptions and Merchant of Record">
+          <Section title="7. Payments, subscriptions and billing">
             <p>
-              Paid plans are sold and billed by our reseller, Paddle. Pricing, billing
-              frequency, renewals, taxes, currency conversion, invoices, refunds and
-              cancellations are governed by the{" "}
-              <a
-                href="https://www.paddle.com/legal/checkout-buyer-terms"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                Paddle Buyer Terms
-              </a>
-              .
-            </p>
-            <p className="rounded-md border border-border bg-surface p-4 text-sm">
-              Our order process is conducted by our online reseller Paddle.com. Paddle.com is
-              the Merchant of Record for all our orders. Paddle provides all customer service
-              inquiries and handles returns.
+              Paid plans are sold by {SELLER}. Card payments are processed by our payment
+              provider, Stripe. Pricing, billing frequency, and renewals are shown at checkout
+              and on your billing page. Applicable taxes may be added at checkout.
             </p>
             <p>
               Refunds are governed by our <a href="/refunds" className="text-primary hover:underline">Refund Policy</a>.
@@ -174,7 +160,7 @@ function TermsPage() {
               disclaim all implied warranties, including merchantability, fitness for a
               particular purpose and non-infringement. To the fullest extent permitted by law,
               our aggregate liability arising out of or relating to these Terms shall not
-              exceed the fees you paid to Paddle for the Service in the twelve (12) months
+              exceed the fees you paid for the Service in the twelve (12) months
               preceding the event giving rise to the claim. Neither party shall be liable for
               indirect, consequential, special, incidental or punitive damages, including loss
               of profits, revenues, data or goodwill. Nothing in these Terms excludes liability
