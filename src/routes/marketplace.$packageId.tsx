@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
@@ -7,6 +8,13 @@ import { TypingLines } from "@/components/site/Typewriter";
 import { TypeBadge } from "./marketplace.index";
 import type { Package, CompatibilityCheck } from "@/data/packages";
 import { getPackageDetail } from "@/lib/marketplace/detail.functions";
+import {
+  installPackageBySlug,
+  uninstallPackageBySlug,
+  getInstallStatus,
+  type InstallStatus,
+} from "@/lib/marketplace/telemetry.functions";
+import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/marketplace/$packageId")({
