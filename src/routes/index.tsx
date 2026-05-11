@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { ClientOnly } from "@/components/site/ClientOnly";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Typewriter } from "@/components/site/Typewriter";
@@ -95,12 +96,12 @@ function Home() {
       <Logos />
       <HowItWorks />
       <PlainEnglish />
-      <CompareIndustries />
+      <ClientOnly minHeight={900}><CompareIndustries /></ClientOnly>
       <CoreConcepts />
       <SkillForgeSection />
-      <EvalLoopSection />
+      <ClientOnly minHeight={700}><EvalLoopSection /></ClientOnly>
       <SocialProof />
-      <NetworkSection />
+      <ClientOnly minHeight={500}><NetworkSection /></ClientOnly>
       <FAQ />
       <CTASection />
       <Footer />
@@ -1208,9 +1209,25 @@ const PRIMITIVE_EXAMPLES: {
 function EvalLoopSection() {
   const [active, setActive] = useState<LoopPhase>("observe");
   const [running, setRunning] = useState(true);
+  const sectionRef = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!running) return;
+    const node = sectionRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => setVisible(entries.some((e) => e.isIntersecting)),
+      { threshold: 0.05 },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!running || !visible) return;
     const id = setInterval(() => {
       setActive((prev) => {
         const idx = LOOP_PHASES.findIndex((p) => p.id === prev);
@@ -1218,10 +1235,10 @@ function EvalLoopSection() {
       });
     }, 1800);
     return () => clearInterval(id);
-  }, [running]);
+  }, [running, visible]);
 
   return (
-    <section className="border-b border-border bg-background py-24">
+    <section ref={sectionRef} className="border-b border-border bg-background py-24">
       <div className="mx-auto max-w-6xl px-6">
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <div>
