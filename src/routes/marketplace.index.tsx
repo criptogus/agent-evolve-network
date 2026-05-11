@@ -43,6 +43,25 @@ const INSTALL_BUCKETS = [
 ] as const;
 type InstallBucket = (typeof INSTALL_BUCKETS)[number]["value"];
 
+const VERTICAL_GROUPS = [
+  { value: "all", label: "All", emoji: "✨", verticals: [] as string[] },
+  {
+    value: "shop_restaurant",
+    label: "Shop & Restaurant",
+    emoji: "🛍️",
+    verticals: ["retail", "restaurant", "operations", "customer-experience"],
+  },
+  { value: "data", label: "Data", emoji: "📊", verticals: ["data"] },
+  { value: "mobile", label: "Mobile", emoji: "📱", verticals: ["mobile"] },
+  {
+    value: "creative",
+    label: "Creative",
+    emoji: "🎨",
+    verticals: ["creative", "productivity", "strategy", "career", "marketing"],
+  },
+] as const;
+type VerticalGroupKey = (typeof VERTICAL_GROUPS)[number]["value"];
+
 function Marketplace() {
   const fetchFn = useServerFn(listMarketplace);
   const { data, isLoading, isError } = useQuery({
@@ -53,6 +72,7 @@ function Marketplace() {
 
   const [type, setType] = useState<TypeFilter>("all");
   const [vertical, setVertical] = useState<string>("all");
+  const [verticalGroup, setVerticalGroup] = useState<string>("all");
   const [q, setQ] = useState("");
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [installBucket, setInstallBucket] = useState<InstallBucket>("any");
@@ -67,6 +87,10 @@ function Marketplace() {
     const result = items.filter((p) => {
       if (type !== "all" && p.type !== type) return false;
       if (vertical !== "all" && p.vertical !== vertical) return false;
+      if (verticalGroup !== "all") {
+        const grp = VERTICAL_GROUPS.find((g) => g.value === verticalGroup);
+        if (grp && (!p.vertical || !(grp.verticals as readonly string[]).includes(p.vertical))) return false;
+      }
       if (verifiedOnly && !p.author_verified) return false;
       if (p.install_count < bucket.min || p.install_count > bucket.max) return false;
       if (!needle) return true;
@@ -96,7 +120,7 @@ function Marketplace() {
       }
     });
     return sorted;
-  }, [items, type, vertical, q, verifiedOnly, installBucket, sort]);
+  }, [items, type, vertical, verticalGroup, q, verifiedOnly, installBucket, sort]);
 
   // Counts per type for chips
   const typeCounts = useMemo(() => {
@@ -181,6 +205,43 @@ function Marketplace() {
             </div>
           </div>
 
+          {/* Quick filters: vertical groups */}
+          <div className="mt-4 flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+              Quick filters
+            </span>
+            {VERTICAL_GROUPS.map((g) => {
+              const active = verticalGroup === g.value;
+              const count =
+                g.value === "all"
+                  ? items.length
+                  : items.filter(
+                      (it) =>
+                        it.vertical && (g.verticals as readonly string[]).includes(it.vertical),
+                    ).length;
+              return (
+                <button
+                  key={g.value}
+                  onClick={() => {
+                    setVerticalGroup(g.value);
+                    setVertical("all");
+                  }}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    active
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <span aria-hidden>{g.emoji}</span>
+                  <span>{g.label}</span>
+                  <span className={`text-[10px] ${active ? "opacity-80" : "opacity-60"}`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
           {/* Category chips */}
           {verticals.length > 0 && (
             <div className="mt-4 flex flex-wrap items-center gap-1.5">
@@ -189,14 +250,20 @@ function Marketplace() {
               </span>
               <CategoryChip
                 active={vertical === "all"}
-                onClick={() => setVertical("all")}
+                onClick={() => {
+                  setVertical("all");
+                  setVerticalGroup("all");
+                }}
                 label="All"
               />
               {verticals.map((v) => (
                 <CategoryChip
                   key={v}
                   active={vertical === v}
-                  onClick={() => setVertical(v)}
+                  onClick={() => {
+                    setVertical(v);
+                    setVerticalGroup("all");
+                  }}
                   label={v}
                 />
               ))}
@@ -243,7 +310,7 @@ function Marketplace() {
           </div>
 
           {/* Active filter summary + reset */}
-          {(q || type !== "all" || vertical !== "all" || verifiedOnly || installBucket !== "any" || sort !== "installs_desc") && (
+          {(q || type !== "all" || vertical !== "all" || verticalGroup !== "all" || verifiedOnly || installBucket !== "any" || sort !== "installs_desc") && (
             <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
               <span>
                 Showing <strong className="text-foreground">{filtered.length}</strong> of {items.length}
@@ -253,6 +320,7 @@ function Marketplace() {
                   setQ("");
                   setType("all");
                   setVertical("all");
+                  setVerticalGroup("all");
                   setVerifiedOnly(false);
                   setInstallBucket("any");
                   setSort("installs_desc");
@@ -283,6 +351,7 @@ function Marketplace() {
                   setQ("");
                   setType("all");
                   setVertical("all");
+                  setVerticalGroup("all");
                 }}
                 className="text-primary hover:underline"
               >
