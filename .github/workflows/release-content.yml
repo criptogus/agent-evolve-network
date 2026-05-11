@@ -1,0 +1,77 @@
+name: Release content
+
+# Triggers:
+#   - Push a tag like `content-v1.2.0` to publish a GitHub Release with
+#     per-category zip bundles + a generated changelog.
+#   - Manually via "Run workflow" (uses the input version, doesn't push a tag).
+on:
+  push:
+    tags:
+      - "content-v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version tag (e.g. content-v1.2.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write   # needed to create the GitHub Release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for changelog)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Resolve release version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+          else
+            VERSION="${{ inputs.version }}"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $VERSION"
+
+      - name: Validate content
+        run: bun run validate:content
+
+      - name: Build release bundles
+        run: node scripts/build-release-bundles.mjs --version "${{ steps.ver.outputs.version }}"
+
+      - name: Generate changelog
+        run: |
+          node scripts/generate-changelog.mjs \
+            --version "${{ steps.ver.outputs.version }}" \
+            --out dist/release/CHANGELOG.md
+
+      - name: Show release manifest
+        run: cat dist/release/manifest.json
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.version }}
+          name: ${{ steps.ver.outputs.version }}
+          body_path: dist/release/CHANGELOG.md
+          fail_on_unmatched_files: true
+          files: |
+            dist/release/super-agent-skill-content-*.zip
+            dist/release/skills-*.zip
+            dist/release/playbooks-*.zip
+            dist/release/souls-*.zip
+            dist/release/guardrails-*.zip
+            dist/release/manifest.json
+            dist/release/CHANGELOG.md
