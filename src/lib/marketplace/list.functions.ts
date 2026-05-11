@@ -17,7 +17,9 @@ export type MarketplaceItem = {
   rating_avg: number;
   rating_count: number;
   rating_human_count: number;
+  rating_human_avg: number;
   rating_agent_count: number;
+  rating_agent_avg: number;
 };
 
 export const listMarketplace = createServerFn({ method: "GET" }).handler(
@@ -55,33 +57,53 @@ export const listMarketplace = createServerFn({ method: "GET" }).handler(
     }
 
     // Aggregate ratings per package (single grouped query)
-    const ratingByPkg = new Map<string, { avg: number; count: number; human: number; agent: number }>();
+    const ratingByPkg = new Map<
+      string,
+      { sum: number; count: number; humanSum: number; humanCount: number; agentSum: number; agentCount: number }
+    >();
     if (ids.length) {
       const { data: rs } = await supabaseAdmin
         .from("reviews")
         .select("package_id, rating, rater_kind")
         .in("package_id", ids);
       for (const r of rs ?? []) {
-        const cur = ratingByPkg.get(r.package_id) ?? { avg: 0, count: 0, human: 0, agent: 0 };
-        cur.avg = (cur.avg * cur.count + r.rating) / (cur.count + 1);
+        const cur = ratingByPkg.get(r.package_id) ?? {
+          sum: 0,
+          count: 0,
+          humanSum: 0,
+          humanCount: 0,
+          agentSum: 0,
+          agentCount: 0,
+        };
+        cur.sum += r.rating;
         cur.count += 1;
-        if (r.rater_kind === "agent") cur.agent += 1;
-        else cur.human += 1;
+        if (r.rater_kind === "agent") {
+          cur.agentSum += r.rating;
+          cur.agentCount += 1;
+        } else {
+          cur.humanSum += r.rating;
+          cur.humanCount += 1;
+        }
         ratingByPkg.set(r.package_id, cur);
       }
     }
 
+    const round2 = (n: number) => Math.round(n * 100) / 100;
     const items: MarketplaceItem[] = (pkgs ?? []).map((p) => {
-      const rt = ratingByPkg.get(p.id) ?? { avg: 0, count: 0, human: 0, agent: 0 };
+      const rt =
+        ratingByPkg.get(p.id) ??
+        { sum: 0, count: 0, humanSum: 0, humanCount: 0, agentSum: 0, agentCount: 0 };
       return {
         ...p,
         type: p.type as MarketplaceItem["type"],
         vertical: verticalByPkg.get(p.id) ?? null,
         price_credits: p.price_credits ?? 0,
-        rating_avg: Math.round(rt.avg * 100) / 100,
+        rating_avg: rt.count ? round2(rt.sum / rt.count) : 0,
         rating_count: rt.count,
-        rating_human_count: rt.human,
-        rating_agent_count: rt.agent,
+        rating_human_count: rt.humanCount,
+        rating_human_avg: rt.humanCount ? round2(rt.humanSum / rt.humanCount) : 0,
+        rating_agent_count: rt.agentCount,
+        rating_agent_avg: rt.agentCount ? round2(rt.agentSum / rt.agentCount) : 0,
       };
     });
 
