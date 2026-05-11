@@ -142,11 +142,25 @@ function PackageDetail() {
                 onClick={() => setInstallOpen(true)}
                 className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-95"
               >
-                {isUpgrade ? `Upgrade → v${selectedVersion}` : `Install v${selectedVersion}`}
+                {isUpgrade ? `Upgrade → v${selectedVersion}` : installed ? `Reinstall v${selectedVersion}` : `Install v${selectedVersion}`}
               </button>
 
+              {installed && (
+                <button
+                  onClick={handleUninstall}
+                  disabled={uninstalling}
+                  className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-border bg-background text-xs font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-50"
+                >
+                  {uninstalling ? "Uninstalling…" : "Uninstall"}
+                </button>
+              )}
+
               <div className="mt-3 text-center text-[11px] text-muted-foreground">
-                via MCP · scoped <span className="font-mono text-foreground">agent:upgrade</span>
+                {user ? (
+                  <>via MCP · scoped <span className="font-mono text-foreground">agent:upgrade</span></>
+                ) : (
+                  <Link to="/login" className="text-primary underline-offset-2 hover:underline">Sign in to install</Link>
+                )}
               </div>
 
               <CompatibilitySummary checks={pkg.compatibility} />
