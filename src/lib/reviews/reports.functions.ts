@@ -35,6 +35,8 @@ export type ReportRow = {
 };
 
 const REASONS = REPORT_REASONS.map((r) => r.value) as ReportReason[];
+// Generated types don't yet know the new RPCs; cast through any for the call.
+type AnyRpc = { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> };
 
 export const reportReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -51,10 +53,10 @@ export const reportReview = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data, context }): Promise<{ id: string }> => {
-    const { data: rid, error } = await context.supabase.rpc("report_review", {
+    const { data: rid, error } = await (context.supabase as unknown as AnyRpc).rpc("report_review", {
       _review_id: data.reviewId,
       _reason: data.reason,
-      _details: data.details || null,
+      _details: data.details,
     });
     if (error) throw new Response(error.message, { status: 400 });
     return { id: rid as string };
@@ -71,6 +73,10 @@ async function assertAdmin(userId: string) {
   if (!data) throw new Response("Forbidden", { status: 403 });
 }
 
+type RawReview = { id: string; rating: number; body: string | null; is_hidden: boolean; user_id: string };
+type RawPackage = { id: string; name: string; slug: string };
+type RawProfile = { id: string; display_name: string | null };
+
 export const listReviewReports = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => {
@@ -78,86 +84,61 @@ export const listReviewReports = createServerFn({ method: "GET" })
     return { status: (o.status ?? "open") as ReportStatus };
   })
   .handler(async ({ data, context }): Promise<{ reports: ReportRow[] }> => {
-    await assertAdmin(context.user.id);
+    await assertAdmin(context.userId);
     const { data: rows, error } = await supabaseAdmin
       .from("review_reports")
-      .select(
-        `id, review_id, package_id, reporter_id, reason, details, status, resolution,
-         created_at, resolved_at,
-         reporter:profiles!review_reports_reporter_id_fkey(display_name),
-         package:packages!review_reports_package_id_fkey(name, slug),
-         review:reviews!review_reports_review_id_fkey(
-           rating, body, is_hidden, user_id,
-           review_user:profiles!reviews_user_id_fkey(display_name)
-         )`
-      )
+      .select("*")
       .eq("status", data.status)
       .order("created_at", { ascending: false })
       .limit(200);
-    if (error) {
-      // Fallback without explicit fk hints if names differ
-      const { data: rows2, error: e2 } = await supabaseAdmin
-        .from("review_reports")
-        .select("*")
-        .eq("status", data.status)
-        .order("created_at", { ascending: false })
-        .limit(200);
-      if (e2) throw new Response(e2.message, { status: 500 });
-      const ids = (rows2 ?? []).map((r) => r.review_id);
-      const pkgIds = (rows2 ?? []).map((r) => r.package_id);
-      const reporterIds = (rows2 ?? []).map((r) => r.reporter_id);
-      const [{ data: revs }, { data: pkgs }, { data: profs }] = await Promise.all([
-        supabaseAdmin.from("reviews").select("id, rating, body, is_hidden, user_id").in("id", ids),
-        supabaseAdmin.from("packages").select("id, name, slug").in("id", pkgIds),
-        supabaseAdmin.from("profiles").select("id, display_name").in("id", [...reporterIds, ...((revs ?? []).map((r) => r.user_id))]),
-      ]);
-      const revMap = new Map((revs ?? []).map((r) => [r.id, r]));
-      const pkgMap = new Map((pkgs ?? []).map((p) => [p.id, p]));
-      const profMap = new Map((profs ?? []).map((p) => [p.id, p.display_name]));
-      const out: ReportRow[] = (rows2 ?? []).map((r) => {
-        const rv = revMap.get(r.review_id);
-        const pk = pkgMap.get(r.package_id);
-        return {
-          id: r.id,
-          review_id: r.review_id,
-          package_id: r.package_id,
-          reporter_id: r.reporter_id,
-          reason: r.reason,
-          details: r.details,
-          status: r.status,
-          resolution: r.resolution,
-          created_at: r.created_at,
-          resolved_at: r.resolved_at,
-          reporter_name: profMap.get(r.reporter_id) ?? null,
-          package_name: pk?.name ?? null,
-          package_slug: pk?.slug ?? null,
-          review_rating: rv?.rating ?? null,
-          review_body: rv?.body ?? null,
-          review_user_name: rv ? profMap.get(rv.user_id) ?? null : null,
-          review_is_hidden: !!rv?.is_hidden,
-        };
-      });
-      return { reports: out };
-    }
-    const reports: ReportRow[] = (rows ?? []).map((r: any) => ({
-      id: r.id,
-      review_id: r.review_id,
-      package_id: r.package_id,
-      reporter_id: r.reporter_id,
-      reason: r.reason,
-      details: r.details,
-      status: r.status,
-      resolution: r.resolution,
-      created_at: r.created_at,
-      resolved_at: r.resolved_at,
-      reporter_name: r.reporter?.display_name ?? null,
-      package_name: r.package?.name ?? null,
-      package_slug: r.package?.slug ?? null,
-      review_rating: r.review?.rating ?? null,
-      review_body: r.review?.body ?? null,
-      review_user_name: r.review?.review_user?.display_name ?? null,
-      review_is_hidden: !!r.review?.is_hidden,
-    }));
+    if (error) throw new Response(error.message, { status: 500 });
+    const list = rows ?? [];
+    if (list.length === 0) return { reports: [] };
+
+    const reviewIds = list.map((r) => r.review_id);
+    const pkgIds = list.map((r) => r.package_id);
+    const reporterIds = list.map((r) => r.reporter_id);
+
+    const [revsRes, pkgsRes] = await Promise.all([
+      supabaseAdmin.from("reviews").select("id, rating, body, is_hidden, user_id").in("id", reviewIds),
+      supabaseAdmin.from("packages").select("id, name, slug").in("id", pkgIds),
+    ]);
+    const revs = (revsRes.data ?? []) as RawReview[];
+    const pkgs = (pkgsRes.data ?? []) as RawPackage[];
+    const profileIds = Array.from(new Set([...reporterIds, ...revs.map((r) => r.user_id)]));
+    const profsRes = await supabaseAdmin
+      .from("profiles")
+      .select("id, display_name")
+      .in("id", profileIds);
+    const profs = (profsRes.data ?? []) as RawProfile[];
+
+    const revMap = new Map(revs.map((r) => [r.id, r]));
+    const pkgMap = new Map(pkgs.map((p) => [p.id, p]));
+    const profMap = new Map(profs.map((p) => [p.id, p.display_name]));
+
+    const reports: ReportRow[] = list.map((r) => {
+      const rv = revMap.get(r.review_id);
+      const pk = pkgMap.get(r.package_id);
+      return {
+        id: r.id,
+        review_id: r.review_id,
+        package_id: r.package_id,
+        reporter_id: r.reporter_id,
+        reason: r.reason as ReportReason,
+        details: r.details,
+        status: r.status as ReportStatus,
+        resolution: r.resolution,
+        created_at: r.created_at,
+        resolved_at: r.resolved_at,
+        reporter_name: profMap.get(r.reporter_id) ?? null,
+        package_name: pk?.name ?? null,
+        package_slug: pk?.slug ?? null,
+        review_rating: rv?.rating ?? null,
+        review_body: rv?.body ?? null,
+        review_user_name: rv ? profMap.get(rv.user_id) ?? null : null,
+        review_is_hidden: !!rv?.is_hidden,
+      };
+    });
     return { reports };
   });
 
@@ -169,13 +150,13 @@ export const moderateReview = createServerFn({ method: "POST" })
     return {
       reviewId: o.reviewId,
       hide: !!o.hide,
-      reason: (o.reason ?? "").slice(0, 200) || null,
-      resolution: (o.resolution ?? "").slice(0, 500) || null,
+      reason: (o.reason ?? "").slice(0, 200),
+      resolution: (o.resolution ?? "").slice(0, 500),
     };
   })
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
-    await assertAdmin(context.user.id);
-    const { error } = await context.supabase.rpc("moderate_review", {
+    await assertAdmin(context.userId);
+    const { error } = await (context.supabase as unknown as AnyRpc).rpc("moderate_review", {
       _review_id: data.reviewId,
       _hide: data.hide,
       _reason: data.reason,
@@ -194,12 +175,12 @@ export const resolveReport = createServerFn({ method: "POST" })
     return {
       reportId: o.reportId,
       status: o.status as "actioned" | "dismissed",
-      resolution: (o.resolution ?? "").slice(0, 500) || null,
+      resolution: (o.resolution ?? "").slice(0, 500),
     };
   })
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
-    await assertAdmin(context.user.id);
-    const { error } = await context.supabase.rpc("resolve_report", {
+    await assertAdmin(context.userId);
+    const { error } = await (context.supabase as unknown as AnyRpc).rpc("resolve_report", {
       _report_id: data.reportId,
       _status: data.status,
       _resolution: data.resolution,
