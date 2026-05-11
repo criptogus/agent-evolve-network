@@ -141,12 +141,18 @@ function ForgeTabs() {
 function AuthorTab() {
   const author = useServerFn(authorPackage);
   const qc = useQueryClient();
+  const [mode, setMode] = useState<"quick" | "wizard">("wizard");
   const [brief, setBrief] = useState("");
   const [type, setType] = useState<"skill" | "playbook" | "soul" | "guardrail">("skill");
   const [vertical, setVertical] = useState("");
   const [publish, setPublish] = useState(false);
   const m = useMutation({
-    mutationFn: () => author({ data: { brief, type, vertical: vertical || undefined, publish } }),
+    mutationFn: (override?: WizardSubmit) =>
+      author({
+        data: override
+          ? { brief: override.brief, type: override.type, vertical: override.vertical, publish: override.publish }
+          : { brief, type, vertical: vertical || undefined, publish },
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["forge", "list"] }),
   });
 
@@ -154,44 +160,70 @@ function AuthorTab() {
     <Card className="mt-4">
       <CardHeader>
         <CardTitle>SkillForge Author</CardTitle>
-        <CardDescription>Describe the brief; the meta-agent designs a complete, executable package.</CardDescription>
+        <CardDescription>
+          Describe the brief; the meta-agent designs a complete, executable, Anthropic-spec-compliant package.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label>Type</Label>
-            <Select value={type} onValueChange={v => setType(v as typeof type)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="skill">skill</SelectItem>
-                <SelectItem value="playbook">playbook</SelectItem>
-                <SelectItem value="soul">soul</SelectItem>
-                <SelectItem value="guardrail">guardrail</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Vertical (optional)</Label>
-            <Input value={vertical} onChange={e => setVertical(e.target.value)} placeholder="cardiology, sales, devops…" />
-          </div>
+        <div className="inline-flex rounded-md border p-0.5">
+          <button
+            type="button"
+            onClick={() => setMode("wizard")}
+            className={`rounded px-3 py-1 text-xs ${mode === "wizard" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+          >
+            Guided wizard (recommended)
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("quick")}
+            className={`rounded px-3 py-1 text-xs ${mode === "quick" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+          >
+            Quick brief
+          </button>
         </div>
-        <div>
-          <Label>Brief</Label>
-          <Textarea rows={6} value={brief} onChange={e => setBrief(e.target.value)}
-            placeholder="What should this package make an agent good at? Include domain, tools, constraints, success criteria." />
-        </div>
-        <div className="flex items-center gap-2">
-          <Switch id="publish" checked={publish} onCheckedChange={setPublish} />
-          <Label htmlFor="publish">Publish to marketplace as stable (otherwise saved as private beta)</Label>
-        </div>
-        <Button disabled={m.isPending || brief.length < 20} onClick={() => m.mutate()}>
-          {m.isPending ? "Authoring…" : "Author package"}
-        </Button>
+
+        {mode === "wizard" ? (
+          <SkillWizard busy={m.isPending} onSubmit={(s) => m.mutate(s)} />
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Type</Label>
+                <Select value={type} onValueChange={v => setType(v as typeof type)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="skill">skill</SelectItem>
+                    <SelectItem value="playbook">playbook</SelectItem>
+                    <SelectItem value="soul">soul</SelectItem>
+                    <SelectItem value="guardrail">guardrail</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Vertical (optional)</Label>
+                <Input value={vertical} onChange={e => setVertical(e.target.value)} placeholder="cardiology, sales, devops…" />
+              </div>
+            </div>
+            <div>
+              <Label>Brief</Label>
+              <Textarea rows={6} value={brief} onChange={e => setBrief(e.target.value)}
+                placeholder="What should this package make an agent good at? Include domain, tools, constraints, success criteria." />
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch id="publish" checked={publish} onCheckedChange={setPublish} />
+              <Label htmlFor="publish">Publish to marketplace as stable (otherwise saved as private beta)</Label>
+            </div>
+            <Button disabled={m.isPending || brief.length < 20} onClick={() => m.mutate(undefined)}>
+              {m.isPending ? "Authoring…" : "Author package"}
+            </Button>
+          </>
+        )}
+
         <ForgeProgress
           active={m.isPending}
           done={!!m.data}
           stages={AUTHOR_STAGES}
-          title="Criando o pacote (pesquisa → método SkillForge → refino até 9+/10)"
+          title="Criando o pacote (pesquisa → método SkillForge → spec Anthropic → refino até 9+/10)"
         />
         {m.error && <p className="text-sm text-destructive">{(m.error as Error).message}</p>}
         {m.data && (
