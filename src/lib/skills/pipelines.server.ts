@@ -280,6 +280,40 @@ ${constitution.map((c) => `- ${c}`).join("\n")}`,
     notes: preTestTotal === 0 ? "no probes" : `${preTestPass}/${preTestTotal} probes safely handled`,
   });
 
+  // Stage 6.5 — Anthropic spec auto-fix (description triggers, slug, no XML chars)
+  const tSpec = Date.now();
+  let specViolations = validateAnthropicSpec({ slug: draft.slug, name: draft.name, description: draft.description });
+  if (specViolations.length > 0) {
+    try {
+      const FixSchema = z.object({
+        slug: z.string(),
+        name: z.string(),
+        description: z.string().max(1024),
+      });
+      const { experimental_output: fixed } = await generateText({
+        model: getGatewayModel(FAST),
+        system:
+          "You are SkillForge Spec Fixer. Rewrite slug/name/description to satisfy Anthropic's Skills spec. Description MUST be ≤1024 chars, contain NO `<` or `>`, state WHAT the skill does AND WHEN to use it (include phrases like 'Use when user asks…', 'Trigger on…'). Slug must be lowercase-kebab. No 'claude' or 'anthropic' in slug/name. Output strict JSON only.",
+        prompt: `Current:\nslug: ${draft.slug}\nname: ${draft.name}\ndescription: ${draft.description}\n\nViolations:\n${specViolations
+          .map((v) => `- ${v.field}: ${v.message}`)
+          .join("\n")}\n\nReturn the corrected JSON.`,
+        experimental_output: Output.object({ schema: FixSchema }),
+      });
+      draft.slug = fixed.slug;
+      draft.name = fixed.name;
+      draft.description = fixed.description;
+      specViolations = validateAnthropicSpec(draft);
+    } catch {
+      /* keep partial fix */
+    }
+  }
+  stages.push({
+    name: "anthropic-spec",
+    ms: Date.now() - tSpec,
+    ok: specViolations.length === 0,
+    notes: specViolations.length === 0 ? "spec-compliant" : `${specViolations.length} remaining: ${specViolations.map((v) => v.field).join(", ")}`,
+  });
+
   // Stage 7 — verify (structural)
   const t6 = Date.now();
   const verifyOk =
