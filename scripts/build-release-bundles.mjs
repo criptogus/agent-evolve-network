@@ -51,6 +51,8 @@ const versionArg =
   argv.find((a) => a.startsWith("--version="))?.slice("--version=".length) ??
   (argv.includes("--version") ? argv[argv.indexOf("--version") + 1] : undefined);
 const VERSION = (versionArg || process.env.VERSION || `content-v0.0.0-dev.${Date.now()}`).trim();
+// Filename-friendly form (strip leading "content-" so we don't get "skills-content-v...zip").
+const FILE_VERSION = VERSION.replace(/^content-/, "");
 
 console.log(`▸ Building release bundles for ${VERSION}`);
 
@@ -140,7 +142,7 @@ for (const type of TYPES) {
   cpSync(join(ROOT, "LICENSE"), join(stageDir, "LICENSE-CODE.md"), { recursive: false });
   writeFileSync(join(stageDir, "LICENSE-CONTENT.md"), licenseContentText());
 
-  const zipName = `${folder}-${VERSION}.zip`;
+  const zipName = `${folder}-${FILE_VERSION}.zip`;
   const zipPath = join(OUT, zipName);
   zipDir(stageDir, zipPath);
 
@@ -177,8 +179,6 @@ writeFileSync(join(allStage, "MANIFEST.json"), JSON.stringify(allManifest, null,
 writeFileSync(join(allStage, "README.md"), renderRootReadme({ version: VERSION, totals }));
 writeFileSync(join(allStage, "LICENSE-CONTENT.md"), licenseContentText());
 
-// Strip a leading "content-" so the file name doesn't read "...content-content-v1.0".
-const FILE_VERSION = VERSION.replace(/^content-/, "");
 const allZipName = `super-agent-skill-content-${FILE_VERSION}.zip`;
 const allZipPath = join(OUT, allZipName);
 zipDir(allStage, allZipPath);
