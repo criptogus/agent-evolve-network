@@ -1,0 +1,34 @@
+name: 📦 New package
+description: Propose a new skill, playbook, soul or guardrail.
+title: "[package] <slug>"
+labels: ["content", "needs-triage"]
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: Package type
+      options: [skill, playbook, soul, guardrail]
+    validations: { required: true }
+  - type: input
+    id: slug
+    attributes: { label: Proposed slug, placeholder: kebab-case-slug }
+    validations: { required: true }
+  - type: textarea
+    id: purpose
+    attributes:
+      label: What problem does it solve?
+      description: Who is it for, what input does it take, what output does it produce?
+    validations: { required: true }
+  - type: textarea
+    id: overlap
+    attributes:
+      label: Overlap check
+      description: Did you check `content/<type>/` for an existing package that does this? If yes, why is a new one better?
+    validations: { required: true }
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmations
+      options:
+        - { label: I plan to open a PR with the YAML, or I'm asking a maintainer to draft it., required: true }
+        - { label: My contribution will be CC-BY-SA-4.0 licensed., required: true }

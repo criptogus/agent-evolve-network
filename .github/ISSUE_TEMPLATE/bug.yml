@@ -1,0 +1,25 @@
+name: 🐛 Bug or content issue
+description: A package gives bad output, the platform misbehaves, docs are wrong.
+title: "[bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [content package, platform / website, MCP endpoint, docs]
+    validations: { required: true }
+  - type: input
+    id: slug
+    attributes: { label: Affected package slug (if any), placeholder: code-reviewer }
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Include the exact input, the actual output, and the expected output.
+    validations: { required: true }
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "MCP client (Claude / Cursor / ...), model, date"
