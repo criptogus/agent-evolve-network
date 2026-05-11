@@ -7,6 +7,7 @@ import { Footer } from "@/components/site/Footer";
 import { autoCreateMissing } from "@/lib/skills/forge-loop.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
+import { useRequireAuth } from "@/lib/require-auth";
 
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
