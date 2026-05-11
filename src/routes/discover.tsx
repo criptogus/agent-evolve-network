@@ -183,8 +183,17 @@ function DiscoverPage() {
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">
             <span className="size-1.5 rounded-full bg-signal pulse-dot" />
             <span className="font-mono uppercase tracking-wider text-muted-foreground">
-              Discover · {ITEMS.length} packages indexed
+              Live · {ITEMS.length} packages ·{" "}
+              {countsByType.skill}&nbsp;skills · {countsByType.playbook}&nbsp;playbooks ·{" "}
+              {countsByType.soul}&nbsp;souls · {countsByType.guardrail}&nbsp;guardrails
             </span>
+            <button
+              onClick={() => router.invalidate()}
+              title={`Updated ${new Date(fetchedAt).toLocaleTimeString()}`}
+              className="ml-1 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
+            >
+              ↻ refresh
+            </button>
           </div>
           <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
             Find any capability. Make it yours.
