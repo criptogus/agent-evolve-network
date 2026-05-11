@@ -237,6 +237,11 @@ function DiscoverPage() {
   );
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  // Detect any in-flight loader/navigation so we can show subtle loading UI.
+  const isLoading = useRouterState({
+    select: (s) => s.isLoading || s.isTransitioning,
+  });
+
   // Local search input mirrors `?q=` with debounce.
   const [query, setQuery] = useState(search.q ?? "");
   useEffect(() => setQuery(search.q ?? ""), [search.q]);
