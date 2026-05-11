@@ -23,10 +23,10 @@ export function Footer() {
           { label: "Docs", to: "/docs" },
           { label: "Pricing", to: "/pricing" },
         ]} />
-        <FooterCol title="Platform" links={[
-          { label: "MCP Gateway", href: "#" },
-          { label: "Skill Registry", href: "#" },
-          { label: "Evolution Engine", href: "#" },
+        <FooterCol title="Open source" links={[
+          { label: "GitHub repo", href: "https://github.com/super-agent-skill/super-agent-skill" },
+          { label: "Contribute", to: "/community" },
+          { label: "Content registry", href: "https://github.com/super-agent-skill/super-agent-skill/tree/main/content" },
         ]} />
         <FooterCol title="Legal" links={[
           { label: "Terms", to: "/terms" },
