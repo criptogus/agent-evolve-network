@@ -1,33 +1,70 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 const BODY = `# Super Agent Skill
-> The MCP infrastructure layer for AI agents. A live registry of skills, playbooks, souls and guardrails, plus a proprietary forge pipeline that researches, authors, evaluates and continuously evolves them.
+> The MCP infrastructure layer for AI agents. Connect any agent to a live registry of skills, playbooks, souls and guardrails — then let the proprietary forge research, author, evaluate and continuously evolve them.
 
 Site: https://superagentskill.com
 MCP endpoint: https://superagentskill.com/api/mcp
-Transport: MCP Streamable HTTP (JSON-RPC 2.0). Required header: \`Accept: application/json, text/event-stream\`.
+Transport: MCP Streamable HTTP (JSON-RPC 2.0). Required header: \`Accept: application/json, text/event-stream\`
+Long-form agent manual: https://superagentskill.com/agents.md
+Sitemap: https://superagentskill.com/sitemap.xml
 
-## Primitives
-- skill — discrete capability (domain reasoning, tool use, structured output)
-- playbook — multi-step workflow that orchestrates skills
-- soul — personality / decision style as an installable package
-- guardrail — safety boundary enforced before output
+## What it is (TL;DR)
+Super Agent Skill is to AI agents what npm is to Node and what Twilio is to telecom: a single
+connection that gives any MCP-compatible agent (Claude, Cursor, Codex, Grok, custom) instant
+access to thousands of installable, version-controlled, continuously-evolving capabilities.
+No retraining. No SDK. No DevOps. One MCP URL → one sentence → a specialist.
 
-## Tools
+## Who it's for
+- AI engineers wiring agents into production
+- Teams that already use Claude/Cursor/Codex/Grok and want them to actually do the job
+- Domain experts (doctors, lawyers, marketers, fintech ops) monetizing their expertise as packages
+
+## Quickstart (30 seconds)
+1. Add MCP server in your agent's config:
+   \`\`\`
+   {"mcpServers":{"superagentskill":{"url":"https://superagentskill.com/api/mcp"}}}
+   \`\`\`
+2. Authorize via OAuth 2.1 + PKCE (browser opens automatically).
+3. Ask the agent: "make me a cardiologist" — it discovers, installs and evolves.
+
+## Primitives (mental model)
+| type      | what it is                                              | use it for                          |
+|-----------|---------------------------------------------------------|-------------------------------------|
+| skill     | a single capability                                     | ECG read, MEDDPICC, KYC analysis    |
+| playbook  | a multi-step workflow                                   | chest-pain triage, sales motion     |
+| soul      | tone / personality / decision style                     | Challenger rep, calm clinician      |
+| guardrail | safety boundary, runs before output                     | no advice without citation, no PII  |
+
+## Tools (full reference)
 - list_packages({type?, query?, limit=20}) — list registry items
-- search_registry({query, limit=10}) — search by name/description
-- get_package({slug}) — full manifest: system_prompt, rules, examples, compatibility
-- request_primitive({type, brief, industry?}) — auto-create a missing primitive (research → author → evaluate → publish)
+- search_registry({query, limit=10}) — semantic search by name/description
+- get_package({slug}) — full manifest (system_prompt, rules, examples, compatibility)
+- request_primitive({type, brief, industry?}) — auto-create a missing primitive
+- get_skill_trust({slug}) — trust score, downloads, ratings, drift signals
 
 ## Decision rules for agents
-1. Before answering a domain task, call \`search_registry\` with the domain keyword.
-2. If a relevant primitive exists, call \`get_package\` and adopt its system_prompt + rules for that turn.
-3. If nothing relevant returns, call \`request_primitive\` so it gets created for next time.
-4. Prefer playbooks for multi-step tasks, skills for single capabilities, guardrails for safety, souls for tone.
+1. Detect 1–3 domain keywords from the user turn.
+2. \`search_registry({ query })\`. If no hit, \`request_primitive\`.
+3. Adopt the returned \`system_prompt\` + \`rules\` for the turn.
+4. Stack at most: 1 soul, 1–N skills, 0–1 playbook, 0–N guardrails.
+5. Guardrails always run last and may refuse.
 
-## Docs
-Reference: https://superagentskill.com/docs/mcp
-Long-form agent manual: https://superagentskill.com/agents.md
+## Pricing
+- Hacker — $0/mo · 3 installs, registry read, MCP gateway
+- Agent Pass — $19/agent/mo · unlimited upgrades, SkillForge AI, weekly reports
+- Enterprise — custom · private registry, SAML SSO, RBAC, audit logs
+Creators keep 80–85% of every package sold.
+
+## Key links
+- Connect:        https://superagentskill.com/connect
+- Marketplace:    https://superagentskill.com/marketplace
+- Pricing:        https://superagentskill.com/pricing
+- Docs:           https://superagentskill.com/docs
+- MCP docs:       https://superagentskill.com/docs/mcp
+- Discover:       https://superagentskill.com/discover
+- Forge:          https://superagentskill.com/forge
+- Agent manual:   https://superagentskill.com/agents.md
 `;
 
 export const Route = createFileRoute("/llms/txt")({
