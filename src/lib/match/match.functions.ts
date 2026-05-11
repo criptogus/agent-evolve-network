@@ -52,6 +52,17 @@ const MatchSchema = z.object({
       })
     )
     .max(8),
+  recommended_mcps: z
+    .array(
+      z.object({
+        id: z.string(),
+        score: z.number().min(0).max(10),
+        why: z.string().max(280),
+        pairs_with: z.array(z.string()).max(8).describe("slugs from the kit that this MCP empowers"),
+      })
+    )
+    .max(6)
+    .default([]),
   rationale: z.string().max(1200),
 });
 
