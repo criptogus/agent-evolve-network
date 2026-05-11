@@ -39,7 +39,7 @@ export async function logAuditAttempt(args: {
       package_id: args.packageId ?? null,
       review_id: args.reviewId ?? null,
       reason: args.reason ?? null,
-      metadata: args.metadata ?? {},
+      metadata: (args.metadata ?? {}) as never,
     });
   } catch {
     // swallow
