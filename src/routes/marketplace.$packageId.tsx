@@ -66,10 +66,10 @@ function PackageDetail() {
       setStatus(null);
       return;
     }
-    statusFn({ data: { slug: pkg.slug } })
+    statusFn({ data: { slug: pkg.id } })
       .then((s) => setStatus(s))
       .catch(() => setStatus(null));
-  }, [user, pkg.slug, statusFn]);
+  }, [user, pkg.id, statusFn]);
 
   const installed = status?.installed ? status.version ?? undefined : undefined;
   const isUpgrade = !!installed && selectedVersion !== installed;
@@ -78,8 +78,8 @@ function PackageDetail() {
     if (!confirm(`Uninstall ${pkg.name}?`)) return;
     setUninstalling(true);
     try {
-      await uninstallFn({ data: { slug: pkg.slug } });
-      const fresh = await statusFn({ data: { slug: pkg.slug } });
+      await uninstallFn({ data: { slug: pkg.id } });
+      const fresh = await statusFn({ data: { slug: pkg.id } });
       setStatus(fresh);
     } finally {
       setUninstalling(false);
@@ -200,7 +200,7 @@ function PackageDetail() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-12">
-        <ReviewsSection slug={pkg.slug} />
+        <ReviewsSection slug={pkg.id} />
       </section>
 
       <Footer />
@@ -212,7 +212,7 @@ function PackageDetail() {
           isUpgrade={isUpgrade}
           onClose={() => setInstallOpen(false)}
           onInstalled={async () => {
-            const fresh = await statusFn({ data: { slug: pkg.slug } });
+            const fresh = await statusFn({ data: { slug: pkg.id } });
             setStatus(fresh);
           }}
         />
@@ -493,7 +493,7 @@ function InstallModal({
     let cancelled = false;
     (async () => {
       try {
-        await installFn({ data: { slug: pkg.slug, version } });
+        await installFn({ data: { slug: pkg.id, version } });
         if (cancelled) return;
         await onInstalled?.();
         if (cancelled) return;
@@ -508,7 +508,7 @@ function InstallModal({
     return () => {
       cancelled = true;
     };
-  }, [phase, installFn, pkg.slug, version, onInstalled]);
+  }, [phase, installFn, pkg.id, version, onInstalled]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4 backdrop-blur-sm">
