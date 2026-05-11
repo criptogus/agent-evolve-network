@@ -134,6 +134,8 @@ function DiscoverPage() {
   const [category, setCategory] = useState<string | null>(null);
   const [openItem, setOpenItem] = useState<Item | null>(null);
   const [authMessage, setAuthMessage] = useState<string | null>(null);
+  const requireAuth = useRequireAuth();
+  const tryOpen = (it: Item | null) => { if (!it || requireAuth("customize and install")) setOpenItem(it); };
 
   const autoCreateFn = useServerFn(autoCreateMissing);
   const autoCreateM = useMutation({
