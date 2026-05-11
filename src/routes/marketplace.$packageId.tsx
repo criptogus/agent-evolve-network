@@ -60,8 +60,10 @@ function PackageDetail() {
   const [installOpen, setInstallOpen] = useState(false);
   const [status, setStatus] = useState<InstallStatus | null>(null);
   const [uninstalling, setUninstalling] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const statusFn = useServerFn(getInstallStatus);
   const uninstallFn = useServerFn(uninstallPackageBySlug);
+  const updateFn = useServerFn(updatePackageBySlug);
 
   useEffect(() => {
     if (!user) {
@@ -75,16 +77,32 @@ function PackageDetail() {
 
   const installed = status?.installed ? status.version ?? undefined : undefined;
   const isUpgrade = !!installed && selectedVersion !== installed;
+  const isOutdated = !!installed && installed !== pkg.latest;
+
+  const refreshStatus = async () => {
+    const fresh = await statusFn({ data: { slug: pkg.id } });
+    setStatus(fresh);
+  };
 
   const handleUninstall = async () => {
     if (!confirm(`Uninstall ${pkg.name}?`)) return;
     setUninstalling(true);
     try {
       await uninstallFn({ data: { slug: pkg.id } });
-      const fresh = await statusFn({ data: { slug: pkg.id } });
-      setStatus(fresh);
+      await refreshStatus();
     } finally {
       setUninstalling(false);
+    }
+  };
+
+  const handleUpdateToLatest = async () => {
+    setUpdating(true);
+    try {
+      await updateFn({ data: { slug: pkg.id } });
+      await refreshStatus();
+      setSelectedVersion(pkg.latest);
+    } finally {
+      setUpdating(false);
     }
   };
 
