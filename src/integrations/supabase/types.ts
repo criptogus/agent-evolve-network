@@ -1001,12 +1001,58 @@ export type Database = {
         }
         Relationships: []
       }
+      review_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          package_id: string
+          reason: string
+          reporter_id: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          review_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          package_id: string
+          reason: string
+          reporter_id: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          review_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          package_id?: string
+          reason?: string
+          reporter_id?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          review_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           body: string | null
           created_at: string
           helpful_count: number
+          hidden_at: string | null
+          hidden_by: string | null
+          hidden_reason: string | null
           id: string
+          is_hidden: boolean
           package_id: string
           rater_kind: string
           rating: number
@@ -1018,7 +1064,11 @@ export type Database = {
           body?: string | null
           created_at?: string
           helpful_count?: number
+          hidden_at?: string | null
+          hidden_by?: string | null
+          hidden_reason?: string | null
           id?: string
+          is_hidden?: boolean
           package_id: string
           rater_kind?: string
           rating: number
@@ -1030,7 +1080,11 @@ export type Database = {
           body?: string | null
           created_at?: string
           helpful_count?: number
+          hidden_at?: string | null
+          hidden_by?: string | null
+          hidden_reason?: string | null
           id?: string
+          is_hidden?: boolean
           package_id?: string
           rater_kind?: string
           rating?: number
@@ -1354,8 +1408,25 @@ export type Database = {
           verified_purchase: boolean
         }[]
       }
+      moderate_review: {
+        Args: {
+          _hide: boolean
+          _reason?: string
+          _resolution?: string
+          _review_id: string
+        }
+        Returns: undefined
+      }
       purchase_pack: { Args: { _pack_id: string }; Returns: Json }
       purchase_package: { Args: { _package_id: string }; Returns: Json }
+      report_review: {
+        Args: { _details?: string; _reason: string; _review_id: string }
+        Returns: string
+      }
+      resolve_report: {
+        Args: { _report_id: string; _resolution?: string; _status: string }
+        Returns: undefined
+      }
       submit_review: {
         Args: {
           _body: string

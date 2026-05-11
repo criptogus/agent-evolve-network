@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
@@ -10,6 +10,11 @@ import {
   type RaterKind,
   type ReviewItem,
 } from "@/lib/reviews/reviews.functions";
+import {
+  reportReview,
+  REPORT_REASONS,
+  type ReportReason,
+} from "@/lib/reviews/reports.functions";
 import { Stars, StarPicker } from "./Stars";
 
 export function ReviewsSection({ slug }: { slug: string }) {
@@ -25,9 +30,13 @@ export function ReviewsSection({ slug }: { slug: string }) {
   });
 
   const [authed, setAuthed] = useState<boolean | null>(null);
-  if (authed === null) {
-    supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
-  }
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setAuthed(!!data.user);
+      setCurrentUserId(data.user?.id ?? null);
+    });
+  }, []);
 
   const eligQ = useQuery({
     queryKey: ["review-elig", slug],
@@ -127,7 +136,11 @@ export function ReviewsSection({ slug }: { slug: string }) {
           </div>
         )}
         {reviews.map((r) => (
-          <ReviewRow key={r.id} review={r} />
+          <ReviewRow
+            key={r.id}
+            review={r}
+            canReport={!!authed && currentUserId !== r.user_id}
+          />
         ))}
       </div>
     </section>
@@ -256,8 +269,9 @@ function SubmitForm({
   );
 }
 
-function ReviewRow({ review }: { review: ReviewItem }) {
+function ReviewRow({ review, canReport }: { review: ReviewItem; canReport: boolean }) {
   const when = new Date(review.created_at).toLocaleDateString();
+  const [open, setOpen] = useState(false);
   return (
     <article className="rounded-lg border border-border bg-background p-4">
       <header className="flex flex-wrap items-center gap-2">
@@ -286,6 +300,116 @@ function ReviewRow({ review }: { review: ReviewItem }) {
         <span className="font-mono text-xs">{review.rating}/5</span>
       </div>
       {review.body && <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{review.body}</p>}
+      <footer className="mt-3 flex justify-end">
+        {canReport ? (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="text-[11px] text-muted-foreground hover:text-destructive"
+            aria-label="Report this review"
+          >
+            ⚑ Report
+          </button>
+        ) : (
+          <span className="text-[11px] text-muted-foreground/60" title="Sign in to report">
+            ⚑
+          </span>
+        )}
+      </footer>
+      {open && (
+        <ReportDialog reviewId={review.id} onClose={() => setOpen(false)} />
+      )}
     </article>
+  );
+}
+
+function ReportDialog({ reviewId, onClose }: { reviewId: string; onClose: () => void }) {
+  const send = useServerFn(reportReview);
+  const [reason, setReason] = useState<ReportReason>("spam");
+  const [details, setDetails] = useState("");
+  const [done, setDone] = useState(false);
+  const mut = useMutation({
+    mutationFn: () => send({ data: { reviewId, reason, details } }),
+    onSuccess: () => setDone(true),
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="font-mono text-sm font-semibold">Report this review</h3>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Our moderation team will review your report. False reports may affect your account.
+        </p>
+
+        {done ? (
+          <div className="mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-700 dark:text-emerald-400">
+            ✓ Report submitted. Thanks for keeping the community safe.
+            <div className="mt-3 flex justify-end">
+              <button onClick={onClose} className="text-xs text-primary hover:underline">
+                Close
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              mut.mutate();
+            }}
+          >
+            <label className="mt-4 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              Reason
+            </label>
+            <select
+              value={reason}
+              onChange={(e) => setReason(e.target.value as ReportReason)}
+              className="mt-1 h-9 w-full rounded-md border border-border bg-background px-2 text-sm"
+            >
+              {REPORT_REASONS.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+            <label className="mt-3 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              Details (optional)
+            </label>
+            <textarea
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              rows={3}
+              maxLength={1000}
+              placeholder="Add context to help us moderate."
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            {mut.error && (
+              <p className="mt-2 text-xs text-destructive">{(mut.error as Error).message}</p>
+            )}
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-md border border-border px-3 py-1.5 text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={mut.isPending}
+                className="rounded-md bg-destructive px-3 py-1.5 text-xs font-medium text-destructive-foreground disabled:opacity-50"
+              >
+                {mut.isPending ? "Sending…" : "Submit report"}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
   );
 }
