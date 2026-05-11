@@ -32,7 +32,7 @@ export const evaluatePackage = createServerFn({ method: "POST" })
     if (vErr || !ver) throw new Response("Version not found", { status: 404 });
 
     const result = await evaluatorPipeline({
-      pkg: { name: pkg.name, type: pkg.type },
+      pkg: { name: pkg.name, type: pkg.type, description: pkg.description },
       version: {
         system_prompt: ver.system_prompt,
         rules: ver.rules,
@@ -57,7 +57,7 @@ export const evaluatePackage = createServerFn({ method: "POST" })
         weaknesses: result.evaluation.weaknesses,
         improvement_actions: result.evaluation.improvement_actions,
         example_results: result.evaluation.example_results,
-        adversarial_results: result.adversarial,
+        adversarial_results: { probes: result.adversarial, trigger_rate: result.triggerRate },
         pipeline_stages: result.stages,
       });
     }
