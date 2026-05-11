@@ -6,9 +6,14 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { autoCreateMissing } from "@/lib/skills/forge-loop.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
 
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
+  loader: async () => {
+    const { items } = await listMarketplace();
+    return { items: items as MarketplaceItem[] };
+  },
   head: () => ({
     meta: [
       { title: "Discover · Super Agent Skill" },
