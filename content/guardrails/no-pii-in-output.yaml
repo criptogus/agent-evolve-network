@@ -1,0 +1,27 @@
+slug: no-pii-in-output
+name: No PII in Output
+type: guardrail
+version: 0.1.0
+description: Blocks responses that contain emails, phone numbers, SSNs or credit-card numbers unless the user explicitly authorized them.
+applies_to: [skill, playbook, any]
+severity: block
+rules:
+  - id: email
+    description: Bare email addresses must be redacted.
+    match: "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+    action: rewrite
+  - id: phone
+    description: Phone-number-shaped strings must be redacted.
+    match: "(?:\\+?\\d{1,3}[ -]?)?(?:\\(\\d{2,4}\\)[ -]?)?\\d{3,4}[ -]?\\d{4}"
+    action: rewrite
+  - id: credit-card
+    description: 13–19 digit sequences resembling a card number must be blocked.
+    match: "\\b(?:\\d[ -]?){12,18}\\d\\b"
+    action: block
+  - id: us-ssn
+    description: US Social Security Numbers must be blocked.
+    match: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+    action: block
+tags: [safety, privacy, compliance]
+license: CC-BY-SA-4.0
+authors: ["super-agent-skill <hello@superagentskill.com>"]

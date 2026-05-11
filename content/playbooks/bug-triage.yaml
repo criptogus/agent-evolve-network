@@ -1,0 +1,33 @@
+slug: bug-triage
+name: Bug Triage Playbook
+type: playbook
+version: 0.1.0
+description: Turns a raw bug report into a prioritized, reproducible ticket with a suggested first fix.
+trigger: When the user pastes a bug report, stack trace, or "something is broken" message.
+inputs:
+  report: { type: string }
+  repo_context: { type: string }
+outputs:
+  ticket: { type: string }
+steps:
+  - id: extract
+    action: instruction
+    with:
+      prompt: "Extract: summary, steps to reproduce, expected, actual, environment. Mark anything missing as TODO."
+  - id: classify
+    action: instruction
+    with:
+      prompt: "Assign severity (S1-S4) and area label using ${inputs.repo_context}."
+  - id: hypothesize
+    action: skill:code-reviewer
+    when: "${steps.extract.output contains 'stack trace'}"
+    with: { diff: "${inputs.report}" }
+    on_error: continue
+  - id: format
+    action: instruction
+    with:
+      prompt: "Render a markdown ticket with: Title, Severity, Steps, Expected, Actual, Environment, Hypothesis, Suggested first fix."
+guardrails: [no-pii-in-output]
+tags: [engineering, support]
+license: CC-BY-SA-4.0
+authors: ["super-agent-skill <hello@superagentskill.com>"]
