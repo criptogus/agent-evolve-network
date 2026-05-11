@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { CodeBlock } from "@/components/site/CodeBlock";
 import { TypingLines } from "@/components/site/Typewriter";
 import { TypeBadge } from "./marketplace.index";
@@ -146,6 +147,10 @@ function PackageDetail() {
         )}
         {tab === "compatibility" && <CompatibilityTab pkg={pkg} />}
         {tab === "changelog" && <ChangelogTab pkg={pkg} />}
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 pb-12">
+        <ReviewsSection slug={pkg.slug} />
       </section>
 
       <Footer />

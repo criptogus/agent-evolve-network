@@ -14,6 +14,10 @@ export type MarketplaceItem = {
   vertical: string | null;
   created_at: string;
   price_credits: number;
+  rating_avg: number;
+  rating_count: number;
+  rating_human_count: number;
+  rating_agent_count: number;
 };
 
 export const listMarketplace = createServerFn({ method: "GET" }).handler(
@@ -50,12 +54,36 @@ export const listMarketplace = createServerFn({ method: "GET" }).handler(
       }
     }
 
-    const items: MarketplaceItem[] = (pkgs ?? []).map((p) => ({
-      ...p,
-      type: p.type as MarketplaceItem["type"],
-      vertical: verticalByPkg.get(p.id) ?? null,
-      price_credits: p.price_credits ?? 0,
-    }));
+    // Aggregate ratings per package (single grouped query)
+    const ratingByPkg = new Map<string, { avg: number; count: number; human: number; agent: number }>();
+    if (ids.length) {
+      const { data: rs } = await supabaseAdmin
+        .from("reviews")
+        .select("package_id, rating, rater_kind")
+        .in("package_id", ids);
+      for (const r of rs ?? []) {
+        const cur = ratingByPkg.get(r.package_id) ?? { avg: 0, count: 0, human: 0, agent: 0 };
+        cur.avg = (cur.avg * cur.count + r.rating) / (cur.count + 1);
+        cur.count += 1;
+        if (r.rater_kind === "agent") cur.agent += 1;
+        else cur.human += 1;
+        ratingByPkg.set(r.package_id, cur);
+      }
+    }
+
+    const items: MarketplaceItem[] = (pkgs ?? []).map((p) => {
+      const rt = ratingByPkg.get(p.id) ?? { avg: 0, count: 0, human: 0, agent: 0 };
+      return {
+        ...p,
+        type: p.type as MarketplaceItem["type"],
+        vertical: verticalByPkg.get(p.id) ?? null,
+        price_credits: p.price_credits ?? 0,
+        rating_avg: Math.round(rt.avg * 100) / 100,
+        rating_count: rt.count,
+        rating_human_count: rt.human,
+        rating_agent_count: rt.agent,
+      };
+    });
 
     const vs = new Set<string>();
     for (const it of items) if (it.vertical) vs.add(it.vertical);

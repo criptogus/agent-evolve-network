@@ -6,6 +6,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
 import { BuyButton, PriceBadge } from "@/components/marketplace/BuyButton";
+import { Stars } from "@/components/reviews/Stars";
 
 export const Route = createFileRoute("/marketplace/")({
   head: () => ({
@@ -221,6 +222,19 @@ function Card({ p }: { p: MarketplaceItem }) {
         {p.author_handle}
         {p.author_verified && <span className="ml-1 text-primary">✓</span>}
         {p.install_count > 0 && <> · {p.install_count.toLocaleString()} installs</>}
+      </div>
+      <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+        {p.rating_count > 0 ? (
+          <>
+            <Stars value={p.rating_avg} size={11} />
+            <span className="font-mono text-foreground">{p.rating_avg.toFixed(1)}</span>
+            <span>({p.rating_count})</span>
+            {p.rating_human_count > 0 && <span title="Human ratings">· 🧑 {p.rating_human_count}</span>}
+            {p.rating_agent_count > 0 && <span title="Agent ratings">· 🤖 {p.rating_agent_count}</span>}
+          </>
+        ) : (
+          <span>No ratings yet</span>
+        )}
       </div>
       <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{p.description}</p>
       {p.vertical && (

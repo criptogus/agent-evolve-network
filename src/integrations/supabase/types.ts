@@ -799,9 +799,11 @@ export type Database = {
           helpful_count: number
           id: string
           package_id: string
+          rater_kind: string
           rating: number
           run_id_ref: string | null
           user_id: string
+          verified_purchase: boolean
         }
         Insert: {
           body?: string | null
@@ -809,9 +811,11 @@ export type Database = {
           helpful_count?: number
           id?: string
           package_id: string
+          rater_kind?: string
           rating: number
           run_id_ref?: string | null
           user_id: string
+          verified_purchase?: boolean
         }
         Update: {
           body?: string | null
@@ -819,9 +823,11 @@ export type Database = {
           helpful_count?: number
           id?: string
           package_id?: string
+          rater_kind?: string
           rating?: number
           run_id_ref?: string | null
           user_id?: string
+          verified_purchase?: boolean
         }
         Relationships: [
           {
@@ -1060,6 +1066,8 @@ export type Database = {
         Returns: number
       }
       get_credit_balance: { Args: { _user_id: string }; Returns: number }
+      get_package_ratings: { Args: { _package_id: string }; Returns: Json }
+      get_review_eligibility: { Args: { _package_id: string }; Returns: Json }
       grant_signup_bonus: { Args: { _user_id: string }; Returns: undefined }
       has_active_subscription:
         | { Args: { _user_id: string }; Returns: boolean }
@@ -1071,7 +1079,30 @@ export type Database = {
         }
         Returns: boolean
       }
+      list_package_reviews: {
+        Args: { _limit?: number; _package_id: string }
+        Returns: {
+          avatar_url: string
+          body: string
+          created_at: string
+          display_name: string
+          id: string
+          rater_kind: string
+          rating: number
+          user_id: string
+          verified_purchase: boolean
+        }[]
+      }
       purchase_package: { Args: { _package_id: string }; Returns: Json }
+      submit_review: {
+        Args: {
+          _body: string
+          _package_id: string
+          _rater_kind: string
+          _rating: number
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "publisher" | "user"
