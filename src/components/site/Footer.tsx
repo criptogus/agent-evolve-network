@@ -24,9 +24,9 @@ export function Footer() {
           { label: "Pricing", to: "/pricing" },
         ]} />
         <FooterCol title="Open source" links={[
-          { label: "GitHub repo", href: "https://github.com/super-agent-skill/super-agent-skill" },
+          { label: "GitHub repo", href: "https://github.com/criptogus/agent-evolve-network" },
           { label: "Contribute", to: "/community" },
-          { label: "Content registry", href: "https://github.com/super-agent-skill/super-agent-skill/tree/main/content" },
+          { label: "Content registry", href: "https://github.com/criptogus/agent-evolve-network/tree/main/content" },
         ]} />
         <FooterCol title="Legal" links={[
           { label: "Terms", to: "/terms" },

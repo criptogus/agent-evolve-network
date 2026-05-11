@@ -3,7 +3,7 @@ import { Github, BookOpen, GitPullRequest, ShieldCheck, Sparkles } from "lucide-
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 
-const REPO = "https://github.com/super-agent-skill/super-agent-skill";
+const REPO = "https://github.com/criptogus/agent-evolve-network";
 
 export const Route = createFileRoute("/community")({
   head: () => ({
