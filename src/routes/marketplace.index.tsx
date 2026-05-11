@@ -310,7 +310,7 @@ function Marketplace() {
           </div>
 
           {/* Active filter summary + reset */}
-          {(q || type !== "all" || vertical !== "all" || verifiedOnly || installBucket !== "any" || sort !== "installs_desc") && (
+          {(q || type !== "all" || vertical !== "all" || verticalGroup !== "all" || verifiedOnly || installBucket !== "any" || sort !== "installs_desc") && (
             <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
               <span>
                 Showing <strong className="text-foreground">{filtered.length}</strong> of {items.length}
