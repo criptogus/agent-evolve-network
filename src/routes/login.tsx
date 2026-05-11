@@ -9,7 +9,12 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
-    meta: [{ title: "Sign in — Super Agent Skill" }],
+    meta: [
+      { title: "Sign in — Super Agent Skill" },
+      { name: "description", content: "Sign in to manage your connected agents, packages and subscription." },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "https://superagentskill.com/login" }],
   }),
   validateSearch: (s: Record<string, unknown>) => ({ next: typeof s.next === "string" ? s.next : undefined }),
   component: LoginPage,

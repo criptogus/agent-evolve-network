@@ -6,7 +6,13 @@ import { Footer } from "@/components/site/Footer";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [{ title: "Reset password — Super Agent Skill" }] }),
+  head: () => ({
+    meta: [
+      { title: "Reset password — Super Agent Skill" },
+      { name: "description", content: "Reset the password on your Super Agent Skill account." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: ResetPage,
 });
 
