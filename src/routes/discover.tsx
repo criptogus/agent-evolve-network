@@ -446,9 +446,20 @@ function DiscoverPage() {
                   </span>
                 )}
               </div>
-              <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                Sorted by popularity
-              </div>
+              <label className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                <span>Sort</span>
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as SortKey)}
+                  className="h-7 rounded-md border border-border bg-surface px-2 font-mono text-[11px] text-foreground outline-none transition-colors hover:border-primary/50 focus:border-primary"
+                >
+                  {SORT_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
 
             {items.length === 0 ? (
