@@ -380,6 +380,7 @@ function DiscoverPage() {
       <Nav />
 
       <main className="mx-auto max-w-7xl px-6 pb-24 pt-10">
+        <TermsStatusBanner className="mb-6" />
         {/* Header */}
         <div className="border-b border-border/70 pb-6">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">
