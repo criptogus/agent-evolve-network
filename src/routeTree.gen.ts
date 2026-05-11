@@ -27,6 +27,7 @@ import { Route as EvaluationRouteImport } from './routes/evaluation'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as ConnectRouteImport } from './routes/connect'
+import { Route as CommunityRouteImport } from './routes/community'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
@@ -140,6 +141,11 @@ const DiscoverRoute = DiscoverRouteImport.update({
 const ConnectRoute = ConnectRouteImport.update({
   id: '/connect',
   path: '/connect',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunityRoute = CommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -267,6 +273,7 @@ const ApiPublicMcpHealthRoute = ApiPublicMcpHealthRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/community': typeof CommunityRoute
   '/connect': typeof ConnectRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
@@ -310,6 +317,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/community': typeof CommunityRoute
   '/connect': typeof ConnectRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
@@ -355,6 +363,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/community': typeof CommunityRoute
   '/connect': typeof ConnectRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
@@ -401,6 +410,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/community'
     | '/connect'
     | '/discover'
     | '/docs'
@@ -444,6 +454,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/community'
     | '/connect'
     | '/discover'
     | '/docs'
@@ -488,6 +499,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/community'
     | '/connect'
     | '/discover'
     | '/docs'
@@ -533,6 +545,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  CommunityRoute: typeof CommunityRoute
   ConnectRoute: typeof ConnectRoute
   DiscoverRoute: typeof DiscoverRoute
   DocsRoute: typeof DocsRouteWithChildren
@@ -690,6 +703,13 @@ declare module '@tanstack/react-router' {
       path: '/connect'
       fullPath: '/connect'
       preLoaderRoute: typeof ConnectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/community': {
+      id: '/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof CommunityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -922,6 +942,7 @@ const ForgeRouteWithChildren = ForgeRoute._addFileChildren(ForgeRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  CommunityRoute: CommunityRoute,
   ConnectRoute: ConnectRoute,
   DiscoverRoute: DiscoverRoute,
   DocsRoute: DocsRouteWithChildren,

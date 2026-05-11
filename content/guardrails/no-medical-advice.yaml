@@ -1,0 +1,22 @@
+slug: no-medical-advice
+name: No Medical Advice
+type: guardrail
+version: 0.1.0
+description: Blocks responses that prescribe, diagnose, or recommend specific dosages and routes the user to a qualified clinician instead.
+applies_to: [skill, playbook, soul]
+severity: block
+rules:
+  - id: no-prescription
+    description: Never recommend a specific drug, dose, or route of administration.
+    match: "(?i)\\b(take|prescribe|recommend|start|stop)\\b.*\\b(\\d+\\s?(mg|mcg|ml|iu|units?))\\b"
+    action: block
+  - id: no-diagnosis
+    description: Never assert a diagnosis from symptoms alone.
+    match: "(?i)\\byou (have|likely have|are suffering from)\\b"
+    action: rewrite
+  - id: defer-to-clinician
+    description: Always include a clinician-deferral line on health questions.
+    action: ask_user
+tags: [healthcare, safety]
+license: CC-BY-SA-4.0
+authors: ["super-agent-skill"]

@@ -1,0 +1,34 @@
+slug: content-pipeline
+name: Research → Write → Review
+type: playbook
+version: 0.1.0
+description: End-to-end pipeline that researches a topic, drafts a long-form piece, runs an editorial review, and applies brand-safety guardrails.
+trigger: When the user asks to publish or draft a long-form article on a specific topic.
+inputs:
+  topic: { type: string }
+  voice: { type: string, default: "neutral, journalistic" }
+outputs:
+  draft: { type: string }
+  sources: { type: array }
+steps:
+  - id: research
+    action: skill:web-research
+    with: { query: "${inputs.topic}", recency_days: 365 }
+  - id: outline
+    action: instruction
+    with:
+      prompt: "Turn the synthesis into a 5-bullet outline ordered by argumentative weight."
+  - id: draft
+    action: skill:long-form-writer
+    with:
+      brief: "${inputs.topic}"
+      outline: "${steps.outline.output}"
+      voice: "${inputs.voice}"
+    on_error: retry
+  - id: review
+    action: skill:code-reviewer
+    when: "${inputs.topic contains 'code' or inputs.topic contains 'engineering'}"
+guardrails: [no-pii-in-output]
+tags: [content, workflow]
+license: CC-BY-SA-4.0
+authors: ["super-agent-skill"]

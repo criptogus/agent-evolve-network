@@ -1,0 +1,45 @@
+slug: long-form-writer
+name: Long-form Writer
+type: skill
+version: 0.1.0
+description: Produces structured long-form content (essays, blog posts, briefs) from a brief and outline, with explicit voice and reading-level controls.
+inputs:
+  brief: { type: string }
+  outline: { type: array, items: { type: string } }
+  voice: { type: string, default: "neutral, journalistic" }
+  word_count: { type: integer, default: 1200 }
+outputs:
+  draft: { type: string }
+must:
+  - Honor the outline order; one H2 per outline bullet.
+  - Open with a concrete scene or stat — never a definition.
+  - Cite any external claim with a [source: <url>] inline tag.
+must_not:
+  - Use AI-tells ("In today's fast-paced world", "delve", "navigate the landscape").
+  - Pad to hit word count — stop when the argument is complete.
+examples:
+  - input:
+      brief: "Why staging environments are an anti-pattern for small teams"
+      outline:
+        - "What teams think staging buys them"
+        - "What it actually costs"
+        - "When preview envs win"
+      voice: "DHH-ish, opinionated"
+      word_count: 900
+    output: |
+      ## What teams think staging buys them
+      Staging promises a safety net... [continues, ~900 words across 3 H2s]
+  - input:
+      brief: "The case for shipping on Fridays"
+      outline:
+        - "Why everyone tells you not to"
+        - "The hidden cost of Monday-only deploys"
+        - "What a Friday-safe pipeline looks like"
+      voice: "calm engineering manager"
+      word_count: 800
+    output: |
+      ## Why everyone tells you not to
+      The argument goes... [continues]
+tags: [content, writing]
+license: CC-BY-SA-4.0
+authors: ["super-agent-skill"]

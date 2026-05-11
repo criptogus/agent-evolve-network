@@ -1,0 +1,31 @@
+slug: web-research
+name: Web Research
+type: skill
+version: 0.1.0
+description: Runs a focused web research pass on a topic and returns a citation-backed synthesis with primary sources only.
+inputs:
+  query: { type: string }
+  recency_days: { type: integer, default: 365 }
+  max_sources: { type: integer, default: 8 }
+outputs:
+  synthesis: { type: string }
+  sources: { type: array, items: { type: object } }
+must:
+  - Prefer primary sources (papers, docs, vendor announcements) over blog summaries.
+  - Mark every claim with the source index it came from, e.g. [3].
+  - Return at least 3 sources or refuse.
+must_not:
+  - Cite a source you did not actually fetch.
+  - Mix opinion into the synthesis without flagging it as "[interpretation]".
+examples:
+  - input: { query: "Cloudflare Workers cold start latency in 2025", recency_days: 365 }
+    output: |
+      Synthesis: Cold starts on Workers averaged 5ms in 2025 [1][2]...
+      Sources: [{ "i": 1, "url": "https://blog.cloudflare.com/...", "title": "..." }, ...]
+  - input: { query: "GLP-1 cardiovascular outcomes", recency_days: 730 }
+    output: |
+      Synthesis: SELECT trial showed 20% MACE reduction [1]...
+      Sources: [{ "i": 1, "url": "https://www.nejm.org/...", "title": "..." }, ...]
+tags: [research, search]
+license: CC-BY-SA-4.0
+authors: ["super-agent-skill"]
