@@ -14,10 +14,19 @@ import {
 } from "@/lib/marketplace/discover.functions";
 import { useRequireAuth } from "@/lib/require-auth";
 
+const SORT_OPTIONS = [
+  { value: "popular", label: "Most installed" },
+  { value: "newest", label: "Newest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "name", label: "Name (A–Z)" },
+] as const;
+type SortKey = (typeof SORT_OPTIONS)[number]["value"];
+
 const SearchSchema = z.object({
   type: z.enum(["skill", "playbook", "soul", "guardrail"]).catch("skill").default("skill"),
   category: z.string().nullish().catch(null),
   q: z.string().nullish().catch(null),
+  sort: z.enum(["popular", "newest", "oldest", "name"]).catch("popular").default("popular"),
   page: z.number().int().min(1).catch(1).default(1),
 });
 
@@ -33,6 +42,7 @@ export const Route = createFileRoute("/discover")({
     type: search.type,
     category: search.category ?? null,
     q: search.q ?? null,
+    sort: search.sort,
     page: search.page,
   }),
   loader: async ({ deps }) => {
@@ -41,6 +51,7 @@ export const Route = createFileRoute("/discover")({
         type: deps.type,
         category: deps.category,
         q: deps.q,
+        sort: deps.sort,
         page: deps.page,
         pageSize: PAGE_SIZE,
       },
