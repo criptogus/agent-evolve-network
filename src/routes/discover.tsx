@@ -428,7 +428,7 @@ function DiscoverPage() {
               className="h-11 w-full rounded-md border border-border bg-surface pl-9 pr-3 text-[14px] outline-none transition-colors focus:border-primary"
             />
           </div>
-          <div className="-mx-1 flex h-11 items-center gap-0.5 overflow-x-auto rounded-md border border-border bg-surface p-0.5 sm:mx-0 md:gap-0">
+          <div className="flex h-11 items-center gap-0.5 overflow-x-auto rounded-md border border-border bg-surface p-0.5 md:gap-0">
             {(["skill", "playbook", "soul", "guardrail"] as Type[]).map((t) => (
               <button
                 key={t}
