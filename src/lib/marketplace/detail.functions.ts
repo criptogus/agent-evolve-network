@@ -55,6 +55,7 @@ function normExamples(raw: unknown): Package["examples"] {
 export const getPackageDetail = createServerFn({ method: "GET" })
   .inputValidator((data: { slug: string }) => data)
   .handler(async ({ data }): Promise<{ pkg: Package } | null> => {
+    return detailCache.getOrLoad(data.slug, async () => {
     const { data: pkg, error } = await supabaseAdmin
       .from("packages")
       .select(
