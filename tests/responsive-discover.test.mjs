@@ -60,7 +60,7 @@ test("stats pill wraps and keeps counts on a single line at mobile widths", () =
 test("primitive-type tab row scrolls horizontally on mobile", () => {
   // The 4-tab row (skills / playbooks / souls / guardrails) is too wide to
   // fit at 320px — it must overflow-x-auto and tabs must shrink-0.
-  const block = windowAround(SRC, '(["skill", "playbook", "soul", "guardrail"]', 600, 1200);
+  const block = windowAround(SRC, '"guardrail"] as Type[]).map', 600, 600);
   assert.match(block, /overflow-x-auto/, "tab row must be overflow-x-auto");
   assert.match(block, /shrink-0/, "tab buttons must use shrink-0");
 });
