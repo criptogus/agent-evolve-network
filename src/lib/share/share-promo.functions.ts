@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { generateText } from "ai";
 import { getGatewayModel } from "@/lib/ai-gateway";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const InputSchema = z.object({
   slug: z.string().min(1).max(120),
@@ -12,9 +13,6 @@ const InputSchema = z.object({
 });
 
 type Input = z.infer<typeof InputSchema>;
-type CacheEntry = { at: number; text: string };
-const TTL_MS = 24 * 60 * 60 * 1000; // 24h
-const cache = new Map<string, CacheEntry>();
 
 const TYPE_LABEL: Record<Input["type"], string> = {
   skill: "AI skill",
@@ -24,18 +22,24 @@ const TYPE_LABEL: Record<Input["type"], string> = {
   pack: "AI agent pack",
 };
 
-function fallbackTweet({ name, description, type, url }: Input): string {
+const HASHTAGS = "#AI #Agents #SuperAgentSkill";
+
+// Tiny in-memory layer in front of the DB cache (per-Worker isolate).
+type MemEntry = { at: number; body: string };
+const MEM_TTL_MS = 10 * 60 * 1000;
+const mem = new Map<string, MemEntry>();
+
+function fallbackBody({ name, description, type }: Omit<Input, "url">): string {
   const label = TYPE_LABEL[type];
   const desc = description.replace(/\s+/g, " ").trim();
   const head = `🚀 New ${label}: ${name}`;
-  const tag = "\n\n#AI #Agents #SuperAgentSkill";
-  // Twitter ~280 chars; URL counts as 23. Reserve room for url + tags.
-  const room = 280 - 24 - tag.length - head.length - 4;
+  // Reserve room for URL (~24) + hashtags + newlines.
+  const room = 280 - 24 - HASHTAGS.length - head.length - 6;
   const body = desc.length > room ? desc.slice(0, Math.max(0, room - 1)).trimEnd() + "…" : desc;
-  return `${head}\n\n${body}${tag}\n${url}`;
+  return `${head}\n\n${body}`;
 }
 
-async function generateTweet(input: Input): Promise<string> {
+async function generateBody(input: Omit<Input, "url">): Promise<{ body: string; source: "ai" | "fallback" }> {
   try {
     const model = getGatewayModel("google/gemini-2.5-flash-lite");
     const { text } = await generateText({
@@ -47,20 +51,64 @@ async function generateTweet(input: Input): Promise<string> {
     const cleaned = (text || "").replace(/^["'`]+|["'`]+$/g, "").trim();
     if (!cleaned) throw new Error("empty");
     const trimmed = cleaned.length > 240 ? cleaned.slice(0, 239).trimEnd() + "…" : cleaned;
-    return `${trimmed}\n\n#AI #Agents #SuperAgentSkill\n${input.url}`;
+    return { body: trimmed, source: "ai" };
   } catch {
-    return fallbackTweet(input);
+    return { body: fallbackBody(input), source: "fallback" };
   }
+}
+
+function assemble(body: string, url: string): string {
+  return `${body}\n\n${HASHTAGS}\n${url}`;
+}
+
+/**
+ * Read cached body from DB, generate + persist if missing.
+ * Used by both the public server fn and the prewarm cron.
+ */
+export async function getOrGenerateBody(input: Omit<Input, "url">): Promise<string> {
+  const key = `${input.type}:${input.slug}`;
+  const now = Date.now();
+  const memHit = mem.get(key);
+  if (memHit && now - memHit.at < MEM_TTL_MS) return memHit.body;
+
+  // DB cache
+  const { data: row } = await supabaseAdmin
+    .from("share_promos")
+    .select("body")
+    .eq("type", input.type)
+    .eq("slug", input.slug)
+    .maybeSingle();
+  if (row?.body) {
+    mem.set(key, { at: now, body: row.body });
+    return row.body;
+  }
+
+  // Generate + persist
+  const { body, source } = await generateBody(input);
+  await supabaseAdmin.from("share_promos").upsert(
+    {
+      type: input.type,
+      slug: input.slug,
+      body,
+      source,
+      name: input.name,
+      description: input.description,
+      generated_at: new Date().toISOString(),
+    },
+    { onConflict: "type,slug" }
+  );
+  mem.set(key, { at: now, body });
+  return body;
 }
 
 export const getSharePromo = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => InputSchema.parse(data))
   .handler(async ({ data }) => {
-    const key = `${data.type}:${data.slug}`;
-    const now = Date.now();
-    const hit = cache.get(key);
-    if (hit && now - hit.at < TTL_MS) return { text: hit.text };
-    const text = await generateTweet(data);
-    cache.set(key, { at: now, text });
-    return { text };
+    const body = await getOrGenerateBody({
+      slug: data.slug,
+      type: data.type,
+      name: data.name,
+      description: data.description,
+    });
+    return { text: assemble(body, data.url) };
   });
