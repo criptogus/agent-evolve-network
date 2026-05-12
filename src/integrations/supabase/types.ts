@@ -1109,6 +1109,7 @@ export type Database = {
           display_name: string | null
           handle: string | null
           id: string
+          referral_code: string | null
           updated_at: string
         }
         Insert: {
@@ -1118,6 +1119,7 @@ export type Database = {
           display_name?: string | null
           handle?: string | null
           id: string
+          referral_code?: string | null
           updated_at?: string
         }
         Update: {
@@ -1127,7 +1129,112 @@ export type Database = {
           display_name?: string | null
           handle?: string | null
           id?: string
+          referral_code?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      referral_clicks: {
+        Row: {
+          code: string
+          created_at: string
+          id: number
+          ip_hash: string | null
+          target: string | null
+          ua_hash: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: number
+          ip_hash?: string | null
+          target?: string | null
+          ua_hash?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: number
+          ip_hash?: string | null
+          target?: string | null
+          ua_hash?: string | null
+        }
+        Relationships: []
+      }
+      referral_rewards: {
+        Row: {
+          created_at: string
+          credits: number
+          id: string
+          kind: string
+          referral_id: string
+          referrer_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits: number
+          id?: string
+          kind: string
+          referral_id: string
+          referrer_id: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number
+          id?: string
+          kind?: string
+          referral_id?: string
+          referrer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_rewards_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          code: string
+          created_at: string
+          first_purchase_at: string | null
+          id: string
+          package_slug: string | null
+          referred_user_id: string
+          referrer_id: string
+          signed_up_at: string
+          source_url: string | null
+          status: string
+          subscribed_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          first_purchase_at?: string | null
+          id?: string
+          package_slug?: string | null
+          referred_user_id: string
+          referrer_id: string
+          signed_up_at?: string
+          source_url?: string | null
+          status?: string
+          subscribed_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          first_purchase_at?: string | null
+          id?: string
+          package_slug?: string | null
+          referred_user_id?: string
+          referrer_id?: string
+          signed_up_at?: string
+          source_url?: string | null
+          status?: string
+          subscribed_at?: string | null
         }
         Relationships: []
       }
@@ -1860,11 +1967,21 @@ export type Database = {
         }
         Returns: number
       }
+      award_referral_credits: {
+        Args: { _credits: number; _kind: string; _referral_id: string }
+        Returns: Json
+      }
+      claim_referral: {
+        Args: { _code: string; _package_slug?: string; _source_url?: string }
+        Returns: Json
+      }
       compute_skill_drift: {
         Args: { _package_id: string; _window_days?: number }
         Returns: Json
       }
+      gen_referral_code: { Args: never; Returns: string }
       get_credit_balance: { Args: { _user_id: string }; Returns: number }
+      get_my_referral_stats: { Args: never; Returns: Json }
       get_pack_with_items: { Args: { _slug: string }; Returns: Json }
       get_package_ratings: { Args: { _package_id: string }; Returns: Json }
       get_review_eligibility: { Args: { _package_id: string }; Returns: Json }
