@@ -15,12 +15,12 @@ const McpInstallAnimation = lazy(() =>
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Super Agent Skill — MCP for AI agents that actually do the job" },
-      { name: "description", content: "Connect Claude, Cursor, Codex or Grok in 30 seconds. One sentence installs the right skills, playbooks, souls and guardrails for your agent. No SDK, no retraining." },
-      { property: "og:title", content: "Super Agent Skill — MCP for AI agents that actually do the job" },
-      { property: "og:description", content: "30s to connect. One sentence to specialize. Health Score climbs while you sleep." },
-      { name: "twitter:title", content: "Super Agent Skill — MCP for AI agents that actually do the job" },
-      { name: "twitter:description", content: "30s to connect. One sentence to specialize. Health Score climbs while you sleep." },
+      { title: "Super Agent Skill — Turn your AI into an expert at your job" },
+      { name: "description", content: "Generic AI gives generic answers. Super Agent Skill is the app store for your AI's brain — install expert skills, workflows and safety rules in one click. Works with ChatGPT, Claude, Cursor, Codex." },
+      { property: "og:title", content: "Turn your AI into an expert at your job — Super Agent Skill" },
+      { property: "og:description", content: "The app store for your AI's brain. One click installs an expert in your field. No code, no retraining." },
+      { name: "twitter:title", content: "Turn your AI into an expert at your job — Super Agent Skill" },
+      { name: "twitter:description", content: "The app store for your AI's brain. One click installs an expert in your field." },
     ],
     links: [{ rel: "canonical", href: "https://superagentskill.com/" }],
   }),
