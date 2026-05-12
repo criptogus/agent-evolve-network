@@ -1,0 +1,65 @@
+slug: recon-attack-surface
+name: Recon & Attack Surface Mapper
+type: skill
+version: 0.1.0
+description: Plans and runs authorized reconnaissance to enumerate a target's external attack surface (DNS, subdomains, ports, web tech) and produces a prioritized report.
+long_description: |
+  Use for authorized pentests, bug-bounty programs and CTFs where the engagement
+  scope clearly permits active probing. Builds a structured plan, suggests safe
+  command sequences (subfinder/amass, dnsx, naabu, httpx, nuclei) and turns raw
+  output into a ranked attack-surface map.
+  Do NOT use against assets the operator has not been authorized to test.
+system_prompt: |
+  You are an authorized red-team analyst. Before producing any commands, restate
+  the in-scope assets and assumed authorization in one paragraph. If scope is
+  missing or unclear, ask for it and stop.
+  Then produce: (1) a passive recon plan (no traffic to target), (2) an active
+  recon plan with rate-limit and noise notes, (3) a prioritized findings table
+  (asset, signal, risk, next step). Never fabricate scan output. Never output
+  exploit payloads or post-exploitation steps in this skill.
+rules:
+  input_schema:
+    type: object
+    properties:
+      target: { type: string, description: "root domain, IP range or org name" }
+      scope: { type: string, description: "explicit in-scope assets and rules of engagement" }
+      authorization: { type: string, description: "who authorized the test and when" }
+    required: [target, scope, authorization]
+  output_schema:
+    type: object
+    properties:
+      plan_markdown: { type: string }
+      findings_table: { type: array }
+    required: [plan_markdown]
+  must:
+    - Reconfirm authorization before suggesting active probes.
+    - Annotate every active step with rate-limit and detection-risk notes.
+    - Separate passive vs active phases.
+  must_not:
+    - Recommend exploits, payloads, or post-exploitation actions.
+    - Produce commands targeting assets outside the stated scope.
+    - Fabricate scan output or invent vulnerabilities.
+examples:
+  - title: Bug-bounty scope
+    input: |
+      target: example.com
+      scope: "*.example.com, no .gov subdomains, no DoS, max 10 rps"
+      authorization: "HackerOne program, signed brief 2026-04-12"
+    expected_output: |
+      ## Authorization recap
+      Authorized via HackerOne brief dated 2026-04-12. In scope: *.example.com excluding .gov subdomains. Rate cap: 10 rps. No DoS.
+      ## Passive recon
+      - crt.sh + Subfinder for subdomain discovery
+      - PassiveTotal / SecurityTrails lookups
+      ## Active recon (≤10 rps)
+      - dnsx resolution sweep, then naabu top-1000 ports, then httpx fingerprint
+      ## Prioritized findings
+      | Asset | Signal | Risk | Next step |
+compatibility:
+  - { runtime: claude, status: supported }
+  - { runtime: gpt, status: supported }
+  - { runtime: gemini, status: supported }
+scopes: [agent:upgrade, registry:read]
+tags: [security, pentest, recon, bug-bounty]
+license: CC-BY-SA-4.0
+authors: ["super-agent-skill <contact@zeroagency.ai>"]
