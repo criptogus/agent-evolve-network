@@ -23,12 +23,10 @@ export type MarketplaceItem = {
   rating_agent_avg: number;
 };
 
-type CacheEntry = { at: number; payload: { items: MarketplaceItem[]; verticals: string[] } };
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 min
-let _cache: CacheEntry | null = null;
-let _inflight: Promise<{ items: MarketplaceItem[]; verticals: string[] }> | null = null;
+type ListPayload = { items: MarketplaceItem[]; verticals: string[] };
+const cache = createTtlCache<ListPayload>(5 * 60 * 1000, { max: 4 });
 
-async function fetchMarketplace(): Promise<{ items: MarketplaceItem[]; verticals: string[] }> {
+async function fetchMarketplace(): Promise<ListPayload> {
   const { data: pkgs, error } = await supabaseAdmin
       .from("packages")
       .select(
@@ -118,25 +116,7 @@ async function fetchMarketplace(): Promise<{ items: MarketplaceItem[]; verticals
 }
 
 export const listMarketplace = createServerFn({ method: "GET" }).handler(
-  async (): Promise<{ items: MarketplaceItem[]; verticals: string[] }> => {
-    const now = Date.now();
-    if (_cache && now - _cache.at < CACHE_TTL_MS) return _cache.payload;
-    if (_inflight) return _inflight;
-    _inflight = fetchMarketplace()
-      .then((payload) => {
-        _cache = { at: Date.now(), payload };
-        return payload;
-      })
-      .finally(() => {
-        _inflight = null;
-      });
-    try {
-      return await _inflight;
-    } catch (err) {
-      // On failure, serve stale cache if available so the UI doesn't break.
-      if (_cache) return _cache.payload;
-      throw err;
-    }
-  }
+  async (): Promise<ListPayload> => cache.getOrLoad("all", fetchMarketplace)
 );
+
 
