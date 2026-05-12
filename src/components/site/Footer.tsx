@@ -50,7 +50,7 @@ export function Footer() {
             { label: "Privacy", to: "/privacy" },
             { label: "Contributor FAQ", to: "/contributor-faq" },
             { label: "Refunds", to: "/refunds" },
-            { label: "Contact sales", href: "mailto:sales@superagentskill.com" },
+            { label: "Contact sales", href: "mailto:contact@zeroagency.ai" },
           ]} />
         </div>
       </div>

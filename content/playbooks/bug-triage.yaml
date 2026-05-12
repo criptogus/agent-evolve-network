@@ -30,4 +30,4 @@ steps:
 guardrails: [no-pii-in-output]
 tags: [engineering, support]
 license: CC-BY-SA-4.0
-authors: ["super-agent-skill <hello@superagentskill.com>"]
+authors: ["super-agent-skill <contact@zeroagency.ai>"]
