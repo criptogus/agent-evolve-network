@@ -19,8 +19,8 @@ export const claimReferral = createServerFn({ method: "POST" })
     const { supabase } = context;
     const { data: result, error } = await supabase.rpc("claim_referral", {
       _code: data.code,
-      _source_url: data.source_url ?? null,
-      _package_slug: data.package_slug ?? null,
+      _source_url: data.source_url ?? undefined,
+      _package_slug: data.package_slug ?? undefined,
     });
     if (error) {
       console.error("claim_referral failed", error);
