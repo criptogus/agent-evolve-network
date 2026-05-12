@@ -24,13 +24,13 @@ const SRC = readFileSync(resolve(here, "../src/routes/discover.tsx"), "utf8");
 const COMMON_MOBILE_WIDTHS = [320, 360, 375, 390, 414];
 const TAILWIND_BREAKPOINTS = { sm: 640, md: 768, lg: 1024, xl: 1280 };
 
-/** Returns the substring between the first occurrence of `marker` and the
- *  matching closing `</tag>` (best-effort, scoped block). */
-function blockAfter(source, marker, length = 1200) {
+/** Returns a window of source centered on `marker`. */
+function windowAround(source, marker, before = 600, after = 1200) {
   const i = source.indexOf(marker);
   assert.ok(i >= 0, `marker not found: ${marker}`);
-  return source.slice(i, i + length);
+  return source.slice(Math.max(0, i - before), i + after);
 }
+const blockAfter = (source, marker, after = 1200) => windowAround(source, marker, 0, after);
 
 test("page wrapper hides horizontal overflow on mobile", () => {
   // The outer min-h-screen wrapper must clip x-overflow so a stray child
@@ -44,7 +44,7 @@ test("page wrapper hides horizontal overflow on mobile", () => {
 });
 
 test("stats pill wraps and keeps counts on a single line at mobile widths", () => {
-  const block = blockAfter(SRC, "Live · ", 1500);
+  const block = windowAround(SRC, "Live · ", 800, 1500);
   // Pill container must wrap so it never forces horizontal scroll.
   assert.match(block, /flex-wrap/, "stats pill must use flex-wrap");
   // Each count uses whitespace-nowrap so "24 skills" never breaks mid-token.
@@ -60,7 +60,7 @@ test("stats pill wraps and keeps counts on a single line at mobile widths", () =
 test("primitive-type tab row scrolls horizontally on mobile", () => {
   // The 4-tab row (skills / playbooks / souls / guardrails) is too wide to
   // fit at 320px — it must overflow-x-auto and tabs must shrink-0.
-  const block = blockAfter(SRC, '(["skill", "playbook", "soul", "guardrail"]', 1200);
+  const block = windowAround(SRC, '(["skill", "playbook", "soul", "guardrail"]', 600, 1200);
   assert.match(block, /overflow-x-auto/, "tab row must be overflow-x-auto");
   assert.match(block, /shrink-0/, "tab buttons must use shrink-0");
 });
