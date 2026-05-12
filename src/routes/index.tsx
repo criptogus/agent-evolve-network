@@ -93,6 +93,7 @@ function Home() {
       <JsonLd data={[ORG_LD, SOFTWARE_LD, FAQ_LD]} />
       <Nav />
       <Hero />
+      <WhatIsThis />
       <Logos />
       <HowItWorks />
       <PlainEnglish />
