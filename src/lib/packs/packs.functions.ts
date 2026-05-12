@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { createTtlCache } from "@/lib/cache/ttl-cache";
 import {
   researchStateOfTheArt,
   customizeItem,
@@ -46,26 +47,31 @@ export type PackDetail = {
   owned: boolean;
 };
 
+const packsListCache = createTtlCache<{ packs: PackSummary[] }>(5 * 60 * 1000, { max: 4 });
+const packDetailCache = createTtlCache<PackDetail | null>(5 * 60 * 1000, { max: 500 });
+
 export const listPacks = createServerFn({ method: "GET" }).handler(async (): Promise<{ packs: PackSummary[] }> => {
-  const { data: rows, error } = await supabaseAdmin
-    .from("packs")
-    .select("id,slug,name,theme,description,cover_emoji,price_credits,install_count, pack_items(count)")
-    .eq("is_published", true)
-    .eq("review_status", "approved")
-    .order("created_at", { ascending: false });
-  if (error) throw new Response(error.message, { status: 500 });
-  const packs = (rows ?? []).map((r: any) => ({
-    id: r.id,
-    slug: r.slug,
-    name: r.name,
-    theme: r.theme,
-    description: r.description,
-    cover_emoji: r.cover_emoji,
-    price_credits: r.price_credits,
-    install_count: r.install_count,
-    item_count: r.pack_items?.[0]?.count ?? 0,
-  }));
-  return { packs };
+  return packsListCache.getOrLoad("all", async () => {
+    const { data: rows, error } = await supabaseAdmin
+      .from("packs")
+      .select("id,slug,name,theme,description,cover_emoji,price_credits,install_count, pack_items(count)")
+      .eq("is_published", true)
+      .eq("review_status", "approved")
+      .order("created_at", { ascending: false });
+    if (error) throw new Response(error.message, { status: 500 });
+    const packs = (rows ?? []).map((r: any) => ({
+      id: r.id,
+      slug: r.slug,
+      name: r.name,
+      theme: r.theme,
+      description: r.description,
+      cover_emoji: r.cover_emoji,
+      price_credits: r.price_credits,
+      install_count: r.install_count,
+      item_count: r.pack_items?.[0]?.count ?? 0,
+    }));
+    return { packs };
+  });
 });
 
 const SlugInput = z.object({ slug: z.string().min(1) });
@@ -73,9 +79,11 @@ const SlugInput = z.object({ slug: z.string().min(1) });
 export const getPack = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => SlugInput.parse(d))
   .handler(async ({ data }): Promise<PackDetail | null> => {
-    const { data: row, error } = await supabaseAdmin.rpc("get_pack_with_items", { _slug: data.slug });
-    if (error) throw new Response(error.message, { status: 500 });
-    return (row as PackDetail | null) ?? null;
+    return packDetailCache.getOrLoad(data.slug, async () => {
+      const { data: row, error } = await supabaseAdmin.rpc("get_pack_with_items", { _slug: data.slug });
+      if (error) throw new Response(error.message, { status: 500 });
+      return (row as PackDetail | null) ?? null;
+    });
   });
 
 const PackIdInput = z.object({ pack_id: z.string().uuid() });
