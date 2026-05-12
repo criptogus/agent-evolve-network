@@ -130,5 +130,6 @@ export const getPackageDetail = createServerFn({ method: "GET" })
       systemPrompt: typeof latest?.system_prompt === "string" ? (latest.system_prompt as string) : undefined,
     };
     return { pkg: out };
+    });
   });
 
