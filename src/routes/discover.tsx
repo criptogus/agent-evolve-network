@@ -472,7 +472,7 @@ function DiscoverPage() {
           </aside>
 
           {/* Results */}
-          <section>
+          <section className="min-w-0">
             {/* Vertical quick filter — live counts, scrollable on mobile */}
             {facetCats.length > 0 && (
               <div className="-mx-1 mb-4 flex gap-1.5 overflow-x-auto pb-1">
