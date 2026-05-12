@@ -3,7 +3,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 
 const SELLER = "Super Agent Skill, Inc.";
-const SUPPORT_EMAIL = "support@superagentskill.com";
+const SUPPORT_EMAIL = "contact@zeroagency.ai";
 const EFFECTIVE = "May 10, 2026";
 
 export const Route = createFileRoute("/privacy")({

@@ -53,7 +53,7 @@ function Pricing() {
 
   const onCta = (tierName: string) => {
     if (tierName === "Hacker") return window.location.assign(user ? "/account/billing" : "/signup");
-    if (tierName === "Enterprise") return window.location.assign("mailto:sales@superagentskill.com?subject=Enterprise%20inquiry");
+    if (tierName === "Enterprise") return window.location.assign("mailto:contact@zeroagency.ai?subject=Enterprise%20inquiry");
     if (!user) return window.location.assign("/signup?next=/pricing");
     if (isActive) return window.location.assign("/account/billing");
     openCheckout({

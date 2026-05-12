@@ -4,7 +4,7 @@
 
 If you discover a security issue in Super Agent Skill — in the platform code, in the MCP endpoint, or in a published package that could be used to attack downstream agents — please report it privately:
 
-- **Email:** security@superagentskill.com
+- **Email:** contact@zeroagency.ai
 - **Subject:** `[security] <short summary>`
 
 Please include:

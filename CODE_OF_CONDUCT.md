@@ -15,6 +15,6 @@ Unacceptable behavior includes harassment, trolling, personal attacks, publishin
 
 ## Enforcement
 
-Instances of abusive behavior may be reported to **conduct@superagentskill.com**. All complaints will be reviewed and investigated and will result in a response appropriate to the circumstances.
+Instances of abusive behavior may be reported to **contact@zeroagency.ai**. All complaints will be reviewed and investigated and will result in a response appropriate to the circumstances.
 
 This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org), version 2.1.
