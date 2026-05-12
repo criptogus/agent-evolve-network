@@ -15,12 +15,12 @@ const McpInstallAnimation = lazy(() =>
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Super Agent Skill — MCP for AI agents that actually do the job" },
-      { name: "description", content: "Connect Claude, Cursor, Codex or Grok in 30 seconds. One sentence installs the right skills, playbooks, souls and guardrails for your agent. No SDK, no retraining." },
-      { property: "og:title", content: "Super Agent Skill — MCP for AI agents that actually do the job" },
-      { property: "og:description", content: "30s to connect. One sentence to specialize. Health Score climbs while you sleep." },
-      { name: "twitter:title", content: "Super Agent Skill — MCP for AI agents that actually do the job" },
-      { name: "twitter:description", content: "30s to connect. One sentence to specialize. Health Score climbs while you sleep." },
+      { title: "Super Agent Skill — Turn your AI into an expert at your job" },
+      { name: "description", content: "Generic AI gives generic answers. Super Agent Skill is the app store for your AI's brain — install expert skills, workflows and safety rules in one click. Works with ChatGPT, Claude, Cursor, Codex." },
+      { property: "og:title", content: "Turn your AI into an expert at your job — Super Agent Skill" },
+      { property: "og:description", content: "The app store for your AI's brain. One click installs an expert in your field. No code, no retraining." },
+      { name: "twitter:title", content: "Turn your AI into an expert at your job — Super Agent Skill" },
+      { name: "twitter:description", content: "The app store for your AI's brain. One click installs an expert in your field." },
     ],
     links: [{ rel: "canonical", href: "https://superagentskill.com/" }],
   }),
@@ -93,6 +93,7 @@ function Home() {
       <JsonLd data={[ORG_LD, SOFTWARE_LD, FAQ_LD]} />
       <Nav />
       <Hero />
+      <WhatIsThis />
       <Logos />
       <HowItWorks />
       <PlainEnglish />
@@ -118,53 +119,50 @@ function Hero() {
         <div className="mx-auto max-w-3xl text-center fade-up">
           <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-border bg-surface-elevated px-3 py-1 text-xs text-muted-foreground shadow-sm">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-signal pulse-dot" />
-            <span className="font-mono">v3.0</span>
-            <span className="text-border">·</span>
-            <span>MCP-native · works with Claude, Cursor, Codex, Grok</span>
+            <span>For ChatGPT, Claude, Cursor, Codex & Grok users</span>
           </div>
           <h1 className="mt-6 text-balance text-5xl font-semibold tracking-tight md:text-7xl">
-            Your AI agent,
+            Turn your AI into
             <br />
             <span className="text-primary">
-              but actually&nbsp;
+              an expert at&nbsp;
               <span className="relative inline-block align-baseline">
-                {/* Invisible spacer reserves space for the longest word so the layout doesn't jump */}
                 <span aria-hidden className="invisible whitespace-nowrap">
-                  good at the job.
+                  your job.
                 </span>
                 <Typewriter
                   className="absolute left-0 top-0 whitespace-nowrap text-foreground"
-                  words={["good at the job.", "a cardiologist.", "a closer.", "a lawyer.", "a strategist."]}
+                  words={["your job.", "cardiology.", "closing deals.", "contracts.", "your brand."]}
                 />
               </span>
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">
-            <span className="text-foreground">30 seconds</span> to connect via MCP.
-            <span className="text-foreground"> One sentence</span> to specialize. Skills, playbooks,
-            souls and guardrails install at runtime — and keep evolving while you ship.
-            No SDK, no retraining, no DevOps.
+            Generic AI gives generic answers. We give your AI the same
+            <span className="text-foreground"> instructions, examples and rules </span>
+            an expert in your field would use — so it stops guessing and starts
+            doing the job the way <span className="text-foreground">you</span> would.
+          </p>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
+            Set it up in one click. No coding. No retraining. Works with the AI tools you already use.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               to="/connect"
-              className="inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95"
+              className="inline-flex h-12 items-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95"
             >
-              Connect your agent →
+              Get started — it's free →
             </Link>
             <Link
-              to="/docs/mcp"
-              className="inline-flex h-11 items-center rounded-md border border-border bg-surface-elevated px-5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+              to="/marketplace"
+              className="inline-flex h-12 items-center rounded-md border border-border bg-surface-elevated px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent"
             >
-              Read the MCP docs
+              Browse what's inside
             </Link>
           </div>
-          <div className="mx-auto mt-6 max-w-xl">
-            <CodeBlockCopy code="https://superagentskill.com/api/mcp" label="copy MCP url" />
-            <p className="mt-2 text-center text-xs text-muted-foreground">
-              Drop this URL into any MCP-compatible agent — Claude, Cursor, Codex, Grok.
-            </p>
-          </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            No credit card · Setup in 30 seconds · 4,200+ ready-to-use experts
+          </p>
         </div>
 
         <div id="connect" className="mx-auto mt-16 max-w-3xl fade-up">
@@ -180,10 +178,10 @@ function Hero() {
         {/* Trust metrics */}
         <div className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-4 md:grid-cols-4">
           {[
-            { v: 4218, suffix: "+", label: "Packages in registry" },
-            { v: 91, suffix: "k connected", label: "Live agents" },
-            { v: 30, suffix: "s", label: "Median time to connect" },
-            { v: 99.99, decimals: 2, suffix: "%", label: "Gateway uptime" },
+            { v: 4218, suffix: "+", label: "Ready-made experts" },
+            { v: 91, suffix: "k", label: "AIs already upgraded" },
+            { v: 30, suffix: "s", label: "Avg. setup time" },
+            { v: 99.99, decimals: 2, suffix: "%", label: "Uptime" },
           ].map((m) => (
             <div key={m.label} className="rounded-xl border border-border bg-surface/60 p-4 text-center">
               <div className="font-mono text-2xl font-semibold tracking-tight text-foreground">
@@ -192,6 +190,71 @@ function Hero() {
               <div className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">{m.label}</div>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function WhatIsThis() {
+  const items = [
+    {
+      icon: "🧠",
+      title: "Skills",
+      plain: "Knowledge packs",
+      body: "Like hiring a specialist — your AI gets the exact know-how to do one thing really well (review code, write SQL, triage a patient).",
+    },
+    {
+      icon: "📘",
+      title: "Playbooks",
+      plain: "Step-by-step recipes",
+      body: "Repeatable workflows your AI follows from start to finish. Think SOPs, but the AI actually executes them.",
+    },
+    {
+      icon: "🎭",
+      title: "Souls",
+      plain: "Personality & tone",
+      body: "Make the AI sound like your brand, your founder, or your top sales rep — consistently, every time.",
+    },
+    {
+      icon: "🛡",
+      title: "Guardrails",
+      plain: "Safety rules",
+      body: "Hard rules the AI cannot break: never give medical advice, never quote a competitor, never share customer data.",
+    },
+  ];
+  return (
+    <section className="border-b border-border bg-surface/40 py-20">
+      <div className="mx-auto max-w-5xl px-6">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">In plain English</span>
+          <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-4xl">
+            Think of it like an app store for your AI's brain.
+          </h2>
+          <p className="mt-4 text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
+            Your AI is smart but generic. We give you a library of small, focused
+            <span className="text-foreground"> "upgrades" </span>
+            you install with one click — and your AI instantly becomes an expert in whatever you do.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {items.map((it) => (
+            <div
+              key={it.title}
+              className="rounded-2xl border border-border bg-background p-6 transition-all hover:border-primary/40 hover:shadow-elevated"
+            >
+              <div className="text-3xl">{it.icon}</div>
+              <h3 className="mt-4 text-lg font-semibold tracking-tight">{it.title}</h3>
+              <div className="mt-1 text-xs font-medium uppercase tracking-wider text-primary">{it.plain}</div>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{it.body}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mx-auto mt-10 max-w-2xl rounded-xl border border-border bg-background/60 p-5 text-center text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">The best part:</span> they keep getting better automatically.
+          Every upgrade is tested daily and improved by the community — so your AI gets smarter while you sleep.
         </div>
       </div>
     </section>
@@ -225,34 +288,34 @@ function HowItWorks() {
   const steps = [
     {
       n: "01",
-      title: "Connect in 30 seconds",
-      body: "One MCP handshake links your agent to Super Agent Skill. No SDKs, no retraining, no DevOps. Works with Claude, Cursor, Codex, Grok and any MCP-compatible runtime.",
+      title: "Connect your AI",
+      body: "Paste one link into Claude, ChatGPT, Cursor or any AI tool. Done in 30 seconds. No code, no setup, no IT ticket.",
     },
     {
       n: "02",
       title: "Tell it what you do",
-      body: "In plain English: \"I run a cardiology clinic\" or \"I close enterprise SaaS deals.\" Super Agent Skill maps your domain and picks the state-of-the-art skills, playbooks, souls and guardrails for it.",
+      body: "Just say it: \"I run a cardiology clinic\" or \"I close SaaS deals.\" We pick the right experts, recipes and rules for you.",
     },
     {
       n: "03",
-      title: "Install — or generate — on command",
-      body: "Pre-built packages install instantly. Need something unique? Say \"create a soul that negotiates like our top rep\" and SkillForge generates a custom skill, playbook or soul tailored to your data.",
+      title: "Install with one click",
+      body: "Pick from 4,200+ ready-made experts — or describe what you need and we'll build a custom one from your own data.",
     },
     {
       n: "04",
-      title: "Evolves while you sleep",
-      body: "Every interaction feeds the loop. Better versions ship automatically, guardrails tighten, and your agent's Health Score climbs — without anyone touching a config file.",
+      title: "It improves on its own",
+      body: "Every expert is tested daily. Better versions arrive automatically. You ship; your AI gets sharper.",
     },
   ];
   return (
     <section className="border-b border-border py-24">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="max-w-2xl">
+        <div className="mx-auto max-w-2xl text-center">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">How it works</span>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">Powerful underneath. Stupidly simple to use.</h2>
-          <p className="mt-4 text-lg text-muted-foreground">
-            No prompt engineering. No fine-tuning pipelines. Just talk to your agent like a teammate
-            and Super Agent Skill handles the rest — from discovery to installation to continuous evolution.
+          <h2 className="mt-3 text-balance text-4xl font-semibold tracking-tight md:text-5xl">From generic AI to your specialist — in 4 steps.</h2>
+          <p className="mt-4 text-pretty text-lg text-muted-foreground">
+            No prompt engineering. No fine-tuning. No new tools to learn.
+            Just connect, describe, install — and let it get better on its own.
           </p>
         </div>
         <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-2 lg:grid-cols-4">
