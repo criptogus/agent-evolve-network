@@ -33,9 +33,31 @@ export type CreditSummary = {
 };
 
 export const getCreditSummary = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<CreditSummary> => {
-    const { supabase, userId } = context;
+  .handler(async (): Promise<CreditSummary> => {
+    const EMPTY: CreditSummary = { balance: 0, total_earned: 0, total_spent: 0, signup_bonus: 0, recent: [] };
+    let userId: string | null = null;
+    let supabase: ReturnType<typeof createClient<Database>> | null = null;
+    try {
+      const url = process.env.SUPABASE_URL;
+      const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+      if (!url || !key) return EMPTY;
+      const req = getRequest();
+      const authHeader = req?.headers?.get("authorization");
+      if (!authHeader?.startsWith("Bearer ")) return EMPTY;
+      const token = authHeader.slice("Bearer ".length);
+      if (!token) return EMPTY;
+      supabase = createClient<Database>(url, key, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+        auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+      });
+      const { data, error: authErr } = await supabase.auth.getClaims(token);
+      if (authErr || !data?.claims?.sub) return EMPTY;
+      userId = data.claims.sub as string;
+    } catch (e) {
+      console.error("getCreditSummary: auth check failed", e);
+      return EMPTY;
+    }
+    if (!supabase || !userId) return EMPTY;
     const { data: rows, error } = await supabase
       .from("credit_ledger")
       .select("id,delta,balance_after,reason,ref_type,ref_id,description,metadata,created_at")
