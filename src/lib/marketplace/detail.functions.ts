@@ -1,6 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { createTtlCache } from "@/lib/cache/ttl-cache";
 import type { Package, PackageVersion, CompatibilityCheck } from "@/data/packages";
+
+const detailCache = createTtlCache<{ pkg: Package } | null>(5 * 60 * 1000, { max: 500 });
 
 function fmtDate(iso: string): string {
   const d = new Date(iso);
