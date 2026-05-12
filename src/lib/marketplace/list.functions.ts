@@ -114,6 +114,28 @@ async function fetchMarketplace(): Promise<{ items: MarketplaceItem[]; verticals
     const vs = new Set<string>();
     for (const it of items) if (it.vertical) vs.add(it.vertical);
     return { items, verticals: Array.from(vs).sort() };
+}
+
+export const listMarketplace = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ items: MarketplaceItem[]; verticals: string[] }> => {
+    const now = Date.now();
+    if (_cache && now - _cache.at < CACHE_TTL_MS) return _cache.payload;
+    if (_inflight) return _inflight;
+    _inflight = fetchMarketplace()
+      .then((payload) => {
+        _cache = { at: Date.now(), payload };
+        return payload;
+      })
+      .finally(() => {
+        _inflight = null;
+      });
+    try {
+      return await _inflight;
+    } catch (err) {
+      // On failure, serve stale cache if available so the UI doesn't break.
+      if (_cache) return _cache.payload;
+      throw err;
+    }
   }
 );
 
