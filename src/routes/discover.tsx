@@ -415,37 +415,41 @@ function DiscoverPage() {
           </p>
         </div>
 
-        {/* Search + tabs */}
-        <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-center">
-          <div className="relative flex-1">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-mono text-sm text-muted-foreground">
-              ⌕
-            </span>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={`Search ${type}s — e.g. "linkedin", "google ads", "medical"…`}
-              className="h-11 w-full rounded-md border border-border bg-surface pl-9 pr-3 text-[14px] outline-none transition-colors focus:border-primary"
-            />
-          </div>
-          <div className="flex h-11 items-center gap-0.5 overflow-x-auto rounded-md border border-border bg-surface p-0.5 md:gap-0">
-            {(["skill", "playbook", "soul", "guardrail"] as Type[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => setType(t)}
-                className={
-                  "h-10 shrink-0 rounded-[5px] px-3 text-sm font-medium capitalize transition-colors " +
-                  (activeTabType === t
-                    ? "bg-background shadow-sm"
-                    : "text-muted-foreground hover:text-foreground")
-                }
-              >
-                {t}s
-                <span className="ml-1.5 rounded bg-muted px-1 font-mono text-[10px] text-muted-foreground">
-                  {totalsByType[t]}
-                </span>
-              </button>
-            ))}
+        {/* Search + tabs — sticky on mobile so users can switch type / search
+            without scrolling back to the top. Becomes static at lg where the
+            facet sidebar takes over navigation. */}
+        <div className="sticky top-0 z-30 -mx-4 mt-6 border-b border-border/70 bg-background/90 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/70 sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <div className="relative flex-1">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-mono text-sm text-muted-foreground">
+                ⌕
+              </span>
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={`Search ${type}s — e.g. "linkedin", "google ads", "medical"…`}
+                className="h-11 w-full rounded-md border border-border bg-surface pl-9 pr-3 text-[14px] outline-none transition-colors focus:border-primary"
+              />
+            </div>
+            <div className="flex h-11 items-center gap-0.5 overflow-x-auto rounded-md border border-border bg-surface p-0.5 md:gap-0">
+              {(["skill", "playbook", "soul", "guardrail"] as Type[]).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setType(t)}
+                  className={
+                    "h-10 shrink-0 rounded-[5px] px-3 text-sm font-medium capitalize transition-colors " +
+                    (activeTabType === t
+                      ? "bg-background shadow-sm"
+                      : "text-muted-foreground hover:text-foreground")
+                  }
+                >
+                  {t}s
+                  <span className="ml-1.5 rounded bg-muted px-1 font-mono text-[10px] text-muted-foreground">
+                    {totalsByType[t]}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

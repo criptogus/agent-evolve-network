@@ -102,3 +102,16 @@ test("vertical quick-filter chip row is horizontally scrollable", () => {
   const block = blockAfter(SRC, "Vertical quick filter", 600);
   assert.match(block, /overflow-x-auto/, "vertical chip row must be overflow-x-auto");
 });
+
+test("filters bar is sticky on mobile and resets at lg", () => {
+  // The search + type tabs container wraps the comment "Search + tabs".
+  // On mobile it must stick to the top of the viewport so users can switch
+  // skills/playbooks/souls/guardrails or refine the query without
+  // scrolling back. At lg the facet sidebar takes over, so the bar reverts
+  // to static positioning to avoid double chrome.
+  const block = windowAround(SRC, "Search + tabs", 0, 800);
+  assert.match(block, /sticky\s+top-0/, "filters bar must be sticky top-0 on mobile");
+  assert.match(block, /z-30/, "filters bar must elevate above content (z-30)");
+  assert.match(block, /backdrop-blur/, "filters bar must use backdrop-blur for legibility");
+  assert.match(block, /lg:static/, "filters bar must reset to static at lg");
+});
