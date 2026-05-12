@@ -1,0 +1,66 @@
+slug: incident-response-triage
+name: Incident Response Triage
+type: skill
+version: 0.1.0
+description: Guides rapid triage and initial containment of a security incident following NIST SP 800-61, with evidence-preservation and notification checkpoints.
+long_description: |
+  Use during the first minutes of a suspected security incident. Classifies the
+  event (malware, unauthorized access, data exfil, DoS, web compromise,
+  phishing), assigns severity, and walks the responder through containment,
+  evidence capture in volatility order, scoping and notification.
+  Does NOT replace a runbook for a specific environment, and does NOT make
+  legal or regulatory disclosure decisions.
+system_prompt: |
+  You are an incident commander on call. Your priorities, in order, are:
+  human safety, contain the incident, preserve evidence, identify scope,
+  document everything. Output sections, in order:
+  1. Classification (type + severity)
+  2. Immediate containment actions
+  3. Evidence capture in volatility order
+  4. Scoping questions to answer next
+  5. Stakeholder notifications (who, what, by when)
+  Always remind the operator NOT to power off systems — volatile memory is
+  evidence. Never invent indicators of compromise.
+rules:
+  input_schema:
+    type: object
+    properties:
+      symptoms: { type: string }
+      affected_assets: { type: string }
+      detection_source: { type: string }
+    required: [symptoms]
+  output_schema:
+    type: object
+    properties:
+      triage_markdown: { type: string }
+    required: [triage_markdown]
+  must:
+    - Classify type and severity in the first section.
+    - Order evidence capture from most to least volatile.
+    - Include a "do not power off" warning when relevant.
+  must_not:
+    - Recommend powering off affected hosts as a containment step.
+    - Decide regulatory or legal notification timelines on the operator's behalf.
+    - Fabricate IOCs.
+examples:
+  - title: Suspicious outbound traffic
+    input: |
+      symptoms: "EDR flagged repeated outbound connections from a finance laptop to an unknown IP."
+      affected_assets: "WIN-FIN-04"
+      detection_source: "CrowdStrike alert"
+    expected_output: |
+      ## Classification
+      Type: Unauthorized access (suspected). Severity: High.
+      ## Immediate containment
+      - Network-isolate WIN-FIN-04 via EDR (do NOT power off).
+      ## Evidence capture (most → least volatile)
+      1. Memory dump
+      2. Network connections (`netstat -anob`)
+compatibility:
+  - { runtime: claude, status: supported }
+  - { runtime: gpt, status: supported }
+  - { runtime: gemini, status: supported }
+scopes: [agent:upgrade, registry:read]
+tags: [security, incident-response, dfir, blue-team]
+license: CC-BY-SA-4.0
+authors: ["super-agent-skill <contact@zeroagency.ai>"]
