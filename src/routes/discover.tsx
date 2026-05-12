@@ -583,7 +583,7 @@ function DiscoverPage() {
 
 function ResultCard({ item, onCustomize }: { item: Item; onCustomize: () => void }) {
   return (
-    <article className="group flex h-full flex-col rounded-xl border border-border bg-surface p-5 transition-colors hover:border-primary/40">
+    <article className="group flex h-full min-w-0 flex-col rounded-xl border border-border bg-surface p-5 transition-colors hover:border-primary/40">
       <div className="flex items-start justify-between gap-3">
         <Link
           to="/marketplace/$packageId"
