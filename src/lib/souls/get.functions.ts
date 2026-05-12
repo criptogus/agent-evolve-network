@@ -102,4 +102,5 @@ export const getSoul = createServerFn({ method: "GET" })
         is_current: v.version === pkg.latest_version,
       })),
     };
+    });
   });
