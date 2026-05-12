@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
