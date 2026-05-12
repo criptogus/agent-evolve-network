@@ -20,6 +20,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/lib/require-auth";
 import { useEffect, useState } from "react";
+import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 
 export const Route = createFileRoute("/marketplace/$packageId")({
   loader: async ({ params }) => {
