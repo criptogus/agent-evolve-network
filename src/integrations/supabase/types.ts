@@ -1520,6 +1520,36 @@ export type Database = {
         }
         Relationships: []
       }
+      share_promos: {
+        Row: {
+          body: string
+          description: string | null
+          generated_at: string
+          name: string | null
+          slug: string
+          source: string
+          type: string
+        }
+        Insert: {
+          body: string
+          description?: string | null
+          generated_at?: string
+          name?: string | null
+          slug: string
+          source?: string
+          type: string
+        }
+        Update: {
+          body?: string
+          description?: string | null
+          generated_at?: string
+          name?: string | null
+          slug?: string
+          source?: string
+          type?: string
+        }
+        Relationships: []
+      }
       skill_compatibility: {
         Row: {
           evaluated_at: string
