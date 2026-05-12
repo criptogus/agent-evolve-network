@@ -39,7 +39,10 @@ export const getCreditSummary = createServerFn({ method: "GET" })
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(500);
-    if (error) throw new Response(error.message, { status: 500 });
+    if (error) {
+      console.error("getCreditSummary: failed to read credit_ledger", error);
+      return { balance: 0, total_earned: 0, total_spent: 0, signup_bonus: 0, recent: [] };
+    }
 
     const all = (rows ?? []) as LedgerEntry[];
     const balance = all[0]?.balance_after ?? 0;
