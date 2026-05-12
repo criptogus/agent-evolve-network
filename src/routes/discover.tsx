@@ -370,7 +370,7 @@ function DiscoverPage() {
     totalsByType.skill + totalsByType.playbook + totalsByType.soul + totalsByType.guardrail;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen overflow-x-hidden bg-background">
       <Nav />
 
       <main className="mx-auto max-w-7xl px-4 pb-24 pt-10 sm:px-6">
