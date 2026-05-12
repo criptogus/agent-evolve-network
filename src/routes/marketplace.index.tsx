@@ -8,6 +8,7 @@ import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
 import { BuyButton, PriceBadge } from "@/components/marketplace/BuyButton";
 import { Stars } from "@/components/reviews/Stars";
+import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 
 export const Route = createFileRoute("/marketplace/")({
   head: () => ({
