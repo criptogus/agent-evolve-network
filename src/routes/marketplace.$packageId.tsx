@@ -147,6 +147,15 @@ function PackageDetail() {
                 <span>★ {pkg.rating} <span className="text-muted-foreground/60">({pkg.reviews.toLocaleString()})</span></span>
                 <span>{pkg.downloads} installs</span>
               </div>
+              <div className="mt-4">
+                <ShareOnXButton
+                  slug={pkg.id}
+                  type={pkg.type as "skill" | "playbook" | "soul" | "guardrail"}
+                  name={pkg.name}
+                  description={pkg.description}
+                  url={`/marketplace/${pkg.id}`}
+                />
+              </div>
             </div>
 
             {/* Install panel */}
