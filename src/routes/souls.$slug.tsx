@@ -197,7 +197,14 @@ function SoulView({
                 {soul.author_handle} · {soul.install_count.toLocaleString()} installs · {soul.license}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <ShareOnXButton
+                slug={soul.slug}
+                type="soul"
+                name={soul.name}
+                description={soul.description}
+                url={`/souls/${soul.slug}`}
+              />
               <Button
                 variant="outline"
                 onClick={() => download(`${soul.slug}.SOUL.md`, soulMd)}
