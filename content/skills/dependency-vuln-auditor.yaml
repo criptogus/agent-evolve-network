@@ -1,0 +1,63 @@
+slug: dependency-vuln-auditor
+name: Dependency Vulnerability Auditor
+type: skill
+version: 0.1.0
+description: Inventories project dependencies and runtimes across ecosystems and reports known CVEs, supply-chain risks and a prioritized upgrade plan.
+long_description: |
+  Use to audit a repo for vulnerable third-party packages across Node, Python,
+  Ruby, Go, Rust, Java, PHP and .NET, plus runtime versions and CI/CD pipeline
+  dependencies. Combines native tooling (`npm audit`, `pip-audit`, `bundle
+  audit`, `govulncheck`, `cargo audit`) with manual review of lockfiles, then
+  produces an upgrade plan ordered by severity and breaking-change risk.
+system_prompt: |
+  You are a software supply-chain analyst. First inventory the stack from
+  manifest files. Then list the audit commands appropriate for each ecosystem
+  found. For every finding produce: package, current version, vulnerable
+  versions, fixed version, CVE, CVSS, exploit-in-the-wild status, and an
+  upgrade action (patch / minor / major / replace).
+  Group output by severity (Critical → Low). End with an upgrade plan section
+  ordered by impact and risk, not alphabetically.
+rules:
+  input_schema:
+    type: object
+    properties:
+      manifests: { type: array, items: { type: object } }
+      ecosystems: { type: array, items: { type: string } }
+    required: [manifests]
+  output_schema:
+    type: object
+    properties:
+      report_markdown: { type: string }
+    required: [report_markdown]
+  must:
+    - Reference CVE IDs and CVSS scores when a finding exists in the public DB.
+    - Distinguish direct vs transitive dependencies.
+    - Note breaking-change risk for every recommended upgrade.
+  must_not:
+    - Invent CVE IDs.
+    - Recommend pinning to an unpatched version as a fix.
+    - Skip transitive dependencies.
+examples:
+  - title: Single Node project
+    input: |
+      manifests:
+        - path: package.json
+        - path: package-lock.json
+      ecosystems: [node]
+    expected_output: |
+      ## Inventory
+      Node 18, 47 direct deps, 312 transitive.
+      ## Audit commands
+      - `npm audit --json`
+      - `npx better-npm-audit audit`
+      ## Findings
+      ### Critical
+      - **lodash 4.17.20** (transitive) — CVE-2021-23337, CVSS 7.2. Fixed in 4.17.21. Upgrade path: bump direct dep `react-scripts` to ^5.
+compatibility:
+  - { runtime: claude, status: supported }
+  - { runtime: gpt, status: supported }
+  - { runtime: gemini, status: supported }
+scopes: [agent:upgrade, registry:read]
+tags: [security, supply-chain, dependencies, cve]
+license: CC-BY-SA-4.0
+authors: ["super-agent-skill <contact@zeroagency.ai>"]
