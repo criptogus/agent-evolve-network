@@ -428,13 +428,13 @@ function DiscoverPage() {
               className="h-11 w-full rounded-md border border-border bg-surface pl-9 pr-3 text-[14px] outline-none transition-colors focus:border-primary"
             />
           </div>
-          <div className="flex h-11 items-center rounded-md border border-border bg-surface p-0.5">
+          <div className="-mx-1 flex h-11 items-center gap-0.5 overflow-x-auto rounded-md border border-border bg-surface p-0.5 sm:mx-0 md:gap-0">
             {(["skill", "playbook", "soul", "guardrail"] as Type[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setType(t)}
                 className={
-                  "h-10 rounded-[5px] px-3 text-sm font-medium capitalize transition-colors " +
+                  "h-10 shrink-0 rounded-[5px] px-3 text-sm font-medium capitalize transition-colors " +
                   (activeTabType === t
                     ? "bg-background shadow-sm"
                     : "text-muted-foreground hover:text-foreground")
