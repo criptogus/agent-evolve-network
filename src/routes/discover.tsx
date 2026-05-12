@@ -35,9 +35,9 @@ const PAGE_SIZE = 24;
 
 function DiscoverPending() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen overflow-x-hidden bg-background">
       <Nav />
-      <main className="mx-auto max-w-7xl px-6 pb-24 pt-10">
+      <main className="mx-auto max-w-7xl px-4 pb-24 pt-10 sm:px-6">
         <div className="border-b border-border/70 pb-6">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">
             <span className="size-1.5 animate-pulse rounded-full bg-primary" />
