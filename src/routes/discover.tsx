@@ -35,9 +35,9 @@ const PAGE_SIZE = 24;
 
 function DiscoverPending() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen overflow-x-hidden bg-background">
       <Nav />
-      <main className="mx-auto max-w-7xl px-6 pb-24 pt-10">
+      <main className="mx-auto max-w-7xl px-4 pb-24 pt-10 sm:px-6">
         <div className="border-b border-border/70 pb-6">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">
             <span className="size-1.5 animate-pulse rounded-full bg-primary" />
@@ -370,17 +370,17 @@ function DiscoverPage() {
     totalsByType.skill + totalsByType.playbook + totalsByType.soul + totalsByType.guardrail;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen overflow-x-hidden bg-background">
       <Nav />
 
-      <main className="mx-auto max-w-7xl px-6 pb-24 pt-10">
+      <main className="mx-auto max-w-7xl px-4 pb-24 pt-10 sm:px-6">
         <TermsStatusBanner className="mb-6" />
         {/* Header */}
         <div className="border-b border-border/70 pb-6">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">
+          <div className="mb-3 flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-border bg-surface px-3 py-1.5 text-xs sm:inline-flex sm:rounded-full sm:py-1">
             <span
               className={
-                "size-1.5 rounded-full " +
+                "size-1.5 shrink-0 rounded-full " +
                 (isLoading ? "bg-primary animate-pulse" : "bg-signal pulse-dot")
               }
             />
@@ -389,9 +389,11 @@ function DiscoverPage() {
                 <>Updating counts…</>
               ) : (
                 <>
-                  Live · {grandTotal} packages · {totalsByType.skill}&nbsp;skills ·{" "}
-                  {totalsByType.playbook}&nbsp;playbooks · {totalsByType.soul}&nbsp;souls ·{" "}
-                  {totalsByType.guardrail}&nbsp;guardrails
+                  Live · {grandTotal} packages ·{" "}
+                  <span className="whitespace-nowrap">{totalsByType.skill} skills</span> ·{" "}
+                  <span className="whitespace-nowrap">{totalsByType.playbook} playbooks</span> ·{" "}
+                  <span className="whitespace-nowrap">{totalsByType.soul} souls</span> ·{" "}
+                  <span className="whitespace-nowrap">{totalsByType.guardrail} guardrails</span>
                 </>
               )}
             </span>
@@ -399,7 +401,7 @@ function DiscoverPage() {
               onClick={() => router.invalidate()}
               disabled={isLoading}
               title={`Updated ${new Date(fetchedAt).toLocaleTimeString()}`}
-              className="ml-1 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground disabled:opacity-50"
+              className="ml-auto shrink-0 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground disabled:opacity-50 sm:ml-1"
             >
               {isLoading ? "…syncing" : "↻ refresh"}
             </button>
@@ -426,13 +428,13 @@ function DiscoverPage() {
               className="h-11 w-full rounded-md border border-border bg-surface pl-9 pr-3 text-[14px] outline-none transition-colors focus:border-primary"
             />
           </div>
-          <div className="flex h-11 items-center rounded-md border border-border bg-surface p-0.5">
+          <div className="flex h-11 items-center gap-0.5 overflow-x-auto rounded-md border border-border bg-surface p-0.5 md:gap-0">
             {(["skill", "playbook", "soul", "guardrail"] as Type[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setType(t)}
                 className={
-                  "h-10 rounded-[5px] px-3 text-sm font-medium capitalize transition-colors " +
+                  "h-10 shrink-0 rounded-[5px] px-3 text-sm font-medium capitalize transition-colors " +
                   (activeTabType === t
                     ? "bg-background shadow-sm"
                     : "text-muted-foreground hover:text-foreground")
@@ -470,7 +472,7 @@ function DiscoverPage() {
           </aside>
 
           {/* Results */}
-          <section>
+          <section className="min-w-0">
             {/* Vertical quick filter — live counts, scrollable on mobile */}
             {facetCats.length > 0 && (
               <div className="-mx-1 mb-4 flex gap-1.5 overflow-x-auto pb-1">
@@ -581,7 +583,7 @@ function DiscoverPage() {
 
 function ResultCard({ item, onCustomize }: { item: Item; onCustomize: () => void }) {
   return (
-    <article className="group flex h-full flex-col rounded-xl border border-border bg-surface p-5 transition-colors hover:border-primary/40">
+    <article className="group flex h-full min-w-0 flex-col rounded-xl border border-border bg-surface p-5 transition-colors hover:border-primary/40">
       <div className="flex items-start justify-between gap-3">
         <Link
           to="/marketplace/$packageId"
