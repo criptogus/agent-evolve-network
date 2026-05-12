@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
+import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 
 export const Route = createFileRoute("/packs/$slug")({
   component: PackDetail,
