@@ -105,7 +105,7 @@ export const purchasePackage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => PurchaseInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase } = context;
+    const { supabase, userId } = context;
     const { data: result, error } = await supabase.rpc("purchase_package", {
       _package_id: data.package_id,
     });
@@ -124,13 +124,21 @@ export const purchasePackage = createServerFn({ method: "POST" })
       const matched = Object.keys(known).find((k) => msg.includes(k));
       throw new Response(matched ? known[matched] : msg, { status: 400 });
     }
-    return result as {
+    const out = result as {
       purchase_id: string;
       credits_paid: number;
       author_credits: number;
       platform_credits: number;
       new_balance: number;
     };
+    // Fire-and-forget referral commission (5% of credits paid).
+    try {
+      const { awardPurchaseCommission } = await import("@/lib/referrals/referrals.functions");
+      await awardPurchaseCommission(userId, out.credits_paid);
+    } catch (e) {
+      console.error("referral commission failed", e);
+    }
+    return out;
   });
 
 export const listMyPurchases = createServerFn({ method: "GET" })

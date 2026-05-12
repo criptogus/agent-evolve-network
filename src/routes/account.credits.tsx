@@ -57,12 +57,24 @@ function CreditsPage() {
           <Stat label="Total spent" value={isLoading ? "…" : `−${(data?.total_spent ?? 0).toLocaleString()}`} />
         </div>
 
+        <div className="mt-6 rounded-xl border border-primary/30 bg-primary/5 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold">Earn credits by sharing</div>
+              <div className="text-xs text-muted-foreground">Invite others and earn up to 200 credits per new subscriber + 5% on their purchases.</div>
+            </div>
+            <Link to="/account/referrals" className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-95">
+              Get my referral link →
+            </Link>
+          </div>
+        </div>
+
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           <InfoCard title="How you earn" items={[
             "Sign-up bonus (one-time): +100 credits",
             "Monthly subscription grant on Pro / Enterprise",
             "Sales of your packages: 70% of price goes to you",
-            "Promo and referral bonuses",
+            "Referral bonuses: +20 signup, +200 subscriber, 5% on buys",
           ]} />
           <InfoCard title="What you spend on" items={[
             "Buying paid packages from the marketplace",

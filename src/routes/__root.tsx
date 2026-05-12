@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { ReferralCapture } from "@/components/referrals/ReferralCapture";
 
 function NotFoundComponent() {
   return (
@@ -121,6 +122,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <ReferralCapture />
       <a href="#main" className="skip-link">Skip to main content</a>
       <div id="main">
         <Outlet />

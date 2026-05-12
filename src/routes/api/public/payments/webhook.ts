@@ -51,6 +51,14 @@ async function handleSubscriptionCreated(subscription: any, env: StripeEnv) {
     } as any,
     { onConflict: "stripe_subscription_id" },
   );
+
+  // Award referral subscription bonus (idempotent server-side).
+  try {
+    const { awardSubscriptionReferral } = await import("@/lib/referrals/referrals.functions");
+    await awardSubscriptionReferral(userId, 200);
+  } catch (e) {
+    console.error("awardSubscriptionReferral failed", e);
+  }
 }
 
 async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
