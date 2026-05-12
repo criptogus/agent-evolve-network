@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
+import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 
 export const Route = createFileRoute("/packs/$slug")({
   component: PackDetail,
@@ -60,6 +61,15 @@ function PackDetail() {
           {pack.long_description && (
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{pack.long_description}</p>
           )}
+          <div className="mt-4">
+            <ShareOnXButton
+              slug={pack.slug}
+              type="pack"
+              name={pack.name}
+              description={pack.description}
+              url={`/packs/${pack.slug}`}
+            />
+          </div>
         </div>
         <Card className="w-72 shrink-0">
           <CardHeader>

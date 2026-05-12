@@ -20,6 +20,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/lib/require-auth";
 import { useEffect, useState } from "react";
+import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 
 export const Route = createFileRoute("/marketplace/$packageId")({
   loader: async ({ params }) => {
@@ -145,6 +146,15 @@ function PackageDetail() {
                 </span>
                 <span>★ {pkg.rating} <span className="text-muted-foreground/60">({pkg.reviews.toLocaleString()})</span></span>
                 <span>{pkg.downloads} installs</span>
+              </div>
+              <div className="mt-4">
+                <ShareOnXButton
+                  slug={pkg.id}
+                  type={pkg.type as "skill" | "playbook" | "soul" | "guardrail"}
+                  name={pkg.name}
+                  description={pkg.description}
+                  url={`/marketplace/${pkg.id}`}
+                />
               </div>
             </div>
 

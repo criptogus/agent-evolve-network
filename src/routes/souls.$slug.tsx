@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
@@ -196,7 +197,14 @@ function SoulView({
                 {soul.author_handle} · {soul.install_count.toLocaleString()} installs · {soul.license}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <ShareOnXButton
+                slug={soul.slug}
+                type="soul"
+                name={soul.name}
+                description={soul.description}
+                url={`/souls/${soul.slug}`}
+              />
               <Button
                 variant="outline"
                 onClick={() => download(`${soul.slug}.SOUL.md`, soulMd)}

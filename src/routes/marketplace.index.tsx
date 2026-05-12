@@ -8,6 +8,7 @@ import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
 import { BuyButton, PriceBadge } from "@/components/marketplace/BuyButton";
 import { Stars } from "@/components/reviews/Stars";
+import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 
 export const Route = createFileRoute("/marketplace/")({
   head: () => ({
@@ -390,6 +391,14 @@ function Card({ p }: { p: MarketplaceItem }) {
         <div className="flex items-center gap-2">
           <PriceBadge priceCredits={p.price_credits} />
           <span className="font-mono text-[10px] text-muted-foreground">v{p.latest_version}</span>
+          <ShareOnXButton
+            slug={p.slug}
+            type={p.type}
+            name={p.name}
+            description={p.description}
+            url={p.type === "soul" ? `/souls/${p.slug}` : `/marketplace/${p.slug}`}
+            variant="icon"
+          />
         </div>
       </div>
       <div className="mt-3 font-mono text-[15px] font-semibold leading-tight">{p.name}</div>
