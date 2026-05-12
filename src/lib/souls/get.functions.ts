@@ -36,6 +36,8 @@ export type SoulDetail = {
   }>;
 };
 
+const soulCache = createTtlCache<SoulDetail | null>(5 * 60 * 1000, { max: 500 });
+
 export const getSoul = createServerFn({ method: "GET" })
   .inputValidator((data: unknown) => {
     const slug = (data as { slug?: unknown })?.slug;
@@ -43,6 +45,7 @@ export const getSoul = createServerFn({ method: "GET" })
     return { slug };
   })
   .handler(async ({ data }): Promise<SoulDetail | null> => {
+    return soulCache.getOrLoad(data.slug, async () => {
     const { data: pkg } = await supabaseAdmin
       .from("packages")
       .select(
