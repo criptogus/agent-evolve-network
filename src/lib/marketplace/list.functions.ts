@@ -22,9 +22,13 @@ export type MarketplaceItem = {
   rating_agent_avg: number;
 };
 
-export const listMarketplace = createServerFn({ method: "GET" }).handler(
-  async (): Promise<{ items: MarketplaceItem[]; verticals: string[] }> => {
-    const { data: pkgs, error } = await supabaseAdmin
+type CacheEntry = { at: number; payload: { items: MarketplaceItem[]; verticals: string[] } };
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 min
+let _cache: CacheEntry | null = null;
+let _inflight: Promise<{ items: MarketplaceItem[]; verticals: string[] }> | null = null;
+
+async function fetchMarketplace(): Promise<{ items: MarketplaceItem[]; verticals: string[] }> {
+  const { data: pkgs, error } = await supabaseAdmin
       .from("packages")
       .select(
         "id, slug, name, type, description, author_handle, author_verified, install_count, latest_version, created_at, price_credits"
