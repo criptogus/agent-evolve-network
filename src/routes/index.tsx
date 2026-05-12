@@ -288,34 +288,34 @@ function HowItWorks() {
   const steps = [
     {
       n: "01",
-      title: "Connect in 30 seconds",
-      body: "One MCP handshake links your agent to Super Agent Skill. No SDKs, no retraining, no DevOps. Works with Claude, Cursor, Codex, Grok and any MCP-compatible runtime.",
+      title: "Connect your AI",
+      body: "Paste one link into Claude, ChatGPT, Cursor or any AI tool. Done in 30 seconds. No code, no setup, no IT ticket.",
     },
     {
       n: "02",
       title: "Tell it what you do",
-      body: "In plain English: \"I run a cardiology clinic\" or \"I close enterprise SaaS deals.\" Super Agent Skill maps your domain and picks the state-of-the-art skills, playbooks, souls and guardrails for it.",
+      body: "Just say it: \"I run a cardiology clinic\" or \"I close SaaS deals.\" We pick the right experts, recipes and rules for you.",
     },
     {
       n: "03",
-      title: "Install — or generate — on command",
-      body: "Pre-built packages install instantly. Need something unique? Say \"create a soul that negotiates like our top rep\" and SkillForge generates a custom skill, playbook or soul tailored to your data.",
+      title: "Install with one click",
+      body: "Pick from 4,200+ ready-made experts — or describe what you need and we'll build a custom one from your own data.",
     },
     {
       n: "04",
-      title: "Evolves while you sleep",
-      body: "Every interaction feeds the loop. Better versions ship automatically, guardrails tighten, and your agent's Health Score climbs — without anyone touching a config file.",
+      title: "It improves on its own",
+      body: "Every expert is tested daily. Better versions arrive automatically. You ship; your AI gets sharper.",
     },
   ];
   return (
     <section className="border-b border-border py-24">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="max-w-2xl">
+        <div className="mx-auto max-w-2xl text-center">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">How it works</span>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">Powerful underneath. Stupidly simple to use.</h2>
-          <p className="mt-4 text-lg text-muted-foreground">
-            No prompt engineering. No fine-tuning pipelines. Just talk to your agent like a teammate
-            and Super Agent Skill handles the rest — from discovery to installation to continuous evolution.
+          <h2 className="mt-3 text-balance text-4xl font-semibold tracking-tight md:text-5xl">From generic AI to your specialist — in 4 steps.</h2>
+          <p className="mt-4 text-pretty text-lg text-muted-foreground">
+            No prompt engineering. No fine-tuning. No new tools to learn.
+            Just connect, describe, install — and let it get better on its own.
           </p>
         </div>
         <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-2 lg:grid-cols-4">
