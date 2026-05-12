@@ -73,6 +73,7 @@ import { Route as ApiPublicOauthTokenRouteImport } from './routes/api/public/oau
 import { Route as ApiPublicOauthRevokeRouteImport } from './routes/api/public/oauth/revoke'
 import { Route as ApiPublicOauthRegisterRouteImport } from './routes/api/public/oauth/register'
 import { Route as ApiPublicMcpHealthRouteImport } from './routes/api/public/mcp.health'
+import { Route as ApiPublicHooksPrewarmSharePromosRouteImport } from './routes/api/public/hooks/prewarm-share-promos'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
 const UploadRoute = UploadRouteImport.update({
@@ -396,6 +397,12 @@ const ApiPublicMcpHealthRoute = ApiPublicMcpHealthRouteImport.update({
   path: '/api/public/mcp/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksPrewarmSharePromosRoute =
+  ApiPublicHooksPrewarmSharePromosRouteImport.update({
+    id: '/api/public/hooks/prewarm-share-promos',
+    path: '/api/public/hooks/prewarm-share-promos',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPacksCustomizationIdDownloadExtRoute =
   ApiPacksCustomizationIdDownloadExtRouteImport.update({
     id: '/api/packs/customization/$id/download/$ext',
@@ -462,6 +469,7 @@ export interface FileRoutesByFullPath {
   '/forge/report/$slug': typeof ForgeReportSlugRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
+  '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
   '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
@@ -528,6 +536,7 @@ export interface FileRoutesByTo {
   '/forge/report/$slug': typeof ForgeReportSlugRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
+  '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
   '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
@@ -596,6 +605,7 @@ export interface FileRoutesById {
   '/forge/report/$slug': typeof ForgeReportSlugRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
+  '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
   '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
@@ -665,6 +675,7 @@ export interface FileRouteTypes {
     | '/forge/report/$slug'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
+    | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/oauth/register'
     | '/api/public/oauth/revoke'
@@ -731,6 +742,7 @@ export interface FileRouteTypes {
     | '/forge/report/$slug'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
+    | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/oauth/register'
     | '/api/public/oauth/revoke'
@@ -798,6 +810,7 @@ export interface FileRouteTypes {
     | '/forge/report/$slug'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
+    | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/oauth/register'
     | '/api/public/oauth/revoke'
@@ -851,6 +864,7 @@ export interface RootRouteChildren {
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   PacksIndexRoute: typeof PacksIndexRoute
   MarketplaceTrustSlugRoute: typeof MarketplaceTrustSlugRoute
+  ApiPublicHooksPrewarmSharePromosRoute: typeof ApiPublicHooksPrewarmSharePromosRoute
   ApiPublicMcpHealthRoute: typeof ApiPublicMcpHealthRoute
   ApiPublicOauthRegisterRoute: typeof ApiPublicOauthRegisterRoute
   ApiPublicOauthRevokeRoute: typeof ApiPublicOauthRevokeRoute
@@ -1310,6 +1324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMcpHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/prewarm-share-promos': {
+      id: '/api/public/hooks/prewarm-share-promos'
+      path: '/api/public/hooks/prewarm-share-promos'
+      fullPath: '/api/public/hooks/prewarm-share-promos'
+      preLoaderRoute: typeof ApiPublicHooksPrewarmSharePromosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/packs/customization/$id/download/$ext': {
       id: '/api/packs/customization/$id/download/$ext'
       path: '/api/packs/customization/$id/download/$ext'
@@ -1438,6 +1459,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   PacksIndexRoute: PacksIndexRoute,
   MarketplaceTrustSlugRoute: MarketplaceTrustSlugRoute,
+  ApiPublicHooksPrewarmSharePromosRoute: ApiPublicHooksPrewarmSharePromosRoute,
   ApiPublicMcpHealthRoute: ApiPublicMcpHealthRoute,
   ApiPublicOauthRegisterRoute: ApiPublicOauthRegisterRoute,
   ApiPublicOauthRevokeRoute: ApiPublicOauthRevokeRoute,
