@@ -1,92 +1,105 @@
+# Programa de Referral + Mais Canais de Viralização
+
 ## Objetivo
+Transformar cada usuário em um divulgador. Toda URL compartilhada do marketplace (skill, pack, soul, playbook, guardrail) carrega um **código de referral**. Quando alguém novo se cadastra por esse link e vira assinante pago, o divulgador ganha créditos no marketplace.
 
-Elevar o site inteiro com foco em desenvolvedores que conectam agentes via MCP. CTA primário consistente: **"Connect your agent"**. Tom mais direto, benefício-primeiro, mantendo a estética atual (Stripe/Linear, vermelho, grade).
+## 1. Modelo de dados (migrations)
 
-## 1. Copy & CRO (benefício-primeiro, dev-céntrico)
+**`profiles.referral_code`** (text, unique) — código curto (8 chars base32), gerado automaticamente no signup via trigger.
 
-**Hero (`/`)**
-- H1: "Your AI agent, but actually good at the job." (rotativo permanece)
-- Sub: começar com prova quantificada — ex.: *"30s para conectar. Um comando para virar especialista. Health Score sobe sozinho."*
-- CTAs: primário `Connect your agent` (vai para `/connect`, não `#connect`), secundário `npm i -g superagentskill` com botão de copy inline (atrito zero para dev).
-- Badge de prova: "MCP-native · works with Claude, Cursor, Codex, Grok" + microcopy "no SDK, no retraining".
+**`referrals`** — eventos de atribuição:
+- `id`, `referrer_id` (uuid), `referred_user_id` (uuid, unique), `code` (text), `landed_at`, `signed_up_at`, `subscribed_at` (nullable), `first_purchase_at` (nullable), `status` (`pending` | `signed_up` | `subscribed` | `rewarded`), `source_url` (text), `package_slug` (nullable).
 
-**Trust bar**: trocar marquee de logos de runtimes por linha estática (mais credível, melhor LCP) + 3 métricas reais ou plausíveis ("4.2k+ skills", "98% health médio", "30s setup").
+**`referral_rewards`** — recompensas pagas (auditoria, idempotência):
+- `id`, `referral_id` (unique por tipo), `referrer_id`, `kind` (`signup` | `subscription` | `purchase`), `credits`, `ledger_entry_id`, `created_at`.
 
-**Seções**
-- Reescrever subtítulos para verbos de resultado ("Install", "Evolve", "Ship") em vez de descrição abstrata.
-- `CTASection` final: dois CTAs claros — `Connect your agent` (primário) + `Browse the registry` (secundário).
-- Adicionar mini "Quickstart" com bloco de código copiável acima do FAQ (alta intenção dev).
+**RPC `award_referral_credits(_referral_id uuid, _kind text, _credits int)`** — security definer; insere em `credit_ledger` (motivo `promo`, ref_type `referral`) **e** `referral_rewards` numa transação. Idempotente via unique `(referral_id, kind)`.
 
-**Pricing (`/pricing`)**
-- Headline focada em ROI: "Pay per agent. Keep 80–85% as creator."
-- Adicionar comparação de features em tabela colapsável.
-- FAQ curto (3 perguntas) anti-objeção: "Sem retraining?", "Funciona com meu runtime?", "Cancelo quando?".
+**Regras de recompensa (configuráveis em `plans` ou constantes server):**
+- Signup do indicado: **+20 créditos** ao referrer.
+- Indicado vira assinante pago: **+200 créditos** ao referrer + **+50 bônus** ao indicado.
+- Cada compra do indicado nos primeiros 90 dias: **5%** dos créditos pagos vão ao referrer.
 
-**Outras rotas públicas** (`/connect`, `/docs`, `/marketplace`, `/discover`, `/forge`, `/community`, `/skillforge`, `/evaluation`, `/match`, `/packs`, `/pricing`, `/terms`, `/privacy`, `/refunds`):
-- Cada uma ganha H1 único, intro de 1 frase com benefício, CTA secundário consistente apontando para `/connect`.
+Anti-fraude básico: mesmo IP/device do referrer não credita; auto-referral bloqueado; cap mensal de 5.000 créditos por referrer.
 
-## 2. UI & micro-animações
+## 2. Captura do código (`?ref=CODE`)
 
-- Padronizar entrada de seções com IntersectionObserver + `animate-fade-in` (uma vez, não em cada scroll). Hoje tudo entra com `fade-up` no mount.
-- Hero: parallax suave no `hero-glow`, cursor blink no terminal, números do Health Score animando com count-up.
-- Cards (`HowItWorks`, `CompareIndustries`): hover com leve elevação + borda primária (já parcial).
-- Adicionar `prefers-reduced-motion` guards globais nas keyframes.
-- Botões: variant `cta` no `buttonVariants` com gradient sutil + shadow-glow no hover.
-- Footer: reorganizar em 4 colunas (Product / Creators / Company / Legal) com newsletter capture (email → Lovable Cloud table).
+- Componente `ReferralCapture` montado em `__root.tsx`: lê `?ref=` da URL, grava em cookie `sas_ref` (90 dias) **e** localStorage. Não sobrescreve se já houver.
+- No fluxo de signup (`/signup`, OAuth callback): após criar o user, chamar server fn `claimReferral({ code })` que cria a linha em `referrals` com `referrer_id` resolvido pelo código (rejeita auto-referral / já existente).
+- Webhook do Stripe (`api/public/payments/webhook.ts`): ao confirmar primeira assinatura ativa, busca `referrals` desse user e dispara `award_referral_credits` (kind=subscription). Idem em `purchase_package` RPC para a recompensa por compra.
 
-## 3. SEO
+## 3. URLs com referral
 
-- Cada rota com `head()` único: title <60 chars, description <160, og:title, og:description, og:image (usar imagem da rota quando existir).
-- Adicionar canonical link em todas via `links` no `head()`.
-- JSON-LD na home: `Organization` + `SoftwareApplication`. Em `/marketplace/$packageId`: `Product` + `AggregateRating` quando houver reviews. Em `/pricing`: `Offer`.
-- Garantir 1 H1 por rota; revisar hierarquia H2/H3.
-- Adicionar `<link rel="alternate" hreflang>` para PT/EN se aplicável (apenas EN por ora; deixar estrutura pronta).
-- Sitemap dinâmico em `src/routes/sitemap[.]xml.tsx` listando rotas estáticas + pacotes/souls publicados via loader.
-- `robots.txt` confirmando sitemap.
+- Helper `buildShareUrl(path, user)` → adiciona `?ref={code}` se houver user logado.
+- Atualizar `ShareOnXButton` para usar esse helper.
+- Atualizar `getSharePromo` para receber a URL já com `ref`.
 
-## 4. GEO (AI/LLM search)
+## 4. Mais canais de compartilhamento
 
-- Atualizar `/llms.txt` com seções: What it is, Who it's for, Key concepts (skills/playbooks/souls/guardrails), How to connect (curl/MCP snippet), Pricing, Links canônicos por rota.
-- `/agents.md` com instruções estruturadas para agentes consumirem o produto (ja existe — auditar e expandir).
-- Adicionar bloco "TL;DR" em cada rota pública (200–300 chars) que LLMs citam bem.
-- FAQ com `FAQPage` JSON-LD (ótimo para AI Overviews/Perplexity).
+Componente novo `ShareMenu` (dropdown) substituindo o botão único nas páginas: `/marketplace`, `/marketplace/$packageId`, `/packs/$slug`, `/souls/$slug`.
 
-## 5. Performance
+Canais:
+- **X (Twitter)** — já existe, manter.
+- **LinkedIn** — `linkedin.com/sharing/share-offsite/?url=...`.
+- **Reddit** — `reddit.com/submit?url=...&title=...`.
+- **WhatsApp** — `wa.me/?text=...` (mobile-first).
+- **Copy link** — copia URL com `?ref=` + toast.
+- **Embed badge** — modal com snippet HTML (`<a><img src="/api/public/badge/{slug}.svg?ref=CODE" /></a>`) — gera SVG dinâmico server-side (rota `/api/public/badge/$slug.svg`) com nome + estrelas + "Get on SuperAgentSkill".
+- **QR code** — modal com QR (lib `qrcode`) da URL com ref, baixável como PNG. Útil para slides/eventos.
 
-- Hero: `McpInstallAnimation` e `Typewriter` → `lazy()` + Suspense fallback (são pesados e abaixo da dobra crítica para LCP).
-- `marquee` de logos: trocar por SVG estático ou `content-visibility: auto`.
-- Imagens (og, screenshots): garantir `loading="lazy"`, `decoding="async"`, dimensões explícitas.
-- Fontes Inter/JetBrains Mono: `font-display: swap` + preconnect; subset latin only.
-- Code splitting: rotas `admin.*` já são separadas pelo TanStack; verificar que não importam nada da landing.
-- Remover `tw-animate-css` se subutilizado (já temos keyframes próprios) — economia de CSS.
-- Audit com `browser--performance_profile` antes/depois e reportar Web Vitals.
+Cada canal usa o mesmo `getSharePromo` para texto AI, cacheado por `(slug, channel)`.
 
-## 6. Acessibilidade & polish
+## 5. Página `/account/referrals`
 
-- Skip-link "Pular para conteúdo".
-- Focus rings visíveis no tema (já existe `--ring`, validar contraste).
-- Alt text em todas imagens; aria-labels em ícones-only buttons.
-- Verificar contraste do `text-muted-foreground` em fundo `surface/40`.
+Nova rota mostrando:
+- Link pessoal (`https://superagentskill.com/?ref=CODE`) com botão copy.
+- Stats: cliques, signups, assinantes convertidos, créditos ganhos.
+- Tabela `referrals` do usuário (status + data).
+- Leaderboard mensal top-10 referrers (público, opt-in via flag em `profiles`).
 
-## 7. Ordem de execução
+Adicionar card no `/account/credits` com resumo + CTA "Convide e ganhe".
 
-1. **Copy & SEO global**: head() de cada rota, JSON-LD, sitemap, llms.txt.
-2. **Hero/Home**: nova H1, CTAs, copy block, code-copy button, animations refinadas.
-3. **Outras rotas públicas**: H1+intro+CTA secundário padronizado.
-4. **Performance**: lazy load animações pesadas, fonts, marquee.
-5. **Footer + newsletter** (Lovable Cloud table `newsletter_signups`).
-6. **A11y pass + reduced-motion**.
-7. **Audit final**: Lighthouse/perf profile + screenshot QA das rotas principais.
+## 6. Tracking de cliques
+
+Rota `/api/public/r/$code` que: registra clique (tabela `referral_clicks` simples: code, ts, ua_hash, ip_hash, target), seta cookie e redireciona para `?ref=CODE` na URL alvo (passada via `?to=`). `ShareMenu` usa essa rota como wrapper opcional para canais onde queremos contar cliques sem JS no destino.
+
+## 7. SEO/OG
+
+`ShareMenu` mantém `og:image` por item (já existe). Embed badge SVG inclui `Cache-Control: public, max-age=300`.
+
+---
 
 ## Detalhes técnicos
 
-- Novos arquivos: `src/routes/sitemap[.]xml.tsx`, `src/components/site/CopyButton.tsx`, `src/components/site/CountUp.tsx`, `src/components/site/SectionReveal.tsx`, `src/components/site/JsonLd.tsx`.
-- Migration: `newsletter_signups (id, email unique, created_at)` com RLS `INSERT` aberto + `SELECT` admin-only.
-- Sem mudanças em business logic, auth, billing ou edge functions.
-- Nenhuma alteração em `routeTree.gen.ts`, `client.ts`, `types.ts`.
+**Arquivos novos:**
+- `supabase/migrations/<ts>_referrals.sql` — tabelas, trigger de `referral_code`, RPC.
+- `src/lib/referrals/referrals.functions.ts` — `claimReferral`, `getMyReferralStats`, `getReferralLeaderboard`.
+- `src/lib/referrals/capture.ts` — leitura de `?ref` + cookie/localStorage.
+- `src/components/referrals/ReferralCapture.tsx` — montado em `__root.tsx`.
+- `src/components/share/ShareMenu.tsx` — dropdown multi-canal, com QR e embed.
+- `src/components/share/ShareBadgeModal.tsx`, `ShareQrModal.tsx`.
+- `src/routes/account.referrals.tsx`.
+- `src/routes/api/public/r.$code.ts` — tracker + redirect.
+- `src/routes/api/public/badge.$slug[.]svg.ts` — SVG dinâmico.
 
-## Fora de escopo
+**Arquivos editados:**
+- `src/routes/__root.tsx` — montar `ReferralCapture`.
+- `src/routes/signup.tsx` + OAuth callback — chamar `claimReferral`.
+- `src/routes/api/public/payments/webhook.ts` — disparar reward em `subscription`.
+- `src/lib/credits/credits.functions.ts` (`purchasePackage`) — após compra, conferir referral ativo e dar 5%.
+- `src/lib/share/share-promo.functions.ts` — aceitar `channel`, ajustar prompt por canal.
+- `src/components/share/ShareOnXButton.tsx` — virar wrapper de `ShareMenu` ou ser substituído nas 4 páginas que o usam.
+- `src/components/site/Nav.tsx` ou `account.*` — adicionar link "Referrals".
+- `package.json` — adicionar `qrcode`.
 
-- Redesign visual radical (paleta, tipografia, layout system).
-- Novas features de produto (apenas marketing/landing/UX).
-- i18n completo (apenas estrutura preparada).
+**Anti-fraude:**
+- Hash de IP via crypto (não armazenar plain).
+- Bloqueio: `referrer_id != referred_user_id`; mesmo `ip_hash` nas últimas 24h reduz peso pra 0.
+- Cap mensal aplicado no RPC `award_referral_credits`.
+
+**Idempotência:** unique `(referral_id, kind)` em `referral_rewards` impede dupla recompensa em retries de webhook.
+
+## Fora de escopo (deixar para depois)
+- Tier system (bronze/silver/gold).
+- Pagamento em dinheiro (apenas créditos por enquanto).
+- Notificações por email ao referrer (pode entrar numa V2 com Resend).
