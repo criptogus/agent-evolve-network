@@ -67,7 +67,7 @@ Creators keep 80–85% of every package sold.
 - Agent manual:   https://superagentskill.com/agents.md
 `;
 
-export const Route = createFileRoute("/llms/txt")({
+export const Route = createFileRoute("/llms.txt")({
   server: {
     handlers: {
       GET: async () =>

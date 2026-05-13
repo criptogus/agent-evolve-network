@@ -16,9 +16,10 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Super Agent Skill — Turn your AI into an expert at your job" },
-      { name: "description", content: "Generic AI gives generic answers. Super Agent Skill is the app store for your AI's brain — install expert skills, workflows and safety rules in one click. Works with ChatGPT, Claude, Cursor, Codex." },
+      { name: "description", content: "The app store for your AI's brain. One click installs an expert in your field — works with ChatGPT, Claude, Cursor, Codex." },
       { property: "og:title", content: "Turn your AI into an expert at your job — Super Agent Skill" },
-      { property: "og:description", content: "The app store for your AI's brain. One click installs an expert in your field. No code, no retraining." },
+      { property: "og:description", content: "The app store for your AI's brain. One click installs an expert in your field." },
+      { property: "og:url", content: "https://superagentskill.com/" },
       { name: "twitter:title", content: "Turn your AI into an expert at your job — Super Agent Skill" },
       { name: "twitter:description", content: "The app store for your AI's brain. One click installs an expert in your field." },
     ],
