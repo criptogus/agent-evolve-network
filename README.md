@@ -4,59 +4,91 @@
 
 # Super Agent Skill
 
-### One command. Your agent becomes a genius.
+### **500+ free skills, playbooks, souls and guardrails — one MCP endpoint away from any AI agent.**
 
-**The open MCP layer that turns any AI agent — Claude, Cursor, Codex, Continue — into a specialist, instantly.**
+Turn Claude, Cursor, Codex, Continue or any MCP-compatible agent into a domain specialist in **60 seconds**. No fine-tuning. No copy-pasting prompts. No vendor lock-in.
 
-[![Website](https://img.shields.io/badge/website-superagentskill.com-0A66FF?style=flat-square)](https://www.superagentskill.com)
-[![MCP](https://img.shields.io/badge/MCP-live-22c55e?style=flat-square)](https://www.superagentskill.com/api/mcp)
-[![Marketplace](https://img.shields.io/badge/marketplace-browse-8b5cf6?style=flat-square)](https://www.superagentskill.com/marketplace)
+[![Website](https://img.shields.io/badge/🌐_superagentskill.com-Visit-0A66FF?style=for-the-badge)](https://www.superagentskill.com)
+[![Marketplace](https://img.shields.io/badge/🛒_Browse_500+_packages-Free-8b5cf6?style=for-the-badge)](https://www.superagentskill.com/marketplace)
+[![MCP](https://img.shields.io/badge/🔌_MCP_endpoint-Live-22c55e?style=for-the-badge)](https://www.superagentskill.com/api/mcp)
+
 [![License: Apache 2.0](https://img.shields.io/badge/code-Apache_2.0-000?style=flat-square)](LICENSE)
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/content-CC_BY--SA_4.0-000?style=flat-square)](LICENSES/CONTENT-CC-BY-SA-4.0.txt)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-ff4f8b?style=flat-square)](CONTRIBUTING.md)
+[![Discord](https://img.shields.io/badge/Discord-join-5865F2?style=flat-square)](https://www.superagentskill.com/community)
 
-[**Website**](https://www.superagentskill.com) · [**Marketplace**](https://www.superagentskill.com/marketplace) · [**Docs**](https://www.superagentskill.com/docs) · [**MCP endpoint**](https://www.superagentskill.com/api/mcp) · [**Discord**](https://www.superagentskill.com/community)
+[**🌐 Website**](https://www.superagentskill.com) · [**🛒 Marketplace**](https://www.superagentskill.com/marketplace) · [**📚 Docs**](https://www.superagentskill.com/docs) · [**🔌 MCP**](https://www.superagentskill.com/api/mcp) · [**💬 Discord**](https://www.superagentskill.com/community)
 
 </div>
 
 ---
 
-## Why Super Agent Skill?
+## 📦 What's inside (today)
 
-Generic agents are jacks of all trades, masters of none. They hallucinate, drift, and forget the rules your team actually cares about.
+> **The registry is live and growing every week. All packages are free to download, fork and run.**
 
-**Super Agent Skill fixes that with three ingredients:**
+| Type | Count | Examples |
+|---|---|---|
+| 🛠 **Skills** | **370+** | code review, OWASP audit, SQL translator, OSINT, ECG triage, MEDDPICC discovery |
+| 📘 **Playbooks** | **30+** | bug triage → fix → PR, content pipeline, incident response |
+| 🎭 **Souls** | **50+** | pragmatic SRE, empathetic support, senior product designer |
+| 🛡 **Guardrails** | **50+** | no-PII, no-medical-advice, GDPR, brand safety |
 
-- 🧠 **A growing open registry** of battle-tested **Skills**, **Playbooks**, **Souls** and **Guardrails** — community-owned, MIT-friendly, embeddable anywhere.
-- ⚙️ **SkillForge**, our continuous evolution loop — it benchmarks every skill against adversarial cases, finds weaknesses, and ships patches automatically.
-- 🔌 **One MCP endpoint** that streams the strongest version of every skill to any compatible agent — no copy-paste, no version drift.
+➡️ **[Browse the full marketplace at superagentskill.com →](https://www.superagentskill.com/marketplace)**
 
-> *Think GitHub for prompts × npm for agent capabilities × Wikipedia for AI behavior — all under MCP.*
+---
 
-## 60-second quickstart
+## ⚡ 60-second quickstart
 
-**Option A — Plug it into your agent (recommended).** Point any MCP-compatible client at:
+### Option A — Plug it into your agent (recommended)
+
+Point any MCP-compatible client at:
 
 ```
 https://www.superagentskill.com/api/mcp
 ```
 
-That's it. Your agent now has discover / install / evaluate tools and live access to every skill in the registry.
+That's it. Your agent now has `discover` / `install` / `evaluate` tools and **live access to every skill in the registry** — including patches shipped overnight by SkillForge.
 
-**Option B — Download a skill as a file.** Free, no account:
+### Option B — Download a skill as a file (no account, free forever)
 
 ```bash
+# Grab a single skill
 curl -O https://raw.githubusercontent.com/criptogus/agent-evolve-network/main/content/skills/code-reviewer.yaml
+
+# Or clone the whole library
+git clone https://github.com/criptogus/agent-evolve-network.git
 ```
 
-**Option C — Run the whole platform locally:**
+Drop the YAML into your agent's system prompt. Done.
+
+### Option C — Need a skill that doesn't exist yet?
+
+Go to **[superagentskill.com](https://www.superagentskill.com)**, describe what your agent should do (e.g. *"triage cardiology patients using the GRACE score"*) and the **Forge** will research, draft, adversarially test and publish a production-grade package — usually in under 5 minutes.
+
+### Option D — Run the whole platform locally
 
 ```bash
-bun install
-bun run dev
+bun install && bun run dev
 ```
 
-## The four building blocks
+---
+
+## 🧠 Why Super Agent Skill?
+
+Generic agents are jacks of all trades, masters of none. They hallucinate, drift, and forget the rules your team actually cares about.
+
+We fix that with three ingredients you won't find anywhere else:
+
+- 🌍 **An open, growing registry** of 500+ battle-tested skills, playbooks, souls and guardrails — community-owned, MIT/CC-friendly, embeddable anywhere.
+- ⚙️ **SkillForge** — our continuous evolution loop benchmarks every skill against adversarial cases, finds weaknesses, and ships patches automatically. Your agent gets smarter while you sleep.
+- 🔌 **One MCP endpoint** that streams the strongest version of every skill to any compatible agent — no copy-paste, no version drift, no vendor lock-in.
+
+> *Think GitHub for prompts × npm for agent capabilities × Wikipedia for AI behavior — all under MCP.*
+
+---
+
+## 🧱 The four building blocks
 
 | | What it is | Use it when… |
 | --- | --- | --- |
@@ -69,14 +101,33 @@ Each one is a single self-contained YAML file. **Read it, fork it, ship it.**
 
 ```
 content/
-├── skills/         → Single capabilities
-├── playbooks/      → Multi-step workflows
-├── souls/          → Personas and values
-├── guardrails/     → Safety and compliance
+├── skills/         → Single capabilities      (370+ on superagentskill.com)
+├── playbooks/      → Multi-step workflows     (30+ on superagentskill.com)
+├── souls/          → Personas and values      (50+ on superagentskill.com)
+├── guardrails/     → Safety and compliance    (50+ on superagentskill.com)
 └── schemas/        → JSON Schemas (every package validates against these)
 ```
 
-## Ship your first skill in 4 steps
+> 💡 This GitHub repo is the **open seed** — the canonical, public-domain core. The full **500+ library** lives at [superagentskill.com/marketplace](https://www.superagentskill.com/marketplace), where SkillForge keeps it sharp.
+
+---
+
+## 🎯 Need to enrich a specific agent?
+
+Whatever your agent does, there's almost certainly a package for it — or you can have one in minutes:
+
+| If your agent is a… | Start here |
+|---|---|
+| **Coding assistant** | [code-reviewer](content/skills/code-reviewer.yaml), [owasp-code-audit](content/skills/owasp-code-audit.yaml), [dependency-vuln-auditor](content/skills/dependency-vuln-auditor.yaml) |
+| **Security / red team** | [recon-attack-surface](content/skills/recon-attack-surface.yaml), [prompt-injection-tester](content/skills/prompt-injection-tester.yaml), [disk-image-forensics](content/skills/disk-image-forensics.yaml) |
+| **SRE / DevOps** | [incident-response-triage](content/skills/incident-response-triage.yaml), [cloud-misconfig-auditor](content/skills/cloud-misconfig-auditor.yaml), [pragmatic-sre](content/souls/pragmatic-sre.yaml) |
+| **Researcher / writer** | [web-research](content/skills/web-research.yaml), [long-form-writer](content/skills/long-form-writer.yaml), [osint-investigator](content/skills/osint-investigator.yaml) |
+| **Customer support** | [empathetic-support](content/souls/empathetic-support.yaml), [no-pii-in-output](content/guardrails/no-pii-in-output.yaml) |
+| **Anything else** | 👉 **[Search the marketplace →](https://www.superagentskill.com/marketplace)** or **[ask the Forge to build it](https://www.superagentskill.com/forge)** |
+
+---
+
+## 🚢 Ship your first skill in 4 steps
 
 ```bash
 # 1. Fork & clone
@@ -96,7 +147,9 @@ A merged skill is automatically imported into the hosted registry, where **Skill
 
 ➡️ Full quality bar in [**CONTRIBUTING.md**](CONTRIBUTING.md).
 
-## Why contribute?
+---
+
+## 💎 Why contribute?
 
 Your work isn't just merged — it's *amplified*.
 
@@ -108,7 +161,9 @@ Your work isn't just merged — it's *amplified*.
 
 > **First-time contributor?** Look for [`good first issue`](https://github.com/criptogus/agent-evolve-network/labels/good%20first%20issue) and [`help wanted`](https://github.com/criptogus/agent-evolve-network/labels/help%20wanted) — most are mergeable in one afternoon.
 
-## What makes this different
+---
+
+## 🆚 What makes this different
 
 |  | Super Agent Skill | A prompt library on GitHub | A walled-garden GPT store |
 | --- | :---: | :---: | :---: |
@@ -118,12 +173,16 @@ Your work isn't just merged — it's *amplified*.
 | Continuous adversarial evolution | ✅ | ❌ | ❌ |
 | Public trust + compatibility scores | ✅ | ❌ | ❌ |
 | Revenue share for authors | ✅ | ❌ | ⚠️ limited |
+| One-line install via MCP | ✅ | ❌ | ❌ |
 
-## Roadmap
+---
+
+## 🗺 Roadmap
 
 - [x] MCP server with discover / install / evaluate / report-execution tools
 - [x] SkillForge evolution loop (eval → patch → re-score)
 - [x] Public **Trust Score**, model compatibility matrix, drift detection
+- [x] 500+ packages live in the hosted registry
 - [ ] CLI (`npx sas init`, `sas publish`, `sas eval`)
 - [ ] Cryptographically signed package releases
 - [ ] Versioned downloadable registry bundles
@@ -131,14 +190,18 @@ Your work isn't just merged — it's *amplified*.
 
 Track everything on the [public board](https://github.com/criptogus/agent-evolve-network/projects).
 
-## Community
+---
+
+## 👥 Community
 
 - 💬 **Discord** — [join here](https://www.superagentskill.com/community) for help, design reviews, and weekly skill-jam events.
 - 🐦 **X / Twitter** — [@superagentskill](https://twitter.com/superagentskill) for releases and benchmarks.
 - 📰 **Changelog** — every accepted package is announced in [GitHub Releases](https://github.com/criptogus/agent-evolve-network/releases).
 - 🛡 **Security** — please disclose responsibly via [SECURITY.md](SECURITY.md).
 
-## License
+---
+
+## 📜 License
 
 - **Code** (this repo, outside `content/`): [Apache License 2.0](LICENSE)
 - **Content** (everything in `content/`): [Creative Commons Attribution-ShareAlike 4.0](LICENSES/CONTENT-CC-BY-SA-4.0.txt)
@@ -148,6 +211,10 @@ By contributing you agree your work is licensed under the same terms — and tha
 ---
 
 <div align="center">
+
+### 🚀 Ready to make your agent a specialist?
+
+**[→ Browse 500+ free packages at superagentskill.com](https://www.superagentskill.com/marketplace)**
 
 **Built by makers, for makers. Star the repo ⭐ if you believe agents should belong to everyone.**
 
