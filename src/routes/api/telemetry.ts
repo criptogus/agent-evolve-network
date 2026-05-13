@@ -16,7 +16,7 @@ export const Route = createFileRoute("/api/telemetry")({
         }
 
         try {
-          const row = await ingestExecution(parsed.data, supabaseAdmin.from("skill_executions"));
+          const row = await ingestExecution(parsed.data, supabaseAdmin.from("skill_executions") as any);
           return Response.json({ ok: true, anonymized_workspace: row.workspace_hash });
         } catch (e) {
           return Response.json({ error: (e as Error).message }, { status: 500 });
