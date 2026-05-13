@@ -1,0 +1,29 @@
+slug: linear
+name: Linear
+type: integration
+version: 0.1.0
+provider: Linear
+description: Query and update issues, projects and cycles in Linear via the GraphQL API.
+homepage: https://linear.app
+auth:
+  kind: api_key
+  api_key:
+    header: Authorization
+    env_hint: LINEAR_API_KEY
+required_scopes: []
+actions:
+  - id: create_issue
+    name: Create issue
+    method: POST
+    base_url: https://api.linear.app/graphql
+    path: /
+    side_effect: write
+  - id: search_issues
+    name: Search issues
+    method: POST
+    base_url: https://api.linear.app/graphql
+    path: /
+    side_effect: read
+tags: [issue-tracking, pm]
+license: MIT
+authors: ["SuperAgentSkill Team"]

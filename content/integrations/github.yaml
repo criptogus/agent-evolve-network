@@ -1,0 +1,53 @@
+slug: github
+name: GitHub
+type: integration
+version: 0.1.0
+provider: GitHub, Inc.
+description: Read repositories, issues, pull requests and post comments via the GitHub REST API.
+homepage: https://github.com
+auth:
+  kind: oauth2
+  oauth2:
+    authorize_url: https://github.com/login/oauth/authorize
+    token_url: https://github.com/login/oauth/access_token
+    scopes: [repo, read:user, read:org]
+    pkce: true
+required_scopes: [repo, read:user, read:org]
+actions:
+  - id: list_issues
+    name: List issues
+    description: List open issues in a repository.
+    method: GET
+    base_url: https://api.github.com
+    path: /repos/{owner}/{repo}/issues
+    side_effect: read
+  - id: get_pull_request
+    name: Get pull request
+    method: GET
+    base_url: https://api.github.com
+    path: /repos/{owner}/{repo}/pulls/{number}
+    side_effect: read
+  - id: create_comment
+    name: Comment on issue or PR
+    method: POST
+    base_url: https://api.github.com
+    path: /repos/{owner}/{repo}/issues/{number}/comments
+    side_effect: write
+    input_schema:
+      type: object
+      required: [body]
+      properties:
+        body: { type: string }
+  - id: delete_branch
+    name: Delete branch
+    method: DELETE
+    base_url: https://api.github.com
+    path: /repos/{owner}/{repo}/git/refs/heads/{branch}
+    side_effect: destructive
+events:
+  - id: pull_request_opened
+    name: Pull request opened
+    webhook_path: /api/integrations/github/webhook
+tags: [scm, devops, code-review]
+license: MIT
+authors: ["SuperAgentSkill Team"]

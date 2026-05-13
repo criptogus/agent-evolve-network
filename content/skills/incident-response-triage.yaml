@@ -56,6 +56,24 @@ examples:
       ## Evidence capture (most → least volatile)
       1. Memory dump
       2. Network connections (`netstat -anob`)
+  - title: Phishing-led credential compromise
+    input: |
+      symptoms: "User clicked a credential-harvesting link; IdP shows successful login from foreign IP minutes later."
+      affected_assets: "user: alice@acme; mailbox + SSO"
+      detection_source: "MS Defender alert + IdP audit log"
+    expected_output: |
+      ## Classification
+      Type: Account compromise. Severity: High.
+      ## Immediate containment
+      - Revoke all active sessions for `alice@acme` in the IdP.
+      - Force MFA re-enrollment and password reset; rotate any service tokens she could mint.
+      - Block the harvesting domain at the email gateway and proxy.
+      ## Evidence capture
+      1. Export IdP sign-in logs for `alice@acme` (last 30 days).
+      2. Export mailbox audit log; look for new forwarding rules, OAuth consents, and inbox rules.
+      3. Snapshot endpoint via EDR before remediation.
+      ## Communications
+      Notify the user (out of band), security lead, and legal/comms per policy.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

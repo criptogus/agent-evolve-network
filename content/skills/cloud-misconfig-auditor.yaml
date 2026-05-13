@@ -53,6 +53,21 @@ examples:
         aws s3api put-public-access-block --bucket acme-public-logs \
           --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
         ```
+  - title: Overly permissive IAM role
+    input: |
+      cloud: aws
+      sources: ["aws iam get-role-policy output"]
+      scope: "prod account 1234"
+    expected_output: |
+      ## High
+      - **AWS / IAM — role `acme-ec2-app`** (CIS 1.16 — least privilege)
+        Evidence: inline policy grants `s3:*` on `Resource: "*"`.
+        Remediation:
+        ```
+        aws iam put-role-policy --role-name acme-ec2-app \
+          --policy-name s3-scoped --policy-document file://least-priv.json
+        ```
+        Where `least-priv.json` restricts `Action` to the buckets actually used.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

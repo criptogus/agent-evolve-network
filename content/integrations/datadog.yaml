@@ -1,0 +1,35 @@
+slug: datadog
+name: Datadog
+type: integration
+version: 0.1.0
+provider: Datadog, Inc.
+description: Query metrics, logs and monitors from Datadog for incident-response playbooks.
+homepage: https://www.datadoghq.com
+auth:
+  kind: api_key
+  api_key:
+    header: DD-API-KEY
+    env_hint: DD_API_KEY
+required_scopes: []
+actions:
+  - id: query_metric
+    name: Query a metric timeseries
+    method: GET
+    base_url: https://api.datadoghq.com/api/v1
+    path: /query
+    side_effect: read
+  - id: list_monitors
+    name: List monitors
+    method: GET
+    base_url: https://api.datadoghq.com/api/v1
+    path: /monitor
+    side_effect: read
+  - id: mute_monitor
+    name: Mute monitor
+    method: POST
+    base_url: https://api.datadoghq.com/api/v1
+    path: /monitor/{monitor_id}/mute
+    side_effect: write
+tags: [observability, sre, incidents]
+license: MIT
+authors: ["SuperAgentSkill Team"]

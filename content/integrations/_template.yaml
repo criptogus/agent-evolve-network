@@ -1,0 +1,28 @@
+slug: example
+name: Example
+type: integration
+version: 0.1.0
+provider: Example Inc.
+description: One-line description of what this integration enables (>= 20 chars).
+auth:
+  kind: api_key
+  api_key:
+    header: X-API-Key
+    env_hint: EXAMPLE_API_KEY
+required_scopes: []
+actions:
+  - id: example_read
+    name: Read something
+    method: GET
+    base_url: https://api.example.com
+    path: /v1/things
+    side_effect: read
+  - id: example_write
+    name: Write something
+    method: POST
+    base_url: https://api.example.com
+    path: /v1/things
+    side_effect: write
+tags: []
+license: MIT
+authors: ["You"]

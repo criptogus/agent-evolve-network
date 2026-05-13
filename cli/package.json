@@ -1,0 +1,15 @@
+{
+  "name": "super-agent",
+  "version": "0.1.0",
+  "description": "Install Super Agent Skill packages locally for Claude / Cursor / Continue / Cline.",
+  "type": "module",
+  "bin": {
+    "super-agent": "./super-agent.mjs"
+  },
+  "files": ["super-agent.mjs", "README.md"],
+  "keywords": ["claude", "cursor", "continue", "cline", "mcp", "skill", "agent", "ai"],
+  "license": "MIT",
+  "engines": { "node": ">=18" },
+  "homepage": "https://superagentskill.com",
+  "repository": { "type": "git", "url": "https://github.com/criptogus/agent-evolve-network", "directory": "cli" }
+}

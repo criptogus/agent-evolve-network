@@ -53,6 +53,25 @@ examples:
       ## Findings
       ### Critical
       - **lodash 4.17.20** (transitive) — CVE-2021-23337, CVSS 7.2. Fixed in 4.17.21. Upgrade path: bump direct dep `react-scripts` to ^5.
+  - title: Polyglot monorepo (Node + Python)
+    input: |
+      manifests:
+        - path: services/api/package.json
+        - path: services/ml/pyproject.toml
+        - path: services/ml/poetry.lock
+      ecosystems: [node, python]
+    expected_output: |
+      ## Inventory
+      - services/api: Node 20, 22 direct deps, 184 transitive
+      - services/ml: Python 3.11, 17 direct deps, 96 transitive
+      ## Audit commands
+      - `npm audit --json --prefix services/api`
+      - `poetry export -f requirements.txt | pip-audit -r /dev/stdin` (run from services/ml)
+      ## Findings
+      ### High
+      - **requests 2.30.0** (services/ml, transitive via `httpx-dependent`) — CVE-2024-35195. Upgrade to 2.32.0; pin in pyproject.
+      ### Medium
+      - **semver 7.5.0** (services/api, direct) — CVE-2024-10491 (ReDoS). Upgrade to 7.5.4.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

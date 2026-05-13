@@ -55,6 +55,22 @@ examples:
       `mmls case-42.E01`
       ## Read-only mount
       `mount -o ro,loop,offset=$((SECTOR*512)) case-42.dd /mnt/ev`
+  - title: Recovering deleted browser history
+    input: |
+      image_path: /evidence/case-87.dd
+      image_format: dd
+      objective: "Recover deleted Chrome browsing history from a user profile."
+    expected_output: |
+      ## Integrity
+      Compute and record sha256 of `case-87.dd`; compare against acquisition manifest.
+      ## Locate profile
+      `fls -r -p case-87.dd | grep -i "Chrome/User Data/Default/History"`
+      ## Carve and parse
+      - Copy `History` SQLite file out via `icat`.
+      - Run `sqlite3` against the file; query `urls` and `visits` tables.
+      - For deleted rows, use `undark` or `sqlite_undelete` to scan freelist pages.
+      ## Output
+      Table of (visit_time, url, deleted?) sorted by visit_time desc; chain-of-custody note appended.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

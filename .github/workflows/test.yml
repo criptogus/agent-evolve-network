@@ -1,0 +1,31 @@
+name: tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  node-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Plain node:test suites
+        run: |
+          node --test \
+            tests/adversarial-harness.test.mjs \
+            tests/trust.test.mjs \
+            tests/release-signing.test.mjs \
+            tests/cli-install.test.mjs
+      - name: TypeScript-source node:test suites
+        run: |
+          node --experimental-strip-types --test \
+            tests/prompt-injection-guard.test.mjs \
+            tests/runtime.test.mjs \
+            tests/integrations.test.mjs \
+            tests/growth-revenue-split.test.mjs \
+            tests/trust-badge.test.mjs \
+            tests/bounties.test.mjs

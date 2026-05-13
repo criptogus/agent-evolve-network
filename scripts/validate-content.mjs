@@ -11,8 +11,8 @@ import Ajv from "ajv";
 import { parse as parseYaml } from "yaml";
 
 const ROOT = new URL("..", import.meta.url).pathname;
-const TYPES = ["skill", "playbook", "soul", "guardrail"];
-const FOLDER = { skill: "skills", playbook: "playbooks", soul: "souls", guardrail: "guardrails" };
+const TYPES = ["skill", "playbook", "soul", "guardrail", "integration"];
+const FOLDER = { skill: "skills", playbook: "playbooks", soul: "souls", guardrail: "guardrails", integration: "integrations" };
 
 const ajv = new Ajv({ allErrors: true, strict: false });
 const schemas = Object.fromEntries(
