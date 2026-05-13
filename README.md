@@ -4,7 +4,12 @@
 
 # Super Agent Skill
 
-### **500+ free skills, playbooks, souls and guardrails — one MCP endpoint away from any AI agent.**
+### **The open network where AI agents learn new skills.**
+
+> **We don't build AI agents. We evolve them.**
+> Models are commodities. Infrastructure is a commodity. **Skills are the new moat.**
+
+**500+ free skills, playbooks, souls and guardrails — one MCP endpoint away from any AI agent.**
 
 Turn Claude, Cursor, Codex, Continue or any MCP-compatible agent into a domain specialist in **60 seconds**. No fine-tuning. No copy-pasting prompts. No vendor lock-in.
 
@@ -20,6 +25,19 @@ Turn Claude, Cursor, Codex, Continue or any MCP-compatible agent into a domain s
 [**🌐 Website**](https://www.superagentskill.com) · [**🛒 Marketplace**](https://www.superagentskill.com/marketplace) · [**📚 Docs**](https://www.superagentskill.com/docs) · [**🔌 MCP**](https://www.superagentskill.com/api/mcp) · [**💬 Discord**](https://www.superagentskill.com/community)
 
 </div>
+
+---
+
+## 🧬 Why this exists
+
+Today there are abundant **models**, **agents**, **MCPs** and **workflows** — but almost no one is dominating the **distribution of intelligence**. That layer compounds. That layer is the moat.
+
+Super Agent Skill is the **App Store for AI agent skills**. Open source by default, community-curated, free to download, and continuously evolved by an automated quality loop (SkillForge).
+
+- **Free tier** — the open registry. 500+ packages. Fork, remix, install, redistribute.
+- **Premium tier** — [superagentskill.com](https://www.superagentskill.com) curates battle-tested elite stacks, enterprise playbooks and private packs for teams that want depth, not just breadth.
+
+The open network feeds the premium layer. The premium layer funds the open network. **That's the flywheel.**
 
 ---
 

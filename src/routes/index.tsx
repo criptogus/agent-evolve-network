@@ -94,6 +94,7 @@ function Home() {
       <JsonLd data={[ORG_LD, SOFTWARE_LD, FAQ_LD]} />
       <Nav />
       <Hero />
+      <SkillLayerManifesto />
       <WhatIsThis />
       <Logos />
       <HowItWorks />
@@ -103,6 +104,7 @@ function Home() {
       <SkillForgeSection />
       <ClientOnly minHeight={700}><EvalLoopSection /></ClientOnly>
       <SocialProof />
+      <FreeVsPremium />
       <ClientOnly minHeight={500}><NetworkSection /></ClientOnly>
       <FAQ />
       <CTASection />
@@ -163,6 +165,9 @@ function Hero() {
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
             No credit card · Setup in 30 seconds · 4,200+ ready-to-use experts
+          </p>
+          <p className="mx-auto mt-6 max-w-md text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70">
+            Models are commodities. <span className="text-foreground/80">Skills are the new moat.</span>
           </p>
         </div>
 
@@ -1871,6 +1876,148 @@ function SocialProof() {
             </figure>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function SkillLayerManifesto() {
+  return (
+    <section className="relative overflow-hidden border-b border-border bg-background py-20">
+      <div className="absolute inset-0 grid-bg opacity-30" aria-hidden />
+      <div className="relative mx-auto max-w-5xl px-6">
+        <div className="mx-auto max-w-3xl text-center">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">The skill layer</span>
+          <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-5xl">
+            We don't build AI agents.
+            <br />
+            <span className="text-primary">We evolve them.</span>
+          </h2>
+          <p className="mx-auto mt-6 text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
+            The future of AI won't be won by the best model — it'll be won by the best
+            <span className="text-foreground"> skill ecosystem</span>. Super Agent Skill is the open
+            network where any agent learns new tricks, week after week.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-4 md:grid-cols-3">
+          {[
+            {
+              k: "Open by default",
+              v: "Hundreds of skills, playbooks, souls and guardrails — free to download, fork and remix.",
+            },
+            {
+              k: "One MCP endpoint",
+              v: "Plug any MCP-compatible agent into a registry that updates itself. No retrain, no redeploy.",
+            },
+            {
+              k: "Premium = depth",
+              v: "Battle-tested elite playbooks, curated stacks and enterprise systems on superagentskill.com.",
+            },
+          ].map((p) => (
+            <div key={p.k} className="rounded-2xl border border-border bg-surface/60 p-6">
+              <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">{p.k}</div>
+              <p className="mt-3 text-sm leading-relaxed text-foreground/90">{p.v}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FreeVsPremium() {
+  const free = [
+    "500+ community skills, playbooks, souls & guardrails",
+    "MCP gateway for any agent (Claude, Cursor, ChatGPT…)",
+    "Daily evaluation & community-driven upgrades",
+    "Public registry, GitHub-native, fork anything",
+  ];
+  const premium = [
+    "Curated, battle-tested stacks for your industry",
+    "Elite playbooks shipped weekly by top operators",
+    "Enterprise-grade agent systems & private packs",
+    "Priority Evolution Engine & guaranteed health scores",
+  ];
+  return (
+    <section className="border-b border-border bg-surface/40 py-24">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Free vs Premium</span>
+          <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-5xl">
+            Start free. Upgrade when your agent needs <span className="text-primary">superpowers</span>.
+          </h2>
+          <p className="mt-4 text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
+            The open registry gets your agent up to speed in minutes. Premium gives it the depth
+            top teams pay operators six figures to design.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-5 md:grid-cols-2">
+          <div className="rounded-2xl border border-border bg-background p-7">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Open registry
+                </div>
+                <h3 className="mt-1 text-2xl font-semibold tracking-tight">Free forever</h3>
+              </div>
+              <span className="rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                MIT-style
+              </span>
+            </div>
+            <ul className="mt-6 space-y-3 text-sm">
+              {free.map((f) => (
+                <li key={f} className="flex gap-3 text-foreground/90">
+                  <span className="mt-1 inline-block size-1.5 shrink-0 rounded-full bg-muted-foreground" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+            <Link
+              to="/marketplace"
+              className="mt-7 inline-flex h-10 items-center rounded-md border border-border bg-surface-elevated px-5 text-sm font-medium transition-colors hover:bg-accent"
+            >
+              Browse the open registry →
+            </Link>
+          </div>
+
+          <div className="relative rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/5 via-background to-signal/5 p-7 shadow-elevated">
+            <div className="absolute -top-3 left-7 rounded-full bg-primary px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-primary-foreground">
+              Most chosen
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
+                  superagentskill.com
+                </div>
+                <h3 className="mt-1 text-2xl font-semibold tracking-tight">Premium superpowers</h3>
+              </div>
+              <span className="rounded-full bg-primary/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-primary">
+                Pro & Enterprise
+              </span>
+            </div>
+            <ul className="mt-6 space-y-3 text-sm">
+              {premium.map((f) => (
+                <li key={f} className="flex gap-3 text-foreground/95">
+                  <span className="mt-1 inline-block size-1.5 shrink-0 rounded-full bg-primary" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+            <Link
+              to="/pricing"
+              className="mt-7 inline-flex h-10 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95"
+            >
+              See premium plans →
+            </Link>
+          </div>
+        </div>
+
+        <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-muted-foreground">
+          The open network feeds the premium layer, and the premium layer funds the open network.
+          That's the flywheel.
+        </p>
       </div>
     </section>
   );
