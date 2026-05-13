@@ -76,6 +76,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Super Agent Skill" },
       { name: "description", content: "Super Agent Skill turns AI agents into continuously evolving specialists via MCP." },
       { name: "author", content: "Super Agent Skill" },
+      { name: "google-site-verification", content: "_XaKwKLlTaHmSy8DgH5RB4dmOTlyKH0HYjcRylGuacQ" },
       { property: "og:site_name", content: "Super Agent Skill" },
       { property: "og:title", content: "Super Agent Skill" },
       { property: "og:description", content: "Super Agent Skill turns AI agents into continuously evolving specialists via MCP." },
