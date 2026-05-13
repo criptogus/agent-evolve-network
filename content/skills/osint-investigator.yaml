@@ -51,6 +51,24 @@ examples:
       - **Domain feeds:** dnstwist permutations, URLScan submissions.
       ## Profile
       | Field | Value | Source | Confidence |
+  - title: Executive protection — public exposure check
+    input: |
+      objective: "Map publicly available information about our CEO that could enable spear-phishing."
+      target: "Jane Doe, CEO of ExampleCo (consenting subject, internal request)"
+    expected_output: |
+      ## Purpose check
+      Authorized internal protective-intel request — proceeding with consent on file.
+      ## Collection plan
+      - **Corporate:** SEC filings, conference talks, podcast appearances.
+      - **Social:** LinkedIn, public Twitter/X, GitHub.
+      - **Data-broker leak indicators:** HaveIBeenPwned, public breach corpora.
+      ## Profile
+      | Field | Value | Source | Confidence |
+      | Personal email pattern | jane.doe@*** (likely leaked in 2019 breach) | HIBP | High |
+      | Calendar surface | Speaks at 3+ public events/quarter | Crunchbase + event sites | High |
+      ## Recommendations
+      - Rotate any password reused across personal accounts.
+      - Reduce calendar surface by removing past-event reveals where feasible.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

@@ -55,6 +55,25 @@ examples:
       - dnsx resolution sweep, then naabu top-1000 ports, then httpx fingerprint
       ## Prioritized findings
       | Asset | Signal | Risk | Next step |
+  - title: Internal pentest engagement
+    input: |
+      target: 10.20.0.0/16
+      scope: "Internal corporate network excluding 10.20.99.0/24 (legal). No exploitation, max 50 pps."
+      authorization: "Signed SOW with Acme Corp, engagement window 2026-05-13 to 2026-05-17"
+    expected_output: |
+      ## Authorization recap
+      Authorized via signed SOW dated 2026-05-13. Scope: 10.20.0.0/16 minus 10.20.99.0/24. Rate cap: 50 pps. No exploitation; recon and fingerprint only.
+      ## Passive recon
+      - DHCP / DNS audit from provided collection files
+      - Pull CMDB / asset inventory if available
+      ## Active recon (≤50 pps)
+      - `nmap -sn -T2 --max-rate 50 10.20.0.0/16` for liveness
+      - `naabu -rate 50 -top-ports 100` against live hosts
+      - `httpx -silent -title -tech-detect` against web ports
+      ## Prioritized findings
+      | Asset | Signal | Risk | Next step |
+      | 10.20.4.17 | Exposed `:445` SMBv1 banner | High | Verify CVE-2017-0144 patch level via patch records |
+      | 10.20.7.10 | Default Tomcat /manager page | Medium | Confirm credentials are not default; document |
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

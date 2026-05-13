@@ -52,6 +52,27 @@ examples:
         ```ts
         return db("users").where({ email });
         ```
+  - title: Broken access control on an admin endpoint
+    input: |
+      files:
+        - path: api/admin/users.ts
+          snippet: |
+            export async function deleteUser(req, res) {
+              const id = req.params.id;
+              await db("users").where({ id }).delete();
+              res.json({ ok: true });
+            }
+    expected_output: |
+      ## Critical
+      - **A01 Broken Access Control — api/admin/users.ts:1** — Endpoint deletes any user without checking caller role or ownership.
+        ```ts
+        export async function deleteUser(req, res) {
+          if (!req.user?.isAdmin) return res.status(403).json({ error: "forbidden" });
+          await db("users").where({ id: req.params.id }).delete();
+          res.json({ ok: true });
+        }
+        ```
+        Add a route-level admin middleware and an audit log entry on success.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }
