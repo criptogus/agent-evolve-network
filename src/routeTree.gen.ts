@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SkillforgeRouteImport } from './routes/skillforge'
@@ -76,6 +77,11 @@ import { Route as ApiPublicMcpHealthRouteImport } from './routes/api/public/mcp.
 import { Route as ApiPublicHooksPrewarmSharePromosRouteImport } from './routes/api/public/hooks/prewarm-share-promos'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
   path: '/upload',
@@ -435,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/skillforge': typeof SkillforgeRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
+  '/welcome': typeof WelcomeRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
@@ -502,6 +509,7 @@ export interface FileRoutesByTo {
   '/skillforge': typeof SkillforgeRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
+  '/welcome': typeof WelcomeRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
@@ -571,6 +579,7 @@ export interface FileRoutesById {
   '/skillforge': typeof SkillforgeRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
+  '/welcome': typeof WelcomeRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
@@ -641,6 +650,7 @@ export interface FileRouteTypes {
     | '/skillforge'
     | '/terms'
     | '/upload'
+    | '/welcome'
     | '/account/billing'
     | '/account/connections'
     | '/account/credits'
@@ -708,6 +718,7 @@ export interface FileRouteTypes {
     | '/skillforge'
     | '/terms'
     | '/upload'
+    | '/welcome'
     | '/account/billing'
     | '/account/connections'
     | '/account/credits'
@@ -776,6 +787,7 @@ export interface FileRouteTypes {
     | '/skillforge'
     | '/terms'
     | '/upload'
+    | '/welcome'
     | '/account/billing'
     | '/account/connections'
     | '/account/credits'
@@ -845,6 +857,7 @@ export interface RootRouteChildren {
   SkillforgeRoute: typeof SkillforgeRoute
   TermsRoute: typeof TermsRoute
   UploadRoute: typeof UploadRoute
+  WelcomeRoute: typeof WelcomeRoute
   AccountBillingRoute: typeof AccountBillingRoute
   AccountConnectionsRoute: typeof AccountConnectionsRoute
   AccountCreditsRoute: typeof AccountCreditsRoute
@@ -876,6 +889,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/upload': {
       id: '/upload'
       path: '/upload'
@@ -1440,6 +1460,7 @@ const rootRouteChildren: RootRouteChildren = {
   SkillforgeRoute: SkillforgeRoute,
   TermsRoute: TermsRoute,
   UploadRoute: UploadRoute,
+  WelcomeRoute: WelcomeRoute,
   AccountBillingRoute: AccountBillingRoute,
   AccountConnectionsRoute: AccountConnectionsRoute,
   AccountCreditsRoute: AccountCreditsRoute,
