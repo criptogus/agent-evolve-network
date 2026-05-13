@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SitePage } from "@/components/site/SitePage";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 // SEO landing: /compare/<slug-a>-vs-<slug-b>
@@ -52,6 +53,7 @@ export const Route = createFileRoute("/compare/$pair")({
 function ComparePage() {
   const { left, right } = Route.useLoaderData();
   return (
+    <SitePage>
     <main className="mx-auto max-w-4xl p-6">
       <h1 className="text-3xl font-bold mb-2">
         {left.name ?? left.slug} <span className="text-muted-foreground">vs</span> {right.name ?? right.slug}
@@ -90,6 +92,7 @@ function ComparePage() {
         <code className="block mt-2 p-2 bg-muted rounded">{`![trust](/api/badges/trust/${left.slug}.svg)`}</code>
       </p>
     </main>
+    </SitePage>
   );
 }
 

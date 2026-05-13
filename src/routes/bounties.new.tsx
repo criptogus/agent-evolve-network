@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { SitePage } from "@/components/site/SitePage";
 import { useState } from "react";
 import { toast } from "sonner";
 import { postBounty } from "@/lib/growth/bounties.functions";
@@ -56,6 +57,7 @@ function NewBounty() {
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   return (
+    <SitePage>
     <main className="mx-auto max-w-2xl p-6">
       <h1 className="text-3xl font-bold mb-2">Post a Skill Bounty</h1>
       <p className="text-muted-foreground mb-6">
@@ -125,5 +127,6 @@ function NewBounty() {
         </button>
       </form>
     </main>
+    </SitePage>
   );
 }

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { SitePage } from "@/components/site/SitePage";
 
 type Bounty = {
   id: string; title: string; brief: string; vertical: string;
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/bounties")({
 function BountiesPage() {
   const { bounties } = Route.useLoaderData();
   return (
+    <SitePage>
     <main className="mx-auto max-w-4xl p-6">
       <h1 className="text-3xl font-bold mb-2">Skill Bounties</h1>
       <p className="text-muted-foreground mb-8">
@@ -68,5 +70,6 @@ function BountiesPage() {
         </a>
       </section>
     </main>
+    </SitePage>
   );
 }

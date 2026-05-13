@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SitePage } from "@/components/site/SitePage";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { rankLeaderboard } from "@/lib/growth/bounties";
 
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/leaderboard")({
 function LeaderboardPage() {
   const { rows } = Route.useLoaderData();
   return (
+    <SitePage>
     <main className="mx-auto max-w-3xl p-6">
       <h1 className="text-3xl font-bold mb-2">Affiliate Leaderboard</h1>
       <p className="text-muted-foreground mb-6">
@@ -58,5 +60,6 @@ function LeaderboardPage() {
         </tbody>
       </table>
     </main>
+    </SitePage>
   );
 }

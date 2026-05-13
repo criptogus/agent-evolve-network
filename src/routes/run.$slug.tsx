@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SitePage } from "@/components/site/SitePage";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -77,6 +78,7 @@ function RunPage() {
   };
 
   return (
+    <SitePage>
     <main className="mx-auto max-w-2xl p-6">
       <a href={`/packs/${pkg.slug}`} className="text-sm underline text-muted-foreground">← {pkg.name}</a>
 
@@ -130,5 +132,6 @@ function RunPage() {
         or install locally with <code className="bg-muted px-1">npx super-agent install {pkg.slug}</code>.
       </section>
     </main>
+    </SitePage>
   );
 }

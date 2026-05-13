@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SitePage } from "@/components/site/SitePage";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { findUseCase } from "@/lib/seo/use-cases";
 
@@ -64,6 +65,7 @@ export const Route = createFileRoute("/use-case/$vertical/$task")({
 function UseCasePage() {
   const { useCase, skills } = Route.useLoaderData();
   return (
+    <SitePage>
     <main className="mx-auto max-w-3xl p-6">
       <div className="text-sm uppercase tracking-wide text-muted-foreground mb-2">
         {useCase.vertical}
@@ -128,6 +130,7 @@ function UseCasePage() {
         </p>
       </section>
     </main>
+    </SitePage>
   );
 }
 

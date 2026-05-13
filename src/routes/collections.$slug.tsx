@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SitePage } from "@/components/site/SitePage";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 type CollectionRow = {
@@ -51,6 +52,7 @@ export const Route = createFileRoute("/collections/$slug")({
 function CollectionPage() {
   const { collection, items } = Route.useLoaderData();
   return (
+    <SitePage>
     <main className="mx-auto max-w-3xl p-6">
       <header className="mb-8">
         <div className="text-5xl mb-2">{collection.cover_emoji ?? "📦"}</div>
@@ -87,5 +89,6 @@ function CollectionPage() {
         </code></pre>
       </section>
     </main>
+    </SitePage>
   );
 }

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SitePage } from "@/components/site/SitePage";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -61,6 +62,7 @@ function BountyDetail() {
 
   const closed = bounty.status !== "open";
   return (
+    <SitePage>
     <main className="mx-auto max-w-3xl p-6">
       <a href="/bounties" className="text-sm text-muted-foreground underline">← All bounties</a>
       <header className="flex justify-between items-baseline mt-4 mb-2">
@@ -103,5 +105,6 @@ function BountyDetail() {
         </p>
       </section>
     </main>
+    </SitePage>
   );
 }

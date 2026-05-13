@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SitePage } from "@/components/site/SitePage";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 type Winner = {
@@ -39,6 +40,7 @@ export const Route = createFileRoute("/skill-of-the-week")({
 function SkillOfTheWeekPage() {
   const { current, history } = Route.useLoaderData();
   return (
+    <SitePage>
     <main className="mx-auto max-w-3xl p-6">
       <h1 className="text-3xl font-bold mb-2">Skill of the Week</h1>
       <p className="text-muted-foreground mb-8">
@@ -89,6 +91,7 @@ function SkillOfTheWeekPage() {
         </>
       )}
     </main>
+    </SitePage>
   );
 }
 
