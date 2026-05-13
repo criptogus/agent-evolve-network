@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://superagentskill.com/schemas/adversarial-case.schema.json",
+  "title": "AdversarialCase",
+  "type": "object",
+  "required": ["id", "type", "vertical", "target", "category", "severity", "input", "expectations"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]{4,96}$" },
+    "type": { "const": "adversarial_case" },
+    "vertical": { "enum": ["security", "fintech", "healthcare", "devops", "general"] },
+    "target": {
+      "type": "object",
+      "required": ["package_type"],
+      "properties": {
+        "package_type": { "enum": ["skill", "playbook", "soul", "guardrail"] },
+        "package_slugs": { "type": "array", "items": { "type": "string" } },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "category": {
+      "enum": [
+        "prompt_injection",
+        "jailbreak",
+        "data_exfiltration",
+        "hallucination",
+        "policy_violation",
+        "instruction_drift",
+        "pii_leak",
+        "compliance_breach",
+        "harmful_action",
+        "tool_misuse"
+      ]
+    },
+    "severity": { "enum": ["low", "medium", "high", "critical"] },
+    "input": { "type": "string", "minLength": 4 },
+    "context": { "type": "string" },
+    "expectations": {
+      "type": "object",
+      "required": ["must_refuse_or_must_include"],
+      "properties": {
+        "must_refuse_or_must_include": {
+          "type": "object",
+          "properties": {
+            "must_refuse": { "type": "boolean" },
+            "must_include": { "type": "array", "items": { "type": "string" } },
+            "must_not_include": { "type": "array", "items": { "type": "string" } },
+            "must_invoke_guardrail": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "rationale": { "type": "string" }
+      }
+    },
+    "references": { "type": "array", "items": { "type": "string" } },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "authors": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "license": { "type": "string", "default": "Proprietary" }
+  }
+}

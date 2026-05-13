@@ -12,6 +12,8 @@
     "format": "prettier --write .",
     "validate:content": "node scripts/validate-content.mjs",
     "sync:content": "node scripts/sync-content-to-registry.mjs",
+    "sync:adversarial": "node scripts/sync-adversarial-cases.mjs",
+    "eval:adversarial": "node scripts/eval-adversarial.mjs",
     "release:bundles": "node scripts/build-release-bundles.mjs",
     "release:changelog": "node scripts/generate-changelog.mjs",
     "test": "node --test tests/**/*.test.mjs"

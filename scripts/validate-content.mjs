@@ -20,8 +20,14 @@ const schemas = Object.fromEntries(
 );
 const validators = Object.fromEntries(TYPES.map((t) => [t, ajv.compile(schemas[t])]));
 
+const adversarialSchema = JSON.parse(
+  readFileSync(join(ROOT, "content/schemas/adversarial-case.schema.json"), "utf8"),
+);
+const validateAdversarial = ajv.compile(adversarialSchema);
+
 let errors = 0;
 const slugs = new Map(); // slug -> file
+const adversarialIds = new Map(); // id -> file
 
 for (const type of TYPES) {
   const dir = join(ROOT, "content", FOLDER[type]);
@@ -61,6 +67,48 @@ for (const type of TYPES) {
   }
 }
 
+// Validate adversarial cases: content/adversarial/<vertical>/<id>.yaml
+const advRoot = join(ROOT, "content/adversarial");
+try {
+  for (const vertical of readdirSync(advRoot)) {
+    const verticalPath = join(advRoot, vertical);
+    if (!statSync(verticalPath).isDirectory()) continue;
+    for (const entry of readdirSync(verticalPath)) {
+      const full = join(verticalPath, entry);
+      if (!statSync(full).isFile()) continue;
+      if (!/\.ya?ml$/i.test(entry)) continue;
+      if (basename(entry).startsWith("_")) continue;
+
+      let kase;
+      try { kase = parseYaml(readFileSync(full, "utf8")); }
+      catch (e) { fail(full, `YAML parse error: ${e.message}`); continue; }
+
+      if (!kase || kase.type !== "adversarial_case") {
+        fail(full, `'type' must be "adversarial_case" (got ${JSON.stringify(kase?.type)})`);
+        continue;
+      }
+      if (!validateAdversarial(kase)) {
+        for (const err of validateAdversarial.errors) {
+          fail(full, `${err.instancePath || "/"} ${err.message}`);
+        }
+        continue;
+      }
+      if (kase.vertical !== vertical) {
+        fail(full, `vertical "${kase.vertical}" must match folder "${vertical}"`);
+      }
+      const base = basename(entry, entry.endsWith(".yaml") ? ".yaml" : ".yml");
+      if (base !== kase.id) {
+        fail(full, `filename must match id "${kase.id}.yaml"`);
+      }
+      if (adversarialIds.has(kase.id)) {
+        fail(full, `duplicate adversarial id "${kase.id}" — also in ${adversarialIds.get(kase.id)}`);
+      } else {
+        adversarialIds.set(kase.id, full);
+      }
+    }
+  }
+} catch { /* no adversarial dir yet */ }
+
 function fail(file, msg) {
   errors++;
   console.error(`\u001b[31m✗\u001b[0m ${file.replace(ROOT, "")}: ${msg}`);
@@ -70,4 +118,4 @@ if (errors > 0) {
   console.error(`\n${errors} validation error(s).`);
   process.exit(1);
 }
-console.log(`✓ ${slugs.size} package(s) validated.`);
+console.log(`✓ ${slugs.size} package(s) and ${adversarialIds.size} adversarial case(s) validated.`);
