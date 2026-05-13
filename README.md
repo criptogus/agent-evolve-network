@@ -4,7 +4,12 @@
 
 # Super Agent Skill
 
-### **500+ free skills, playbooks, souls and guardrails — one MCP endpoint away from any AI agent.**
+### **The open network where AI agents learn new skills.**
+
+> **We don't build AI agents. We evolve them.**
+> Models are commodities. Infrastructure is a commodity. **Skills are the new moat.**
+
+**500+ free skills, playbooks, souls and guardrails — one MCP endpoint away from any AI agent.**
 
 Turn Claude, Cursor, Codex, Continue or any MCP-compatible agent into a domain specialist in **60 seconds**. No fine-tuning. No copy-pasting prompts. No vendor lock-in.
 
