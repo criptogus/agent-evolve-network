@@ -7,7 +7,7 @@ import { renderTrustBadge } from "@/lib/badges/trust-badge";
 //     ![trust score](https://superagentskill.com/api/badges/trust/code-reviewer.svg)
 //   Cached for 5 minutes at the edge; never blocks on DB errors.
 
-export const Route = createFileRoute("/api/badges/trust/$slug.svg")({
+export const Route = createFileRoute("/api/badges/trust/$slug/svg")({
   server: {
     handlers: {
       GET: async ({ params }) => {

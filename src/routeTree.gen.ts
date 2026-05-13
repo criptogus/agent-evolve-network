@@ -10,9 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as UseCasesRouteImport } from './routes/use-cases'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SkillforgeRouteImport } from './routes/skillforge'
+import { Route as SkillOfTheWeekRouteImport } from './routes/skill-of-the-week'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
@@ -24,6 +26,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MatchRouteImport } from './routes/match'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as ForgeRouteImport } from './routes/forge'
 import { Route as EvaluationRouteImport } from './routes/evaluation'
@@ -32,6 +35,7 @@ import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as ContributorFaqRouteImport } from './routes/contributor-faq'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as CommunityRouteImport } from './routes/community'
+import { Route as BountiesRouteImport } from './routes/bounties'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PacksIndexRouteImport } from './routes/packs.index'
@@ -39,6 +43,7 @@ import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as UHandleRouteImport } from './routes/u.$handle'
 import { Route as SoulsSlugRouteImport } from './routes/souls.$slug'
+import { Route as RunSlugRouteImport } from './routes/run.$slug'
 import { Route as PacksSlugRouteImport } from './routes/packs.$slug'
 import { Route as OauthAuthorizeRouteImport } from './routes/oauth.authorize'
 import { Route as MarketplaceRankingsRouteImport } from './routes/marketplace.rankings'
@@ -46,6 +51,10 @@ import { Route as MarketplaceLeaderboardRouteImport } from './routes/marketplace
 import { Route as MarketplaceCategoriesRouteImport } from './routes/marketplace.categories'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
 import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
+import { Route as ComparePairRouteImport } from './routes/compare.$pair'
+import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
+import { Route as BountiesNewRouteImport } from './routes/bounties.new'
+import { Route as BountiesIdRouteImport } from './routes/bounties.$id'
 import { Route as ApiTelemetryRouteImport } from './routes/api/telemetry'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as AgentsMdRouteImport } from './routes/agents.md'
@@ -63,6 +72,7 @@ import { Route as AccountReferralsRouteImport } from './routes/account.referrals
 import { Route as AccountCreditsRouteImport } from './routes/account.credits'
 import { Route as AccountConnectionsRouteImport } from './routes/account.connections'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
+import { Route as UseCaseVerticalTaskRouteImport } from './routes/use-case.$vertical.$task'
 import { Route as PacksSlugCustomizeRouteImport } from './routes/packs.$slug.customize'
 import { Route as MarketplaceTrustSlugRouteImport } from './routes/marketplace.trust.$slug'
 import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug'
@@ -76,11 +86,19 @@ import { Route as ApiPublicOauthRevokeRouteImport } from './routes/api/public/oa
 import { Route as ApiPublicOauthRegisterRouteImport } from './routes/api/public/oauth/register'
 import { Route as ApiPublicMcpHealthRouteImport } from './routes/api/public/mcp.health'
 import { Route as ApiPublicHooksPrewarmSharePromosRouteImport } from './routes/api/public/hooks/prewarm-share-promos'
+import { Route as ApiOgSkillOfTheWeekSvgRouteImport } from './routes/api/og.skill-of-the-week.svg'
+import { Route as ApiIntegrationsSlugInstallRouteImport } from './routes/api/integrations.$slug.install'
+import { Route as ApiBadgesTrustSlugSvgRouteImport } from './routes/api/badges.trust.$slug.svg'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
 const WelcomeRoute = WelcomeRouteImport.update({
   id: '/welcome',
   path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UseCasesRoute = UseCasesRouteImport.update({
+  id: '/use-cases',
+  path: '/use-cases',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UploadRoute = UploadRouteImport.update({
@@ -96,6 +114,11 @@ const TermsRoute = TermsRouteImport.update({
 const SkillforgeRoute = SkillforgeRouteImport.update({
   id: '/skillforge',
   path: '/skillforge',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SkillOfTheWeekRoute = SkillOfTheWeekRouteImport.update({
+  id: '/skill-of-the-week',
+  path: '/skill-of-the-week',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -153,6 +176,11 @@ const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
   path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GenerateRoute = GenerateRouteImport.update({
   id: '/generate',
   path: '/generate',
@@ -193,6 +221,11 @@ const CommunityRoute = CommunityRouteImport.update({
   path: '/community',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BountiesRoute = BountiesRouteImport.update({
+  id: '/bounties',
+  path: '/bounties',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -226,6 +259,11 @@ const UHandleRoute = UHandleRouteImport.update({
 const SoulsSlugRoute = SoulsSlugRouteImport.update({
   id: '/souls/$slug',
   path: '/souls/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RunSlugRoute = RunSlugRouteImport.update({
+  id: '/run/$slug',
+  path: '/run/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PacksSlugRoute = PacksSlugRouteImport.update({
@@ -262,6 +300,26 @@ const DocsMcpRoute = DocsMcpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
   getParentRoute: () => DocsRoute,
+} as any)
+const ComparePairRoute = ComparePairRouteImport.update({
+  id: '/compare/$pair',
+  path: '/compare/$pair',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsSlugRoute = CollectionsSlugRouteImport.update({
+  id: '/collections/$slug',
+  path: '/collections/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BountiesNewRoute = BountiesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => BountiesRoute,
+} as any)
+const BountiesIdRoute = BountiesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => BountiesRoute,
 } as any)
 const ApiTelemetryRoute = ApiTelemetryRouteImport.update({
   id: '/api/telemetry',
@@ -348,6 +406,11 @@ const AccountBillingRoute = AccountBillingRouteImport.update({
   path: '/account/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UseCaseVerticalTaskRoute = UseCaseVerticalTaskRouteImport.update({
+  id: '/use-case/$vertical/$task',
+  path: '/use-case/$vertical/$task',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PacksSlugCustomizeRoute = PacksSlugCustomizeRouteImport.update({
   id: '/customize',
   path: '/customize',
@@ -415,6 +478,22 @@ const ApiPublicHooksPrewarmSharePromosRoute =
     path: '/api/public/hooks/prewarm-share-promos',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiOgSkillOfTheWeekSvgRoute = ApiOgSkillOfTheWeekSvgRouteImport.update({
+  id: '/api/og/skill-of-the-week/svg',
+  path: '/api/og/skill-of-the-week/svg',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiIntegrationsSlugInstallRoute =
+  ApiIntegrationsSlugInstallRouteImport.update({
+    id: '/api/integrations/$slug/install',
+    path: '/api/integrations/$slug/install',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiBadgesTrustSlugSvgRoute = ApiBadgesTrustSlugSvgRouteImport.update({
+  id: '/api/badges/trust/$slug/svg',
+  path: '/api/badges/trust/$slug/svg',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPacksCustomizationIdDownloadExtRoute =
   ApiPacksCustomizationIdDownloadExtRouteImport.update({
     id: '/api/packs/customization/$id/download/$ext',
@@ -425,6 +504,7 @@ const ApiPacksCustomizationIdDownloadExtRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/bounties': typeof BountiesRouteWithChildren
   '/community': typeof CommunityRoute
   '/connect': typeof ConnectRoute
   '/contributor-faq': typeof ContributorFaqRoute
@@ -433,6 +513,7 @@ export interface FileRoutesByFullPath {
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
@@ -444,9 +525,11 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/skill-of-the-week': typeof SkillOfTheWeekRoute
   '/skillforge': typeof SkillforgeRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
+  '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
@@ -465,6 +548,10 @@ export interface FileRoutesByFullPath {
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
   '/api/telemetry': typeof ApiTelemetryRoute
+  '/bounties/$id': typeof BountiesIdRoute
+  '/bounties/new': typeof BountiesNewRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
+  '/compare/$pair': typeof ComparePairRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
@@ -472,6 +559,7 @@ export interface FileRoutesByFullPath {
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
+  '/run/$slug': typeof RunSlugRoute
   '/souls/$slug': typeof SoulsSlugRoute
   '/u/$handle': typeof UHandleRoute
   '/admin/': typeof AdminIndexRoute
@@ -483,6 +571,9 @@ export interface FileRoutesByFullPath {
   '/forge/report/$slug': typeof ForgeReportSlugRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
+  '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
+  '/api/integrations/$slug/install': typeof ApiIntegrationsSlugInstallRoute
+  '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
@@ -490,10 +581,12 @@ export interface FileRoutesByFullPath {
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
+  '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bounties': typeof BountiesRouteWithChildren
   '/community': typeof CommunityRoute
   '/connect': typeof ConnectRoute
   '/contributor-faq': typeof ContributorFaqRoute
@@ -502,6 +595,7 @@ export interface FileRoutesByTo {
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
@@ -513,9 +607,11 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/skill-of-the-week': typeof SkillOfTheWeekRoute
   '/skillforge': typeof SkillforgeRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
+  '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
@@ -534,6 +630,10 @@ export interface FileRoutesByTo {
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
   '/api/telemetry': typeof ApiTelemetryRoute
+  '/bounties/$id': typeof BountiesIdRoute
+  '/bounties/new': typeof BountiesNewRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
+  '/compare/$pair': typeof ComparePairRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
@@ -541,6 +641,7 @@ export interface FileRoutesByTo {
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
+  '/run/$slug': typeof RunSlugRoute
   '/souls/$slug': typeof SoulsSlugRoute
   '/u/$handle': typeof UHandleRoute
   '/admin': typeof AdminIndexRoute
@@ -552,6 +653,9 @@ export interface FileRoutesByTo {
   '/forge/report/$slug': typeof ForgeReportSlugRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
+  '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
+  '/api/integrations/$slug/install': typeof ApiIntegrationsSlugInstallRoute
+  '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
@@ -559,12 +663,14 @@ export interface FileRoutesByTo {
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
+  '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/bounties': typeof BountiesRouteWithChildren
   '/community': typeof CommunityRoute
   '/connect': typeof ConnectRoute
   '/contributor-faq': typeof ContributorFaqRoute
@@ -573,6 +679,7 @@ export interface FileRoutesById {
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
@@ -584,9 +691,11 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/skill-of-the-week': typeof SkillOfTheWeekRoute
   '/skillforge': typeof SkillforgeRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
+  '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
@@ -605,6 +714,10 @@ export interface FileRoutesById {
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
   '/api/telemetry': typeof ApiTelemetryRoute
+  '/bounties/$id': typeof BountiesIdRoute
+  '/bounties/new': typeof BountiesNewRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
+  '/compare/$pair': typeof ComparePairRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
@@ -612,6 +725,7 @@ export interface FileRoutesById {
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
+  '/run/$slug': typeof RunSlugRoute
   '/souls/$slug': typeof SoulsSlugRoute
   '/u/$handle': typeof UHandleRoute
   '/admin/': typeof AdminIndexRoute
@@ -623,6 +737,9 @@ export interface FileRoutesById {
   '/forge/report/$slug': typeof ForgeReportSlugRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
+  '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
+  '/api/integrations/$slug/install': typeof ApiIntegrationsSlugInstallRoute
+  '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
@@ -630,6 +747,7 @@ export interface FileRoutesById {
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
+  '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRouteTypes {
@@ -637,6 +755,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/bounties'
     | '/community'
     | '/connect'
     | '/contributor-faq'
@@ -645,6 +764,7 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/forge'
     | '/generate'
+    | '/leaderboard'
     | '/llms.txt'
     | '/login'
     | '/match'
@@ -656,9 +776,11 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
+    | '/skill-of-the-week'
     | '/skillforge'
     | '/terms'
     | '/upload'
+    | '/use-cases'
     | '/welcome'
     | '/account/billing'
     | '/account/connections'
@@ -677,6 +799,10 @@ export interface FileRouteTypes {
     | '/agents/md'
     | '/api/mcp'
     | '/api/telemetry'
+    | '/bounties/$id'
+    | '/bounties/new'
+    | '/collections/$slug'
+    | '/compare/$pair'
     | '/docs/mcp'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
@@ -684,6 +810,7 @@ export interface FileRouteTypes {
     | '/marketplace/rankings'
     | '/oauth/authorize'
     | '/packs/$slug'
+    | '/run/$slug'
     | '/souls/$slug'
     | '/u/$handle'
     | '/admin/'
@@ -695,6 +822,9 @@ export interface FileRouteTypes {
     | '/forge/report/$slug'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
+    | '/use-case/$vertical/$task'
+    | '/api/integrations/$slug/install'
+    | '/api/og/skill-of-the-week/svg'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/oauth/register'
@@ -702,10 +832,12 @@ export interface FileRouteTypes {
     | '/api/public/oauth/token'
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
+    | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/bounties'
     | '/community'
     | '/connect'
     | '/contributor-faq'
@@ -714,6 +846,7 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/forge'
     | '/generate'
+    | '/leaderboard'
     | '/llms.txt'
     | '/login'
     | '/match'
@@ -725,9 +858,11 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
+    | '/skill-of-the-week'
     | '/skillforge'
     | '/terms'
     | '/upload'
+    | '/use-cases'
     | '/welcome'
     | '/account/billing'
     | '/account/connections'
@@ -746,6 +881,10 @@ export interface FileRouteTypes {
     | '/agents/md'
     | '/api/mcp'
     | '/api/telemetry'
+    | '/bounties/$id'
+    | '/bounties/new'
+    | '/collections/$slug'
+    | '/compare/$pair'
     | '/docs/mcp'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
@@ -753,6 +892,7 @@ export interface FileRouteTypes {
     | '/marketplace/rankings'
     | '/oauth/authorize'
     | '/packs/$slug'
+    | '/run/$slug'
     | '/souls/$slug'
     | '/u/$handle'
     | '/admin'
@@ -764,6 +904,9 @@ export interface FileRouteTypes {
     | '/forge/report/$slug'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
+    | '/use-case/$vertical/$task'
+    | '/api/integrations/$slug/install'
+    | '/api/og/skill-of-the-week/svg'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/oauth/register'
@@ -771,11 +914,13 @@ export interface FileRouteTypes {
     | '/api/public/oauth/token'
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
+    | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/bounties'
     | '/community'
     | '/connect'
     | '/contributor-faq'
@@ -784,6 +929,7 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/forge'
     | '/generate'
+    | '/leaderboard'
     | '/llms.txt'
     | '/login'
     | '/match'
@@ -795,9 +941,11 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
+    | '/skill-of-the-week'
     | '/skillforge'
     | '/terms'
     | '/upload'
+    | '/use-cases'
     | '/welcome'
     | '/account/billing'
     | '/account/connections'
@@ -816,6 +964,10 @@ export interface FileRouteTypes {
     | '/agents/md'
     | '/api/mcp'
     | '/api/telemetry'
+    | '/bounties/$id'
+    | '/bounties/new'
+    | '/collections/$slug'
+    | '/compare/$pair'
     | '/docs/mcp'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
@@ -823,6 +975,7 @@ export interface FileRouteTypes {
     | '/marketplace/rankings'
     | '/oauth/authorize'
     | '/packs/$slug'
+    | '/run/$slug'
     | '/souls/$slug'
     | '/u/$handle'
     | '/admin/'
@@ -834,6 +987,9 @@ export interface FileRouteTypes {
     | '/forge/report/$slug'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
+    | '/use-case/$vertical/$task'
+    | '/api/integrations/$slug/install'
+    | '/api/og/skill-of-the-week/svg'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/oauth/register'
@@ -841,12 +997,14 @@ export interface FileRouteTypes {
     | '/api/public/oauth/token'
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
+    | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  BountiesRoute: typeof BountiesRouteWithChildren
   CommunityRoute: typeof CommunityRoute
   ConnectRoute: typeof ConnectRoute
   ContributorFaqRoute: typeof ContributorFaqRoute
@@ -855,6 +1013,7 @@ export interface RootRouteChildren {
   EvaluationRoute: typeof EvaluationRoute
   ForgeRoute: typeof ForgeRouteWithChildren
   GenerateRoute: typeof GenerateRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   LoginRoute: typeof LoginRoute
   MatchRoute: typeof MatchRoute
@@ -866,9 +1025,11 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SkillOfTheWeekRoute: typeof SkillOfTheWeekRoute
   SkillforgeRoute: typeof SkillforgeRoute
   TermsRoute: typeof TermsRoute
   UploadRoute: typeof UploadRoute
+  UseCasesRoute: typeof UseCasesRoute
   WelcomeRoute: typeof WelcomeRoute
   AccountBillingRoute: typeof AccountBillingRoute
   AccountConnectionsRoute: typeof AccountConnectionsRoute
@@ -879,17 +1040,23 @@ export interface RootRouteChildren {
   AgentsMdRoute: typeof AgentsMdRoute
   ApiMcpRoute: typeof ApiMcpRoute
   ApiTelemetryRoute: typeof ApiTelemetryRoute
+  CollectionsSlugRoute: typeof CollectionsSlugRoute
+  ComparePairRoute: typeof ComparePairRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
   MarketplaceCategoriesRoute: typeof MarketplaceCategoriesRoute
   MarketplaceLeaderboardRoute: typeof MarketplaceLeaderboardRoute
   MarketplaceRankingsRoute: typeof MarketplaceRankingsRoute
   OauthAuthorizeRoute: typeof OauthAuthorizeRoute
   PacksSlugRoute: typeof PacksSlugRouteWithChildren
+  RunSlugRoute: typeof RunSlugRoute
   SoulsSlugRoute: typeof SoulsSlugRoute
   UHandleRoute: typeof UHandleRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   PacksIndexRoute: typeof PacksIndexRoute
   MarketplaceTrustSlugRoute: typeof MarketplaceTrustSlugRoute
+  UseCaseVerticalTaskRoute: typeof UseCaseVerticalTaskRoute
+  ApiIntegrationsSlugInstallRoute: typeof ApiIntegrationsSlugInstallRoute
+  ApiOgSkillOfTheWeekSvgRoute: typeof ApiOgSkillOfTheWeekSvgRoute
   ApiPublicHooksPrewarmSharePromosRoute: typeof ApiPublicHooksPrewarmSharePromosRoute
   ApiPublicMcpHealthRoute: typeof ApiPublicMcpHealthRoute
   ApiPublicOauthRegisterRoute: typeof ApiPublicOauthRegisterRoute
@@ -897,6 +1064,7 @@ export interface RootRouteChildren {
   ApiPublicOauthTokenRoute: typeof ApiPublicOauthTokenRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiSkillsSlugExportRoute: typeof ApiSkillsSlugExportRoute
+  ApiBadgesTrustSlugSvgRoute: typeof ApiBadgesTrustSlugSvgRoute
   ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 
@@ -907,6 +1075,13 @@ declare module '@tanstack/react-router' {
       path: '/welcome'
       fullPath: '/welcome'
       preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/use-cases': {
+      id: '/use-cases'
+      path: '/use-cases'
+      fullPath: '/use-cases'
+      preLoaderRoute: typeof UseCasesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/upload': {
@@ -928,6 +1103,13 @@ declare module '@tanstack/react-router' {
       path: '/skillforge'
       fullPath: '/skillforge'
       preLoaderRoute: typeof SkillforgeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/skill-of-the-week': {
+      id: '/skill-of-the-week'
+      path: '/skill-of-the-week'
+      fullPath: '/skill-of-the-week'
+      preLoaderRoute: typeof SkillOfTheWeekRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -1007,6 +1189,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/generate': {
       id: '/generate'
       path: '/generate'
@@ -1063,6 +1252,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bounties': {
+      id: '/bounties'
+      path: '/bounties'
+      fullPath: '/bounties'
+      preLoaderRoute: typeof BountiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -1110,6 +1306,13 @@ declare module '@tanstack/react-router' {
       path: '/souls/$slug'
       fullPath: '/souls/$slug'
       preLoaderRoute: typeof SoulsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/run/$slug': {
+      id: '/run/$slug'
+      path: '/run/$slug'
+      fullPath: '/run/$slug'
+      preLoaderRoute: typeof RunSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/packs/$slug': {
@@ -1160,6 +1363,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/docs/mcp'
       preLoaderRoute: typeof DocsMcpRouteImport
       parentRoute: typeof DocsRoute
+    }
+    '/compare/$pair': {
+      id: '/compare/$pair'
+      path: '/compare/$pair'
+      fullPath: '/compare/$pair'
+      preLoaderRoute: typeof ComparePairRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections/$slug': {
+      id: '/collections/$slug'
+      path: '/collections/$slug'
+      fullPath: '/collections/$slug'
+      preLoaderRoute: typeof CollectionsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bounties/new': {
+      id: '/bounties/new'
+      path: '/new'
+      fullPath: '/bounties/new'
+      preLoaderRoute: typeof BountiesNewRouteImport
+      parentRoute: typeof BountiesRoute
+    }
+    '/bounties/$id': {
+      id: '/bounties/$id'
+      path: '/$id'
+      fullPath: '/bounties/$id'
+      preLoaderRoute: typeof BountiesIdRouteImport
+      parentRoute: typeof BountiesRoute
     }
     '/api/telemetry': {
       id: '/api/telemetry'
@@ -1280,6 +1511,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountBillingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/use-case/$vertical/$task': {
+      id: '/use-case/$vertical/$task'
+      path: '/use-case/$vertical/$task'
+      fullPath: '/use-case/$vertical/$task'
+      preLoaderRoute: typeof UseCaseVerticalTaskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/packs/$slug/customize': {
       id: '/packs/$slug/customize'
       path: '/customize'
@@ -1371,6 +1609,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPrewarmSharePromosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/og/skill-of-the-week/svg': {
+      id: '/api/og/skill-of-the-week/svg'
+      path: '/api/og/skill-of-the-week/svg'
+      fullPath: '/api/og/skill-of-the-week/svg'
+      preLoaderRoute: typeof ApiOgSkillOfTheWeekSvgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/integrations/$slug/install': {
+      id: '/api/integrations/$slug/install'
+      path: '/api/integrations/$slug/install'
+      fullPath: '/api/integrations/$slug/install'
+      preLoaderRoute: typeof ApiIntegrationsSlugInstallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/badges/trust/$slug/svg': {
+      id: '/api/badges/trust/$slug/svg'
+      path: '/api/badges/trust/$slug/svg'
+      fullPath: '/api/badges/trust/$slug/svg'
+      preLoaderRoute: typeof ApiBadgesTrustSlugSvgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/packs/customization/$id/download/$ext': {
       id: '/api/packs/customization/$id/download/$ext'
       path: '/api/packs/customization/$id/download/$ext'
@@ -1423,6 +1682,20 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface BountiesRouteChildren {
+  BountiesIdRoute: typeof BountiesIdRoute
+  BountiesNewRoute: typeof BountiesNewRoute
+}
+
+const BountiesRouteChildren: BountiesRouteChildren = {
+  BountiesIdRoute: BountiesIdRoute,
+  BountiesNewRoute: BountiesNewRoute,
+}
+
+const BountiesRouteWithChildren = BountiesRoute._addFileChildren(
+  BountiesRouteChildren,
+)
+
 interface DocsRouteChildren {
   DocsMcpRoute: typeof DocsMcpRoute
 }
@@ -1458,6 +1731,7 @@ const PacksSlugRouteWithChildren = PacksSlugRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  BountiesRoute: BountiesRouteWithChildren,
   CommunityRoute: CommunityRoute,
   ConnectRoute: ConnectRoute,
   ContributorFaqRoute: ContributorFaqRoute,
@@ -1466,6 +1740,7 @@ const rootRouteChildren: RootRouteChildren = {
   EvaluationRoute: EvaluationRoute,
   ForgeRoute: ForgeRouteWithChildren,
   GenerateRoute: GenerateRoute,
+  LeaderboardRoute: LeaderboardRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   LoginRoute: LoginRoute,
   MatchRoute: MatchRoute,
@@ -1477,9 +1752,11 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SkillOfTheWeekRoute: SkillOfTheWeekRoute,
   SkillforgeRoute: SkillforgeRoute,
   TermsRoute: TermsRoute,
   UploadRoute: UploadRoute,
+  UseCasesRoute: UseCasesRoute,
   WelcomeRoute: WelcomeRoute,
   AccountBillingRoute: AccountBillingRoute,
   AccountConnectionsRoute: AccountConnectionsRoute,
@@ -1490,17 +1767,23 @@ const rootRouteChildren: RootRouteChildren = {
   AgentsMdRoute: AgentsMdRoute,
   ApiMcpRoute: ApiMcpRoute,
   ApiTelemetryRoute: ApiTelemetryRoute,
+  CollectionsSlugRoute: CollectionsSlugRoute,
+  ComparePairRoute: ComparePairRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
   MarketplaceCategoriesRoute: MarketplaceCategoriesRoute,
   MarketplaceLeaderboardRoute: MarketplaceLeaderboardRoute,
   MarketplaceRankingsRoute: MarketplaceRankingsRoute,
   OauthAuthorizeRoute: OauthAuthorizeRoute,
   PacksSlugRoute: PacksSlugRouteWithChildren,
+  RunSlugRoute: RunSlugRoute,
   SoulsSlugRoute: SoulsSlugRoute,
   UHandleRoute: UHandleRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   PacksIndexRoute: PacksIndexRoute,
   MarketplaceTrustSlugRoute: MarketplaceTrustSlugRoute,
+  UseCaseVerticalTaskRoute: UseCaseVerticalTaskRoute,
+  ApiIntegrationsSlugInstallRoute: ApiIntegrationsSlugInstallRoute,
+  ApiOgSkillOfTheWeekSvgRoute: ApiOgSkillOfTheWeekSvgRoute,
   ApiPublicHooksPrewarmSharePromosRoute: ApiPublicHooksPrewarmSharePromosRoute,
   ApiPublicMcpHealthRoute: ApiPublicMcpHealthRoute,
   ApiPublicOauthRegisterRoute: ApiPublicOauthRegisterRoute,
@@ -1508,9 +1791,20 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicOauthTokenRoute: ApiPublicOauthTokenRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiSkillsSlugExportRoute: ApiSkillsSlugExportRoute,
+  ApiBadgesTrustSlugSvgRoute: ApiBadgesTrustSlugSvgRoute,
   ApiPacksCustomizationIdDownloadExtRoute:
     ApiPacksCustomizationIdDownloadExtRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
