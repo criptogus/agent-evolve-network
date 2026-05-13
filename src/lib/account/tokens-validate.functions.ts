@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 import { hashToken } from "./tokens.server";
 
 export const validateMcpToken = createServerFn({ method: "POST" })

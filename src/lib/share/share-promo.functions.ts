@@ -2,7 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { generateText } from "ai";
 import { getGatewayModel } from "@/lib/ai-gateway";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 
 const InputSchema = z.object({
   slug: z.string().min(1).max(120),

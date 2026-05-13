@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
 import { EmptyState } from "@/components/site/EmptyState";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 import { findUseCase } from "@/lib/seo/use-cases";
 
 type SkillRow = {

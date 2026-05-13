@@ -8,7 +8,8 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import JSZip from "jszip";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 import { buildSkillMd, buildExamplesMd, validateAnthropicSpec } from "@/lib/skills/anthropic-spec";
 
 export const Route = createFileRoute("/api/skills/$slug/export")({

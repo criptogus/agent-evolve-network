@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 import { renderTrustBadge } from "@/lib/badges/trust-badge";
 
 // GET /api/badges/trust/<slug>.svg

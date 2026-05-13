@@ -7,7 +7,8 @@ import { useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { runForgeLoop } from "@/lib/skills/forge-loop.functions";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 
 /* ---------- server: read public report data (no auth required) ---------- */
 const ReportInput = z.object({ slug: z.string() });

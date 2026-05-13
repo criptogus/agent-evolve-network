@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 import { createTtlCache } from "@/lib/cache/ttl-cache";
 import type { Package, PackageVersion, CompatibilityCheck } from "@/data/packages";
 

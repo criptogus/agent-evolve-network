@@ -8,7 +8,8 @@ import { generateText, Output } from "ai";
 import { z } from "zod";
 import { createServerFn } from "@tanstack/react-start";
 import { requireAdmin } from "@/lib/admin/middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 import { getGatewayModel } from "@/lib/ai-gateway";
 
 const MIN_RECENT_RUNS = 50;

@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Users } from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
 import { EmptyState } from "@/components/site/EmptyState";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 import { rankLeaderboard } from "@/lib/growth/bounties";
 
 type Row = { referrer_user_id: string; activated_referrals: number; referral_earnings_cents: number; handle?: string | null };

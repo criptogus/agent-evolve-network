@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SitePage } from "@/components/site/SitePage";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 
 // SEO landing: /compare/<slug-a>-vs-<slug-b>
 // Auto-generated head-to-head scorecard. Programmatic SEO — one URL per pair,
