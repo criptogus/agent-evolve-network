@@ -62,21 +62,23 @@ function ComparePage() {
         Trust Score, adversarial robustness, and recent usage. Updated automatically from the Super Agent Skill registry.
       </p>
 
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="border-b">
-            <th className="text-left py-2 pr-4">Metric</th>
-            <th className="text-right py-2 px-4">{left.slug}</th>
-            <th className="text-right py-2 pl-4">{right.slug}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {row("Trust score", pct(left.trust_score), pct(right.trust_score))}
-          {row("Adversarial pass rate", pct(left.adversarial_pass_rate), pct(right.adversarial_pass_rate))}
-          {row("Installs (7d)", left.installs_7d ?? "—", right.installs_7d ?? "—")}
-          {row("Description", left.description ?? "—", right.description ?? "—")}
-        </tbody>
-      </table>
+      <div className="overflow-x-auto -mx-6 px-6 md:mx-0 md:px-0">
+        <table className="w-full min-w-[520px] border-collapse">
+          <thead>
+            <tr className="border-b">
+              <th className="py-3 pr-4 text-left text-sm font-medium text-muted-foreground">Metric</th>
+              <th className="py-3 px-4 text-left text-sm font-medium">{left.slug}</th>
+              <th className="py-3 pl-4 text-left text-sm font-medium">{right.slug}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ScoreRow label="Trust score" l={left.trust_score} r={right.trust_score} />
+            <ScoreRow label="Adversarial pass rate" l={left.adversarial_pass_rate} r={right.adversarial_pass_rate} />
+            <NumberRow label="Installs (7d)" l={left.installs_7d} r={right.installs_7d} />
+            <TextRow label="Description" l={left.description} r={right.description} />
+          </tbody>
+        </table>
+      </div>
 
       <div className="grid grid-cols-2 gap-4 mt-8">
         <a href={`/packs/${left.slug}`} className="border rounded p-4 hover:bg-accent">
@@ -96,13 +98,53 @@ function ComparePage() {
   );
 }
 
-function row(label: string, l: unknown, r: unknown) {
+function ScoreRow({ label, l, r }: { label: string; l: number | null; r: number | null }) {
   return (
     <tr className="border-b">
-      <td className="py-2 pr-4 font-medium">{label}</td>
-      <td className="py-2 px-4 text-right">{String(l)}</td>
-      <td className="py-2 pl-4 text-right">{String(r)}</td>
+      <td className="py-3 pr-4 align-middle text-sm font-medium">{label}</td>
+      <td className="py-3 px-4 align-middle"><ScoreBar value={l} /></td>
+      <td className="py-3 pl-4 align-middle"><ScoreBar value={r} /></td>
     </tr>
+  );
+}
+
+function NumberRow({ label, l, r }: { label: string; l: number | null; r: number | null }) {
+  return (
+    <tr className="border-b">
+      <td className="py-3 pr-4 align-middle text-sm font-medium">{label}</td>
+      <td className="py-3 px-4 align-middle font-mono text-sm">{l ?? "—"}</td>
+      <td className="py-3 pl-4 align-middle font-mono text-sm">{r ?? "—"}</td>
+    </tr>
+  );
+}
+
+function TextRow({ label, l, r }: { label: string; l: string | null; r: string | null }) {
+  return (
+    <tr className="border-b">
+      <td className="py-3 pr-4 align-top text-sm font-medium">{label}</td>
+      <td className="py-3 px-4 align-top text-sm text-muted-foreground">{l ?? "—"}</td>
+      <td className="py-3 pl-4 align-top text-sm text-muted-foreground">{r ?? "—"}</td>
+    </tr>
+  );
+}
+
+function ScoreBar({ value }: { value: number | null }) {
+  if (value === null || value === undefined) {
+    return <span className="text-sm text-muted-foreground">—</span>;
+  }
+  const pct = Math.max(0, Math.min(1, Number(value)));
+  const color =
+    pct >= 0.85 ? "bg-emerald-500"
+    : pct >= 0.70 ? "bg-yellow-500"
+    : pct >= 0.50 ? "bg-orange-500"
+    : "bg-red-500";
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-2 w-20 overflow-hidden rounded-full bg-muted">
+        <div className={`h-full ${color}`} style={{ width: `${pct * 100}%` }} />
+      </div>
+      <span className="font-mono text-sm tabular-nums">{(pct * 100).toFixed(0)}%</span>
+    </div>
   );
 }
 

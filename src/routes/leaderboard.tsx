@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Users } from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
+import { EmptyState } from "@/components/site/EmptyState";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { rankLeaderboard } from "@/lib/growth/bounties";
 
@@ -41,24 +43,32 @@ function LeaderboardPage() {
         Get your link at <a className="underline" href="/account/referrals">/account/referrals</a>.
       </p>
 
-      <table className="w-full">
-        <thead className="text-left text-sm text-muted-foreground border-b">
-          <tr><th className="py-2">#</th><th>Referrer</th><th className="text-right">Activations</th><th className="text-right">Earnings</th></tr>
-        </thead>
-        <tbody>
-          {rows.length === 0 && (
-            <tr><td colSpan={4} className="py-4 text-center text-muted-foreground">No data yet.</td></tr>
-          )}
-          {rows.map((r, i) => (
-            <tr key={r.referrer_user_id} className="border-b">
-              <td className="py-2 font-mono">{i + 1}</td>
-              <td>@{r.handle ?? r.referrer_user_id.slice(0, 8)}</td>
-              <td className="text-right">{r.activated_referrals}</td>
-              <td className="text-right">${(r.referral_earnings_cents / 100).toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {rows.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="Leaderboard is just warming up"
+          body="Grab your referral link and bring the first activated author. Earn 10% of their revenue share for 12 months."
+          cta={{ label: "Get my referral link", href: "/account/referrals" }}
+        />
+      ) : (
+        <div className="overflow-x-auto -mx-6 px-6 md:mx-0 md:px-0">
+          <table className="w-full min-w-[520px]">
+            <thead className="border-b text-left text-sm text-muted-foreground">
+              <tr><th className="py-2">#</th><th>Referrer</th><th className="text-right">Activations</th><th className="text-right">Earnings</th></tr>
+            </thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={r.referrer_user_id} className="border-b">
+                  <td className="py-2 font-mono">{i + 1}</td>
+                  <td>@{r.handle ?? r.referrer_user_id.slice(0, 8)}</td>
+                  <td className="text-right">{r.activated_referrals}</td>
+                  <td className="text-right">${(r.referral_earnings_cents / 100).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </main>
     </SitePage>
   );

@@ -94,10 +94,30 @@ function RunPage() {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
           />
-          <button disabled={busy} className="px-4 py-2 bg-primary text-primary-foreground rounded disabled:opacity-50">
-            {busy ? "Running…" : "Run and share"}
+          <button
+            disabled={busy}
+            className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-all hover:opacity-95 disabled:opacity-50"
+          >
+            {busy && (
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden>
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" fill="none" strokeOpacity="0.25" />
+                <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+              </svg>
+            )}
+            {busy ? "Running on the registry…" : "Run and share"}
           </button>
         </form>
+      )}
+
+      {busy && !sharedRun && (
+        <section className="rounded-lg border bg-muted/20 p-5">
+          <div className="h-3 w-24 animate-pulse rounded bg-muted-foreground/20" />
+          <div className="mt-3 h-4 w-3/4 animate-pulse rounded bg-muted-foreground/15" />
+          <div className="mt-2 h-4 w-2/3 animate-pulse rounded bg-muted-foreground/15" />
+          <div className="mt-6 h-3 w-20 animate-pulse rounded bg-muted-foreground/20" />
+          <div className="mt-3 h-4 w-5/6 animate-pulse rounded bg-muted-foreground/15" />
+          <div className="mt-2 h-4 w-4/6 animate-pulse rounded bg-muted-foreground/15" />
+        </section>
       )}
 
       {sharedRun && (

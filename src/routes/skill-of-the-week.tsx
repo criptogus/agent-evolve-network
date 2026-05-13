@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Crown } from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
+import { EmptyState } from "@/components/site/EmptyState";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 type Winner = {
@@ -32,6 +34,9 @@ export const Route = createFileRoute("/skill-of-the-week")({
       { name: "description", content: `This week's top skill on Super Agent Skill, ranked by trust score, adversarial robustness, and real-world installs.` },
       { property: "og:title", content: `Skill of the Week: ${loaderData?.current?.package?.name ?? "—"}` },
       { property: "og:description", content: loaderData?.current?.package?.description ?? "" },
+      { property: "og:image", content: "https://superagentskill.com/api/og/skill-of-the-week.svg" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://superagentskill.com/api/og/skill-of-the-week.svg" },
     ],
   }),
   component: SkillOfTheWeekPage,
@@ -48,7 +53,14 @@ function SkillOfTheWeekPage() {
         robustness, and real installs. First-time winners get a novelty bonus.
       </p>
 
-      {!current && <p>Picking has not started yet — check back Monday.</p>}
+      {!current && (
+        <EmptyState
+          icon={Crown}
+          title="No winner crowned yet"
+          body="Picks land every Monday 14:00 UTC. Publish a skill with high trust + adversarial pass to be in the running."
+          cta={{ label: "Browse signed skills", href: "/marketplace" }}
+        />
+      )}
 
       {current?.package && (
         <article className="border rounded-lg p-6 mb-10 bg-accent/30">

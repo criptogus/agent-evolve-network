@@ -97,7 +97,10 @@ function BountyDetail() {
           </form>
         )}
         {result && !result.ok && (
-          <p className="text-sm text-destructive mt-3">Rejected: {result.reason}</p>
+          <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
+            <p className="font-medium text-destructive">Submission can't be accepted yet</p>
+            <p className="mt-1 text-muted-foreground">{rejectionMessage(result.reason)}</p>
+          </div>
         )}
         <p className="text-xs text-muted-foreground mt-3">
           Submissions are auto-evaluated against the latest Trust Score and adversarial
@@ -107,4 +110,23 @@ function BountyDetail() {
     </main>
     </SitePage>
   );
+}
+
+function rejectionMessage(reason?: string): string {
+  switch (reason) {
+    case "BOUNTY_NOT_OPEN":
+      return "This bounty has already been claimed, paid out, expired or cancelled. Browse open bounties on the board.";
+    case "DEADLINE_PASSED":
+      return "The deadline for this bounty has passed. Watch for renewals from the same poster.";
+    case "TRUST_BELOW_THRESHOLD":
+      return "Your package's Trust Score is below the threshold set by this bounty. Run more adversarial cases, publish a signed release, and recompute — then resubmit.";
+    case "ADVERSARIAL_BELOW_THRESHOLD":
+      return "Your adversarial pass rate hasn't cleared the bar yet. Open SkillForge on your package, run the suite for this vertical, and address the failing cases before resubmitting.";
+    case "VERTICAL_MISMATCH":
+      return "Your package doesn't carry the tag for this bounty's vertical. Add the appropriate vertical tag and republish.";
+    case "ALREADY_SUBMITTED":
+      return "You've already submitted this package to this bounty.";
+    default:
+      return reason ?? "Unknown reason. Please retry, then contact support if it persists.";
+  }
 }

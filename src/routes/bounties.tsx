@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Trophy } from "lucide-react";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { SitePage } from "@/components/site/SitePage";
+import { EmptyState } from "@/components/site/EmptyState";
 
 type Bounty = {
   id: string; title: string; brief: string; vertical: string;
@@ -39,7 +41,14 @@ function BountiesPage() {
       </p>
 
       <div className="space-y-3">
-        {bounties.length === 0 && <p>No open bounties right now. Check back soon.</p>}
+        {bounties.length === 0 && (
+          <EmptyState
+            icon={Trophy}
+            title="No open bounties right now"
+            body="Be the first to post one — any author can claim it by passing the adversarial harness."
+            cta={{ label: "Post a bounty", href: "/bounties/new" }}
+          />
+        )}
         {bounties.map((b) => (
           <article key={b.id} className="border rounded p-4">
             <header className="flex justify-between items-baseline">

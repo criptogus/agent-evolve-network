@@ -101,10 +101,10 @@ function Home() {
       <Logos />
       <HowItWorks />
       <PlainEnglish />
-      <ClientOnly minHeight={900}><CompareIndustries /></ClientOnly>
+      <ClientOnly minHeight={560}><CompareIndustries /></ClientOnly>
       <CoreConcepts />
       <SkillForgeSection />
-      <ClientOnly minHeight={700}><EvalLoopSection /></ClientOnly>
+      <ClientOnly minHeight={520}><EvalLoopSection /></ClientOnly>
       <SocialProof />
       <FreeVsPremium />
       <ClientOnly minHeight={500}><NetworkSection /></ClientOnly>
@@ -156,15 +156,15 @@ function Hero() {
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               to="/connect"
-              className="inline-flex h-12 items-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95"
+              className="inline-flex h-12 items-center rounded-md bg-primary px-7 text-[15px] font-semibold text-primary-foreground shadow-elevated transition-all hover:scale-[1.02] hover:opacity-95"
             >
               Connect your agent — free →
             </Link>
             <Link
               to="/marketplace"
-              className="inline-flex h-12 items-center rounded-md border border-border bg-surface-elevated px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+              className="inline-flex h-12 items-center rounded-md px-5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              Browse signed skills
+              Browse signed skills →
             </Link>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
@@ -1858,14 +1858,16 @@ function SocialProof() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="max-w-2xl">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
-            Proof, not promises
+            What we measure
           </span>
           <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">
-            Before. After. Measured.
+            Before. After. Side by side.
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Real teams. Real metrics. Numbers logged by Super Agent Skill during the first 30 days
-            after connecting an MCP-compatible agent.
+            Illustrative scenarios showing the kind of before/after measurements teams track when
+            an MCP-compatible agent picks up signed Super Agent Skill packages — diagnostic
+            precision, reply rate, memo turnaround. Your numbers will differ; we surface them in
+            telemetry so you can verify.
           </p>
         </div>
 
