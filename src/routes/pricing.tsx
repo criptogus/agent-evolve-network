@@ -64,7 +64,7 @@ function Pricing() {
       priceId: "agent_pass_pro_monthly",
       customerEmail: user.email ?? undefined,
       userId: user.id,
-      returnUrl: `${window.location.origin}/account/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      returnUrl: `${window.location.origin}/welcome?session_id={CHECKOUT_SESSION_ID}&plan=${encodeURIComponent(tierName)}`,
     });
   };
 
