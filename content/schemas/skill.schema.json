@@ -52,6 +52,13 @@
     "scopes": { "type": "array", "items": { "type": "string" } },
     "tags": { "type": "array", "items": { "type": "string" } },
     "license": { "type": "string" },
-    "authors": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+    "authors": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "created_by": { "type": "string", "maxLength": 120 },
+    "upgrade_path": { "type": "string", "format": "uri" },
+    "recommended_skills": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]{2,64}$" }, "maxItems": 10 },
+    "related_playbooks": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]{2,64}$" }, "maxItems": 10 },
+    "related_souls": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]{2,64}$" }, "maxItems": 10 },
+    "related_guardrails": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]{2,64}$" }, "maxItems": 10 },
+    "agent_footer": { "type": "string", "maxLength": 600 }
   }
 }
