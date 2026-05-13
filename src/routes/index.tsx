@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { ShieldCheck, BadgeCheck, Landmark, Plug, ShieldAlert, Layers, Activity, Clock } from "lucide-react";
 import { ClientOnly } from "@/components/site/ClientOnly";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
@@ -187,14 +188,15 @@ function Hero() {
         {/* Trust metrics — proof of the moat, not vanity counts */}
         <div className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-4 md:grid-cols-4">
           {[
-            { v: 100, suffix: "%", label: "Signed at release" },
-            { v: 5, suffix: "", label: "Regulated verticals" },
-            { v: 7, suffix: "", label: "Injection attack classes blocked" },
-            { v: 30, suffix: "s", label: "MCP setup" },
+            { Icon: BadgeCheck, v: 100, suffix: "%", label: "Signed at release" },
+            { Icon: Landmark, v: 5, suffix: "", label: "Regulated verticals" },
+            { Icon: ShieldAlert, v: 7, suffix: "", label: "Injection classes blocked" },
+            { Icon: Clock, v: 30, suffix: "s", label: "MCP setup" },
           ].map((m) => (
             <div key={m.label} className="rounded-xl border border-border bg-surface/60 p-4 text-center">
-              <div className="font-mono text-2xl font-semibold tracking-tight text-foreground">
-                <CountUp to={m.v} suffix={m.suffix} decimals={m.decimals ?? 0} />
+              <m.Icon className="mx-auto h-4 w-4 text-primary" strokeWidth={1.75} aria-hidden />
+              <div className="mt-2 font-mono text-2xl font-semibold tracking-tight text-foreground">
+                <CountUp to={m.v} suffix={m.suffix} decimals={0} />
               </div>
               <div className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">{m.label}</div>
             </div>
@@ -208,25 +210,25 @@ function Hero() {
 function WhatIsThis() {
   const items = [
     {
-      icon: "🛡",
+      Icon: ShieldCheck,
       title: "Adversarial harness",
       plain: "Proven robust",
       body: "Every skill is tested against prompt injection, jailbreaks, exfiltration, blast-radius and policy bypass before it can publish. Verticalized cases for OWASP LLM, FINRA, HIPAA Safe Harbor, PCI-DSS and SRE.",
     },
     {
-      icon: "🔏",
+      Icon: BadgeCheck,
       title: "Signed Trust Score",
       plain: "Cryptographic + transparent",
       body: "Releases are Ed25519-signed and air-gap verifiable. Trust Score is a public, weighted formula over adversarial robustness, real-world success, signed releases and age — embed the badge in your README.",
     },
     {
-      icon: "🏛",
+      Icon: Landmark,
       title: "Verticalized Souls",
       plain: "Regulator-aware personas",
       body: "Fintech compliance officer, HIPAA-aware clinical liaison, SOC 2 auditor, Kubernetes SRE — Souls that cite the rule before the recommendation and refuse the unsafe defaults.",
     },
     {
-      icon: "🔌",
+      Icon: Plug,
       title: "One MCP endpoint",
       plain: "Plug into any agent",
       body: "Claude, Cursor, ChatGPT, Continue, Cline. No SDK, no glue code — one URL or one `npx super-agent install`. Skills compose into Playbooks at runtime with guardrail middleware.",
@@ -253,7 +255,9 @@ function WhatIsThis() {
               key={it.title}
               className="rounded-2xl border border-border bg-background p-6 transition-all hover:border-primary/40 hover:shadow-elevated"
             >
-              <div className="text-3xl">{it.icon}</div>
+              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <it.Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+              </div>
               <h3 className="mt-4 text-lg font-semibold tracking-tight">{it.title}</h3>
               <div className="mt-1 text-xs font-medium uppercase tracking-wider text-primary">{it.plain}</div>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{it.body}</p>
@@ -270,24 +274,37 @@ function WhatIsThis() {
   );
 }
 
-const PARTNERS = ["CLAUDE", "CURSOR", "CODEX", "OPENCLAW", "HERMES", "GROK", "LANGCHAIN", "REPLIT"];
+// Capability claims framed as "works with X" — avoids partner-logo trademark
+// issues that come with using third-party marks without a brand-use agreement.
+const RUNTIMES = [
+  { name: "Claude Code", desc: "MCP" },
+  { name: "Cursor", desc: "MCP" },
+  { name: "ChatGPT", desc: "MCP / GPTs" },
+  { name: "Continue", desc: "MCP" },
+  { name: "Cline", desc: "MCP" },
+  { name: "Any MCP client", desc: "stdio · http" },
+];
 
 function Logos() {
   return (
-    <section className="border-b border-border bg-surface/50 py-10">
+    <section className="border-b border-border bg-surface/50 py-12">
       <div className="mx-auto max-w-7xl px-6">
         <p className="text-center text-xs uppercase tracking-[0.2em] text-muted-foreground">
-          Compatible with every major agent runtime
+          One endpoint. Every major agent runtime.
         </p>
-        <div className="relative mt-6 overflow-hidden">
-          <div className="marquee flex w-max gap-14 whitespace-nowrap">
-            {[...PARTNERS, ...PARTNERS].map((p, i) => (
-              <span key={i} className="font-mono text-sm tracking-widest text-muted-foreground/70">
-                {p}
+        <ul className="mx-auto mt-8 grid max-w-5xl grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {RUNTIMES.map((r) => (
+            <li
+              key={r.name}
+              className="flex flex-col items-center justify-center rounded-xl border border-border bg-background/40 px-4 py-5 text-center transition-colors hover:bg-background/80"
+            >
+              <span className="text-sm font-medium text-foreground">{r.name}</span>
+              <span className="mt-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                {r.desc}
               </span>
-            ))}
-          </div>
-        </div>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

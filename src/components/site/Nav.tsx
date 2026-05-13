@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, Github, ChevronDown } from "lucide-react";
 import { Logo } from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import {
   DropdownMenu,
@@ -104,6 +105,7 @@ export function Nav() {
           </nav>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <ThemeToggle className="hidden h-8 w-8 sm:inline-flex" />
           <a
             href={GITHUB_URL}
             target="_blank"
