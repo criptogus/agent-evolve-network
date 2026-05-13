@@ -20,7 +20,8 @@ export const postBounty = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => PostInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sb, userId } = context;
+    const supabase = _sb as any;
     const { data: row, error } = await supabase
       .from("skill_bounties")
       .insert({
@@ -50,7 +51,8 @@ export const submitToBounty = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => SubmitInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sb, userId } = context;
+    const supabase = _sb as any;
 
     const { data: bounty } = await supabase
       .from("skill_bounties")

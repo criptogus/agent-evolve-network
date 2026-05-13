@@ -19,7 +19,8 @@ export const forkPackage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => ForkInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sb, userId } = context;
+    const supabase = _sb as any;
 
     const { data: parent, error: pErr } = await supabase
       .from("packages")
