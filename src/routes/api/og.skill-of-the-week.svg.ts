@@ -8,7 +8,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 // Caches at the edge for 15 minutes — the underlying selection only changes
 // weekly.
 
-export const Route = createFileRoute("/api/og/skill-of-the-week.svg")({
+export const Route = createFileRoute("/api/og/skill-of-the-week/svg")({
   server: {
     handlers: {
       GET: async () => {
