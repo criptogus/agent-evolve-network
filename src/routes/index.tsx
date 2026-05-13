@@ -166,6 +166,9 @@ function Hero() {
           <p className="mt-4 text-xs text-muted-foreground">
             No credit card · Setup in 30 seconds · 4,200+ ready-to-use experts
           </p>
+          <p className="mx-auto mt-6 max-w-md text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70">
+            Models are commodities. <span className="text-foreground/80">Skills are the new moat.</span>
+          </p>
         </div>
 
         <div id="connect" className="mx-auto mt-16 max-w-3xl fade-up">
