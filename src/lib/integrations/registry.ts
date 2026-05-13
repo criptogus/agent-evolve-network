@@ -38,11 +38,22 @@ export interface Integration {
   authors: string[];
 }
 
-const DEFAULT_DIR = new URL("../../../content/integrations/", import.meta.url).pathname;
+// Lazily resolve the content dir. `new URL(..., import.meta.url)` throws
+// "Invalid URL string." inside the bundled Cloudflare Worker because
+// import.meta.url is not a usable base there. Resolving it eagerly at module
+// init would crash SSR for every request that imports this file.
+function resolveDefaultDir(): string {
+  try {
+    return new URL("../../../content/integrations/", import.meta.url).pathname;
+  } catch {
+    return "";
+  }
+}
 
 let cache: Map<string, Integration> | null = null;
 
-export function loadIntegrations(dir = DEFAULT_DIR): Map<string, Integration> {
+export function loadIntegrations(dir?: string): Map<string, Integration> {
+  dir = dir ?? resolveDefaultDir();
   if (cache) return cache;
   const out = new Map<string, Integration>();
   let entries: string[] = [];
