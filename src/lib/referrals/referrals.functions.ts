@@ -17,7 +17,8 @@ export const claimReferral = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => ClaimInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase } = context;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     const { data: result, error } = await supabase.rpc("claim_referral", {
       _code: data.code,
       _source_url: data.source_url ?? undefined,

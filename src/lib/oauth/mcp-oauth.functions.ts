@@ -44,7 +44,8 @@ export const issueOauthCode = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase } = context as { supabase: typeof supabaseAdmin };
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     const code = generateAuthCode();
     const { error } = await supabase.rpc("mcp_oauth_issue_code", {
       _client_id: data.client_id,

@@ -92,7 +92,8 @@ export const getCompatibility = createServerFn({ method: "GET" })
 export const listMyDriftAlerts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const { data: pkgs } = await supabase
       .from("packages")
       .select("id")

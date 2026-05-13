@@ -17,7 +17,8 @@ export const runForgeLoop = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => LoopInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
 
     const { data: pkg } = await supabase.from("packages").select("*").eq("slug", data.package_slug).single();
     if (!pkg) throw new Response("Package not found", { status: 404 });
@@ -178,7 +179,8 @@ export const autoCreateMissing = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => CreateInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
 
     // Log the request first
     const { data: req } = await supabase

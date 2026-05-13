@@ -93,7 +93,8 @@ export const purchasePack = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => PackIdInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase } = context;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     const { data: result, error } = await supabase.rpc("purchase_pack", { _pack_id: data.pack_id });
     if (error) {
       const known: Record<string, string> = {
@@ -122,7 +123,8 @@ export const startCustomization = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => CustomizeInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     // Must own the pack
     const { data: owned } = await supabase
       .from("pack_purchases")
@@ -155,7 +157,8 @@ export const runCustomization = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => RunInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const { data: cust, error: cErr } = await supabase
       .from("pack_customizations")
       .select("*")
@@ -261,7 +264,8 @@ export const getCustomization = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => GetCustInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const { data: row, error } = await supabase
       .from("pack_customizations")
       .select("*")
@@ -276,7 +280,8 @@ export const listMyCustomizations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ pack_id: z.string().uuid().optional() }).parse(d ?? {}))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     let q = supabase
       .from("pack_customizations")
       .select("id, pack_id, status, brief, niche, created_at, updated_at")

@@ -11,7 +11,8 @@ const PACK_NAME = "Meta Ads Pack — 135 Tool-Grounded Primitives";
 export const listMetaAdsBlueprints = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    const { supabase } = context as any;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     const slugs = BLUEPRINTS.map((b) => b.slug);
     const { data: existing } = await supabase
       .from("packages")
@@ -45,7 +46,8 @@ export const generateMetaAdsBlueprint = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => GenInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context as any;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const bp = BLUEPRINTS.find((b) => b.id === data.blueprint_id);
     if (!bp) throw new Response(`Unknown blueprint: ${data.blueprint_id}`, { status: 400 });
 
@@ -131,7 +133,8 @@ export const generateMetaAdsBlueprint = createServerFn({ method: "POST" })
 export const assembleMetaAdsPack = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context as any;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
 
     // Load all generated packages by slug
     const slugs = BLUEPRINTS.map((b) => b.slug);

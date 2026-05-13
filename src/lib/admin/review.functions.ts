@@ -65,7 +65,8 @@ export const submitForReview = createServerFn({ method: "POST" })
     return { slug };
   })
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const { data: pkg } = await supabase.from("packages").select("id, author_id").eq("slug", data.slug).maybeSingle();
     if (!pkg) throw new Response("Not found", { status: 404 });
     if (pkg.author_id !== userId) {

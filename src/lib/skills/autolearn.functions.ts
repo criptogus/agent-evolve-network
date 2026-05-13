@@ -12,7 +12,8 @@ export const autoLearnPackage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
 
     const { data: pkg, error: pErr } = await supabase
       .from("packages")

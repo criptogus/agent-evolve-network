@@ -7,7 +7,8 @@ import { requireAdmin } from "./middleware";
 export const getMyAdminStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
     return { isAdmin: !!data, userId };
   });
@@ -16,7 +17,8 @@ export const getMyAdminStatus = createServerFn({ method: "GET" })
 export const claimAdminBootstrap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const { count, error: cErr } = await supabase
       .from("user_roles")
       .select("user_id", { count: "exact", head: true })
@@ -36,7 +38,8 @@ export const listAccounts = createServerFn({ method: "GET" })
     z.object({ search: z.string().max(120).optional() }).parse(d ?? {})
   )
   .handler(async ({ data, context }) => {
-    const { supabase } = context as any;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     let q = supabase
       .from("profiles")
       .select("id, display_name, handle, avatar_url, created_at")
@@ -81,7 +84,8 @@ export const setUserRole = createServerFn({ method: "POST" })
       .parse(d)
   )
   .handler(async ({ data, context }) => {
-    const { supabase } = context as any;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     if (data.grant) {
       const { error } = await supabase
         .from("user_roles")
@@ -106,7 +110,8 @@ export const setUserPlan = createServerFn({ method: "POST" })
     z.object({ userId: z.string().uuid(), planId: z.string().uuid() }).parse(d)
   )
   .handler(async ({ data, context }) => {
-    const { supabase } = context as any;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     const { error } = await supabase
       .from("account_plans")
       .upsert(

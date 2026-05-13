@@ -18,7 +18,8 @@ export const wizardCreatePackage = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => WizardInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as any;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const vertical = [data.industry, data.technology, data.business_area].filter(Boolean).join(" / ");
     const draft = await generateDraft(data.brief, data.type, vertical || undefined);
     const pkg = await insertDraftPackage(supabase, userId, draft, {
@@ -43,7 +44,8 @@ export const importFromGithub = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => GithubInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as any;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const m = data.repoUrl.match(/github\.com\/([^/]+)\/([^/?#]+)/);
     if (!m) throw new Response("Invalid GitHub URL", { status: 400 });
     const [, owner, repoRaw] = m;
@@ -144,7 +146,8 @@ export const importMarkdown = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => MarkdownInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as any;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const staged: Array<{ name: string; pkgId?: string; error?: string }> = [];
 
     for (const f of data.files) {

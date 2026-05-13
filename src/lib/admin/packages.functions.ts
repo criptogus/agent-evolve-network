@@ -8,7 +8,8 @@ export const listAllPackages = createServerFn({ method: "GET" })
     z.object({ search: z.string().max(120).optional(), kind: z.string().optional() }).parse(d ?? {})
   )
   .handler(async ({ data, context }) => {
-    const { supabase } = context as any;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     let q = supabase
       .from("packages")
       .select("id, slug, name, type, description, is_published, install_count, latest_version, source_kind, source_ref, author_handle, created_at")
@@ -27,7 +28,8 @@ export const setPackagePublished = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), published: z.boolean() }).parse(d)
   )
   .handler(async ({ data, context }) => {
-    const { supabase } = context as any;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     const { error } = await supabase
       .from("packages")
       .update({ is_published: data.published })
@@ -40,7 +42,8 @@ export const deletePackage = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context as any;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     await supabase.from("package_versions").delete().eq("package_id", data.id);
     const { error } = await supabase.from("packages").delete().eq("id", data.id);
     if (error) throw new Response(error.message, { status: 500 });

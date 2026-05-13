@@ -22,7 +22,8 @@ export const bulkUploadPackages = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }): Promise<{ results: UploadResult[] }> => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const results = await processBulkUpload(supabase as any, userId, data.files, {
       publish: data.publish,
     });

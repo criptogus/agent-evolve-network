@@ -18,7 +18,8 @@ export const requestMissingPrimitive = createServerFn({ method: "POST" })
       .parse(d)
   )
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as any;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const { data: row, error } = await supabase
       .from("package_requests")
       .insert({
@@ -37,7 +38,8 @@ export const requestMissingPrimitive = createServerFn({ method: "POST" })
 export const listRequests = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    const { supabase } = context as any;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     const { data, error } = await supabase
       .from("package_requests")
       .select("*")
@@ -51,7 +53,8 @@ export const processRequest = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as any;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
 
     const { data: req, error: rErr } = await supabase
       .from("package_requests")
@@ -111,7 +114,8 @@ export const publishRequestPackage = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context as any;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     const { data: req } = await supabase
       .from("package_requests")
       .select("generated_package_id")
