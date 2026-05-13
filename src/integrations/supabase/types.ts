@@ -43,6 +43,151 @@ export type Database = {
           },
         ]
       }
+      adversarial_cases: {
+        Row: {
+          authors: string[]
+          case_id: string
+          category: string
+          context: string | null
+          created_at: string
+          expectations: Json
+          id: string
+          input: string
+          is_active: boolean
+          license: string
+          references_: string[]
+          severity: string
+          tags: string[]
+          target_package_slugs: string[]
+          target_package_type: string
+          target_tags: string[]
+          updated_at: string
+          vertical: string
+        }
+        Insert: {
+          authors?: string[]
+          case_id: string
+          category: string
+          context?: string | null
+          created_at?: string
+          expectations: Json
+          id?: string
+          input: string
+          is_active?: boolean
+          license?: string
+          references_?: string[]
+          severity: string
+          tags?: string[]
+          target_package_slugs?: string[]
+          target_package_type: string
+          target_tags?: string[]
+          updated_at?: string
+          vertical: string
+        }
+        Update: {
+          authors?: string[]
+          case_id?: string
+          category?: string
+          context?: string | null
+          created_at?: string
+          expectations?: Json
+          id?: string
+          input?: string
+          is_active?: boolean
+          license?: string
+          references_?: string[]
+          severity?: string
+          tags?: string[]
+          target_package_slugs?: string[]
+          target_package_type?: string
+          target_tags?: string[]
+          updated_at?: string
+          vertical?: string
+        }
+        Relationships: []
+      }
+      adversarial_runs: {
+        Row: {
+          by_category: Json
+          by_severity: Json
+          created_at: string
+          duration_ms: number | null
+          failed: number
+          id: string
+          model: string | null
+          outcomes: Json
+          package_id: string | null
+          pass_rate: number
+          passed: number
+          severity_weighted_score: number
+          total: number
+          trigger_kind: string
+          triggered_by: string | null
+          version_id: string | null
+          vertical_filter: string | null
+        }
+        Insert: {
+          by_category?: Json
+          by_severity?: Json
+          created_at?: string
+          duration_ms?: number | null
+          failed: number
+          id?: string
+          model?: string | null
+          outcomes?: Json
+          package_id?: string | null
+          pass_rate: number
+          passed: number
+          severity_weighted_score: number
+          total: number
+          trigger_kind?: string
+          triggered_by?: string | null
+          version_id?: string | null
+          vertical_filter?: string | null
+        }
+        Update: {
+          by_category?: Json
+          by_severity?: Json
+          created_at?: string
+          duration_ms?: number | null
+          failed?: number
+          id?: string
+          model?: string | null
+          outcomes?: Json
+          package_id?: string | null
+          pass_rate?: number
+          passed?: number
+          severity_weighted_score?: number
+          total?: number
+          trigger_kind?: string
+          triggered_by?: string | null
+          version_id?: string | null
+          vertical_filter?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "adversarial_runs_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "adversarial_runs_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "adversarial_runs_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "package_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_ledger: {
         Row: {
           balance_after: number
@@ -1886,6 +2031,42 @@ export type Database = {
           stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      upload_injection_audit: {
+        Row: {
+          content_sample: string | null
+          created_at: string
+          filename: string | null
+          findings: Json
+          id: number
+          inferred_type: string | null
+          rejected: boolean
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          content_sample?: string | null
+          created_at?: string
+          filename?: string | null
+          findings?: Json
+          id?: number
+          inferred_type?: string | null
+          rejected: boolean
+          severity: string
+          user_id?: string | null
+        }
+        Update: {
+          content_sample?: string | null
+          created_at?: string
+          filename?: string | null
+          findings?: Json
+          id?: number
+          inferred_type?: string | null
+          rejected?: boolean
+          severity?: string
+          user_id?: string | null
         }
         Relationships: []
       }
