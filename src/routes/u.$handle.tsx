@@ -9,22 +9,35 @@ import { TypeBadge } from "@/routes/marketplace.index";
 import { PriceBadge } from "@/components/marketplace/BuyButton";
 
 export const Route = createFileRoute("/u/$handle")({
-  head: ({ params }) => ({
-    meta: [
-      { title: `@${params.handle.replace(/^@/, "")} — Creator on Super Agent Skill` },
-      {
-        name: "description",
-        content: `All agent skills, playbooks and souls published by @${params.handle.replace(
-          /^@/,
-          ""
-        )} on the Super Agent Skill marketplace.`,
-      },
-      {
-        property: "og:title",
-        content: `@${params.handle.replace(/^@/, "")} on Super Agent Skill`,
-      },
-    ],
-  }),
+  head: ({ params }) => {
+    const handle = params.handle.replace(/^@/, "");
+    const url = `https://superagentskill.com/u/${handle}`;
+    return {
+      meta: [
+        { title: `@${handle} — Creator on Super Agent Skill` },
+        {
+          name: "description",
+          content: `All agent skills, playbooks and souls published by @${handle} on the Super Agent Skill marketplace.`,
+        },
+        { property: "og:title", content: `@${handle} on Super Agent Skill` },
+        { property: "og:description", content: `Skills, playbooks and souls by @${handle}.` },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "profile" },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ProfilePage",
+            url,
+            mainEntity: { "@type": "Person", name: `@${handle}`, url },
+          }),
+        },
+      ],
+    };
+  },
   component: CreatorPage,
   notFoundComponent: () => (
     <div className="min-h-screen bg-background">

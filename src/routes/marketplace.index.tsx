@@ -19,6 +19,22 @@ export const Route = createFileRoute("/marketplace/")({
         content:
           "Browse the live registry of skills, playbooks, souls (incl. famous founders & operators) and guardrails. Search by name, person and category.",
       },
+      { property: "og:title", content: "Marketplace — Super Agent Skill" },
+      { property: "og:description", content: "Live registry of skills, playbooks, souls and guardrails for AI agents." },
+      { property: "og:url", content: "https://superagentskill.com/marketplace" },
+    ],
+    links: [{ rel: "canonical", href: "https://superagentskill.com/marketplace" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Super Agent Skill Marketplace",
+          description: "Live registry of skills, playbooks, souls and guardrails for AI agents.",
+          url: "https://superagentskill.com/marketplace",
+        }),
+      },
     ],
   }),
   component: Marketplace,

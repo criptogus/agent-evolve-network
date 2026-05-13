@@ -28,16 +28,34 @@ export const Route = createFileRoute("/marketplace/$packageId")({
     if (!result) throw notFound();
     return { pkg: result.pkg };
   },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.pkg.name} — Super Agent Skill` },
-          { name: "description", content: loaderData.pkg.description },
-          { property: "og:title", content: `${loaderData.pkg.name} — Super Agent Skill` },
-          { property: "og:description", content: loaderData.pkg.description },
-        ]
-      : [],
-  }),
+  head: ({ loaderData, params }) => {
+    if (!loaderData) return { meta: [] };
+    const url = `https://superagentskill.com/marketplace/${params.packageId}`;
+    return {
+      meta: [
+        { title: `${loaderData.pkg.name} — Super Agent Skill` },
+        { name: "description", content: loaderData.pkg.description },
+        { property: "og:title", content: `${loaderData.pkg.name} — Super Agent Skill` },
+        { property: "og:description", content: loaderData.pkg.description },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "product" },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: loaderData.pkg.name,
+            description: loaderData.pkg.description,
+            url,
+            brand: { "@type": "Brand", name: loaderData.pkg.author ?? "Super Agent Skill" },
+          }),
+        },
+      ],
+    };
+  },
   notFoundComponent: () => (
     <div className="min-h-screen bg-background">
       <Nav />

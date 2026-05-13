@@ -8,6 +8,24 @@ export const Route = createFileRoute("/docs")({
     meta: [
       { title: "Docs — Super Agent Skill" },
       { name: "description", content: "Connect any AI agent to Super Agent Skill through MCP. Quickstart, capabilities, and the Evolution Engine." },
+      { property: "og:title", content: "Docs — Super Agent Skill" },
+      { property: "og:description", content: "Quickstart, MCP gateway, skills, playbooks, souls, guardrails and the Evolution Engine." },
+      { property: "og:url", content: "https://superagentskill.com/docs" },
+      { property: "og:type", content: "article" },
+    ],
+    links: [{ rel: "canonical", href: "https://superagentskill.com/docs" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: "Super Agent Skill — Documentation",
+          description: "Connect any AI agent to Super Agent Skill through MCP. Quickstart, capabilities, and the Evolution Engine.",
+          url: "https://superagentskill.com/docs",
+          author: { "@type": "Organization", name: "Super Agent Skill" },
+        }),
+      },
     ],
   }),
   component: Docs,

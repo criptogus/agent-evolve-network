@@ -11,7 +11,11 @@ export const Route = createFileRoute("/pricing")({
     meta: [
       { title: "Pricing — Super Agent Skill" },
       { name: "description", content: "Simple, usage-aligned pricing. From individual agents to enterprise-wide synchronization." },
+      { property: "og:title", content: "Pricing — Super Agent Skill" },
+      { property: "og:description", content: "Plans for solo builders, teams shipping agents, and enterprises rolling out fleets." },
+      { property: "og:url", content: "https://superagentskill.com/pricing" },
     ],
+    links: [{ rel: "canonical", href: "https://superagentskill.com/pricing" }],
   }),
   component: Pricing,
 });
