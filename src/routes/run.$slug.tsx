@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SitePage } from "@/components/site/SitePage";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -77,6 +78,7 @@ function RunPage() {
   };
 
   return (
+    <SitePage>
     <main className="mx-auto max-w-2xl p-6">
       <a href={`/packs/${pkg.slug}`} className="text-sm underline text-muted-foreground">← {pkg.name}</a>
 
@@ -92,29 +94,69 @@ function RunPage() {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
           />
-          <button disabled={busy} className="px-4 py-2 bg-primary text-primary-foreground rounded disabled:opacity-50">
-            {busy ? "Running…" : "Run and share"}
+          <button
+            disabled={busy}
+            className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-all hover:opacity-95 disabled:opacity-50"
+          >
+            {busy && (
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden>
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" fill="none" strokeOpacity="0.25" />
+                <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+              </svg>
+            )}
+            {busy ? "Running on the registry…" : "Run and share"}
           </button>
         </form>
       )}
 
+      {busy && !sharedRun && (
+        <section className="rounded-lg border bg-muted/20 p-5">
+          <div className="h-3 w-24 animate-pulse rounded bg-muted-foreground/20" />
+          <div className="mt-3 h-4 w-3/4 animate-pulse rounded bg-muted-foreground/15" />
+          <div className="mt-2 h-4 w-2/3 animate-pulse rounded bg-muted-foreground/15" />
+          <div className="mt-6 h-3 w-20 animate-pulse rounded bg-muted-foreground/20" />
+          <div className="mt-3 h-4 w-5/6 animate-pulse rounded bg-muted-foreground/15" />
+          <div className="mt-2 h-4 w-4/6 animate-pulse rounded bg-muted-foreground/15" />
+        </section>
+      )}
+
       {sharedRun && (
-        <section className="border rounded p-4 bg-muted/30 relative">
-          <div
+        <section className="relative overflow-hidden rounded-lg border bg-muted/30 p-5">
+          <svg
             aria-hidden
-            className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10 text-3xl font-bold tracking-widest"
-            style={{ transform: "rotate(-20deg)" }}
+            className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.06]"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            powered by super-agent-skill
+            <defs>
+              <pattern
+                id="sas-watermark"
+                x="0" y="0" width="220" height="120" patternUnits="userSpaceOnUse"
+                patternTransform="rotate(-22)"
+              >
+                <text
+                  x="0" y="60"
+                  fontFamily="ui-sans-serif, system-ui, sans-serif"
+                  fontSize="14" fontWeight="600"
+                  letterSpacing="0.18em"
+                  textAnchor="start"
+                  className="fill-foreground"
+                >
+                  SUPER · AGENT · SKILL
+                </text>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#sas-watermark)" />
+          </svg>
+          <div className="relative">
+            <h2 className="mb-2 text-sm uppercase tracking-wide text-muted-foreground">Prompt</h2>
+            <pre className="mb-4 whitespace-pre-wrap text-sm">{sharedRun.prompt}</pre>
+            <h2 className="mb-2 text-sm uppercase tracking-wide text-muted-foreground">Output</h2>
+            <pre className="whitespace-pre-wrap text-sm">{sharedRun.output}</pre>
+            <footer className="mt-4 flex justify-between text-xs text-muted-foreground">
+              <span>Shared run · {new Date(sharedRun.created_at).toLocaleString()} · {sharedRun.view_count + 1} views</span>
+              <a className="underline" href={`/packs/${pkg.slug}`}>Open in {pkg.name} →</a>
+            </footer>
           </div>
-          <h2 className="text-sm uppercase tracking-wide text-muted-foreground mb-2">Prompt</h2>
-          <pre className="whitespace-pre-wrap text-sm mb-4">{sharedRun.prompt}</pre>
-          <h2 className="text-sm uppercase tracking-wide text-muted-foreground mb-2">Output</h2>
-          <pre className="whitespace-pre-wrap text-sm">{sharedRun.output}</pre>
-          <footer className="mt-4 flex justify-between text-xs text-muted-foreground">
-            <span>Shared run · {new Date(sharedRun.created_at).toLocaleString()} · {sharedRun.view_count + 1} views</span>
-            <a className="underline" href={`/packs/${pkg.slug}`}>Open in {pkg.name} →</a>
-          </footer>
         </section>
       )}
 
@@ -130,5 +172,6 @@ function RunPage() {
         or install locally with <code className="bg-muted px-1">npx super-agent install {pkg.slug}</code>.
       </section>
     </main>
+    </SitePage>
   );
 }

@@ -23,7 +23,7 @@ export function Footer() {
           <NewsletterForm />
         </div>
 
-        <div className="grid grid-cols-2 gap-10 md:col-span-7 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-10 md:col-span-7 md:grid-cols-5">
           <FooterCol title="Product" links={[
             { label: "Connect", to: "/connect" },
             { label: "Marketplace", to: "/marketplace" },
@@ -37,6 +37,13 @@ export function Footer() {
             { label: "Generate", to: "/generate" },
             { label: "Evaluation", to: "/evaluation" },
             { label: "Rankings", to: "/marketplace/rankings" },
+          ]} />
+          <FooterCol title="Community" links={[
+            { label: "Skill of the Week", to: "/skill-of-the-week" },
+            { label: "Use cases", to: "/use-cases" },
+            { label: "Bounties", to: "/bounties" },
+            { label: "Affiliate leaderboard", to: "/leaderboard" },
+            { label: "Discord", href: "https://www.superagentskill.com/community" },
           ]} />
           <FooterCol title="Open source" links={[
             { label: "GitHub repo", href: "https://github.com/criptogus/agent-evolve-network" },

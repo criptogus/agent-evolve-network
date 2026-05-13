@@ -1,4 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Sparkles } from "lucide-react";
+import { SitePage } from "@/components/site/SitePage";
+import { EmptyState } from "@/components/site/EmptyState";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { findUseCase } from "@/lib/seo/use-cases";
 
@@ -64,6 +67,7 @@ export const Route = createFileRoute("/use-case/$vertical/$task")({
 function UseCasePage() {
   const { useCase, skills } = Route.useLoaderData();
   return (
+    <SitePage>
     <main className="mx-auto max-w-3xl p-6">
       <div className="text-sm uppercase tracking-wide text-muted-foreground mb-2">
         {useCase.vertical}
@@ -73,10 +77,12 @@ function UseCasePage() {
 
       <h2 className="text-xl font-semibold mb-3">Top skills for this use case</h2>
       {skills.length === 0 && (
-        <p className="text-muted-foreground">
-          No published skills with these tags yet. Want to build it?{" "}
-          <a href="/bounties/new" className="underline">Post a bounty</a>.
-        </p>
+        <EmptyState
+          icon={Sparkles}
+          title="No published skills for this use case — yet"
+          body="Be the first to build it, or post a bounty so authors compete to ship one."
+          cta={{ label: "Post a bounty", href: "/bounties/new" }}
+        />
       )}
       <ol className="space-y-3">
         {skills.map((s, i) => (
@@ -128,6 +134,7 @@ function UseCasePage() {
         </p>
       </section>
     </main>
+    </SitePage>
   );
 }
 

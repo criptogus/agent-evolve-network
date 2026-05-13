@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Trophy } from "lucide-react";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { SitePage } from "@/components/site/SitePage";
+import { EmptyState } from "@/components/site/EmptyState";
 
 type Bounty = {
   id: string; title: string; brief: string; vertical: string;
@@ -29,6 +32,7 @@ export const Route = createFileRoute("/bounties")({
 function BountiesPage() {
   const { bounties } = Route.useLoaderData();
   return (
+    <SitePage>
     <main className="mx-auto max-w-4xl p-6">
       <h1 className="text-3xl font-bold mb-2">Skill Bounties</h1>
       <p className="text-muted-foreground mb-8">
@@ -37,7 +41,14 @@ function BountiesPage() {
       </p>
 
       <div className="space-y-3">
-        {bounties.length === 0 && <p>No open bounties right now. Check back soon.</p>}
+        {bounties.length === 0 && (
+          <EmptyState
+            icon={Trophy}
+            title="No open bounties right now"
+            body="Be the first to post one — any author can claim it by passing the adversarial harness."
+            cta={{ label: "Post a bounty", href: "/bounties/new" }}
+          />
+        )}
         {bounties.map((b) => (
           <article key={b.id} className="border rounded p-4">
             <header className="flex justify-between items-baseline">
@@ -68,5 +79,6 @@ function BountiesPage() {
         </a>
       </section>
     </main>
+    </SitePage>
   );
 }

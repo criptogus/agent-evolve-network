@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SitePage } from "@/components/site/SitePage";
 import { USE_CASES } from "@/lib/seo/use-cases";
 
 export const Route = createFileRoute("/use-cases")({
@@ -16,6 +17,7 @@ function UseCasesIndex() {
   for (const u of USE_CASES) (byVertical[u.vertical] ||= []).push(u);
 
   return (
+    <SitePage>
     <main className="mx-auto max-w-3xl p-6">
       <h1 className="text-3xl font-bold mb-2">Use cases</h1>
       <p className="text-muted-foreground mb-8">
@@ -35,5 +37,6 @@ function UseCasesIndex() {
         </section>
       ))}
     </main>
+    </SitePage>
   );
 }

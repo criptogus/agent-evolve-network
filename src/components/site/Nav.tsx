@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, Github, ChevronDown } from "lucide-react";
 import { Logo } from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import {
   DropdownMenu,
@@ -32,6 +33,13 @@ const CREATE: NavItem[] = [
   { to: "/discover", label: "Discover", hint: "AI auto-forges what's missing" },
   { to: "/evaluation", label: "Evaluation", hint: "Test & benchmark" },
   { to: "/match", label: "Match", hint: "Pair skills to a goal" },
+];
+
+const COMMUNITY: NavItem[] = [
+  { to: "/skill-of-the-week", label: "Skill of the Week", hint: "Top skill, weekly" },
+  { to: "/use-cases", label: "Use cases", hint: "By vertical & task" },
+  { to: "/bounties", label: "Bounties", hint: "Get paid to publish skills" },
+  { to: "/leaderboard", label: "Affiliate leaderboard", hint: "Top referrers (30d)" },
 ];
 
 const SIMPLE: NavItem[] = [
@@ -84,6 +92,7 @@ export function Nav() {
           <nav className="hidden min-w-0 items-center gap-5 lg:flex">
             <NavDropdown label="Browse" items={BROWSE} />
             <NavDropdown label="Create" items={CREATE} />
+            <NavDropdown label="Community" items={COMMUNITY} />
             {SIMPLE.map((l) => (
               <Link
                 key={l.to}
@@ -96,6 +105,7 @@ export function Nav() {
           </nav>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <ThemeToggle className="hidden h-8 w-8 sm:inline-flex" />
           <a
             href={GITHUB_URL}
             target="_blank"
@@ -173,6 +183,7 @@ export function Nav() {
               <nav className="mt-6 flex flex-col gap-4">
                 <MobileSection title="Browse" items={BROWSE} onNavigate={() => setOpen(false)} />
                 <MobileSection title="Create" items={CREATE} onNavigate={() => setOpen(false)} />
+                <MobileSection title="Community" items={COMMUNITY} onNavigate={() => setOpen(false)} />
                 <MobileSection title="More" items={SIMPLE} onNavigate={() => setOpen(false)} />
 
                 <div className="mt-2 border-t border-border pt-4">
