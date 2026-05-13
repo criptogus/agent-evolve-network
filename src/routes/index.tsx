@@ -94,6 +94,7 @@ function Home() {
       <JsonLd data={[ORG_LD, SOFTWARE_LD, FAQ_LD]} />
       <Nav />
       <Hero />
+      <SkillLayerManifesto />
       <WhatIsThis />
       <Logos />
       <HowItWorks />
@@ -103,6 +104,7 @@ function Home() {
       <SkillForgeSection />
       <ClientOnly minHeight={700}><EvalLoopSection /></ClientOnly>
       <SocialProof />
+      <FreeVsPremium />
       <ClientOnly minHeight={500}><NetworkSection /></ClientOnly>
       <FAQ />
       <CTASection />
