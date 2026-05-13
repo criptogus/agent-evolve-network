@@ -6,6 +6,8 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Logo } from "@/components/site/Logo";
 import { toast } from "sonner";
+import { captureRefFromUrl, getStoredRef, clearStoredRef } from "@/lib/referrals/capture";
+import { claimReferral } from "@/lib/referrals/referrals.functions";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -29,12 +31,21 @@ function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    captureRefFromUrl();
     const target = next || "/account/billing";
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: target, replace: true });
+    const tryClaim = async () => {
+      const code = getStoredRef();
+      if (!code) return;
+      try {
+        const r = await claimReferral({ data: { code, source_url: window.location.href } });
+        if (r?.ok) clearStoredRef();
+      } catch { /* non-fatal */ }
+    };
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (data.session) { await tryClaim(); navigate({ to: target, replace: true }); }
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      if (s) navigate({ to: target, replace: true });
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
+      if (s) { await tryClaim(); navigate({ to: target, replace: true }); }
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate, next]);

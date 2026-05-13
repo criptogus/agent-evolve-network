@@ -39,19 +39,19 @@ create index if not exists bounty_submissions_bounty_idx
 -- Materialized leaderboard refreshed daily — referrer ranking by activated users.
 create materialized view if not exists public.affiliate_leaderboard_30d as
 select
-  r.referrer_user_id,
+  r.referrer_id,
   count(*) as activated_referrals,
   coalesce(sum(p.amount_cents) filter (where p.kind = 'referral'), 0) as referral_earnings_cents
 from public.referrals r
 left join public.revenue_share_payouts p
-  on p.payee_user_id = r.referrer_user_id
+  on p.payee_user_id = r.referrer_id
   and p.kind = 'referral'
   and p.created_at >= now() - interval '30 days'
 where r.signed_up_at >= now() - interval '30 days'
-group by r.referrer_user_id;
+group by r.referrer_id;
 
 create unique index if not exists affiliate_leaderboard_30d_uidx
-  on public.affiliate_leaderboard_30d (referrer_user_id);
+  on public.affiliate_leaderboard_30d (referrer_id);
 
 alter table public.skill_bounties enable row level security;
 alter table public.bounty_submissions enable row level security;
