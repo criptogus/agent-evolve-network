@@ -46,6 +46,7 @@ import { Route as MarketplaceLeaderboardRouteImport } from './routes/marketplace
 import { Route as MarketplaceCategoriesRouteImport } from './routes/marketplace.categories'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
 import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
+import { Route as ApiTelemetryRouteImport } from './routes/api/telemetry'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as AgentsMdRouteImport } from './routes/agents.md'
 import { Route as AdminReviewReportsRouteImport } from './routes/admin.review-reports'
@@ -262,6 +263,11 @@ const DocsMcpRoute = DocsMcpRouteImport.update({
   path: '/mcp',
   getParentRoute: () => DocsRoute,
 } as any)
+const ApiTelemetryRoute = ApiTelemetryRouteImport.update({
+  id: '/api/telemetry',
+  path: '/api/telemetry',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMcpRoute = ApiMcpRouteImport.update({
   id: '/api/mcp',
   path: '/api/mcp',
@@ -458,6 +464,7 @@ export interface FileRoutesByFullPath {
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
+  '/api/telemetry': typeof ApiTelemetryRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
@@ -526,6 +533,7 @@ export interface FileRoutesByTo {
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
+  '/api/telemetry': typeof ApiTelemetryRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
@@ -596,6 +604,7 @@ export interface FileRoutesById {
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
+  '/api/telemetry': typeof ApiTelemetryRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
@@ -667,6 +676,7 @@ export interface FileRouteTypes {
     | '/admin/review-reports'
     | '/agents/md'
     | '/api/mcp'
+    | '/api/telemetry'
     | '/docs/mcp'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
@@ -735,6 +745,7 @@ export interface FileRouteTypes {
     | '/admin/review-reports'
     | '/agents/md'
     | '/api/mcp'
+    | '/api/telemetry'
     | '/docs/mcp'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
@@ -804,6 +815,7 @@ export interface FileRouteTypes {
     | '/admin/review-reports'
     | '/agents/md'
     | '/api/mcp'
+    | '/api/telemetry'
     | '/docs/mcp'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
@@ -866,6 +878,7 @@ export interface RootRouteChildren {
   AccountUsageRoute: typeof AccountUsageRoute
   AgentsMdRoute: typeof AgentsMdRoute
   ApiMcpRoute: typeof ApiMcpRoute
+  ApiTelemetryRoute: typeof ApiTelemetryRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
   MarketplaceCategoriesRoute: typeof MarketplaceCategoriesRoute
   MarketplaceLeaderboardRoute: typeof MarketplaceLeaderboardRoute
@@ -1147,6 +1160,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/docs/mcp'
       preLoaderRoute: typeof DocsMcpRouteImport
       parentRoute: typeof DocsRoute
+    }
+    '/api/telemetry': {
+      id: '/api/telemetry'
+      path: '/api/telemetry'
+      fullPath: '/api/telemetry'
+      preLoaderRoute: typeof ApiTelemetryRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/mcp': {
       id: '/api/mcp'
@@ -1469,6 +1489,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountUsageRoute: AccountUsageRoute,
   AgentsMdRoute: AgentsMdRoute,
   ApiMcpRoute: ApiMcpRoute,
+  ApiTelemetryRoute: ApiTelemetryRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
   MarketplaceCategoriesRoute: MarketplaceCategoriesRoute,
   MarketplaceLeaderboardRoute: MarketplaceLeaderboardRoute,
@@ -1493,3 +1514,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
