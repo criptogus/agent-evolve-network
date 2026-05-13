@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 
 const VersionStatus = z.enum(["stable", "beta", "deprecated", "candidate"]);
 
@@ -47,7 +48,8 @@ export const getSoulOwnership = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as { supabase: any; userId: string };
+    const { supabase: _sbCtx, userId } = context as { supabase: any; userId: string };
+    const supabase = _sbCtx as any;
     const { data: pkg } = await supabase
       .from("packages")
       .select("author_id, type")
@@ -74,7 +76,8 @@ export const createSoulVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => CreateInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as { supabase: any; userId: string };
+    const { supabase: _sbCtx, userId } = context as { supabase: any; userId: string };
+    const supabase = _sbCtx as any;
     const pkg = await assertSoulOwnership(supabase, userId, data.slug);
 
     // ensure version doesn't already exist
@@ -136,7 +139,8 @@ export const rollbackSoulVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => RollbackInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as { supabase: any; userId: string };
+    const { supabase: _sbCtx, userId } = context as { supabase: any; userId: string };
+    const supabase = _sbCtx as any;
     const pkg = await assertSoulOwnership(supabase, userId, data.slug);
 
     const { data: target } = await supabase
@@ -167,7 +171,8 @@ export const setSoulVersionStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => StatusInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as { supabase: any; userId: string };
+    const { supabase: _sbCtx, userId } = context as { supabase: any; userId: string };
+    const supabase = _sbCtx as any;
     const pkg = await assertSoulOwnership(supabase, userId, data.slug);
 
     const { error } = await supabaseAdmin

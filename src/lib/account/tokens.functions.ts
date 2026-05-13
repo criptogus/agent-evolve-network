@@ -6,7 +6,8 @@ import { hashToken, newToken } from "./tokens.server";
 export const listMcpTokens = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const { data } = await supabase
       .from("mcp_tokens")
       .select("id,name,prefix,last_used_at,created_at")
@@ -19,7 +20,8 @@ export const createMcpToken = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ name: z.string().min(1).max(80) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const { token, prefix } = newToken();
     const { data: row, error } = await supabase
       .from("mcp_tokens")
@@ -40,7 +42,8 @@ export const revokeMcpToken = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const { error } = await supabase.from("mcp_tokens").delete().eq("id", data.id).eq("user_id", userId);
     if (error) throw new Response(error.message, { status: 500 });
     return { ok: true };

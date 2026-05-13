@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { SitePage } from "@/components/site/SitePage";
 import { useState } from "react";
 import { toast } from "sonner";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 import { createSharedRun } from "@/lib/runs/shared.functions";
 
 type Pkg = { id: string; slug: string; name: string; description: string | null; is_published: boolean };

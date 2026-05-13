@@ -28,7 +28,8 @@ export const upsertPlan = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => PlanInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context as any;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     const payload = { ...data, features: data.features as any };
     const { data: row, error } = await supabase
       .from("plans")
@@ -43,7 +44,8 @@ export const deletePlan = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context as any;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     const { error } = await supabase.from("plans").delete().eq("id", data.id);
     if (error) throw new Response(error.message, { status: 500 });
     return { ok: true };

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 
 export type ReviewStatus = "draft" | "pending" | "approved" | "paused" | "rejected";
 
@@ -64,7 +65,8 @@ export const submitForReview = createServerFn({ method: "POST" })
     return { slug };
   })
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const { data: pkg } = await supabase.from("packages").select("id, author_id").eq("slug", data.slug).maybeSingle();
     if (!pkg) throw new Response("Not found", { status: 404 });
     if (pkg.author_id !== userId) {

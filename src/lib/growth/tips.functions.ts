@@ -19,7 +19,8 @@ export const createTipIntent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context;
+    const { supabase: _sb, userId } = context;
+    const supabase = _sb as any;
 
     const { data: pkg, error } = await supabase
       .from("packages")

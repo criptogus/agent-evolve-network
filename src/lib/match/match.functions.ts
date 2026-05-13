@@ -2,7 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { generateText, Output } from "ai";
 import { getGatewayModel } from "@/lib/ai-gateway";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 import { MCP_REGISTRY, compactMcpCatalogForLLM, getMcpById } from "./mcp-registry";
 
 const Input = z.object({

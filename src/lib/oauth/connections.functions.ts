@@ -6,7 +6,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const listOauthConnections = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase } = context as { supabase: any };
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     const { data, error } = await supabase.rpc("mcp_oauth_list_user_connections");
     if (error) throw new Error(error.message);
     return { items: (data ?? []) as Array<{
@@ -25,7 +26,8 @@ export const revokeOauthConnection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ client_id: z.string().min(3).max(200) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context as { supabase: any };
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     const { data: count, error } = await supabase.rpc(
       "mcp_oauth_revoke_client_for_user",
       { _client_id: data.client_id },

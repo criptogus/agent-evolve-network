@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Trophy } from "lucide-react";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 import { SitePage } from "@/components/site/SitePage";
 import { EmptyState } from "@/components/site/EmptyState";
 

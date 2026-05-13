@@ -1,6 +1,7 @@
 import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 import { hashToken } from "@/lib/account/tokens.server";
 import { processBulkUpload } from "@/lib/uploads/uploads.server";
 

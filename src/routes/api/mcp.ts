@@ -9,7 +9,8 @@ import {
   reportExecutionTool,
   getTrustTool,
 } from "@/lib/mcp/tools/skills";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 import { ORIGIN, sha256 } from "@/lib/oauth/mcp-oauth.server";
 import { hashToken } from "@/lib/account/tokens.server";
 
