@@ -14,6 +14,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SkillforgeRouteImport } from './routes/skillforge'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RefundsRouteImport } from './routes/refunds'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -21,6 +22,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MatchRouteImport } from './routes/match'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as ForgeRouteImport } from './routes/forge'
 import { Route as EvaluationRouteImport } from './routes/evaluation'
@@ -36,14 +38,12 @@ import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as UHandleRouteImport } from './routes/u.$handle'
 import { Route as SoulsSlugRouteImport } from './routes/souls.$slug'
-import { Route as RobotsTxtRouteImport } from './routes/robots.txt'
 import { Route as PacksSlugRouteImport } from './routes/packs.$slug'
 import { Route as OauthAuthorizeRouteImport } from './routes/oauth.authorize'
 import { Route as MarketplaceRankingsRouteImport } from './routes/marketplace.rankings'
 import { Route as MarketplaceLeaderboardRouteImport } from './routes/marketplace.leaderboard'
 import { Route as MarketplaceCategoriesRouteImport } from './routes/marketplace.categories'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
-import { Route as LlmsTxtRouteImport } from './routes/llms.txt'
 import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as AgentsMdRouteImport } from './routes/agents.md'
@@ -101,6 +101,11 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -134,6 +139,11 @@ const MatchRoute = MatchRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GenerateRoute = GenerateRouteImport.update({
@@ -211,11 +221,6 @@ const SoulsSlugRoute = SoulsSlugRouteImport.update({
   path: '/souls/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RobotsTxtRoute = RobotsTxtRouteImport.update({
-  id: '/robots/txt',
-  path: '/robots/txt',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PacksSlugRoute = PacksSlugRouteImport.update({
   id: '/packs/$slug',
   path: '/packs/$slug',
@@ -244,11 +249,6 @@ const MarketplaceCategoriesRoute = MarketplaceCategoriesRouteImport.update({
 const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
   id: '/marketplace/$packageId',
   path: '/marketplace/$packageId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LlmsTxtRoute = LlmsTxtRouteImport.update({
-  id: '/llms/txt',
-  path: '/llms/txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsMcpRoute = DocsMcpRouteImport.update({
@@ -421,6 +421,7 @@ export interface FileRoutesByFullPath {
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
   '/onboarding': typeof OnboardingRoute
@@ -428,6 +429,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skillforge': typeof SkillforgeRoute
@@ -450,14 +452,12 @@ export interface FileRoutesByFullPath {
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
   '/docs/mcp': typeof DocsMcpRoute
-  '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
   '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
-  '/robots/txt': typeof RobotsTxtRoute
   '/souls/$slug': typeof SoulsSlugRoute
   '/u/$handle': typeof UHandleRoute
   '/admin/': typeof AdminIndexRoute
@@ -488,6 +488,7 @@ export interface FileRoutesByTo {
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
   '/onboarding': typeof OnboardingRoute
@@ -495,6 +496,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skillforge': typeof SkillforgeRoute
@@ -517,14 +519,12 @@ export interface FileRoutesByTo {
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
   '/docs/mcp': typeof DocsMcpRoute
-  '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
   '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
-  '/robots/txt': typeof RobotsTxtRoute
   '/souls/$slug': typeof SoulsSlugRoute
   '/u/$handle': typeof UHandleRoute
   '/admin': typeof AdminIndexRoute
@@ -557,6 +557,7 @@ export interface FileRoutesById {
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
   '/onboarding': typeof OnboardingRoute
@@ -564,6 +565,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skillforge': typeof SkillforgeRoute
@@ -586,14 +588,12 @@ export interface FileRoutesById {
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRoute
   '/docs/mcp': typeof DocsMcpRoute
-  '/llms/txt': typeof LlmsTxtRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
   '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
-  '/robots/txt': typeof RobotsTxtRoute
   '/souls/$slug': typeof SoulsSlugRoute
   '/u/$handle': typeof UHandleRoute
   '/admin/': typeof AdminIndexRoute
@@ -627,6 +627,7 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/forge'
     | '/generate'
+    | '/llms.txt'
     | '/login'
     | '/match'
     | '/onboarding'
@@ -634,6 +635,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/refunds'
     | '/reset-password'
+    | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
     | '/skillforge'
@@ -656,14 +658,12 @@ export interface FileRouteTypes {
     | '/agents/md'
     | '/api/mcp'
     | '/docs/mcp'
-    | '/llms/txt'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
     | '/marketplace/leaderboard'
     | '/marketplace/rankings'
     | '/oauth/authorize'
     | '/packs/$slug'
-    | '/robots/txt'
     | '/souls/$slug'
     | '/u/$handle'
     | '/admin/'
@@ -694,6 +694,7 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/forge'
     | '/generate'
+    | '/llms.txt'
     | '/login'
     | '/match'
     | '/onboarding'
@@ -701,6 +702,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/refunds'
     | '/reset-password'
+    | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
     | '/skillforge'
@@ -723,14 +725,12 @@ export interface FileRouteTypes {
     | '/agents/md'
     | '/api/mcp'
     | '/docs/mcp'
-    | '/llms/txt'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
     | '/marketplace/leaderboard'
     | '/marketplace/rankings'
     | '/oauth/authorize'
     | '/packs/$slug'
-    | '/robots/txt'
     | '/souls/$slug'
     | '/u/$handle'
     | '/admin'
@@ -762,6 +762,7 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/forge'
     | '/generate'
+    | '/llms.txt'
     | '/login'
     | '/match'
     | '/onboarding'
@@ -769,6 +770,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/refunds'
     | '/reset-password'
+    | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
     | '/skillforge'
@@ -791,14 +793,12 @@ export interface FileRouteTypes {
     | '/agents/md'
     | '/api/mcp'
     | '/docs/mcp'
-    | '/llms/txt'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
     | '/marketplace/leaderboard'
     | '/marketplace/rankings'
     | '/oauth/authorize'
     | '/packs/$slug'
-    | '/robots/txt'
     | '/souls/$slug'
     | '/u/$handle'
     | '/admin/'
@@ -831,6 +831,7 @@ export interface RootRouteChildren {
   EvaluationRoute: typeof EvaluationRoute
   ForgeRoute: typeof ForgeRouteWithChildren
   GenerateRoute: typeof GenerateRoute
+  LlmsDottxtRoute: typeof LlmsDottxtRoute
   LoginRoute: typeof LoginRoute
   MatchRoute: typeof MatchRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -838,6 +839,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   RefundsRoute: typeof RefundsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SkillforgeRoute: typeof SkillforgeRoute
@@ -851,14 +853,12 @@ export interface RootRouteChildren {
   AccountUsageRoute: typeof AccountUsageRoute
   AgentsMdRoute: typeof AgentsMdRoute
   ApiMcpRoute: typeof ApiMcpRoute
-  LlmsTxtRoute: typeof LlmsTxtRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
   MarketplaceCategoriesRoute: typeof MarketplaceCategoriesRoute
   MarketplaceLeaderboardRoute: typeof MarketplaceLeaderboardRoute
   MarketplaceRankingsRoute: typeof MarketplaceRankingsRoute
   OauthAuthorizeRoute: typeof OauthAuthorizeRoute
   PacksSlugRoute: typeof PacksSlugRouteWithChildren
-  RobotsTxtRoute: typeof RobotsTxtRoute
   SoulsSlugRoute: typeof SoulsSlugRoute
   UHandleRoute: typeof UHandleRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
@@ -911,6 +911,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -958,6 +965,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/llms.txt': {
+      id: '/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/llms.txt'
+      preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/generate': {
@@ -1065,13 +1079,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SoulsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/robots/txt': {
-      id: '/robots/txt'
-      path: '/robots/txt'
-      fullPath: '/robots/txt'
-      preLoaderRoute: typeof RobotsTxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/packs/$slug': {
       id: '/packs/$slug'
       path: '/packs/$slug'
@@ -1112,13 +1119,6 @@ declare module '@tanstack/react-router' {
       path: '/marketplace/$packageId'
       fullPath: '/marketplace/$packageId'
       preLoaderRoute: typeof MarketplacePackageIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/llms/txt': {
-      id: '/llms/txt'
-      path: '/llms/txt'
-      fullPath: '/llms/txt'
-      preLoaderRoute: typeof LlmsTxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs/mcp': {
@@ -1426,6 +1426,7 @@ const rootRouteChildren: RootRouteChildren = {
   EvaluationRoute: EvaluationRoute,
   ForgeRoute: ForgeRouteWithChildren,
   GenerateRoute: GenerateRoute,
+  LlmsDottxtRoute: LlmsDottxtRoute,
   LoginRoute: LoginRoute,
   MatchRoute: MatchRoute,
   OnboardingRoute: OnboardingRoute,
@@ -1433,6 +1434,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   RefundsRoute: RefundsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SkillforgeRoute: SkillforgeRoute,
@@ -1446,14 +1448,12 @@ const rootRouteChildren: RootRouteChildren = {
   AccountUsageRoute: AccountUsageRoute,
   AgentsMdRoute: AgentsMdRoute,
   ApiMcpRoute: ApiMcpRoute,
-  LlmsTxtRoute: LlmsTxtRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
   MarketplaceCategoriesRoute: MarketplaceCategoriesRoute,
   MarketplaceLeaderboardRoute: MarketplaceLeaderboardRoute,
   MarketplaceRankingsRoute: MarketplaceRankingsRoute,
   OauthAuthorizeRoute: OauthAuthorizeRoute,
   PacksSlugRoute: PacksSlugRouteWithChildren,
-  RobotsTxtRoute: RobotsTxtRoute,
   SoulsSlugRoute: SoulsSlugRoute,
   UHandleRoute: UHandleRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
@@ -1472,3 +1472,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
