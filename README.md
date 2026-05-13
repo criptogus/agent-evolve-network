@@ -28,6 +28,19 @@ Turn Claude, Cursor, Codex, Continue or any MCP-compatible agent into a domain s
 
 ---
 
+## 🧬 Why this exists
+
+Today there are abundant **models**, **agents**, **MCPs** and **workflows** — but almost no one is dominating the **distribution of intelligence**. That layer compounds. That layer is the moat.
+
+Super Agent Skill is the **App Store for AI agent skills**. Open source by default, community-curated, free to download, and continuously evolved by an automated quality loop (SkillForge).
+
+- **Free tier** — the open registry. 500+ packages. Fork, remix, install, redistribute.
+- **Premium tier** — [superagentskill.com](https://www.superagentskill.com) curates battle-tested elite stacks, enterprise playbooks and private packs for teams that want depth, not just breadth.
+
+The open network feeds the premium layer. The premium layer funds the open network. **That's the flywheel.**
+
+---
+
 ## 📦 What's inside (today)
 
 > **The registry is live and growing every week. All packages are free to download, fork and run.**
