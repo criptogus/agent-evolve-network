@@ -1,0 +1,43 @@
+slug: slack
+name: Slack
+type: integration
+version: 0.1.0
+provider: Slack Technologies
+description: Send messages, look up users, and react to channel events via the Slack Web API.
+homepage: https://slack.com
+auth:
+  kind: oauth2
+  oauth2:
+    authorize_url: https://slack.com/oauth/v2/authorize
+    token_url: https://slack.com/api/oauth.v2.access
+    scopes: [chat:write, channels:read, users:read]
+    pkce: false
+required_scopes: [chat:write, channels:read]
+actions:
+  - id: post_message
+    name: Post message
+    method: POST
+    base_url: https://slack.com/api
+    path: /chat.postMessage
+    side_effect: write
+    input_schema:
+      type: object
+      required: [channel, text]
+      properties:
+        channel: { type: string }
+        text: { type: string, maxLength: 4000 }
+  - id: list_channels
+    name: List channels
+    method: GET
+    base_url: https://slack.com/api
+    path: /conversations.list
+    side_effect: read
+  - id: lookup_user
+    name: Lookup user by email
+    method: GET
+    base_url: https://slack.com/api
+    path: /users.lookupByEmail
+    side_effect: read
+tags: [chat, ops, comms]
+license: MIT
+authors: ["SuperAgentSkill Team"]
