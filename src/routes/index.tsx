@@ -15,13 +15,13 @@ const McpInstallAnimation = lazy(() =>
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Super Agent Skill — Turn your AI into an expert at your job" },
-      { name: "description", content: "The app store for your AI's brain. One click installs an expert in your field — works with ChatGPT, Claude, Cursor, Codex." },
-      { property: "og:title", content: "Turn your AI into an expert at your job — Super Agent Skill" },
-      { property: "og:description", content: "The app store for your AI's brain. One click installs an expert in your field." },
+      { title: "Super Agent Skill — Trustworthy AI skills for serious work" },
+      { name: "description", content: "Signed, adversarially-tested AI agent skills with verifiable Trust Scores. For security, fintech, healthcare and DevOps teams shipping AI to customers. Install with one MCP link or npx super-agent install." },
+      { property: "og:title", content: "Trustworthy AI agent skills — Super Agent Skill" },
+      { property: "og:description", content: "Signed, adversarially-tested AI agent skills with verifiable Trust Scores. For teams that ship AI to customers." },
       { property: "og:url", content: "https://superagentskill.com/" },
-      { name: "twitter:title", content: "Turn your AI into an expert at your job — Super Agent Skill" },
-      { name: "twitter:description", content: "The app store for your AI's brain. One click installs an expert in your field." },
+      { name: "twitter:title", content: "Trustworthy AI agent skills — Super Agent Skill" },
+      { name: "twitter:description", content: "Signed, adversarially-tested AI agent skills with verifiable Trust Scores." },
     ],
     links: [{ rel: "canonical", href: "https://superagentskill.com/" }],
   }),
@@ -44,7 +44,7 @@ const SOFTWARE_LD = {
   applicationCategory: "DeveloperApplication",
   operatingSystem: "Any (MCP-compatible)",
   description:
-    "MCP gateway and registry of skills, playbooks, souls and guardrails for AI agents. Continuously evolves connected agents.",
+    "Signed, adversarially-tested registry of skills, playbooks, souls and guardrails for AI agents. Every package ships with a verifiable Trust Score so teams can ship AI to customers safely.",
   url: "https://superagentskill.com",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
 };
@@ -96,6 +96,7 @@ function Home() {
       <Hero />
       <SkillLayerManifesto />
       <WhatIsThis />
+      <WhoItsFor />
       <Logos />
       <HowItWorks />
       <PlainEnglish />
@@ -122,52 +123,54 @@ function Hero() {
         <div className="mx-auto max-w-3xl text-center fade-up">
           <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-border bg-surface-elevated px-3 py-1 text-xs text-muted-foreground shadow-sm">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-signal pulse-dot" />
-            <span>For ChatGPT, Claude, Cursor, Codex & Grok users</span>
+            <span>For teams shipping AI to customers — not just experimenting</span>
           </div>
           <h1 className="mt-6 text-balance text-5xl font-semibold tracking-tight md:text-7xl">
-            Turn your AI into
+            AI skills you can
             <br />
             <span className="text-primary">
-              an expert at&nbsp;
+              actually trust with&nbsp;
               <span className="relative inline-block align-baseline">
                 <span aria-hidden className="invisible whitespace-nowrap">
-                  your job.
+                  production.
                 </span>
                 <Typewriter
                   className="absolute left-0 top-0 whitespace-nowrap text-foreground"
-                  words={["your job.", "cardiology.", "closing deals.", "contracts.", "your brand."]}
+                  words={["production.", "compliance.", "PHI data.", "your customers.", "real money."]}
                 />
               </span>
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">
-            Generic AI gives generic answers. We give your AI the same
-            <span className="text-foreground"> instructions, examples and rules </span>
-            an expert in your field would use — so it stops guessing and starts
-            doing the job the way <span className="text-foreground">you</span> would.
+            Every skill on Super Agent Skill is{" "}
+            <span className="text-foreground">benchmarked against an adversarial suite</span>,{" "}
+            <span className="text-foreground">cryptographically signed at release</span>, and scored on{" "}
+            <span className="text-foreground">real production telemetry</span> — so you ship AI features
+            with a Trust Score your security team can verify, not a vibe check.
           </p>
           <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-            Set it up in one click. No coding. No retraining. Works with the AI tools you already use.
+            Install with one MCP link or <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">npx super-agent install</code>.
+            Works with Claude, Cursor, ChatGPT, Continue and Cline.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               to="/connect"
               className="inline-flex h-12 items-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95"
             >
-              Get started — it's free →
+              Connect your agent — free →
             </Link>
             <Link
               to="/marketplace"
               className="inline-flex h-12 items-center rounded-md border border-border bg-surface-elevated px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent"
             >
-              Browse what's inside
+              Browse signed skills
             </Link>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            No credit card · Setup in 30 seconds · 4,200+ ready-to-use experts
+            No credit card · 30-second setup · Adversarially tested · Signed releases · Open source
           </p>
           <p className="mx-auto mt-6 max-w-md text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70">
-            Models are commodities. <span className="text-foreground/80">Skills are the new moat.</span>
+            Models are commodities. <span className="text-foreground/80">Trust is the new moat.</span>
           </p>
         </div>
 
@@ -181,13 +184,13 @@ function Hero() {
           </Suspense>
         </div>
 
-        {/* Trust metrics */}
+        {/* Trust metrics — proof of the moat, not vanity counts */}
         <div className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-4 md:grid-cols-4">
           {[
-            { v: 4218, suffix: "+", label: "Ready-made experts" },
-            { v: 91, suffix: "k", label: "AIs already upgraded" },
-            { v: 30, suffix: "s", label: "Avg. setup time" },
-            { v: 99.99, decimals: 2, suffix: "%", label: "Uptime" },
+            { v: 100, suffix: "%", label: "Signed at release" },
+            { v: 5, suffix: "", label: "Regulated verticals" },
+            { v: 7, suffix: "", label: "Injection attack classes blocked" },
+            { v: 30, suffix: "s", label: "MCP setup" },
           ].map((m) => (
             <div key={m.label} className="rounded-xl border border-border bg-surface/60 p-4 text-center">
               <div className="font-mono text-2xl font-semibold tracking-tight text-foreground">
@@ -205,42 +208,42 @@ function Hero() {
 function WhatIsThis() {
   const items = [
     {
-      icon: "🧠",
-      title: "Skills",
-      plain: "Knowledge packs",
-      body: "Like hiring a specialist — your AI gets the exact know-how to do one thing really well (review code, write SQL, triage a patient).",
-    },
-    {
-      icon: "📘",
-      title: "Playbooks",
-      plain: "Step-by-step recipes",
-      body: "Repeatable workflows your AI follows from start to finish. Think SOPs, but the AI actually executes them.",
-    },
-    {
-      icon: "🎭",
-      title: "Souls",
-      plain: "Personality & tone",
-      body: "Make the AI sound like your brand, your founder, or your top sales rep — consistently, every time.",
-    },
-    {
       icon: "🛡",
-      title: "Guardrails",
-      plain: "Safety rules",
-      body: "Hard rules the AI cannot break: never give medical advice, never quote a competitor, never share customer data.",
+      title: "Adversarial harness",
+      plain: "Proven robust",
+      body: "Every skill is tested against prompt injection, jailbreaks, exfiltration, blast-radius and policy bypass before it can publish. Verticalized cases for OWASP LLM, FINRA, HIPAA Safe Harbor, PCI-DSS and SRE.",
+    },
+    {
+      icon: "🔏",
+      title: "Signed Trust Score",
+      plain: "Cryptographic + transparent",
+      body: "Releases are Ed25519-signed and air-gap verifiable. Trust Score is a public, weighted formula over adversarial robustness, real-world success, signed releases and age — embed the badge in your README.",
+    },
+    {
+      icon: "🏛",
+      title: "Verticalized Souls",
+      plain: "Regulator-aware personas",
+      body: "Fintech compliance officer, HIPAA-aware clinical liaison, SOC 2 auditor, Kubernetes SRE — Souls that cite the rule before the recommendation and refuse the unsafe defaults.",
+    },
+    {
+      icon: "🔌",
+      title: "One MCP endpoint",
+      plain: "Plug into any agent",
+      body: "Claude, Cursor, ChatGPT, Continue, Cline. No SDK, no glue code — one URL or one `npx super-agent install`. Skills compose into Playbooks at runtime with guardrail middleware.",
     },
   ];
   return (
     <section className="border-b border-border bg-surface/40 py-20">
       <div className="mx-auto max-w-5xl px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">In plain English</span>
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">What makes it different</span>
           <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-4xl">
-            Think of it like an app store for your AI's brain.
+            Other registries hand you prompts. We hand you proof.
           </h2>
           <p className="mt-4 text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
-            Your AI is smart but generic. We give you a library of small, focused
-            <span className="text-foreground"> "upgrades" </span>
-            you install with one click — and your AI instantly becomes an expert in whatever you do.
+            Anyone can write a YAML prompt and call it a skill. The hard part is convincing your
+            security team it won't leak PII, accept a jailbreak, or hallucinate compliance text.
+            <span className="text-foreground"> That's what we build.</span>
           </p>
         </div>
 
@@ -259,8 +262,8 @@ function WhatIsThis() {
         </div>
 
         <div className="mx-auto mt-10 max-w-2xl rounded-xl border border-border bg-background/60 p-5 text-center text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">The best part:</span> they keep getting better automatically.
-          Every upgrade is tested daily and improved by the community — so your AI gets smarter while you sleep.
+          <span className="font-medium text-foreground">The flywheel:</span> every production execution feeds the Trust Score.
+          Skills that survive real workloads bubble up; ones that drift get re-scored and patched by SkillForge automatically.
         </div>
       </div>
     </section>
@@ -284,6 +287,71 @@ function Logos() {
               </span>
             ))}
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function WhoItsFor() {
+  const personas = [
+    {
+      tag: "Eng leadership",
+      title: "You're shipping AI features your CEO already announced",
+      body: "You need agent skills that won't go rogue in front of customers. Trust Score + adversarial pass rate go on the deploy checklist, not in a Notion doc.",
+      cta: { href: "/marketplace?vertical=devops", label: "Browse SRE & code-review skills →" },
+    },
+    {
+      tag: "Security & compliance",
+      title: "You're the one who has to sign off on LLM usage",
+      body: "Every release is Ed25519-signed and offline-verifiable. Adversarial pass rate is broken down by attack class. Audit log captures every upload-time injection attempt.",
+      cta: { href: "/marketplace?vertical=security", label: "Browse signed security skills →" },
+    },
+    {
+      tag: "Regulated teams",
+      title: "Fintech, healthcare, SOC 2 — you can't ship a hallucination",
+      body: "Verticalized Souls cite the rule before the recommendation: FINRA 2210, Reg E, HIPAA Safe Harbor, TSC CC6.x. PII guardrails redact PAN/CVV and PHI before output.",
+      cta: { href: "/use-cases", label: "See vertical use cases →" },
+    },
+    {
+      tag: "Solo builders",
+      title: "You just want skills that work in Claude or Cursor today",
+      body: "One command — `npx super-agent install <slug>` — drops the right file into every IDE you use. No login for public skills.",
+      cta: { href: "/marketplace", label: "Pick a skill, install in 30s →" },
+    },
+    {
+      tag: "Authors",
+      title: "You publish skills and want to get paid for them",
+      body: "Premium revenue share, 12-month referral window for who you bring in, and a perpetual lineage cut every time someone forks your work. Bounties from companies looking for specific skills.",
+      cta: { href: "/bounties", label: "See open bounties →" },
+    },
+  ];
+  return (
+    <section className="border-b border-border py-20">
+      <div className="mx-auto max-w-5xl px-6">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Who it's for</span>
+          <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-4xl">
+            Built for the people who have to <span className="text-primary">stand behind</span> the AI.
+          </h2>
+          <p className="mt-4 text-pretty text-base text-muted-foreground md:text-lg">
+            If your job depends on the agent being right — not just fluent — you're in the right place.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-4 md:grid-cols-2">
+          {personas.map((p) => (
+            <a
+              key={p.tag}
+              href={p.cta.href}
+              className="group rounded-2xl border border-border bg-surface/40 p-6 transition-all hover:border-primary/40 hover:bg-surface hover:shadow-elevated"
+            >
+              <div className="text-xs font-medium uppercase tracking-wider text-primary">{p.tag}</div>
+              <h3 className="mt-2 text-lg font-semibold tracking-tight">{p.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.body}</p>
+              <div className="mt-4 text-sm font-medium text-primary group-hover:underline">{p.cta.label}</div>
+            </a>
+          ))}
         </div>
       </div>
     </section>

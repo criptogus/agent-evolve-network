@@ -4,14 +4,14 @@
 
 # Super Agent Skill
 
-### **The open network where AI agents learn new skills.**
+### **Trustworthy AI skills for teams shipping to production.**
 
-> **We don't build AI agents. We evolve them.**
-> Models are commodities. Infrastructure is a commodity. **Skills are the new moat.**
+> **Other registries hand you prompts. We hand you proof.**
+> Signed at release · Adversarially benchmarked · Trust Score your security team can verify.
 
-**500+ free skills, playbooks, souls and guardrails — one MCP endpoint away from any AI agent.**
+**500+ signed, adversarially-tested skills, playbooks, souls and guardrails — one MCP endpoint or `npx super-agent install` away from any AI agent.**
 
-Turn Claude, Cursor, Codex, Continue or any MCP-compatible agent into a domain specialist in **60 seconds**. No fine-tuning. No copy-pasting prompts. No vendor lock-in.
+Built for teams that have to **stand behind** what their AI does — security, fintech, healthcare, SOC 2 and DevOps. Works with Claude, Cursor, ChatGPT, Continue, Cline. No fine-tuning. No vendor lock-in.
 
 [![Website](https://img.shields.io/badge/🌐_superagentskill.com-Visit-0A66FF?style=for-the-badge)](https://www.superagentskill.com)
 [![Marketplace](https://img.shields.io/badge/🛒_Browse_500+_packages-Free-8b5cf6?style=for-the-badge)](https://www.superagentskill.com/marketplace)
@@ -94,15 +94,28 @@ bun install && bun run dev
 
 ## 🧠 Why Super Agent Skill?
 
-Generic agents are jacks of all trades, masters of none. They hallucinate, drift, and forget the rules your team actually cares about.
+**The problem:** anyone can write a YAML prompt and call it an "AI skill." The hard part is convincing your security team it won't leak PII, accept a jailbreak, or hallucinate a compliance disclosure in front of a customer.
 
-We fix that with three ingredients you won't find anywhere else:
+**What we ship that other registries don't:**
 
-- 🌍 **An open, growing registry** of 500+ battle-tested skills, playbooks, souls and guardrails — community-owned, MIT/CC-friendly, embeddable anywhere.
-- ⚙️ **SkillForge** — our continuous evolution loop benchmarks every skill against adversarial cases, finds weaknesses, and ships patches automatically. Your agent gets smarter while you sleep.
-- 🔌 **One MCP endpoint** that streams the strongest version of every skill to any compatible agent — no copy-paste, no version drift, no vendor lock-in.
+- 🛡 **Proprietary adversarial harness.** Every skill is benchmarked against attacks before it can publish — prompt injection, jailbreaks, exfiltration, blast-radius, policy bypass, PII/PHI leakage. Cases are curated per vertical (OWASP LLM, FINRA, HIPAA Safe Harbor, PCI-DSS, SRE).
+- 🔏 **Ed25519-signed releases.** Every published version is cryptographically signed. Verify offline with `npm run release:verify` — exactly what air-gapped enterprise customers need.
+- 📊 **Public, verifiable Trust Score.** A transparent weighted formula over adversarial robustness, real-world success rate, signed releases and package age. Embed the badge in your README; reviewers see the same number you do.
+- 🏛 **Verticalized Souls.** Fintech compliance officer (FINRA / Reg E / PCI-DSS), HIPAA-aware clinical liaison, SOC 2 auditor (TSC-mapped), Kubernetes SRE (blast-radius-first). Souls that cite the rule before the recommendation.
+- 🔌 **One MCP endpoint, every IDE.** Claude, Cursor, ChatGPT, Continue, Cline — same URL, same `npx super-agent install <slug>` command. No SDK, no glue code.
+- 🛠 **SkillForge evolution loop.** Re-scores published skills against the live adversarial suite + telemetry; proposes patches automatically when robustness drops.
 
-> *Think GitHub for prompts × npm for agent capabilities × Wikipedia for AI behavior — all under MCP.*
+> *Other registries hand you prompts. We hand you proof.*
+
+## 👥 Who it's for
+
+| If you're… | What you get |
+| --- | --- |
+| 🚢 **Eng leadership shipping AI features** | Trust Score on the deploy checklist instead of a Notion doc. Real-world success rate per skill. |
+| 🔒 **Security / compliance officer** | Offline-verifiable signatures. Adversarial pass rate broken down by attack class. Upload-time injection-guard audit log. |
+| 🏥 **Fintech / healthcare / SOC 2 team** | Souls that cite FINRA 2210, Reg E §1005.7, HIPAA Safe Harbor, TSC CC6.x. PII/PHI guardrails redact PAN/CVV/MRNs before output. |
+| 💻 **Solo builder using Claude, Cursor or Continue** | `npx super-agent install <slug>` drops the right file into every IDE you use. No login for public skills. |
+| ✍️ **Skill author** | Premium revenue share, 12-month referral window, perpetual lineage cut on every fork, open bounties from companies. |
 
 ---
 
