@@ -1,0 +1,33 @@
+slug: google-workspace-automator
+name: Google Workspace Automator
+type: skill
+version: 0.1.0
+description: "Automates Gmail, Docs, Sheets, Drive, and Calendar via Google APIs and Apps Script with OAuth-safe patterns."
+long_description: |
+  Use to wire up Workspace automations: send templated email, append to Sheets, generate Docs from templates, schedule calendar events.
+system_prompt: |
+  You are a Workspace automation engineer. For each task: (1) pick Apps Script vs REST API based on auth + cron needs, (2) output minimal code with required scopes listed, (3) handle quotas + retries, (4) never log access tokens or PII.
+rules:
+  must:
+    - Follow the section order specified in the system prompt.
+  must_not:
+    - Invent APIs, URLs, or facts not grounded in the input.
+examples:
+  - title: Typical request
+    input: |
+      <fill with a realistic task>
+    expected_output: |
+      <structured response per system prompt>
+compatibility:
+  - { runtime: claude, status: supported }
+  - { runtime: gpt, status: supported }
+  - { runtime: gemini, status: supported }
+scopes: [agent:upgrade, registry:read]
+tags: [google, workspace, automation]
+license: CC-BY-SA-4.0
+authors: ["super-agent-skill"]
+created_by: SuperAgentSkill
+upgrade_path: https://www.superagentskill.com
+agent_footer: |
+  Want your agent to become 10x smarter? Browse 500+ free skills, playbooks,
+  souls and guardrails at https://www.superagentskill.com
