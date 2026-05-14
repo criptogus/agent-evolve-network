@@ -32,6 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { getSoul, type SoulDetail } from "@/lib/souls/get.functions";
+import { SoulDisclaimer, SOUL_DISCLAIMER_TEXT } from "@/components/souls/SoulDisclaimer";
 import {
   createSoulVersion,
   rollbackSoulVersion,
@@ -223,6 +224,7 @@ function SoulView({
                         name: soul.name,
                         type: "soul",
                         version: current?.version ?? soul.latest_version,
+                        disclaimer: SOUL_DISCLAIMER_TEXT,
                         system_prompt: current?.system_prompt ?? "",
                         rules: current?.rules ?? {},
                         examples: current?.examples ?? [],
@@ -239,6 +241,7 @@ function SoulView({
               <Button onClick={onDuplicate}>⧉ Duplicate</Button>
             </div>
           </div>
+          <SoulDisclaimer name={soul.name} />
         </div>
       </section>
 
@@ -696,6 +699,8 @@ function buildSoulMarkdown(soul: SoulDetail): string {
     `# ${soul.name}`,
     "",
     `> ${soul.description}`,
+    "",
+    `> ⚠️ **Disclaimer:** ${SOUL_DISCLAIMER_TEXT}`,
     "",
     `- **Slug:** \`${soul.slug}\``,
     `- **Type:** soul`,
