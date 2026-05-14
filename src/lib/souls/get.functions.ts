@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
 import { createTtlCache } from "@/lib/cache/ttl-cache";
+import { SOUL_DISCLAIMER } from "./disclaimer";
 
 export type SoulDetail = {
   id: string;
@@ -17,6 +18,14 @@ export type SoulDetail = {
   license: string;
   created_at: string;
   updated_at: string;
+  disclaimer: {
+    text: string;
+    short: string;
+    title: string;
+    is_real_person: boolean;
+    endorsed_by_real_person: boolean;
+    fair_use: string;
+  };
   current: {
     id: string;
     version: string;
@@ -82,6 +91,7 @@ export const getSoul = createServerFn({ method: "GET" })
       license: pkg.license,
       created_at: pkg.created_at,
       updated_at: pkg.updated_at,
+      disclaimer: { ...SOUL_DISCLAIMER },
       current: current
         ? {
             id: current.id,
