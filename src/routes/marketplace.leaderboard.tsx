@@ -125,7 +125,7 @@ function RankCard({ p, rank }: { p: MarketplaceItem; rank: number }) {
         </span>
         <div className="flex items-center gap-2">
           <TypeBadge type={p.type} />
-          <PriceBadge priceCredits={p.price_credits} />
+          {p.type !== "soul" && <PriceBadge priceCredits={p.price_credits} />}
         </div>
       </div>
       <div className="mt-3 font-mono text-[15px] font-semibold leading-tight">{p.name}</div>
