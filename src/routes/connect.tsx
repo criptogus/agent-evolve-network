@@ -410,6 +410,12 @@ After it's connected, call the tool "search_registry" with query "design review"
           >
             ▶ Test MCP
           </a>
+          <a
+            href="#usage"
+            className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-700 transition hover:border-emerald-500/60 dark:text-emerald-400"
+          >
+            💬 How to use it
+          </a>
           {CLIENTS.map((c) => (
             <a
               key={c.id}
@@ -462,7 +468,72 @@ After it's connected, call the tool "search_registry" with query "design review"
           ))}
         </div>
 
-        <section className="mt-12 rounded-2xl border border-dashed border-border bg-card p-5 md:p-6">
+        {/* After connecting — how to actually USE it */}
+        <section id="usage" className="mt-12 scroll-mt-24 rounded-2xl border border-border bg-card p-5 md:p-6">
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-xl font-semibold">Once connected — how to use it from your agent</h2>
+            <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+              In-chat prompts
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            After the MCP server is registered, you don't need to remember tool names. Just mention
+            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">@superagentskill</code> (or
+            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">/superagentskill</code> in clients
+            that support slash-mentions) inside the chat — the agent will pick the right tool from
+            the catalog automatically.
+          </p>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <CodeBlock
+              filename="Improve UX/UI of a project"
+              lang="txt"
+              code={`Use @superagentskill to improve the UX and UI skills applied to project "Acme Dashboard". Search the registry for the best UI/UX, design-review and frontend-design skills, fetch their manifests, and apply their playbooks to the current codebase. Report which skills you used and why.`}
+            />
+
+            <CodeBlock
+              filename="Code review on a PR"
+              lang="txt"
+              code={`Use @superagentskill to run a thorough code review on the current diff. Pick the highest-trust "code-reviewer" and "owasp-code-audit" skills from the registry, follow their checklists, and post findings grouped by severity.`}
+            />
+
+            <CodeBlock
+              filename="Growth / marketing audit"
+              lang="txt"
+              code={`Use @superagentskill to audit the growth stack of project X. Search for skills tagged "growth", "seo" and "analytics", load the top-trust ones (Amplitude, GA4, SEO technical, CRO) and produce a prioritized action plan with copy-pasteable artifacts.`}
+            />
+
+            <CodeBlock
+              filename="Generate a landing page"
+              lang="txt"
+              code={`Use @superagentskill to design a high-converting landing page for project X. Combine the "od-frontend-design", "od-copywriting" and "od-marketing-psychology" skills from the registry. Output: hero copy, section structure, and Tailwind/React JSX I can paste into the project.`}
+            />
+
+            <CodeBlock
+              filename="Security & compliance pass"
+              lang="txt"
+              code={`Use @superagentskill to harden project X. Pull the "owasp-code-audit", "dependency-vuln-auditor" and "cloud-misconfig-auditor" skills, run their playbooks against the repo, and report findings with fixes ranked by exploitability.`}
+            />
+
+            <CodeBlock
+              filename="Pick the best skill for any task"
+              lang="txt"
+              code={`Use @superagentskill: call search_registry with my task description, then call get_skill_trust on the top 3 results before recommending one. Apply the chosen skill and call report_execution when you're done.`}
+            />
+          </div>
+
+          <div className="mt-5 grid gap-3 rounded-xl border border-border bg-background/50 p-4 text-sm">
+            <p className="font-medium">Pro tips</p>
+            <ul className="grid gap-1.5 text-muted-foreground">
+              <li>• Be specific about the <em>project</em> and the <em>outcome</em> — the agent searches the registry with that as the query.</li>
+              <li>• Ask the agent to call <code className="rounded bg-muted px-1 text-xs">get_skill_trust</code> before applying a skill to filter low-quality entries.</li>
+              <li>• For multi-step work, chain skills: "first apply X, then Y, then report".</li>
+              <li>• If your client doesn't auto-mention MCP servers, just say: <em>"Using the super-agent-skill MCP, …"</em> — the agent will route to it.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-2xl border border-dashed border-border bg-card p-5 md:p-6">
           <h3 className="text-lg font-semibold">Don't see your client?</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             Any runtime that speaks{" "}
