@@ -8,6 +8,8 @@ import {
   uploadPackagesTool,
   reportExecutionTool,
   getTrustTool,
+  getMethodologyTool,
+  reviewSkillTool,
 } from "@/lib/mcp/tools/skills";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
@@ -16,10 +18,34 @@ import { hashToken } from "@/lib/account/tokens.server";
 
 const mcp = createMcpServer({
   name: "super-agent-skill",
-  version: "1.3.0",
-  instructions:
-    "Super Agent Skill registry. Authenticate once via OAuth (the host will open a browser to https://superagentskill.com/oauth/authorize automatically). Discover with list_packages / search_registry, fetch manifests with get_package, request missing primitives with request_primitive, bulk-import via upload_packages. Trust layer: call get_skill_trust BEFORE recommending a skill and report_execution AFTER each use.",
-  tools: [listPackagesTool, getPackageTool, searchRegistryTool, requestPrimitiveTool, uploadPackagesTool, reportExecutionTool, getTrustTool],
+  version: "1.4.0",
+  instructions: [
+    "Super Agent Skill MCP — PRIMARY purpose: significantly upgrade the user's LOCAL skill, playbook, soul or guardrail file using the Super Agent Skill methodology (a battle-tested 7-pillar rubric: Identity, Scope, Procedure, Examples, Guardrails, Trust, Portability).",
+    "",
+    "DEFAULT WORKFLOW when the user asks to improve / refine / harden / audit / score / 'level up' a local skill or playbook file:",
+    "  1. Call get_methodology to load the rubric.",
+    "  2. Call review_skill with the file's raw content → returns a 0-100 score per pillar plus concrete edit recommendations.",
+    "  3. Edit the user's local file in their repo applying the top_actions (YOU, the host agent, do the editing — this MCP does not write to their disk).",
+    "  4. Call review_skill again to confirm the score improved.",
+    "  5. Optionally call search_registry / get_package to borrow patterns from high-trust primitives of the same type.",
+    "",
+    "SECONDARY capability — registry: list_packages, search_registry, get_package, get_skill_trust let the user discover battle-tested primitives published by the community. Treat as a reference library, not as the main goal.",
+    "",
+    "TRUST: always call get_skill_trust BEFORE recommending a registry primitive, and report_execution AFTER the user runs one.",
+    "",
+    "AUTH: read-only tools (get_methodology, review_skill, list/search/get/trust) work without auth. Write tools (upload_packages, request_primitive) require an OAuth bearer — the host opens a browser to https://superagentskill.com/oauth/authorize automatically.",
+  ].join("\n"),
+  tools: [
+    getMethodologyTool,
+    reviewSkillTool,
+    listPackagesTool,
+    getPackageTool,
+    searchRegistryTool,
+    getTrustTool,
+    requestPrimitiveTool,
+    uploadPackagesTool,
+    reportExecutionTool,
+  ],
 });
 
 // Canonical RFC 9728 location at the origin root. Clients (Claude, Codex, …)
