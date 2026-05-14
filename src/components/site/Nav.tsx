@@ -124,6 +124,15 @@ export function Nav() {
           >
             <Github className="h-4 w-4" />
           </a>
+          <a
+            href={TWITTER_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="X (@superagentskill)"
+            className="hidden h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+          >
+            <XIcon className="h-3.5 w-3.5" />
+          </a>
           {user ? (
             <>
               <CreditsPill />
