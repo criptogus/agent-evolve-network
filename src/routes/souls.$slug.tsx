@@ -32,6 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { getSoul, type SoulDetail } from "@/lib/souls/get.functions";
+import { SoulDisclaimer, SOUL_DISCLAIMER_TEXT } from "@/components/souls/SoulDisclaimer";
 import {
   createSoulVersion,
   rollbackSoulVersion,
