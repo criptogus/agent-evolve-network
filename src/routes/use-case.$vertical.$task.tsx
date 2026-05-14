@@ -39,7 +39,7 @@ export const Route = createFileRoute("/use-case/$vertical/$task")({
 
     const skills: SkillRow[] = (pkgs ?? [])
       .map((p: { id: string; slug: string; name: string; description: string | null; tags: string[] | null }) => {
-        const t = trustMap.get(p.id);
+        const t = trustMap.get(p.id) as any;
         return {
           slug: p.slug, name: p.name, description: p.description, tags: p.tags,
           trust_score: t ? Number(t.score) : null,
