@@ -19,10 +19,70 @@ async function resolveUserFromToken(token: string): Promise<string | null> {
   return data.user_id;
 }
 
+export const overviewTool = defineTool({
+  name: "overview",
+  description:
+    "START HERE if unsure. Returns the SuperAgentSkill toolkit map grouped by user intent (UPGRADE a local file / DISCOVER registry primitives / PUBLISH back to registry), the auth model, and the canonical workflows. Cheap, read-only, no auth.",
+  parameters: z.object({}),
+  execute: async () =>
+    json({
+      server: "superagentskill",
+      version: "1.5.0",
+      tagline:
+        "Battle-tested toolkit for designing, auditing and shipping AI primitives — skills, playbooks, souls, guardrails.",
+      intents: {
+        upgrade_local_file: {
+          description:
+            "PRIMARY use case. The user has a local skill/playbook/soul/guardrail file and wants it significantly improved against the SuperAgentSkill methodology.",
+          workflow: [
+            "1. get_methodology  — load the 7-pillar rubric.",
+            "2. review_skill     — score the file (0-100 per pillar) + concrete top_actions.",
+            "3. <host edits>     — YOU apply top_actions in the user's repo.",
+            "4. review_skill     — confirm the score went up. Iterate to grade A.",
+            "5. search_registry  — (optional) borrow patterns from high-trust primitives.",
+          ],
+          tools: ["get_methodology", "review_skill", "search_registry", "get_package"],
+        },
+        discover_registry: {
+          description:
+            "Find or install pre-built primitives from the public registry (590+ packages: marketing, sales, growth, code, security, healthcare, finance, ops, …).",
+          workflow: [
+            "1. search_registry   — free-text across name + description + long_description, ordered by install_count.",
+            "2. get_package       — full latest manifest (system_prompt, rules, examples, compatibility).",
+            "3. get_skill_trust   — success rate, latency, per-model heatmap, robustness findings, trust_score. Call BEFORE recommending.",
+            "4. report_execution  — (after the user runs it) feed the trust system. Best-effort.",
+          ],
+          tools: ["search_registry", "list_packages", "get_package", "get_skill_trust", "report_execution"],
+        },
+        publish_back: {
+          description:
+            "Push a local primitive upward to the registry so others (and future-you) benefit. Requires OAuth.",
+          workflow: [
+            "1. upload_packages   — bulk upload markdown/prompt/JSON files. Normalised by SkillForge into draft packages. Pass publish:true to publish immediately.",
+            "2. request_primitive — ask SuperAgentSkill to AUTHOR a brand-new primitive from scratch via the forge pipeline.",
+          ],
+          tools: ["upload_packages", "request_primitive"],
+        },
+      },
+      primitive_types: {
+        skill: "A focused capability the agent can invoke (e.g. 'write-cold-outreach', 'audit-rls-policies').",
+        playbook: "A multi-step procedure / runbook the agent follows end-to-end.",
+        soul: "Persona + values + voice + refusals (the 'who', not the 'what').",
+        guardrail: "A safety / quality constraint enforced before, during or after another primitive runs.",
+      },
+      auth: {
+        anonymous_ok: ["overview", "get_methodology", "review_skill", "search_registry", "list_packages", "get_package", "get_skill_trust"],
+        oauth_required: ["upload_packages", "request_primitive", "report_execution"],
+        oauth_endpoint: "https://superagentskill.com/oauth/authorize",
+      },
+      docs: "https://superagentskill.com/connect",
+    }),
+});
+
 export const listPackagesTool = defineTool({
   name: "list_packages",
   description:
-    "List published primitives (skills, playbooks, souls, guardrails) from the Super Agent Skill registry. The registry has 590+ packages across many domains (marketing, sales, growth, design, code, security, finance, ops, healthcare, education, …). ALWAYS pass the `query` parameter (free-text, matches name + description + long_description) to narrow by domain — e.g. query='marketing', 'sales', 'growth', 'design', 'security'. Results are ordered by install_count desc so the most-used primitives surface first. Listing without a query returns the most-installed across ALL domains, which is biased toward whichever vertical is currently popular — do NOT use that to conclude a domain is missing. If you don't know the right keyword, call search_registry instead.",
+    "[DISCOVER] Browse published primitives by `type`. Always pass `query` to scope by domain — the registry has 590+ packages and listing without a query is biased toward the most-installed vertical. Prefer `search_registry` when scoping by topic. Read-only, no auth.",
   parameters: z.object({
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).optional(),
     query: z
@@ -68,7 +128,7 @@ export const listPackagesTool = defineTool({
 export const getPackageTool = defineTool({
   name: "get_package",
   description:
-    "Fetch the full latest-version manifest of a primitive by slug: system prompt, rules, examples, and compatibility.",
+    "[DISCOVER] Fetch the full latest-version manifest of a primitive by slug: system_prompt, rules, examples, compatibility. Use AFTER search_registry/list_packages found a candidate. Read-only, no auth.",
   parameters: z.object({
     slug: z.string().describe("Package slug (e.g. cardiology-soul)"),
   }),
@@ -95,7 +155,7 @@ export const getPackageTool = defineTool({
 export const searchRegistryTool = defineTool({
   name: "search_registry",
   description:
-    "Search the registry by free-text across name + description + long_description. Best when the user asks for a domain, capability or persona ('marketing skills', 'a copywriter for landing pages', 'something to harden RLS') and you don't know the exact slug. Returns up to 50 hits ordered by install_count desc. Always prefer this over list_packages when scoping by topic — it sees descriptions, not just names.",
+    "[DISCOVER] PRIMARY discovery tool. Free-text search across name + description + long_description. Use whenever the user asks for a domain, capability or persona ('marketing skills', 'copywriter for landing pages', 'something to harden RLS'). Returns up to 50 hits ordered by install_count desc. Prefer this over list_packages — it sees descriptions, not just names. Read-only, no auth.",
   parameters: z.object({
     query: z.string().min(2),
     limit: z.number().int().min(1).max(50).default(20),
@@ -120,7 +180,7 @@ export const searchRegistryTool = defineTool({
 export const requestPrimitiveTool = defineTool({
   name: "request_primitive",
   description:
-    "Submit a request for a primitive that does not yet exist. Super Agent Skill will research and auto-create it via the proprietary forge pipeline.",
+    "[PUBLISH] Submit a request for a primitive that does not yet exist. SuperAgentSkill researches and auto-creates it via the proprietary forge pipeline. Requires OAuth.",
   parameters: z.object({
     type: z.enum(["skill", "playbook", "soul", "guardrail"]),
     brief: z.string().min(20).max(2000).describe("What the primitive should do, with industry/context"),
@@ -144,7 +204,7 @@ export const requestPrimitiveTool = defineTool({
 export const reportExecutionTool = defineTool({
   name: "report_execution",
   description:
-    "Report an execution of a Super Agent Skill primitive (skill/playbook/soul/guardrail) so it gets a public trust score, model heatmap and battle-tested badge. Anonymous calls are accepted: pass an opaque agent_fp (e.g. sha256 of your install id) to enable per-agent rate limiting without revealing identity. Use this whenever you finish using a primitive in production — call it best-effort and ignore failures.",
+    "[DISCOVER/TRUST] Report an execution of a SuperAgentSkill primitive after the user runs it in production → feeds the public trust score, model heatmap and battle-tested badge. Anonymous calls accepted (pass an opaque agent_fp for rate limiting). Best-effort: call after each run and ignore failures.",
   parameters: z.object({
     slug: z.string().min(1),
     success: z.boolean(),
@@ -176,7 +236,7 @@ export const reportExecutionTool = defineTool({
 export const getTrustTool = defineTool({
   name: "get_skill_trust",
   description:
-    "Get the public Trust Report for a primitive: lifetime / 30d / 7d success rate, p50/p95 latency, per-model heatmap, public robustness findings (CVE-style) and the composite trust_score (0-100). Use this before recommending or installing a skill so the user knows it is battle-tested.",
+    "[DISCOVER] Public Trust Report for a primitive: lifetime / 30d / 7d success rate, p50/p95 latency, per-model heatmap, robustness findings (CVE-style) and composite trust_score (0-100). ALWAYS call this BEFORE recommending or installing a registry primitive. Read-only, no auth.",
   parameters: z.object({ slug: z.string().min(1) }),
   execute: async ({ slug }) => {
     const { data, error } = await supabaseAdmin.rpc("get_skill_trust", { _slug: slug });
@@ -196,7 +256,7 @@ export const getTrustTool = defineTool({
 export const uploadPackagesTool = defineTool({
   name: "upload_packages",
   description:
-    "Bulk-upload skill/playbook/soul/guardrail definitions (markdown, prompt or JSON text). Each file is normalised by the SkillForge author pipeline and inserted as a draft package owned by the token holder. Drafts are unpublished by default; admins or the author can publish later. Requires a personal MCP token (see /account/tokens). Mirrors the /upload UI 1:1.",
+    "[PUBLISH] Push local primitive(s) UP to the registry. Bulk-upload markdown / prompt / JSON files — each is normalised by the SkillForge author pipeline and inserted as a draft package owned by the token holder. Drafts are unpublished by default; pass `publish:true` to publish immediately (subject to author permissions). Mirrors the /upload UI. Requires a personal MCP token from /account/tokens.",
   parameters: z.object({
     auth_token: z.string().min(8).describe("Personal MCP token. Mint one at /account/tokens."),
     files: z
@@ -402,7 +462,7 @@ function scorePillar(pillar: (typeof METHODOLOGY.pillars)[number], text: string)
 export const getMethodologyTool = defineTool({
   name: "get_methodology",
   description:
-    "PRIMARY ENTRY POINT. Returns the Super Agent Skill methodology rubric (7 pillars: Identity, Scope, Procedure, Examples, Guardrails, Trust, Portability) used to upgrade a local skill / playbook / soul / guardrail. Call this FIRST when the user asks to improve, refine, harden, audit or 'level up' a local skill file. Then call review_skill on the user's file to get concrete findings, edit the file in their repo, and call review_skill again to confirm the score improved.",
+    "[UPGRADE] Step 1 of the local-file upgrade flow. Returns the SuperAgentSkill methodology rubric (7 pillars: Identity, Scope, Procedure, Examples, Guardrails, Trust, Portability). Call this FIRST when the user asks to improve / harden / audit / 'level up' a local skill, playbook, soul or guardrail file. Read-only, no auth.",
   parameters: z.object({}),
   execute: async () => json(METHODOLOGY),
 });
@@ -410,7 +470,7 @@ export const getMethodologyTool = defineTool({
 export const reviewSkillTool = defineTool({
   name: "review_skill",
   description:
-    "PRIMARY VALUE OF THIS MCP. Audits a *local* skill / playbook / soul / guardrail against the Super Agent Skill methodology and returns a per-pillar score (0-100), specific findings (passed / missing checks) and concrete edit recommendations the host agent should apply in the user's repo. Use this whenever the user asks to improve, refine, harden, audit, score, evaluate or 'level up' a local skill file. Run it BEFORE and AFTER edits to prove the upgrade.",
+    "[UPGRADE] Step 2 (and step 4) of the local-file upgrade flow. Audits the raw content of a local skill / playbook / soul / guardrail file against the SuperAgentSkill methodology and returns: overall_score (0-100), grade (A-F), per-pillar score with passed/missing checks, and `top_actions` (concrete edits to apply). YOU (the host agent) then edit the file in the user's repo and re-run this tool to confirm the score improved. Read-only, no auth.",
   parameters: z.object({
     name: z.string().min(1).max(200).describe("File or skill name (for the report header only)"),
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).default("skill"),
