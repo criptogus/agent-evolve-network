@@ -155,7 +155,7 @@ export const getPackageTool = defineTool({
 export const searchRegistryTool = defineTool({
   name: "search_registry",
   description:
-    "Search the registry by free-text across name + description + long_description. Best when the user asks for a domain, capability or persona ('marketing skills', 'a copywriter for landing pages', 'something to harden RLS') and you don't know the exact slug. Returns up to 50 hits ordered by install_count desc. Always prefer this over list_packages when scoping by topic — it sees descriptions, not just names.",
+    "[DISCOVER] PRIMARY discovery tool. Free-text search across name + description + long_description. Use whenever the user asks for a domain, capability or persona ('marketing skills', 'copywriter for landing pages', 'something to harden RLS'). Returns up to 50 hits ordered by install_count desc. Prefer this over list_packages — it sees descriptions, not just names. Read-only, no auth.",
   parameters: z.object({
     query: z.string().min(2),
     limit: z.number().int().min(1).max(50).default(20),
