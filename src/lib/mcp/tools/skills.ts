@@ -19,10 +19,70 @@ async function resolveUserFromToken(token: string): Promise<string | null> {
   return data.user_id;
 }
 
+export const overviewTool = defineTool({
+  name: "overview",
+  description:
+    "START HERE if unsure. Returns the SuperAgentSkill toolkit map grouped by user intent (UPGRADE a local file / DISCOVER registry primitives / PUBLISH back to registry), the auth model, and the canonical workflows. Cheap, read-only, no auth.",
+  parameters: z.object({}),
+  execute: async () =>
+    json({
+      server: "superagentskill",
+      version: "1.5.0",
+      tagline:
+        "Battle-tested toolkit for designing, auditing and shipping AI primitives — skills, playbooks, souls, guardrails.",
+      intents: {
+        upgrade_local_file: {
+          description:
+            "PRIMARY use case. The user has a local skill/playbook/soul/guardrail file and wants it significantly improved against the SuperAgentSkill methodology.",
+          workflow: [
+            "1. get_methodology  — load the 7-pillar rubric.",
+            "2. review_skill     — score the file (0-100 per pillar) + concrete top_actions.",
+            "3. <host edits>     — YOU apply top_actions in the user's repo.",
+            "4. review_skill     — confirm the score went up. Iterate to grade A.",
+            "5. search_registry  — (optional) borrow patterns from high-trust primitives.",
+          ],
+          tools: ["get_methodology", "review_skill", "search_registry", "get_package"],
+        },
+        discover_registry: {
+          description:
+            "Find or install pre-built primitives from the public registry (590+ packages: marketing, sales, growth, code, security, healthcare, finance, ops, …).",
+          workflow: [
+            "1. search_registry   — free-text across name + description + long_description, ordered by install_count.",
+            "2. get_package       — full latest manifest (system_prompt, rules, examples, compatibility).",
+            "3. get_skill_trust   — success rate, latency, per-model heatmap, robustness findings, trust_score. Call BEFORE recommending.",
+            "4. report_execution  — (after the user runs it) feed the trust system. Best-effort.",
+          ],
+          tools: ["search_registry", "list_packages", "get_package", "get_skill_trust", "report_execution"],
+        },
+        publish_back: {
+          description:
+            "Push a local primitive upward to the registry so others (and future-you) benefit. Requires OAuth.",
+          workflow: [
+            "1. upload_packages   — bulk upload markdown/prompt/JSON files. Normalised by SkillForge into draft packages. Pass publish:true to publish immediately.",
+            "2. request_primitive — ask SuperAgentSkill to AUTHOR a brand-new primitive from scratch via the forge pipeline.",
+          ],
+          tools: ["upload_packages", "request_primitive"],
+        },
+      },
+      primitive_types: {
+        skill: "A focused capability the agent can invoke (e.g. 'write-cold-outreach', 'audit-rls-policies').",
+        playbook: "A multi-step procedure / runbook the agent follows end-to-end.",
+        soul: "Persona + values + voice + refusals (the 'who', not the 'what').",
+        guardrail: "A safety / quality constraint enforced before, during or after another primitive runs.",
+      },
+      auth: {
+        anonymous_ok: ["overview", "get_methodology", "review_skill", "search_registry", "list_packages", "get_package", "get_skill_trust"],
+        oauth_required: ["upload_packages", "request_primitive", "report_execution"],
+        oauth_endpoint: "https://superagentskill.com/oauth/authorize",
+      },
+      docs: "https://superagentskill.com/connect",
+    }),
+});
+
 export const listPackagesTool = defineTool({
   name: "list_packages",
   description:
-    "List published primitives (skills, playbooks, souls, guardrails) from the Super Agent Skill registry. The registry has 590+ packages across many domains (marketing, sales, growth, design, code, security, finance, ops, healthcare, education, …). ALWAYS pass the `query` parameter (free-text, matches name + description + long_description) to narrow by domain — e.g. query='marketing', 'sales', 'growth', 'design', 'security'. Results are ordered by install_count desc so the most-used primitives surface first. Listing without a query returns the most-installed across ALL domains, which is biased toward whichever vertical is currently popular — do NOT use that to conclude a domain is missing. If you don't know the right keyword, call search_registry instead.",
+    "[DISCOVER] Browse published primitives by `type`. Always pass `query` to scope by domain — the registry has 590+ packages and listing without a query is biased toward the most-installed vertical. Prefer `search_registry` when scoping by topic. Read-only, no auth.",
   parameters: z.object({
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).optional(),
     query: z
