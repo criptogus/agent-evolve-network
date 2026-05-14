@@ -1,4 +1,45 @@
 import { AlertTriangle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+export const SOUL_DISCLAIMER_SHORT = "Fictional AI persona — not the real person.";
+
+export function SoulDisclaimerBadge({
+  name,
+  className = "",
+  onClick,
+}: {
+  name?: string;
+  className?: string;
+  onClick?: (e: React.MouseEvent) => void;
+}) {
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            role="note"
+            aria-label="Fictional AI persona disclaimer"
+            onClick={(e) => {
+              // Prevent parent <Link> navigation when used inside a card
+              e.stopPropagation();
+              onClick?.(e);
+            }}
+            className={`inline-flex cursor-help items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-amber-700 dark:text-amber-300 ${className}`}
+          >
+            <AlertTriangle className="h-3 w-3" aria-hidden="true" />
+            Fictional persona
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
+          <p className="font-semibold">{name ? `${name} — Fictional AI persona` : "Fictional AI persona"}</p>
+          <p className="mt-1">{SOUL_DISCLAIMER_TEXT}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+
 
 const DISCLAIMER_TITLE = "Persona fictícia / Fictional persona";
 
