@@ -175,7 +175,7 @@ export const listDiscoverPage = createServerFn({ method: "GET" })
       };
     }
 
-    const fullById = new Map(pageRows.map((r) => [r.id, r]));
+    const fullById = new Map<string, any>(pageRows.map((r: any) => [r.id, r]));
 
     // Ratings only for the visible page.
     const ratingByPkg = new Map<string, { sum: number; count: number }>();
