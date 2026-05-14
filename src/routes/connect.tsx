@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Nav } from "@/components/site/Nav";
-import { Footer } from "@/components/site/Footer";
+import { useState } from "react";
+import { ArrowRight, Check, Copy, Plug, Sparkles, Search, Upload, Terminal, Zap } from "lucide-react";
+import { SitePage } from "@/components/site/SitePage";
 import { CodeBlock } from "@/components/site/CodeBlock";
 import { McpTester } from "@/components/site/McpTester";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/connect")({
   head: () => ({
@@ -21,11 +23,14 @@ export const Route = createFileRoute("/connect")({
 
 const ENDPOINT = "https://superagentskill.com/api/mcp";
 
+/* ---------------- types ---------------- */
+
 type Client = {
   id: string;
   name: string;
-  blurb: string;
+  short: string;
   badge?: string;
+  blurb: string;
   steps: string[];
   filename: string;
   lang: string;
@@ -33,10 +38,15 @@ type Client = {
   notes?: string;
 };
 
+type Prompt = { title: string; code: string };
+
+/* ---------------- data ---------------- */
+
 const CLIENTS: Client[] = [
   {
     id: "lovable",
     name: "Lovable",
+    short: "Workspace",
     badge: "1-click",
     blurb:
       "Add Super Agent Skill as an MCP connector inside the Lovable workspace. Tools become available to the agent during builds.",
@@ -54,6 +64,7 @@ Auth: none (read-only) · Bearer <token> for write tools`,
   {
     id: "claude-desktop",
     name: "Claude Desktop",
+    short: "Desktop app",
     badge: "Streamable HTTP",
     blurb:
       "Native MCP support. Edit the config file and restart Claude. The server appears in the tools menu.",
@@ -75,14 +86,11 @@ Auth: none (read-only) · Bearer <token> for write tools`,
   },
   {
     id: "claude-code",
-    name: "Claude Code (Anthropic CLI)",
+    name: "Claude Code",
+    short: "Anthropic CLI",
     badge: "CLI",
-    blurb:
-      "One command registers the MCP server globally. Reuses your Claude account auth.",
-    steps: [
-      "Run the command in any terminal.",
-      "Verify with `claude mcp list`.",
-    ],
+    blurb: "One command registers the MCP server globally. Reuses your Claude account auth.",
+    steps: ["Run the command in any terminal.", "Verify with `claude mcp list`."],
     filename: "shell",
     lang: "bash",
     code: `claude mcp add --transport http super-agent-skill ${ENDPOINT}`,
@@ -92,9 +100,9 @@ Auth: none (read-only) · Bearer <token> for write tools`,
   {
     id: "cursor",
     name: "Cursor",
+    short: "IDE",
     badge: "Project + Global",
-    blurb:
-      "Drop-in JSON config at the project root or in the global settings folder.",
+    blurb: "Drop-in JSON config at the project root or in the global settings folder.",
     steps: [
       "Create the file at the path below.",
       "Reload Cursor (Cmd/Ctrl+Shift+P → Reload Window).",
@@ -113,13 +121,11 @@ Auth: none (read-only) · Bearer <token> for write tools`,
   },
   {
     id: "windsurf",
-    name: "Windsurf (Codeium)",
+    name: "Windsurf",
+    short: "Codeium Cascade",
     badge: "Cascade",
     blurb: "Cascade reads MCP servers from the codeium config directory.",
-    steps: [
-      "Edit the config file.",
-      "Restart Windsurf.",
-    ],
+    steps: ["Edit the config file.", "Restart Windsurf."],
     filename: "~/.codeium/windsurf/mcp_config.json",
     lang: "json",
     code: `{
@@ -132,13 +138,11 @@ Auth: none (read-only) · Bearer <token> for write tools`,
   },
   {
     id: "codex-cli",
-    name: "OpenAI Codex CLI",
+    name: "Codex CLI",
+    short: "OpenAI",
     badge: "TOML",
     blurb: "Codex CLI registers MCP servers via its config.toml.",
-    steps: [
-      "Edit ~/.codex/config.toml.",
-      "Append the [mcp_servers] block below.",
-    ],
+    steps: ["Edit ~/.codex/config.toml.", "Append the [mcp_servers] block below."],
     filename: "~/.codex/config.toml",
     lang: "toml",
     code: `[mcp_servers.super-agent-skill]
@@ -148,6 +152,7 @@ transport = "http"`,
   {
     id: "opencode",
     name: "OpenCode",
+    short: "OSS agent",
     badge: "JSON",
     blurb: "Open-source coding agent with native MCP support.",
     steps: [
@@ -168,10 +173,11 @@ transport = "http"`,
   },
   {
     id: "vscode",
-    name: "VS Code (Copilot Chat / Cline / Continue)",
+    name: "VS Code",
+    short: "Copilot / Cline / Continue",
     badge: "settings.json",
     blurb:
-      "VS Code 1.93+ supports MCP servers natively for GitHub Copilot Chat. Cline and Continue use the same shape.",
+      "VS Code 1.93+ supports MCP servers natively for Copilot Chat. Cline and Continue use the same shape.",
     steps: [
       "Open Settings (JSON) — Cmd/Ctrl+Shift+P → 'Preferences: Open User Settings (JSON)'.",
       "Add the snippet, save, reload window.",
@@ -194,12 +200,10 @@ transport = "http"`,
   {
     id: "zed",
     name: "Zed",
+    short: "Editor",
     badge: "context_servers",
     blurb: "Zed exposes MCP servers as context servers in its settings.json.",
-    steps: [
-      "Open Zed settings (Cmd+,).",
-      "Add the snippet under context_servers.",
-    ],
+    steps: ["Open Zed settings (Cmd+,).", "Add the snippet under context_servers."],
     filename: "~/.config/zed/settings.json",
     lang: "json",
     code: `{
@@ -213,14 +217,12 @@ transport = "http"`,
   },
   {
     id: "cline",
-    name: "Cline / Roo Code (CoWork)",
+    name: "Cline / Roo",
+    short: "VS Code panel",
     badge: "Side panel",
     blurb:
       "Cline-family extensions read MCP servers from a dedicated JSON file managed via the side panel.",
-    steps: [
-      "Open Cline → MCP Servers → Edit MCP Settings.",
-      "Paste the snippet, save.",
-    ],
+    steps: ["Open Cline → MCP Servers → Edit MCP Settings.", "Paste the snippet, save."],
     filename: "cline_mcp_settings.json",
     lang: "json",
     code: `{
@@ -235,7 +237,8 @@ transport = "http"`,
   },
   {
     id: "n8n",
-    name: "n8n (workflow agent)",
+    name: "n8n",
+    short: "Workflow agent",
     badge: "MCP Client node",
     blurb:
       "Use the MCP Client node inside any AI Agent workflow. Tools become callable steps.",
@@ -251,7 +254,8 @@ Headers:   Accept: application/json, text/event-stream`,
   },
   {
     id: "custom",
-    name: "Any custom runtime",
+    name: "Custom",
+    short: "Any MCP runtime",
     badge: "Generic",
     blurb:
       "Any client speaking MCP Streamable HTTP can connect — Hermes, Grok, OpenClaw, custom Python/Node agents.",
@@ -268,385 +272,507 @@ Headers:   Accept: application/json, text/event-stream`,
   },
 ];
 
-function ConnectPage() {
-  return (
-    <div className="min-h-screen bg-background">
-      <Nav />
-      <main className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-        <header className="mb-10">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Connect</p>
-          <h1 className="mt-2 text-3xl font-semibold md:text-4xl">
-            One MCP server. Every coding agent.
-          </h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            Copy-paste config for the client of your choice. Read tools (
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">list_packages</code>,{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">search_registry</code>,{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">get_package</code>) work
-            anonymously. Write tools (
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">upload_packages</code>,{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">request_primitive</code>) need
-            a token from{" "}
-            <Link to="/account/tokens" className="text-primary hover:underline">
-              Account → Tokens
-            </Link>
-            .
-          </p>
-          <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 font-mono text-xs">
-            <span className="text-muted-foreground">Endpoint:</span>
-            <span>{ENDPOINT}</span>
-          </div>
-        </header>
-
-        {/* Live test */}
-        <McpTester />
-
-        {/* Health check from terminal */}
-        <section className="mb-10 rounded-2xl border border-border bg-card p-5 md:p-6">
-          <h2 className="text-xl font-semibold">Verify from your terminal</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Hit the public health endpoint to confirm the registry is reachable from your network
-            and to enumerate the live tool catalog — no auth required.
-          </p>
-          <div className="mt-3">
-            <CodeBlock
-              filename="shell"
-              lang="bash"
-              code={`curl -s ${ENDPOINT.replace("/api/mcp", "/api/public/mcp/health")} | jq`}
-            />
-          </div>
-        </section>
-
-        {/* Ready-to-paste prompts */}
-        <section id="prompts" className="mb-10 scroll-mt-24 rounded-2xl border border-border bg-card p-5 md:p-6">
-          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-xl font-semibold">Copy-paste prompts (no config editing)</h2>
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-              Fastest path
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Don't want to touch JSON? Paste the prompt for your agent — it will install Super Agent
-            Skill as an MCP server, then call <code className="rounded bg-muted px-1 py-0.5 text-xs">tools/list</code> to confirm
-            it works.
-          </p>
-
-          <div className="mt-4 grid gap-4">
-            <CodeBlock
-              filename="Codex CLI / OpenCode — paste in chat"
-              lang="txt"
-              code={`Install the "Super Agent Skill" MCP server using this Streamable HTTP endpoint:
+const QUICK_PROMPTS: Prompt[] = [
+  {
+    title: "Codex CLI / OpenCode",
+    code: `Install the "Super Agent Skill" MCP server using this Streamable HTTP endpoint:
   ${ENDPOINT}
 
 Steps:
 1. Add it to my MCP config (transport: http, no auth required for read tools).
 2. Restart the MCP connection.
 3. Call the "list_packages" tool with no arguments and show me the first 5 results.
-If anything fails, print the exact error and the config you wrote.`}
-            />
-
-            <CodeBlock
-              filename="Claude Code (CLI) — paste in chat"
-              lang="txt"
-              code={`Run this command in my shell, then verify it works:
+If anything fails, print the exact error and the config you wrote.`,
+  },
+  {
+    title: "Claude Code (CLI)",
+    code: `Run this command in my shell, then verify it works:
 
   claude mcp add --transport http super-agent-skill ${ENDPOINT}
 
-After it succeeds, call the MCP tool "search_registry" with query "code review" and summarize the top 3 results.`}
-            />
-
-            <CodeBlock
-              filename="Claude Desktop — paste in chat"
-              lang="txt"
-              code={`Add this MCP server to my claude_desktop_config.json under "mcpServers":
+After it succeeds, call the MCP tool "search_registry" with query "code review" and summarize the top 3 results.`,
+  },
+  {
+    title: "Claude Desktop",
+    code: `Add this MCP server to my claude_desktop_config.json under "mcpServers":
 
   "super-agent-skill": { "url": "${ENDPOINT}" }
 
-Tell me the exact file path for my OS, write the merged JSON (preserving any existing servers), and remind me to fully quit and reopen Claude Desktop. Then list the tools I should see (list_packages, search_registry, get_package, request_primitive, report_execution, get_skill_trust, upload_packages).`}
-            />
-
-            <CodeBlock
-              filename="Cursor / Windsurf / VS Code — paste in chat"
-              lang="txt"
-              code={`Add the "Super Agent Skill" MCP server to this project.
+Tell me the exact file path for my OS, write the merged JSON (preserving any existing servers), and remind me to fully quit and reopen Claude Desktop.`,
+  },
+  {
+    title: "Cursor / Windsurf / VS Code",
+    code: `Add the "Super Agent Skill" MCP server to this project.
 
 Endpoint (Streamable HTTP): ${ENDPOINT}
-Auth: none for read tools (list_packages, search_registry, get_package). Bearer token only for write tools.
+Auth: none for read tools. Bearer token only for write tools.
 
-Create or update the right config file for the editor I'm using (.cursor/mcp.json, ~/.codeium/windsurf/mcp_config.json, or VS Code settings.json under "mcp.servers"), then tell me to reload the window. After reload, call list_packages and show me the count.`}
-            />
-
-            <CodeBlock
-              filename="Lovable — paste in chat"
-              lang="txt"
-              code={`Connect the Super Agent Skill MCP server to this project.
+Create or update the right config file for the editor I'm using, then tell me to reload the window. After reload, call list_packages and show me the count.`,
+  },
+  {
+    title: "Lovable",
+    code: `Connect the Super Agent Skill MCP server to this project.
 
 URL: ${ENDPOINT}
 Transport: Streamable HTTP, no auth required.
 
-After it's connected, call the tool "search_registry" with query "design review" and recommend the best matching skill for this codebase.`}
-            />
-          </div>
+After it's connected, call the tool "search_registry" with query "design review" and recommend the best matching skill for this codebase.`,
+  },
+];
 
-          <p className="mt-4 text-xs text-muted-foreground">
-            For write tools (<code className="rounded bg-muted px-1 py-0.5 text-[11px]">upload_packages</code>,{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">request_primitive</code>), append:{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">Authorization: Bearer &lt;token&gt;</code> from{" "}
-            <Link to="/account/tokens" className="text-primary hover:underline">Account → Tokens</Link>.
-          </p>
-        </section>
-
-        {/* Quick jump */}
-        <nav className="mb-10 flex flex-wrap gap-2">
-          <a
-            href="#prompts"
-            className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary transition hover:border-primary/60"
-          >
-            ✨ Copy-paste prompts
-          </a>
-          <a
-            href="#test-mcp"
-            className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-700 transition hover:border-emerald-500/60 dark:text-emerald-400"
-          >
-            ▶ Test MCP
-          </a>
-          <a
-            href="#usage"
-            className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-700 transition hover:border-emerald-500/60 dark:text-emerald-400"
-          >
-            💬 How to use it
-          </a>
-          {CLIENTS.map((c) => (
-            <a
-              key={c.id}
-              href={`#${c.id}`}
-              className="rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
-            >
-              {c.name}
-            </a>
-          ))}
-        </nav>
-
-        <div className="grid gap-6">
-          {CLIENTS.map((c) => (
-            <section
-              key={c.id}
-              id={c.id}
-              className="scroll-mt-24 rounded-2xl border border-border bg-card p-5 md:p-6"
-            >
-              <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-xl font-semibold">{c.name}</h2>
-                {c.badge && (
-                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-                    {c.badge}
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground">{c.blurb}</p>
-
-              <ol className="mt-4 grid gap-1.5 text-sm">
-                {c.steps.map((s, i) => (
-                  <li key={s} className="flex gap-2 text-muted-foreground">
-                    <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-foreground">
-                      {i + 1}
-                    </span>
-                    <span>{s}</span>
-                  </li>
-                ))}
-              </ol>
-
-              <div className="mt-4">
-                <CodeBlock filename={c.filename} lang={c.lang} code={c.code} />
-              </div>
-
-              {c.notes && (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">Note:</span> {c.notes}
-                </p>
-              )}
-            </section>
-          ))}
-        </div>
-
-        {/* After connecting — how to actually USE it */}
-        <section id="usage" className="mt-12 scroll-mt-24 rounded-2xl border border-border bg-card p-5 md:p-6">
-          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-xl font-semibold">Once connected — copy-paste prompts for your agent</h2>
-            <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
-              Ready-made
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Three things you can do from Claude / Codex / any MCP-aware agent. Just copy a block,
-            paste it in chat, swap the file path or topic, and send. The agent routes to{" "}
-            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">@superagentskill</code> automatically.
-          </p>
-
-          {/* INTENT 1 — UPGRADE */}
-          <div className="mt-6 flex items-baseline gap-2">
-            <span className="rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-              1. Upgrade
-            </span>
-            <p className="text-sm font-medium">Significantly improve a local skill, playbook, soul or guardrail file</p>
-          </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Uses <code className="rounded bg-muted px-1 text-[11px]">get_methodology</code> →{" "}
-            <code className="rounded bg-muted px-1 text-[11px]">review_skill</code> → host edits → re-score. The score delta is the proof.
-          </p>
-
-          <div className="mt-3 grid gap-4 md:grid-cols-2">
-            <CodeBlock
-              filename="Upgrade a skill end-to-end"
-              lang="txt"
-              code={`Use @superagentskill to significantly upgrade my local skill at .claude/skills/code-reviewer.md.
+const UPGRADE_PROMPTS: Prompt[] = [
+  {
+    title: "Upgrade a skill end-to-end",
+    code: `Use @superagentskill to significantly upgrade my local skill at .claude/skills/code-reviewer.md.
 1. Call get_methodology to load the rubric.
 2. Call review_skill on the file's raw content — show me the per-pillar score.
 3. Edit the file in place applying every top_action.
 4. Re-run review_skill and show the before/after grade and per-pillar delta.
-Stop only when the overall score is >= 90.`}
-            />
-
-            <CodeBlock
-              filename="Audit & harden a playbook"
-              lang="txt"
-              code={`Use @superagentskill to audit docs/playbooks/incident-response.md against the SuperAgentSkill methodology.
+Stop only when the overall score is >= 90.`,
+  },
+  {
+    title: "Audit & harden a playbook",
+    code: `Use @superagentskill to audit docs/playbooks/incident-response.md against the SuperAgentSkill methodology.
 Score it, then rewrite the 3 weakest pillars in place.
-Show the diff and the new overall_score. Don't touch pillars already at >= 80.`}
-            />
-
-            <CodeBlock
-              filename="Harden a soul / persona file"
-              lang="txt"
-              code={`Use @superagentskill to upgrade the soul at agents/nova/SOUL.md.
+Show the diff and the new overall_score. Don't touch pillars already at >= 80.`,
+  },
+  {
+    title: "Harden a soul / persona",
+    code: `Use @superagentskill to upgrade the soul at agents/nova/SOUL.md.
 Focus on Identity, Guardrails and Trust pillars.
-After review_skill, also call search_registry type="soul" to borrow patterns from the 3 highest-trust souls. Merge what fits, then re-score.`}
-            />
-
-            <CodeBlock
-              filename="Author a new guardrail from the rubric"
-              lang="txt"
-              code={`Use @superagentskill: call get_methodology, then draft a brand-new guardrail file at .agents/guardrails/no-pii-leak.md that scores >= 90 on every pillar. Verify by calling review_skill on your draft BEFORE handing it to me.`}
-            />
-
-            <CodeBlock
-              filename="Batch-upgrade every skill in a folder"
-              lang="txt"
-              code={`Use @superagentskill to upgrade every .md file under .claude/skills/.
+After review_skill, also call search_registry type="soul" to borrow patterns from the 3 highest-trust souls. Merge what fits, then re-score.`,
+  },
+  {
+    title: "Author a new guardrail",
+    code: `Use @superagentskill: call get_methodology, then draft a brand-new guardrail file at .agents/guardrails/no-pii-leak.md that scores >= 90 on every pillar. Verify by calling review_skill on your draft BEFORE handing it to me.`,
+  },
+  {
+    title: "Batch-upgrade a folder",
+    code: `Use @superagentskill to upgrade every .md file under .claude/skills/.
 For each file: review_skill → edit in place → re-review. Skip files already at grade A.
-At the end, print a table: file | before | after | delta.`}
-            />
+At the end, print a table: file | before | after | delta.`,
+  },
+  {
+    title: "Compare two versions",
+    code: `Use @superagentskill to score both versions of my skill (skill-v1.md and skill-v2.md) with review_skill.
+Tell me which one wins per pillar, what v2 broke that v1 had right, and what to merge into a v3.`,
+  },
+];
 
-            <CodeBlock
-              filename="Compare two versions of a skill"
-              lang="txt"
-              code={`Use @superagentskill to score both versions of my skill (skill-v1.md and skill-v2.md) with review_skill.
-Tell me which one wins per pillar, what v2 broke that v1 had right, and what to merge into a v3.`}
-            />
-          </div>
-
-          {/* INTENT 2 — DISCOVER */}
-          <div className="mt-8 flex items-baseline gap-2">
-            <span className="rounded-md bg-blue-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">
-              2. Discover
-            </span>
-            <p className="text-sm font-medium">Find &amp; install battle-tested primitives from the registry (590+)</p>
-          </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Always pair <code className="rounded bg-muted px-1 text-[11px]">search_registry</code> with{" "}
-            <code className="rounded bg-muted px-1 text-[11px]">get_skill_trust</code> before recommending. Report results back with{" "}
-            <code className="rounded bg-muted px-1 text-[11px]">report_execution</code>.
-          </p>
-
-          <div className="mt-3 grid gap-4 md:grid-cols-2">
-            <CodeBlock
-              filename="Find the best skill for a task"
-              lang="txt"
-              code={`Use @superagentskill: call search_registry with query="<my task in 2-5 words>" and limit=20.
+const DISCOVER_PROMPTS: Prompt[] = [
+  {
+    title: "Find the best skill for a task",
+    code: `Use @superagentskill: call search_registry with query="<my task in 2-5 words>" and limit=20.
 Then call get_skill_trust on the top 5 results.
-Recommend the highest trust_score one, paste its system_prompt from get_package, and tell me which models it's validated on.`}
-            />
-
-            <CodeBlock
-              filename="Browse a domain (marketing / sales / security…)"
-              lang="txt"
-              code={`Use @superagentskill: call search_registry with query="marketing" type="skill" limit=30.
-Group results by sub-domain (copywriting, ads, growth, brand, …) and show top 3 per group with their install_count and trust_score.`}
-            />
-
-            <CodeBlock
-              filename="Borrow patterns into my local skill"
-              lang="txt"
-              code={`Use @superagentskill to find the highest-trust "code-reviewer" skill in the registry.
+Recommend the highest trust_score one, paste its system_prompt from get_package, and tell me which models it's validated on.`,
+  },
+  {
+    title: "Browse a domain",
+    code: `Use @superagentskill: call search_registry with query="marketing" type="skill" limit=30.
+Group results by sub-domain (copywriting, ads, growth, brand, …) and show top 3 per group with their install_count and trust_score.`,
+  },
+  {
+    title: "Borrow patterns into my local skill",
+    code: `Use @superagentskill to find the highest-trust "code-reviewer" skill in the registry.
 Fetch its full manifest with get_package, identify the 3 strongest sections, and merge them into my local code-reviewer.md.
-Run review_skill before and after — score must improve.`}
-            />
+Run review_skill before and after — score must improve.`,
+  },
+  {
+    title: "Install + run + report",
+    code: `Use @superagentskill to install the skill "<slug>": call get_package, save the system_prompt under .claude/skills/<slug>.md, run it on <my task>, then call report_execution with success=true/false, the model name and latency_ms.`,
+  },
+];
 
-            <CodeBlock
-              filename="Install + run + report"
-              lang="txt"
-              code={`Use @superagentskill to install the skill "<slug>": call get_package, save the system_prompt under .claude/skills/<slug>.md, run it on <my task>, then call report_execution with success=true/false, the model name and latency_ms.`}
-            />
+const PUBLISH_PROMPTS: Prompt[] = [
+  {
+    title: "Upload a single skill as draft",
+    code: `Use @superagentskill: read my file at .claude/skills/<my-skill>.md, then call upload_packages with files=[{name:"<my-skill>.md", content:<file content>, type:"skill"}] and publish=false.
+Print the returned slug so I can review the draft at /packages/<slug>.`,
+  },
+  {
+    title: "Bulk-upload a folder & publish",
+    code: `Use @superagentskill to publish every .md file under agents/published/ (max 10 per call).
+First call review_skill on each — only publish files that score >= 80.
+Then upload_packages with publish=true. Print a table: filename | slug | grade.`,
+  },
+  {
+    title: "Request a primitive you wish existed",
+    code: `Use @superagentskill to request a new primitive: a "supabase-rls-auditor" skill that reviews Postgres RLS policies for privilege-escalation patterns.
+Call request_primitive with a detailed brief, my industry, and report the request_id back so I can track it.`,
+  },
+  {
+    title: "Round-trip: upgrade → publish",
+    code: `Use @superagentskill to take my local skill at <path>, upgrade it (get_methodology + review_skill + edit + re-review until grade A), THEN upload_packages with publish=true so the improved version goes back to the registry. Print before/after score and the published slug.`,
+  },
+];
+
+/* ---------------- small UI helpers ---------------- */
+
+function CopyInline({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(value);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        } catch {}
+      }}
+      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-accent"
+      aria-label="Copy endpoint"
+    >
+      {copied ? <Check className="h-3.5 w-3.5 text-signal" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? "Copied" : "Copy"}
+    </button>
+  );
+}
+
+function SectionHeader({
+  eyebrow,
+  title,
+  description,
+  icon: Icon,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+}) {
+  return (
+    <div className="flex items-start gap-4">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-surface">
+        <Icon className="h-5 w-5 text-primary" />
+      </div>
+      <div>
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">{eyebrow}</p>
+        <h2 className="mt-1 text-2xl font-semibold tracking-tight">{title}</h2>
+        <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+function PromptGrid({ prompts }: { prompts: Prompt[] }) {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      {prompts.map((p) => (
+        <CodeBlock key={p.title} filename={p.title} lang="txt" code={p.code} />
+      ))}
+    </div>
+  );
+}
+
+/* ---------------- page ---------------- */
+
+function ConnectPage() {
+  const [activeClient, setActiveClient] = useState<string>(CLIENTS[0].id);
+  const client = CLIENTS.find((c) => c.id === activeClient) ?? CLIENTS[0];
+
+  return (
+    <SitePage>
+      <main className="mx-auto max-w-6xl px-4 py-10 md:py-14">
+        {/* ============ HERO ============ */}
+        <section className="grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">
+              Connect · MCP
+            </p>
+            <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">
+              One MCP server.
+              <br />
+              <span className="text-muted-foreground">Every coding agent.</span>
+            </h1>
+            <p className="mt-4 max-w-xl text-base text-muted-foreground">
+              Plug Super Agent Skill into Lovable, Claude, Cursor, Codex, VS Code, Zed, n8n and any
+              MCP-compatible runtime. Read tools work anonymously — write tools need a token.
+            </p>
           </div>
 
-          {/* INTENT 3 — PUBLISH */}
-          <div className="mt-8 flex items-baseline gap-2">
-            <span className="rounded-md bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">
-              3. Publish
-            </span>
-            <p className="text-sm font-medium">Push your local primitives back to the registry</p>
+          {/* Endpoint card */}
+          <div className="rounded-2xl border border-border bg-surface p-5 shadow-elevated">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+              Streamable HTTP endpoint
+            </p>
+            <div className="mt-3 flex items-center gap-3">
+              <code className="font-mono text-sm font-medium text-foreground">{ENDPOINT}</code>
+              <CopyInline value={ENDPOINT} />
+            </div>
+            <div className="mt-4 flex items-center gap-4 border-t border-border pt-3 text-[11px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-signal" />
+                Live
+              </span>
+              <span>·</span>
+              <span>3 read tools · free</span>
+              <span>·</span>
+              <span>4 write tools · token</span>
+            </div>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Requires OAuth (Claude does this automatically) or a personal token from{" "}
+        </section>
+
+        {/* ============ JUMP NAV ============ */}
+        <nav className="mt-10 flex flex-wrap gap-2 border-y border-border py-4">
+          {[
+            { href: "#quick-start", label: "Quick start", icon: Zap },
+            { href: "#test", label: "Test it live", icon: Plug },
+            { href: "#clients", label: "Client configs", icon: Terminal },
+            { href: "#prompts", label: "Power prompts", icon: Sparkles },
+          ].map(({ href, label, icon: Icon }) => (
+            <a
+              key={href}
+              href={href}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </a>
+          ))}
+        </nav>
+
+        {/* ============ QUICK START — paste-prompt path ============ */}
+        <section id="quick-start" className="mt-14 scroll-mt-24">
+          <SectionHeader
+            eyebrow="01 · Fastest path"
+            title="Don't touch JSON. Paste a prompt."
+            description="Pick your agent. Paste the prompt in chat. It writes the config, restarts, and runs a test call so you know it works."
+            icon={Zap}
+          />
+
+          <div className="mt-6 rounded-2xl border border-border bg-card p-5 md:p-6">
+            <Tabs defaultValue={QUICK_PROMPTS[0].title}>
+              <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 bg-transparent p-0">
+                {QUICK_PROMPTS.map((p) => (
+                  <TabsTrigger
+                    key={p.title}
+                    value={p.title}
+                    className="rounded-md border border-transparent px-3 py-1.5 text-xs font-medium data-[state=active]:border-border data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  >
+                    {p.title}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              {QUICK_PROMPTS.map((p) => (
+                <TabsContent key={p.title} value={p.title} className="mt-4">
+                  <CodeBlock filename={`Paste in ${p.title}`} lang="txt" code={p.code} />
+                </TabsContent>
+              ))}
+            </Tabs>
+          </div>
+
+          <p className="mt-3 text-xs text-muted-foreground">
+            For write tools (
+            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">upload_packages</code>,{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">request_primitive</code>),
+            append <code className="rounded bg-muted px-1 py-0.5 text-[11px]">Authorization: Bearer &lt;token&gt;</code>{" "}
+            from{" "}
             <Link to="/account/tokens" className="text-primary hover:underline">
-              /account/tokens
+              Account → Tokens
             </Link>
             .
           </p>
+        </section>
 
-          <div className="mt-3 grid gap-4 md:grid-cols-2">
-            <CodeBlock
-              filename="Upload a single skill as draft"
-              lang="txt"
-              code={`Use @superagentskill: read my file at .claude/skills/<my-skill>.md, then call upload_packages with files=[{name:"<my-skill>.md", content:<file content>, type:"skill"}] and publish=false.
-Print the returned slug so I can review the draft at /packages/<slug>.`}
-            />
-
-            <CodeBlock
-              filename="Bulk-upload a folder, publish immediately"
-              lang="txt"
-              code={`Use @superagentskill to publish every .md file under agents/published/ (max 10 per call).
-First call review_skill on each — only publish files that score >= 80.
-Then upload_packages with publish=true. Print a table: filename | slug | grade.`}
-            />
-
-            <CodeBlock
-              filename="Request a primitive you wish existed"
-              lang="txt"
-              code={`Use @superagentskill to request a new primitive: a "supabase-rls-auditor" skill that reviews Postgres RLS policies for privilege-escalation patterns.
-Call request_primitive with a detailed brief, my industry, and report the request_id back so I can track it.`}
-            />
-
-            <CodeBlock
-              filename="Round-trip: upgrade locally → publish back"
-              lang="txt"
-              code={`Use @superagentskill to take my local skill at <path>, upgrade it (get_methodology + review_skill + edit + re-review until grade A), THEN upload_packages with publish=true so the improved version goes back to the registry. Print before/after score and the published slug.`}
-            />
+        {/* ============ TEST IT LIVE ============ */}
+        <section id="test" className="mt-16 scroll-mt-24">
+          <SectionHeader
+            eyebrow="02 · Verify"
+            title="Test the MCP server, right here."
+            description="Probe the live endpoint from your browser or a shell. No setup needed."
+            icon={Plug}
+          />
+          <div className="mt-6">
+            <McpTester />
           </div>
 
-          <div className="mt-7 grid gap-3 rounded-xl border border-border bg-background/50 p-4 text-sm">
-            <p className="font-medium">Pro tips</p>
-            <ul className="grid gap-1.5 text-muted-foreground">
-              <li>• If the agent can't find the server, ask it to call <code className="rounded bg-muted px-1 text-xs">overview</code> first — it returns the full intent → tool map.</li>
-              <li>• Always run <code className="rounded bg-muted px-1 text-xs">review_skill</code> twice (before and after edits). The score delta is the proof.</li>
-              <li>• Always call <code className="rounded bg-muted px-1 text-xs">get_skill_trust</code> before recommending a registry primitive.</li>
-              <li>• If your client doesn't auto-mention MCP servers, just write: <em>"Using the superagentskill MCP, …"</em></li>
+          <details className="mt-4 rounded-2xl border border-border bg-card p-5">
+            <summary className="cursor-pointer text-sm font-medium">
+              Or hit the public health endpoint from your terminal
+            </summary>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Confirms reachability from your network and enumerates the live tool catalog — no auth.
+            </p>
+            <div className="mt-3">
+              <CodeBlock
+                filename="shell"
+                lang="bash"
+                code={`curl -s ${ENDPOINT.replace("/api/mcp", "/api/public/mcp/health")} | jq`}
+              />
+            </div>
+          </details>
+        </section>
+
+        {/* ============ CLIENT CONFIGS ============ */}
+        <section id="clients" className="mt-16 scroll-mt-24">
+          <SectionHeader
+            eyebrow="03 · Configs"
+            title="Manual setup for every client."
+            description="Pick your client. Copy the snippet. Restart. Tools appear in the agent."
+            icon={Terminal}
+          />
+
+          <div className="mt-6 grid gap-6 md:grid-cols-[260px_1fr]">
+            {/* Left: client list */}
+            <aside className="rounded-2xl border border-border bg-card p-2">
+              <ul className="grid gap-0.5">
+                {CLIENTS.map((c) => {
+                  const active = c.id === activeClient;
+                  return (
+                    <li key={c.id}>
+                      <button
+                        type="button"
+                        onClick={() => setActiveClient(c.id)}
+                        className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-left transition-colors ${
+                          active
+                            ? "bg-primary/10 text-foreground"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                        }`}
+                      >
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-medium">{c.name}</div>
+                          <div className="truncate font-mono text-[10px] uppercase tracking-wider opacity-70">
+                            {c.short}
+                          </div>
+                        </div>
+                        {active && <ArrowRight className="h-3.5 w-3.5 shrink-0 text-primary" />}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </aside>
+
+            {/* Right: client detail */}
+            <article className="rounded-2xl border border-border bg-card p-5 md:p-6">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <div>
+                  <h3 className="text-2xl font-semibold tracking-tight">{client.name}</h3>
+                  <p className="mt-0.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                    {client.short}
+                  </p>
+                </div>
+                {client.badge && (
+                  <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
+                    {client.badge}
+                  </span>
+                )}
+              </div>
+
+              <p className="mt-4 text-sm text-muted-foreground">{client.blurb}</p>
+
+              <ol className="mt-5 grid gap-2 text-sm">
+                {client.steps.map((s, i) => (
+                  <li key={s} className="flex gap-3">
+                    <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[10px] font-semibold text-primary">
+                      {i + 1}
+                    </span>
+                    <span className="text-muted-foreground">{s}</span>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="mt-5">
+                <CodeBlock filename={client.filename} lang={client.lang} code={client.code} />
+              </div>
+
+              {client.notes && (
+                <p className="mt-4 rounded-lg border border-border bg-surface px-3 py-2.5 text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">Note:</span> {client.notes}
+                </p>
+              )}
+            </article>
+          </div>
+        </section>
+
+        {/* ============ POWER PROMPTS — once connected ============ */}
+        <section id="prompts" className="mt-16 scroll-mt-24">
+          <SectionHeader
+            eyebrow="04 · Power moves"
+            title="Once connected — what to ask the agent."
+            description="Three intent groups. Copy a prompt, swap a path or topic, send. The agent routes to @superagentskill automatically."
+            icon={Sparkles}
+          />
+
+          <div className="mt-6 rounded-2xl border border-border bg-card p-5 md:p-6">
+            <Tabs defaultValue="upgrade">
+              <TabsList className="grid w-full grid-cols-3 bg-muted/60">
+                <TabsTrigger value="upgrade" className="gap-1.5 data-[state=active]:bg-background">
+                  <Zap className="h-3.5 w-3.5" /> Upgrade
+                </TabsTrigger>
+                <TabsTrigger value="discover" className="gap-1.5 data-[state=active]:bg-background">
+                  <Search className="h-3.5 w-3.5" /> Discover
+                </TabsTrigger>
+                <TabsTrigger value="publish" className="gap-1.5 data-[state=active]:bg-background">
+                  <Upload className="h-3.5 w-3.5" /> Publish
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="upgrade" className="mt-5 space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Significantly improve a local skill, playbook, soul or guardrail. Uses{" "}
+                  <code className="rounded bg-muted px-1 text-[11px]">get_methodology</code> →{" "}
+                  <code className="rounded bg-muted px-1 text-[11px]">review_skill</code> → host
+                  edits → re-score. The score delta is the proof.
+                </p>
+                <PromptGrid prompts={UPGRADE_PROMPTS} />
+              </TabsContent>
+
+              <TabsContent value="discover" className="mt-5 space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Find &amp; install battle-tested primitives from the registry (590+). Always pair{" "}
+                  <code className="rounded bg-muted px-1 text-[11px]">search_registry</code> with{" "}
+                  <code className="rounded bg-muted px-1 text-[11px]">get_skill_trust</code> before
+                  recommending. Report results back with{" "}
+                  <code className="rounded bg-muted px-1 text-[11px]">report_execution</code>.
+                </p>
+                <PromptGrid prompts={DISCOVER_PROMPTS} />
+              </TabsContent>
+
+              <TabsContent value="publish" className="mt-5 space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Push your local primitives back to the registry. Requires OAuth (Claude does this
+                  automatically) or a personal token from{" "}
+                  <Link to="/account/tokens" className="text-primary hover:underline">
+                    /account/tokens
+                  </Link>
+                  .
+                </p>
+                <PromptGrid prompts={PUBLISH_PROMPTS} />
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-border bg-surface p-5">
+            <p className="font-mono text-[11px] uppercase tracking-wider text-primary">Pro tips</p>
+            <ul className="mt-3 grid gap-2 text-sm text-muted-foreground md:grid-cols-2">
+              <li className="flex gap-2">
+                <span className="text-primary">→</span> If the agent can't find the server, ask it
+                to call <code className="rounded bg-muted px-1 text-xs">overview</code> first — it
+                returns the full intent → tool map.
+              </li>
+              <li className="flex gap-2">
+                <span className="text-primary">→</span> Always run{" "}
+                <code className="rounded bg-muted px-1 text-xs">review_skill</code> twice (before
+                and after edits). The score delta is the proof.
+              </li>
+              <li className="flex gap-2">
+                <span className="text-primary">→</span> Always call{" "}
+                <code className="rounded bg-muted px-1 text-xs">get_skill_trust</code> before
+                recommending a registry primitive.
+              </li>
+              <li className="flex gap-2">
+                <span className="text-primary">→</span> If your client doesn't auto-mention MCP
+                servers, just write: <em>"Using the superagentskill MCP, …"</em>
+              </li>
             </ul>
           </div>
         </section>
 
-        <section className="mt-8 rounded-2xl border border-dashed border-border bg-card p-5 md:p-6">
+        {/* ============ FOOTER NOTE ============ */}
+        <section className="mt-16 rounded-2xl border border-dashed border-border bg-card p-6 text-center">
           <h3 className="text-lg font-semibold">Don't see your client?</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground">
             Any runtime that speaks{" "}
             <a
               href="https://modelcontextprotocol.io/specification/2025-06-18/basic/transports"
@@ -664,7 +790,6 @@ Call request_primitive with a detailed brief, my industry, and report the reques
           </p>
         </section>
       </main>
-      <Footer />
-    </div>
+    </SitePage>
   );
 }
