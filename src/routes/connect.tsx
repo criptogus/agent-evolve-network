@@ -477,57 +477,80 @@ After it's connected, call the tool "search_registry" with query "design review"
             </span>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            After the MCP server is registered, you don't need to remember tool names. Just mention
-            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">@superagentskill</code> (or
-            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">/superagentskill</code> in clients
-            that support slash-mentions) inside the chat — the agent will pick the right tool from
-            the catalog automatically.
+            The <strong>primary use</strong> of this MCP is to{" "}
+            <strong>significantly upgrade a skill, playbook, soul or guardrail you already have locally</strong>{" "}
+            using the Super Agent Skill methodology (a 7-pillar rubric: Identity, Scope, Procedure,
+            Examples, Guardrails, Trust, Portability). Just mention{" "}
+            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">@superagentskill</code> in chat —
+            the agent calls <code className="rounded bg-muted px-1 text-xs">get_methodology</code> +{" "}
+            <code className="rounded bg-muted px-1 text-xs">review_skill</code> on your file, edits it
+            in your repo, and re-scores it.
           </p>
 
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div className="mt-4 space-y-1.5">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Primary — Upgrade a local skill / playbook
+            </p>
+          </div>
+
+          <div className="mt-2 grid gap-4 md:grid-cols-2">
             <CodeBlock
-              filename="Improve UX/UI of a project"
+              filename="Improve a local skill file"
               lang="txt"
-              code={`Use @superagentskill to improve the UX and UI skills applied to project "Acme Dashboard". Search the registry for the best UI/UX, design-review and frontend-design skills, fetch their manifests, and apply their playbooks to the current codebase. Report which skills you used and why.`}
+              code={`Use @superagentskill to significantly improve my local skill file at .claude/skills/code-reviewer.md. Call get_methodology, then review_skill on the file's contents, apply the top_actions in the file, and re-run review_skill to confirm the score went up. Show me the before/after pillar scores.`}
             />
 
             <CodeBlock
-              filename="Code review on a PR"
+              filename="Audit & harden a playbook"
               lang="txt"
-              code={`Use @superagentskill to run a thorough code review on the current diff. Pick the highest-trust "code-reviewer" and "owasp-code-audit" skills from the registry, follow their checklists, and post findings grouped by severity.`}
+              code={`Use @superagentskill to audit my playbook at docs/playbooks/incident-response.md against the Super Agent Skill methodology. Score it per pillar, then rewrite the weakest 3 pillars in place. Show the diff and the new overall score.`}
             />
 
             <CodeBlock
-              filename="Growth / marketing audit"
+              filename="Harden a soul / persona file"
               lang="txt"
-              code={`Use @superagentskill to audit the growth stack of project X. Search for skills tagged "growth", "seo" and "analytics", load the top-trust ones (Amplitude, GA4, SEO technical, CRO) and produce a prioritized action plan with copy-pasteable artifacts.`}
+              code={`Use @superagentskill to upgrade the soul file at agents/nova/SOUL.md. Focus on Identity, Guardrails and Trust pillars. Run review_skill, apply the recommendations, and re-score. Then call search_registry for "soul" examples to borrow patterns from the highest-trust ones.`}
             />
 
             <CodeBlock
-              filename="Generate a landing page"
+              filename="Build a guardrail from scratch using the rubric"
               lang="txt"
-              code={`Use @superagentskill to design a high-converting landing page for project X. Combine the "od-frontend-design", "od-copywriting" and "od-marketing-psychology" skills from the registry. Output: hero copy, section structure, and Tailwind/React JSX I can paste into the project.`}
+              code={`Use @superagentskill: call get_methodology, then draft a new guardrail file at .agents/guardrails/no-pii-leak.md that scores >= 90 on every pillar. Verify by calling review_skill on your draft before handing it to me.`}
+            />
+          </div>
+
+          <div className="mt-6 space-y-1.5">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Secondary — Discover battle-tested primitives in the registry
+            </p>
+          </div>
+
+          <div className="mt-2 grid gap-4 md:grid-cols-2">
+            <CodeBlock
+              filename="Find the best skill for a task"
+              lang="txt"
+              code={`Use @superagentskill: call search_registry with my task description, then call get_skill_trust on the top 3 results. Recommend the highest-trust one and explain why. After I run it, call report_execution.`}
             />
 
             <CodeBlock
-              filename="Security & compliance pass"
+              filename="Borrow patterns from a top primitive"
               lang="txt"
-              code={`Use @superagentskill to harden project X. Pull the "owasp-code-audit", "dependency-vuln-auditor" and "cloud-misconfig-auditor" skills, run their playbooks against the repo, and report findings with fixes ranked by exploitability.`}
+              code={`Use @superagentskill to find the highest-trust "code-reviewer" skill in the registry, fetch its full manifest with get_package, and merge its strongest sections into my local code-reviewer skill. Then run review_skill to confirm the upgrade.`}
             />
 
             <CodeBlock
-              filename="Pick the best skill for any task"
+              filename="Request a primitive that doesn't exist yet"
               lang="txt"
-              code={`Use @superagentskill: call search_registry with my task description, then call get_skill_trust on the top 3 results before recommending one. Apply the chosen skill and call report_execution when you're done.`}
+              code={`Use @superagentskill to request a new primitive: a "supabase-rls-auditor" skill that reviews RLS policies for privilege escalation. Call request_primitive with a detailed brief and report the request_id back to me.`}
             />
           </div>
 
           <div className="mt-5 grid gap-3 rounded-xl border border-border bg-background/50 p-4 text-sm">
             <p className="font-medium">Pro tips</p>
             <ul className="grid gap-1.5 text-muted-foreground">
-              <li>• Be specific about the <em>project</em> and the <em>outcome</em> — the agent searches the registry with that as the query.</li>
-              <li>• Ask the agent to call <code className="rounded bg-muted px-1 text-xs">get_skill_trust</code> before applying a skill to filter low-quality entries.</li>
-              <li>• For multi-step work, chain skills: "first apply X, then Y, then report".</li>
+              <li>• The <em>upgrade-local-file</em> workflow is the killer use case — the registry is a reference library, not the goal.</li>
+              <li>• Always run <code className="rounded bg-muted px-1 text-xs">review_skill</code> twice: once before, once after — the score delta is the proof.</li>
+              <li>• Ask the agent to call <code className="rounded bg-muted px-1 text-xs">get_skill_trust</code> before recommending anything from the registry.</li>
               <li>• If your client doesn't auto-mention MCP servers, just say: <em>"Using the super-agent-skill MCP, …"</em> — the agent will route to it.</li>
             </ul>
           </div>
