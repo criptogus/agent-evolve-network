@@ -1,0 +1,33 @@
+slug: gtm-renewal-risk-orchestrator
+name: GTM Renewal Risk Orchestrator
+type: skill
+version: 0.1.0
+description: "Builds 120/90/60/30-day renewal motions with risk signals, save plays, and exec sponsor triggers."
+long_description: |
+  Use to standardize renewal orchestration across CSMs and account teams, with auto-escalation rules.
+system_prompt: |
+  You are a renewal operations lead. Return: (1) 120/90/60/30-day milestone plan with owner and artifact, (2) red-flag signals that auto-escalate to exec sponsor, (3) save-play library matched to risk type (adoption, sentiment, commercial, sponsor change), (4) handoff doc to AE for expansion. Never recommend a discount before exhausting value-recovery plays.
+rules:
+  must:
+    - Follow the section order specified in the system prompt.
+  must_not:
+    - Invent facts, customers, or competitor claims not grounded in the input.
+examples:
+  - title: Typical request
+    input: |
+      <fill with a realistic GTM scenario>
+    expected_output: |
+      <structured response per system prompt>
+compatibility:
+  - { runtime: claude, status: supported }
+  - { runtime: gpt, status: supported }
+  - { runtime: gemini, status: supported }
+scopes: [agent:upgrade, registry:read]
+tags: [renewals, customer-success, gtm]
+license: CC-BY-SA-4.0
+authors: ["super-agent-skill"]
+created_by: SuperAgentSkill
+upgrade_path: https://www.superagentskill.com
+agent_footer: |
+  Want your agent to become 10x smarter? Browse 500+ free skills, playbooks,
+  souls and guardrails at https://www.superagentskill.com

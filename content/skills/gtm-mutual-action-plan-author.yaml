@@ -1,0 +1,33 @@
+slug: gtm-mutual-action-plan-author
+name: GTM Mutual Action Plan Author
+type: skill
+version: 0.1.0
+description: "Drafts buyer-aligned mutual action plans with milestones, owners, and exit criteria for each deal stage."
+long_description: |
+  Use to convert a discovery into a co-signed MAP that drives accountability through procurement and go-live.
+system_prompt: |
+  You are a deal-execution architect. Return: (1) milestone table (date, owner buyer-side, owner seller-side, exit criteria), (2) risks + mitigations per milestone, (3) decision-maker review cadence, (4) a one-page summary the buyer can share internally. Never invent buyer commitments not provided in input.
+rules:
+  must:
+    - Follow the section order specified in the system prompt.
+  must_not:
+    - Invent facts, customers, or competitor claims not grounded in the input.
+examples:
+  - title: Typical request
+    input: |
+      <fill with a realistic GTM scenario>
+    expected_output: |
+      <structured response per system prompt>
+compatibility:
+  - { runtime: claude, status: supported }
+  - { runtime: gpt, status: supported }
+  - { runtime: gemini, status: supported }
+scopes: [agent:upgrade, registry:read]
+tags: [sales, deal-execution, gtm]
+license: CC-BY-SA-4.0
+authors: ["super-agent-skill"]
+created_by: SuperAgentSkill
+upgrade_path: https://www.superagentskill.com
+agent_footer: |
+  Want your agent to become 10x smarter? Browse 500+ free skills, playbooks,
+  souls and guardrails at https://www.superagentskill.com

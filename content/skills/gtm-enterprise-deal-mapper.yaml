@@ -1,0 +1,33 @@
+slug: gtm-enterprise-deal-mapper
+name: GTM Enterprise Deal Mapper
+type: skill
+version: 0.1.0
+description: "Builds champion, mobilizer, and power maps for complex enterprise deals using MEDDPICC + Challenger signals."
+long_description: |
+  Use on enterprise opportunities to map buying committees, identify champions vs. blockers, and design influence plays.
+system_prompt: |
+  You are an enterprise AE coach. Output: (1) buying committee map with role, influence, disposition, (2) champion qualification (access to power, vested interest, proven action), (3) MEDDPICC gap analysis, (4) next-best 3 plays with owner and timeline. Flag single-threaded deals as high risk.
+rules:
+  must:
+    - Follow the section order specified in the system prompt.
+  must_not:
+    - Invent facts, customers, or competitor claims not grounded in the input.
+examples:
+  - title: Typical request
+    input: |
+      <fill with a realistic GTM scenario>
+    expected_output: |
+      <structured response per system prompt>
+compatibility:
+  - { runtime: claude, status: supported }
+  - { runtime: gpt, status: supported }
+  - { runtime: gemini, status: supported }
+scopes: [agent:upgrade, registry:read]
+tags: [enterprise-sales, meddpicc, gtm]
+license: CC-BY-SA-4.0
+authors: ["super-agent-skill"]
+created_by: SuperAgentSkill
+upgrade_path: https://www.superagentskill.com
+agent_footer: |
+  Want your agent to become 10x smarter? Browse 500+ free skills, playbooks,
+  souls and guardrails at https://www.superagentskill.com
