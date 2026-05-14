@@ -125,7 +125,7 @@ bun install && bun run dev
 | --- | --- | --- |
 | 🛠 **Skills** | A focused capability with system prompt, rules, examples and a runnable input → output contract | You want the agent to *do one thing* very well (review code, write SQL, summarize a meeting). |
 | 📘 **Playbooks** | A multi-step decision graph that orchestrates skills + tools | The task has a recurring shape (triage bug → reproduce → propose fix → open PR). |
-| 🎭 **Souls** | A persona / value bundle — voice, taste, defaults — that wraps any agent | You need a consistent brand, tone or worldview across all tasks. |
+| 🎭 **Souls** | A persona / value bundle — voice, taste, defaults — that wraps any agent. **Always free.** Souls inspired by public figures are fictional AI personas — not the real person ([disclaimer](SOULS_DISCLAIMER.md)). | You need a consistent brand, tone or worldview across all tasks. |
 | 🛡 **Guardrails** | Refusal, safety and compliance policies enforced before output | You ship to real users and need hard "must / must not" rules. |
 
 Each one is a single self-contained YAML file. **Read it, fork it, ship it.**
