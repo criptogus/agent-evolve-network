@@ -317,8 +317,93 @@ function ConnectPage() {
           </div>
         </section>
 
+        {/* Ready-to-paste prompts */}
+        <section id="prompts" className="mb-10 scroll-mt-24 rounded-2xl border border-border bg-card p-5 md:p-6">
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-xl font-semibold">Copy-paste prompts (no config editing)</h2>
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+              Fastest path
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Don't want to touch JSON? Paste the prompt for your agent — it will install Super Agent
+            Skill as an MCP server, then call <code className="rounded bg-muted px-1 py-0.5 text-xs">tools/list</code> to confirm
+            it works.
+          </p>
+
+          <div className="mt-4 grid gap-4">
+            <CodeBlock
+              filename="Codex CLI / OpenCode — paste in chat"
+              lang="txt"
+              code={`Install the "Super Agent Skill" MCP server using this Streamable HTTP endpoint:
+  ${ENDPOINT}
+
+Steps:
+1. Add it to my MCP config (transport: http, no auth required for read tools).
+2. Restart the MCP connection.
+3. Call the "list_packages" tool with no arguments and show me the first 5 results.
+If anything fails, print the exact error and the config you wrote.`}
+            />
+
+            <CodeBlock
+              filename="Claude Code (CLI) — paste in chat"
+              lang="txt"
+              code={`Run this command in my shell, then verify it works:
+
+  claude mcp add --transport http super-agent-skill ${ENDPOINT}
+
+After it succeeds, call the MCP tool "search_registry" with query "code review" and summarize the top 3 results.`}
+            />
+
+            <CodeBlock
+              filename="Claude Desktop — paste in chat"
+              lang="txt"
+              code={`Add this MCP server to my claude_desktop_config.json under "mcpServers":
+
+  "super-agent-skill": { "url": "${ENDPOINT}" }
+
+Tell me the exact file path for my OS, write the merged JSON (preserving any existing servers), and remind me to fully quit and reopen Claude Desktop. Then list the tools I should see (list_packages, search_registry, get_package, request_primitive, report_execution, get_skill_trust, upload_packages).`}
+            />
+
+            <CodeBlock
+              filename="Cursor / Windsurf / VS Code — paste in chat"
+              lang="txt"
+              code={`Add the "Super Agent Skill" MCP server to this project.
+
+Endpoint (Streamable HTTP): ${ENDPOINT}
+Auth: none for read tools (list_packages, search_registry, get_package). Bearer token only for write tools.
+
+Create or update the right config file for the editor I'm using (.cursor/mcp.json, ~/.codeium/windsurf/mcp_config.json, or VS Code settings.json under "mcp.servers"), then tell me to reload the window. After reload, call list_packages and show me the count.`}
+            />
+
+            <CodeBlock
+              filename="Lovable — paste in chat"
+              lang="txt"
+              code={`Connect the Super Agent Skill MCP server to this project.
+
+URL: ${ENDPOINT}
+Transport: Streamable HTTP, no auth required.
+
+After it's connected, call the tool "search_registry" with query "design review" and recommend the best matching skill for this codebase.`}
+            />
+          </div>
+
+          <p className="mt-4 text-xs text-muted-foreground">
+            For write tools (<code className="rounded bg-muted px-1 py-0.5 text-[11px]">upload_packages</code>,{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">request_primitive</code>), append:{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">Authorization: Bearer &lt;token&gt;</code> from{" "}
+            <Link to="/account/tokens" className="text-primary hover:underline">Account → Tokens</Link>.
+          </p>
+        </section>
+
         {/* Quick jump */}
         <nav className="mb-10 flex flex-wrap gap-2">
+          <a
+            href="#prompts"
+            className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary transition hover:border-primary/60"
+          >
+            ✨ Copy-paste prompts
+          </a>
           <a
             href="#test-mcp"
             className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-700 transition hover:border-emerald-500/60 dark:text-emerald-400"
