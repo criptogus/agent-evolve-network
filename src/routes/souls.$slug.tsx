@@ -240,6 +240,7 @@ function SoulView({
               <Button onClick={onDuplicate}>⧉ Duplicate</Button>
             </div>
           </div>
+          <SoulDisclaimer name={soul.name} />
         </div>
       </section>
 
