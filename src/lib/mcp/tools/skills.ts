@@ -180,7 +180,7 @@ export const searchRegistryTool = defineTool({
 export const requestPrimitiveTool = defineTool({
   name: "request_primitive",
   description:
-    "Submit a request for a primitive that does not yet exist. Super Agent Skill will research and auto-create it via the proprietary forge pipeline.",
+    "[PUBLISH] Submit a request for a primitive that does not yet exist. SuperAgentSkill researches and auto-creates it via the proprietary forge pipeline. Requires OAuth.",
   parameters: z.object({
     type: z.enum(["skill", "playbook", "soul", "guardrail"]),
     brief: z.string().min(20).max(2000).describe("What the primitive should do, with industry/context"),
