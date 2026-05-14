@@ -1,7 +1,8 @@
 import { AlertTriangle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { SOUL_DISCLAIMER_TEXT, SOUL_DISCLAIMER_SHORT } from "@/lib/souls/disclaimer";
 
-export const SOUL_DISCLAIMER_SHORT = "Fictional AI persona — not the real person.";
+export { SOUL_DISCLAIMER_TEXT, SOUL_DISCLAIMER_SHORT };
 
 export function SoulDisclaimerBadge({
   name,
