@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
 import { createTtlCache } from "@/lib/cache/ttl-cache";
+import { SOUL_DISCLAIMER } from "./disclaimer";
 
 export type SoulDetail = {
   id: string;
