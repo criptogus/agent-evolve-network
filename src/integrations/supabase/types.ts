@@ -301,6 +301,33 @@ export type Database = {
           },
         ]
       }
+      mcp_call_log: {
+        Row: {
+          created_at: string
+          id: string
+          identity: string
+          is_write: boolean
+          tool_name: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          identity: string
+          is_write?: boolean
+          tool_name: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          identity?: string
+          is_write?: boolean
+          tool_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       mcp_oauth_authorizations: {
         Row: {
           client_id: string
@@ -2221,6 +2248,15 @@ export type Database = {
           user_id: string
           verified_purchase: boolean
         }[]
+      }
+      mcp_check_and_log_call: {
+        Args: {
+          _identity: string
+          _is_write: boolean
+          _tool_name: string
+          _user_id: string
+        }
+        Returns: Json
       }
       mcp_oauth_exchange_code: {
         Args: {
