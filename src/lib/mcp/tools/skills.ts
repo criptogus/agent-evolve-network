@@ -470,7 +470,7 @@ export const getMethodologyTool = defineTool({
 export const reviewSkillTool = defineTool({
   name: "review_skill",
   description:
-    "PRIMARY VALUE OF THIS MCP. Audits a *local* skill / playbook / soul / guardrail against the Super Agent Skill methodology and returns a per-pillar score (0-100), specific findings (passed / missing checks) and concrete edit recommendations the host agent should apply in the user's repo. Use this whenever the user asks to improve, refine, harden, audit, score, evaluate or 'level up' a local skill file. Run it BEFORE and AFTER edits to prove the upgrade.",
+    "[UPGRADE] Step 2 (and step 4) of the local-file upgrade flow. Audits the raw content of a local skill / playbook / soul / guardrail file against the SuperAgentSkill methodology and returns: overall_score (0-100), grade (A-F), per-pillar score with passed/missing checks, and `top_actions` (concrete edits to apply). YOU (the host agent) then edit the file in the user's repo and re-run this tool to confirm the score improved. Read-only, no auth.",
   parameters: z.object({
     name: z.string().min(1).max(200).describe("File or skill name (for the report header only)"),
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).default("skill"),
