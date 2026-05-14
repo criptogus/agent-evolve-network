@@ -9,6 +9,7 @@ import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.fu
 import { BuyButton, PriceBadge } from "@/components/marketplace/BuyButton";
 import { Stars } from "@/components/reviews/Stars";
 import { ShareOnXButton } from "@/components/share/ShareOnXButton";
+import { SoulDisclaimerBadge, SOUL_DISCLAIMER_SHORT } from "@/components/souls/SoulDisclaimer";
 
 export const Route = createFileRoute("/marketplace/")({
   head: () => ({
@@ -422,6 +423,11 @@ function Card({ p }: { p: MarketplaceItem }) {
         <AuthorLink handle={p.author_handle} verified={p.author_verified} />
         {p.install_count > 0 && <> · {p.install_count.toLocaleString()} installs</>}
       </div>
+      {p.type === "soul" && (
+        <div className="mt-2">
+          <SoulDisclaimerBadge name={p.name} />
+        </div>
+      )}
       <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
         {p.rating_count > 0 ? (
           <>
@@ -436,6 +442,9 @@ function Card({ p }: { p: MarketplaceItem }) {
         )}
       </div>
       <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{p.description}</p>
+      {p.type === "soul" && (
+        <p className="mt-2 text-[10px] italic text-muted-foreground/80">{SOUL_DISCLAIMER_SHORT}</p>
+      )}
       {p.vertical && (
         <div className="mt-3">
           <span className="rounded-md border border-border bg-muted/40 px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
