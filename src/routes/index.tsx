@@ -16,13 +16,13 @@ const McpInstallAnimation = lazy(() =>
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Super Agent Skill — Trustworthy AI skills for serious work" },
-      { name: "description", content: "Signed, adversarially-tested AI agent skills with verifiable Trust Scores. For security, fintech, healthcare and DevOps teams shipping AI to customers. Install with one MCP link or npx super-agent install." },
-      { property: "og:title", content: "Trustworthy AI agent skills — Super Agent Skill" },
-      { property: "og:description", content: "Signed, adversarially-tested AI agent skills with verifiable Trust Scores. For teams that ship AI to customers." },
+      { title: "Super Agent Skill — The university for AI agents. Matrix-style." },
+      { name: "description", content: "Super Agent Skill is the university for AI agents: a Matrix-style upload that turns any model into a domain expert in seconds. Signed, adversarially-tested skills with verifiable Trust Scores. Install with one MCP link or npx super-agent install." },
+      { property: "og:title", content: "The university for AI agents — Matrix-style upload, in seconds" },
+      { property: "og:description", content: "Turn any agent into a domain expert in seconds. Signed, adversarially-tested skills with verifiable Trust Scores." },
       { property: "og:url", content: "https://superagentskill.com/" },
-      { name: "twitter:title", content: "Trustworthy AI agent skills — Super Agent Skill" },
-      { name: "twitter:description", content: "Signed, adversarially-tested AI agent skills with verifiable Trust Scores." },
+      { name: "twitter:title", content: "The university for AI agents — Matrix-style upload" },
+      { name: "twitter:description", content: "Turn any agent into a domain expert in seconds. Signed, adversarially-tested skills with verifiable Trust Scores." },
     ],
     links: [{ rel: "canonical", href: "https://superagentskill.com/" }],
   }),
@@ -124,33 +124,34 @@ function Hero() {
         <div className="mx-auto max-w-3xl text-center fade-up">
           <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-border bg-surface-elevated px-3 py-1 text-xs text-muted-foreground shadow-sm">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-signal pulse-dot" />
-            <span>For teams shipping AI to customers — not just experimenting</span>
+            <span>The university for AI agents — Matrix-style upload, in seconds</span>
           </div>
           <h1 className="mt-6 text-balance text-5xl font-semibold tracking-tight md:text-7xl">
-            AI skills you can
+            Make any agent an expert in
             <br />
             <span className="text-primary">
-              actually trust with&nbsp;
               <span className="relative inline-block align-baseline">
                 <span aria-hidden className="invisible whitespace-nowrap">
-                  production.
+                  cybersecurity.
                 </span>
                 <Typewriter
                   className="absolute left-0 top-0 whitespace-nowrap text-foreground"
-                  words={["production.", "compliance.", "PHI data.", "your customers.", "real money."]}
+                  words={["cybersecurity.", "fintech.", "healthcare.", "DevOps.", "your domain.", "anything."]}
                 />
               </span>
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">
-            Every skill on Super Agent Skill is{" "}
+            Super Agent Skill is the <span className="text-foreground">university for AI agents</span> —
+            a Matrix-style upload that turns any model into a domain expert in seconds. Every skill is{" "}
             <span className="text-foreground">benchmarked against an adversarial suite</span>,{" "}
             <span className="text-foreground">cryptographically signed at release</span>, and scored on{" "}
             <span className="text-foreground">real production telemetry</span> — so you ship AI features
             with a Trust Score your security team can verify, not a vibe check.
           </p>
           <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-            Install with one MCP link or <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">npx super-agent install</code>.
+            <span className="font-mono text-foreground">"I know kung fu."</span> Install with one MCP link or{" "}
+            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">npx super-agent install</code>.
             Works with Claude, Cursor, ChatGPT, Continue and Cline.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">

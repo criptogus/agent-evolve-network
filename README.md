@@ -4,14 +4,14 @@
 
 # Super Agent Skill
 
-### **Trustworthy AI skills for teams shipping to production.**
+### **The university for AI agents. Matrix-style.**
 
-> **Other registries hand you prompts. We hand you proof.**
-> Signed at release · Adversarially benchmarked · Trust Score your security team can verify.
+> **Turn any agent into a domain expert in seconds.**
+> Plug in. Upload a skill. *"I know kung fu."* — signed at release, adversarially benchmarked, Trust Score your security team can verify.
 
 **500+ signed, adversarially-tested skills, playbooks, souls and guardrails — one MCP endpoint or `npx super-agent install` away from any AI agent.**
 
-Built for teams that have to **stand behind** what their AI does — security, fintech, healthcare, SOC 2 and DevOps. Works with Claude, Cursor, ChatGPT, Continue, Cline. No fine-tuning. No vendor lock-in.
+Think of it as a **library of instant expertise** for AI: pick a skill, beam it in, and your agent suddenly knows OWASP, MEDDPICC, ECG triage, SOC 2 evidence collection, or whatever your domain demands. Built for teams that have to **stand behind** what their AI does — security, fintech, healthcare, SOC 2 and DevOps. Works with Claude, Cursor, ChatGPT, Continue, Cline. No fine-tuning. No vendor lock-in.
 
 [![Website](https://img.shields.io/badge/🌐_superagentskill.com-Visit-0A66FF?style=for-the-badge)](https://www.superagentskill.com)
 [![Marketplace](https://img.shields.io/badge/🛒_Browse_500+_packages-Free-8b5cf6?style=for-the-badge)](https://www.superagentskill.com/marketplace)
@@ -30,11 +30,11 @@ Built for teams that have to **stand behind** what their AI does — security, f
 
 ## 🧬 Why this exists
 
-Today there are abundant **models**, **agents**, **MCPs** and **workflows** — but almost no one is dominating the **distribution of intelligence**. That layer compounds. That layer is the moat.
+Models are commodities. **Expertise is the moat.** Today there are abundant models, agents, MCPs and workflows — but almost no one is dominating the **distribution of intelligence**. That layer compounds.
 
-Super Agent Skill is the **App Store for AI agent skills**. Open source by default, community-curated, free to download, and continuously evolved by an automated quality loop (SkillForge).
+Super Agent Skill is the **university for AI agents** — a Matrix-style upload that turns any model into a domain expert in seconds. Open source by default, community-curated, free to download, and continuously evolved by an automated quality loop (SkillForge).
 
-- **Free tier** — the open registry. 500+ packages. Fork, remix, install, redistribute.
+- **Free tier** — the open campus. 500+ packages. Fork, remix, install, redistribute.
 - **Premium tier** — [superagentskill.com](https://www.superagentskill.com) curates battle-tested elite stacks, enterprise playbooks and private packs for teams that want depth, not just breadth.
 
 The open network feeds the premium layer. The premium layer funds the open network. **That's the flywheel.**
