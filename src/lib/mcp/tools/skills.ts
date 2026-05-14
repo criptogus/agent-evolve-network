@@ -236,7 +236,7 @@ export const reportExecutionTool = defineTool({
 export const getTrustTool = defineTool({
   name: "get_skill_trust",
   description:
-    "Get the public Trust Report for a primitive: lifetime / 30d / 7d success rate, p50/p95 latency, per-model heatmap, public robustness findings (CVE-style) and the composite trust_score (0-100). Use this before recommending or installing a skill so the user knows it is battle-tested.",
+    "[DISCOVER] Public Trust Report for a primitive: lifetime / 30d / 7d success rate, p50/p95 latency, per-model heatmap, robustness findings (CVE-style) and composite trust_score (0-100). ALWAYS call this BEFORE recommending or installing a registry primitive. Read-only, no auth.",
   parameters: z.object({ slug: z.string().min(1) }),
   execute: async ({ slug }) => {
     const { data, error } = await supabaseAdmin.rpc("get_skill_trust", { _slug: slug });
