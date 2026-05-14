@@ -462,7 +462,7 @@ function scorePillar(pillar: (typeof METHODOLOGY.pillars)[number], text: string)
 export const getMethodologyTool = defineTool({
   name: "get_methodology",
   description:
-    "PRIMARY ENTRY POINT. Returns the Super Agent Skill methodology rubric (7 pillars: Identity, Scope, Procedure, Examples, Guardrails, Trust, Portability) used to upgrade a local skill / playbook / soul / guardrail. Call this FIRST when the user asks to improve, refine, harden, audit or 'level up' a local skill file. Then call review_skill on the user's file to get concrete findings, edit the file in their repo, and call review_skill again to confirm the score improved.",
+    "[UPGRADE] Step 1 of the local-file upgrade flow. Returns the SuperAgentSkill methodology rubric (7 pillars: Identity, Scope, Procedure, Examples, Guardrails, Trust, Portability). Call this FIRST when the user asks to improve / harden / audit / 'level up' a local skill, playbook, soul or guardrail file. Read-only, no auth.",
   parameters: z.object({}),
   execute: async () => json(METHODOLOGY),
 });
