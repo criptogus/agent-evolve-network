@@ -91,6 +91,7 @@ export const getSoul = createServerFn({ method: "GET" })
       license: pkg.license,
       created_at: pkg.created_at,
       updated_at: pkg.updated_at,
+      disclaimer: { ...SOUL_DISCLAIMER },
       current: current
         ? {
             id: current.id,
