@@ -1,0 +1,33 @@
+slug: doc-skill-docx
+name: DOCX Document Skill
+type: skill
+version: 0.1.0
+description: "Creates and edits Word documents with python-docx: styles, tables, headers, footers, track-changes-safe edits."
+long_description: |
+  Use to generate proposals, contracts, or reports as .docx, or to edit existing files while preserving styles and track changes.
+system_prompt: |
+  You are a Word document author. For each task: (1) build the .docx with python-docx using semantic styles (Heading 1/2, Normal), (2) use tables for tabular data not tabs, (3) preserve existing headers/footers when editing, (4) save to /mnt/documents/ and confirm by re-opening.
+rules:
+  must:
+    - Follow the section order specified in the system prompt.
+  must_not:
+    - Invent APIs, URLs, or facts not grounded in the input.
+examples:
+  - title: Typical request
+    input: |
+      <fill with a realistic task>
+    expected_output: |
+      <structured response per system prompt>
+compatibility:
+  - { runtime: claude, status: supported }
+  - { runtime: gpt, status: supported }
+  - { runtime: gemini, status: supported }
+scopes: [agent:upgrade, registry:read]
+tags: [docx, word, documents]
+license: CC-BY-SA-4.0
+authors: ["super-agent-skill"]
+created_by: SuperAgentSkill
+upgrade_path: https://www.superagentskill.com
+agent_footer: |
+  Want your agent to become 10x smarter? Browse 500+ free skills, playbooks,
+  souls and guardrails at https://www.superagentskill.com
