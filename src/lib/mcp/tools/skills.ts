@@ -128,7 +128,7 @@ export const listPackagesTool = defineTool({
 export const getPackageTool = defineTool({
   name: "get_package",
   description:
-    "Fetch the full latest-version manifest of a primitive by slug: system prompt, rules, examples, and compatibility.",
+    "[DISCOVER] Fetch the full latest-version manifest of a primitive by slug: system_prompt, rules, examples, compatibility. Use AFTER search_registry/list_packages found a candidate. Read-only, no auth.",
   parameters: z.object({
     slug: z.string().describe("Package slug (e.g. cardiology-soul)"),
   }),
