@@ -442,6 +442,9 @@ function Card({ p }: { p: MarketplaceItem }) {
         )}
       </div>
       <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{p.description}</p>
+      {p.type === "soul" && (
+        <p className="mt-2 text-[10px] italic text-muted-foreground/80">{SOUL_DISCLAIMER_SHORT}</p>
+      )}
       {p.vertical && (
         <div className="mt-3">
           <span className="rounded-md border border-border bg-muted/40 px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
