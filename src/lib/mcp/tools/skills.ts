@@ -204,7 +204,7 @@ export const requestPrimitiveTool = defineTool({
 export const reportExecutionTool = defineTool({
   name: "report_execution",
   description:
-    "Report an execution of a Super Agent Skill primitive (skill/playbook/soul/guardrail) so it gets a public trust score, model heatmap and battle-tested badge. Anonymous calls are accepted: pass an opaque agent_fp (e.g. sha256 of your install id) to enable per-agent rate limiting without revealing identity. Use this whenever you finish using a primitive in production — call it best-effort and ignore failures.",
+    "[DISCOVER/TRUST] Report an execution of a SuperAgentSkill primitive after the user runs it in production → feeds the public trust score, model heatmap and battle-tested badge. Anonymous calls accepted (pass an opaque agent_fp for rate limiting). Best-effort: call after each run and ignore failures.",
   parameters: z.object({
     slug: z.string().min(1),
     success: z.boolean(),
