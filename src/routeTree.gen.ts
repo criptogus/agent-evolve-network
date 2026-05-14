@@ -50,6 +50,7 @@ import { Route as MarketplaceRankingsRouteImport } from './routes/marketplace.ra
 import { Route as MarketplaceLeaderboardRouteImport } from './routes/marketplace.leaderboard'
 import { Route as MarketplaceCategoriesRouteImport } from './routes/marketplace.categories'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
+import { Route as LegalDisclaimersRouteImport } from './routes/legal.disclaimers'
 import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
 import { Route as ComparePairRouteImport } from './routes/compare.$pair'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
@@ -294,6 +295,11 @@ const MarketplaceCategoriesRoute = MarketplaceCategoriesRouteImport.update({
 const MarketplacePackageIdRoute = MarketplacePackageIdRouteImport.update({
   id: '/marketplace/$packageId',
   path: '/marketplace/$packageId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalDisclaimersRoute = LegalDisclaimersRouteImport.update({
+  id: '/legal/disclaimers',
+  path: '/legal/disclaimers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsMcpRoute = DocsMcpRouteImport.update({
@@ -553,6 +559,7 @@ export interface FileRoutesByFullPath {
   '/collections/$slug': typeof CollectionsSlugRoute
   '/compare/$pair': typeof ComparePairRoute
   '/docs/mcp': typeof DocsMcpRoute
+  '/legal/disclaimers': typeof LegalDisclaimersRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
   '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
@@ -635,6 +642,7 @@ export interface FileRoutesByTo {
   '/collections/$slug': typeof CollectionsSlugRoute
   '/compare/$pair': typeof ComparePairRoute
   '/docs/mcp': typeof DocsMcpRoute
+  '/legal/disclaimers': typeof LegalDisclaimersRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
   '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
@@ -719,6 +727,7 @@ export interface FileRoutesById {
   '/collections/$slug': typeof CollectionsSlugRoute
   '/compare/$pair': typeof ComparePairRoute
   '/docs/mcp': typeof DocsMcpRoute
+  '/legal/disclaimers': typeof LegalDisclaimersRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
   '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
@@ -804,6 +813,7 @@ export interface FileRouteTypes {
     | '/collections/$slug'
     | '/compare/$pair'
     | '/docs/mcp'
+    | '/legal/disclaimers'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
     | '/marketplace/leaderboard'
@@ -886,6 +896,7 @@ export interface FileRouteTypes {
     | '/collections/$slug'
     | '/compare/$pair'
     | '/docs/mcp'
+    | '/legal/disclaimers'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
     | '/marketplace/leaderboard'
@@ -969,6 +980,7 @@ export interface FileRouteTypes {
     | '/collections/$slug'
     | '/compare/$pair'
     | '/docs/mcp'
+    | '/legal/disclaimers'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
     | '/marketplace/leaderboard'
@@ -1042,6 +1054,7 @@ export interface RootRouteChildren {
   ApiTelemetryRoute: typeof ApiTelemetryRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
   ComparePairRoute: typeof ComparePairRoute
+  LegalDisclaimersRoute: typeof LegalDisclaimersRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
   MarketplaceCategoriesRoute: typeof MarketplaceCategoriesRoute
   MarketplaceLeaderboardRoute: typeof MarketplaceLeaderboardRoute
@@ -1355,6 +1368,13 @@ declare module '@tanstack/react-router' {
       path: '/marketplace/$packageId'
       fullPath: '/marketplace/$packageId'
       preLoaderRoute: typeof MarketplacePackageIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/disclaimers': {
+      id: '/legal/disclaimers'
+      path: '/legal/disclaimers'
+      fullPath: '/legal/disclaimers'
+      preLoaderRoute: typeof LegalDisclaimersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs/mcp': {
@@ -1769,6 +1789,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTelemetryRoute: ApiTelemetryRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
   ComparePairRoute: ComparePairRoute,
+  LegalDisclaimersRoute: LegalDisclaimersRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
   MarketplaceCategoriesRoute: MarketplaceCategoriesRoute,
   MarketplaceLeaderboardRoute: MarketplaceLeaderboardRoute,

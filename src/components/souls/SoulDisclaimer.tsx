@@ -1,4 +1,5 @@
 import { AlertTriangle } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { SOUL_DISCLAIMER_TEXT, SOUL_DISCLAIMER_SHORT } from "@/lib/souls/disclaimer";
 
@@ -34,6 +35,11 @@ export function SoulDisclaimerBadge({
         <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
           <p className="font-semibold">{name ? `${name} — Fictional AI persona` : "Fictional AI persona"}</p>
           <p className="mt-1">{SOUL_DISCLAIMER_TEXT}</p>
+          <p className="mt-2">
+            <Link to="/legal/disclaimers" className="underline">
+              Read full Legal &amp; Disclaimers →
+            </Link>
+          </p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -75,6 +81,14 @@ export function SoulDisclaimer({ name }: { name?: string }) {
             remain the property of their respective owners and are referenced for educational,
             commentary, and parody purposes under fair use. Outputs may be inaccurate and must not
             be treated as the real person's opinions, advice, or statements. Use at your own risk.
+          </p>
+          <p className="mt-2">
+            <Link
+              to="/legal/disclaimers"
+              className="font-medium underline underline-offset-2 hover:text-amber-700 dark:hover:text-amber-200"
+            >
+              Read full Legal &amp; Disclaimers →
+            </Link>
           </p>
         </div>
       </div>
