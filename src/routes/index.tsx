@@ -16,13 +16,13 @@ const McpInstallAnimation = lazy(() =>
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Super Agent Skill — Trustworthy AI skills for serious work" },
-      { name: "description", content: "Signed, adversarially-tested AI agent skills with verifiable Trust Scores. For security, fintech, healthcare and DevOps teams shipping AI to customers. Install with one MCP link or npx super-agent install." },
-      { property: "og:title", content: "Trustworthy AI agent skills — Super Agent Skill" },
-      { property: "og:description", content: "Signed, adversarially-tested AI agent skills with verifiable Trust Scores. For teams that ship AI to customers." },
+      { title: "Super Agent Skill — The university for AI agents. Matrix-style." },
+      { name: "description", content: "Super Agent Skill is the university for AI agents: a Matrix-style upload that turns any model into a domain expert in seconds. Signed, adversarially-tested skills with verifiable Trust Scores. Install with one MCP link or npx super-agent install." },
+      { property: "og:title", content: "The university for AI agents — Matrix-style upload, in seconds" },
+      { property: "og:description", content: "Turn any agent into a domain expert in seconds. Signed, adversarially-tested skills with verifiable Trust Scores." },
       { property: "og:url", content: "https://superagentskill.com/" },
-      { name: "twitter:title", content: "Trustworthy AI agent skills — Super Agent Skill" },
-      { name: "twitter:description", content: "Signed, adversarially-tested AI agent skills with verifiable Trust Scores." },
+      { name: "twitter:title", content: "The university for AI agents — Matrix-style upload" },
+      { name: "twitter:description", content: "Turn any agent into a domain expert in seconds. Signed, adversarially-tested skills with verifiable Trust Scores." },
     ],
     links: [{ rel: "canonical", href: "https://superagentskill.com/" }],
   }),
