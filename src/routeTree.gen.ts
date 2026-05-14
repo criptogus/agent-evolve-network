@@ -73,6 +73,8 @@ import { Route as AccountReferralsRouteImport } from './routes/account.referrals
 import { Route as AccountCreditsRouteImport } from './routes/account.credits'
 import { Route as AccountConnectionsRouteImport } from './routes/account.connections'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
+import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known.oauth-protected-resource'
+import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known.oauth-authorization-server'
 import { Route as UseCaseVerticalTaskRouteImport } from './routes/use-case.$vertical.$task'
 import { Route as PacksSlugCustomizeRouteImport } from './routes/packs.$slug.customize'
 import { Route as MarketplaceTrustSlugRouteImport } from './routes/marketplace.trust.$slug'
@@ -414,6 +416,18 @@ const AccountBillingRoute = AccountBillingRouteImport.update({
   path: '/account/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotwellKnownOauthProtectedResourceRoute =
+  DotwellKnownOauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotwellKnownOauthAuthorizationServerRoute =
+  DotwellKnownOauthAuthorizationServerRouteImport.update({
+    id: '/.well-known/oauth-authorization-server',
+    path: '/.well-known/oauth-authorization-server',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const UseCaseVerticalTaskRoute = UseCaseVerticalTaskRouteImport.update({
   id: '/use-case/$vertical/$task',
   path: '/use-case/$vertical/$task',
@@ -551,6 +565,8 @@ export interface FileRoutesByFullPath {
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
@@ -636,6 +652,8 @@ export interface FileRoutesByTo {
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
@@ -723,6 +741,8 @@ export interface FileRoutesById {
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
@@ -811,6 +831,8 @@ export interface FileRouteTypes {
     | '/upload'
     | '/use-cases'
     | '/welcome'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/connections'
     | '/account/credits'
@@ -896,6 +918,8 @@ export interface FileRouteTypes {
     | '/upload'
     | '/use-cases'
     | '/welcome'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/connections'
     | '/account/credits'
@@ -982,6 +1006,8 @@ export interface FileRouteTypes {
     | '/upload'
     | '/use-cases'
     | '/welcome'
+    | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/connections'
     | '/account/credits'
@@ -1069,6 +1095,8 @@ export interface RootRouteChildren {
   UploadRoute: typeof UploadRoute
   UseCasesRoute: typeof UseCasesRoute
   WelcomeRoute: typeof WelcomeRoute
+  DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRoute
+  DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
   AccountBillingRoute: typeof AccountBillingRoute
   AccountConnectionsRoute: typeof AccountConnectionsRoute
   AccountCreditsRoute: typeof AccountCreditsRoute
@@ -1559,6 +1587,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountBillingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof DotwellKnownOauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-authorization-server': {
+      id: '/.well-known/oauth-authorization-server'
+      path: '/.well-known/oauth-authorization-server'
+      fullPath: '/.well-known/oauth-authorization-server'
+      preLoaderRoute: typeof DotwellKnownOauthAuthorizationServerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/use-case/$vertical/$task': {
       id: '/use-case/$vertical/$task'
       path: '/use-case/$vertical/$task'
@@ -1820,6 +1862,10 @@ const rootRouteChildren: RootRouteChildren = {
   UploadRoute: UploadRoute,
   UseCasesRoute: UseCasesRoute,
   WelcomeRoute: WelcomeRoute,
+  DotwellKnownOauthAuthorizationServerRoute:
+    DotwellKnownOauthAuthorizationServerRoute,
+  DotwellKnownOauthProtectedResourceRoute:
+    DotwellKnownOauthProtectedResourceRoute,
   AccountBillingRoute: AccountBillingRoute,
   AccountConnectionsRoute: AccountConnectionsRoute,
   AccountCreditsRoute: AccountCreditsRoute,

@@ -22,7 +22,9 @@ const mcp = createMcpServer({
   tools: [listPackagesTool, getPackageTool, searchRegistryTool, requestPrimitiveTool, uploadPackagesTool, reportExecutionTool, getTrustTool],
 });
 
-const RESOURCE_METADATA_URL = `${ORIGIN}/api/public/.well-known/oauth-protected-resource`;
+// Canonical RFC 9728 location at the origin root. Clients (Claude, Codex, …)
+// read this URL from the WWW-Authenticate header to start the OAuth dance.
+const RESOURCE_METADATA_URL = `${ORIGIN}/.well-known/oauth-protected-resource`;
 
 /** Try OAuth tokens first, then fall back to legacy MCP personal tokens. */
 async function verifyBearer(token: string): Promise<{ user_id: string; source: "oauth" | "pat" } | null> {
