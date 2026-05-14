@@ -18,6 +18,14 @@ export type SoulDetail = {
   license: string;
   created_at: string;
   updated_at: string;
+  disclaimer: {
+    text: string;
+    short: string;
+    title: string;
+    is_real_person: boolean;
+    endorsed_by_real_person: boolean;
+    fair_use: string;
+  };
   current: {
     id: string;
     version: string;
