@@ -16,6 +16,15 @@ import { useAuth } from "@/hooks/use-auth";
 import { CreditsPill } from "./CreditsPill";
 
 const GITHUB_URL = "https://github.com/criptogus/agent-evolve-network";
+const TWITTER_URL = "https://x.com/superagentskill";
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+      <path d="M18.244 2H21.5l-7.51 8.583L22.5 22h-6.86l-5.37-6.93L4.1 22H.84l8.04-9.19L1.5 2h7.02l4.86 6.43L18.244 2Zm-2.4 18h1.9L7.26 4H5.24l10.604 16Z" />
+    </svg>
+  );
+}
 
 type NavItem = { to: string; label: string; hint?: string };
 
@@ -114,6 +123,15 @@ export function Nav() {
             className="hidden h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
           >
             <Github className="h-4 w-4" />
+          </a>
+          <a
+            href={TWITTER_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="X (@superagentskill)"
+            className="hidden h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+          >
+            <XIcon className="h-3.5 w-3.5" />
           </a>
           {user ? (
             <>
