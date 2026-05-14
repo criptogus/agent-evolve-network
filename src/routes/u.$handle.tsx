@@ -141,7 +141,7 @@ function CreatorCard({ p }: { p: MarketplaceItem }) {
     >
       <div className="flex items-center justify-between gap-2">
         <TypeBadge type={p.type} />
-        <PriceBadge priceCredits={p.price_credits} />
+        {p.type !== "soul" && <PriceBadge priceCredits={p.price_credits} />}
       </div>
       <div className="mt-3 font-mono text-[15px] font-semibold leading-tight">{p.name}</div>
       <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.description}</p>
