@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createMcpServer } from "mcp-tanstack-start";
 import {
+  overviewTool,
   listPackagesTool,
   getPackageTool,
   searchRegistryTool,
