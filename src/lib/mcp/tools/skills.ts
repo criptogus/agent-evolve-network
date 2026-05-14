@@ -256,7 +256,7 @@ export const getTrustTool = defineTool({
 export const uploadPackagesTool = defineTool({
   name: "upload_packages",
   description:
-    "Bulk-upload skill/playbook/soul/guardrail definitions (markdown, prompt or JSON text). Each file is normalised by the SkillForge author pipeline and inserted as a draft package owned by the token holder. Drafts are unpublished by default; admins or the author can publish later. Requires a personal MCP token (see /account/tokens). Mirrors the /upload UI 1:1.",
+    "[PUBLISH] Push local primitive(s) UP to the registry. Bulk-upload markdown / prompt / JSON files — each is normalised by the SkillForge author pipeline and inserted as a draft package owned by the token holder. Drafts are unpublished by default; pass `publish:true` to publish immediately (subject to author permissions). Mirrors the /upload UI. Requires a personal MCP token from /account/tokens.",
   parameters: z.object({
     auth_token: z.string().min(8).describe("Personal MCP token. Mint one at /account/tokens."),
     files: z
