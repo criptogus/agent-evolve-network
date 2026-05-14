@@ -87,6 +87,8 @@ import { Route as ApiPublicOauthRevokeRouteImport } from './routes/api/public/oa
 import { Route as ApiPublicOauthRegisterRouteImport } from './routes/api/public/oauth/register'
 import { Route as ApiPublicMcpHealthRouteImport } from './routes/api/public/mcp.health'
 import { Route as ApiPublicHooksPrewarmSharePromosRouteImport } from './routes/api/public/hooks/prewarm-share-promos'
+import { Route as ApiPublicDotwellKnownOauthProtectedResourceRouteImport } from './routes/api/public/[.]well-known.oauth-protected-resource'
+import { Route as ApiPublicDotwellKnownOauthAuthorizationServerRouteImport } from './routes/api/public/[.]well-known.oauth-authorization-server'
 import { Route as ApiOgSkillOfTheWeekSvgRouteImport } from './routes/api/og.skill-of-the-week.svg'
 import { Route as ApiIntegrationsSlugInstallRouteImport } from './routes/api/integrations.$slug.install'
 import { Route as ApiBadgesTrustSlugSvgRouteImport } from './routes/api/badges.trust.$slug.svg'
@@ -484,6 +486,18 @@ const ApiPublicHooksPrewarmSharePromosRoute =
     path: '/api/public/hooks/prewarm-share-promos',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicDotwellKnownOauthProtectedResourceRoute =
+  ApiPublicDotwellKnownOauthProtectedResourceRouteImport.update({
+    id: '/api/public/.well-known/oauth-protected-resource',
+    path: '/api/public/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicDotwellKnownOauthAuthorizationServerRoute =
+  ApiPublicDotwellKnownOauthAuthorizationServerRouteImport.update({
+    id: '/api/public/.well-known/oauth-authorization-server',
+    path: '/api/public/.well-known/oauth-authorization-server',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiOgSkillOfTheWeekSvgRoute = ApiOgSkillOfTheWeekSvgRouteImport.update({
   id: '/api/og/skill-of-the-week/svg',
   path: '/api/og/skill-of-the-week/svg',
@@ -581,6 +595,8 @@ export interface FileRoutesByFullPath {
   '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
   '/api/integrations/$slug/install': typeof ApiIntegrationsSlugInstallRoute
   '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
+  '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
+  '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
@@ -664,6 +680,8 @@ export interface FileRoutesByTo {
   '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
   '/api/integrations/$slug/install': typeof ApiIntegrationsSlugInstallRoute
   '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
+  '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
+  '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
@@ -749,6 +767,8 @@ export interface FileRoutesById {
   '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
   '/api/integrations/$slug/install': typeof ApiIntegrationsSlugInstallRoute
   '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
+  '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
+  '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
@@ -835,6 +855,8 @@ export interface FileRouteTypes {
     | '/use-case/$vertical/$task'
     | '/api/integrations/$slug/install'
     | '/api/og/skill-of-the-week/svg'
+    | '/api/public/.well-known/oauth-authorization-server'
+    | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/oauth/register'
@@ -918,6 +940,8 @@ export interface FileRouteTypes {
     | '/use-case/$vertical/$task'
     | '/api/integrations/$slug/install'
     | '/api/og/skill-of-the-week/svg'
+    | '/api/public/.well-known/oauth-authorization-server'
+    | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/oauth/register'
@@ -1002,6 +1026,8 @@ export interface FileRouteTypes {
     | '/use-case/$vertical/$task'
     | '/api/integrations/$slug/install'
     | '/api/og/skill-of-the-week/svg'
+    | '/api/public/.well-known/oauth-authorization-server'
+    | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/oauth/register'
@@ -1070,6 +1096,8 @@ export interface RootRouteChildren {
   UseCaseVerticalTaskRoute: typeof UseCaseVerticalTaskRoute
   ApiIntegrationsSlugInstallRoute: typeof ApiIntegrationsSlugInstallRoute
   ApiOgSkillOfTheWeekSvgRoute: typeof ApiOgSkillOfTheWeekSvgRoute
+  ApiPublicDotwellKnownOauthAuthorizationServerRoute: typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
+  ApiPublicDotwellKnownOauthProtectedResourceRoute: typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   ApiPublicHooksPrewarmSharePromosRoute: typeof ApiPublicHooksPrewarmSharePromosRoute
   ApiPublicMcpHealthRoute: typeof ApiPublicMcpHealthRoute
   ApiPublicOauthRegisterRoute: typeof ApiPublicOauthRegisterRoute
@@ -1629,6 +1657,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPrewarmSharePromosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/.well-known/oauth-protected-resource': {
+      id: '/api/public/.well-known/oauth-protected-resource'
+      path: '/api/public/.well-known/oauth-protected-resource'
+      fullPath: '/api/public/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof ApiPublicDotwellKnownOauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/.well-known/oauth-authorization-server': {
+      id: '/api/public/.well-known/oauth-authorization-server'
+      path: '/api/public/.well-known/oauth-authorization-server'
+      fullPath: '/api/public/.well-known/oauth-authorization-server'
+      preLoaderRoute: typeof ApiPublicDotwellKnownOauthAuthorizationServerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/og/skill-of-the-week/svg': {
       id: '/api/og/skill-of-the-week/svg'
       path: '/api/og/skill-of-the-week/svg'
@@ -1805,6 +1847,10 @@ const rootRouteChildren: RootRouteChildren = {
   UseCaseVerticalTaskRoute: UseCaseVerticalTaskRoute,
   ApiIntegrationsSlugInstallRoute: ApiIntegrationsSlugInstallRoute,
   ApiOgSkillOfTheWeekSvgRoute: ApiOgSkillOfTheWeekSvgRoute,
+  ApiPublicDotwellKnownOauthAuthorizationServerRoute:
+    ApiPublicDotwellKnownOauthAuthorizationServerRoute,
+  ApiPublicDotwellKnownOauthProtectedResourceRoute:
+    ApiPublicDotwellKnownOauthProtectedResourceRoute,
   ApiPublicHooksPrewarmSharePromosRoute: ApiPublicHooksPrewarmSharePromosRoute,
   ApiPublicMcpHealthRoute: ApiPublicMcpHealthRoute,
   ApiPublicOauthRegisterRoute: ApiPublicOauthRegisterRoute,
