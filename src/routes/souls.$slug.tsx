@@ -224,6 +224,7 @@ function SoulView({
                         name: soul.name,
                         type: "soul",
                         version: current?.version ?? soul.latest_version,
+                        disclaimer: SOUL_DISCLAIMER_TEXT,
                         system_prompt: current?.system_prompt ?? "",
                         rules: current?.rules ?? {},
                         examples: current?.examples ?? [],
