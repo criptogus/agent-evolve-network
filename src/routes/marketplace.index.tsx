@@ -406,7 +406,7 @@ function Card({ p }: { p: MarketplaceItem }) {
       <div className="flex items-center justify-between gap-2">
         <TypeBadge type={p.type} />
         <div className="flex items-center gap-2">
-          <PriceBadge priceCredits={p.price_credits} />
+          {p.type !== "soul" && <PriceBadge priceCredits={p.price_credits} />}
           <span className="font-mono text-[10px] text-muted-foreground">v{p.latest_version}</span>
           <ShareOnXButton
             slug={p.slug}
@@ -454,9 +454,9 @@ function Card({ p }: { p: MarketplaceItem }) {
       )}
       <div className="mt-auto flex items-center gap-2 pt-5">
         <div className="inline-flex h-9 flex-1 items-center justify-center rounded-md bg-foreground text-sm font-medium text-background transition-opacity group-hover:opacity-90">
-          {p.price_credits > 0 ? "View →" : "View package →"}
+          {p.type === "soul" ? "View soul →" : p.price_credits > 0 ? "View →" : "View package →"}
         </div>
-        {p.price_credits > 0 && (
+        {p.type !== "soul" && p.price_credits > 0 && (
           <BuyButton packageId={p.id} priceCredits={p.price_credits} />
         )}
       </div>
