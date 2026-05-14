@@ -471,87 +471,175 @@ After it's connected, call the tool "search_registry" with query "design review"
         {/* After connecting — how to actually USE it */}
         <section id="usage" className="mt-12 scroll-mt-24 rounded-2xl border border-border bg-card p-5 md:p-6">
           <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-xl font-semibold">Once connected — how to use it from your agent</h2>
+            <h2 className="text-xl font-semibold">Once connected — copy-paste prompts for your agent</h2>
             <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
-              In-chat prompts
+              Ready-made
             </span>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            The <strong>primary use</strong> of this MCP is to{" "}
-            <strong>significantly upgrade a skill, playbook, soul or guardrail you already have locally</strong>{" "}
-            using the Super Agent Skill methodology (a 7-pillar rubric: Identity, Scope, Procedure,
-            Examples, Guardrails, Trust, Portability). Just mention{" "}
-            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">@superagentskill</code> in chat —
-            the agent calls <code className="rounded bg-muted px-1 text-xs">get_methodology</code> +{" "}
-            <code className="rounded bg-muted px-1 text-xs">review_skill</code> on your file, edits it
-            in your repo, and re-scores it.
+            Three things you can do from Claude / Codex / any MCP-aware agent. Just copy a block,
+            paste it in chat, swap the file path or topic, and send. The agent routes to{" "}
+            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">@superagentskill</code> automatically.
           </p>
 
-          <div className="mt-4 space-y-1.5">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Primary — Upgrade a local skill / playbook
-            </p>
+          {/* INTENT 1 — UPGRADE */}
+          <div className="mt-6 flex items-baseline gap-2">
+            <span className="rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+              1. Upgrade
+            </span>
+            <p className="text-sm font-medium">Significantly improve a local skill, playbook, soul or guardrail file</p>
           </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Uses <code className="rounded bg-muted px-1 text-[11px]">get_methodology</code> →{" "}
+            <code className="rounded bg-muted px-1 text-[11px]">review_skill</code> → host edits → re-score. The score delta is the proof.
+          </p>
 
-          <div className="mt-2 grid gap-4 md:grid-cols-2">
+          <div className="mt-3 grid gap-4 md:grid-cols-2">
             <CodeBlock
-              filename="Improve a local skill file"
+              filename="Upgrade a skill end-to-end"
               lang="txt"
-              code={`Use @superagentskill to significantly improve my local skill file at .claude/skills/code-reviewer.md. Call get_methodology, then review_skill on the file's contents, apply the top_actions in the file, and re-run review_skill to confirm the score went up. Show me the before/after pillar scores.`}
+              code={`Use @superagentskill to significantly upgrade my local skill at .claude/skills/code-reviewer.md.
+1. Call get_methodology to load the rubric.
+2. Call review_skill on the file's raw content — show me the per-pillar score.
+3. Edit the file in place applying every top_action.
+4. Re-run review_skill and show the before/after grade and per-pillar delta.
+Stop only when the overall score is >= 90.`}
             />
 
             <CodeBlock
               filename="Audit & harden a playbook"
               lang="txt"
-              code={`Use @superagentskill to audit my playbook at docs/playbooks/incident-response.md against the Super Agent Skill methodology. Score it per pillar, then rewrite the weakest 3 pillars in place. Show the diff and the new overall score.`}
+              code={`Use @superagentskill to audit docs/playbooks/incident-response.md against the SuperAgentSkill methodology.
+Score it, then rewrite the 3 weakest pillars in place.
+Show the diff and the new overall_score. Don't touch pillars already at >= 80.`}
             />
 
             <CodeBlock
               filename="Harden a soul / persona file"
               lang="txt"
-              code={`Use @superagentskill to upgrade the soul file at agents/nova/SOUL.md. Focus on Identity, Guardrails and Trust pillars. Run review_skill, apply the recommendations, and re-score. Then call search_registry for "soul" examples to borrow patterns from the highest-trust ones.`}
+              code={`Use @superagentskill to upgrade the soul at agents/nova/SOUL.md.
+Focus on Identity, Guardrails and Trust pillars.
+After review_skill, also call search_registry type="soul" to borrow patterns from the 3 highest-trust souls. Merge what fits, then re-score.`}
             />
 
             <CodeBlock
-              filename="Build a guardrail from scratch using the rubric"
+              filename="Author a new guardrail from the rubric"
               lang="txt"
-              code={`Use @superagentskill: call get_methodology, then draft a new guardrail file at .agents/guardrails/no-pii-leak.md that scores >= 90 on every pillar. Verify by calling review_skill on your draft before handing it to me.`}
+              code={`Use @superagentskill: call get_methodology, then draft a brand-new guardrail file at .agents/guardrails/no-pii-leak.md that scores >= 90 on every pillar. Verify by calling review_skill on your draft BEFORE handing it to me.`}
+            />
+
+            <CodeBlock
+              filename="Batch-upgrade every skill in a folder"
+              lang="txt"
+              code={`Use @superagentskill to upgrade every .md file under .claude/skills/.
+For each file: review_skill → edit in place → re-review. Skip files already at grade A.
+At the end, print a table: file | before | after | delta.`}
+            />
+
+            <CodeBlock
+              filename="Compare two versions of a skill"
+              lang="txt"
+              code={`Use @superagentskill to score both versions of my skill (skill-v1.md and skill-v2.md) with review_skill.
+Tell me which one wins per pillar, what v2 broke that v1 had right, and what to merge into a v3.`}
             />
           </div>
 
-          <div className="mt-6 space-y-1.5">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Secondary — Discover battle-tested primitives in the registry
-            </p>
+          {/* INTENT 2 — DISCOVER */}
+          <div className="mt-8 flex items-baseline gap-2">
+            <span className="rounded-md bg-blue-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">
+              2. Discover
+            </span>
+            <p className="text-sm font-medium">Find &amp; install battle-tested primitives from the registry (590+)</p>
           </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Always pair <code className="rounded bg-muted px-1 text-[11px]">search_registry</code> with{" "}
+            <code className="rounded bg-muted px-1 text-[11px]">get_skill_trust</code> before recommending. Report results back with{" "}
+            <code className="rounded bg-muted px-1 text-[11px]">report_execution</code>.
+          </p>
 
-          <div className="mt-2 grid gap-4 md:grid-cols-2">
+          <div className="mt-3 grid gap-4 md:grid-cols-2">
             <CodeBlock
               filename="Find the best skill for a task"
               lang="txt"
-              code={`Use @superagentskill: call search_registry with my task description, then call get_skill_trust on the top 3 results. Recommend the highest-trust one and explain why. After I run it, call report_execution.`}
+              code={`Use @superagentskill: call search_registry with query="<my task in 2-5 words>" and limit=20.
+Then call get_skill_trust on the top 5 results.
+Recommend the highest trust_score one, paste its system_prompt from get_package, and tell me which models it's validated on.`}
             />
 
             <CodeBlock
-              filename="Borrow patterns from a top primitive"
+              filename="Browse a domain (marketing / sales / security…)"
               lang="txt"
-              code={`Use @superagentskill to find the highest-trust "code-reviewer" skill in the registry, fetch its full manifest with get_package, and merge its strongest sections into my local code-reviewer skill. Then run review_skill to confirm the upgrade.`}
+              code={`Use @superagentskill: call search_registry with query="marketing" type="skill" limit=30.
+Group results by sub-domain (copywriting, ads, growth, brand, …) and show top 3 per group with their install_count and trust_score.`}
             />
 
             <CodeBlock
-              filename="Request a primitive that doesn't exist yet"
+              filename="Borrow patterns into my local skill"
               lang="txt"
-              code={`Use @superagentskill to request a new primitive: a "supabase-rls-auditor" skill that reviews RLS policies for privilege escalation. Call request_primitive with a detailed brief and report the request_id back to me.`}
+              code={`Use @superagentskill to find the highest-trust "code-reviewer" skill in the registry.
+Fetch its full manifest with get_package, identify the 3 strongest sections, and merge them into my local code-reviewer.md.
+Run review_skill before and after — score must improve.`}
+            />
+
+            <CodeBlock
+              filename="Install + run + report"
+              lang="txt"
+              code={`Use @superagentskill to install the skill "<slug>": call get_package, save the system_prompt under .claude/skills/<slug>.md, run it on <my task>, then call report_execution with success=true/false, the model name and latency_ms.`}
             />
           </div>
 
-          <div className="mt-5 grid gap-3 rounded-xl border border-border bg-background/50 p-4 text-sm">
+          {/* INTENT 3 — PUBLISH */}
+          <div className="mt-8 flex items-baseline gap-2">
+            <span className="rounded-md bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">
+              3. Publish
+            </span>
+            <p className="text-sm font-medium">Push your local primitives back to the registry</p>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Requires OAuth (Claude does this automatically) or a personal token from{" "}
+            <Link to="/account/tokens" className="text-primary hover:underline">
+              /account/tokens
+            </Link>
+            .
+          </p>
+
+          <div className="mt-3 grid gap-4 md:grid-cols-2">
+            <CodeBlock
+              filename="Upload a single skill as draft"
+              lang="txt"
+              code={`Use @superagentskill: read my file at .claude/skills/<my-skill>.md, then call upload_packages with files=[{name:"<my-skill>.md", content:<file content>, type:"skill"}] and publish=false.
+Print the returned slug so I can review the draft at /packages/<slug>.`}
+            />
+
+            <CodeBlock
+              filename="Bulk-upload a folder, publish immediately"
+              lang="txt"
+              code={`Use @superagentskill to publish every .md file under agents/published/ (max 10 per call).
+First call review_skill on each — only publish files that score >= 80.
+Then upload_packages with publish=true. Print a table: filename | slug | grade.`}
+            />
+
+            <CodeBlock
+              filename="Request a primitive you wish existed"
+              lang="txt"
+              code={`Use @superagentskill to request a new primitive: a "supabase-rls-auditor" skill that reviews Postgres RLS policies for privilege-escalation patterns.
+Call request_primitive with a detailed brief, my industry, and report the request_id back so I can track it.`}
+            />
+
+            <CodeBlock
+              filename="Round-trip: upgrade locally → publish back"
+              lang="txt"
+              code={`Use @superagentskill to take my local skill at <path>, upgrade it (get_methodology + review_skill + edit + re-review until grade A), THEN upload_packages with publish=true so the improved version goes back to the registry. Print before/after score and the published slug.`}
+            />
+          </div>
+
+          <div className="mt-7 grid gap-3 rounded-xl border border-border bg-background/50 p-4 text-sm">
             <p className="font-medium">Pro tips</p>
             <ul className="grid gap-1.5 text-muted-foreground">
-              <li>• The <em>upgrade-local-file</em> workflow is the killer use case — the registry is a reference library, not the goal.</li>
-              <li>• Always run <code className="rounded bg-muted px-1 text-xs">review_skill</code> twice: once before, once after — the score delta is the proof.</li>
-              <li>• Ask the agent to call <code className="rounded bg-muted px-1 text-xs">get_skill_trust</code> before recommending anything from the registry.</li>
-              <li>• If your client doesn't auto-mention MCP servers, just say: <em>"Using the super-agent-skill MCP, …"</em> — the agent will route to it.</li>
+              <li>• If the agent can't find the server, ask it to call <code className="rounded bg-muted px-1 text-xs">overview</code> first — it returns the full intent → tool map.</li>
+              <li>• Always run <code className="rounded bg-muted px-1 text-xs">review_skill</code> twice (before and after edits). The score delta is the proof.</li>
+              <li>• Always call <code className="rounded bg-muted px-1 text-xs">get_skill_trust</code> before recommending a registry primitive.</li>
+              <li>• If your client doesn't auto-mention MCP servers, just write: <em>"Using the superagentskill MCP, …"</em></li>
             </ul>
           </div>
         </section>
