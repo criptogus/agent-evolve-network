@@ -22,23 +22,46 @@ async function resolveUserFromToken(token: string): Promise<string | null> {
 export const listPackagesTool = defineTool({
   name: "list_packages",
   description:
-    "List published primitives (skills, playbooks, souls, guardrails) from the Super Agent Skill registry. Optional type filter and search query.",
+    "List published primitives (skills, playbooks, souls, guardrails) from the Super Agent Skill registry. The registry has 590+ packages across many domains (marketing, sales, growth, design, code, security, finance, ops, healthcare, education, …). ALWAYS pass the `query` parameter (free-text, matches name + description + long_description) to narrow by domain — e.g. query='marketing', 'sales', 'growth', 'design', 'security'. Results are ordered by install_count desc so the most-used primitives surface first. Listing without a query returns the most-installed across ALL domains, which is biased toward whichever vertical is currently popular — do NOT use that to conclude a domain is missing. If you don't know the right keyword, call search_registry instead.",
   parameters: z.object({
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).optional(),
-    query: z.string().optional().describe("Free-text search over name/description"),
-    limit: z.number().int().min(1).max(50).default(20),
+    query: z
+      .string()
+      .optional()
+      .describe(
+        "Free-text filter over name + description + long_description (case-insensitive). Use a domain keyword like 'marketing', 'sales', 'growth', 'design', 'security' to narrow the 590+ packages.",
+      ),
+    limit: z.number().int().min(1).max(200).default(50),
   }),
   execute: async ({ type, query, limit }) => {
     let q = supabaseAdmin
       .from("packages")
-      .select("slug,name,type,description,latest_version,author_handle")
+      .select("slug,name,type,description,latest_version,author_handle,install_count")
       .eq("is_published", true)
+      .order("install_count", { ascending: false })
+      .order("name", { ascending: true })
       .limit(limit);
     if (type) q = q.eq("type", type);
-    if (query) q = q.ilike("name", `%${query}%`);
+    if (query) {
+      const safe = query.replace(/[%,()]/g, " ").trim();
+      if (safe) {
+        q = q.or(
+          `name.ilike.%${safe}%,description.ilike.%${safe}%,long_description.ilike.%${safe}%`,
+        );
+      }
+    }
     const { data, error } = await q;
     if (error) return json({ error: error.message });
-    return json({ count: data?.length ?? 0, items: data ?? [] });
+    return json({
+      count: data?.length ?? 0,
+      hint:
+        (data?.length ?? 0) >= limit
+          ? "More results available — increase `limit` (max 200) or refine `query`."
+          : !query
+            ? "No `query` was passed. Pass a domain keyword (e.g. 'marketing') to scope the search — listing the whole registry will skew toward whichever vertical has the most installs."
+            : undefined,
+      items: data ?? [],
+    });
   },
 });
 
@@ -72,18 +95,23 @@ export const getPackageTool = defineTool({
 export const searchRegistryTool = defineTool({
   name: "search_registry",
   description:
-    "Search across the entire registry (name + description + long description). Use when the agent does not know an exact slug.",
+    "Search the registry by free-text across name + description + long_description. Best when the user asks for a domain, capability or persona ('marketing skills', 'a copywriter for landing pages', 'something to harden RLS') and you don't know the exact slug. Returns up to 50 hits ordered by install_count desc. Always prefer this over list_packages when scoping by topic — it sees descriptions, not just names.",
   parameters: z.object({
     query: z.string().min(2),
-    limit: z.number().int().min(1).max(20).default(10),
+    limit: z.number().int().min(1).max(50).default(20),
+    type: z.enum(["skill", "playbook", "soul", "guardrail"]).optional(),
   }),
-  execute: async ({ query, limit }) => {
-    const { data, error } = await supabaseAdmin
+  execute: async ({ query, limit, type }) => {
+    const safe = query.replace(/[%,()]/g, " ").trim();
+    let q = supabaseAdmin
       .from("packages")
-      .select("slug,name,type,description,latest_version")
+      .select("slug,name,type,description,latest_version,install_count")
       .eq("is_published", true)
-      .or(`name.ilike.%${query}%,description.ilike.%${query}%,long_description.ilike.%${query}%`)
+      .or(`name.ilike.%${safe}%,description.ilike.%${safe}%,long_description.ilike.%${safe}%`)
+      .order("install_count", { ascending: false })
       .limit(limit);
+    if (type) q = q.eq("type", type);
+    const { data, error } = await q;
     if (error) return json({ error: error.message });
     return json({ query, count: data?.length ?? 0, items: data ?? [] });
   },
