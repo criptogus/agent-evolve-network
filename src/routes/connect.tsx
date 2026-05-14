@@ -410,6 +410,12 @@ After it's connected, call the tool "search_registry" with query "design review"
           >
             ▶ Test MCP
           </a>
+          <a
+            href="#usage"
+            className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-700 transition hover:border-emerald-500/60 dark:text-emerald-400"
+          >
+            💬 How to use it
+          </a>
           {CLIENTS.map((c) => (
             <a
               key={c.id}
