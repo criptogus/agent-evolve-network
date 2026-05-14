@@ -9,6 +9,7 @@ import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.fu
 import { BuyButton, PriceBadge } from "@/components/marketplace/BuyButton";
 import { Stars } from "@/components/reviews/Stars";
 import { ShareOnXButton } from "@/components/share/ShareOnXButton";
+import { SoulDisclaimerBadge, SOUL_DISCLAIMER_SHORT } from "@/components/souls/SoulDisclaimer";
 
 export const Route = createFileRoute("/marketplace/")({
   head: () => ({
