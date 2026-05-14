@@ -699,6 +699,8 @@ function buildSoulMarkdown(soul: SoulDetail): string {
     "",
     `> ${soul.description}`,
     "",
+    `> ⚠️ **Disclaimer:** ${SOUL_DISCLAIMER_TEXT}`,
+    "",
     `- **Slug:** \`${soul.slug}\``,
     `- **Type:** soul`,
     `- **Version:** ${c?.version ?? soul.latest_version} (${c?.status ?? "n/a"})`,
