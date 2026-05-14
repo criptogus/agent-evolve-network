@@ -189,9 +189,9 @@ function Hero() {
         {/* Trust metrics — proof of the moat, not vanity counts */}
         <div className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-4 md:grid-cols-4">
           {[
-            { Icon: BadgeCheck, v: 100, suffix: "%", label: "Signed at release" },
-            { Icon: Landmark, v: 5, suffix: "", label: "Regulated verticals" },
-            { Icon: ShieldAlert, v: 7, suffix: "", label: "Injection classes blocked" },
+            { Icon: BadgeCheck, v: 459, suffix: "+", label: "Skills shipped" },
+            { Icon: Landmark, v: 69, suffix: "+", label: "Souls available" },
+            { Icon: ShieldAlert, v: 32, suffix: "+", label: "Playbooks ready" },
             { Icon: Clock, v: 30, suffix: "s", label: "MCP setup" },
           ].map((m) => (
             <div key={m.label} className="rounded-xl border border-border bg-surface/60 p-4 text-center">
