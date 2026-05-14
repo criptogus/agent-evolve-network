@@ -102,30 +102,105 @@ function unauthorized(reason: string) {
   });
 }
 
+const WRITE_TOOLS = new Set(["upload_packages", "report_execution", "request_primitive"]);
+// Tools that are SO cheap / discovery-oriented they don't count against quota.
+const FREE_TOOLS = new Set(["overview", "get_methodology"]);
+
+/** Stable, hashed identity for quota bucketing. */
+function quotaIdentity(userId: string | null, request: Request): string {
+  if (userId) return `u:${userId}`;
+  const fwd = request.headers.get("x-forwarded-for") ?? "";
+  const ip = fwd.split(",")[0]?.trim() || request.headers.get("cf-connecting-ip") || "unknown";
+  return `ip:${sha256(ip).slice(0, 32)}`;
+}
+
+function rateLimited(quota: any, id: string | number | null) {
+  const tier = quota?.tier ?? "trial";
+  const reason = quota?.reason ?? "rate_limited";
+  const win = quota?.window === "hour" ? "this hour" : "today";
+  const upgradeHint =
+    tier === "trial"
+      ? " Upgrade your plan at https://superagentskill.com/pricing for higher MCP limits."
+      : tier === "anonymous"
+        ? " Sign in and connect via OAuth (https://superagentskill.com/connect) for higher limits."
+        : "";
+  const message = `MCP quota reached for ${win} (${tier} tier: ${quota?.used}/${quota?.limit}).${upgradeHint}`;
+  return new Response(
+    JSON.stringify({
+      jsonrpc: "2.0",
+      id: id ?? null,
+      error: { code: -32029, message, data: quota },
+    }),
+    {
+      status: 429,
+      headers: {
+        "Content-Type": "application/json",
+        "Retry-After": quota?.window === "hour" ? "3600" : "86400",
+      },
+    },
+  );
+}
+
 async function handle(request: Request): Promise<Response> {
   const authHeader = request.headers.get("authorization") ?? "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
 
+  let userId: string | null = null;
+  let authSource: "oauth" | "pat" | null = null;
   if (token) {
     const auth = await verifyBearer(token);
     if (!auth) return unauthorized("token rejected");
-    return mcp.handleRequest(request, {
-      auth: { token, claims: { user_id: auth.user_id, source: auth.source } },
-    });
+    userId = auth.user_id;
+    authSource = auth.source;
   }
 
-  // No token: allow read-only tools (list/search/get/trust). MCP discovery (initialize,
-  // tools/list, ping, etc.) is also allowed so clients can browse before auth.
+  // Inspect the JSON-RPC body to decide:
+  //  - whether it's a tools/call (only those count against quota)
+  //  - whether anonymous callers are allowed to invoke this specific tool
+  let toolName = "";
+  let rpcId: string | number | null = null;
+  let isToolsCall = false;
   try {
     const cloned = request.clone();
-    const body = (await cloned.json().catch(() => null)) as { method?: string; params?: { name?: string } } | null;
-    if (body && body.method === "tools/call") {
-      const toolName = body.params?.name ?? "";
-      const writeTools = new Set(["upload_packages", "report_execution", "request_primitive"]);
-      if (writeTools.has(toolName)) return unauthorized("authentication required for this tool");
+    const body = (await cloned.json().catch(() => null)) as
+      | { id?: string | number | null; method?: string; params?: { name?: string } }
+      | null;
+    if (body) {
+      rpcId = body.id ?? null;
+      if (body.method === "tools/call") {
+        isToolsCall = true;
+        toolName = body.params?.name ?? "";
+      }
     }
   } catch {
     /* fall through */
+  }
+
+  // Auth gate for write tools (anonymous users blocked entirely).
+  if (isToolsCall && !userId && WRITE_TOOLS.has(toolName)) {
+    return unauthorized("authentication required for this tool");
+  }
+
+  // Quota gate. Skip discovery / lifecycle methods (initialize, tools/list, ping…)
+  // and ultra-cheap tools, since they're needed just to bootstrap the session.
+  if (isToolsCall && !FREE_TOOLS.has(toolName)) {
+    const identity = quotaIdentity(userId, request);
+    const isWrite = WRITE_TOOLS.has(toolName);
+    const { data: quota, error: quotaErr } = await supabaseAdmin.rpc("mcp_check_and_log_call", {
+      _user_id: userId,
+      _identity: identity,
+      _tool_name: toolName,
+      _is_write: isWrite,
+    } as never);
+    if (!quotaErr && quota && quota.allowed === false) {
+      return rateLimited(quota, rpcId);
+    }
+  }
+
+  if (userId && authSource) {
+    return mcp.handleRequest(request, {
+      auth: { token, claims: { user_id: userId, source: authSource } },
+    });
   }
   return mcp.handleRequest(request);
 }
