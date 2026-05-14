@@ -423,6 +423,11 @@ function Card({ p }: { p: MarketplaceItem }) {
         <AuthorLink handle={p.author_handle} verified={p.author_verified} />
         {p.install_count > 0 && <> · {p.install_count.toLocaleString()} installs</>}
       </div>
+      {p.type === "soul" && (
+        <div className="mt-2">
+          <SoulDisclaimerBadge name={p.name} />
+        </div>
+      )}
       <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
         {p.rating_count > 0 ? (
           <>
