@@ -259,9 +259,8 @@ export const getTrustTool = defineTool({
 export const uploadPackagesTool = defineTool({
   name: "upload_packages",
   description:
-    "[PRIVATE UPLOAD] Push local primitive(s) into the author's PRIVATE workspace. Files are normalised by the SkillForge author pipeline and stored as private drafts owned by the token holder — NOT visible in the public marketplace, search, or trust leaderboard. To list a draft for sale on the marketplace, the author must explicitly publish it from the website UI (/account/packages). This MCP tool intentionally has no `publish` parameter so agents cannot expose a user's skill publicly without their consent. Requires OAuth or a personal MCP token from /account/tokens.",
+    "[PRIVATE UPLOAD] Push local primitive(s) into the author's PRIVATE workspace. Files are normalised by the SkillForge author pipeline and stored as private drafts owned by the token holder — NOT visible in the public marketplace, search, or trust leaderboard. To list a draft for sale on the marketplace, the author must explicitly publish it from the website UI (/account/packages). This MCP tool intentionally has no `publish` parameter so agents cannot expose a user's skill publicly without their consent. Authenticates via the OAuth bearer of the active MCP session — no extra personal token needed.",
   parameters: z.object({
-    auth_token: z.string().min(8).describe("Personal MCP token. Mint one at /account/tokens."),
     files: z
       .array(
         z.object({
@@ -272,10 +271,20 @@ export const uploadPackagesTool = defineTool({
       )
       .min(1)
       .max(10),
+    auth_token: z
+      .string()
+      .min(8)
+      .optional()
+      .describe("Deprecated. Ignored when the request already carries an OAuth bearer; only used as a fallback for legacy personal MCP tokens."),
   }),
-  execute: async ({ auth_token, files }) => {
-    const userId = await resolveUserFromToken(auth_token);
-    if (!userId) return json({ error: "invalid_token", hint: "Mint a token at /account/tokens" });
+  execute: async ({ auth_token, files }, ctx) => {
+    const sessionUserId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
+    const userId = sessionUserId ?? (auth_token ? await resolveUserFromToken(auth_token) : null);
+    if (!userId)
+      return json({
+        error: "unauthorized",
+        hint: "Connect via OAuth (the host opens https://superagentskill.com/oauth/authorize automatically) — no personal token needed.",
+      });
     try {
       // Always private. Marketplace listing requires an explicit user action in the UI.
       const results = await processBulkUpload(supabaseAdmin as any, userId, files, { publish: false });
