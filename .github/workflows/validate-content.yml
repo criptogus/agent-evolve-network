@@ -5,12 +5,16 @@ on:
     paths:
       - "content/**"
       - "scripts/validate-content.mjs"
+      - "scripts/audit-skills.mjs"
+      - "src/lib/security/prompt-injection-guard.ts"
       - ".github/workflows/validate-content.yml"
   push:
     branches: [main]
     paths:
       - "content/**"
       - "scripts/validate-content.mjs"
+      - "scripts/audit-skills.mjs"
+      - "src/lib/security/prompt-injection-guard.ts"
 
 jobs:
   validate:
@@ -24,3 +28,5 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Validate registry
         run: bun run validate:content
+      - name: Security audit (prompt injection / malicious functions)
+        run: bun run audit:skills
