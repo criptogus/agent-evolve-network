@@ -535,15 +535,341 @@ function statusBand(n: number): "strong" | "adequate" | "weak" {
   return n >= 78 ? "strong" : n >= 55 ? "adequate" : "weak";
 }
 
-// Cheap heuristic — counts diacritics + PT-BR function words. Used only to
-// emit a `language` hint and a low-confidence caveat; does NOT alter scoring.
-function detectLanguage(text: string): { lang: "en" | "pt" | "other"; confidence: number } {
+// Cheap heuristic — counts function-words across major Latin-script languages.
+// Used to emit a `language` hint, choose localized messages, and decide a
+// low-confidence caveat. Does NOT alter scoring.
+type Lang = "en" | "pt" | "es" | "fr" | "de" | "it" | "other";
+function detectLanguage(text: string): { lang: Lang; confidence: number } {
   const sample = text.slice(0, 8000).toLowerCase();
-  const ptHits = (sample.match(/\b(não|você|são|também|então|porém|porque|usuário|exemplo|gatilho|fora de escopo|valores|critério|saída|entrada)\b|[ãõçáéíóúâêô]/g) ?? []).length;
-  const enHits = (sample.match(/\b(the|and|when|use|trigger|example|input|output|scope|values|user|must|should|never)\b/g) ?? []).length;
-  if (ptHits > enHits * 1.2 && ptHits > 10) return { lang: "pt", confidence: Math.min(1, ptHits / 60) };
-  if (enHits > ptHits * 1.2 && enHits > 10) return { lang: "en", confidence: Math.min(1, enHits / 60) };
-  return { lang: "other", confidence: 0.3 };
+  const counts: Record<Exclude<Lang, "other">, number> = {
+    en: (sample.match(/\b(the|and|when|use|trigger|example|input|output|scope|values|user|must|should|never|with|from|that|this)\b/g) ?? []).length,
+    pt: (sample.match(/\b(não|você|são|também|então|porque|usuário|exemplo|gatilho|fora|valores|critério|saída|entrada|para|com|está|isso)\b|[ãõçáéíóúâêô]/g) ?? []).length,
+    es: (sample.match(/\b(no|usted|son|también|entonces|porque|usuario|ejemplo|disparador|fuera|valores|criterio|salida|entrada|para|con|está|esto|cuando|debe)\b|[ñáéíóúü¿¡]/g) ?? []).length,
+    fr: (sample.match(/\b(le|la|les|et|ne|pas|vous|êtes|aussi|alors|parce|utilisateur|exemple|déclencheur|valeurs|critère|sortie|entrée|pour|avec|est|cela|quand|doit)\b|[àâçéèêëîïôûùüÿœ]/g) ?? []).length,
+    de: (sample.match(/\b(der|die|das|und|nicht|sie|sind|auch|dann|weil|nutzer|beispiel|auslöser|werte|kriterium|ausgabe|eingabe|für|mit|ist|dies|wenn|muss)\b|[äöüß]/g) ?? []).length,
+    it: (sample.match(/\b(il|la|le|e|non|lei|sei|sono|anche|allora|perché|utente|esempio|trigger|valori|criterio|uscita|ingresso|per|con|è|questo|quando|deve)\b|[àèéìíîòóùú]/g) ?? []).length,
+  };
+  const entries = Object.entries(counts) as Array<[Exclude<Lang, "other">, number]>;
+  entries.sort((a, b) => b[1] - a[1]);
+  const [topLang, topHits] = entries[0];
+  const [, secondHits] = entries[1];
+  if (topHits < 8) return { lang: "other", confidence: 0.3 };
+  if (topHits < secondHits * 1.2) return { lang: "other", confidence: 0.4 };
+  return { lang: topLang, confidence: Math.min(1, topHits / 60) };
+}
+
+// Localized message bundle. EN is the canonical fallback; other languages
+// override only what's needed. Keys cover everything user-visible from the
+// review_skill response: pillar titles, directives, diagnostics, captions.
+type MsgBundle = {
+  pillar_title: Record<PillarId, string>;
+  directives: Record<PillarId, string[]>;
+  diag_zero: string;
+  diag_no_positive: string;
+  caveat_other: string;
+  caveat_low_conf: string;
+  caveat_default: string;
+  next_grade_a: string;
+  next_apply: string;
+  next_rerun: string;
+  next_diagnostic: string;
+  no_signals_prefix: (title: string) => string;
+  near_line_prefix: (line: number, excerpt: string) => string;
+  signals_summary: (hit: number, total: number) => string;
+};
+
+const MESSAGES: Record<Exclude<Lang, "other">, MsgBundle> = {
+  en: {
+    pillar_title: PILLAR_TITLE,
+    directives: DIRECTIVES,
+    diag_zero: "Pillar scored 0 — the engine found no recognised pattern for this dimension. Rephrase using conventional vocabulary so detectors catch it.",
+    diag_no_positive: "No positive signals matched, but the pillar avoided 0 via penalty-absence. Add explicit content for this dimension.",
+    caveat_other: "The engine could not confidently detect a supported language. Detection covers EN/PT/ES/FR/DE/IT — translate or duplicate key cues into one of these for a fair score.",
+    caveat_low_conf: "Low-confidence language detection. Make sure conventional terms (trigger, example, failure mode, mitigation, acceptance criterion, output schema) appear verbatim.",
+    caveat_default: "The engine is calibrated for Markdown skill files with named sections + worked input/output examples. Pure governance prose may underscore even when content is strong — that's a format mismatch, not a quality verdict.",
+    next_grade_a: "Grade A — no high-impact gaps detected. Re-run after any substantive edit.",
+    next_apply: "Apply the top_actions in the user's local file — each action carries a line number and an excerpt when the engine could anchor evidence.",
+    next_rerun: "Re-run review_skill with the updated content to confirm the score rose.",
+    next_diagnostic: "If a pillar shows `diagnostic`, address that first — those are blind spots, not quality misses.",
+    no_signals_prefix: (t) => `No content recognised for "${t}" — `,
+    near_line_prefix: (l, e) => `Near line ${l} ("${e}"): `,
+    signals_summary: (h, t) => `${h}/${t} signals matched`,
+  },
+  pt: {
+    pillar_title: { identity: "Identidade", scope: "Escopo", procedure: "Procedimento", examples: "Exemplos", guardrails: "Salvaguardas", trust: "Pontos de confiança", portability: "Portabilidade" },
+    directives: {
+      identity: [
+        "Dê a ele um senso de identidade mais nítido: quem é, o que recusa e o que NÃO faz.",
+        "A persona soa genérica — torne os valores e a voz específicos o bastante para um estranho imitar.",
+        "Adicione uma postura explícita de recusa para que pedidos inseguros ou fora do escopo sejam tratados deliberadamente.",
+      ],
+      scope: [
+        "Torne a ativação inequívoca: quando deve disparar e os casos parecidos onde NÃO deve.",
+        "Aperte a fronteira do gatilho — hoje ele dispararia em excesso ou de menos em pedidos adjacentes.",
+        "Nomeie o usuário-alvo e a tarefa em uma linha para que o agente se autosselecione corretamente.",
+      ],
+      procedure: [
+        "Transforme a prosa num procedimento determinístico, passo-a-passo, com entradas, saídas e condição de parada.",
+        "O caminho feliz está claro, mas as bifurcações não — explicite as 2-3 ramificações principais.",
+        "Adicione uma definição concreta de pronto para o agente saber quando parar em vez de divagar.",
+      ],
+      examples: [
+        "Inclua exemplos resolvidos (entrada → raciocínio → saída); modelos generalizam disso melhor que de regras.",
+        "Inclua ao menos um exemplo de falha com a correção — exemplos negativos previnem o erro comum.",
+        "Substitua um exemplo do caminho feliz por um caso real e bagunçado; é onde o skill quebra.",
+      ],
+      guardrails: [
+        "Antecipe os modos de falha que você já viu: nomeie cada um e anexe uma mitigação concreta.",
+        "Endureça contra prompt injection — deixe explícito que saídas de ferramentas e docs do usuário são dados, não instruções.",
+        "Adicione regras de manuseio de dados (PII, segredos, citações) para falhar de forma segura sob pressão.",
+        "Tire a aplicação do prompt: um gate determinístico (regex/AST/policy engine) com código de saída e suíte de regressão é evidência muito mais forte que regras em prosa.",
+      ],
+      trust: [
+        "Torne mensurável: declare modelos validados e um critério de aceitação que o host possa verificar.",
+        "Emita resultado estruturado em vez de prosa livre para que o sucesso seja checado e pontuado automaticamente.",
+        "Feche o ciclo — instrua o host a reportar resultados de execução para ganhar um trust_score.",
+      ],
+      portability: [
+        "Remova suposições de fornecedor único para o mesmo primitivo rodar em Claude, GPT e Gemini sem cirurgia.",
+        "Descreva ferramentas por contrato, não por SDK específico, e mantenha dentro de um orçamento de contexto típico.",
+        "Tire frontmatter proprietário que o host não consegue parsear; mantenha Markdown portátil e simples.",
+        "Declare suporte multi-runtime explicitamente (ex: 'validado em Claude, GPT e Gemini') — o motor não infere portabilidade pela ausência.",
+      ],
+    },
+    diag_zero: "Pilar zerou — o motor não encontrou padrão reconhecido para esta dimensão. Reescreva com vocabulário convencional para os detectores capturarem.",
+    diag_no_positive: "Nenhum sinal positivo bateu, mas o pilar evitou o zero por ausência de penalidade. Adicione conteúdo explícito para esta dimensão.",
+    caveat_other: "O motor não detectou um idioma suportado com confiança. A detecção cobre EN/PT/ES/FR/DE/IT — traduza ou duplique pistas-chave em um desses idiomas para uma pontuação justa.",
+    caveat_low_conf: "Detecção de idioma com baixa confiança. Garanta que termos convencionais (gatilho, exemplo, modo de falha, mitigação, critério de aceitação, esquema de saída) apareçam textualmente.",
+    caveat_default: "O motor é calibrado para arquivos Markdown com seções nomeadas e exemplos resolvidos de entrada/saída. Prosa de governança pura pode pontuar abaixo mesmo com conteúdo forte — é descompasso de formato, não veredicto de qualidade.",
+    next_grade_a: "Grau A — nenhuma lacuna de alto impacto detectada. Reexecute após qualquer edição substancial.",
+    next_apply: "Aplique as top_actions no arquivo local — cada ação carrega número de linha e trecho quando o motor conseguiu ancorar evidência.",
+    next_rerun: "Rode review_skill de novo com o conteúdo atualizado para confirmar que o score subiu.",
+    next_diagnostic: "Se um pilar mostrar `diagnostic`, atenda isso primeiro — são pontos cegos, não falhas de qualidade.",
+    no_signals_prefix: (t) => `Nenhum conteúdo reconhecido para "${t}" — `,
+    near_line_prefix: (l, e) => `Próximo à linha ${l} ("${e}"): `,
+    signals_summary: (h, t) => `${h}/${t} sinais reconhecidos`,
+  },
+  es: {
+    pillar_title: { identity: "Identidad", scope: "Alcance", procedure: "Procedimiento", examples: "Ejemplos", guardrails: "Salvaguardas", trust: "Puntos de confianza", portability: "Portabilidad" },
+    directives: {
+      identity: [
+        "Dale un sentido de sí más nítido: quién es, qué rechaza y qué NO hace.",
+        "La persona se lee genérica — haz que los valores y la voz sean específicos.",
+        "Añade una postura explícita de rechazo para manejar deliberadamente pedidos inseguros o fuera de alcance.",
+      ],
+      scope: [
+        "Hace inequívoca la activación: cuándo debe dispararse y los casos parecidos donde NO debe.",
+        "Aprieta la frontera del trigger — hoy se dispararía de más o de menos en pedidos adyacentes.",
+        "Nombra al usuario objetivo y la tarea en una línea para que el agente se autoseleccione correctamente.",
+      ],
+      procedure: [
+        "Convierte la prosa en un procedimiento determinista paso a paso, con entradas, salidas y condición de parada.",
+        "El camino feliz está claro pero las bifurcaciones no — explicita las 2-3 ramificaciones principales.",
+        "Añade una definición concreta de hecho para que el agente sepa cuándo parar.",
+      ],
+      examples: [
+        "Añade ejemplos trabajados (entrada → razonamiento → salida); los modelos generalizan mejor de eso que de reglas.",
+        "Incluye al menos un ejemplo de fallo con la corrección — los ejemplos negativos previenen el error común.",
+        "Sustituye un ejemplo del camino feliz por un caso real y desordenado; ahí es donde rompe.",
+      ],
+      guardrails: [
+        "Anticipa los modos de fallo que ya viste: nómbralos y adjunta una mitigación concreta a cada uno.",
+        "Endurece contra prompt injection — deja explícito que salidas de herramientas y docs del usuario son datos, no instrucciones.",
+        "Añade reglas de manejo de datos (PII, secretos, citas) para fallar de forma segura bajo presión.",
+        "Saca la aplicación del prompt: una puerta determinista (regex/AST/policy engine) con código de salida y suite de regresión es evidencia mucho más fuerte que reglas en prosa.",
+      ],
+      trust: [
+        "Hazlo medible: declara modelos validados y un criterio de aceptación que el host pueda verificar.",
+        "Emite un resultado estructurado en lugar de prosa libre para que el éxito se verifique automáticamente.",
+        "Cierra el ciclo — instruye al host a reportar resultados de ejecución para ganar un trust_score.",
+      ],
+      portability: [
+        "Elimina supuestos de un solo proveedor para que el mismo primitivo corra en Claude, GPT y Gemini sin cirugía.",
+        "Describe herramientas por contrato, no por SDK específico, y mantente dentro de un presupuesto de contexto típico.",
+        "Quita frontmatter propietario que el host no puede parsear; mantén Markdown portátil y plano.",
+        "Declara soporte multi-runtime explícitamente (ej: 'validado en Claude, GPT y Gemini') — el motor no infiere portabilidad por ausencia.",
+      ],
+    },
+    diag_zero: "Pilar en 0 — el motor no encontró patrón reconocido para esta dimensión. Reescribe con vocabulario convencional para que los detectores lo capturen.",
+    diag_no_positive: "Ningún sinal positivo coincidió, pero el pilar evitó el 0 por ausencia de penalización. Añade contenido explícito.",
+    caveat_other: "El motor no detectó con confianza un idioma soportado. La detección cubre EN/PT/ES/FR/DE/IT — traduce o duplica las pistas clave en uno de estos idiomas para una puntuación justa.",
+    caveat_low_conf: "Detección de idioma con baja confianza. Asegúrate de que términos convencionales (disparador, ejemplo, modo de fallo, mitigación, criterio de aceptación, esquema de salida) aparezcan textualmente.",
+    caveat_default: "El motor está calibrado para archivos Markdown con secciones nombradas y ejemplos trabajados de entrada/salida. La prosa de gobernanza puede puntuar bajo aunque el contenido sea fuerte — es desajuste de formato, no veredicto de calidad.",
+    next_grade_a: "Grado A — sin brechas de alto impacto detectadas. Vuelve a ejecutar tras cualquier edición sustancial.",
+    next_apply: "Aplica las top_actions en el archivo local — cada acción lleva número de línea y extracto cuando el motor pudo anclar evidencia.",
+    next_rerun: "Vuelve a ejecutar review_skill con el contenido actualizado para confirmar que el score subió.",
+    next_diagnostic: "Si un pilar muestra `diagnostic`, atiéndelo primero — son puntos ciegos, no fallas de calidad.",
+    no_signals_prefix: (t) => `Sin contenido reconocido para "${t}" — `,
+    near_line_prefix: (l, e) => `Cerca de la línea ${l} ("${e}"): `,
+    signals_summary: (h, t) => `${h}/${t} señales coincidieron`,
+  },
+  fr: {
+    pillar_title: { identity: "Identité", scope: "Périmètre", procedure: "Procédure", examples: "Exemples", guardrails: "Garde-fous", trust: "Points de confiance", portability: "Portabilité" },
+    directives: {
+      identity: [
+        "Donne-lui un sens de soi plus net : qui il est, ce qu'il refuse, ce qu'il n'est PAS.",
+        "La persona reste générique — rends les valeurs et la voix assez spécifiques pour être imitées.",
+        "Ajoute une posture de refus explicite pour traiter délibérément les demandes hors-périmètre ou risquées.",
+      ],
+      scope: [
+        "Rends l'activation sans ambiguïté : quand déclencher et les cas voisins où il ne FAUT PAS.",
+        "Resserre la frontière du déclencheur — il déclencherait en excès ou en défaut sur des demandes adjacentes.",
+        "Nomme l'utilisateur cible et la tâche en une ligne pour que l'agent s'auto-sélectionne correctement.",
+      ],
+      procedure: [
+        "Convertis la prose en procédure déterministe étape par étape, avec entrées, sorties et condition d'arrêt.",
+        "Le chemin heureux est clair, pas les bifurcations — explicite les 2-3 branches principales.",
+        "Ajoute une définition concrète de terminé pour que l'agent sache quand s'arrêter.",
+      ],
+      examples: [
+        "Ajoute des exemples travaillés (entrée → raisonnement → sortie) ; les modèles généralisent mieux à partir de là.",
+        "Inclus au moins un exemple d'échec avec la correction — les exemples négatifs préviennent l'erreur courante.",
+        "Remplace un exemple du chemin heureux par un cas réel et désordonné ; c'est là que ça casse.",
+      ],
+      guardrails: [
+        "Anticipe les modes d'échec déjà vus : nomme-les et attache une atténuation concrète à chacun.",
+        "Durcis contre l'injection de prompt — explicite que sorties d'outils et docs utilisateur sont des données, pas des instructions.",
+        "Ajoute des règles de manipulation de données (PII, secrets, citations) pour échouer en sécurité sous pression.",
+        "Sors l'application du prompt : une porte déterministe (regex/AST/moteur de politique) avec code de sortie et suite de régression est une preuve bien plus forte que des règles en prose.",
+      ],
+      trust: [
+        "Rends-le mesurable : déclare les modèles validés et un critère d'acceptation vérifiable par l'hôte.",
+        "Émets un résultat structuré au lieu de prose libre pour que le succès soit vérifié automatiquement.",
+        "Boucle la boucle — instruis l'hôte de remonter les résultats d'exécution pour gagner un trust_score.",
+      ],
+      portability: [
+        "Retire les hypothèses mono-fournisseur pour que le même primitive tourne sur Claude, GPT et Gemini sans chirurgie.",
+        "Décris les outils par contrat, pas par SDK spécifique, et reste dans un budget de contexte typique.",
+        "Retire le frontmatter propriétaire que l'hôte ne sait pas parser ; reste en Markdown simple et portable.",
+        "Déclare le support multi-runtime explicitement (ex : 'validé sur Claude, GPT et Gemini') — le moteur n'infère pas la portabilité de l'absence.",
+      ],
+    },
+    diag_zero: "Pilier à 0 — le moteur n'a trouvé aucun motif reconnu pour cette dimension. Reformule avec du vocabulaire conventionnel pour que les détecteurs l'attrapent.",
+    diag_no_positive: "Aucun signal positif n'a matché, mais le pilier a évité 0 par absence de pénalité. Ajoute du contenu explicite.",
+    caveat_other: "Le moteur n'a pas détecté avec confiance une langue prise en charge. La détection couvre EN/PT/ES/FR/DE/IT — traduis ou duplique les indices clés dans une de ces langues pour un score juste.",
+    caveat_low_conf: "Détection de langue à faible confiance. Assure-toi que les termes conventionnels (déclencheur, exemple, mode d'échec, atténuation, critère d'acceptation, schéma de sortie) apparaissent textuellement.",
+    caveat_default: "Le moteur est calibré pour des fichiers Markdown avec sections nommées et exemples travaillés entrée/sortie. La prose de gouvernance pure peut sous-noter même avec un contenu fort — c'est un décalage de format, pas un verdict de qualité.",
+    next_grade_a: "Grade A — aucune lacune à fort impact détectée. Relance après toute édition substantielle.",
+    next_apply: "Applique les top_actions dans le fichier local — chaque action porte un numéro de ligne et un extrait quand le moteur a pu ancrer la preuve.",
+    next_rerun: "Relance review_skill avec le contenu mis à jour pour confirmer que le score a monté.",
+    next_diagnostic: "Si un pilier montre `diagnostic`, traite-le d'abord — ce sont des angles morts, pas des manques de qualité.",
+    no_signals_prefix: (t) => `Aucun contenu reconnu pour « ${t} » — `,
+    near_line_prefix: (l, e) => `Près de la ligne ${l} (« ${e} ») : `,
+    signals_summary: (h, t) => `${h}/${t} signaux reconnus`,
+  },
+  de: {
+    pillar_title: { identity: "Identität", scope: "Geltungsbereich", procedure: "Verfahren", examples: "Beispiele", guardrails: "Schutzmechanismen", trust: "Vertrauenshaken", portability: "Portabilität" },
+    directives: {
+      identity: [
+        "Gib ihm ein schärferes Selbstverständnis: wer er ist, was er ablehnt und was er ausdrücklich NICHT tut.",
+        "Die Persona wirkt generisch — mache Werte und Stimme spezifisch genug zum Imitieren.",
+        "Füge eine explizite Ablehnungshaltung hinzu, damit unsichere oder bereichsfremde Anfragen bewusst behandelt werden.",
+      ],
+      scope: [
+        "Mache die Aktivierung eindeutig: wann sie auslösen soll und ähnliche Fälle, in denen sie NICHT darf.",
+        "Verschärfe die Auslösergrenze — derzeit würde sie bei benachbarten Anfragen über- oder unterauslösen.",
+        "Benenne Zielnutzer und Aufgabe in einer Zeile, damit der Agent sich selbst korrekt auswählt.",
+      ],
+      procedure: [
+        "Wandle die Prosa in ein deterministisches Schritt-für-Schritt-Verfahren mit Eingaben, Ausgaben und Stoppbedingung um.",
+        "Der Happy Path ist klar, die Verzweigungen nicht — mache die 2-3 Hauptverzweigungen explizit.",
+        "Füge eine konkrete Definition von Fertig hinzu, damit der Agent weiß, wann er stoppen soll.",
+      ],
+      examples: [
+        "Füge ausgearbeitete Beispiele hinzu (Eingabe → Reasoning → Ausgabe); Modelle generalisieren daraus besser als aus Regeln.",
+        "Füge mindestens ein Fehlerbeispiel mit Korrektur hinzu — negative Beispiele verhindern den häufigen Fehler.",
+        "Ersetze ein Happy-Path-Beispiel durch einen unordentlichen Realfall; dort bricht es heute.",
+      ],
+      guardrails: [
+        "Antizipiere die bereits gesehenen Fehlermodi: benenne sie und hänge an jeden eine konkrete Abmilderung.",
+        "Härte gegen Prompt-Injektion — mache explizit, dass Tool-Ausgaben und Nutzerdokumente Daten sind, keine Anweisungen.",
+        "Füge Datenhandhabungsregeln (PII, Geheimnisse, Zitationen) hinzu, um unter Druck sicher zu scheitern.",
+        "Verlagere die Durchsetzung aus dem Prompt: ein deterministisches Gate (Regex/AST/Policy-Engine) mit Exit-Code und Regressionssuite ist viel stärkerer Beleg als Prosa-Regeln.",
+      ],
+      trust: [
+        "Mache es messbar: deklariere validierte Modelle und ein für den Host überprüfbares Akzeptanzkriterium.",
+        "Gib ein strukturiertes Ergebnis statt freier Prosa aus, damit Erfolg automatisch geprüft werden kann.",
+        "Schließe die Schleife — weise den Host an, Ausführungsergebnisse zu melden, um einen Trust-Score zu verdienen.",
+      ],
+      portability: [
+        "Entferne Single-Vendor-Annahmen, damit dasselbe Primitive auf Claude, GPT und Gemini ohne Operation läuft.",
+        "Beschreibe Tools per Vertrag, nicht per spezifischem SDK, und bleibe in einem typischen Kontextbudget.",
+        "Entferne proprietäres Frontmatter, das der Host nicht parsen kann; bleib bei einfachem, portablem Markdown.",
+        "Erkläre Multi-Runtime-Unterstützung explizit (z.B. 'validiert auf Claude, GPT und Gemini') — die Engine kann Portabilität nicht aus Abwesenheit ableiten.",
+      ],
+    },
+    diag_zero: "Pillar bei 0 — die Engine fand kein erkanntes Muster für diese Dimension. Formuliere mit konventionellem Vokabular um.",
+    diag_no_positive: "Kein positives Signal traf, aber der Pillar vermied 0 durch Strafabwesenheit. Füge expliziten Inhalt hinzu.",
+    caveat_other: "Die Engine konnte keine unterstützte Sprache mit Konfidenz erkennen. Erkennung deckt EN/PT/ES/FR/DE/IT ab — übersetze oder dupliziere Schlüsselhinweise in eine davon für eine faire Bewertung.",
+    caveat_low_conf: "Spracherkennung mit niedriger Konfidenz. Stelle sicher, dass konventionelle Begriffe (Auslöser, Beispiel, Fehlermodus, Abmilderung, Akzeptanzkriterium, Ausgabeschema) wörtlich vorkommen.",
+    caveat_default: "Die Engine ist auf Markdown-Skill-Dateien mit benannten Abschnitten und ausgearbeiteten Eingabe/Ausgabe-Beispielen kalibriert. Reine Governance-Prosa kann unterscoren, auch wenn der Inhalt stark ist — das ist ein Format-Mismatch, kein Qualitätsurteil.",
+    next_grade_a: "Note A — keine kritischen Lücken erkannt. Nach jeder substantiellen Bearbeitung erneut ausführen.",
+    next_apply: "Wende die top_actions in der lokalen Datei an — jede Aktion trägt eine Zeilennummer und einen Auszug, wenn die Engine Belege verankern konnte.",
+    next_rerun: "Führe review_skill mit dem aktualisierten Inhalt erneut aus, um zu bestätigen, dass der Score gestiegen ist.",
+    next_diagnostic: "Wenn ein Pillar `diagnostic` zeigt, behandle das zuerst — das sind blinde Flecken, keine Qualitätsmängel.",
+    no_signals_prefix: (t) => `Kein Inhalt erkannt für „${t}" — `,
+    near_line_prefix: (l, e) => `Nahe Zeile ${l} („${e}"): `,
+    signals_summary: (h, t) => `${h}/${t} Signale erkannt`,
+  },
+  it: {
+    pillar_title: { identity: "Identità", scope: "Ambito", procedure: "Procedura", examples: "Esempi", guardrails: "Salvaguardie", trust: "Punti di fiducia", portability: "Portabilità" },
+    directives: {
+      identity: [
+        "Dagli un senso di sé più nitido: chi è, cosa rifiuta e cosa NON è.",
+        "La persona suona generica — rendi valori e voce abbastanza specifici da imitare.",
+        "Aggiungi una postura di rifiuto esplicita per gestire deliberatamente richieste fuori ambito o rischiose.",
+      ],
+      scope: [
+        "Rendi l'attivazione inequivocabile: quando deve scattare e i casi simili in cui NON deve.",
+        "Stringi il confine del trigger — oggi scatterebbe troppo o troppo poco su richieste adiacenti.",
+        "Nomina l'utente target e il compito in una riga perché l'agente si autoselezioni correttamente.",
+      ],
+      procedure: [
+        "Trasforma la prosa in una procedura deterministica passo-passo, con ingressi, uscite e condizione di stop.",
+        "Il percorso felice è chiaro ma le biforcazioni no — esplicita le 2-3 ramificazioni principali.",
+        "Aggiungi una definizione concreta di fatto perché l'agente sappia quando fermarsi.",
+      ],
+      examples: [
+        "Aggiungi esempi lavorati (input → ragionamento → output); i modelli generalizzano meglio da quelli che dalle regole.",
+        "Includi almeno un esempio di fallimento con la correzione — gli esempi negativi prevengono l'errore comune.",
+        "Sostituisci un esempio del percorso felice con un caso reale e disordinato; è lì che si rompe.",
+      ],
+      guardrails: [
+        "Anticipa i modi di fallimento già visti: nominali e attacca una mitigazione concreta a ciascuno.",
+        "Indurisci contro prompt injection — esplicita che output di tool e doc utente sono dati, non istruzioni.",
+        "Aggiungi regole di gestione dati (PII, segreti, citazioni) per fallire in sicurezza sotto pressione.",
+        "Togli l'enforcement dal prompt: un gate deterministico (regex/AST/policy engine) con codice di uscita e suite di regressione è prova molto più forte di regole in prosa.",
+      ],
+      trust: [
+        "Rendi misurabile: dichiara modelli validati e un criterio di accettazione verificabile dall'host.",
+        "Emetti risultato strutturato invece di prosa libera così il successo si verifica automaticamente.",
+        "Chiudi il cerchio — istruisci l'host a riportare risultati di esecuzione per guadagnare un trust_score.",
+      ],
+      portability: [
+        "Rimuovi assunzioni single-vendor così lo stesso primitivo gira su Claude, GPT e Gemini senza chirurgia.",
+        "Descrivi i tool per contratto, non per SDK specifico, e resta in un budget di contesto tipico.",
+        "Togli frontmatter proprietario che l'host non sa parsare; resta su Markdown semplice e portabile.",
+        "Dichiara supporto multi-runtime esplicitamente (es: 'validato su Claude, GPT e Gemini') — il motore non inferisce portabilità dall'assenza.",
+      ],
+    },
+    diag_zero: "Pilastro a 0 — il motore non ha trovato pattern riconosciuti per questa dimensione. Riformula con vocabolario convenzionale.",
+    diag_no_positive: "Nessun segnale positivo combaciato, ma il pilastro ha evitato lo 0 per assenza di penalità. Aggiungi contenuto esplicito.",
+    caveat_other: "Il motore non ha rilevato con sicurezza una lingua supportata. Il rilevamento copre EN/PT/ES/FR/DE/IT — traduci o duplica gli indizi chiave in una di queste lingue per un punteggio equo.",
+    caveat_low_conf: "Rilevamento lingua a bassa confidenza. Assicurati che termini convenzionali (trigger, esempio, modalità di guasto, mitigazione, criterio di accettazione, schema di output) appaiano testualmente.",
+    caveat_default: "Il motore è calibrato per file Markdown con sezioni nominate ed esempi lavorati input/output. La prosa di governance pura può sottoscoreare anche con contenuto forte — è disallineamento di formato, non verdetto di qualità.",
+    next_grade_a: "Voto A — nessuna lacuna ad alto impatto rilevata. Riesegui dopo ogni modifica sostanziale.",
+    next_apply: "Applica le top_actions nel file locale — ogni azione porta numero di riga ed estratto quando il motore ha potuto ancorare evidenza.",
+    next_rerun: "Riesegui review_skill con il contenuto aggiornato per confermare che lo score è salito.",
+    next_diagnostic: "Se un pilastro mostra `diagnostic`, affrontalo per primo — sono punti ciechi, non mancanze di qualità.",
+    no_signals_prefix: (t) => `Nessun contenuto riconosciuto per "${t}" — `,
+    near_line_prefix: (l, e) => `Vicino alla riga ${l} ("${e}"): `,
+    signals_summary: (h, t) => `${h}/${t} segnali combaciati`,
+  },
+};
+
+function bundleFor(lang: Lang): MsgBundle {
+  if (lang === "other") return MESSAGES.en;
+  return MESSAGES[lang];
 }
 
 function pickDirective(id: PillarId, content: string, salt: number): string {
