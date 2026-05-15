@@ -70,6 +70,7 @@ import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
 import { Route as AccountUsageRouteImport } from './routes/account.usage'
 import { Route as AccountTokensRouteImport } from './routes/account.tokens'
 import { Route as AccountReferralsRouteImport } from './routes/account.referrals'
+import { Route as AccountPackagesRouteImport } from './routes/account.packages'
 import { Route as AccountCreditsRouteImport } from './routes/account.credits'
 import { Route as AccountConnectionsRouteImport } from './routes/account.connections'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
@@ -403,6 +404,11 @@ const AccountReferralsRoute = AccountReferralsRouteImport.update({
   path: '/account/referrals',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountPackagesRoute = AccountPackagesRouteImport.update({
+  id: '/account/packages',
+  path: '/account/packages',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountCreditsRoute = AccountCreditsRouteImport.update({
   id: '/account/credits',
   path: '/account/credits',
@@ -584,6 +590,7 @@ export interface FileRoutesByFullPath {
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
+  '/account/packages': typeof AccountPackagesRoute
   '/account/referrals': typeof AccountReferralsRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
@@ -673,6 +680,7 @@ export interface FileRoutesByTo {
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
+  '/account/packages': typeof AccountPackagesRoute
   '/account/referrals': typeof AccountReferralsRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
@@ -764,6 +772,7 @@ export interface FileRoutesById {
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
+  '/account/packages': typeof AccountPackagesRoute
   '/account/referrals': typeof AccountReferralsRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
@@ -856,6 +865,7 @@ export interface FileRouteTypes {
     | '/account/billing'
     | '/account/connections'
     | '/account/credits'
+    | '/account/packages'
     | '/account/referrals'
     | '/account/tokens'
     | '/account/usage'
@@ -945,6 +955,7 @@ export interface FileRouteTypes {
     | '/account/billing'
     | '/account/connections'
     | '/account/credits'
+    | '/account/packages'
     | '/account/referrals'
     | '/account/tokens'
     | '/account/usage'
@@ -1035,6 +1046,7 @@ export interface FileRouteTypes {
     | '/account/billing'
     | '/account/connections'
     | '/account/credits'
+    | '/account/packages'
     | '/account/referrals'
     | '/account/tokens'
     | '/account/usage'
@@ -1126,6 +1138,7 @@ export interface RootRouteChildren {
   AccountBillingRoute: typeof AccountBillingRoute
   AccountConnectionsRoute: typeof AccountConnectionsRoute
   AccountCreditsRoute: typeof AccountCreditsRoute
+  AccountPackagesRoute: typeof AccountPackagesRoute
   AccountReferralsRoute: typeof AccountReferralsRoute
   AccountTokensRoute: typeof AccountTokensRoute
   AccountUsageRoute: typeof AccountUsageRoute
@@ -1592,6 +1605,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountReferralsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/packages': {
+      id: '/account/packages'
+      path: '/account/packages'
+      fullPath: '/account/packages'
+      preLoaderRoute: typeof AccountPackagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/credits': {
       id: '/account/credits'
       path: '/account/credits'
@@ -1939,6 +1959,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountBillingRoute: AccountBillingRoute,
   AccountConnectionsRoute: AccountConnectionsRoute,
   AccountCreditsRoute: AccountCreditsRoute,
+  AccountPackagesRoute: AccountPackagesRoute,
   AccountReferralsRoute: AccountReferralsRoute,
   AccountTokensRoute: AccountTokensRoute,
   AccountUsageRoute: AccountUsageRoute,
