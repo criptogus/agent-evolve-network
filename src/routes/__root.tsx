@@ -10,8 +10,15 @@ import {
 
 import appCss from "../styles.css?url";
 import { ReferralCapture } from "@/components/referrals/ReferralCapture";
+import { getNormalizedMalformedOauthAuthorizeUrl } from "@/lib/oauth/normalize";
 
 function NotFoundComponent() {
+  const normalizedOauthUrl = getNormalizedMalformedOauthAuthorizeUrl();
+  if (normalizedOauthUrl) {
+    window.location.replace(normalizedOauthUrl);
+    return null;
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
