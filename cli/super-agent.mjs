@@ -197,8 +197,16 @@ function synthesizeSkillMd(info) {
 
 function reportTelemetry(event) {
   if (!TELEMETRY) return;
-  const body = JSON.stringify({ ...event, latency_ms: 0, workspace_id: hashCwd() });
-  fetch(`${REGISTRY}/api/telemetry`, {
+  const body = JSON.stringify({
+    latency_ms: 0,
+    workspace_id: hashCwd(),
+    runtime: "cli",
+    ...event,
+  });
+  // /api/public/* bypasses the published-site auth gate so anonymous CLI
+  // users actually reach the handler. The endpoint also relays the event
+  // to report_skill_execution so the trust score updates without a token.
+  fetch(`${REGISTRY}/api/public/telemetry`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body,

@@ -86,6 +86,7 @@ import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packa
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
+import { Route as ApiSkillsSlugExportDotmdRouteImport } from './routes/api/skills.$slug.export[.]md'
 import { Route as ApiSkillsSlugExportRouteImport } from './routes/api/skills.$slug.export'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicPackagesSlugRouteImport } from './routes/api/public/packages.$slug'
@@ -490,6 +491,12 @@ const AdminImportGithubRoute = AdminImportGithubRouteImport.update({
   path: '/import/github',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiSkillsSlugExportDotmdRoute =
+  ApiSkillsSlugExportDotmdRouteImport.update({
+    id: '/api/skills/$slug/export.md',
+    path: '/api/skills/$slug/export.md',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiSkillsSlugExportRoute = ApiSkillsSlugExportRouteImport.update({
   id: '/api/skills/$slug/export',
   path: '/api/skills/$slug/export',
@@ -671,6 +678,7 @@ export interface FileRoutesByFullPath {
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
+  '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -765,6 +773,7 @@ export interface FileRoutesByTo {
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
+  '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -861,6 +870,7 @@ export interface FileRoutesById {
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
+  '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -958,6 +968,7 @@ export interface FileRouteTypes {
     | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
+    | '/api/skills/$slug/export.md'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
@@ -1052,6 +1063,7 @@ export interface FileRouteTypes {
     | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
+    | '/api/skills/$slug/export.md'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   id:
@@ -1147,6 +1159,7 @@ export interface FileRouteTypes {
     | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
+    | '/api/skills/$slug/export.md'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
@@ -1223,6 +1236,7 @@ export interface RootRouteChildren {
   ApiPublicOauthTokenRoute: typeof ApiPublicOauthTokenRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiSkillsSlugExportRoute: typeof ApiSkillsSlugExportRoute
+  ApiSkillsSlugExportDotmdRoute: typeof ApiSkillsSlugExportDotmdRoute
   ApiBadgesTrustSlugSvgRoute: typeof ApiBadgesTrustSlugSvgRoute
   ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1768,6 +1782,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminImportGithubRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/skills/$slug/export.md': {
+      id: '/api/skills/$slug/export.md'
+      path: '/api/skills/$slug/export.md'
+      fullPath: '/api/skills/$slug/export.md'
+      preLoaderRoute: typeof ApiSkillsSlugExportDotmdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/skills/$slug/export': {
       id: '/api/skills/$slug/export'
       path: '/api/skills/$slug/export'
@@ -2088,6 +2109,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicOauthTokenRoute: ApiPublicOauthTokenRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiSkillsSlugExportRoute: ApiSkillsSlugExportRoute,
+  ApiSkillsSlugExportDotmdRoute: ApiSkillsSlugExportDotmdRoute,
   ApiBadgesTrustSlugSvgRoute: ApiBadgesTrustSlugSvgRoute,
   ApiPacksCustomizationIdDownloadExtRoute:
     ApiPacksCustomizationIdDownloadExtRoute,
