@@ -936,7 +936,7 @@ export const getMethodologyTool = defineTool({
 export const reviewSkillTool = defineTool({
   name: "review_skill",
   description:
-    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns overall_score (0-100), grade, per-dimension scores (with `signals_hit`/`signals_total` so you can see why a pillar landed low) and `top_actions` anchored to concrete file evidence (line number + excerpt) when available. The detection signals, weights and thresholds remain server-side. NOTE: signal detection is bilingual (EN + PT-BR) and calibrated for Markdown skill files; long-form governance prose in other languages may underscore — see `language` and `format_caveat` in the response. Read-only, no auth.",
+    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns overall_score (0-100), grade, per-dimension scores (with `signals_hit`/`signals_total` so you can see why a pillar landed low) and `top_actions` anchored to concrete file evidence (line number + excerpt) when available. The detection signals, weights and thresholds remain server-side. NOTE: signal detection AND feedback are multilingual (EN, PT-BR, ES, FR, DE, IT) — write the file in any of those and you'll get top_actions/diagnostics/next_steps back in that same language. The engine is calibrated for Markdown skill files; long-form governance prose may underscore — see `language` and `format_caveat` in the response. Read-only, no auth.",
   parameters: z.object({
     name: z.string().min(1).max(200).describe("File or skill name (for the report header only)"),
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).default("skill"),
