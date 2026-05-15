@@ -947,6 +947,7 @@ export const reviewSkillTool = defineTool({
     const weights = TYPE_WEIGHTS[type] ?? TYPE_WEIGHTS.skill;
     const details = ids.map((id) => scorePillar(id, content));
     const language = detectLanguage(content);
+    const bundle = bundleFor(language.lang);
 
     let wSum = 0;
     let wTotal = 0;
@@ -959,16 +960,16 @@ export const reviewSkillTool = defineTool({
 
     const pillars = details.map((r) => ({
       pillar: r.id,
-      title: PILLAR_TITLE[r.id],
+      title: bundle.pillar_title[r.id],
       score: r.score,
       status: statusBand(r.score),
       signals_hit: r.signals_hit,
       signals_total: r.signals_total,
       diagnostic:
         r.score === 0
-          ? "Pillar scored 0 — the engine found no recognised pattern for this dimension in the submitted text. If your file does cover this in another idiom, rephrase with the conventional vocabulary (EN or PT-BR) so detectors catch it."
+          ? bundle.diag_zero
           : r.signals_hit === 0
-            ? "No positive signals matched, but the pillar avoided 0 via penalty-absence. Add explicit content for this dimension."
+            ? bundle.diag_no_positive
             : null,
     }));
 
@@ -978,13 +979,13 @@ export const reviewSkillTool = defineTool({
       .filter((r) => r.impact > 0)
       .slice(0, 4);
 
-    const topActions = ranked.map((r, i) => buildAction(r, content, i + 1));
+    const topActions = ranked.map((r, i) => buildAction(r, content, i + 1, bundle));
 
     const formatCaveat =
       language.lang === "other"
-        ? "The engine could not confidently detect EN or PT-BR. Signal detection is bilingual; other languages will underscore by mismatch, not by quality. Translate or duplicate key cues into EN or PT-BR for a fair score."
-        : language.lang === "pt" && language.confidence < 0.5
-          ? "Low-confidence Portuguese detection. Ensure conventional terms (gatilho, exemplo, modo de falha, mitigação, critério de aceitação, esquema de saída) appear verbatim so detectors catch them."
+        ? bundle.caveat_other
+        : language.confidence < 0.5
+          ? bundle.caveat_low_conf
           : null;
 
     return json({
@@ -993,20 +994,18 @@ export const reviewSkillTool = defineTool({
       engine: ENGINE,
       overall_score: overall,
       grade: gradeBand(overall),
-      language: { detected: language.lang, confidence: Math.round(language.confidence * 100) / 100 },
-      format_caveat:
-        formatCaveat ??
-        "The engine is calibrated for Markdown skill files with named sections + worked input/output examples. Pure governance prose may underscore even when content is strong — that's a format mismatch, not a quality verdict.",
+      language: {
+        detected: language.lang,
+        confidence: Math.round(language.confidence * 100) / 100,
+        supported: ["en", "pt", "es", "fr", "de", "it"],
+      },
+      format_caveat: formatCaveat ?? bundle.caveat_default,
       pillars,
       top_actions: topActions,
       next_steps:
         topActions.length === 0
-          ? ["Grade A — no high-impact gaps detected. Re-run after any substantive edit."]
-          : [
-              "Apply the top_actions in the user's local file — each action carries a line number and an excerpt when the engine could anchor evidence.",
-              "Re-run review_skill with the updated content to confirm the score rose.",
-              "If a pillar shows `diagnostic`, address that first — those are blind spots, not quality misses.",
-            ],
+          ? [bundle.next_grade_a]
+          : [bundle.next_apply, bundle.next_rerun, bundle.next_diagnostic],
     });
   },
 });
