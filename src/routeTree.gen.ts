@@ -93,6 +93,8 @@ import { Route as ApiPublicDotwellKnownOauthProtectedResourceRouteImport } from 
 import { Route as ApiPublicDotwellKnownOauthAuthorizationServerRouteImport } from './routes/api/public/[.]well-known.oauth-authorization-server'
 import { Route as ApiOgSkillOfTheWeekSvgRouteImport } from './routes/api/og.skill-of-the-week.svg'
 import { Route as ApiIntegrationsSlugInstallRouteImport } from './routes/api/integrations.$slug.install'
+import { Route as DotwellKnownOauthProtectedResourceApiMcpRouteImport } from './routes/[.]well-known.oauth-protected-resource.api.mcp'
+import { Route as DotwellKnownOauthAuthorizationServerApiMcpRouteImport } from './routes/[.]well-known.oauth-authorization-server.api.mcp'
 import { Route as ApiBadgesTrustSlugSvgRouteImport } from './routes/api/badges.trust.$slug.svg'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
@@ -523,6 +525,18 @@ const ApiIntegrationsSlugInstallRoute =
     path: '/api/integrations/$slug/install',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DotwellKnownOauthProtectedResourceApiMcpRoute =
+  DotwellKnownOauthProtectedResourceApiMcpRouteImport.update({
+    id: '/api/mcp',
+    path: '/api/mcp',
+    getParentRoute: () => DotwellKnownOauthProtectedResourceRoute,
+  } as any)
+const DotwellKnownOauthAuthorizationServerApiMcpRoute =
+  DotwellKnownOauthAuthorizationServerApiMcpRouteImport.update({
+    id: '/api/mcp',
+    path: '/api/mcp',
+    getParentRoute: () => DotwellKnownOauthAuthorizationServerRoute,
+  } as any)
 const ApiBadgesTrustSlugSvgRoute = ApiBadgesTrustSlugSvgRouteImport.update({
   id: '/api/badges/trust/$slug/svg',
   path: '/api/badges/trust/$slug/svg',
@@ -565,8 +579,8 @@ export interface FileRoutesByFullPath {
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
-  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
-  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
@@ -609,6 +623,8 @@ export interface FileRoutesByFullPath {
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
+  '/.well-known/oauth-authorization-server/api/mcp': typeof DotwellKnownOauthAuthorizationServerApiMcpRoute
+  '/.well-known/oauth-protected-resource/api/mcp': typeof DotwellKnownOauthProtectedResourceApiMcpRoute
   '/api/integrations/$slug/install': typeof ApiIntegrationsSlugInstallRoute
   '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
@@ -652,8 +668,8 @@ export interface FileRoutesByTo {
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
-  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
-  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
@@ -696,6 +712,8 @@ export interface FileRoutesByTo {
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
+  '/.well-known/oauth-authorization-server/api/mcp': typeof DotwellKnownOauthAuthorizationServerApiMcpRoute
+  '/.well-known/oauth-protected-resource/api/mcp': typeof DotwellKnownOauthProtectedResourceApiMcpRoute
   '/api/integrations/$slug/install': typeof ApiIntegrationsSlugInstallRoute
   '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
@@ -741,8 +759,8 @@ export interface FileRoutesById {
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
-  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRoute
-  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
+  '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
   '/account/billing': typeof AccountBillingRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
@@ -785,6 +803,8 @@ export interface FileRoutesById {
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
+  '/.well-known/oauth-authorization-server/api/mcp': typeof DotwellKnownOauthAuthorizationServerApiMcpRoute
+  '/.well-known/oauth-protected-resource/api/mcp': typeof DotwellKnownOauthProtectedResourceApiMcpRoute
   '/api/integrations/$slug/install': typeof ApiIntegrationsSlugInstallRoute
   '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
@@ -875,6 +895,8 @@ export interface FileRouteTypes {
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
     | '/use-case/$vertical/$task'
+    | '/.well-known/oauth-authorization-server/api/mcp'
+    | '/.well-known/oauth-protected-resource/api/mcp'
     | '/api/integrations/$slug/install'
     | '/api/og/skill-of-the-week/svg'
     | '/api/public/.well-known/oauth-authorization-server'
@@ -962,6 +984,8 @@ export interface FileRouteTypes {
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
     | '/use-case/$vertical/$task'
+    | '/.well-known/oauth-authorization-server/api/mcp'
+    | '/.well-known/oauth-protected-resource/api/mcp'
     | '/api/integrations/$slug/install'
     | '/api/og/skill-of-the-week/svg'
     | '/api/public/.well-known/oauth-authorization-server'
@@ -1050,6 +1074,8 @@ export interface FileRouteTypes {
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
     | '/use-case/$vertical/$task'
+    | '/.well-known/oauth-authorization-server/api/mcp'
+    | '/.well-known/oauth-protected-resource/api/mcp'
     | '/api/integrations/$slug/install'
     | '/api/og/skill-of-the-week/svg'
     | '/api/public/.well-known/oauth-authorization-server'
@@ -1095,8 +1121,8 @@ export interface RootRouteChildren {
   UploadRoute: typeof UploadRoute
   UseCasesRoute: typeof UseCasesRoute
   WelcomeRoute: typeof WelcomeRoute
-  DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRoute
-  DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
+  DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
+  DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRouteWithChildren
   AccountBillingRoute: typeof AccountBillingRoute
   AccountConnectionsRoute: typeof AccountConnectionsRoute
   AccountCreditsRoute: typeof AccountCreditsRoute
@@ -1727,6 +1753,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiIntegrationsSlugInstallRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/oauth-protected-resource/api/mcp': {
+      id: '/.well-known/oauth-protected-resource/api/mcp'
+      path: '/api/mcp'
+      fullPath: '/.well-known/oauth-protected-resource/api/mcp'
+      preLoaderRoute: typeof DotwellKnownOauthProtectedResourceApiMcpRouteImport
+      parentRoute: typeof DotwellKnownOauthProtectedResourceRoute
+    }
+    '/.well-known/oauth-authorization-server/api/mcp': {
+      id: '/.well-known/oauth-authorization-server/api/mcp'
+      path: '/api/mcp'
+      fullPath: '/.well-known/oauth-authorization-server/api/mcp'
+      preLoaderRoute: typeof DotwellKnownOauthAuthorizationServerApiMcpRouteImport
+      parentRoute: typeof DotwellKnownOauthAuthorizationServerRoute
+    }
     '/api/badges/trust/$slug/svg': {
       id: '/api/badges/trust/$slug/svg'
       path: '/api/badges/trust/$slug/svg'
@@ -1820,6 +1860,36 @@ const ForgeRouteChildren: ForgeRouteChildren = {
 
 const ForgeRouteWithChildren = ForgeRoute._addFileChildren(ForgeRouteChildren)
 
+interface DotwellKnownOauthAuthorizationServerRouteChildren {
+  DotwellKnownOauthAuthorizationServerApiMcpRoute: typeof DotwellKnownOauthAuthorizationServerApiMcpRoute
+}
+
+const DotwellKnownOauthAuthorizationServerRouteChildren: DotwellKnownOauthAuthorizationServerRouteChildren =
+  {
+    DotwellKnownOauthAuthorizationServerApiMcpRoute:
+      DotwellKnownOauthAuthorizationServerApiMcpRoute,
+  }
+
+const DotwellKnownOauthAuthorizationServerRouteWithChildren =
+  DotwellKnownOauthAuthorizationServerRoute._addFileChildren(
+    DotwellKnownOauthAuthorizationServerRouteChildren,
+  )
+
+interface DotwellKnownOauthProtectedResourceRouteChildren {
+  DotwellKnownOauthProtectedResourceApiMcpRoute: typeof DotwellKnownOauthProtectedResourceApiMcpRoute
+}
+
+const DotwellKnownOauthProtectedResourceRouteChildren: DotwellKnownOauthProtectedResourceRouteChildren =
+  {
+    DotwellKnownOauthProtectedResourceApiMcpRoute:
+      DotwellKnownOauthProtectedResourceApiMcpRoute,
+  }
+
+const DotwellKnownOauthProtectedResourceRouteWithChildren =
+  DotwellKnownOauthProtectedResourceRoute._addFileChildren(
+    DotwellKnownOauthProtectedResourceRouteChildren,
+  )
+
 interface PacksSlugRouteChildren {
   PacksSlugCustomizeRoute: typeof PacksSlugCustomizeRoute
 }
@@ -1863,9 +1933,9 @@ const rootRouteChildren: RootRouteChildren = {
   UseCasesRoute: UseCasesRoute,
   WelcomeRoute: WelcomeRoute,
   DotwellKnownOauthAuthorizationServerRoute:
-    DotwellKnownOauthAuthorizationServerRoute,
+    DotwellKnownOauthAuthorizationServerRouteWithChildren,
   DotwellKnownOauthProtectedResourceRoute:
-    DotwellKnownOauthProtectedResourceRoute,
+    DotwellKnownOauthProtectedResourceRouteWithChildren,
   AccountBillingRoute: AccountBillingRoute,
   AccountConnectionsRoute: AccountConnectionsRoute,
   AccountCreditsRoute: AccountCreditsRoute,
