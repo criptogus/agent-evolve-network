@@ -872,39 +872,40 @@ function bundleFor(lang: Lang): MsgBundle {
   return MESSAGES[lang];
 }
 
-function pickDirective(id: PillarId, content: string, salt: number): string {
-  const pool = DIRECTIVES[id];
+function pickDirective(id: PillarId, content: string, salt: number, bundle: MsgBundle): string {
+  const pool = bundle.directives[id];
   let h = salt;
   for (let i = 0; i < content.length; i += 97) h = (h * 31 + content.charCodeAt(i)) >>> 0;
   return pool[h % pool.length];
 }
 
-// Anchor a directive to concrete file evidence when we have it. When a pillar
-// scored 0 with no hits, surface that explicitly so the host knows the engine
-// found nothing matching — not that the file is silently bad.
-function buildAction(detail: PillarDetail, content: string, priority: number): {
+// Anchor a directive to concrete file evidence when we have it. All
+// user-visible strings come from the localized bundle so non-English authors
+// get feedback in their own language.
+function buildAction(detail: PillarDetail, content: string, priority: number, bundle: MsgBundle): {
   area: string;
   priority: number;
   action: string;
   evidence: { line: number; excerpt: string } | null;
   signal_summary: string;
 } {
-  const directive = pickDirective(detail.id, content, priority);
+  const directive = pickDirective(detail.id, content, priority, bundle);
+  const title = bundle.pillar_title[detail.id];
   const ev = detail.evidence[0] ?? null;
   let action: string;
   if (ev) {
-    action = `Near line ${ev.line} ("${ev.excerpt}"): ${directive}`;
+    action = bundle.near_line_prefix(ev.line, ev.excerpt) + directive;
   } else if (detail.signals_hit === 0) {
-    action = `No content recognised for "${PILLAR_TITLE[detail.id]}" — ${directive}`;
+    action = bundle.no_signals_prefix(title) + directive;
   } else {
     action = directive;
   }
   return {
-    area: PILLAR_TITLE[detail.id],
+    area: title,
     priority,
     action,
     evidence: ev,
-    signal_summary: `${detail.signals_hit}/${detail.signals_total} signals matched`,
+    signal_summary: bundle.signals_summary(detail.signals_hit, detail.signals_total),
   };
 }
 
