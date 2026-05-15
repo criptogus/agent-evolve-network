@@ -17,7 +17,7 @@ type Props = {
 };
 
 const SITE_ORIGIN =
-  typeof window !== "undefined" ? window.location.origin : "https://www.superagentskill.com";
+  typeof window !== "undefined" ? window.location.origin : "https://superagentskill.com";
 
 function absolutize(url: string): string {
   if (/^https?:\/\//i.test(url)) return url;

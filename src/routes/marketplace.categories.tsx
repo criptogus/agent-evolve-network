@@ -17,7 +17,7 @@ export const Route = createFileRoute("/marketplace/categories")({
       },
       { property: "og:title", content: "Browse Agent Skills by Category" },
     ],
-    links: [{ rel: "canonical", href: "https://www.superagentskill.com/marketplace/categories" }],
+    links: [{ rel: "canonical", href: "https://superagentskill.com/marketplace/categories" }],
   }),
   component: Categories,
 });

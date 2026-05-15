@@ -66,9 +66,32 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   return brandedErrorResponse();
 }
 
+// Canonical host. The OAuth issuer / resource metadata is minted against the
+// bare apex (see ORIGIN in lib/oauth/mcp-oauth.server.ts), so a client that
+// connects via www.* would see an issuer/resource mismatch and refuse the
+// token. Redirect the www alias to the apex before anything else runs.
+const CANONICAL_HOST = "superagentskill.com";
+
+function canonicalRedirect(request: Request): Response | null {
+  let url: URL;
+  try {
+    url = new URL(request.url);
+  } catch {
+    return null;
+  }
+  if (url.host !== `www.${CANONICAL_HOST}`) return null;
+  url.host = CANONICAL_HOST;
+  return new Response(null, {
+    status: 301,
+    headers: { Location: url.toString(), "Cache-Control": "public, max-age=86400" },
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const redirect = canonicalRedirect(request);
+      if (redirect) return redirect;
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

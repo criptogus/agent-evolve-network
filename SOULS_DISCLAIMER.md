@@ -3,7 +3,7 @@
 > **TL;DR — Fictional AI persona. Not the real person. Use at your own risk.**
 
 This document applies to every "soul" published in this repository and on
-[superagentskill.com](https://www.superagentskill.com). It is the canonical,
+[superagentskill.com](https://superagentskill.com). It is the canonical,
 machine-readable source of truth — the same text is shipped in the platform UI,
 in `SOUL.md` exports, and in the soul JSON API response under the `disclaimer`
 field.
@@ -80,6 +80,6 @@ faith.
 | Single source of truth                 | `src/lib/souls/disclaimer.ts`                            |
 | GitHub repository                      | This file (`SOULS_DISCLAIMER.md`)                        |
 
-See also: [Terms](https://www.superagentskill.com/terms) ·
-[Privacy](https://www.superagentskill.com/privacy) ·
-[Legal & Disclaimers](https://www.superagentskill.com/legal/disclaimers).
+See also: [Terms](https://superagentskill.com/terms) ·
+[Privacy](https://superagentskill.com/privacy) ·
+[Legal & Disclaimers](https://superagentskill.com/legal/disclaimers).

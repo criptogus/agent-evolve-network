@@ -35,7 +35,7 @@ function ReferralsPage() {
   }, [loading, user, navigate]);
 
   const code = data?.referral_code ?? "";
-  const link = code ? `https://www.superagentskill.com/?ref=${code}` : "";
+  const link = code ? `https://superagentskill.com/?ref=${code}` : "";
 
   const copy = async () => {
     if (!link) return;

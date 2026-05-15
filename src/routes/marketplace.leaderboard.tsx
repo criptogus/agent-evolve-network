@@ -23,7 +23,7 @@ export const Route = createFileRoute("/marketplace/leaderboard")({
         content: "Discover the most popular skills powering AI agents this week.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://www.superagentskill.com/marketplace/leaderboard" }],
+    links: [{ rel: "canonical", href: "https://superagentskill.com/marketplace/leaderboard" }],
   }),
   component: Leaderboard,
 });
