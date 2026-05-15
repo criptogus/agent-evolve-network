@@ -1002,10 +1002,12 @@ export const reviewSkillTool = defineTool({
       format_caveat: formatCaveat ?? bundle.caveat_default,
       pillars,
       top_actions: topActions,
+      // next_steps are instructions to the host LLM agent (not shown to the
+      // skill author), so always English regardless of the file's language.
       next_steps:
         topActions.length === 0
-          ? [bundle.next_grade_a]
-          : [bundle.next_apply, bundle.next_rerun, bundle.next_diagnostic],
+          ? [MESSAGES.en.next_grade_a]
+          : [MESSAGES.en.next_apply, MESSAGES.en.next_rerun, MESSAGES.en.next_diagnostic],
     });
   },
 });
