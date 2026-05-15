@@ -81,8 +81,11 @@ function canonicalRedirect(request: Request): Response | null {
   }
   if (url.host !== `www.${CANONICAL_HOST}`) return null;
   url.host = CANONICAL_HOST;
+  // 308 (not 301): keeps the method and body intact so POSTs sent to the
+  // www alias — e.g. /api/public/oauth/token, package uploads — survive the
+  // canonicalization instead of being replayed as GET.
   return new Response(null, {
-    status: 301,
+    status: 308,
     headers: { Location: url.toString(), "Cache-Control": "public, max-age=86400" },
   });
 }
