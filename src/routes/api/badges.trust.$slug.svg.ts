@@ -16,7 +16,12 @@ export const Route = createFileRoute("/api/badges/trust/$slug/svg")({
         let score: number | null = null;
         try {
           const { data: pkg } = await supabaseAdmin
-            .from("packages").select("id").eq("slug", slug).maybeSingle();
+            .from("packages")
+            .select("id,is_published,review_status")
+            .eq("slug", slug)
+            .eq("is_published", true)
+            .eq("review_status", "approved")
+            .maybeSingle();
           if (pkg?.id) {
             const { data: t } = await supabaseAdmin
               .from("package_trust_scores").select("score").eq("package_id", pkg.id).maybeSingle();

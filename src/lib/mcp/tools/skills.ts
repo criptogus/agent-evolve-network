@@ -98,6 +98,7 @@ export const listPackagesTool = defineTool({
       .from("packages")
       .select("slug,name,type,description,latest_version,author_handle,install_count")
       .eq("is_published", true)
+      .eq("review_status", "approved")
       .order("install_count", { ascending: false })
       .order("name", { ascending: true })
       .limit(limit);
@@ -138,6 +139,7 @@ export const getPackageTool = defineTool({
       .select("id,slug,name,type,description,long_description,latest_version,author_handle")
       .eq("slug", slug)
       .eq("is_published", true)
+      .eq("review_status", "approved")
       .maybeSingle();
     if (error) return json({ error: error.message });
     if (!pkg) return json({ error: "not_found" });
@@ -167,6 +169,7 @@ export const searchRegistryTool = defineTool({
       .from("packages")
       .select("slug,name,type,description,latest_version,install_count")
       .eq("is_published", true)
+      .eq("review_status", "approved")
       .or(`name.ilike.%${safe}%,description.ilike.%${safe}%,long_description.ilike.%${safe}%`)
       .order("install_count", { ascending: false })
       .limit(limit);

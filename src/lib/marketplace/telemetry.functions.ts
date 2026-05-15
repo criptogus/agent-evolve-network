@@ -164,10 +164,12 @@ export const installPackageBySlug = createServerFn({ method: "POST" })
     const { userId } = context;
     const { data: pkg } = await supabaseAdmin
       .from("packages")
-      .select("id, price_credits, latest_version, install_count")
+      .select("id, price_credits, latest_version, install_count, is_published, review_status")
       .eq("slug", data.slug)
       .maybeSingle();
-    if (!pkg) throw new Response("Package not found", { status: 404 });
+    if (!pkg || !pkg.is_published || pkg.review_status !== "approved") {
+      throw new Response("Package not found", { status: 404 });
+    }
     if ((pkg.price_credits ?? 0) > 0) {
       throw new Response("Paid package — purchase required", { status: 402 });
     }
