@@ -256,7 +256,7 @@ export const getTrustTool = defineTool({
 export const uploadPackagesTool = defineTool({
   name: "upload_packages",
   description:
-    "[PUBLISH] Push local primitive(s) UP to the registry. Bulk-upload markdown / prompt / JSON files — each is normalised by the SkillForge author pipeline and inserted as a draft package owned by the token holder. Drafts are unpublished by default; pass `publish:true` to publish immediately (subject to author permissions). Mirrors the /upload UI. Requires a personal MCP token from /account/tokens.",
+    "[PRIVATE UPLOAD] Push local primitive(s) into the author's PRIVATE workspace. Files are normalised by the SkillForge author pipeline and stored as private drafts owned by the token holder — NOT visible in the public marketplace, search, or trust leaderboard. To list a draft for sale on the marketplace, the author must explicitly publish it from the website UI (/account/packages). This MCP tool intentionally has no `publish` parameter so agents cannot expose a user's skill publicly without their consent. Requires OAuth or a personal MCP token from /account/tokens.",
   parameters: z.object({
     auth_token: z.string().min(8).describe("Personal MCP token. Mint one at /account/tokens."),
     files: z
@@ -269,15 +269,21 @@ export const uploadPackagesTool = defineTool({
       )
       .min(1)
       .max(10),
-    publish: z.boolean().optional().default(false),
   }),
-  execute: async ({ auth_token, files, publish }) => {
+  execute: async ({ auth_token, files }) => {
     const userId = await resolveUserFromToken(auth_token);
     if (!userId) return json({ error: "invalid_token", hint: "Mint a token at /account/tokens" });
     try {
-      const results = await processBulkUpload(supabaseAdmin as any, userId, files, { publish });
+      // Always private. Marketplace listing requires an explicit user action in the UI.
+      const results = await processBulkUpload(supabaseAdmin as any, userId, files, { publish: false });
       const ok = results.filter((r) => r.ok).length;
-      return json({ uploaded: ok, failed: results.length - ok, results });
+      return json({
+        uploaded: ok,
+        failed: results.length - ok,
+        visibility: "private_draft",
+        next_step: "Open /account/packages on superagentskill.com to list a draft on the marketplace.",
+        results,
+      });
     } catch (e: any) {
       return json({ error: e?.message ?? "upload_failed" });
     }
