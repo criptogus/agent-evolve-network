@@ -109,9 +109,17 @@ function unauthorized(reason: string) {
   });
 }
 
-const WRITE_TOOLS = new Set(["upload_packages", "report_execution", "request_primitive"]);
+// Tools that mutate user-owned state and require an OAuth bearer.
+// `report_execution` is intentionally NOT here: it's a best-effort telemetry
+// ping the host agent fires after every run. Treating it as a write would
+// burn the trial 5/day write quota in minutes. The underlying
+// `report_skill_execution` RPC already rate-limits by `agent_fp` (60/min),
+// so it's safe to count it as a cheap read.
+const WRITE_TOOLS = new Set(["upload_packages", "request_primitive"]);
 // Tools that are SO cheap / discovery-oriented they don't count against quota.
-const FREE_TOOLS = new Set(["overview", "get_methodology"]);
+// `report_execution` is included so post-run telemetry is truly best-effort
+// and never blocks a user's flow on quota.
+const FREE_TOOLS = new Set(["overview", "get_methodology", "report_execution"]);
 
 /** Stable, hashed identity for quota bucketing. */
 function quotaIdentity(userId: string | null, request: Request): string {
