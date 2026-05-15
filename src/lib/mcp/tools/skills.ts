@@ -920,7 +920,7 @@ export const getMethodologyTool = defineTool({
       name: "Super Agent Skill evaluation",
       proprietary: true,
       note:
-        "Scoring is performed server-side. Signal detection is bilingual (EN + PT-BR); other languages may underscore — write in EN or PT-BR for best signal. The engine is calibrated for kebab-case Markdown skill files following the Anthropic SKILL.md conventions; long-form governance prose may underscore even when the underlying content is strong, because some signals look for structured cues (worked input/output blocks, named sections, acceptance criteria).",
+        "Scoring is performed server-side. Signal detection is multilingual (EN, PT-BR, ES, FR, DE, IT) and feedback (top_actions, diagnostics, format_caveat, next_steps) is returned in the detected language. Other languages may underscore by mismatch — write in one of the supported languages for best signal. The engine is calibrated for kebab-case Markdown skill files following the Anthropic SKILL.md conventions; long-form governance prose may underscore even when the underlying content is strong, because some signals look for structured cues (worked input/output blocks, named sections, acceptance criteria).",
       dimensions: (Object.keys(PILLAR_TITLE) as PillarId[]).map((id) => ({
         id,
         title: PILLAR_TITLE[id],
