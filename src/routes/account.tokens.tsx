@@ -242,7 +242,7 @@ function TokensPage() {
             label="2. curl"
             snippet={`export SAS_TOKEN="${fresh ?? PLACEHOLDER}"
 
-curl -X POST https://www.superagentskill.com/api/packages/upload \\
+curl -X POST https://superagentskill.com/api/packages/upload \\
   -H "Authorization: Bearer $SAS_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -259,7 +259,7 @@ curl -X POST https://www.superagentskill.com/api/packages/upload \\
 
           <SnippetCard
             label="3. JavaScript / fetch"
-            snippet={`const res = await fetch("https://www.superagentskill.com/api/packages/upload", {
+            snippet={`const res = await fetch("https://superagentskill.com/api/packages/upload", {
   method: "POST",
   headers: {
     Authorization: \`Bearer \${process.env.SAS_TOKEN}\`,

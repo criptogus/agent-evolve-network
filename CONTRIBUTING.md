@@ -145,7 +145,7 @@ All participation — issues, PRs, Discord, comments — is governed by the [Cod
 
 ## 🌟 Recognition
 
-- Every merged contributor is listed in the [`AUTHORS`](AUTHORS) file and on the [public marketplace](https://www.superagentskill.com/marketplace/rankings).
+- Every merged contributor is listed in the [`AUTHORS`](AUTHORS) file and on the [public marketplace](https://superagentskill.com/marketplace/rankings).
 - Top contributors get the **Skill Architect** role on Discord, early access to new features, and a small monthly grant from the platform revenue pool.
 - **Found a robustness issue?** It's published as a public finding (e.g. `SAS-2026-0042`) with your handle credited — CVE-style.
 

@@ -32,5 +32,5 @@ Each package is a single YAML file. Filename = `<slug>.yaml`.
 curl -O https://raw.githubusercontent.com/criptogus/agent-evolve-network/main/content/skills/code-reviewer.yaml
 
 # or stream the live, evolving version through MCP
-# https://www.superagentskill.com/api/mcp
+# https://superagentskill.com/api/mcp
 ```
