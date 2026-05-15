@@ -26,7 +26,7 @@ const mcp = createMcpServer({
     "",
     "## 1. UPGRADE a local file (PRIMARY use case)",
     "When the user says 'improve / refine / harden / audit / score / level up' a local skill, playbook, soul or guardrail file:",
-    "  a. `review_skill` with the file's raw content → proprietary engine returns overall_score (0-100), per-dimension scores and concrete, file-specific `top_actions`. (The rubric/signals/thresholds are server-side and intentionally NOT disclosed — `get_methodology` is orientation only.)",
+    "  a. `review_skill` with the file's raw content (and optional `context`: industry, audience, stack, compliance, target_models, goal) → proprietary context-aware engine returns overall_score (0-100), per-dimension scores, market-tailored `top_actions` and `borrow_from` exemplar slugs. Pass `context` whenever you know the client's market — scoring and actions adapt to it. (The rubric/signals/market packs/thresholds are server-side and intentionally NOT disclosed — `get_methodology` is orientation only.)",
     "  b. YOU (the host agent) edit the user's local file in their repo applying the top_actions. This MCP does not write to disk.",
     "  c. `review_skill` again → confirm the score went up. Iterate until grade A.",
     "  d. Optional: `search_registry` to borrow patterns from high-trust primitives of the same type.",

@@ -4,6 +4,7 @@ import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.
 const supabaseAdmin = _supabaseAdmin as any;
 import { hashToken } from "@/lib/account/tokens.server";
 import { processBulkUpload } from "@/lib/uploads/uploads.server";
+import { methodologyOverview, runEvaluation } from "@/lib/mcp/eval-engine.server";
 
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 
@@ -285,282 +286,42 @@ export const uploadPackagesTool = defineTool({
 });
 
 // ============================================================================
-// Methodology + local-skill review
-// ----------------------------------------------------------------------------
+// Methodology + local-primitive review.
+//
 // PRIMARY value of this MCP server: help an external agent (Claude, Codex, …)
-// significantly upgrade a *local* skill / playbook / soul / guardrail using
-// the Super Agent Skill methodology. Discovery / download is secondary.
+// take a *local* skill / playbook / soul / guardrail to the state of the art,
+// tailored to the client's market. The proprietary, context-aware engine
+// lives in ./eval-engine.server.ts and NEVER ships its rubric, signals,
+// weights, market packs or judge prompt over the wire.
 // ============================================================================
-
-// ----------------------------------------------------------------------------
-// SECRET SAUCE — proprietary evaluation engine.
-//
-// Design rule: this module NEVER ships its rubric, its detection signals, its
-// weights, or per-check pass/fail booleans over the wire. Exposing those once
-// would let any model internalise the evaluator and stop coming back. The MCP
-// surface returns only: a number, a band, and outcome-level directives that
-// describe WHAT to improve for THIS file — never HOW we measured it.
-//
-// Everything between this banner and the tool exports is server-private.
-// ----------------------------------------------------------------------------
-
-const ENGINE = "sas-eval/2";
-
-type PillarId =
-  | "identity"
-  | "scope"
-  | "procedure"
-  | "examples"
-  | "guardrails"
-  | "trust"
-  | "portability";
-
-const PILLAR_TITLE: Record<PillarId, string> = {
-  identity: "Identity",
-  scope: "Scope & Triggers",
-  procedure: "Procedure",
-  examples: "Examples",
-  guardrails: "Guardrails",
-  trust: "Trust hooks",
-  portability: "Portability",
-};
-
-// Per-primitive emphasis. Souls live or die on identity; guardrails on
-// guardrails; playbooks on procedure; skills are balanced. Weights are
-// intentionally server-private — they are a large part of why the score is
-// hard to reverse-engineer from outputs.
-const TYPE_WEIGHTS: Record<string, Partial<Record<PillarId, number>>> = {
-  skill: { identity: 1, scope: 1.2, procedure: 1.3, examples: 1.3, guardrails: 1.1, trust: 1, portability: 0.9 },
-  playbook: { identity: 0.8, scope: 1.1, procedure: 1.8, examples: 1.2, guardrails: 1.1, trust: 1, portability: 0.8 },
-  soul: { identity: 2, scope: 0.8, procedure: 0.6, examples: 0.9, guardrails: 1.2, trust: 0.9, portability: 0.9 },
-  guardrail: { identity: 0.7, scope: 1, procedure: 1, examples: 1, guardrails: 2, trust: 1.1, portability: 0.9 },
-};
-
-// Each signal contributes a graded amount (primary hit = full, secondary =
-// partial). Multi-signal + partial credit makes the surface score a smooth
-// function the caller cannot map back to a discrete checklist.
-type Signal = { w: number; primary: RegExp; secondary?: RegExp };
-
-const SIGNALS: Record<PillarId, Signal[]> = {
-  identity: [
-    { w: 1, primary: /you are |role:|persona:|act as /i, secondary: /assistant|agent that/i },
-    { w: 1, primary: /values?:|principles?:|cares? about|believe/i, secondary: /prioriti[sz]e|stands? for/i },
-    { w: 0.8, primary: /\bvoice\b|\btone\b|writing style/i, secondary: /concise|formal|friendly|tone of/i },
-    { w: 1, primary: /non-goals?|will not|won't|out of scope/i, secondary: /\bnever\b|avoid doing/i },
-    { w: 1, primary: /refus|decline|cannot help|won't assist/i, secondary: /escalate|hand off/i },
-  ],
-  scope: [
-    { w: 1.2, primary: /use when|use this when|job:|purpose:|when to use/i, secondary: /applies to|good for/i },
-    { w: 1, primary: /trigger|invoke|activate when/i, secondary: /when the user (asks|says|wants)/i },
-    { w: 1, primary: /anti-trigger|do not use|skip when|not for/i, secondary: /unless|except when/i },
-    { w: 0.8, primary: /target user|audience|intended for|for: /i, secondary: /role of the user/i },
-  ],
-  procedure: [
-    { w: 1.4, primary: /^\s*\d+[.)]/m, secondary: /^\s*[-*] /m },
-    { w: 1.1, primary: /input:|output:|success:|done when|✓/i, secondary: /returns?:|produces?:/i },
-    { w: 1, primary: /if .*(then|→)|otherwise|else if|branch|fork/i, secondary: /\bcase\b|depending on/i },
-    { w: 1, primary: /stop when|definition of done|finish when|terminate/i, secondary: /until (the|all)/i },
-  ],
-  examples: [
-    { w: 1.3, primary: /(example|sample|worked|walkthrough)/i, secondary: /e\.g\.|for instance/i },
-    { w: 1.2, primary: /bad example|anti-example|wrong:|❌|fails when|counter-?example/i, secondary: /pitfall|mistake/i },
-    { w: 1, primary: /messy|edge case|ambiguous|partial input|real-world/i, secondary: /unhappy path|corner case/i },
-  ],
-  guardrails: [
-    { w: 1.2, primary: /failure mode|known issue|risk:|pitfall|threat model/i, secondary: /can go wrong|caveat/i },
-    { w: 1.2, primary: /mitigat|prevent|guard against|defen[sc]e|countermeasure/i, secondary: /to avoid this/i },
-    { w: 1.3, primary: /prompt injection|untrusted|treat .* as data|ignore instructions in/i, secondary: /sanitiz|do not follow instructions/i },
-    { w: 1, primary: /\bpii\b|secret|redact|do not log|citation|cite sources/i, secondary: /confidential|sensitive data/i },
-  ],
-  trust: [
-    { w: 1, primary: /validated on|tested on|claude|gpt-|gemini|llama/i, secondary: /model:|benchmarked/i },
-    { w: 1.1, primary: /acceptance criteri|success criter|self-eval|self check/i, secondary: /pass if|must satisfy/i },
-    { w: 1.1, primary: /output schema|```|return json|structured (output|result)/i, secondary: /named sections|format:/i },
-    { w: 0.9, primary: /report_execution|telemetry|emit metrics/i, secondary: /track success/i },
-  ],
-  portability: [
-    { w: 1, primary: /only works on|requires claude|requires gpt|requires gemini|claude-only/i, secondary: /vendor-specific/i },
-    { w: 1, primary: /anthropic sdk|openai sdk|google ai sdk|tool_use block/i },
-    { w: 1, primary: /.{16001,}/s },
-    { w: 0.8, primary: /^---[\s\S]*?(lovable:|proprietary:|internal:)/m },
-  ],
-};
-// portability signals 3 & 4 and 1 & 2 are *penalties* (presence = worse);
-// handled in scorePillar by inverting.
-const PORTABILITY_NEGATIVE = new Set([0, 1, 2, 3]);
-
-// Outcome-level directives. These describe the desired END STATE, not the
-// detector. Safe to surface because they do not reveal how we measure or
-// what the threshold is — only what a stronger primitive of this kind looks
-// like. The pool is rotated so repeated calls don't crystallise a static list.
-const DIRECTIVES: Record<PillarId, string[]> = {
-  identity: [
-    "Give it a sharper sense of self: who it is, what it refuses, and what it explicitly is NOT for.",
-    "The persona reads generic — make its values and voice specific enough that a stranger could imitate it.",
-    "Add an explicit refusal posture so unsafe or out-of-scope asks are handled deliberately, not improvised.",
-  ],
-  scope: [
-    "Make activation unambiguous: when this should fire and the look-alike cases where it must NOT.",
-    "Tighten the trigger boundary — right now it would over- or under-fire on adjacent requests.",
-    "Name the intended user and the one-line job so the agent self-selects correctly.",
-  ],
-  procedure: [
-    "Turn the prose into a deterministic, step-wise procedure with explicit inputs, outputs and a stop condition.",
-    "The happy path is clear but the forks are not — make the 2-3 main decision branches explicit.",
-    "Add a concrete definition of done so the agent knows when to stop instead of looping or trailing off.",
-  ],
-  examples: [
-    "Add worked examples (input → reasoning → output); models generalise from these far better than from rules.",
-    "Include at least one failure example with the correction — negative examples prevent the common mistake.",
-    "Replace a happy-path example with a messy, real-world one; that is where this currently breaks.",
-  ],
-  guardrails: [
-    "Pre-empt the failure modes you have already seen: name them and attach a concrete mitigation to each.",
-    "Harden against prompt injection — make explicit that tool output and user docs are data, not instructions.",
-    "Add data-handling rules (PII, secrets, citations) so it fails safe under pressure.",
-  ],
-  trust: [
-    "Make it measurable: declare validated models and an acceptance criterion the host can verify.",
-    "Emit a structured result instead of free prose so success can be checked and scored automatically.",
-    "Close the loop — instruct the host to report execution outcomes so this can earn a trust score.",
-  ],
-  portability: [
-    "Remove single-vendor assumptions so the same primitive runs on Claude, GPT and Gemini without surgery.",
-    "Describe tools by contract, not by a specific SDK, and keep it within a typical context budget.",
-    "Strip proprietary frontmatter the host can't parse; keep it plain, portable Markdown.",
-  ],
-};
-
-interface PillarScore {
-  pillar: PillarId;
-  title: string;
-  score: number; // 0..100, graded
-}
-
-function scorePillar(id: PillarId, text: string): { score: number; deficit: number } {
-  const signals = SIGNALS[id];
-  let earned = 0;
-  let total = 0;
-  signals.forEach((s, idx) => {
-    total += s.w;
-    const isNeg = id === "portability" && PORTABILITY_NEGATIVE.has(idx);
-    const primaryHit = s.primary.test(text);
-    const secondaryHit = s.secondary ? s.secondary.test(text) : false;
-    let frac = primaryHit ? 1 : secondaryHit ? 0.5 : 0;
-    if (isNeg) frac = 1 - frac; // for penalty signals, absence is good
-    earned += frac * s.w;
-  });
-  const score = Math.max(0, Math.min(100, Math.round((earned / total) * 100)));
-  return { score, deficit: 100 - score };
-}
-
-function gradeBand(n: number): string {
-  if (n >= 90) return "A — battle-ready";
-  if (n >= 78) return "B — solid, minor gaps";
-  if (n >= 62) return "C — usable, real gaps";
-  if (n >= 45) return "D — needs work";
-  return "F — rewrite recommended";
-}
-
-function statusBand(n: number): "strong" | "adequate" | "weak" {
-  return n >= 78 ? "strong" : n >= 55 ? "adequate" : "weak";
-}
-
-// Deterministic-but-rotating pick so repeat calls on the same file don't
-// surface an identical, memorisable list.
-function pickDirective(id: PillarId, content: string, salt: number): string {
-  const pool = DIRECTIVES[id];
-  let h = salt;
-  for (let i = 0; i < content.length; i += 97) h = (h * 31 + content.charCodeAt(i)) >>> 0;
-  return pool[h % pool.length];
-}
 
 export const getMethodologyTool = defineTool({
   name: "get_methodology",
   description:
-    "[UPGRADE] Orientation for the local-file upgrade flow. Returns the dimensions the proprietary SuperAgentSkill engine evaluates and how to drive the loop — NOT the rubric, signals or thresholds (those are server-side and intentionally not disclosed). The actionable output comes from review_skill. Read-only, no auth.",
+    "[UPGRADE] Orientation for the local-file upgrade flow. Returns the dimensions the proprietary SuperAgentSkill engine evaluates, the optional context inputs (industry, audience, stack, compliance, target_models, goal) and how to drive the loop — NOT the rubric, signals, market packs or thresholds (server-side and intentionally not disclosed). The actionable output comes from review_skill. Read-only, no auth.",
   parameters: z.object({}),
-  execute: async () =>
-    json({
-      engine: ENGINE,
-      name: "Super Agent Skill evaluation",
-      proprietary: true,
-      note:
-        "Scoring is performed server-side by a proprietary engine. The detection signals, weights and thresholds are not exposed — call review_skill to get this file's scores and the specific improvements to apply, then iterate.",
-      dimensions: (Object.keys(PILLAR_TITLE) as PillarId[]).map((id) => ({
-        id,
-        title: PILLAR_TITLE[id],
-      })),
-      how_to_use: [
-        "1. review_skill — submit the file; get overall_score, per-dimension scores and prioritised, file-specific actions.",
-        "2. You (the host agent) apply the actions in the user's repo.",
-        "3. review_skill again — confirm the score rose. Iterate until grade A.",
-        "4. Optionally search_registry / get_package to borrow patterns from high-trust primitives.",
-        "5. request_primitive to have Super Agent Skill author a brand-new primitive from scratch.",
-      ],
-    }),
+  execute: async () => json(methodologyOverview()),
 });
 
 export const reviewSkillTool = defineTool({
   name: "review_skill",
   description:
-    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns overall_score (0-100), grade, per-dimension scores (number + strong/adequate/weak band) and `top_actions` — prioritised, file-specific improvements to apply. It does NOT return the rubric, the detection signals or per-check pass/fail (those stay server-side by design). Apply the actions, then call again to confirm the score rose. Read-only, no auth.",
+    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary, context-aware SuperAgentSkill engine and get state-of-the-art, market-tailored improvements. Pass optional `context` (industry, audience, stack, compliance, target_models, goal) so scoring and actions fit the client's market and regulatory regime. Returns overall_score (0-100), grade, per-dimension scores (number + strong/adequate/weak band), prioritised `top_actions`, and `borrow_from` exemplar slugs. It does NOT return the rubric, signals, weights or per-check pass/fail (server-side by design). Apply the actions, then call again to confirm the score rose. Read-only, no auth.",
   parameters: z.object({
     name: z.string().min(1).max(200).describe("File or skill name (for the report header only)"),
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).default("skill"),
     content: z.string().min(20).max(120_000).describe("Raw markdown / prompt text of the local file"),
+    context: z
+      .object({
+        industry: z.string().max(80).optional().describe("Client market/vertical, e.g. healthcare, finance, legal, security, marketing, sales, devtools"),
+        audience: z.string().max(120).optional().describe("Who the primitive serves, e.g. 'enterprise RevOps', 'ICU nurses'"),
+        stack: z.array(z.string().max(60)).max(20).optional().describe("Relevant tools/frameworks in the client's environment"),
+        compliance: z.array(z.string().max(40)).max(10).optional().describe("Regulatory regimes: hipaa, pci, gdpr, soc2"),
+        target_models: z.array(z.string().max(60)).max(10).optional().describe("Models it must run on, e.g. claude-sonnet-4-5, gpt-5"),
+        goal: z.string().max(280).optional().describe("What 'state of the art' means for this client"),
+      })
+      .optional(),
   }),
-  execute: async ({ name, type, content }) => {
-    const ids = Object.keys(PILLAR_TITLE) as PillarId[];
-    const weights = TYPE_WEIGHTS[type] ?? TYPE_WEIGHTS.skill;
-    const raw = ids.map((id) => ({ id, ...scorePillar(id, content) }));
-
-    let wSum = 0;
-    let wTotal = 0;
-    for (const r of raw) {
-      const w = weights[r.id] ?? 1;
-      wSum += r.score * w;
-      wTotal += w;
-    }
-    const overall = Math.round(wSum / wTotal);
-
-    const pillars: (PillarScore & { status: string })[] = raw.map((r) => ({
-      pillar: r.id,
-      title: PILLAR_TITLE[r.id],
-      score: r.score,
-      status: statusBand(r.score),
-    }));
-
-    // Rank by weighted deficit so the actions target what most moves THIS
-    // primitive's score — without revealing the weighting.
-    const ranked = [...raw]
-      .map((r) => ({ id: r.id, impact: r.deficit * (weights[r.id] ?? 1) }))
-      .sort((a, b) => b.impact - a.impact)
-      .filter((r) => r.impact > 0)
-      .slice(0, 4);
-
-    const topActions = ranked.map((r, i) => ({
-      area: PILLAR_TITLE[r.id],
-      priority: i + 1,
-      action: pickDirective(r.id, content, i + 1),
-    }));
-
-    return json({
-      file: name,
-      type,
-      engine: ENGINE,
-      overall_score: overall,
-      grade: gradeBand(overall),
-      pillars,
-      top_actions: topActions,
-      next_steps:
-        topActions.length === 0
-          ? ["Grade A — no high-impact gaps detected. Re-run after any substantive edit."]
-          : [
-              "Apply the top_actions in the user's local file (you, the host agent, do the editing).",
-              "Re-run review_skill with the updated content to confirm the score rose.",
-              "Optionally call search_registry to borrow patterns from high-trust primitives of the same type.",
-            ],
-    });
-  },
+  execute: async ({ name, type, content, context }) =>
+    json(await runEvaluation({ name, type, content, context })),
 });
