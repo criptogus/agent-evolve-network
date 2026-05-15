@@ -30,9 +30,20 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const goNext = (fallback = "/account/billing") => {
+    const target = next || fallback;
+    // If `next` includes a query string (e.g. /oauth/authorize?...), TanStack
+    // Router's typed navigate({ to }) treats it as a literal pathname and 404s.
+    // Use a real browser navigation so the destination route's validateSearch runs.
+    if (target.includes("?") || target.includes("#")) {
+      window.location.assign(target);
+    } else {
+      navigate({ to: target, replace: true });
+    }
+  };
+
   useEffect(() => {
     captureRefFromUrl();
-    const target = next || "/account/billing";
     const tryClaim = async () => {
       const code = getStoredRef();
       if (!code) return;
@@ -42,10 +53,10 @@ function LoginPage() {
       } catch { /* non-fatal */ }
     };
     supabase.auth.getSession().then(async ({ data }) => {
-      if (data.session) { await tryClaim(); navigate({ to: target, replace: true }); }
+      if (data.session) { await tryClaim(); goNext(); }
     });
     const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
-      if (s) { await tryClaim(); navigate({ to: target, replace: true }); }
+      if (s) { await tryClaim(); goNext(); }
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate, next]);
