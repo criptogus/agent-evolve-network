@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { Nav } from "@/components/site/Nav";
 import { useAuth } from "@/hooks/use-auth";
@@ -41,6 +41,7 @@ function AuthorizePage() {
   >(null);
   const [error, setError] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
+  const autoApprovedRef = useRef(false);
 
   useEffect(() => {
     fetchClient({ data: { client_id: params.client_id } })
@@ -49,6 +50,25 @@ function AuthorizePage() {
   }, [params.client_id, fetchClient]);
 
   const redirectOk = client?.redirect_uris.includes(params.redirect_uri);
+
+  // Loopback redirects (http://localhost | 127.0.0.1 | [::1]) belong to a
+  // local app the user already controls and launched — Claude Code, the
+  // super-agent CLI, IDE MCP clients. Their callback server is ephemeral and
+  // times out fast, so forcing a second manual "Authorize" click breaks the
+  // handoff and the browser is left stranded on the loopback URL. For these,
+  // auto-approve once the user is signed in: genuine one-click, no timeout.
+  // Remote https clients still get the explicit consent screen.
+  const isLoopback = /^http:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?(\/|$)/i.test(
+    params.redirect_uri,
+  );
+
+  useEffect(() => {
+    if (autoApprovedRef.current) return;
+    if (loading || !user || !client || !redirectOk || !isLoopback) return;
+    autoApprovedRef.current = true;
+    void approve();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, user, client, redirectOk, isLoopback]);
 
   if (!loading && !user) {
     const next = `/oauth/authorize?${new URLSearchParams(params as unknown as Record<string, string>).toString()}`;
@@ -84,6 +104,27 @@ function AuthorizePage() {
 
   function deny() {
     window.location.href = buildDeniedUrl();
+  }
+
+  // One-click loopback path: show progress, not a consent gate.
+  if (isLoopback && redirectOk && !error) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Nav />
+        <main className="mx-auto flex min-h-[80vh] max-w-md items-center px-6 py-16">
+          <div className="w-full rounded-2xl border border-border bg-card p-8 text-center shadow-elevated">
+            <h1 className="text-xl font-semibold tracking-tight">
+              Connecting {client?.client_name ?? "your app"}…
+            </h1>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Authorizing as <span className="font-medium text-foreground">{user?.email}</span>.
+              You'll be returned to your app automatically — you can close this tab if it
+              doesn't redirect in a few seconds.
+            </p>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (
