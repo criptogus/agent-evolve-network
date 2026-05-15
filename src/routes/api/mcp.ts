@@ -14,7 +14,7 @@ import {
 } from "@/lib/mcp/tools/skills";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
-import { ORIGIN, sha256 } from "@/lib/oauth/mcp-oauth.server";
+import { ORIGIN, sha256, CORS_HEADERS } from "@/lib/oauth/mcp-oauth.server";
 import { hashToken } from "@/lib/account/tokens.server";
 
 const mcp = createMcpServer({
@@ -26,11 +26,10 @@ const mcp = createMcpServer({
     "",
     "## 1. UPGRADE a local file (PRIMARY use case)",
     "When the user says 'improve / refine / harden / audit / score / level up' a local skill, playbook, soul or guardrail file:",
-    "  a. `get_methodology` → load the 7-pillar rubric (Identity, Scope, Procedure, Examples, Guardrails, Trust, Portability).",
-    "  b. `review_skill` with the file's raw content → 0-100 score per pillar + concrete `top_actions` to apply.",
-    "  c. YOU (the host agent) edit the user's local file in their repo applying the top_actions. This MCP does not write to disk.",
-    "  d. `review_skill` again → confirm the score went up. Iterate until grade A.",
-    "  e. Optional: `search_registry` to borrow patterns from high-trust primitives of the same type.",
+    "  a. `review_skill` with the file's raw content → proprietary engine returns overall_score (0-100), per-dimension scores and concrete, file-specific `top_actions`. (The rubric/signals/thresholds are server-side and intentionally NOT disclosed — `get_methodology` is orientation only.)",
+    "  b. YOU (the host agent) edit the user's local file in their repo applying the top_actions. This MCP does not write to disk.",
+    "  c. `review_skill` again → confirm the score went up. Iterate until grade A.",
+    "  d. Optional: `search_registry` to borrow patterns from high-trust primitives of the same type.",
     "",
     "## 2. DISCOVER primitives in the public registry",
     "When the user wants to find or install something pre-built (590+ packages across marketing, sales, growth, code, security, healthcare, finance, ops, …):",
@@ -66,7 +65,14 @@ const mcp = createMcpServer({
 
 // Canonical RFC 9728 location at the origin root. Clients (Claude, Codex, …)
 // read this URL from the WWW-Authenticate header to start the OAuth dance.
-const RESOURCE_METADATA_URL = `${ORIGIN}/.well-known/oauth-protected-resource`;
+const RESOURCE_METADATA_URL = `${ORIGIN}/.well-known/oauth-protected-resource/api/mcp`;
+
+/** Attach CORS headers to any Response without dropping its existing headers. */
+function withCors(res: Response): Response {
+  const headers = new Headers(res.headers);
+  for (const [k, v] of Object.entries(CORS_HEADERS)) headers.set(k, v);
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
 
 /** Try OAuth tokens first, then fall back to legacy MCP personal tokens. */
 async function verifyBearer(token: string): Promise<{ user_id: string; source: "oauth" | "pat" } | null> {
@@ -97,7 +103,8 @@ function unauthorized(reason: string) {
     status: 401,
     headers: {
       "Content-Type": "application/json",
-      "WWW-Authenticate": `Bearer realm="MCP", resource_metadata="${RESOURCE_METADATA_URL}", error="invalid_token"`,
+      "WWW-Authenticate": `Bearer realm="MCP", resource_metadata="${RESOURCE_METADATA_URL}", error="invalid_token", error_description="${reason}"`,
+      ...CORS_HEADERS,
     },
   });
 }
@@ -136,6 +143,7 @@ function rateLimited(quota: any, id: string | number | null) {
       headers: {
         "Content-Type": "application/json",
         "Retry-After": quota?.window === "hour" ? "3600" : "86400",
+        ...CORS_HEADERS,
       },
     },
   );
@@ -198,16 +206,19 @@ async function handle(request: Request): Promise<Response> {
   }
 
   if (userId && authSource) {
-    return mcp.handleRequest(request, {
-      auth: { token, claims: { user_id: userId, source: authSource } },
-    });
+    return withCors(
+      await mcp.handleRequest(request, {
+        auth: { token, claims: { user_id: userId, source: authSource } },
+      }),
+    );
   }
-  return mcp.handleRequest(request);
+  return withCors(await mcp.handleRequest(request));
 }
 
 export const Route = createFileRoute("/api/mcp")({
   server: {
     handlers: {
+      OPTIONS: async () => new Response(null, { status: 204, headers: CORS_HEADERS }),
       GET: async ({ request }) => handle(request),
       POST: async ({ request }) => handle(request),
       DELETE: async ({ request }) => handle(request),

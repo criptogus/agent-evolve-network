@@ -274,6 +274,30 @@ Headers:   Accept: application/json, text/event-stream`,
 
 const QUICK_PROMPTS: Prompt[] = [
   {
+    title: "One prompt → fully connected (recommended)",
+    code: `Connect me to the "Super Agent Skill" MCP server with full access (read + write tools).
+
+Run this in my shell and follow the browser login it opens:
+
+  npx -y super-agent connect --client claude-code
+
+Notes:
+- It does OAuth (loopback PKCE), stores the token in ~/.superagentskill, and writes my client's MCP config automatically.
+- Swap --client for: claude | cursor | codex | vscode | windsurf.
+- After it finishes, restart the client, then call the MCP tool "overview" and show me the intent→tool map.
+If anything fails, paste the exact command output and the config file it wrote.`,
+  },
+  {
+    title: "Enable write tools (OAuth)",
+    code: `I want to use the auth-gated write tools (upload_packages, request_primitive, report_execution) of the Super Agent Skill MCP.
+
+1. Run: npx -y super-agent login   (complete the browser OAuth login)
+2. Run: npx -y super-agent status  (confirm the token is valid)
+3. If my client supports header auth, ensure the MCP config sends Authorization: Bearer <the saved access_token from ~/.superagentskill/credentials.json>.
+   Otherwise wire it through the local bridge: command "npx", args ["-y","super-agent","mcp"].
+4. Restart the MCP connection and call "overview" to verify write tools are listed.`,
+  },
+  {
     title: "Codex CLI / OpenCode",
     code: `Install the "Super Agent Skill" MCP server using this Streamable HTTP endpoint:
   ${ENDPOINT}
@@ -510,6 +534,41 @@ function ConnectPage() {
               <span>4 write tools · token</span>
             </div>
           </div>
+        </section>
+
+        {/* ============ ONE-COMMAND (CLI) PATH ============ */}
+        <section className="mt-10 rounded-2xl border border-primary/30 bg-primary/5 p-6">
+          <div className="flex items-center gap-2">
+            <Terminal className="h-4 w-4 text-primary" />
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+              Plug and play · one command
+            </p>
+          </div>
+          <h2 className="mt-2 text-xl font-semibold tracking-tight">
+            OAuth login + client auto-config, no JSON editing
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            The CLI runs the full OAuth flow in your browser (loopback PKCE),
+            stores the token locally, and writes the MCP config for your client
+            — including the auth-gated write tools. It also ships a local stdio
+            bridge that injects and refreshes the token automatically.
+          </p>
+          <div className="mt-4">
+            <CodeBlock
+              filename="terminal"
+              lang="bash"
+              code={`npx super-agent connect --client claude-code
+# clients: claude-code · claude · cursor · codex · vscode · windsurf
+
+npx super-agent status     # token state
+npx super-agent logout     # revoke + forget`}
+            />
+          </div>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            Stdio-only client? Point it at{" "}
+            <code className="font-mono">npx -y super-agent mcp</code> — the
+            bridge handles auth for you.
+          </p>
         </section>
 
         {/* ============ JUMP NAV ============ */}

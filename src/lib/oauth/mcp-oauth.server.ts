@@ -50,10 +50,59 @@ export function verifyPkceS256(verifier: string, challenge: string): boolean {
 
 export const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, Mcp-Session-Id, Mcp-Protocol-Version",
+  // Browser MCP clients (Claude.ai web connectors) can only read the OAuth
+  // challenge if WWW-Authenticate is explicitly exposed.
+  "Access-Control-Expose-Headers": "WWW-Authenticate, Mcp-Session-Id",
   "Access-Control-Max-Age": "86400",
 };
+
+/**
+ * RFC 8414 authorization-server metadata. Served at both the bare
+ * `/.well-known/oauth-authorization-server` and the path-aware
+ * `/.well-known/oauth-authorization-server/api/mcp` location so every
+ * client generation (Claude, Codex, Cursor, VS Code, …) finds it.
+ */
+export function authorizationServerMetadata() {
+  return {
+    issuer: ORIGIN,
+    authorization_endpoint: `${ORIGIN}/oauth/authorize`,
+    token_endpoint: `${ORIGIN}/api/public/oauth/token`,
+    registration_endpoint: `${ORIGIN}/api/public/oauth/register`,
+    revocation_endpoint: `${ORIGIN}/api/public/oauth/revoke`,
+    response_types_supported: ["code"],
+    grant_types_supported: ["authorization_code", "refresh_token"],
+    code_challenge_methods_supported: ["S256"],
+    token_endpoint_auth_methods_supported: ["none"],
+    revocation_endpoint_auth_methods_supported: ["none"],
+    scopes_supported: ["mcp:read", "mcp:write"],
+    service_documentation: `${ORIGIN}/docs/mcp`,
+  };
+}
+
+/** RFC 9728 protected-resource metadata. */
+export function protectedResourceMetadata() {
+  return {
+    resource: MCP_RESOURCE,
+    authorization_servers: [ORIGIN],
+    scopes_supported: ["mcp:read", "mcp:write"],
+    bearer_methods_supported: ["header"],
+    resource_documentation: `${ORIGIN}/docs/mcp`,
+  };
+}
+
+/** Cached, CORS-enabled JSON response for the discovery documents. */
+export function discoveryResponse(body: unknown) {
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=300",
+      ...CORS_HEADERS,
+    },
+  });
+}
 
 export function jsonResponse(body: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(body), {
