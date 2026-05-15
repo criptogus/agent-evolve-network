@@ -44,7 +44,9 @@ export const getSkillTrust = createServerFn({ method: "GET" })
       .select("id,slug,name,type,description,latest_version,author_handle,is_published,review_status")
       .eq("slug", data.slug)
       .maybeSingle();
-    if (!pkg || !pkg.is_published) return { ok: false as const, error: "not_found" };
+    if (!pkg || !pkg.is_published || pkg.review_status !== "approved") {
+      return { ok: false as const, error: "not_found" };
+    }
 
     const { data: trust } = await supabaseAdmin.rpc("get_skill_trust", { _slug: data.slug } as any);
     const { data: findings } = await supabaseAdmin

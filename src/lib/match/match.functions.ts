@@ -83,6 +83,7 @@ export const matchAgentToPackages = createServerFn({ method: "POST" })
       .from("packages")
       .select("slug,name,type,description")
       .eq("is_published", true)
+      .eq("review_status", "approved")
       .order("install_count", { ascending: false })
       .limit(800);
     if (error) throw new Response(`Catalog read failed: ${error.message}`, { status: 500 });
