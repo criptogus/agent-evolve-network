@@ -322,7 +322,7 @@ export const uploadPackagesTool = defineTool({
 // Everything between this banner and the tool exports is server-private.
 // ----------------------------------------------------------------------------
 
-const ENGINE = "sas-eval/2";
+const ENGINE = "sas-eval/3";
 
 type PillarId =
   | "identity"
@@ -343,10 +343,6 @@ const PILLAR_TITLE: Record<PillarId, string> = {
   portability: "Portability",
 };
 
-// Per-primitive emphasis. Souls live or die on identity; guardrails on
-// guardrails; playbooks on procedure; skills are balanced. Weights are
-// intentionally server-private — they are a large part of why the score is
-// hard to reverse-engineer from outputs.
 const TYPE_WEIGHTS: Record<string, Partial<Record<PillarId, number>>> = {
   skill: { identity: 1, scope: 1.2, procedure: 1.3, examples: 1.3, guardrails: 1.1, trust: 1, portability: 0.9 },
   playbook: { identity: 0.8, scope: 1.1, procedure: 1.8, examples: 1.2, guardrails: 1.1, trust: 1, portability: 0.8 },
@@ -354,63 +350,68 @@ const TYPE_WEIGHTS: Record<string, Partial<Record<PillarId, number>>> = {
   guardrail: { identity: 0.7, scope: 1, procedure: 1, examples: 1, guardrails: 2, trust: 1.1, portability: 0.9 },
 };
 
-// Each signal contributes a graded amount (primary hit = full, secondary =
-// partial). Multi-signal + partial credit makes the surface score a smooth
-// function the caller cannot map back to a discrete checklist.
-type Signal = { w: number; primary: RegExp; secondary?: RegExp };
+// Each signal is bilingual (EN + PT-BR alternates) so non-English docs are not
+// silently zeroed. `kind`: "positive" = presence improves score; "negative" =
+// presence is a penalty (e.g. vendor lock-in for portability).
+type Signal = {
+  w: number;
+  kind: "positive" | "negative";
+  primary: RegExp;
+  secondary?: RegExp;
+};
 
 const SIGNALS: Record<PillarId, Signal[]> = {
   identity: [
-    { w: 1, primary: /you are |role:|persona:|act as /i, secondary: /assistant|agent that/i },
-    { w: 1, primary: /values?:|principles?:|cares? about|believe/i, secondary: /prioriti[sz]e|stands? for/i },
-    { w: 0.8, primary: /\bvoice\b|\btone\b|writing style/i, secondary: /concise|formal|friendly|tone of/i },
-    { w: 1, primary: /non-goals?|will not|won't|out of scope/i, secondary: /\bnever\b|avoid doing/i },
-    { w: 1, primary: /refus|decline|cannot help|won't assist/i, secondary: /escalate|hand off/i },
+    { w: 1, kind: "positive", primary: /\b(you are|role:|persona:|act as|você é|papel:|persona:|atue como)\b/i, secondary: /\b(assistant|agent that|assistente|agente que)\b/i },
+    { w: 1, kind: "positive", primary: /\b(values?:|principles?:|cares? about|believe|valores?:|princípios?:|acredita|importa-se com)\b/i, secondary: /\b(prioriti[sz]e|stands? for|prioriza|defende)\b/i },
+    { w: 0.8, kind: "positive", primary: /\b(voice|tone|writing style|voz|tom|estilo de escrita)\b/i, secondary: /\b(concise|formal|friendly|tone of|conciso|amigável|tom de)\b/i },
+    { w: 1, kind: "positive", primary: /\b(non-goals?|will not|won't|out of scope|não-objetivos?|não fará|fora de escopo)\b/i, secondary: /\b(never|avoid doing|nunca|evita)\b/i },
+    { w: 1, kind: "positive", primary: /\b(refus|decline|cannot help|won't assist|recus|negar|não pode ajudar|não atend)/i, secondary: /\b(escalate|hand off|escala[r]?|encaminha[r]?)\b/i },
   ],
   scope: [
-    { w: 1.2, primary: /use when|use this when|job:|purpose:|when to use/i, secondary: /applies to|good for/i },
-    { w: 1, primary: /trigger|invoke|activate when/i, secondary: /when the user (asks|says|wants)/i },
-    { w: 1, primary: /anti-trigger|do not use|skip when|not for/i, secondary: /unless|except when/i },
-    { w: 0.8, primary: /target user|audience|intended for|for: /i, secondary: /role of the user/i },
+    { w: 1.2, kind: "positive", primary: /\b(use when|use this when|job:|purpose:|when to use|use quando|propósito:|quando usar|finalidade:)\b/i, secondary: /\b(applies to|good for|aplica-se a|serve para)\b/i },
+    { w: 1, kind: "positive", primary: /\b(trigger|invoke|activate when|gatilho|acionar|disparar|ativar quando)\b/i, secondary: /\b(when the user (asks|says|wants)|quando o usuário (pede|diz|quer))\b/i },
+    { w: 1, kind: "positive", primary: /\b(anti-trigger|do not use|skip when|not for|anti-gatilho|não usar|pular quando|não para)\b/i, secondary: /\b(unless|except when|a menos que|exceto quando)\b/i },
+    { w: 0.8, kind: "positive", primary: /\b(target user|audience|intended for|for: |público-alvo|audiência|destinado a|para: )/i, secondary: /\b(role of the user|papel do usuário)\b/i },
   ],
   procedure: [
-    { w: 1.4, primary: /^\s*\d+[.)]/m, secondary: /^\s*[-*] /m },
-    { w: 1.1, primary: /input:|output:|success:|done when|✓/i, secondary: /returns?:|produces?:/i },
-    { w: 1, primary: /if .*(then|→)|otherwise|else if|branch|fork/i, secondary: /\bcase\b|depending on/i },
-    { w: 1, primary: /stop when|definition of done|finish when|terminate/i, secondary: /until (the|all)/i },
+    { w: 1.4, kind: "positive", primary: /^\s*\d+[.)]/m, secondary: /^\s*[-*] /m },
+    { w: 1.1, kind: "positive", primary: /\b(input:|output:|success:|done when|entrada:|saída:|sucesso:|pronto quando|concluído quando)|✓/i, secondary: /\b(returns?:|produces?:|retorna:|produz:)/i },
+    { w: 1, kind: "positive", primary: /\b(if .*(then|→)|otherwise|else if|branch|fork|se .*(então|→)|caso contrário|senão|ramificação|bifurc)/i, secondary: /\b(case|depending on|caso|dependendo de)\b/i },
+    { w: 1, kind: "positive", primary: /\b(stop when|definition of done|finish when|terminate|parar quando|definição de pronto|finalizar quando|encerrar)/i, secondary: /\b(until (the|all)|até (que|todos))/i },
   ],
   examples: [
-    { w: 1.3, primary: /(example|sample|worked|walkthrough)/i, secondary: /e\.g\.|for instance/i },
-    { w: 1.2, primary: /bad example|anti-example|wrong:|❌|fails when|counter-?example/i, secondary: /pitfall|mistake/i },
-    { w: 1, primary: /messy|edge case|ambiguous|partial input|real-world/i, secondary: /unhappy path|corner case/i },
+    { w: 1.3, kind: "positive", primary: /\b(example|sample|worked|walkthrough|exemplo|amostra|caso de uso|passo a passo)/i, secondary: /\b(e\.g\.|for instance|por exemplo|por ex\.)/i },
+    { w: 1.2, kind: "positive", primary: /\b(bad example|anti-example|wrong:|fails when|counter-?example|exemplo ruim|anti-exemplo|errado:|falha quando|contra-?exemplo)|❌/i, secondary: /\b(pitfall|mistake|armadilha|erro comum)/i },
+    { w: 1, kind: "positive", primary: /\b(messy|edge case|ambiguous|partial input|real-world|caso extremo|ambíguo|entrada parcial|caso real|mundo real)/i, secondary: /\b(unhappy path|corner case|caminho infeliz|caso de canto)/i },
   ],
   guardrails: [
-    { w: 1.2, primary: /failure mode|known issue|risk:|pitfall|threat model/i, secondary: /can go wrong|caveat/i },
-    { w: 1.2, primary: /mitigat|prevent|guard against|defen[sc]e|countermeasure/i, secondary: /to avoid this/i },
-    { w: 1.3, primary: /prompt injection|untrusted|treat .* as data|ignore instructions in/i, secondary: /sanitiz|do not follow instructions/i },
-    { w: 1, primary: /\bpii\b|secret|redact|do not log|citation|cite sources/i, secondary: /confidential|sensitive data/i },
+    { w: 1.2, kind: "positive", primary: /\b(failure mode|known issue|risk:|pitfall|threat model|modo de falha|problema conhecido|risco:|armadilha|modelo de ameaça)/i, secondary: /\b(can go wrong|caveat|pode dar errado|ressalva)/i },
+    { w: 1.2, kind: "positive", primary: /\b(mitigat|prevent|guard against|defen[sc]e|countermeasure|mitiga|preven[ir]|proteger contra|defesa|contramedida)/i, secondary: /\b(to avoid this|para evitar isso)/i },
+    { w: 1.3, kind: "positive", primary: /\b(prompt injection|untrusted|treat .* as data|ignore instructions in|injeção de prompt|não-confiável|tratar .* como dados|ignorar instruções em)/i, secondary: /\b(sanitiz|do not follow instructions|sanitiza|não seguir instruções)/i },
+    { w: 1, kind: "positive", primary: /\b(pii|secret|redact|do not log|citation|cite sources|lgpd|gdpr|dados pessoais|segredo|redigir|não registrar|citação|citar fontes)\b/i, secondary: /\b(confidential|sensitive data|confidencial|dados sensíveis)/i },
+    // Enforcement strength: deterministic gates / regression suites / fail-closed
+    // defaults move the score because they're harder evidence than prose rules.
+    { w: 1.4, kind: "positive", primary: /\b(deterministic gate|exit code|regression suite|policy engine|opa\b|cedar\b|fail[- ]closed|automated test|external enforcement|gate determinístico|código de saída|suíte de regressão|motor de política|falha[- ]segura|teste automatizado|aplicação externa)/i, secondary: /\b(regex check|ast check|signed (release|bundle)|verificação por regex|verificação de ast|release assinado)/i },
   ],
   trust: [
-    { w: 1, primary: /validated on|tested on|claude|gpt-|gemini|llama/i, secondary: /model:|benchmarked/i },
-    { w: 1.1, primary: /acceptance criteri|success criter|self-eval|self check/i, secondary: /pass if|must satisfy/i },
-    { w: 1.1, primary: /output schema|```|return json|structured (output|result)/i, secondary: /named sections|format:/i },
-    { w: 0.9, primary: /report_execution|telemetry|emit metrics/i, secondary: /track success/i },
+    { w: 1, kind: "positive", primary: /\b(validated on|tested on|claude|gpt-|gemini|llama|validado em|testado em)/i, secondary: /\b(model:|benchmarked|modelo:|avaliado em)/i },
+    { w: 1.1, kind: "positive", primary: /\b(acceptance criteri|success criter|self-eval|self check|critério de aceitação|critério de sucesso|auto-avaliação|auto-verificação)/i, secondary: /\b(pass if|must satisfy|aprova se|deve satisfazer)/i },
+    { w: 1.1, kind: "positive", primary: /\b(output schema|return json|structured (output|result)|esquema de saída|retornar json|saída estruturada|resultado estruturado)/i, secondary: /\b(named sections|format:|seções nomeadas|formato:)/i },
+    { w: 0.9, kind: "positive", primary: /\b(report_execution|telemetry|emit metrics|telemetria|emitir métricas)/i, secondary: /\b(track success|rastrear sucesso)/i },
   ],
   portability: [
-    { w: 1, primary: /only works on|requires claude|requires gpt|requires gemini|claude-only/i, secondary: /vendor-specific/i },
-    { w: 1, primary: /anthropic sdk|openai sdk|google ai sdk|tool_use block/i },
-    { w: 1, primary: /.{16001,}/s },
-    { w: 0.8, primary: /^---[\s\S]*?(lovable:|proprietary:|internal:)/m },
+    // Vendor lock-in (negative)
+    { w: 1, kind: "negative", primary: /\b(only works on|requires claude|requires gpt|requires gemini|claude-only|funciona apenas em|requer claude|requer gpt|requer gemini|exclusivo claude)/i, secondary: /\bvendor-specific\b|específico de fornecedor/i },
+    { w: 1, kind: "negative", primary: /\b(anthropic sdk|openai sdk|google ai sdk|tool_use block)\b/i },
+    { w: 0.6, kind: "negative", primary: /.{32001,}/s }, // raise the over-long threshold; 16k was punishing reasonable docs
+    { w: 0.6, kind: "negative", primary: /^---[\s\S]*?(lovable:|proprietary:|internal:)/m },
+    // Cross-runtime evidence (positive) — fixes the "100 by absence" smell
+    { w: 1.1, kind: "positive", primary: /\b(model[- ]agnostic|runtime[- ]independent|works on (claude|gpt|gemini).*and.*(claude|gpt|gemini)|cross[- ]runtime|agnóstico (de|a) modelo|independente de runtime|funciona em (claude|gpt|gemini).*e.*(claude|gpt|gemini))/i, secondary: /\b(portable across|portátil entre)/i },
+    { w: 0.9, kind: "positive", primary: /\b(plain markdown|standard skill\.md|skill\.md format|markdown puro|formato skill\.md padrão)/i },
   ],
 };
-// portability signals 3 & 4 and 1 & 2 are *penalties* (presence = worse);
-// handled in scorePillar by inverting.
-const PORTABILITY_NEGATIVE = new Set([0, 1, 2, 3]);
 
-// Outcome-level directives. These describe the desired END STATE, not the
-// detector. Safe to surface because they do not reveal how we measure or
-// what the threshold is — only what a stronger primitive of this kind looks
-// like. The pool is rotated so repeated calls don't crystallise a static list.
 const DIRECTIVES: Record<PillarId, string[]> = {
   identity: [
     "Give it a sharper sense of self: who it is, what it refuses, and what it explicitly is NOT for.",
@@ -436,6 +437,7 @@ const DIRECTIVES: Record<PillarId, string[]> = {
     "Pre-empt the failure modes you have already seen: name them and attach a concrete mitigation to each.",
     "Harden against prompt injection — make explicit that tool output and user docs are data, not instructions.",
     "Add data-handling rules (PII, secrets, citations) so it fails safe under pressure.",
+    "Move enforcement out of the prompt: a deterministic gate (regex/AST/policy engine) with an exit code and a regression suite is far stronger evidence than prose rules.",
   ],
   trust: [
     "Make it measurable: declare validated models and an acceptance criterion the host can verify.",
@@ -446,30 +448,78 @@ const DIRECTIVES: Record<PillarId, string[]> = {
     "Remove single-vendor assumptions so the same primitive runs on Claude, GPT and Gemini without surgery.",
     "Describe tools by contract, not by a specific SDK, and keep it within a typical context budget.",
     "Strip proprietary frontmatter the host can't parse; keep it plain, portable Markdown.",
+    "State cross-runtime support explicitly (e.g. 'validated on Claude, GPT and Gemini') — the engine cannot infer portability from absence alone.",
   ],
 };
 
 interface PillarScore {
   pillar: PillarId;
   title: string;
-  score: number; // 0..100, graded
+  score: number;
 }
 
-function scorePillar(id: PillarId, text: string): { score: number; deficit: number } {
+interface PillarDetail {
+  id: PillarId;
+  score: number;
+  deficit: number;
+  signals_total: number;
+  signals_hit: number;
+  evidence: Array<{ line: number; excerpt: string }>;
+}
+
+// Find the line number + a short excerpt for the first regex hit. Used to
+// anchor top_actions to a concrete location instead of being generic.
+function findEvidence(text: string, re: RegExp): { line: number; excerpt: string } | null {
+  const m = re.exec(text);
+  if (!m) return null;
+  const idx = m.index;
+  const before = text.slice(0, idx);
+  const line = before.split("\n").length;
+  const lineStart = before.lastIndexOf("\n") + 1;
+  const lineEnd = text.indexOf("\n", idx);
+  const raw = text.slice(lineStart, lineEnd === -1 ? text.length : lineEnd).trim();
+  const excerpt = raw.length > 140 ? raw.slice(0, 137) + "…" : raw;
+  return { line, excerpt };
+}
+
+function scorePillar(id: PillarId, text: string): PillarDetail {
   const signals = SIGNALS[id];
   let earned = 0;
   let total = 0;
-  signals.forEach((s, idx) => {
+  let hit = 0;
+  const evidence: PillarDetail["evidence"] = [];
+
+  signals.forEach((s) => {
     total += s.w;
-    const isNeg = id === "portability" && PORTABILITY_NEGATIVE.has(idx);
     const primaryHit = s.primary.test(text);
     const secondaryHit = s.secondary ? s.secondary.test(text) : false;
     let frac = primaryHit ? 1 : secondaryHit ? 0.5 : 0;
-    if (isNeg) frac = 1 - frac; // for penalty signals, absence is good
+    // Negative signals: presence is bad. Absence (frac=0) becomes good (1).
+    // Crucially, a negative signal contributes to "hit" only when it ACTUALLY
+    // matched — so portability no longer hits 100 just from absence.
+    if (s.kind === "negative") {
+      frac = 1 - frac;
+    }
     earned += frac * s.w;
+    if (primaryHit || secondaryHit) {
+      hit += 1;
+      const ev = findEvidence(text, primaryHit ? s.primary : (s.secondary as RegExp));
+      if (ev) evidence.push(ev);
+    }
   });
-  const score = Math.max(0, Math.min(100, Math.round((earned / total) * 100)));
-  return { score, deficit: 100 - score };
+
+  let score = total > 0 ? Math.round((earned / total) * 100) : 0;
+  // Cap any pillar that scored on zero positive evidence — prevents the
+  // "all-negative-signals → 100 by default" smell. Affects portability most.
+  const positiveSignals = signals.filter((s) => s.kind === "positive").length;
+  const positiveHits = signals.filter(
+    (s) => s.kind === "positive" && (s.primary.test(text) || (s.secondary && s.secondary.test(text)))
+  ).length;
+  if (positiveSignals > 0 && positiveHits === 0) {
+    score = Math.min(score, 60); // graceful cap, not zero
+  }
+  score = Math.max(0, Math.min(100, score));
+  return { id, score, deficit: 100 - score, signals_total: signals.length, signals_hit: hit, evidence };
 }
 
 function gradeBand(n: number): string {
@@ -484,8 +534,17 @@ function statusBand(n: number): "strong" | "adequate" | "weak" {
   return n >= 78 ? "strong" : n >= 55 ? "adequate" : "weak";
 }
 
-// Deterministic-but-rotating pick so repeat calls on the same file don't
-// surface an identical, memorisable list.
+// Cheap heuristic — counts diacritics + PT-BR function words. Used only to
+// emit a `language` hint and a low-confidence caveat; does NOT alter scoring.
+function detectLanguage(text: string): { lang: "en" | "pt" | "other"; confidence: number } {
+  const sample = text.slice(0, 8000).toLowerCase();
+  const ptHits = (sample.match(/\b(não|você|são|também|então|porém|porque|usuário|exemplo|gatilho|fora de escopo|valores|critério|saída|entrada)\b|[ãõçáéíóúâêô]/g) ?? []).length;
+  const enHits = (sample.match(/\b(the|and|when|use|trigger|example|input|output|scope|values|user|must|should|never)\b/g) ?? []).length;
+  if (ptHits > enHits * 1.2 && ptHits > 10) return { lang: "pt", confidence: Math.min(1, ptHits / 60) };
+  if (enHits > ptHits * 1.2 && enHits > 10) return { lang: "en", confidence: Math.min(1, enHits / 60) };
+  return { lang: "other", confidence: 0.3 };
+}
+
 function pickDirective(id: PillarId, content: string, salt: number): string {
   const pool = DIRECTIVES[id];
   let h = salt;
@@ -493,10 +552,39 @@ function pickDirective(id: PillarId, content: string, salt: number): string {
   return pool[h % pool.length];
 }
 
+// Anchor a directive to concrete file evidence when we have it. When a pillar
+// scored 0 with no hits, surface that explicitly so the host knows the engine
+// found nothing matching — not that the file is silently bad.
+function buildAction(detail: PillarDetail, content: string, priority: number): {
+  area: string;
+  priority: number;
+  action: string;
+  evidence: { line: number; excerpt: string } | null;
+  signal_summary: string;
+} {
+  const directive = pickDirective(detail.id, content, priority);
+  const ev = detail.evidence[0] ?? null;
+  let action: string;
+  if (ev) {
+    action = `Near line ${ev.line} ("${ev.excerpt}"): ${directive}`;
+  } else if (detail.signals_hit === 0) {
+    action = `No content recognised for "${PILLAR_TITLE[detail.id]}" — ${directive}`;
+  } else {
+    action = directive;
+  }
+  return {
+    area: PILLAR_TITLE[detail.id],
+    priority,
+    action,
+    evidence: ev,
+    signal_summary: `${detail.signals_hit}/${detail.signals_total} signals matched`,
+  };
+}
+
 export const getMethodologyTool = defineTool({
   name: "get_methodology",
   description:
-    "[UPGRADE] Orientation for the local-file upgrade flow. Returns the dimensions the proprietary SuperAgentSkill engine evaluates and how to drive the loop — NOT the rubric, signals or thresholds (those are server-side and intentionally not disclosed). The actionable output comes from review_skill. Read-only, no auth.",
+    "[UPGRADE] Orientation for the local-file upgrade flow. Returns the dimensions the proprietary SuperAgentSkill engine evaluates and how to drive the loop — NOT the rubric, signals or thresholds. Read-only, no auth.",
   parameters: z.object({}),
   execute: async () =>
     json({
@@ -504,17 +592,15 @@ export const getMethodologyTool = defineTool({
       name: "Super Agent Skill evaluation",
       proprietary: true,
       note:
-        "Scoring is performed server-side by a proprietary engine. The detection signals, weights and thresholds are not exposed — call review_skill to get this file's scores and the specific improvements to apply, then iterate.",
+        "Scoring is performed server-side. Signal detection is bilingual (EN + PT-BR); other languages may underscore — write in EN or PT-BR for best signal. The engine is calibrated for kebab-case Markdown skill files following the Anthropic SKILL.md conventions; long-form governance prose may underscore even when the underlying content is strong, because some signals look for structured cues (worked input/output blocks, named sections, acceptance criteria).",
       dimensions: (Object.keys(PILLAR_TITLE) as PillarId[]).map((id) => ({
         id,
         title: PILLAR_TITLE[id],
       })),
       how_to_use: [
-        "1. review_skill — submit the file; get overall_score, per-dimension scores and prioritised, file-specific actions.",
+        "1. review_skill — submit the file; get overall_score, per-dimension scores, signal-hit counts and file-anchored top_actions (with line numbers and excerpts when evidence exists).",
         "2. You (the host agent) apply the actions in the user's repo.",
         "3. review_skill again — confirm the score rose. Iterate until grade A.",
-        "4. Optionally search_registry / get_package to borrow patterns from high-trust primitives.",
-        "5. request_primitive to have Super Agent Skill author a brand-new primitive from scratch.",
       ],
     }),
 });
@@ -522,7 +608,7 @@ export const getMethodologyTool = defineTool({
 export const reviewSkillTool = defineTool({
   name: "review_skill",
   description:
-    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns overall_score (0-100), grade, per-dimension scores (number + strong/adequate/weak band) and `top_actions` — prioritised, file-specific improvements to apply. It does NOT return the rubric, the detection signals or per-check pass/fail (those stay server-side by design). Apply the actions, then call again to confirm the score rose. Read-only, no auth.",
+    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns overall_score (0-100), grade, per-dimension scores (with `signals_hit`/`signals_total` so you can see why a pillar landed low) and `top_actions` anchored to concrete file evidence (line number + excerpt) when available. The detection signals, weights and thresholds remain server-side. NOTE: signal detection is bilingual (EN + PT-BR) and calibrated for Markdown skill files; long-form governance prose in other languages may underscore — see `language` and `format_caveat` in the response. Read-only, no auth.",
   parameters: z.object({
     name: z.string().min(1).max(200).describe("File or skill name (for the report header only)"),
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).default("skill"),
@@ -531,37 +617,47 @@ export const reviewSkillTool = defineTool({
   execute: async ({ name, type, content }) => {
     const ids = Object.keys(PILLAR_TITLE) as PillarId[];
     const weights = TYPE_WEIGHTS[type] ?? TYPE_WEIGHTS.skill;
-    const raw = ids.map((id) => ({ id, ...scorePillar(id, content) }));
+    const details = ids.map((id) => scorePillar(id, content));
+    const language = detectLanguage(content);
 
     let wSum = 0;
     let wTotal = 0;
-    for (const r of raw) {
+    for (const r of details) {
       const w = weights[r.id] ?? 1;
       wSum += r.score * w;
       wTotal += w;
     }
     const overall = Math.round(wSum / wTotal);
 
-    const pillars: (PillarScore & { status: string })[] = raw.map((r) => ({
+    const pillars = details.map((r) => ({
       pillar: r.id,
       title: PILLAR_TITLE[r.id],
       score: r.score,
       status: statusBand(r.score),
+      signals_hit: r.signals_hit,
+      signals_total: r.signals_total,
+      diagnostic:
+        r.score === 0
+          ? "Pillar scored 0 — the engine found no recognised pattern for this dimension in the submitted text. If your file does cover this in another idiom, rephrase with the conventional vocabulary (EN or PT-BR) so detectors catch it."
+          : r.signals_hit === 0
+            ? "No positive signals matched, but the pillar avoided 0 via penalty-absence. Add explicit content for this dimension."
+            : null,
     }));
 
-    // Rank by weighted deficit so the actions target what most moves THIS
-    // primitive's score — without revealing the weighting.
-    const ranked = [...raw]
-      .map((r) => ({ id: r.id, impact: r.deficit * (weights[r.id] ?? 1) }))
+    const ranked = [...details]
+      .map((r) => ({ ...r, impact: r.deficit * (weights[r.id] ?? 1) }))
       .sort((a, b) => b.impact - a.impact)
       .filter((r) => r.impact > 0)
       .slice(0, 4);
 
-    const topActions = ranked.map((r, i) => ({
-      area: PILLAR_TITLE[r.id],
-      priority: i + 1,
-      action: pickDirective(r.id, content, i + 1),
-    }));
+    const topActions = ranked.map((r, i) => buildAction(r, content, i + 1));
+
+    const formatCaveat =
+      language.lang === "other"
+        ? "The engine could not confidently detect EN or PT-BR. Signal detection is bilingual; other languages will underscore by mismatch, not by quality. Translate or duplicate key cues into EN or PT-BR for a fair score."
+        : language.lang === "pt" && language.confidence < 0.5
+          ? "Low-confidence Portuguese detection. Ensure conventional terms (gatilho, exemplo, modo de falha, mitigação, critério de aceitação, esquema de saída) appear verbatim so detectors catch them."
+          : null;
 
     return json({
       file: name,
@@ -569,15 +665,19 @@ export const reviewSkillTool = defineTool({
       engine: ENGINE,
       overall_score: overall,
       grade: gradeBand(overall),
+      language: { detected: language.lang, confidence: Math.round(language.confidence * 100) / 100 },
+      format_caveat:
+        formatCaveat ??
+        "The engine is calibrated for Markdown skill files with named sections + worked input/output examples. Pure governance prose may underscore even when content is strong — that's a format mismatch, not a quality verdict.",
       pillars,
       top_actions: topActions,
       next_steps:
         topActions.length === 0
           ? ["Grade A — no high-impact gaps detected. Re-run after any substantive edit."]
           : [
-              "Apply the top_actions in the user's local file (you, the host agent, do the editing).",
+              "Apply the top_actions in the user's local file — each action carries a line number and an excerpt when the engine could anchor evidence.",
               "Re-run review_skill with the updated content to confirm the score rose.",
-              "Optionally call search_registry to borrow patterns from high-trust primitives of the same type.",
+              "If a pillar shows `diagnostic`, address that first — those are blind spots, not quality misses.",
             ],
     });
   },
