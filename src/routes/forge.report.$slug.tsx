@@ -120,9 +120,10 @@ function ReportPage() {
         )}
 
         {/* Score summary */}
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <Score label="Overall" before={before?.overall_score} after={after?.overall_score} />
           <Score label="Precision" before={before?.precision_score} after={after?.precision_score} />
+          <Score label="Health" before={before?.health_score} after={after?.health_score} />
           <Score label="Safety" before={before?.safety_score} after={after?.safety_score} />
           <Score
             label="Hallucination"
@@ -148,47 +149,73 @@ function ReportPage() {
               No evaluations yet.
             </div>
           )}
-          {q.data?.evaluations.map((e, i) => (
-            <div key={e.id} className="rounded-xl border border-border bg-surface p-5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                  #{i + 1} · {e.trigger_kind} · {new Date(e.created_at).toLocaleString()}
-                </div>
-                <Verdict v={e.verdict} />
-              </div>
-              <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                <Stat label="Overall" v={e.overall_score} />
-                <Stat label="Precision" v={e.precision_score} />
-                <Stat label="Health" v={e.health_score} />
-              </div>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                <List title="Strengths" items={(e.strengths as string[]) ?? []} tone="positive" />
-                <List title="Weaknesses" items={(e.weaknesses as string[]) ?? []} tone="negative" />
-              </div>
-              {(e.improvement_actions as string[])?.length > 0 && (
-                <div className="mt-3">
-                  <List title="Improvement actions" items={(e.improvement_actions as string[]) ?? []} tone="info" />
-                </div>
-              )}
-              {(e.pipeline_stages as Array<{ name: string; ms?: number; ok?: boolean; notes?: string }>)?.length > 0 && (
-                <div className="mt-4">
-                  <div className="mb-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Pipeline stages</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(e.pipeline_stages as Array<{ name: string; ms?: number; ok?: boolean }>).map((s, idx) => (
-                      <span
-                        key={idx}
-                        className={`rounded-md px-2 py-1 font-mono text-[11px] ${
-                          s.ok === false ? "bg-destructive/15 text-destructive" : "bg-primary/10 text-primary"
-                        }`}
-                      >
-                        {s.name}{s.ms ? ` · ${s.ms}ms` : ""}
-                      </span>
-                    ))}
+          {q.data?.evaluations.map((e, i) => {
+            const stages = (e.pipeline_stages as Array<{ name: string; ms?: number; ok?: boolean; notes?: string }>) ?? [];
+            const breakdown = stages.find((s) => s.name === "breakdown");
+            return (
+              <div key={e.id} className="rounded-xl border border-border bg-surface p-5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                    #{i + 1} · {e.trigger_kind} · {new Date(e.created_at).toLocaleString()}
                   </div>
+                  <Verdict v={e.verdict} />
                 </div>
-              )}
-            </div>
-          ))}
+                <div className="mt-3 grid gap-3 sm:grid-cols-4">
+                  <Stat label="Overall" v={e.overall_score} />
+                  <Stat label="Precision" v={e.precision_score} />
+                  <Stat label="Health" v={e.health_score} />
+                  <Stat label="Safety" v={e.safety_score} />
+                </div>
+
+                {/* Why this score? — the breakdown stage explains contributions */}
+                {breakdown?.notes && (
+                  <div className="mt-3 rounded-md border border-primary/30 bg-primary/5 p-3">
+                    <div className="mb-1 font-mono text-[10px] uppercase tracking-wider text-primary">
+                      Why this score
+                    </div>
+                    <code className="block whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed text-foreground/90">
+                      {breakdown.notes}
+                    </code>
+                  </div>
+                )}
+
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  <List title="Strengths" items={(e.strengths as string[]) ?? []} tone="positive" />
+                  <List title="Weaknesses" items={(e.weaknesses as string[]) ?? []} tone="negative" />
+                </div>
+                {(e.improvement_actions as string[])?.length > 0 && (
+                  <div className="mt-3">
+                    <List title="Improvement actions" items={(e.improvement_actions as string[]) ?? []} tone="info" />
+                  </div>
+                )}
+                {stages.length > 0 && (
+                  <div className="mt-4">
+                    <div className="mb-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Pipeline stages</div>
+                    <div className="space-y-1.5">
+                      {stages
+                        .filter((s) => s.name !== "breakdown")
+                        .map((s, idx) => (
+                          <div
+                            key={idx}
+                            className={`rounded-md px-2.5 py-1.5 font-mono text-[11px] ${
+                              s.ok === false ? "bg-destructive/15 text-destructive" : "bg-background text-foreground/90 border border-border/60"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-semibold">{s.name}</span>
+                              {s.ms ? <span className="text-muted-foreground">{s.ms}ms</span> : null}
+                            </div>
+                            {s.notes && (
+                              <div className="mt-0.5 text-[10.5px] text-muted-foreground">{s.notes}</div>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Versions */}
