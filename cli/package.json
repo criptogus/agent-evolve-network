@@ -1,7 +1,7 @@
 {
   "name": "super-agent",
-  "version": "0.1.0",
-  "description": "Install Super Agent Skill packages locally for Claude / Cursor / Continue / Cline.",
+  "version": "0.2.0",
+  "description": "Plug-and-play Super Agent Skill MCP: OAuth login, client auto-config, local stdio bridge, and skill package install for Claude / Cursor / Codex / VS Code / Windsurf.",
   "type": "module",
   "bin": {
     "super-agent": "./super-agent.mjs"

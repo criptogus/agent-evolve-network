@@ -21,7 +21,8 @@ export const Route = createFileRoute("/docs/mcp")({
 const SECTIONS = [
   { id: "endpoint", label: "Endpoint" },
   { id: "transport", label: "Transport" },
-  { id: "auth", label: "Auth" },
+  { id: "auth", label: "Auth (OAuth)" },
+  { id: "cli", label: "CLI / plug-and-play" },
   { id: "tools", label: "Tools" },
   { id: "configs", label: "Client configs" },
   { id: "errors", label: "Errors & limits" },
@@ -150,11 +151,71 @@ function McpDocs() {
           {/* Auth */}
           <h2 id="auth" className="mt-12 text-2xl font-semibold tracking-tight">Authentication</h2>
           <p className="mt-2 text-muted-foreground">
-            Read tools (<code>list_packages</code>, <code>search_registry</code>, <code>get_package</code>) are
-            available without authentication for the public registry. Mutating tools
-            (<code>request_primitive</code>) accept an optional <code>Authorization: Bearer &lt;token&gt;</code>
-            header to attribute the request to your account and unlock per-plan limits.
+            Read tools (<code>list_packages</code>, <code>search_registry</code>, <code>get_package</code>,{" "}
+            <code>overview</code>, <code>get_methodology</code>, <code>review_skill</code>) work anonymously.
+            Write tools (<code>upload_packages</code>, <code>request_primitive</code>,{" "}
+            <code>report_execution</code>) require an OAuth bearer token.
           </p>
+          <p className="mt-3 text-muted-foreground">
+            We implement the full MCP authorization spec: <strong>OAuth 2.1</strong> with PKCE
+            (S256), <strong>RFC 7591</strong> dynamic client registration, <strong>RFC 8414</strong>{" "}
+            authorization-server metadata and <strong>RFC 9728</strong> protected-resource metadata —
+            including the <em>path-aware</em> well-known location that current Claude, Cursor,
+            VS Code and Codex builds probe:
+          </p>
+          <CodeBlock
+            filename="discovery (served with CORS, path-aware)"
+            lang="text"
+            code={`GET /.well-known/oauth-protected-resource/api/mcp     → RFC 9728
+GET /.well-known/oauth-protected-resource             → RFC 9728 (root)
+GET /.well-known/oauth-authorization-server           → RFC 8414
+POST /api/public/oauth/register                       → RFC 7591 (DCR)
+POST /api/public/oauth/token                          → code + refresh grants
+POST /api/public/oauth/revoke                         → RFC 7009
+
+# A 401 from /api/mcp returns:
+WWW-Authenticate: Bearer resource_metadata="https://superagentskill.com/.well-known/oauth-protected-resource/api/mcp"`}
+          />
+          <p className="mt-3 text-muted-foreground">
+            Compliant clients run the browser consent flow automatically. The fastest path on
+            any client is the CLI below — it does the whole dance for you.
+          </p>
+
+          {/* CLI */}
+          <h2 id="cli" className="mt-12 text-2xl font-semibold tracking-tight">
+            CLI — plug and play
+          </h2>
+          <p className="mt-2 text-muted-foreground">
+            <code>npx super-agent connect</code> performs dynamic client registration, the
+            loopback PKCE OAuth flow, stores the token in{" "}
+            <code>~/.superagentskill/credentials.json</code> (chmod 600, auto-refreshed), and
+            writes/patches your client's MCP config — no hand-edited JSON.
+          </p>
+          <CodeBlock
+            filename="terminal"
+            lang="bash"
+            code={`npx -y super-agent connect --client claude-code
+# clients: claude-code | claude | cursor | codex | vscode | windsurf
+
+npx -y super-agent login     # OAuth only
+npx -y super-agent status    # token state / expiry
+npx -y super-agent logout    # revoke + forget
+npx -y super-agent setup cursor   # (re)write a client config from saved creds`}
+          />
+          <p className="mt-3 text-muted-foreground">
+            For stdio-only clients (or builds with flaky MCP OAuth), the CLI also ships a
+            local bridge that proxies stdio ⇄ the remote Streamable HTTP endpoint and injects
+            the token transparently:
+          </p>
+          <CodeBlock
+            filename="any stdio MCP client"
+            lang="json"
+            code={`{
+  "mcpServers": {
+    "super-agent-skill": { "command": "npx", "args": ["-y", "super-agent", "mcp"] }
+  }
+}`}
+          />
 
           {/* Tools */}
           <h2 id="tools" className="mt-12 text-2xl font-semibold tracking-tight">Tools</h2>
@@ -279,7 +340,8 @@ function McpDocs() {
           <div className="mt-10 rounded-xl border border-primary/40 bg-primary/5 p-5">
             <div className="font-mono text-xs uppercase tracking-wider text-primary">Heads up</div>
             <p className="mt-2 text-sm text-foreground/90">
-              Want to test right now? Paste the Claude config above, restart Claude Desktop, and ask:
+              Want to test right now? Run <code>npx -y super-agent connect --client claude</code>,
+              restart Claude, and ask:
               <em> "Use the super-agent-skill MCP server to find a cardiology skill and show me its system prompt."</em>
             </p>
           </div>

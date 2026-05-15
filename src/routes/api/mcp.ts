@@ -14,7 +14,7 @@ import {
 } from "@/lib/mcp/tools/skills";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
-import { ORIGIN, sha256 } from "@/lib/oauth/mcp-oauth.server";
+import { ORIGIN, sha256, CORS_HEADERS } from "@/lib/oauth/mcp-oauth.server";
 import { hashToken } from "@/lib/account/tokens.server";
 
 const mcp = createMcpServer({
@@ -66,7 +66,14 @@ const mcp = createMcpServer({
 
 // Canonical RFC 9728 location at the origin root. Clients (Claude, Codex, …)
 // read this URL from the WWW-Authenticate header to start the OAuth dance.
-const RESOURCE_METADATA_URL = `${ORIGIN}/.well-known/oauth-protected-resource`;
+const RESOURCE_METADATA_URL = `${ORIGIN}/.well-known/oauth-protected-resource/api/mcp`;
+
+/** Attach CORS headers to any Response without dropping its existing headers. */
+function withCors(res: Response): Response {
+  const headers = new Headers(res.headers);
+  for (const [k, v] of Object.entries(CORS_HEADERS)) headers.set(k, v);
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
 
 /** Try OAuth tokens first, then fall back to legacy MCP personal tokens. */
 async function verifyBearer(token: string): Promise<{ user_id: string; source: "oauth" | "pat" } | null> {
@@ -97,7 +104,8 @@ function unauthorized(reason: string) {
     status: 401,
     headers: {
       "Content-Type": "application/json",
-      "WWW-Authenticate": `Bearer realm="MCP", resource_metadata="${RESOURCE_METADATA_URL}", error="invalid_token"`,
+      "WWW-Authenticate": `Bearer realm="MCP", resource_metadata="${RESOURCE_METADATA_URL}", error="invalid_token", error_description="${reason}"`,
+      ...CORS_HEADERS,
     },
   });
 }
@@ -136,6 +144,7 @@ function rateLimited(quota: any, id: string | number | null) {
       headers: {
         "Content-Type": "application/json",
         "Retry-After": quota?.window === "hour" ? "3600" : "86400",
+        ...CORS_HEADERS,
       },
     },
   );
@@ -198,16 +207,19 @@ async function handle(request: Request): Promise<Response> {
   }
 
   if (userId && authSource) {
-    return mcp.handleRequest(request, {
-      auth: { token, claims: { user_id: userId, source: authSource } },
-    });
+    return withCors(
+      await mcp.handleRequest(request, {
+        auth: { token, claims: { user_id: userId, source: authSource } },
+      }),
+    );
   }
-  return mcp.handleRequest(request);
+  return withCors(await mcp.handleRequest(request));
 }
 
 export const Route = createFileRoute("/api/mcp")({
   server: {
     handlers: {
+      OPTIONS: async () => new Response(null, { status: 204, headers: CORS_HEADERS }),
       GET: async ({ request }) => handle(request),
       POST: async ({ request }) => handle(request),
       DELETE: async ({ request }) => handle(request),
