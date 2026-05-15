@@ -72,7 +72,7 @@ function LoginPage() {
     }
     toast.success("Welcome back");
     router.invalidate();
-    navigate({ to: next || "/account/billing" });
+    goNext();
   };
 
   const onGoogle = async () => {
