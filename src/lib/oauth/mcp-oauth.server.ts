@@ -3,10 +3,10 @@ import { createHash, randomBytes, timingSafeEqual } from "crypto";
 export const ORIGIN = "https://superagentskill.com";
 export const MCP_RESOURCE = `${ORIGIN}/api/mcp`;
 // Hosts (Claude/Hermes/Cursor) keep the access token in memory and only refresh
-// when it 401s. Bumping access TTL from 1h → 24h means a host restart inside the
-// day reuses the same bearer transparently. Refresh remains 30d.
-export const ACCESS_TTL_SECONDS = 60 * 60 * 24; // 24 h
-export const REFRESH_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 d
+// when it 401s. With 7d access + 90d refresh, hosts effectively never reauthorize:
+// access bearer survives a week of restarts; refresh covers a quarter.
+export const ACCESS_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 d
+export const REFRESH_TTL_SECONDS = 60 * 60 * 24 * 90; // 90 d
 export const CODE_TTL_SECONDS = 60 * 10; // 10 min
 
 const ACCESS_PREFIX = "sas_at_";
