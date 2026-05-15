@@ -19,11 +19,13 @@ export const Route = createFileRoute("/api/skills/$slug/export")({
         const slug = params.slug;
         const { data: pkg, error } = await supabaseAdmin
           .from("packages")
-          .select("id,slug,name,type,description,long_description,license,author_handle,latest_version,is_published")
+          .select("id,slug,name,type,description,long_description,license,author_handle,latest_version,is_published,review_status")
           .eq("slug", slug)
           .maybeSingle();
         if (error || !pkg) return new Response("not found", { status: 404 });
-        if (!pkg.is_published) return new Response("not published", { status: 403 });
+        if (!pkg.is_published || pkg.review_status !== "approved") {
+          return new Response("not published", { status: 403 });
+        }
 
         const { data: ver } = await supabaseAdmin
           .from("package_versions")
