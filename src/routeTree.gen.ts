@@ -80,11 +80,15 @@ import { Route as UseCaseVerticalTaskRouteImport } from './routes/use-case.$vert
 import { Route as PacksSlugCustomizeRouteImport } from './routes/packs.$slug.customize'
 import { Route as MarketplaceTrustSlugRouteImport } from './routes/marketplace.trust.$slug'
 import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug'
+import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
+import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
+import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packages'
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
 import { Route as ApiSkillsSlugExportRouteImport } from './routes/api/skills.$slug.export'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicPackagesSlugRouteImport } from './routes/api/public/packages.$slug'
 import { Route as ApiPublicOauthTokenRouteImport } from './routes/api/public/oauth/token'
 import { Route as ApiPublicOauthRevokeRouteImport } from './routes/api/public/oauth/revoke'
 import { Route as ApiPublicOauthRegisterRouteImport } from './routes/api/public/oauth/register'
@@ -456,6 +460,21 @@ const ForgeReportSlugRoute = ForgeReportSlugRouteImport.update({
   path: '/report/$slug',
   getParentRoute: () => ForgeRoute,
 } as any)
+const ApiPublicTelemetryRoute = ApiPublicTelemetryRouteImport.update({
+  id: '/api/public/telemetry',
+  path: '/api/public/telemetry',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSearchRoute = ApiPublicSearchRouteImport.update({
+  id: '/api/public/search',
+  path: '/api/public/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPackagesRoute = ApiPublicPackagesRouteImport.update({
+  id: '/api/public/packages',
+  path: '/api/public/packages',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminPackagesNewRoute = AdminPackagesNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -482,6 +501,11 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPackagesSlugRoute = ApiPublicPackagesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ApiPublicPackagesRoute,
+} as any)
 const ApiPublicOauthTokenRoute = ApiPublicOauthTokenRouteImport.update({
   id: '/api/public/oauth/token',
   path: '/api/public/oauth/token',
@@ -626,6 +650,9 @@ export interface FileRoutesByFullPath {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/search': typeof ApiPublicSearchRoute
+  '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
@@ -641,6 +668,7 @@ export interface FileRoutesByFullPath {
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
   '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
+  '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
@@ -716,6 +744,9 @@ export interface FileRoutesByTo {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/search': typeof ApiPublicSearchRoute
+  '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
@@ -731,6 +762,7 @@ export interface FileRoutesByTo {
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
   '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
+  '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
@@ -808,6 +840,9 @@ export interface FileRoutesById {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/search': typeof ApiPublicSearchRoute
+  '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
@@ -823,6 +858,7 @@ export interface FileRoutesById {
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
   '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
+  '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
@@ -901,6 +937,9 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/api/public/packages'
+    | '/api/public/search'
+    | '/api/public/telemetry'
     | '/forge/report/$slug'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
@@ -916,6 +955,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/register'
     | '/api/public/oauth/revoke'
     | '/api/public/oauth/token'
+    | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/badges/trust/$slug/svg'
@@ -991,6 +1031,9 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/api/public/packages'
+    | '/api/public/search'
+    | '/api/public/telemetry'
     | '/forge/report/$slug'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
@@ -1006,6 +1049,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/register'
     | '/api/public/oauth/revoke'
     | '/api/public/oauth/token'
+    | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/badges/trust/$slug/svg'
@@ -1082,6 +1126,9 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/api/public/packages'
+    | '/api/public/search'
+    | '/api/public/telemetry'
     | '/forge/report/$slug'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
@@ -1097,6 +1144,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/register'
     | '/api/public/oauth/revoke'
     | '/api/public/oauth/token'
+    | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/badges/trust/$slug/svg'
@@ -1159,6 +1207,9 @@ export interface RootRouteChildren {
   UHandleRoute: typeof UHandleRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   PacksIndexRoute: typeof PacksIndexRoute
+  ApiPublicPackagesRoute: typeof ApiPublicPackagesRouteWithChildren
+  ApiPublicSearchRoute: typeof ApiPublicSearchRoute
+  ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
   MarketplaceTrustSlugRoute: typeof MarketplaceTrustSlugRoute
   UseCaseVerticalTaskRoute: typeof UseCaseVerticalTaskRoute
   ApiIntegrationsSlugInstallRoute: typeof ApiIntegrationsSlugInstallRoute
@@ -1675,6 +1726,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgeReportSlugRouteImport
       parentRoute: typeof ForgeRoute
     }
+    '/api/public/telemetry': {
+      id: '/api/public/telemetry'
+      path: '/api/public/telemetry'
+      fullPath: '/api/public/telemetry'
+      preLoaderRoute: typeof ApiPublicTelemetryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/search': {
+      id: '/api/public/search'
+      path: '/api/public/search'
+      fullPath: '/api/public/search'
+      preLoaderRoute: typeof ApiPublicSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/packages': {
+      id: '/api/public/packages'
+      path: '/api/public/packages'
+      fullPath: '/api/public/packages'
+      preLoaderRoute: typeof ApiPublicPackagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/packages/new': {
       id: '/admin/packages/new'
       path: '/new'
@@ -1709,6 +1781,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/payments/webhook'
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/public/packages/$slug': {
+      id: '/api/public/packages/$slug'
+      path: '/$slug'
+      fullPath: '/api/public/packages/$slug'
+      preLoaderRoute: typeof ApiPublicPackagesSlugRouteImport
+      parentRoute: typeof ApiPublicPackagesRoute
     }
     '/api/public/oauth/token': {
       id: '/api/public/oauth/token'
@@ -1922,6 +2001,17 @@ const PacksSlugRouteWithChildren = PacksSlugRoute._addFileChildren(
   PacksSlugRouteChildren,
 )
 
+interface ApiPublicPackagesRouteChildren {
+  ApiPublicPackagesSlugRoute: typeof ApiPublicPackagesSlugRoute
+}
+
+const ApiPublicPackagesRouteChildren: ApiPublicPackagesRouteChildren = {
+  ApiPublicPackagesSlugRoute: ApiPublicPackagesSlugRoute,
+}
+
+const ApiPublicPackagesRouteWithChildren =
+  ApiPublicPackagesRoute._addFileChildren(ApiPublicPackagesRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -1980,6 +2070,9 @@ const rootRouteChildren: RootRouteChildren = {
   UHandleRoute: UHandleRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   PacksIndexRoute: PacksIndexRoute,
+  ApiPublicPackagesRoute: ApiPublicPackagesRouteWithChildren,
+  ApiPublicSearchRoute: ApiPublicSearchRoute,
+  ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
   MarketplaceTrustSlugRoute: MarketplaceTrustSlugRoute,
   UseCaseVerticalTaskRoute: UseCaseVerticalTaskRoute,
   ApiIntegrationsSlugInstallRoute: ApiIntegrationsSlugInstallRoute,
@@ -2002,13 +2095,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
