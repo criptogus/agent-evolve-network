@@ -69,6 +69,13 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      // Canonical host: redirect www → non-www so OAuth issuer/resource
+      // (https://superagentskill.com) always matches the connected host.
+      const url = new URL(request.url);
+      if (url.hostname === "www.superagentskill.com") {
+        url.hostname = "superagentskill.com";
+        return Response.redirect(url.toString(), 301);
+      }
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
