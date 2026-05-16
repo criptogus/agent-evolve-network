@@ -316,6 +316,7 @@ function EvaluateTab({ packages }: { packages: Array<{ slug: string; name: strin
             <details><summary className="cursor-pointer text-sm">Per-case results ({m.data.evaluation.example_results.length})</summary>
               <pre className="text-xs whitespace-pre-wrap mt-2">{JSON.stringify(m.data.evaluation.example_results, null, 2)}</pre>
             </details>
+            <FeedbackPrompt request={(m.data as any).feedback_request} />
           </div>
         )}
       </CardContent>
