@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
+import { track, EVENTS } from "@/lib/analytics";
 import { CreditsPill } from "./CreditsPill";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -76,9 +77,7 @@ function NavDropdown({ label, items }: { label: string; items: NavItem[] }) {
           <DropdownMenuItem key={item.to} asChild>
             <Link to={item.to} className="flex flex-col items-start gap-0.5 py-2">
               <span className="text-sm font-medium">{item.label}</span>
-              {item.hint && (
-                <span className="text-xs text-muted-foreground">{item.hint}</span>
-              )}
+              {item.hint && <span className="text-xs text-muted-foreground">{item.hint}</span>}
             </Link>
           </DropdownMenuItem>
         ))}
@@ -178,6 +177,7 @@ export function Nav() {
               </DropdownMenu>
               <Link
                 to="/connect"
+                onClick={() => track(EVENTS.ctaConnect, { location: "nav", auth: true })}
                 className="inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
               >
                 Connect
@@ -192,11 +192,12 @@ export function Nav() {
                 Sign in
               </Link>
               <Link
-                to="/signup"
+                to="/connect"
+                onClick={() => track(EVENTS.ctaConnect, { location: "nav", auth: false })}
                 className="inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
               >
-                <span className="hidden sm:inline">Get started</span>
-                <span className="sm:hidden">Start</span>
+                <span className="hidden sm:inline">Connect your agent</span>
+                <span className="sm:hidden">Connect</span>
               </Link>
             </>
           )}
@@ -219,7 +220,11 @@ export function Nav() {
               <nav className="mt-6 flex flex-col gap-4">
                 <MobileSection title="Browse" items={BROWSE} onNavigate={() => setOpen(false)} />
                 <MobileSection title="Create" items={CREATE} onNavigate={() => setOpen(false)} />
-                <MobileSection title="Community" items={COMMUNITY} onNavigate={() => setOpen(false)} />
+                <MobileSection
+                  title="Community"
+                  items={COMMUNITY}
+                  onNavigate={() => setOpen(false)}
+                />
                 <MobileSection title="More" items={SIMPLE} onNavigate={() => setOpen(false)} />
 
                 <div className="mt-2 border-t border-border pt-4">
@@ -243,7 +248,10 @@ export function Nav() {
                         </MobileLink>
                       )}
                       <button
-                        onClick={() => { setOpen(false); signOut(); }}
+                        onClick={() => {
+                          setOpen(false);
+                          signOut();
+                        }}
                         className="rounded-md px-3 py-2.5 text-left text-[15px] text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
                       >
                         Sign out

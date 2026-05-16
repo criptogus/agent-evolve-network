@@ -5,14 +5,23 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import { track, EVENTS } from "@/lib/analytics";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Pricing — Super Agent Skill" },
-      { name: "description", content: "Simple, usage-aligned pricing. From individual agents to enterprise-wide synchronization." },
+      {
+        name: "description",
+        content:
+          "Simple, usage-aligned pricing. From individual agents to enterprise-wide synchronization.",
+      },
       { property: "og:title", content: "Pricing — Super Agent Skill" },
-      { property: "og:description", content: "Plans for solo builders, teams shipping agents, and enterprises rolling out fleets." },
+      {
+        property: "og:description",
+        content:
+          "Plans for solo builders, teams shipping agents, and enterprises rolling out fleets.",
+      },
       { property: "og:url", content: "https://superagentskill.com/pricing" },
     ],
     links: [{ rel: "canonical", href: "https://superagentskill.com/pricing" }],
@@ -26,7 +35,12 @@ const TIERS = [
     price: "$0",
     cadence: "free forever",
     blurb: "For exploring the registry and shipping your first agent.",
-    features: ["MCP gateway access", "Public registry", "3 installed packages", "Community support"],
+    features: [
+      "MCP gateway access",
+      "Public registry",
+      "3 installed packages",
+      "Community support",
+    ],
     cta: "Start free",
     highlight: false,
   },
@@ -34,8 +48,15 @@ const TIERS = [
     name: "Agent Pass",
     price: "$19",
     cadence: "per agent / month",
-    blurb: "The core subscription for continuously evolving agents.",
-    features: ["Unlimited upgrades", "SkillForge AI included", "Automatic improvements", "Health scoring & weekly reports", "All marketplace packages"],
+    blurb:
+      "The core subscription for continuously evolving agents. Billed per connected agent — most teams start with one.",
+    features: [
+      "Unlimited upgrades",
+      "SkillForge AI included",
+      "Automatic improvements",
+      "Health scoring & weekly reports",
+      "All marketplace packages",
+    ],
     cta: "Connect agent",
     highlight: true,
   },
@@ -44,7 +65,13 @@ const TIERS = [
     price: "Custom",
     cadence: "company-wide",
     blurb: "Fleet-wide synchronization, governance, and private registries.",
-    features: ["Private package registry", "SAML SSO & RBAC", "Compliance & audit logs", "Centralized upgrade policy", "Dedicated support"],
+    features: [
+      "Private package registry",
+      "SAML SSO & RBAC",
+      "Compliance & audit logs",
+      "Centralized upgrade policy",
+      "Dedicated support",
+    ],
     cta: "Talk to sales",
     highlight: false,
   },
@@ -56,8 +83,10 @@ function Pricing() {
   const { openCheckout, checkoutElement, isOpen, closeCheckout } = useStripeCheckout();
 
   const onCta = (tierName: string) => {
+    track(EVENTS.ctaPricing, { tier: tierName, authed: !!user });
     if (tierName === "Hacker") return window.location.assign(user ? "/account/billing" : "/signup");
-    if (tierName === "Enterprise") return window.location.assign("mailto:contact@zeroagency.ai?subject=Enterprise%20inquiry");
+    if (tierName === "Enterprise")
+      return window.location.assign("mailto:contact@zeroagency.ai?subject=Enterprise%20inquiry");
     if (!user) return window.location.assign("/signup?next=/pricing");
     if (isActive) return window.location.assign("/account/billing");
     openCheckout({
@@ -76,9 +105,12 @@ function Pricing() {
         <div className="absolute inset-0 hero-glow" aria-hidden />
         <div className="relative mx-auto max-w-7xl px-6 py-20 text-center">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Pricing</span>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-6xl">Aligned with the value your agent ships.</h1>
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-6xl">
+            Aligned with the value your agent ships.
+          </h1>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Creators keep 80–85% on every package sold. Super Agent Skill takes 15–20% to power the gateway, registry and Evolution Engine.
+            Creators keep 80–85% on every package sold. Super Agent Skill takes 15–20% to power the
+            gateway, registry and Evolution Engine.
           </p>
         </div>
       </section>
@@ -89,7 +121,9 @@ function Pricing() {
             <div
               key={t.name}
               className={`relative rounded-2xl border p-7 ${
-                t.highlight ? "border-primary bg-background shadow-elevated" : "border-border bg-background"
+                t.highlight
+                  ? "border-primary bg-background shadow-elevated"
+                  : "border-border bg-background"
               }`}
             >
               {t.highlight && (
@@ -106,7 +140,9 @@ function Pricing() {
               <button
                 onClick={() => onCta(t.name)}
                 className={`mt-6 inline-flex h-10 w-full items-center justify-center rounded-md text-sm font-medium transition-all ${
-                  t.highlight ? "bg-primary text-primary-foreground hover:opacity-95" : "border border-border bg-surface-elevated text-foreground hover:bg-accent"
+                  t.highlight
+                    ? "bg-primary text-primary-foreground hover:opacity-95"
+                    : "border border-border bg-surface-elevated text-foreground hover:bg-accent"
                 }`}
               >
                 {isActive && t.name === "Agent Pass" ? "Manage subscription" : t.cta}
@@ -125,21 +161,35 @@ function Pricing() {
 
         <div className="mt-14 rounded-2xl border border-border bg-surface p-8 md:flex md:items-center md:justify-between">
           <div>
-            <div className="font-mono text-xs uppercase tracking-wider text-primary">For creators</div>
-            <h3 className="mt-2 text-2xl font-semibold tracking-tight">Monetize your operational expertise.</h3>
+            <div className="font-mono text-xs uppercase tracking-wider text-primary">
+              For creators
+            </div>
+            <h3 className="mt-2 text-2xl font-semibold tracking-tight">
+              Monetize your operational expertise.
+            </h3>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              Doctors, lawyers, engineers, copywriters, consultants — package your know-how as installable skills, playbooks or souls. Earn 80–85% revenue share.
+              Doctors, lawyers, engineers, copywriters, consultants — package your know-how as
+              installable skills, playbooks or souls. Earn 80–85% revenue share.
             </p>
           </div>
-          <Link to="/forge" className="mt-5 inline-flex h-11 items-center rounded-md border border-border bg-background px-5 text-sm font-medium transition-colors hover:bg-accent md:mt-0">
+          <Link
+            to="/forge"
+            className="mt-5 inline-flex h-11 items-center rounded-md border border-border bg-background px-5 text-sm font-medium transition-colors hover:bg-accent md:mt-0"
+          >
             Become a creator →
           </Link>
         </div>
       </section>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={closeCheckout}>
-          <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-background shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={closeCheckout}
+        >
+          <div
+            className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-background shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={closeCheckout}
               className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-md bg-background/90 text-sm hover:bg-accent"

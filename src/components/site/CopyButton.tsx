@@ -5,9 +5,10 @@ interface CopyButtonProps {
   value: string;
   label?: string;
   className?: string;
+  onCopy?: () => void;
 }
 
-export function CopyButton({ value, label = "copy", className = "" }: CopyButtonProps) {
+export function CopyButton({ value, label = "copy", className = "", onCopy }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -16,6 +17,7 @@ export function CopyButton({ value, label = "copy", className = "" }: CopyButton
         try {
           await navigator.clipboard.writeText(value);
           setCopied(true);
+          onCopy?.();
           setTimeout(() => setCopied(false), 1600);
         } catch {
           /* ignore */
@@ -38,9 +40,10 @@ interface CodeBlockCopyProps {
   code: string;
   label?: string;
   className?: string;
+  onCopy?: () => void;
 }
 
-export function CodeBlockCopy({ code, label, className = "" }: CodeBlockCopyProps) {
+export function CodeBlockCopy({ code, label, className = "", onCopy }: CodeBlockCopyProps) {
   return (
     <div
       className={
@@ -50,7 +53,12 @@ export function CodeBlockCopy({ code, label, className = "" }: CodeBlockCopyProp
     >
       <span className="text-primary">$</span>
       <code className="flex-1 overflow-x-auto whitespace-nowrap">{code}</code>
-      <CopyButton value={code} label={label ?? "copy"} className="border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white" />
+      <CopyButton
+        value={code}
+        label={label ?? "copy"}
+        onCopy={onCopy}
+        className="border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+      />
     </div>
   );
 }

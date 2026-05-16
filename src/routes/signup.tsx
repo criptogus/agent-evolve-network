@@ -8,19 +8,30 @@ import { Logo } from "@/components/site/Logo";
 import { toast } from "sonner";
 import { captureRefFromUrl, getStoredRef, clearStoredRef } from "@/lib/referrals/capture";
 import { claimReferral } from "@/lib/referrals/referrals.functions";
+import { track, EVENTS } from "@/lib/analytics";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
       { title: "Create account — Super Agent Skill" },
-      { name: "description", content: "Create your Super Agent Skill account and connect any MCP-compatible agent in 30 seconds." },
+      {
+        name: "description",
+        content:
+          "Create your Super Agent Skill account and connect any MCP-compatible agent in 30 seconds.",
+      },
       { property: "og:title", content: "Create account — Super Agent Skill" },
-      { property: "og:description", content: "Create your account and connect Claude, Cursor, Codex or Grok via MCP in 30 seconds." },
+      {
+        property: "og:description",
+        content:
+          "Create your account and connect Claude, Cursor, Codex or Grok via MCP in 30 seconds.",
+      },
       { name: "robots", content: "noindex" },
     ],
     links: [{ rel: "canonical", href: "https://superagentskill.com/signup" }],
   }),
-  validateSearch: (s: Record<string, unknown>) => ({ next: typeof s.next === "string" ? s.next : undefined }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : undefined,
+  }),
   component: SignupPage,
 });
 
@@ -34,6 +45,7 @@ function SignupPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    track(EVENTS.signupStarted);
     // First-touch referral capture from ?ref=CODE on landing.
     captureRefFromUrl();
 
@@ -44,13 +56,21 @@ function SignupPage() {
       try {
         const r = await claimReferral({ data: { code, source_url: window.location.href } });
         if (r?.ok) clearStoredRef();
-      } catch { /* non-fatal */ }
+      } catch {
+        /* non-fatal */
+      }
     };
     supabase.auth.getSession().then(async ({ data }) => {
-      if (data.session) { await tryClaim(); navigate({ to: target, replace: true }); }
+      if (data.session) {
+        await tryClaim();
+        navigate({ to: target, replace: true });
+      }
     });
     const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
-      if (s) { await tryClaim(); navigate({ to: target, replace: true }); }
+      if (s) {
+        await tryClaim();
+        navigate({ to: target, replace: true });
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate, next]);
@@ -62,16 +82,22 @@ function SignupPage() {
       return;
     }
     setBusy(true);
+    track(EVENTS.signupSubmitted, { method: "email" });
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: name, accepted_terms_at: new Date().toISOString(), accepted_ip_assignment: true },
+        data: {
+          full_name: name,
+          accepted_terms_at: new Date().toISOString(),
+          accepted_ip_assignment: true,
+        },
       },
     });
     setBusy(false);
     if (error) return toast.error(error.message);
+    track(EVENTS.signupSucceeded, { method: "email" });
     toast.success("Check your inbox to confirm your email");
     navigate({ to: "/login", search: { next } });
   };
@@ -82,6 +108,7 @@ function SignupPage() {
       return;
     }
     setBusy(true);
+    track(EVENTS.signupSubmitted, { method: "google" });
     const { error } = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: `${window.location.origin}${next || "/account/billing"}`,
     });
@@ -101,7 +128,9 @@ function SignupPage() {
         </Link>
         <div className="w-full rounded-2xl border border-border bg-background p-7 shadow-elevated">
           <h1 className="text-2xl font-semibold tracking-tight">Create your account</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Start with the free Hacker plan. Upgrade anytime.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Start with the free Hacker plan. Upgrade anytime.
+          </p>
 
           <button
             type="button"
@@ -142,12 +171,46 @@ function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
             />
-            <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-xs text-foreground/90">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="font-mono uppercase tracking-wider text-primary">
-                  Before you sign — what you're assigning
-                </span>
-                <div className="flex items-center gap-2">
+            <div className="rounded-md border border-border bg-surface/40 p-3 text-xs text-muted-foreground">
+              <span className="text-foreground">
+                Browsing the marketplace and connecting your agent stays always free and assigns
+                nothing.
+              </span>{" "}
+              IP assignment only applies if you choose to publish or submit a package later.
+              <details className="mt-2">
+                <summary className="cursor-pointer select-none font-mono text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground">
+                  What publishing assigns
+                </summary>
+                <ul className="mt-2 space-y-1.5">
+                  <li className="flex gap-2">
+                    <span className="text-primary">→</span>
+                    <span>
+                      Any{" "}
+                      <span className="text-foreground">skill, playbook, soul or guardrail</span>{" "}
+                      you publish, submit for review, or upload to be improved becomes the{" "}
+                      <span className="text-foreground">
+                        exclusive property of Super Agent Skill, Inc.
+                      </span>
+                    </span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-primary">→</span>
+                    <span>
+                      We may{" "}
+                      <span className="text-foreground">use, modify, sublicense and resell</span> it
+                      worldwide, without further notice or compensation.
+                    </span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-primary">→</span>
+                    <span>
+                      You keep the right to{" "}
+                      <span className="text-foreground">use your own work</span> elsewhere — but you
+                      can't revoke our rights later.
+                    </span>
+                  </li>
+                </ul>
+                <div className="mt-2 flex items-center gap-3">
                   <Link
                     to="/contributor-faq"
                     className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
@@ -162,38 +225,7 @@ function SignupPage() {
                     Read §6.1 →
                   </Link>
                 </div>
-              </div>
-              <ul className="space-y-1.5 text-muted-foreground">
-                <li className="flex gap-2">
-                  <span className="text-primary">→</span>
-                  <span>
-                    Any <span className="text-foreground">skill, playbook, soul or guardrail</span> you
-                    publish, submit for review, or upload to be improved becomes the{" "}
-                    <span className="text-foreground">exclusive property of Super Agent Skill, Inc.</span>
-                  </span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-primary">→</span>
-                  <span>
-                    We may <span className="text-foreground">use, modify, sublicense and resell</span> it
-                    worldwide, without further notice or compensation.
-                  </span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-primary">→</span>
-                  <span>
-                    You keep the right to <span className="text-foreground">use your own work</span>{" "}
-                    elsewhere — but you can't revoke our rights later.
-                  </span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-primary">→</span>
-                  <span>
-                    Browsing the marketplace stays{" "}
-                    <span className="text-foreground">always free</span> and assigns nothing.
-                  </span>
-                </li>
-              </ul>
+              </details>
             </div>
             <label className="flex cursor-pointer items-start gap-2 rounded-md border border-border bg-surface/40 p-3 text-xs text-muted-foreground">
               <input
@@ -203,19 +235,19 @@ function SignupPage() {
                 className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
               />
               <span>
-                I have read the summary above and agree to the{" "}
+                I agree to the{" "}
                 <Link to="/terms" className="text-foreground underline-offset-2 hover:underline">
                   Terms
-                </Link>{" "}
-                and the{" "}
+                </Link>
+                , including the{" "}
                 <Link
                   to="/terms"
                   hash="contributor-ip"
                   className="text-foreground underline-offset-2 hover:underline"
                 >
                   Contributor IP Assignment (§6.1)
-                </Link>
-                .
+                </Link>{" "}
+                that applies if I publish.
               </span>
             </label>
             <button
@@ -229,7 +261,9 @@ function SignupPage() {
 
           <p className="mt-4 text-center text-xs text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="text-foreground hover:underline">Sign in</Link>
+            <Link to="/login" className="text-foreground hover:underline">
+              Sign in
+            </Link>
           </p>
         </div>
       </section>

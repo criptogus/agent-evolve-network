@@ -7,9 +7,11 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
 import { ReferralCapture } from "@/components/referrals/ReferralCapture";
+import { initAnalytics, trackPageView } from "@/lib/analytics";
 import { getNormalizedMalformedOauthAuthorizeUrl } from "@/lib/oauth/normalize";
 
 function NotFoundComponent() {
@@ -81,19 +83,39 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Super Agent Skill" },
-      { name: "description", content: "Super Agent Skill turns AI agents into continuously evolving specialists via MCP." },
+      {
+        name: "description",
+        content:
+          "Super Agent Skill turns AI agents into continuously evolving specialists via MCP.",
+      },
       { name: "author", content: "Super Agent Skill" },
       { name: "google-site-verification", content: "_XaKwKLlTaHmSy8DgH5RB4dmOTlyKH0HYjcRylGuacQ" },
       { property: "og:site_name", content: "Super Agent Skill" },
       { property: "og:title", content: "Super Agent Skill" },
-      { property: "og:description", content: "Super Agent Skill turns AI agents into continuously evolving specialists via MCP." },
+      {
+        property: "og:description",
+        content:
+          "Super Agent Skill turns AI agents into continuously evolving specialists via MCP.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@superagentskill" },
       { name: "twitter:title", content: "Super Agent Skill" },
-      { name: "twitter:description", content: "Super Agent Skill turns AI agents into continuously evolving specialists via MCP." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31e8f1c8-d61a-43e0-a6cf-bc7dc826978f/id-preview-a810735d--b00a8021-9d8d-4f49-a581-628727b71f68.lovable.app-1778445620031.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31e8f1c8-d61a-43e0-a6cf-bc7dc826978f/id-preview-a810735d--b00a8021-9d8d-4f49-a581-628727b71f68.lovable.app-1778445620031.png" },
+      {
+        name: "twitter:description",
+        content:
+          "Super Agent Skill turns AI agents into continuously evolving specialists via MCP.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31e8f1c8-d61a-43e0-a6cf-bc7dc826978f/id-preview-a810735d--b00a8021-9d8d-4f49-a581-628727b71f68.lovable.app-1778445620031.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31e8f1c8-d61a-43e0-a6cf-bc7dc826978f/id-preview-a810735d--b00a8021-9d8d-4f49-a581-628727b71f68.lovable.app-1778445620031.png",
+      },
     ],
     links: [
       {
@@ -127,13 +149,29 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AnalyticsTracker() {
+  const router = useRouter();
+  useEffect(() => {
+    initAnalytics();
+    trackPageView(router.state.location.pathname);
+    const unsub = router.subscribe("onResolved", ({ toLocation }) => {
+      trackPageView(toLocation.pathname);
+    });
+    return unsub;
+  }, [router]);
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
+      <AnalyticsTracker />
       <ReferralCapture />
-      <a href="#main" className="skip-link">Skip to main content</a>
+      <a href="#main" className="skip-link">
+        Skip to main content
+      </a>
       <div id="main">
         <Outlet />
       </div>

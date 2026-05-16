@@ -1,10 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowRight, Check, Copy, Plug, Sparkles, Search, Upload, Terminal, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Copy,
+  Plug,
+  Sparkles,
+  Search,
+  Upload,
+  Terminal,
+  Zap,
+} from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
 import { CodeBlock } from "@/components/site/CodeBlock";
 import { McpTester } from "@/components/site/McpTester";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { track, EVENTS } from "@/lib/analytics";
 
 export const Route = createFileRoute("/connect")({
   head: () => ({
@@ -240,8 +251,7 @@ transport = "http"`,
     name: "n8n",
     short: "Workflow agent",
     badge: "MCP Client node",
-    blurb:
-      "Use the MCP Client node inside any AI Agent workflow. Tools become callable steps.",
+    blurb: "Use the MCP Client node inside any AI Agent workflow. Tools become callable steps.",
     steps: [
       "Add the MCP Client node to your AI Agent.",
       "Set transport to HTTP and paste the URL.",
@@ -441,8 +451,11 @@ function CopyInline({ value }: { value: string }) {
         try {
           await navigator.clipboard.writeText(value);
           setCopied(true);
+          track(EVENTS.mcpUrlCopied, { location: "connect" });
           setTimeout(() => setCopied(false), 1500);
-        } catch {}
+        } catch {
+          /* clipboard unavailable */
+        }
       }}
       className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-accent"
       aria-label="Copy endpoint"
@@ -548,10 +561,10 @@ function ConnectPage() {
             OAuth login + client auto-config, no JSON editing
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            The CLI runs the full OAuth flow in your browser (loopback PKCE),
-            stores the token locally, and writes the MCP config for your client
-            — including the auth-gated write tools. It also ships a local stdio
-            bridge that injects and refreshes the token automatically.
+            The CLI runs the full OAuth flow in your browser (loopback PKCE), stores the token
+            locally, and writes the MCP config for your client — including the auth-gated write
+            tools. It also ships a local stdio bridge that injects and refreshes the token
+            automatically.
           </p>
           <div className="mt-4">
             <CodeBlock
@@ -565,9 +578,8 @@ npx super-agent logout     # revoke + forget`}
             />
           </div>
           <p className="mt-3 text-[11px] text-muted-foreground">
-            Stdio-only client? Point it at{" "}
-            <code className="font-mono">npx -y super-agent mcp</code> — the
-            bridge handles auth for you.
+            Stdio-only client? Point it at <code className="font-mono">npx -y super-agent mcp</code>{" "}
+            — the bridge handles auth for you.
           </p>
         </section>
 
@@ -624,7 +636,10 @@ npx super-agent logout     # revoke + forget`}
             For write tools (
             <code className="rounded bg-muted px-1 py-0.5 text-[11px]">upload_packages</code>,{" "}
             <code className="rounded bg-muted px-1 py-0.5 text-[11px]">request_primitive</code>),
-            append <code className="rounded bg-muted px-1 py-0.5 text-[11px]">Authorization: Bearer &lt;token&gt;</code>{" "}
+            append{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
+              Authorization: Bearer &lt;token&gt;
+            </code>{" "}
             from{" "}
             <Link to="/account/tokens" className="text-primary hover:underline">
               Account → Tokens
@@ -650,7 +665,8 @@ npx super-agent logout     # revoke + forget`}
               Or hit the public health endpoint from your terminal
             </summary>
             <p className="mt-2 text-sm text-muted-foreground">
-              Confirms reachability from your network and enumerates the live tool catalog — no auth.
+              Confirms reachability from your network and enumerates the live tool catalog — no
+              auth.
             </p>
             <div className="mt-3">
               <CodeBlock
@@ -681,7 +697,10 @@ npx super-agent logout     # revoke + forget`}
                     <li key={c.id}>
                       <button
                         type="button"
-                        onClick={() => setActiveClient(c.id)}
+                        onClick={() => {
+                          setActiveClient(c.id);
+                          track(EVENTS.connectClientSelected, { client: c.id });
+                        }}
                         className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-left transition-colors ${
                           active
                             ? "bg-primary/10 text-foreground"
