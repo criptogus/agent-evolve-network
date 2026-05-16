@@ -11,6 +11,7 @@ import {
   getTrustTool,
   getMethodologyTool,
   reviewSkillTool,
+  submitFeedbackTool,
 } from "@/lib/mcp/tools/skills";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
@@ -60,6 +61,7 @@ const mcp = createMcpServer({
     uploadPackagesTool,
     requestPrimitiveTool,
     reportExecutionTool,
+    submitFeedbackTool,
   ],
 });
 
