@@ -74,9 +74,20 @@ A package is accepted when it:
 
 ```bash
 bun run validate:content
+bun run audit:skills
 ```
 
-The validator checks schema, slug uniqueness, file naming and example count. CI runs the same script on every PR.
+The validator checks schema, slug uniqueness, file naming and example count.
+
+`audit:skills` is the **marketplace security gate**: every package is scanned
+for prompt-injection / jailbreak signals (shared with the runtime guard) and
+for malicious "functions" embedded in instructions — remote code execution
+(`curl … | sh`), credential/dotenv exfiltration, reverse shells, beacons to
+non-allowlisted hosts, hardcoded keys, and obfuscated payloads. A package is
+**rejected** when its worst finding is `high` or `critical`. A skill whose job
+*is* security testing must declare a `security` / `red-team` / `adversarial`
+tag so its quoted example payloads are treated as data, not as attacks. Both
+scripts run in CI on every PR that touches `content/`.
 
 ### Step 5 — Open a pull request
 
