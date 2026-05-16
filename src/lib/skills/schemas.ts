@@ -14,6 +14,13 @@ export const PackageDraftSchema = z.object({
     output_schema: z.record(z.string(), z.any()).default({}),
     must: z.array(z.string()).default([]),
     must_not: z.array(z.string()).default([]),
+    // How safety is enforced. "prompt" = relies on the model following the
+    // system_prompt (default). "deterministic_gate" = enforced by a code gate
+    // before/after the LLM call (e.g. regex/AST/policy-engine). "hybrid" = both.
+    // The evaluator uses this to score the right thing — a deterministic_gate
+    // skill is NOT penalized for the model lacking refusal markers, because the
+    // gate (not the model) is what blocks the attack.
+    enforcement: z.enum(["prompt", "deterministic_gate", "hybrid"]).default("prompt"),
   }),
   examples: z.array(z.object({
     title: z.string(),
