@@ -149,6 +149,15 @@ export const runForgeLoop = createServerFn({ method: "POST" })
       });
     }
 
+    const feedback_request = await createFeedbackRequest(supabase, {
+      kind: "forge_loop",
+      packageId: pkg.id,
+      versionId: newVersion?.id ?? ver.id,
+      sourceUserId: userId,
+      source: "ui",
+      context: { hotswapped: !!newVersion, before_score: before.evaluation.overall_score, after_score: after?.evaluation.overall_score ?? null },
+    });
+
     return {
       package: pkg,
       base_version: ver,
@@ -163,6 +172,7 @@ export const runForgeLoop = createServerFn({ method: "POST" })
         learn: learn.stages,
         re_evaluate: after?.stages ?? [],
       },
+      feedback_request,
     };
   });
 
