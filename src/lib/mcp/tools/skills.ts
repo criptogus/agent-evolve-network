@@ -1083,19 +1083,42 @@ export const getMethodologyTool = defineTool({
 export const reviewSkillTool = defineTool({
   name: "review_skill",
   description:
-    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns overall_score (0-100), grade, per-dimension scores (with `signals_hit`/`signals_total` so you can see why a pillar landed low) and `top_actions` anchored to concrete file evidence (line number + excerpt) when available. The detection signals, weights and thresholds remain server-side. NOTE: signal detection AND feedback are multilingual (EN, PT-BR, ES, FR, DE, IT) — write the file in any of those and you'll get top_actions/diagnostics/next_steps back in that same language. The engine is calibrated for Markdown skill files; long-form governance prose may underscore — see `language` and `format_caveat` in the response. Read-only, no auth.",
+    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns `overall_score` plus a split `structural_score` vs `content_quality_score` so format mismatch doesn't dominate the verdict; `expected_ceiling` per `doc_class` so the operator knows the realistic top before chasing diminishing returns; per-pillar scores (`signals_hit`/`signals_total`) and `top_actions` anchored to file evidence with an `evidence_anchored` honesty flag. Optional `doc_class` (skill | governance | playbook-ops | guardrail-ops | auto) and optional `previous_hash` + `previous_overall_score` produce a `delta` between runs. An `input_warning` is emitted BEFORE the score if the content looks truncated/summarised. Multilingual signal detection AND feedback (EN, PT-BR, ES, FR, DE, IT). Read-only, no auth.",
   parameters: z.object({
     name: z.string().min(1).max(200).describe("File or skill name (for the report header only)"),
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).default("skill"),
-    content: z.string().min(20).max(120_000).describe("Raw markdown / prompt text of the local file"),
+    content: z.string().min(20).max(120_000).describe("Raw markdown / prompt text of the local file — pass verbatim, not summarised"),
+    doc_class: z
+      .enum(["skill", "governance", "playbook-ops", "guardrail-ops", "auto"])
+      .default("auto")
+      .describe("Declare the document class to set the realistic ceiling and weight the structural vs content axes. `auto` infers from `type` + content shape."),
+    previous_hash: z.string().max(32).optional().describe("fnv1a hash from a previous run — enables delta_vs_previous in the response"),
+    previous_overall_score: z.number().int().min(0).max(100).optional(),
   }),
-  execute: async ({ name, type, content }) => {
+  execute: async ({ name, type, content, doc_class, previous_hash, previous_overall_score }) => {
     const ids = Object.keys(PILLAR_TITLE) as PillarId[];
     const weights = TYPE_WEIGHTS[type] ?? TYPE_WEIGHTS.skill;
     const details = ids.map((id) => scorePillar(id, content));
     const language = detectLanguage(content);
     const bundle = bundleFor(language.lang);
+    const extras = extrasFor(language.lang);
 
+    // Doc class — declared or inferred. Drives ceiling + grade axis.
+    const docClass: DocClass = doc_class === "auto" ? inferDocClass(content, type) : doc_class;
+    const ceiling = DOC_CLASS_CEILING[docClass];
+
+    // Pre-score input sanity. Surface BEFORE the score so the operator doesn't
+    // chase a misleading verdict on a summary.
+    const warnKind = inputWarning(content);
+    const inputWarn = warnKind
+      ? warnKind === "short_input"
+        ? extras.warn_short
+        : warnKind === "summary_markers"
+          ? extras.warn_summary
+          : extras.warn_outline
+      : null;
+
+    // Per-pillar overall score (existing logic — kept for back-compat).
     let wSum = 0;
     let wTotal = 0;
     for (const r of details) {
@@ -1104,6 +1127,27 @@ export const reviewSkillTool = defineTool({
       wTotal += w;
     }
     const overall = Math.round(wSum / wTotal);
+
+    // Axis split — weight each pillar's structural/content earnings by the
+    // pillar's TYPE_WEIGHTS so the axes share the same scale as overall_score.
+    let sEarned = 0, sTotal = 0, cEarned = 0, cTotal = 0;
+    for (const r of details) {
+      const w = weights[r.id] ?? 1;
+      sEarned += r.structural_earned * w;
+      sTotal += r.structural_total * w;
+      cEarned += r.content_earned * w;
+      cTotal += r.content_total * w;
+    }
+    const structuralScore = sTotal > 0 ? Math.round((sEarned / sTotal) * 100) : null;
+    const contentQualityScore = cTotal > 0 ? Math.round((cEarned / cTotal) * 100) : null;
+
+    // Verdict score: governance docs are graded on content_quality_score so
+    // the F-by-format-mismatch failure mode is fixed. Skill-class docs keep
+    // the blended overall score so the existing rubric isn't disturbed.
+    const verdictScore =
+      docClass === "governance" && contentQualityScore !== null
+        ? contentQualityScore
+        : overall;
 
     const pillars = details.map((r) => ({
       pillar: r.id,
@@ -1120,10 +1164,18 @@ export const reviewSkillTool = defineTool({
             : null,
     }));
 
+    // Suppress actions that target structural improvements already above the
+    // ceiling — those are the "cosmetic" actions the operator was warned about.
     const ranked = [...details]
       .map((r) => ({ ...r, impact: r.deficit * (weights[r.id] ?? 1) }))
+      .filter((r) => {
+        if (r.impact <= 0) return false;
+        if (docClass === "governance" && r.structural_total > r.content_total && r.score >= ceiling) {
+          return false;
+        }
+        return true;
+      })
       .sort((a, b) => b.impact - a.impact)
-      .filter((r) => r.impact > 0)
       .slice(0, 4);
 
     const topActions = ranked.map((r, i) => buildAction(r, content, i + 1, bundle));
@@ -1135,12 +1187,41 @@ export const reviewSkillTool = defineTool({
           ? bundle.caveat_low_conf
           : null;
 
+    // Delta vs the caller's last run. Hash is non-crypto; client sends back
+    // whatever we emitted previously and we compare overall + content hash.
+    const contentHash = fnv1aHex(content);
+    const delta =
+      typeof previous_overall_score === "number"
+        ? {
+            previous_overall_score,
+            current_overall_score: overall,
+            change: overall - previous_overall_score,
+            same_content: previous_hash === contentHash,
+          }
+        : null;
+
     return json({
       file: name,
       type,
       engine: ENGINE,
+      // Pre-score signal — surfaced first so the host can act on it before
+      // taking the verdict at face value.
+      input_warning: inputWarn,
+      doc_class: {
+        value: docClass,
+        inferred: doc_class === "auto",
+        expected_ceiling: ceiling,
+        rationale: DOC_CLASS_RATIONALE[docClass],
+        ceiling_note: extras.ceiling_note(ceiling, docClass, DOC_CLASS_RATIONALE[docClass]),
+      },
+      // Two axes + the verdict that derives from them. Operators can now see
+      // whether a low number is a format issue or a content issue.
       overall_score: overall,
-      grade: gradeBand(overall),
+      structural_score: structuralScore,
+      content_quality_score: contentQualityScore,
+      verdict_score: verdictScore,
+      grade: gradeBand(verdictScore),
+      axis_note: extras.axis_caveat,
       language: {
         detected: language.lang,
         confidence: Math.round(language.confidence * 100) / 100,
@@ -1149,12 +1230,20 @@ export const reviewSkillTool = defineTool({
       format_caveat: formatCaveat ?? bundle.caveat_default,
       pillars,
       top_actions: topActions,
+      content_hash: contentHash,
+      delta_vs_previous: delta,
       // next_steps are instructions to the host LLM agent (not shown to the
       // skill author), so always English regardless of the file's language.
       next_steps:
         topActions.length === 0
           ? [MESSAGES.en.next_grade_a]
-          : [MESSAGES.en.next_apply, MESSAGES.en.next_rerun, MESSAGES.en.next_diagnostic],
+          : [
+              MESSAGES.en.next_apply,
+              MESSAGES.en.next_rerun,
+              MESSAGES.en.next_diagnostic,
+              "Pass `previous_hash` + `previous_overall_score` from this response into the next call to get a `delta_vs_previous`.",
+              "Honour `doc_class.expected_ceiling` — actions beyond that point are cosmetic, not quality wins.",
+            ],
     });
   },
 });
