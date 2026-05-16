@@ -39,7 +39,8 @@ export const Route = createFileRoute("/api/public/search")({
 
         const { data, error } = await query;
         if (error) {
-          return new Response(JSON.stringify({ error: error.message }), {
+          console.error("[api/public/search] db error:", error);
+          return new Response(JSON.stringify({ error: "internal_server_error" }), {
             status: 500,
             headers: { "Content-Type": "application/json", ...CORS },
           });

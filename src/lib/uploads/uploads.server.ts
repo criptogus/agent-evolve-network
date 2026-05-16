@@ -1,6 +1,7 @@
 // Shared bulk-upload pipeline used by both the UI server fn and the MCP tool.
 import { generateDraft, insertDraftPackage, inferType } from "@/lib/admin/author.server";
 import { inspectContent } from "@/lib/security/prompt-injection-guard";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export type UploadFileInput = {
   name: string;
@@ -51,7 +52,7 @@ export async function processBulkUpload(
       if (guard.severity !== "none") {
         // Best-effort audit; never block on logging failures.
         try {
-          await supabase.from("upload_injection_audit").insert({
+          await (supabaseAdmin as any).from("upload_injection_audit").insert({
             user_id: userId,
             filename: f.name,
             inferred_type: inferred,

@@ -20,7 +20,8 @@ export const Route = createFileRoute("/api/telemetry")({
           const row = await ingestExecution(parsed.data, supabaseAdmin.from("skill_executions") as any);
           return Response.json({ ok: true, anonymized_workspace: row.workspace_hash });
         } catch (e) {
-          return Response.json({ error: (e as Error).message }, { status: 500 });
+          console.error("[api/telemetry] error:", e);
+          return Response.json({ error: "internal_server_error" }, { status: 500 });
         }
       },
     },

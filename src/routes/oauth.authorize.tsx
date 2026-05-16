@@ -83,6 +83,10 @@ function AuthorizePage() {
   }
 
   function deny() {
+    if (!redirectOk) {
+      setError("Invalid redirect URI — cannot deny safely.");
+      return;
+    }
     window.location.href = buildDeniedUrl();
   }
 
