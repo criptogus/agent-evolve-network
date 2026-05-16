@@ -131,9 +131,11 @@ function Hero() {
             </div>
             <h1 className="mt-5 text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-[64px]">
               Turn Claude or Cursor into a{" "}
-              <span className="relative inline-block align-baseline text-primary">
+              <span className="relative inline-block max-w-full align-baseline text-primary">
+                {/* Sizer: must be the LONGEST word so the absolute-positioned
+                    Typewriter never overflows into the right column. */}
                 <span aria-hidden className="invisible whitespace-nowrap">
-                  cybersecurity expert.
+                  fintech compliance officer.
                 </span>
                 <Typewriter
                   className="absolute left-0 top-0 whitespace-nowrap"
