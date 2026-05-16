@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
 import { CreditsPill } from "./CreditsPill";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { getMyAdminStatus } from "@/lib/admin/accounts.functions";
 
 const GITHUB_URL = "https://github.com/criptogus/agent-evolve-network";
 const TWITTER_URL = "https://x.com/superagentskill";
