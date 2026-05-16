@@ -52,7 +52,7 @@ export async function processBulkUpload(
       if (guard.severity !== "none") {
         // Best-effort audit; never block on logging failures.
         try {
-          await supabase.from("upload_injection_audit").insert({
+          await (supabaseAdmin as any).from("upload_injection_audit").insert({
             user_id: userId,
             filename: f.name,
             inferred_type: inferred,
