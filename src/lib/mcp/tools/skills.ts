@@ -1201,7 +1201,7 @@ export const getMethodologyTool = defineTool({
 export const reviewSkillTool = defineTool({
   name: "review_skill",
   description:
-    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns `overall_score` plus a split `structural_score` vs `content_quality_score` so format mismatch doesn't dominate the verdict; `expected_ceiling` per `doc_class` so the operator knows the realistic top before chasing diminishing returns; per-pillar scores (`signals_hit`/`signals_total`) and `top_actions` anchored to file evidence with an `evidence_anchored` honesty flag. Optional `doc_class` (skill | governance | playbook-ops | guardrail-ops | auto) and optional `previous_hash` + `previous_overall_score` produce a `delta` between runs. An `input_warning` is emitted BEFORE the score if the content looks truncated/summarised. Multilingual signal detection AND feedback (EN, PT-BR, ES, FR, DE, IT). Read-only, no auth.",
+    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns `overall_score` plus a split `structural_score` vs `content_quality_score` so format mismatch doesn't dominate the verdict; `expected_ceiling` per `doc_class` so the operator knows the realistic top before chasing diminishing returns; per-pillar scores (`signals_hit`/`signals_total`) and `top_actions` anchored to file evidence with an `evidence_anchored` honesty flag. A fast LLM-backed semantic pass runs alongside the deterministic detectors to fix false-zero pillars (content covered with unconventional vocabulary) and to relocate evidence anchors when the keyword match is misleading; set `semantic_check: false` to skip. Optional `doc_class` (skill | governance | playbook-ops | guardrail-ops | auto) and optional `previous_hash` + `previous_overall_score` produce a `delta` between runs. An `input_warning` is emitted BEFORE the score if the content looks truncated/summarised. Multilingual signal detection AND feedback (EN, PT-BR, ES, FR, DE, IT). Read-only, no auth.",
   parameters: z.object({
     name: z.string().min(1).max(200).describe("File or skill name (for the report header only)"),
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).default("skill"),
@@ -1210,10 +1210,14 @@ export const reviewSkillTool = defineTool({
       .enum(["skill", "governance", "playbook-ops", "guardrail-ops", "auto"])
       .default("auto")
       .describe("Declare the document class to set the realistic ceiling and weight the structural vs content axes. `auto` infers from `type` + content shape."),
+    semantic_check: z
+      .boolean()
+      .default(true)
+      .describe("Run the LLM-backed semantic pass to catch pillars covered with non-conventional vocabulary and to improve evidence anchors. Set false for offline/zero-cost runs."),
     previous_hash: z.string().max(32).optional().describe("fnv1a hash from a previous run — enables delta_vs_previous in the response"),
     previous_overall_score: z.number().int().min(0).max(100).optional(),
   }),
-  execute: async ({ name, type, content, doc_class, previous_hash, previous_overall_score }) => {
+  execute: async ({ name, type, content, doc_class, semantic_check, previous_hash, previous_overall_score }) => {
     const ids = Object.keys(PILLAR_TITLE) as PillarId[];
     const weights = TYPE_WEIGHTS[type] ?? TYPE_WEIGHTS.skill;
     const details = ids.map((id) => scorePillar(id, content));
@@ -1235,6 +1239,53 @@ export const reviewSkillTool = defineTool({
           ? extras.warn_summary
           : extras.warn_outline
       : null;
+
+    // Semantic pass — only run when enabled, content is substantive, and the
+    // input isn't already flagged as truncated (no point asking an LLM to
+    // judge coverage of a summary). Result is a per-pillar verdict map or
+    // null if the gateway is unavailable / errored / disabled.
+    const semantic =
+      semantic_check && !warnKind && content.length >= 400
+        ? await semanticCheck(content, language.lang)
+        : null;
+
+    // Apply semantic uplift to pillar scores. Rationale: if a pillar scored
+    // low purely because the detectors didn't recognise the vocabulary, lift
+    // it toward (but not above) what the LLM thinks coverage warrants. This
+    // never lowers a score — keyword hits remain authoritative on the upside.
+    const semanticUplifts: Record<string, { from: number; to: number; confidence: number }> = {};
+    if (semantic) {
+      for (const r of details) {
+        const v = semantic.get(r.id);
+        if (!v || !v.covered) continue;
+        // Confidence-weighted target: 0.6 → ~60, 0.9 → ~78, 1.0 → ~82.
+        // Capped so the semantic pass never single-handedly pushes a pillar
+        // into "strong" without keyword corroboration.
+        const target = Math.round(40 + v.confidence * 45);
+        if (target > r.score) {
+          const from = r.score;
+          r.score = Math.min(82, target);
+          r.deficit = 100 - r.score;
+          // Re-pro-rate the axes so the verdict_score also benefits.
+          const pillarTotal = r.structural_total + r.content_total;
+          if (pillarTotal > 0) {
+            const ratio = r.score / 100;
+            r.structural_earned = r.structural_total * ratio;
+            r.content_earned = r.content_total * ratio;
+          }
+          semanticUplifts[r.id] = { from, to: r.score, confidence: v.confidence };
+        }
+        // Improve evidence anchor when the semantic pass found a better quote.
+        if (v.evidence_line !== null && v.evidence_quote) {
+          const quote = v.evidence_quote.length > 140 ? v.evidence_quote.slice(0, 137) + "…" : v.evidence_quote;
+          // Prepend so buildAction picks this up first; keep keyword evidence
+          // as fallback in case the LLM anchor is later contested.
+          r.evidence.unshift({ line: v.evidence_line, excerpt: quote });
+          // Treat as anchored even when keyword signals_hit was 0.
+          if (r.signals_hit === 0) r.signals_hit = 1;
+        }
+      }
+    }
 
     // Per-pillar overall score (existing logic — kept for back-compat).
     let wSum = 0;
@@ -1274,6 +1325,7 @@ export const reviewSkillTool = defineTool({
       status: statusBand(r.score),
       signals_hit: r.signals_hit,
       signals_total: r.signals_total,
+      semantic_uplift: semanticUplifts[r.id] ?? null,
       diagnostic:
         r.score === 0
           ? bundle.diag_zero
@@ -1340,6 +1392,14 @@ export const reviewSkillTool = defineTool({
       verdict_score: verdictScore,
       grade: gradeBand(verdictScore),
       axis_note: extras.axis_caveat,
+      semantic_pass: {
+        ran: semantic !== null,
+        model: semantic !== null ? SEMANTIC_MODEL : null,
+        skipped_reason: semantic === null
+          ? (!semantic_check ? "disabled_by_caller" : warnKind ? "input_warning" : content.length < 400 ? "content_too_short" : "gateway_unavailable_or_errored")
+          : null,
+        uplifts: Object.entries(semanticUplifts).map(([pillar, u]) => ({ pillar, ...u })),
+      },
       language: {
         detected: language.lang,
         confidence: Math.round(language.confidence * 100) / 100,
