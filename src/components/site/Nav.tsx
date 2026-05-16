@@ -237,6 +237,11 @@ export function Nav() {
                       <MobileLink to="/account/tokens" onNavigate={() => setOpen(false)}>
                         API tokens
                       </MobileLink>
+                      {isAdmin && (
+                        <MobileLink to="/admin" onNavigate={() => setOpen(false)}>
+                          Admin
+                        </MobileLink>
+                      )}
                       <button
                         onClick={() => { setOpen(false); signOut(); }}
                         className="rounded-md px-3 py-2.5 text-left text-[15px] text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
