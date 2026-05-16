@@ -552,6 +552,12 @@ interface PillarDetail {
   signals_total: number;
   signals_hit: number;
   evidence: Array<{ line: number; excerpt: string }>;
+  // Axis split — surfaced at the top level so the operator can see whether a
+  // low score reflects format mismatch (structural) or substantive gaps (content).
+  structural_earned: number;
+  structural_total: number;
+  content_earned: number;
+  content_total: number;
 }
 
 // Find the line number + a short excerpt for the first regex hit. Used to
