@@ -322,7 +322,7 @@ export const uploadPackagesTool = defineTool({
 // Everything between this banner and the tool exports is server-private.
 // ----------------------------------------------------------------------------
 
-const ENGINE = "sas-eval/3";
+const ENGINE = "sas-eval/4";
 
 type PillarId =
   | "identity"
@@ -349,6 +349,92 @@ const TYPE_WEIGHTS: Record<string, Partial<Record<PillarId, number>>> = {
   soul: { identity: 2, scope: 0.8, procedure: 0.6, examples: 0.9, guardrails: 1.2, trust: 0.9, portability: 0.9 },
   guardrail: { identity: 0.7, scope: 1, procedure: 1, examples: 1, guardrails: 2, trust: 1.1, portability: 0.9 },
 };
+
+// ----------------------------------------------------------------------------
+// Doc class — declared by the caller or inferred from the content shape. Drives
+// expected_ceiling and the structural/content axis split, so a long-form
+// governance doc isn't graded on the same scale as a kebab-case SKILL.md.
+// This is the single most-requested fix from real-world iteration: stop
+// rewarding format-chasing and stop hiding the realistic ceiling from the
+// operator until they've burned 5 retries discovering it empirically.
+// ----------------------------------------------------------------------------
+type DocClass = "skill" | "governance" | "playbook-ops" | "guardrail-ops";
+type DocClassInput = DocClass | "auto";
+
+const DOC_CLASS_CEILING: Record<DocClass, number> = {
+  skill: 95,
+  "playbook-ops": 92,
+  "guardrail-ops": 90,
+  governance: 82,
+};
+
+const DOC_CLASS_RATIONALE: Record<DocClass, string> = {
+  skill: "Calibrated for kebab-case SKILL.md with named sections and worked input/output. Grade A is realistically reachable.",
+  "playbook-ops": "Multi-step ops procedures. Heavier weight on the procedure axis; A reachable with explicit branches + stop condition.",
+  "guardrail-ops": "Policy/guardrail doc. A reachable when enforcement is described as deterministic (gate + exit code + tests), not just prose.",
+  governance: "Long-form governance/policy prose. Realistic ceiling is around B — the engine's structural signals are calibrated for skill files, so content quality matters more than format here. Actions targeting structural format above this ceiling are cosmetic.",
+};
+
+function inferDocClass(text: string, type: string): DocClass {
+  if (type === "playbook") return "playbook-ops";
+  if (type === "guardrail") return "guardrail-ops";
+  if (type === "soul") return "governance";
+  // Heuristic for skill type: long paragraphs + few bullets/headings = governance prose.
+  const lines = text.split("\n");
+  const bulletLines = lines.filter((l) => /^\s*([-*]|\d+[.)])\s/.test(l)).length;
+  const headingLines = lines.filter((l) => /^#{1,6}\s/.test(l)).length;
+  const paragraphs = text.split(/\n\s*\n/).filter((p) => p.trim().length > 0);
+  const avgParaLen = paragraphs.length
+    ? paragraphs.reduce((a, p) => a + p.length, 0) / paragraphs.length
+    : 0;
+  const bulletRatio = lines.length ? bulletLines / Math.max(1, lines.length) : 0;
+  if (avgParaLen > 320 && bulletRatio < 0.08 && headingLines < 6) return "governance";
+  return "skill";
+}
+
+// Signals that measure *format/structure* rather than substantive content.
+// Indices match the SIGNALS arrays below. Used to split overall_score into
+// structural vs content_quality_score so the verdict isn't dominated by format.
+const STRUCTURAL_SIGNAL_INDEX: Record<PillarId, ReadonlyArray<number>> = {
+  identity: [],
+  scope: [],
+  procedure: [0, 1], // numbered/bulleted list pattern, input/output keyword block
+  examples: [],
+  guardrails: [],
+  trust: [2], // output schema / structured result keywords
+  portability: [2, 3, 5], // long file penalty, proprietary frontmatter penalty, plain-markdown declaration
+};
+
+function isStructural(id: PillarId, idx: number): boolean {
+  return STRUCTURAL_SIGNAL_INDEX[id].includes(idx);
+}
+
+// Fast non-crypto hash so callers can pass `previous_hash` from the last run
+// and get a delta without us keeping any server state. fnv-1a 32-bit.
+function fnv1aHex(s: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+  }
+  return h.toString(16).padStart(8, "0");
+}
+
+// Pre-score sanity check. The engine penalises summaries (rightly — it can't
+// score what it can't see), but the operator deserves to know BEFORE the score
+// arrives that the input looks truncated, not after reading a misleading "F".
+function inputWarning(text: string): "short_input" | "summary_markers" | "outline_only" | null {
+  const t = text.trim();
+  if (t.length < 400) return "short_input";
+  if (/(\.{3,}|\[truncated\]|\[\.\.\.\]|truncated for brevity|condensed|abbreviated|resumido|truncado|condensado|abrégé|tronqué|gekürzt|abgekürzt|troncato|abbreviato)/i.test(t)) {
+    return "summary_markers";
+  }
+  const lines = t.split("\n");
+  const headings = lines.filter((l) => /^#{1,6}\s/.test(l)).length;
+  const bodyLines = lines.filter((l) => l.trim().length > 0 && !/^#{1,6}\s/.test(l) && !/^\s*([-*]|\d+[.)])\s/.test(l)).length;
+  if (headings >= 6 && bodyLines < headings * 1.5) return "outline_only";
+  return null;
+}
 
 // Each signal is bilingual (EN + PT-BR alternates) so non-English docs are not
 // silently zeroed. `kind`: "positive" = presence improves score; "negative" =
@@ -466,6 +552,12 @@ interface PillarDetail {
   signals_total: number;
   signals_hit: number;
   evidence: Array<{ line: number; excerpt: string }>;
+  // Axis split — surfaced at the top level so the operator can see whether a
+  // low score reflects format mismatch (structural) or substantive gaps (content).
+  structural_earned: number;
+  structural_total: number;
+  content_earned: number;
+  content_total: number;
 }
 
 // Find the line number + a short excerpt for the first regex hit. Used to
@@ -488,20 +580,27 @@ function scorePillar(id: PillarId, text: string): PillarDetail {
   let earned = 0;
   let total = 0;
   let hit = 0;
+  let structEarned = 0;
+  let structTotal = 0;
+  let contEarned = 0;
+  let contTotal = 0;
   const evidence: PillarDetail["evidence"] = [];
 
-  signals.forEach((s) => {
+  signals.forEach((s, idx) => {
     total += s.w;
     const primaryHit = s.primary.test(text);
     const secondaryHit = s.secondary ? s.secondary.test(text) : false;
     let frac = primaryHit ? 1 : secondaryHit ? 0.5 : 0;
-    // Negative signals: presence is bad. Absence (frac=0) becomes good (1).
-    // Crucially, a negative signal contributes to "hit" only when it ACTUALLY
-    // matched — so portability no longer hits 100 just from absence.
-    if (s.kind === "negative") {
-      frac = 1 - frac;
+    if (s.kind === "negative") frac = 1 - frac;
+    const earnedHere = frac * s.w;
+    earned += earnedHere;
+    if (isStructural(id, idx)) {
+      structTotal += s.w;
+      structEarned += earnedHere;
+    } else {
+      contTotal += s.w;
+      contEarned += earnedHere;
     }
-    earned += frac * s.w;
     if (primaryHit || secondaryHit) {
       hit += 1;
       const ev = findEvidence(text, primaryHit ? s.primary : (s.secondary as RegExp));
@@ -510,17 +609,24 @@ function scorePillar(id: PillarId, text: string): PillarDetail {
   });
 
   let score = total > 0 ? Math.round((earned / total) * 100) : 0;
-  // Cap any pillar that scored on zero positive evidence — prevents the
-  // "all-negative-signals → 100 by default" smell. Affects portability most.
   const positiveSignals = signals.filter((s) => s.kind === "positive").length;
   const positiveHits = signals.filter(
     (s) => s.kind === "positive" && (s.primary.test(text) || (s.secondary && s.secondary.test(text)))
   ).length;
-  if (positiveSignals > 0 && positiveHits === 0) {
-    score = Math.min(score, 60); // graceful cap, not zero
-  }
+  if (positiveSignals > 0 && positiveHits === 0) score = Math.min(score, 60);
   score = Math.max(0, Math.min(100, score));
-  return { id, score, deficit: 100 - score, signals_total: signals.length, signals_hit: hit, evidence };
+  return {
+    id,
+    score,
+    deficit: 100 - score,
+    signals_total: signals.length,
+    signals_hit: hit,
+    evidence,
+    structural_earned: structEarned,
+    structural_total: structTotal,
+    content_earned: contEarned,
+    content_total: contTotal,
+  };
 }
 
 function gradeBand(n: number): string {
@@ -887,13 +993,18 @@ function buildAction(detail: PillarDetail, content: string, priority: number, bu
   priority: number;
   action: string;
   evidence: { line: number; excerpt: string } | null;
+  evidence_anchored: boolean;
   signal_summary: string;
 } {
   const directive = pickDirective(detail.id, content, priority, bundle);
   const title = bundle.pillar_title[detail.id];
   const ev = detail.evidence[0] ?? null;
+  // Honesty flag: when the pillar scored by ABSENCE of signals, we have no
+  // file location to point at — emit `evidence_anchored: false` so the host
+  // doesn't quote a random line as if it were the problem.
+  const anchored = ev !== null && detail.signals_hit > 0;
   let action: string;
-  if (ev) {
+  if (anchored && ev) {
     action = bundle.near_line_prefix(ev.line, ev.excerpt) + directive;
   } else if (detail.signals_hit === 0) {
     action = bundle.no_signals_prefix(title) + directive;
@@ -904,15 +1015,51 @@ function buildAction(detail: PillarDetail, content: string, priority: number, bu
     area: title,
     priority,
     action,
-    evidence: ev,
+    evidence: anchored ? ev : null,
+    evidence_anchored: anchored,
     signal_summary: bundle.signals_summary(detail.signals_hit, detail.signals_total),
   };
+}
+
+// Localised "extras" added after the v3 → v4 bump. Kept separate from the
+// big MsgBundle so we don't have to retranslate every existing string. EN is
+// the canonical fallback for any language not covered here.
+type Extras = {
+  ceiling_note: (ceiling: number, cls: DocClass, rationale: string) => string;
+  warn_short: string;
+  warn_summary: string;
+  warn_outline: string;
+  axis_caveat: string;
+};
+
+const EXTRAS: Partial<Record<Exclude<Lang, "other">, Extras>> = {
+  en: {
+    ceiling_note: (c, cls, r) =>
+      `Realistic ceiling for doc_class="${cls}" is ~${c}/100. Actions targeting structural format above this point are cosmetic — focus on content_quality_score instead. ${r}`,
+    warn_short: "Input is very short (<400 chars). Score is unreliable — pass the full file content, not a summary.",
+    warn_summary: "Input contains summary/truncation markers (`...`, `[truncated]`, `condensed`, etc.). The engine cannot score what it can't see — pass verbatim content for a real score.",
+    warn_outline: "Input looks like an outline (headings without body). Pass the full content; the engine scores prose, not structure alone.",
+    axis_caveat: "Grade uses content_quality_score as the primary axis; structural_score is reported separately so format mismatch doesn't dominate the verdict.",
+  },
+  pt: {
+    ceiling_note: (c, cls, r) =>
+      `Teto realista para doc_class="${cls}" é ~${c}/100. Ações que perseguem formato estrutural acima desse ponto são cosméticas — foque em content_quality_score. ${r}`,
+    warn_short: "Entrada muito curta (<400 caracteres). O score não é confiável — envie o conteúdo completo, não um resumo.",
+    warn_summary: "A entrada contém marcadores de resumo/truncamento (`...`, `[truncado]`, `condensado`, etc.). O motor não pontua o que não vê — envie o conteúdo textual para uma medição real.",
+    warn_outline: "A entrada parece um esqueleto (cabeçalhos sem corpo). Envie o conteúdo completo; o motor avalia prosa, não só estrutura.",
+    axis_caveat: "O grade usa content_quality_score como eixo principal; structural_score é reportado separado para que desencontro de formato não domine o veredicto.",
+  },
+};
+
+function extrasFor(lang: Lang): Extras {
+  if (lang === "other") return EXTRAS.en!;
+  return EXTRAS[lang] ?? EXTRAS.en!;
 }
 
 export const getMethodologyTool = defineTool({
   name: "get_methodology",
   description:
-    "[UPGRADE] Orientation for the local-file upgrade flow. Returns the dimensions the proprietary SuperAgentSkill engine evaluates and how to drive the loop — NOT the rubric, signals or thresholds. Read-only, no auth.",
+    "[UPGRADE] Orientation for the local-file upgrade flow. Returns the dimensions the engine evaluates, the doc classes it grades against, and how to drive the loop — NOT the rubric, signals or thresholds. Read-only, no auth.",
   parameters: z.object({}),
   execute: async () =>
     json({
@@ -920,15 +1067,20 @@ export const getMethodologyTool = defineTool({
       name: "Super Agent Skill evaluation",
       proprietary: true,
       note:
-        "Scoring is performed server-side. Signal detection is multilingual (EN, PT-BR, ES, FR, DE, IT) and feedback (top_actions, diagnostics, format_caveat, next_steps) is returned in the detected language. Other languages may underscore by mismatch — write in one of the supported languages for best signal. The engine is calibrated for kebab-case Markdown skill files following the Anthropic SKILL.md conventions; long-form governance prose may underscore even when the underlying content is strong, because some signals look for structured cues (worked input/output blocks, named sections, acceptance criteria).",
+        "Scoring is performed server-side. Engine v4 splits the verdict into structural_score (format) and content_quality_score (substance) and exposes an expected_ceiling per doc_class so the operator knows the realistic top before chasing diminishing returns. Multilingual detection AND feedback (EN, PT-BR, ES, FR, DE, IT).",
       dimensions: (Object.keys(PILLAR_TITLE) as PillarId[]).map((id) => ({
         id,
         title: PILLAR_TITLE[id],
       })),
+      doc_classes: (Object.keys(DOC_CLASS_CEILING) as DocClass[]).map((c) => ({
+        id: c,
+        expected_ceiling: DOC_CLASS_CEILING[c],
+        rationale: DOC_CLASS_RATIONALE[c],
+      })),
       how_to_use: [
-        "1. review_skill — submit the file; get overall_score, per-dimension scores, signal-hit counts and file-anchored top_actions (with line numbers and excerpts when evidence exists).",
-        "2. You (the host agent) apply the actions in the user's repo.",
-        "3. review_skill again — confirm the score rose. Iterate until grade A.",
+        "1. review_skill — submit the file (declare `doc_class` if you know it; otherwise leave as `auto`). Read `input_warning`, `doc_class.expected_ceiling`, then `verdict_score` and `top_actions`.",
+        "2. You (the host agent) apply the file-anchored actions in the user's repo. Skip actions whose `evidence_anchored: false` if you'd otherwise quote a misleading line.",
+        "3. review_skill again with `previous_hash` + `previous_overall_score` from the prior response — you'll get a `delta_vs_previous`. Iterate until the verdict_score reaches the expected_ceiling; going beyond is cosmetic.",
       ],
     }),
 });
@@ -936,19 +1088,42 @@ export const getMethodologyTool = defineTool({
 export const reviewSkillTool = defineTool({
   name: "review_skill",
   description:
-    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns overall_score (0-100), grade, per-dimension scores (with `signals_hit`/`signals_total` so you can see why a pillar landed low) and `top_actions` anchored to concrete file evidence (line number + excerpt) when available. The detection signals, weights and thresholds remain server-side. NOTE: signal detection AND feedback are multilingual (EN, PT-BR, ES, FR, DE, IT) — write the file in any of those and you'll get top_actions/diagnostics/next_steps back in that same language. The engine is calibrated for Markdown skill files; long-form governance prose may underscore — see `language` and `format_caveat` in the response. Read-only, no auth.",
+    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns `overall_score` plus a split `structural_score` vs `content_quality_score` so format mismatch doesn't dominate the verdict; `expected_ceiling` per `doc_class` so the operator knows the realistic top before chasing diminishing returns; per-pillar scores (`signals_hit`/`signals_total`) and `top_actions` anchored to file evidence with an `evidence_anchored` honesty flag. Optional `doc_class` (skill | governance | playbook-ops | guardrail-ops | auto) and optional `previous_hash` + `previous_overall_score` produce a `delta` between runs. An `input_warning` is emitted BEFORE the score if the content looks truncated/summarised. Multilingual signal detection AND feedback (EN, PT-BR, ES, FR, DE, IT). Read-only, no auth.",
   parameters: z.object({
     name: z.string().min(1).max(200).describe("File or skill name (for the report header only)"),
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).default("skill"),
-    content: z.string().min(20).max(120_000).describe("Raw markdown / prompt text of the local file"),
+    content: z.string().min(20).max(120_000).describe("Raw markdown / prompt text of the local file — pass verbatim, not summarised"),
+    doc_class: z
+      .enum(["skill", "governance", "playbook-ops", "guardrail-ops", "auto"])
+      .default("auto")
+      .describe("Declare the document class to set the realistic ceiling and weight the structural vs content axes. `auto` infers from `type` + content shape."),
+    previous_hash: z.string().max(32).optional().describe("fnv1a hash from a previous run — enables delta_vs_previous in the response"),
+    previous_overall_score: z.number().int().min(0).max(100).optional(),
   }),
-  execute: async ({ name, type, content }) => {
+  execute: async ({ name, type, content, doc_class, previous_hash, previous_overall_score }) => {
     const ids = Object.keys(PILLAR_TITLE) as PillarId[];
     const weights = TYPE_WEIGHTS[type] ?? TYPE_WEIGHTS.skill;
     const details = ids.map((id) => scorePillar(id, content));
     const language = detectLanguage(content);
     const bundle = bundleFor(language.lang);
+    const extras = extrasFor(language.lang);
 
+    // Doc class — declared or inferred. Drives ceiling + grade axis.
+    const docClass: DocClass = doc_class === "auto" ? inferDocClass(content, type) : doc_class;
+    const ceiling = DOC_CLASS_CEILING[docClass];
+
+    // Pre-score input sanity. Surface BEFORE the score so the operator doesn't
+    // chase a misleading verdict on a summary.
+    const warnKind = inputWarning(content);
+    const inputWarn = warnKind
+      ? warnKind === "short_input"
+        ? extras.warn_short
+        : warnKind === "summary_markers"
+          ? extras.warn_summary
+          : extras.warn_outline
+      : null;
+
+    // Per-pillar overall score (existing logic — kept for back-compat).
     let wSum = 0;
     let wTotal = 0;
     for (const r of details) {
@@ -957,6 +1132,27 @@ export const reviewSkillTool = defineTool({
       wTotal += w;
     }
     const overall = Math.round(wSum / wTotal);
+
+    // Axis split — weight each pillar's structural/content earnings by the
+    // pillar's TYPE_WEIGHTS so the axes share the same scale as overall_score.
+    let sEarned = 0, sTotal = 0, cEarned = 0, cTotal = 0;
+    for (const r of details) {
+      const w = weights[r.id] ?? 1;
+      sEarned += r.structural_earned * w;
+      sTotal += r.structural_total * w;
+      cEarned += r.content_earned * w;
+      cTotal += r.content_total * w;
+    }
+    const structuralScore = sTotal > 0 ? Math.round((sEarned / sTotal) * 100) : null;
+    const contentQualityScore = cTotal > 0 ? Math.round((cEarned / cTotal) * 100) : null;
+
+    // Verdict score: governance docs are graded on content_quality_score so
+    // the F-by-format-mismatch failure mode is fixed. Skill-class docs keep
+    // the blended overall score so the existing rubric isn't disturbed.
+    const verdictScore =
+      docClass === "governance" && contentQualityScore !== null
+        ? contentQualityScore
+        : overall;
 
     const pillars = details.map((r) => ({
       pillar: r.id,
@@ -973,10 +1169,18 @@ export const reviewSkillTool = defineTool({
             : null,
     }));
 
+    // Suppress actions that target structural improvements already above the
+    // ceiling — those are the "cosmetic" actions the operator was warned about.
     const ranked = [...details]
       .map((r) => ({ ...r, impact: r.deficit * (weights[r.id] ?? 1) }))
+      .filter((r) => {
+        if (r.impact <= 0) return false;
+        if (docClass === "governance" && r.structural_total > r.content_total && r.score >= ceiling) {
+          return false;
+        }
+        return true;
+      })
       .sort((a, b) => b.impact - a.impact)
-      .filter((r) => r.impact > 0)
       .slice(0, 4);
 
     const topActions = ranked.map((r, i) => buildAction(r, content, i + 1, bundle));
@@ -988,12 +1192,41 @@ export const reviewSkillTool = defineTool({
           ? bundle.caveat_low_conf
           : null;
 
+    // Delta vs the caller's last run. Hash is non-crypto; client sends back
+    // whatever we emitted previously and we compare overall + content hash.
+    const contentHash = fnv1aHex(content);
+    const delta =
+      typeof previous_overall_score === "number"
+        ? {
+            previous_overall_score,
+            current_overall_score: overall,
+            change: overall - previous_overall_score,
+            same_content: previous_hash === contentHash,
+          }
+        : null;
+
     return json({
       file: name,
       type,
       engine: ENGINE,
+      // Pre-score signal — surfaced first so the host can act on it before
+      // taking the verdict at face value.
+      input_warning: inputWarn,
+      doc_class: {
+        value: docClass,
+        inferred: doc_class === "auto",
+        expected_ceiling: ceiling,
+        rationale: DOC_CLASS_RATIONALE[docClass],
+        ceiling_note: extras.ceiling_note(ceiling, docClass, DOC_CLASS_RATIONALE[docClass]),
+      },
+      // Two axes + the verdict that derives from them. Operators can now see
+      // whether a low number is a format issue or a content issue.
       overall_score: overall,
-      grade: gradeBand(overall),
+      structural_score: structuralScore,
+      content_quality_score: contentQualityScore,
+      verdict_score: verdictScore,
+      grade: gradeBand(verdictScore),
+      axis_note: extras.axis_caveat,
       language: {
         detected: language.lang,
         confidence: Math.round(language.confidence * 100) / 100,
@@ -1002,12 +1235,20 @@ export const reviewSkillTool = defineTool({
       format_caveat: formatCaveat ?? bundle.caveat_default,
       pillars,
       top_actions: topActions,
+      content_hash: contentHash,
+      delta_vs_previous: delta,
       // next_steps are instructions to the host LLM agent (not shown to the
       // skill author), so always English regardless of the file's language.
       next_steps:
         topActions.length === 0
           ? [MESSAGES.en.next_grade_a]
-          : [MESSAGES.en.next_apply, MESSAGES.en.next_rerun, MESSAGES.en.next_diagnostic],
+          : [
+              MESSAGES.en.next_apply,
+              MESSAGES.en.next_rerun,
+              MESSAGES.en.next_diagnostic,
+              "Pass `previous_hash` + `previous_overall_score` from this response into the next call to get a `delta_vs_previous`.",
+              "Honour `doc_class.expected_ceiling` — actions beyond that point are cosmetic, not quality wins.",
+            ],
     });
   },
 });
