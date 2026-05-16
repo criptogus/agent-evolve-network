@@ -5,7 +5,7 @@ import { ClientOnly } from "@/components/site/ClientOnly";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Typewriter } from "@/components/site/Typewriter";
-import { CodeBlockCopy } from "@/components/site/CopyButton";
+import { CopyButton } from "@/components/site/CopyButton";
 import { CountUp } from "@/components/site/CountUp";
 import { JsonLd } from "@/components/site/JsonLd";
 
@@ -164,7 +164,7 @@ function Hero() {
                 </span>
                 <code className="truncate font-mono text-xs text-foreground sm:text-sm">{mcpUrl}</code>
               </div>
-              <CodeBlockCopy text={mcpUrl} />
+              <CopyButton value={mcpUrl} label="Copy URL" />
             </div>
             <p className="mt-2 text-center text-[11px] text-muted-foreground">
               Paste this URL into Claude → Settings → Connectors. It works immediately.
