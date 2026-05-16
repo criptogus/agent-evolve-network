@@ -121,99 +121,108 @@ function Hero() {
     <section className="relative overflow-hidden border-b border-border">
       <div className="absolute inset-0 grid-bg opacity-60" aria-hidden />
       <div className="absolute inset-0 hero-glow" aria-hidden />
-      <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-20 md:pt-28">
-        <div className="mx-auto max-w-3xl text-center fade-up">
-          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-border bg-surface-elevated px-3 py-1 text-xs text-muted-foreground shadow-sm">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-signal pulse-dot" />
-            <span>459+ expert skills · Works with Claude, Cursor &amp; ChatGPT</span>
-          </div>
-          <h1 className="mt-6 text-balance text-5xl font-semibold tracking-tight md:text-7xl">
-            Turn Claude or Cursor into a{" "}
-            <span className="relative inline-block align-baseline text-primary">
-              <span aria-hidden className="invisible whitespace-nowrap">
-                cybersecurity expert.
-              </span>
-              <Typewriter
-                className="absolute left-0 top-0 whitespace-nowrap"
-                words={[
-                  "cybersecurity expert.",
-                  "senior SRE.",
-                  "fintech compliance officer.",
-                  "HIPAA-aware clinician.",
-                  "Stripe payments expert.",
-                  "CRO specialist.",
-                ]}
-              />
-            </span>
-            <br />
-            <span className="text-foreground/90">In 30 seconds. No code.</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">
-            Paste one link into your AI tool and it instantly gains{" "}
-            <span className="text-foreground">459+ ready-to-use expert skills</span> —
-            from code review to ad copy, all tested against jailbreaks and signed for audit.{" "}
-            <span className="text-foreground">No retraining, no SDK, no signup to browse.</span>
-          </p>
-
-          {/* Above-the-fold action — copy-the-URL is the lowest friction conversion */}
-          <div className="mx-auto mt-8 max-w-2xl rounded-xl border border-border bg-background/80 p-3 shadow-elevated backdrop-blur">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden px-2">
-                <span className="hidden font-mono text-[10px] uppercase tracking-wider text-primary sm:inline">
-                  MCP
-                </span>
-                <code className="truncate font-mono text-xs text-foreground sm:text-sm">{mcpUrl}</code>
-              </div>
-              <CopyButton value={mcpUrl} label="Copy URL" />
+      <div className="relative mx-auto max-w-7xl px-6 pb-16 pt-16 md:pt-20 lg:pb-20">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
+          {/* LEFT — message + primary action */}
+          <div className="fade-up text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-elevated px-3 py-1 text-xs text-muted-foreground shadow-sm">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-signal pulse-dot" />
+              <span>459+ expert skills · Works with Claude, Cursor &amp; ChatGPT</span>
             </div>
-            <p className="mt-2 text-center text-[11px] text-muted-foreground">
-              Paste this URL into Claude → Settings → Connectors. It works immediately.
+            <h1 className="mt-5 text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-[64px]">
+              Turn Claude or Cursor into a{" "}
+              <span className="relative inline-block align-baseline text-primary">
+                <span aria-hidden className="invisible whitespace-nowrap">
+                  cybersecurity expert.
+                </span>
+                <Typewriter
+                  className="absolute left-0 top-0 whitespace-nowrap"
+                  words={[
+                    "cybersecurity expert.",
+                    "senior SRE.",
+                    "fintech compliance officer.",
+                    "HIPAA-aware clinician.",
+                    "Stripe payments expert.",
+                    "CRO specialist.",
+                  ]}
+                />
+              </span>{" "}
+              <span className="text-foreground/90">In 30 seconds. No code.</span>
+            </h1>
+            <p className="mx-auto mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground lg:mx-0 lg:text-lg">
+              Paste one link into your AI tool and it instantly gains{" "}
+              <span className="text-foreground">459+ ready-to-use expert skills</span> —
+              from code review to ad copy, tested against jailbreaks and signed for audit.
+            </p>
+
+            {/* MCP URL — primary above-the-fold action */}
+            <div className="mt-6 rounded-xl border border-border bg-background/80 p-3 shadow-elevated backdrop-blur">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden px-2">
+                  <span className="hidden font-mono text-[10px] uppercase tracking-wider text-primary sm:inline">
+                    MCP
+                  </span>
+                  <code className="truncate font-mono text-xs text-foreground sm:text-sm">{mcpUrl}</code>
+                </div>
+                <CopyButton value={mcpUrl} label="Copy URL" />
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Paste into Claude → Settings → Connectors. Works immediately.
+              </p>
+            </div>
+
+            <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center lg:justify-start">
+              <Link
+                to="/marketplace"
+                className="inline-flex h-12 items-center justify-center rounded-md bg-primary px-7 text-[15px] font-semibold text-primary-foreground shadow-elevated transition-all hover:scale-[1.02] hover:opacity-95"
+              >
+                Browse 459 free skills →
+              </Link>
+              <Link
+                to="/connect"
+                className="inline-flex h-12 items-center justify-center rounded-md border border-border bg-background px-5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+              >
+                Show me how to connect
+              </Link>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Free forever · No signup to browse · No credit card · Open source
             </p>
           </div>
 
-          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              to="/marketplace"
-              className="inline-flex h-12 items-center rounded-md bg-primary px-7 text-[15px] font-semibold text-primary-foreground shadow-elevated transition-all hover:scale-[1.02] hover:opacity-95"
+          {/* RIGHT — live install demo */}
+          <div id="connect" className="fade-up lg:pl-2">
+            <Suspense
+              fallback={
+                <div className="h-[420px] animate-pulse rounded-xl border border-border bg-surface" aria-hidden />
+              }
             >
-              Browse 459 free skills →
-            </Link>
-            <Link
-              to="/connect"
-              className="inline-flex h-12 items-center rounded-md border border-border bg-background px-5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-            >
-              Show me how to connect →
-            </Link>
+              <McpInstallAnimation />
+            </Suspense>
           </div>
-          <p className="mt-4 text-xs text-muted-foreground">
-            Free forever · No signup to browse · No credit card · Open source
-          </p>
         </div>
 
-        <div id="connect" className="mx-auto mt-16 max-w-3xl fade-up">
-          <Suspense
-            fallback={
-              <div className="h-[420px] animate-pulse rounded-xl border border-border bg-surface" aria-hidden />
-            }
-          >
-            <McpInstallAnimation />
-          </Suspense>
-        </div>
-
-        {/* Trust metrics — proof of the moat, not vanity counts */}
-        <div className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-4 md:grid-cols-4">
+        {/* Trust metrics — slim band spanning full width */}
+        <div className="mt-12 grid grid-cols-2 gap-3 border-t border-border/60 pt-8 sm:gap-4 md:grid-cols-4">
           {[
             { Icon: BadgeCheck, v: 459, suffix: "+", label: "Skills shipped" },
             { Icon: Landmark, v: 69, suffix: "+", label: "Souls available" },
             { Icon: ShieldAlert, v: 32, suffix: "+", label: "Playbooks ready" },
             { Icon: Clock, v: 30, suffix: "s", label: "MCP setup" },
           ].map((m) => (
-            <div key={m.label} className="rounded-xl border border-border bg-surface/60 p-4 text-center">
-              <m.Icon className="mx-auto h-4 w-4 text-primary" strokeWidth={1.75} aria-hidden />
-              <div className="mt-2 font-mono text-2xl font-semibold tracking-tight text-foreground">
-                <CountUp to={m.v} suffix={m.suffix} decimals={0} />
+            <div
+              key={m.label}
+              className="flex items-center gap-3 rounded-xl border border-border bg-surface/60 px-4 py-3"
+            >
+              <m.Icon className="h-5 w-5 shrink-0 text-primary" strokeWidth={1.75} aria-hidden />
+              <div className="min-w-0">
+                <div className="font-mono text-xl font-semibold leading-none tracking-tight text-foreground">
+                  <CountUp to={m.v} suffix={m.suffix} decimals={0} />
+                </div>
+                <div className="mt-1 truncate text-[11px] uppercase tracking-wider text-muted-foreground">
+                  {m.label}
+                </div>
               </div>
-              <div className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">{m.label}</div>
             </div>
           ))}
         </div>
