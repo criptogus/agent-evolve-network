@@ -32,8 +32,14 @@ export type FeedbackRequest = {
   prompt: string;
   expires_at: string;
   submit: {
-    ui: { endpoint: string };
-    mcp: { tool: "submit_feedback"; example: Record<string, unknown> };
+    ui_endpoint: string;
+    mcp_tool: "submit_feedback";
+    mcp_example: {
+      request_id: string;
+      rating: number;
+      sentiment: "positive" | "neutral" | "negative";
+      comments: string;
+    };
   };
 };
 
@@ -80,15 +86,13 @@ export async function createFeedbackRequest(
     prompt: PROMPTS[data.kind as EnrichmentKind] ?? "Share your feedback (1-5).",
     expires_at: data.expires_at,
     submit: {
-      ui: { endpoint: "/api/feedback (submitPackageFeedback server fn)" },
-      mcp: {
-        tool: "submit_feedback",
-        example: {
-          request_id: data.id,
-          rating: 4,
-          sentiment: "positive",
-          comments: "Worked well; could use more examples.",
-        },
+      ui_endpoint: "submitPackageFeedback server fn (/forge UI prompts automatically)",
+      mcp_tool: "submit_feedback",
+      mcp_example: {
+        request_id: data.id,
+        rating: 4,
+        sentiment: "positive",
+        comments: "Worked well; could use more examples.",
       },
     },
   };
