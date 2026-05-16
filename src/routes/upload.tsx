@@ -42,14 +42,13 @@ const MAX_BYTES = 120_000;
 
 function UploadPage() {
   const [files, setFiles] = useState<Staged[]>([]);
-  const [publish, setPublish] = useState(false);
   const [results, setResults] = useState<ResultRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fn = useServerFn(bulkUploadPackages);
 
   const mut = useMutation({
-    mutationFn: (payload: { files: { name: string; content: string; type?: Staged["type"] }[]; publish: boolean }) =>
+    mutationFn: (payload: { files: { name: string; content: string; type?: Staged["type"] }[] }) =>
       fn({ data: payload }),
     onSuccess: (res) => setResults(res.results),
     onError: (e: Error) =>
@@ -87,7 +86,6 @@ function UploadPage() {
         content: f.content,
         type: f.type === "auto" ? undefined : f.type,
       })),
-      publish,
     });
   }
 
@@ -175,10 +173,10 @@ function UploadPage() {
 
         {/* Submit bar */}
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4">
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={publish} onChange={(e) => setPublish(e.target.checked)} />
-            Publish immediately (otherwise saved as drafts)
-          </label>
+          <p className="text-sm text-muted-foreground">
+            Uploads are saved as private drafts. Listing on the public marketplace
+            requires submitting for review and admin approval.
+          </p>
           <button
             onClick={submit}
             disabled={files.length === 0 || mut.isPending}

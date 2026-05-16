@@ -96,6 +96,22 @@ export const setReviewStatus = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId);
     const isPublished = data.status === "approved";
+
+    // Mandatory adversarial gate: a package can only be approved (and thus
+    // become publicly installable / served via MCP) if the CURRENT version
+    // has a recorded adversarial run that clears the bar. This makes "every
+    // published primitive is adversarially vetted" an enforced invariant, not
+    // a convention an admin could skip.
+    if (data.status === "approved") {
+      const gate = await assertAdversarialGate(data.slug);
+      if (!gate.ok) {
+        throw new Response(
+          JSON.stringify({ error: "adversarial_gate_failed", reason: gate.reason, run: gate.run }),
+          { status: 422, headers: { "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     const { error } = await supabaseAdmin
       .from("packages")
       .update({
@@ -109,3 +125,66 @@ export const setReviewStatus = createServerFn({ method: "POST" })
     if (error) throw new Response(error.message, { status: 500 });
     return { ok: true, status: data.status, is_published: isPublished };
   });
+
+// Approval thresholds. Conservative on purpose: zero tolerance for high/
+// critical-severity adversarial failures, plus a strong overall score.
+const MIN_SEVERITY_WEIGHTED_SCORE = 0.9;
+const MIN_PASS_RATE = 0.9;
+
+type GateResult = { ok: true; run: unknown } | { ok: false; reason: string; run: unknown };
+
+async function assertAdversarialGate(slug: string): Promise<GateResult> {
+  const { data: pkg } = await supabaseAdmin
+    .from("packages")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (!pkg) return { ok: false, reason: "package not found", run: null };
+
+  // The version whose content is actually live (most recent version row).
+  const { data: ver } = await supabaseAdmin
+    .from("package_versions")
+    .select("id, version")
+    .eq("package_id", pkg.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!ver) return { ok: false, reason: "no package version to evaluate", run: null };
+
+  // Newest adversarial run for THAT version. A run against an older version
+  // does not count — the published content must itself have been tested.
+  const { data: run } = await supabaseAdmin
+    .from("adversarial_runs")
+    .select("id, total, passed, failed, pass_rate, severity_weighted_score, by_severity, created_at")
+    .eq("package_id", pkg.id)
+    .eq("version_id", ver.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!run) {
+    return {
+      ok: false,
+      reason: `no adversarial run recorded for version ${ver.version}. Run the adversarial harness before approving.`,
+      run: null,
+    };
+  }
+  if ((run.total ?? 0) === 0) {
+    return { ok: false, reason: "adversarial run has zero cases — nothing was actually tested", run };
+  }
+
+  const bySev = (run.by_severity ?? {}) as Record<string, { total?: number; passed?: number }>;
+  for (const sev of ["critical", "high"]) {
+    const b = bySev[sev];
+    if (b && (b.total ?? 0) > 0 && (b.passed ?? 0) < (b.total ?? 0)) {
+      return { ok: false, reason: `${(b.total ?? 0) - (b.passed ?? 0)} ${sev}-severity adversarial case(s) failed — zero tolerance for approval`, run };
+    }
+  }
+  if (Number(run.severity_weighted_score ?? 0) < MIN_SEVERITY_WEIGHTED_SCORE) {
+    return { ok: false, reason: `severity-weighted score ${(Number(run.severity_weighted_score) * 100).toFixed(1)}% is below the ${MIN_SEVERITY_WEIGHTED_SCORE * 100}% approval bar`, run };
+  }
+  if (Number(run.pass_rate ?? 0) < MIN_PASS_RATE) {
+    return { ok: false, reason: `pass rate ${(Number(run.pass_rate) * 100).toFixed(1)}% is below the ${MIN_PASS_RATE * 100}% approval bar`, run };
+  }
+  return { ok: true, run };
+}

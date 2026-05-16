@@ -30,8 +30,7 @@ export type UploadResult = {
 export async function processBulkUpload(
   supabase: any,
   userId: string,
-  files: UploadFileInput[],
-  opts?: { publish?: boolean }
+  files: UploadFileInput[]
 ): Promise<UploadResult[]> {
   const results: UploadResult[] = [];
   for (const f of files) {
@@ -80,7 +79,6 @@ export async function processBulkUpload(
       const pkg = await insertDraftPackage(supabase, userId, draft, {
         source_kind: "markdown",
         source_ref: `upload:${f.name}`,
-        publish: !!opts?.publish,
       });
       out.ok = true;
       out.package_id = pkg.id;

@@ -37,7 +37,7 @@ export async function insertDraftPackage(
   supabase: any,
   userId: string,
   draft: any,
-  meta: { source_kind: "github" | "markdown" | "request" | "wizard"; source_ref: string; publish?: boolean }
+  meta: { source_kind: "github" | "markdown" | "request" | "wizard"; source_ref: string }
 ) {
   const baseSlug = draft.slug;
   let slug = baseSlug;
@@ -63,9 +63,14 @@ export async function insertDraftPackage(
       description: draft.description,
       long_description: draft.long_description,
       author_id: userId,
-      author_handle: "@admin",
-      author_verified: true,
-      is_published: !!meta.publish,
+      // Trust fields are NOT self-asserted. A new draft is unverified and
+      // unreviewed; `author_verified` and `review_status='approved'` are only
+      // ever granted by an admin via the review workflow. The DB also enforces
+      // this with a BEFORE UPDATE trigger so a compromised/abused client
+      // cannot escalate via direct RLS writes.
+      author_verified: false,
+      is_published: false,
+      review_status: "draft",
       latest_version: "0.1.0",
       scopes: draft.scopes,
       source_kind: meta.source_kind,
@@ -78,7 +83,7 @@ export async function insertDraftPackage(
   const { error: verErr } = await supabase.from("package_versions").insert({
     package_id: pkg.id,
     version: "0.1.0",
-    status: meta.publish ? "stable" : "beta",
+    status: "beta",
     notes: `Source: ${meta.source_kind} (${meta.source_ref})`,
     system_prompt: draft.system_prompt,
     rules: draft.rules,

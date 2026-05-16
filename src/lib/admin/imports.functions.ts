@@ -25,8 +25,16 @@ export const wizardCreatePackage = createServerFn({ method: "POST" })
     const pkg = await insertDraftPackage(supabase, userId, draft, {
       source_kind: "wizard",
       source_ref: vertical || "wizard",
-      publish: data.publish,
     });
+    // Publishing always goes through the single gated path
+    // (setReviewStatus → mandatory adversarial gate). `publish` only submits
+    // the draft into the review queue; it never auto-approves.
+    if (data.publish) {
+      await supabase
+        .from("packages")
+        .update({ review_status: "pending", submitted_at: new Date().toISOString() })
+        .eq("id", pkg.id);
+    }
     return { package: pkg, draft };
   });
 
