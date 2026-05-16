@@ -5,7 +5,7 @@ import { ClientOnly } from "@/components/site/ClientOnly";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Typewriter } from "@/components/site/Typewriter";
-import { CodeBlockCopy } from "@/components/site/CopyButton";
+import { CopyButton, CodeBlockCopy } from "@/components/site/CopyButton";
 import { CountUp } from "@/components/site/CountUp";
 import { JsonLd } from "@/components/site/JsonLd";
 
@@ -116,6 +116,7 @@ function Home() {
 }
 
 function Hero() {
+  const mcpUrl = "https://superagentskill.com/api/mcp";
   return (
     <section className="relative overflow-hidden border-b border-border">
       <div className="absolute inset-0 grid-bg opacity-60" aria-hidden />
@@ -124,55 +125,68 @@ function Hero() {
         <div className="mx-auto max-w-3xl text-center fade-up">
           <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-border bg-surface-elevated px-3 py-1 text-xs text-muted-foreground shadow-sm">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-signal pulse-dot" />
-            <span>The university for AI agents — Matrix-style upload, in seconds</span>
+            <span>459+ expert skills · Works with Claude, Cursor &amp; ChatGPT</span>
           </div>
           <h1 className="mt-6 text-balance text-5xl font-semibold tracking-tight md:text-7xl">
-            Make any agent an expert in
-            <br />
-            <span className="text-primary">
-              <span className="relative inline-block align-baseline">
-                <span aria-hidden className="invisible whitespace-nowrap">
-                  cybersecurity.
-                </span>
-                <Typewriter
-                  className="absolute left-0 top-0 whitespace-nowrap text-foreground"
-                  words={["cybersecurity.", "fintech.", "healthcare.", "DevOps.", "your domain.", "anything."]}
-                />
+            Turn Claude or Cursor into a{" "}
+            <span className="relative inline-block align-baseline text-primary">
+              <span aria-hidden className="invisible whitespace-nowrap">
+                cybersecurity expert.
               </span>
+              <Typewriter
+                className="absolute left-0 top-0 whitespace-nowrap"
+                words={[
+                  "cybersecurity expert.",
+                  "senior SRE.",
+                  "fintech compliance officer.",
+                  "HIPAA-aware clinician.",
+                  "Stripe payments expert.",
+                  "CRO specialist.",
+                ]}
+              />
             </span>
+            <br />
+            <span className="text-foreground/90">In 30 seconds. No code.</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">
-            Super Agent Skill is the <span className="text-foreground">university for AI agents</span> —
-            a Matrix-style upload that turns any model into a domain expert in seconds. Every skill is{" "}
-            <span className="text-foreground">benchmarked against an adversarial suite</span>,{" "}
-            <span className="text-foreground">cryptographically signed at release</span>, and scored on{" "}
-            <span className="text-foreground">real production telemetry</span> — so you ship AI features
-            with a Trust Score your security team can verify, not a vibe check.
+            Paste one link into your AI tool and it instantly gains{" "}
+            <span className="text-foreground">459+ ready-to-use expert skills</span> —
+            from code review to ad copy, all tested against jailbreaks and signed for audit.{" "}
+            <span className="text-foreground">No retraining, no SDK, no signup to browse.</span>
           </p>
-          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-            <span className="font-mono text-foreground">"I know kung fu."</span> Install with one MCP link or{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">npx super-agent install</code>.
-            Works with Claude, Cursor, ChatGPT, Continue and Cline.
-          </p>
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              to="/connect"
-              className="inline-flex h-12 items-center rounded-md bg-primary px-7 text-[15px] font-semibold text-primary-foreground shadow-elevated transition-all hover:scale-[1.02] hover:opacity-95"
-            >
-              Connect your agent — free →
-            </Link>
+
+          {/* Above-the-fold action — copy-the-URL is the lowest friction conversion */}
+          <div className="mx-auto mt-8 max-w-2xl rounded-xl border border-border bg-background/80 p-3 shadow-elevated backdrop-blur">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden px-2">
+                <span className="hidden font-mono text-[10px] uppercase tracking-wider text-primary sm:inline">
+                  MCP
+                </span>
+                <code className="truncate font-mono text-xs text-foreground sm:text-sm">{mcpUrl}</code>
+              </div>
+              <CopyButton value={mcpUrl} label="Copy URL" />
+            </div>
+            <p className="mt-2 text-center text-[11px] text-muted-foreground">
+              Paste this URL into Claude → Settings → Connectors. It works immediately.
+            </p>
+          </div>
+
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               to="/marketplace"
-              className="inline-flex h-12 items-center rounded-md px-5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex h-12 items-center rounded-md bg-primary px-7 text-[15px] font-semibold text-primary-foreground shadow-elevated transition-all hover:scale-[1.02] hover:opacity-95"
             >
-              Browse signed skills →
+              Browse 459 free skills →
+            </Link>
+            <Link
+              to="/connect"
+              className="inline-flex h-12 items-center rounded-md border border-border bg-background px-5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            >
+              Show me how to connect →
             </Link>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            No credit card · 30-second setup · Adversarially tested · Signed releases · Open source
-          </p>
-          <p className="mx-auto mt-6 max-w-md text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70">
-            Models are commodities. <span className="text-foreground/80">Trust is the new moat.</span>
+            Free forever · No signup to browse · No credit card · Open source
           </p>
         </div>
 
