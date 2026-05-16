@@ -993,13 +993,18 @@ function buildAction(detail: PillarDetail, content: string, priority: number, bu
   priority: number;
   action: string;
   evidence: { line: number; excerpt: string } | null;
+  evidence_anchored: boolean;
   signal_summary: string;
 } {
   const directive = pickDirective(detail.id, content, priority, bundle);
   const title = bundle.pillar_title[detail.id];
   const ev = detail.evidence[0] ?? null;
+  // Honesty flag: when the pillar scored by ABSENCE of signals, we have no
+  // file location to point at — emit `evidence_anchored: false` so the host
+  // doesn't quote a random line as if it were the problem.
+  const anchored = ev !== null && detail.signals_hit > 0;
   let action: string;
-  if (ev) {
+  if (anchored && ev) {
     action = bundle.near_line_prefix(ev.line, ev.excerpt) + directive;
   } else if (detail.signals_hit === 0) {
     action = bundle.no_signals_prefix(title) + directive;
@@ -1010,9 +1015,45 @@ function buildAction(detail: PillarDetail, content: string, priority: number, bu
     area: title,
     priority,
     action,
-    evidence: ev,
+    evidence: anchored ? ev : null,
+    evidence_anchored: anchored,
     signal_summary: bundle.signals_summary(detail.signals_hit, detail.signals_total),
   };
+}
+
+// Localised "extras" added after the v3 → v4 bump. Kept separate from the
+// big MsgBundle so we don't have to retranslate every existing string. EN is
+// the canonical fallback for any language not covered here.
+type Extras = {
+  ceiling_note: (ceiling: number, cls: DocClass, rationale: string) => string;
+  warn_short: string;
+  warn_summary: string;
+  warn_outline: string;
+  axis_caveat: string;
+};
+
+const EXTRAS: Partial<Record<Exclude<Lang, "other">, Extras>> = {
+  en: {
+    ceiling_note: (c, cls, r) =>
+      `Realistic ceiling for doc_class="${cls}" is ~${c}/100. Actions targeting structural format above this point are cosmetic — focus on content_quality_score instead. ${r}`,
+    warn_short: "Input is very short (<400 chars). Score is unreliable — pass the full file content, not a summary.",
+    warn_summary: "Input contains summary/truncation markers (`...`, `[truncated]`, `condensed`, etc.). The engine cannot score what it can't see — pass verbatim content for a real score.",
+    warn_outline: "Input looks like an outline (headings without body). Pass the full content; the engine scores prose, not structure alone.",
+    axis_caveat: "Grade uses content_quality_score as the primary axis; structural_score is reported separately so format mismatch doesn't dominate the verdict.",
+  },
+  pt: {
+    ceiling_note: (c, cls, r) =>
+      `Teto realista para doc_class="${cls}" é ~${c}/100. Ações que perseguem formato estrutural acima desse ponto são cosméticas — foque em content_quality_score. ${r}`,
+    warn_short: "Entrada muito curta (<400 caracteres). O score não é confiável — envie o conteúdo completo, não um resumo.",
+    warn_summary: "A entrada contém marcadores de resumo/truncamento (`...`, `[truncado]`, `condensado`, etc.). O motor não pontua o que não vê — envie o conteúdo textual para uma medição real.",
+    warn_outline: "A entrada parece um esqueleto (cabeçalhos sem corpo). Envie o conteúdo completo; o motor avalia prosa, não só estrutura.",
+    axis_caveat: "O grade usa content_quality_score como eixo principal; structural_score é reportado separado para que desencontro de formato não domine o veredicto.",
+  },
+};
+
+function extrasFor(lang: Lang): Extras {
+  if (lang === "other") return EXTRAS.en!;
+  return EXTRAS[lang] ?? EXTRAS.en!;
 }
 
 export const getMethodologyTool = defineTool({
