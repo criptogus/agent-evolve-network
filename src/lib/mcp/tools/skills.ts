@@ -350,6 +350,92 @@ const TYPE_WEIGHTS: Record<string, Partial<Record<PillarId, number>>> = {
   guardrail: { identity: 0.7, scope: 1, procedure: 1, examples: 1, guardrails: 2, trust: 1.1, portability: 0.9 },
 };
 
+// ----------------------------------------------------------------------------
+// Doc class — declared by the caller or inferred from the content shape. Drives
+// expected_ceiling and the structural/content axis split, so a long-form
+// governance doc isn't graded on the same scale as a kebab-case SKILL.md.
+// This is the single most-requested fix from real-world iteration: stop
+// rewarding format-chasing and stop hiding the realistic ceiling from the
+// operator until they've burned 5 retries discovering it empirically.
+// ----------------------------------------------------------------------------
+type DocClass = "skill" | "governance" | "playbook-ops" | "guardrail-ops";
+type DocClassInput = DocClass | "auto";
+
+const DOC_CLASS_CEILING: Record<DocClass, number> = {
+  skill: 95,
+  "playbook-ops": 92,
+  "guardrail-ops": 90,
+  governance: 82,
+};
+
+const DOC_CLASS_RATIONALE: Record<DocClass, string> = {
+  skill: "Calibrated for kebab-case SKILL.md with named sections and worked input/output. Grade A is realistically reachable.",
+  "playbook-ops": "Multi-step ops procedures. Heavier weight on the procedure axis; A reachable with explicit branches + stop condition.",
+  "guardrail-ops": "Policy/guardrail doc. A reachable when enforcement is described as deterministic (gate + exit code + tests), not just prose.",
+  governance: "Long-form governance/policy prose. Realistic ceiling is around B — the engine's structural signals are calibrated for skill files, so content quality matters more than format here. Actions targeting structural format above this ceiling are cosmetic.",
+};
+
+function inferDocClass(text: string, type: string): DocClass {
+  if (type === "playbook") return "playbook-ops";
+  if (type === "guardrail") return "guardrail-ops";
+  if (type === "soul") return "governance";
+  // Heuristic for skill type: long paragraphs + few bullets/headings = governance prose.
+  const lines = text.split("\n");
+  const bulletLines = lines.filter((l) => /^\s*([-*]|\d+[.)])\s/.test(l)).length;
+  const headingLines = lines.filter((l) => /^#{1,6}\s/.test(l)).length;
+  const paragraphs = text.split(/\n\s*\n/).filter((p) => p.trim().length > 0);
+  const avgParaLen = paragraphs.length
+    ? paragraphs.reduce((a, p) => a + p.length, 0) / paragraphs.length
+    : 0;
+  const bulletRatio = lines.length ? bulletLines / Math.max(1, lines.length) : 0;
+  if (avgParaLen > 320 && bulletRatio < 0.08 && headingLines < 6) return "governance";
+  return "skill";
+}
+
+// Signals that measure *format/structure* rather than substantive content.
+// Indices match the SIGNALS arrays below. Used to split overall_score into
+// structural vs content_quality_score so the verdict isn't dominated by format.
+const STRUCTURAL_SIGNAL_INDEX: Record<PillarId, ReadonlyArray<number>> = {
+  identity: [],
+  scope: [],
+  procedure: [0, 1], // numbered/bulleted list pattern, input/output keyword block
+  examples: [],
+  guardrails: [],
+  trust: [2], // output schema / structured result keywords
+  portability: [2, 3, 5], // long file penalty, proprietary frontmatter penalty, plain-markdown declaration
+};
+
+function isStructural(id: PillarId, idx: number): boolean {
+  return STRUCTURAL_SIGNAL_INDEX[id].includes(idx);
+}
+
+// Fast non-crypto hash so callers can pass `previous_hash` from the last run
+// and get a delta without us keeping any server state. fnv-1a 32-bit.
+function fnv1aHex(s: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+  }
+  return h.toString(16).padStart(8, "0");
+}
+
+// Pre-score sanity check. The engine penalises summaries (rightly — it can't
+// score what it can't see), but the operator deserves to know BEFORE the score
+// arrives that the input looks truncated, not after reading a misleading "F".
+function inputWarning(text: string): "short_input" | "summary_markers" | "outline_only" | null {
+  const t = text.trim();
+  if (t.length < 400) return "short_input";
+  if (/(\.{3,}|\[truncated\]|\[\.\.\.\]|truncated for brevity|condensed|abbreviated|resumido|truncado|condensado|abrégé|tronqué|gekürzt|abgekürzt|troncato|abbreviato)/i.test(t)) {
+    return "summary_markers";
+  }
+  const lines = t.split("\n");
+  const headings = lines.filter((l) => /^#{1,6}\s/.test(l)).length;
+  const bodyLines = lines.filter((l) => l.trim().length > 0 && !/^#{1,6}\s/.test(l) && !/^\s*([-*]|\d+[.)])\s/.test(l)).length;
+  if (headings >= 6 && bodyLines < headings * 1.5) return "outline_only";
+  return null;
+}
+
 // Each signal is bilingual (EN + PT-BR alternates) so non-English docs are not
 // silently zeroed. `kind`: "positive" = presence improves score; "negative" =
 // presence is a penalty (e.g. vendor lock-in for portability).
