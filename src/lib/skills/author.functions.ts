@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { authorPipeline } from "./pipelines.server";
+import { createFeedbackRequest } from "./feedback.functions";
 
 const Input = z.object({
   brief: z.string().min(20).max(4000),
@@ -68,5 +69,14 @@ export const authorPackage = createServerFn({ method: "POST" })
       .single();
     if (verErr) throw new Response(`Insert version failed: ${verErr.message}`, { status: 500 });
 
-    return { package: pkg, version: ver, draft, research, stages };
+    const feedback_request = await createFeedbackRequest(supabase, {
+      kind: "author",
+      packageId: pkg.id,
+      versionId: ver.id,
+      sourceUserId: userId,
+      source: "ui",
+      context: { slug: pkg.slug, type: pkg.type },
+    });
+
+    return { package: pkg, version: ver, draft, research, stages, feedback_request };
   });

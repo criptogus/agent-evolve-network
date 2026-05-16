@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { evaluatorPipeline, autoLearnPipeline, authorPipeline } from "./pipelines.server";
 import { webResearch } from "@/lib/admin/research.server";
+import { createFeedbackRequest } from "./feedback.functions";
 
 /* ============================================================
  * runForgeLoop — Eval → Learn → (Hot-swap) → Re-Eval
