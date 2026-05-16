@@ -73,7 +73,8 @@ export const Route = createFileRoute("/api/public/telemetry")({
             { status: 200, headers: { "Content-Type": "application/json", ...CORS } },
           );
         } catch (e) {
-          return new Response(JSON.stringify({ error: (e as Error).message }), {
+          console.error("[api/public/telemetry] error:", e);
+          return new Response(JSON.stringify({ error: "internal_server_error" }), {
             status: 500,
             headers: { "Content-Type": "application/json", ...CORS },
           });
