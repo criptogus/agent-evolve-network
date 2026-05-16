@@ -9,6 +9,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, basename } from "node:path";
 import Ajv from "ajv";
 import { parse as parseYaml } from "yaml";
+import { inspectContent } from "../src/lib/security/prompt-injection-guard.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const TYPES = ["skill", "playbook", "soul", "guardrail", "integration"];
@@ -26,6 +27,7 @@ const adversarialSchema = JSON.parse(
 const validateAdversarial = ajv.compile(adversarialSchema);
 
 let errors = 0;
+let warnings = 0;
 const slugs = new Map(); // slug -> file
 const adversarialIds = new Map(); // id -> file
 
@@ -63,6 +65,21 @@ for (const type of TYPES) {
       fail(full, `duplicate slug "${pkg.slug}" — also in ${slugs.get(pkg.slug)}`);
     } else {
       slugs.set(pkg.slug, full);
+    }
+
+    // Prompt-injection gate for community contributions. The MCP upload path
+    // already scans (lib/uploads/uploads.server.ts); this closes the same hole
+    // for packages added via PR/git. `critical` signals (fake SYSTEM/control
+    // tokens, secret-exfiltration URLs) block the build; `high` is reported as
+    // a non-fatal warning since legitimate skill prose ("run this skill with
+    // …") trips the heuristic. Skills that legitimately demonstrate attacks
+    // (e.g. a prompt-injection tester) set `x_security_research: true` to opt
+    // out of the warning.
+    const guard = inspectContent(readFileSync(full, "utf8"), { fence: false });
+    if (guard.severity === "critical") {
+      fail(full, `prompt-injection: critical signal(s) — ${guard.findings.filter((g) => g.severity === "critical").map((g) => g.pattern).join("; ")}`);
+    } else if ((guard.severity === "high" || guard.severity === "medium") && pkg.x_security_research !== true) {
+      warn(full, `prompt-injection: ${guard.severity} signal(s) — ${guard.findings.map((g) => g.pattern).join("; ")} (set x_security_research: true if intentional)`);
     }
   }
 }
@@ -114,8 +131,16 @@ function fail(file, msg) {
   console.error(`\u001b[31m✗\u001b[0m ${file.replace(ROOT, "")}: ${msg}`);
 }
 
+function warn(file, msg) {
+  warnings++;
+  console.warn(`[33m⚠[0m ${file.replace(ROOT, "")}: ${msg}`);
+}
+
 if (errors > 0) {
-  console.error(`\n${errors} validation error(s).`);
+  console.error(`\n${errors} validation error(s)${warnings ? `, ${warnings} warning(s)` : ""}.`);
   process.exit(1);
 }
-console.log(`✓ ${slugs.size} package(s) and ${adversarialIds.size} adversarial case(s) validated.`);
+console.log(
+  `✓ ${slugs.size} package(s) and ${adversarialIds.size} adversarial case(s) validated.` +
+    (warnings ? ` [33m${warnings} warning(s)[0m` : ""),
+);

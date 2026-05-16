@@ -44,13 +44,14 @@ The open network feeds the premium layer. The premium layer funds the open netwo
 ## 📦 What's inside (today)
 
 > **The registry is live and growing every week. All packages are free to download, fork and run.**
+> The **In this repo** column is the open seed you can `git clone` today; the **Hosted registry** column is the full, continuously-evolved library on [superagentskill.com](https://superagentskill.com/marketplace).
 
-| Type | Count | Examples |
-|---|---|---|
-| 🛠 **Skills** | **370+** | code review, OWASP audit, SQL translator, OSINT, ECG triage, MEDDPICC discovery |
-| 📘 **Playbooks** | **30+** | bug triage → fix → PR, content pipeline, incident response |
-| 🎭 **Souls** | **50+** | pragmatic SRE, empathetic support, senior product designer |
-| 🛡 **Guardrails** | **50+** | no-PII, no-medical-advice, GDPR, brand safety |
+| Type | In this repo (open seed) | Hosted registry | Examples |
+|---|---|---|---|
+| 🛠 **Skills** | **76** | **370+** | code review, OWASP audit, SQL translator, OSINT, ECG triage, MEDDPICC discovery |
+| 📘 **Playbooks** | **2** | **30+** | bug triage → fix → PR, content pipeline, incident response |
+| 🎭 **Souls** | **6** | **50+** | pragmatic SRE, empathetic support, senior product designer |
+| 🛡 **Guardrails** | **2** | **50+** | no-PII, no-medical-advice, GDPR, brand safety |
 
 ➡️ **[Browse the full marketplace at superagentskill.com →](https://superagentskill.com/marketplace)**
 
@@ -100,6 +101,7 @@ bun install && bun run dev
 
 - 🛡 **Proprietary adversarial harness.** Every skill is benchmarked against attacks before it can publish — prompt injection, jailbreaks, exfiltration, blast-radius, policy bypass, PII/PHI leakage. Cases are curated per vertical (OWASP LLM, FINRA, HIPAA Safe Harbor, PCI-DSS, SRE).
 - 🔏 **Ed25519-signed releases.** Every published version is cryptographically signed. Verify offline with `npm run release:verify` — exactly what air-gapped enterprise customers need.
+- 🧾 **Signed per-package trust attestations.** `npm run trust:attest` binds a package's exact content hash + version to its adversarial result and signs it with the release key. Your security team runs `npm run trust:verify -- --attestation pkg.trust.json --pkg pkg.yaml --pubkey pub.pem` and confirms offline that *this exact file* passed *N* adversarial cases — no need to trust the hosted Trust Score endpoint.
 - 📊 **Public, verifiable Trust Score.** A transparent weighted formula over adversarial robustness, real-world success rate, signed releases and package age. Embed the badge in your README; reviewers see the same number you do.
 - 🏛 **Verticalized Souls.** Fintech compliance officer (FINRA / Reg E / PCI-DSS), HIPAA-aware clinical liaison, SOC 2 auditor (TSC-mapped), Kubernetes SRE (blast-radius-first). Souls that cite the rule before the recommendation.
 - 🔌 **One MCP endpoint, every IDE.** Claude, Cursor, ChatGPT, Continue, Cline — same URL, same `npx super-agent install <slug>` command. No SDK, no glue code.
