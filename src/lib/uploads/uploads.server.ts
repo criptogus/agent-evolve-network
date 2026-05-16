@@ -1,6 +1,7 @@
 // Shared bulk-upload pipeline used by both the UI server fn and the MCP tool.
 import { generateDraft, insertDraftPackage, inferType } from "@/lib/admin/author.server";
 import { inspectContent } from "@/lib/security/prompt-injection-guard";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export type UploadFileInput = {
   name: string;
