@@ -41,7 +41,7 @@ const mcp = createMcpServer({
     "",
     "## 3. PUBLISH new primitives back to the registry",
     "When the user wants to contribute a local skill upward so others (and future versions of themselves) benefit:",
-    "  - `upload_packages` with the raw file content(s) → normalised by the SkillForge author pipeline, inserted as drafts owned by the token holder. Pass `publish: true` to publish immediately (subject to author permissions).",
+    "  - `upload_packages` with the raw file content(s) → normalised by the SkillForge author pipeline, inserted as PRIVATE drafts owned by the token holder. Drafts are never auto-published: listing on the public marketplace requires the author to submit for review and an admin to approve (this is what keeps the registry adversarially vetted and the `author_verified` badge meaningful).",
     "  - `request_primitive` if the user wants SuperAgentSkill to AUTHOR a brand-new primitive from scratch via the forge pipeline.",
     "",
     "## Auth",

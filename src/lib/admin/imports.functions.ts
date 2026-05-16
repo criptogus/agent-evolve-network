@@ -25,8 +25,14 @@ export const wizardCreatePackage = createServerFn({ method: "POST" })
     const pkg = await insertDraftPackage(supabase, userId, draft, {
       source_kind: "wizard",
       source_ref: vertical || "wizard",
-      publish: data.publish,
     });
+    // Admin-only (requireAdmin) flow; publishing is an explicit authorized step.
+    if (data.publish) {
+      await supabase
+        .from("packages")
+        .update({ is_published: true, review_status: "approved" })
+        .eq("id", pkg.id);
+    }
     return { package: pkg, draft };
   });
 

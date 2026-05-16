@@ -11,7 +11,6 @@ const FileSchema = z.object({
 
 const Input = z.object({
   files: z.array(FileSchema).min(1).max(10),
-  publish: z.boolean().default(false),
 });
 
 /**
@@ -24,8 +23,6 @@ export const bulkUploadPackages = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ results: UploadResult[] }> => {
     const { supabase: _sbCtx, userId  } = context as any;
     const supabase = _sbCtx as any;
-    const results = await processBulkUpload(supabase as any, userId, data.files, {
-      publish: data.publish,
-    });
+    const results = await processBulkUpload(supabase as any, userId, data.files);
     return { results };
   });

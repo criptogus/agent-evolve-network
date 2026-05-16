@@ -60,7 +60,7 @@ export const overviewTool = defineTool({
           description:
             "Push a local primitive upward to the registry so others (and future-you) benefit. Requires OAuth.",
           workflow: [
-            "1. upload_packages   — bulk upload markdown/prompt/JSON files. Normalised by SkillForge into draft packages. Pass publish:true to publish immediately.",
+            "1. upload_packages   — bulk upload markdown/prompt/JSON files. Normalised by SkillForge into PRIVATE draft packages. Never auto-published; public listing requires author submit + admin review/approval.",
             "2. request_primitive — ask SuperAgentSkill to AUTHOR a brand-new primitive from scratch via the forge pipeline.",
           ],
           tools: ["upload_packages", "request_primitive"],
@@ -289,7 +289,7 @@ export const uploadPackagesTool = defineTool({
       });
     try {
       // Always private. Marketplace listing requires an explicit user action in the UI.
-      const results = await processBulkUpload(supabaseAdmin as any, userId, files, { publish: false });
+      const results = await processBulkUpload(supabaseAdmin as any, userId, files);
       const ok = results.filter((r) => r.ok).length;
       return json({
         uploaded: ok,

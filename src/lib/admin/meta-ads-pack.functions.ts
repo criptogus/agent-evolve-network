@@ -105,8 +105,17 @@ export const generateMetaAdsBlueprint = createServerFn({ method: "POST" })
     const pkg = await insertDraftPackage(supabase, userId, draft, {
       source_kind: "wizard",
       source_ref: `meta-ads-mcp:${bp.id}`,
-      publish: data.publish,
     });
+    // insertDraftPackage always creates a private, unverified draft. This is an
+    // admin-only (requireAdmin) flow, so publishing is an explicit, authorized
+    // step — the DB trust-column trigger permits it because auth.uid() is an
+    // admin here.
+    if (data.publish) {
+      await supabase
+        .from("packages")
+        .update({ is_published: true, review_status: "approved" })
+        .eq("id", pkg.id);
+    }
 
     // 4) Patch the version row with mcp_servers / permissions / live_resources columns
     //    (insertDraftPackage's INSERT only writes the core version fields).
