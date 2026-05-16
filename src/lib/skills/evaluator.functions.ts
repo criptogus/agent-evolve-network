@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { evaluatorPipeline } from "./pipelines.server";
+import { createFeedbackRequest } from "./feedback.functions";
 
 const Input = z.object({
   package_slug: z.string(),
@@ -63,5 +64,14 @@ export const evaluatePackage = createServerFn({ method: "POST" })
       });
     }
 
-    return { package: pkg, version: ver, ...result };
+    const feedback_request = await createFeedbackRequest(supabase, {
+      kind: "evaluate",
+      packageId: pkg.id,
+      versionId: ver.id,
+      sourceUserId: userId,
+      source: "ui",
+      context: { verdict: result.evaluation.verdict, overall_score: result.evaluation.overall_score },
+    });
+
+    return { package: pkg, version: ver, ...result, feedback_request };
   });

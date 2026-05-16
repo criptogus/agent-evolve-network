@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { autoLearnPipeline } from "./pipelines.server";
+import { createFeedbackRequest } from "./feedback.functions";
 
 const Input = z.object({
   package_slug: z.string(),
@@ -12,7 +13,7 @@ export const autoLearnPackage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
 
     const { data: pkg, error: pErr } = await supabase
@@ -95,5 +96,18 @@ export const autoLearnPackage = createServerFn({ method: "POST" })
         .is("applied_in_version_id", null);
     }
 
-    return { package: pkg, current_version: ver, ...result, applied: createdVersion };
+    const feedback_request = await createFeedbackRequest(supabase, {
+      kind: "autolearn",
+      packageId: pkg.id,
+      versionId: createdVersion?.id ?? ver.id,
+      sourceUserId: userId,
+      source: "ui",
+      context: {
+        applied: !!createdVersion,
+        next_version: result.patch?.next_version,
+        confidence: result.patch?.confidence,
+      },
+    });
+
+    return { package: pkg, current_version: ver, ...result, applied: createdVersion, feedback_request };
   });
