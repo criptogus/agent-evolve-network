@@ -324,7 +324,7 @@ export const uploadPackagesTool = defineTool({
 // Everything between this banner and the tool exports is server-private.
 // ----------------------------------------------------------------------------
 
-const ENGINE = "sas-eval/4";
+const ENGINE = "sas-eval/5";
 
 type PillarId =
   | "identity"
