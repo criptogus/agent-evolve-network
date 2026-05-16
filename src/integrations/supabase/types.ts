@@ -727,6 +727,134 @@ export type Database = {
         }
         Relationships: []
       }
+      package_feedback: {
+        Row: {
+          agent_model: string | null
+          comments: string | null
+          context: Json
+          created_at: string
+          id: string
+          kind: string | null
+          package_id: string | null
+          rating: number | null
+          request_id: string | null
+          sentiment: string | null
+          source: string
+          submitter_id: string | null
+        }
+        Insert: {
+          agent_model?: string | null
+          comments?: string | null
+          context?: Json
+          created_at?: string
+          id?: string
+          kind?: string | null
+          package_id?: string | null
+          rating?: number | null
+          request_id?: string | null
+          sentiment?: string | null
+          source: string
+          submitter_id?: string | null
+        }
+        Update: {
+          agent_model?: string | null
+          comments?: string | null
+          context?: Json
+          created_at?: string
+          id?: string
+          kind?: string | null
+          package_id?: string | null
+          rating?: number | null
+          request_id?: string | null
+          sentiment?: string | null
+          source?: string
+          submitter_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_feedback_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_feedback_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_feedback_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "package_feedback_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      package_feedback_requests: {
+        Row: {
+          context: Json
+          created_at: string
+          expires_at: string
+          fulfilled_at: string | null
+          id: string
+          kind: string
+          package_id: string | null
+          source: string
+          source_user_id: string | null
+          version_id: string | null
+        }
+        Insert: {
+          context?: Json
+          created_at?: string
+          expires_at?: string
+          fulfilled_at?: string | null
+          id?: string
+          kind: string
+          package_id?: string | null
+          source?: string
+          source_user_id?: string | null
+          version_id?: string | null
+        }
+        Update: {
+          context?: Json
+          created_at?: string
+          expires_at?: string
+          fulfilled_at?: string | null
+          id?: string
+          kind?: string
+          package_id?: string | null
+          source?: string
+          source_user_id?: string | null
+          version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_feedback_requests_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_feedback_requests_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_feedback_requests_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "package_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       package_imports: {
         Row: {
           created_at: string
@@ -2364,6 +2492,18 @@ export type Database = {
       seed_robustness_findings_for: {
         Args: { _package_id: string }
         Returns: number
+      }
+      submit_package_feedback: {
+        Args: {
+          _agent_model?: string
+          _comments?: string
+          _context?: Json
+          _rating?: number
+          _request_id: string
+          _sentiment?: string
+          _source?: string
+        }
+        Returns: string
       }
       submit_review: {
         Args: {

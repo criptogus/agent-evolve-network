@@ -1370,12 +1370,23 @@ export const reviewSkillTool = defineTool({
           }
         : null;
 
+    // Create a feedback request so the host LLM can rate this review via the
+    // `submit_feedback` MCP tool. Single-use, 30-day TTL, validated server-side.
+    const { data: fbReq } = await supabaseAdmin
+      .from("package_feedback_requests")
+      .insert({
+        kind: "review_skill",
+        package_id: null,
+        source: "mcp",
+        context: { file: name, type, doc_class: docClass, score: verdictScore },
+      })
+      .select("id, expires_at")
+      .single();
+
     return json({
       file: name,
       type,
       engine: ENGINE,
-      // Pre-score signal — surfaced first so the host can act on it before
-      // taking the verdict at face value.
       input_warning: inputWarn,
       doc_class: {
         value: docClass,
@@ -1384,8 +1395,6 @@ export const reviewSkillTool = defineTool({
         rationale: DOC_CLASS_RATIONALE[docClass],
         ceiling_note: extras.ceiling_note(ceiling, docClass, DOC_CLASS_RATIONALE[docClass]),
       },
-      // Two axes + the verdict that derives from them. Operators can now see
-      // whether a low number is a format issue or a content issue.
       overall_score: overall,
       structural_score: structuralScore,
       content_quality_score: contentQualityScore,
@@ -1410,8 +1419,15 @@ export const reviewSkillTool = defineTool({
       top_actions: topActions,
       content_hash: contentHash,
       delta_vs_previous: delta,
-      // next_steps are instructions to the host LLM agent (not shown to the
-      // skill author), so always English regardless of the file's language.
+      feedback_request: fbReq
+        ? {
+            id: fbReq.id,
+            expires_at: fbReq.expires_at,
+            prompt: "After applying top_actions, please rate this review (1-5) via the `submit_feedback` tool so the engine learns which signals helped.",
+            tool: "submit_feedback",
+            example: { request_id: fbReq.id, rating: 4, sentiment: "positive", comments: "Top actions were spot-on." },
+          }
+        : null,
       next_steps:
         topActions.length === 0
           ? [MESSAGES.en.next_grade_a]
@@ -1421,7 +1437,41 @@ export const reviewSkillTool = defineTool({
               MESSAGES.en.next_diagnostic,
               "Pass `previous_hash` + `previous_overall_score` from this response into the next call to get a `delta_vs_previous`.",
               "Honour `doc_class.expected_ceiling` — actions beyond that point are cosmetic, not quality wins.",
-            ],
+              fbReq ? `When done iterating, call \`submit_feedback\` with request_id="${fbReq.id}" and a 1-5 rating.` : "",
+            ].filter(Boolean),
     });
+  },
+});
+
+/* ============================================================
+ * submit_feedback — host LLM (or human via CLI) sends rating + comment
+ * after consuming a review_skill / request_primitive / upload_packages
+ * result. Validated via SECURITY DEFINER `submit_package_feedback` RPC.
+ * Anonymous OK; the rate-limit lives in the JSON-RPC layer (mcp.ts).
+ * ============================================================ */
+export const submitFeedbackTool = defineTool({
+  name: "submit_feedback",
+  description:
+    "[FEEDBACK] Send a rating + optional comment for a prior SuperAgentSkill action (review_skill, request_primitive, upload_packages, author/forge loop). Pass the `request_id` returned in the prior response's `feedback_request.id`. Single-use; expires 30 days after issuance. Anonymous-OK.",
+  parameters: z.object({
+    request_id: z.string().uuid().describe("The id from the prior response's feedback_request.id"),
+    rating: z.number().int().min(1).max(5).describe("1 = bad, 5 = excellent"),
+    sentiment: z.enum(["positive", "neutral", "negative"]).optional(),
+    comments: z.string().max(4000).optional(),
+    agent_model: z.string().max(120).optional().describe("e.g. claude-sonnet-4-5, gpt-5, gemini-3-pro"),
+  }),
+  execute: async ({ request_id, rating, sentiment, comments, agent_model }) => {
+    const inferred = sentiment ?? (rating >= 4 ? "positive" : rating <= 2 ? "negative" : "neutral");
+    const { data, error } = await supabaseAdmin.rpc("submit_package_feedback", {
+      _request_id: request_id,
+      _rating: rating,
+      _sentiment: inferred,
+      _comments: comments ?? null,
+      _source: "mcp",
+      _agent_model: agent_model ?? null,
+      _context: {},
+    } as any);
+    if (error) return json({ ok: false, error: error.message });
+    return json({ ok: true, feedback_id: data, message: "Thanks — recorded." });
   },
 });

@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Nav } from "@/components/site/Nav";
 import { ForgeProgress, AUTHOR_STAGES, EVAL_STAGES, EVOLVE_STAGES } from "@/components/forge/ForgeProgress";
 import { SkillWizard, type WizardSubmit } from "@/components/forge/SkillWizard";
+import { FeedbackPrompt } from "@/components/forge/FeedbackPrompt";
 
 export const Route = createFileRoute("/forge")({
   head: () => ({
@@ -247,6 +248,9 @@ function AuthorTab() {
             <details className="mt-2"><summary className="cursor-pointer text-sm">Rules + examples ({m.data.draft.examples.length})</summary>
               <pre className="text-xs whitespace-pre-wrap mt-2">{JSON.stringify({ rules: m.data.draft.rules, examples: m.data.draft.examples }, null, 2)}</pre>
             </details>
+            <div className="mt-3">
+              <FeedbackPrompt request={(m.data as any).feedback_request} />
+            </div>
           </div>
         )}
       </CardContent>

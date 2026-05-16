@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { evaluatorPipeline, autoLearnPipeline, authorPipeline } from "./pipelines.server";
 import { webResearch } from "@/lib/admin/research.server";
+import { createFeedbackRequest } from "./feedback.functions";
 
 /* ============================================================
  * runForgeLoop — Eval → Learn → (Hot-swap) → Re-Eval
@@ -148,6 +149,15 @@ export const runForgeLoop = createServerFn({ method: "POST" })
       });
     }
 
+    const feedback_request = await createFeedbackRequest(supabase, {
+      kind: "forge_loop",
+      packageId: pkg.id,
+      versionId: newVersion?.id ?? ver.id,
+      sourceUserId: userId,
+      source: "ui",
+      context: { hotswapped: !!newVersion, before_score: before.evaluation.overall_score, after_score: after?.evaluation.overall_score ?? null },
+    });
+
     return {
       package: pkg,
       base_version: ver,
@@ -162,6 +172,7 @@ export const runForgeLoop = createServerFn({ method: "POST" })
         learn: learn.stages,
         re_evaluate: after?.stages ?? [],
       },
+      feedback_request,
     };
   });
 
@@ -290,10 +301,19 @@ export const autoCreateMissing = createServerFn({ method: "POST" })
         .eq("id", req.id);
     }
 
+    const feedback_request = await createFeedbackRequest(supabase, {
+      kind: "autocreate",
+      packageId: pkg.id,
+      sourceUserId: userId,
+      source: "ui",
+      context: { brief: data.brief.slice(0, 200), type: data.type },
+    });
+
     return {
       package: pkg,
       research_used: !!research,
       evaluation: evalRes?.evaluation ?? null,
       stages,
+      feedback_request,
     };
   });
