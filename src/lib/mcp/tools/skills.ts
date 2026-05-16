@@ -1058,6 +1058,117 @@ function extrasFor(lang: Lang): Extras {
   return EXTRAS[lang] ?? EXTRAS.en!;
 }
 
+// ----------------------------------------------------------------------------
+// Semantic pass (LLM-backed). Fixes the two deepest keyword-engine failure
+// modes:
+//   1. False zero — content covers the dimension semantically but with
+//      non-conventional vocabulary, and no regex hits.
+//   2. Displaced anchor — top_action quotes a line that is technically a hit
+//      but not the most representative passage for the dimension.
+// Uses a small/fast model on the Lovable AI gateway. Falls back silently to
+// the pure keyword score if the gateway is unavailable, the call errors, or
+// the response shape is malformed — the engine never degrades on outage.
+// ----------------------------------------------------------------------------
+type SemanticPillarVerdict = {
+  pillar: PillarId;
+  covered: boolean;
+  confidence: number;
+  evidence_line: number | null;
+  evidence_quote: string | null;
+};
+
+const SEMANTIC_MODEL = "google/gemini-3-flash-preview";
+
+const PILLAR_BRIEF: Record<PillarId, string> = {
+  identity: "Identity — who the agent is, voice/tone, values, refusal posture, non-goals.",
+  scope: "Scope & Triggers — when to use, target user, applies-to conditions, edge cases.",
+  procedure: "Procedure — step-by-step deterministic process, branches, stop condition, inputs/outputs.",
+  examples: "Examples — worked input → reasoning → output samples, including failure cases.",
+  guardrails: "Guardrails — failure modes named with mitigations, PII/data rules, prompt-injection defense, deterministic enforcement.",
+  trust: "Trust hooks — measurable acceptance criteria, output schemas, validation suite, runtime telemetry hooks.",
+  portability: "Portability — multi-runtime declaration (Claude/GPT/Gemini), vendor-neutral tool contracts, portable Markdown.",
+};
+
+async function semanticCheck(
+  content: string,
+  langHint: Lang,
+): Promise<Map<PillarId, SemanticPillarVerdict> | null> {
+  if (!process.env.LOVABLE_API_KEY) return null;
+  // Numbered lines so the model can return a usable evidence_line.
+  const lines = content.split("\n");
+  const cap = Math.min(lines.length, 600);
+  const numbered = lines
+    .slice(0, cap)
+    .map((l, i) => `${(i + 1).toString().padStart(4, " ")}  ${l}`)
+    .join("\n")
+    .slice(0, 16000);
+  const pillarList = (Object.keys(PILLAR_BRIEF) as PillarId[])
+    .map((id) => `- ${id}: ${PILLAR_BRIEF[id]}`)
+    .join("\n");
+  const sys = `You are a semantic-coverage probe for a skill/playbook/soul/guardrail evaluator. For each pillar, judge whether the document substantively covers that dimension — IGNORE missing keywords, headings, or formatting. Reward content even when the vocabulary is unconventional or in a non-English language. Quote at most 140 chars verbatim from the document; the line number must match the leading number on that line.`;
+  const user = `DOCUMENT LANGUAGE (hint): ${langHint}
+
+PILLARS:
+${pillarList}
+
+DOCUMENT (line-numbered, may be truncated):
+${numbered}
+
+Return one verdict per pillar. covered=true only if a reader would say the pillar is substantively addressed. confidence in [0,1]. If covered=false, set evidence_line=null and evidence_quote=null.`;
+
+  const schema = z.object({
+    verdicts: z
+      .array(
+        z.object({
+          pillar: z.enum(["identity", "scope", "procedure", "examples", "guardrails", "trust", "portability"]),
+          covered: z.boolean(),
+          confidence: z.number().min(0).max(1),
+          evidence_line: z.number().int().min(1).nullable(),
+          evidence_quote: z.string().max(200).nullable(),
+        }),
+      )
+      .length(7),
+  });
+
+  try {
+    const { output } = await generateText({
+      model: getGatewayModel(SEMANTIC_MODEL),
+      system: sys,
+      prompt: user,
+      output: Output.object({ schema }),
+      abortSignal: AbortSignal.timeout(12_000),
+    });
+    const map = new Map<PillarId, SemanticPillarVerdict>();
+    for (const v of output.verdicts) {
+      // Validate the line/quote pair against the actual file. If the model
+      // hallucinated a line number, drop the anchor (keep the coverage bit).
+      let line = v.evidence_line;
+      let quote = v.evidence_quote;
+      if (line !== null && quote) {
+        const idx = line - 1;
+        if (idx < 0 || idx >= lines.length || !lines[idx].includes(quote.slice(0, 24))) {
+          // Try a fuzzy lookup for the quote elsewhere in the file.
+          const needle = quote.slice(0, 40).trim();
+          const found = needle ? lines.findIndex((l) => l.includes(needle)) : -1;
+          if (found >= 0) line = found + 1;
+          else { line = null; quote = null; }
+        }
+      }
+      map.set(v.pillar as PillarId, {
+        pillar: v.pillar as PillarId,
+        covered: v.covered,
+        confidence: v.confidence,
+        evidence_line: line,
+        evidence_quote: quote,
+      });
+    }
+    return map;
+  } catch {
+    return null;
+  }
+}
+
+
 export const getMethodologyTool = defineTool({
   name: "get_methodology",
   description:
