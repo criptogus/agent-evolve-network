@@ -1180,7 +1180,7 @@ export const getMethodologyTool = defineTool({
       name: "Super Agent Skill evaluation",
       proprietary: true,
       note:
-        "Scoring is performed server-side. Engine v4 splits the verdict into structural_score (format) and content_quality_score (substance) and exposes an expected_ceiling per doc_class so the operator knows the realistic top before chasing diminishing returns. Multilingual detection AND feedback (EN, PT-BR, ES, FR, DE, IT).",
+        "Scoring is performed server-side. Engine v5 combines deterministic multilingual detectors with a fast LLM-backed semantic pass that catches pillars covered with non-conventional vocabulary and improves evidence anchors. The verdict is split into structural_score (format) and content_quality_score (substance) and an expected_ceiling per doc_class tells the operator the realistic top before chasing diminishing returns. Feedback localised to EN, PT-BR, ES, FR, DE, IT.",
       dimensions: (Object.keys(PILLAR_TITLE) as PillarId[]).map((id) => ({
         id,
         title: PILLAR_TITLE[id],
