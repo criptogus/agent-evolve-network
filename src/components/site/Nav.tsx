@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
 import { CreditsPill } from "./CreditsPill";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { getMyAdminStatus } from "@/lib/admin/accounts.functions";
 
 const GITHUB_URL = "https://github.com/criptogus/agent-evolve-network";
 const TWITTER_URL = "https://x.com/superagentskill";
@@ -87,6 +90,15 @@ function NavDropdown({ label, items }: { label: string; items: NavItem[] }) {
 export function Nav() {
   const [open, setOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const checkAdmin = useServerFn(getMyAdminStatus);
+  const adminQuery = useQuery({
+    queryKey: ["admin", "status", user?.id ?? null],
+    queryFn: () => checkAdmin(),
+    enabled: !!user,
+    retry: false,
+    staleTime: 60_000,
+  });
+  const isAdmin = !!adminQuery.data?.isAdmin;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/80 backdrop-blur-md">
@@ -155,6 +167,12 @@ export function Nav() {
                     <Link to="/account/tokens">API tokens</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
+                  <DropdownMenuSeparator />
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin">Admin</Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => signOut()}>Sign out</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -219,6 +237,11 @@ export function Nav() {
                       <MobileLink to="/account/tokens" onNavigate={() => setOpen(false)}>
                         API tokens
                       </MobileLink>
+                      {isAdmin && (
+                        <MobileLink to="/admin" onNavigate={() => setOpen(false)}>
+                          Admin
+                        </MobileLink>
+                      )}
                       <button
                         onClick={() => { setOpen(false); signOut(); }}
                         className="rounded-md px-3 py-2.5 text-left text-[15px] text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
