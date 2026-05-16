@@ -90,6 +90,15 @@ function NavDropdown({ label, items }: { label: string; items: NavItem[] }) {
 export function Nav() {
   const [open, setOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const checkAdmin = useServerFn(getMyAdminStatus);
+  const adminQuery = useQuery({
+    queryKey: ["admin", "status", user?.id ?? null],
+    queryFn: () => checkAdmin(),
+    enabled: !!user,
+    retry: false,
+    staleTime: 60_000,
+  });
+  const isAdmin = !!adminQuery.data?.isAdmin;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/80 backdrop-blur-md">
