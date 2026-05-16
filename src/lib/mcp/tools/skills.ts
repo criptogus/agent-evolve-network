@@ -1059,7 +1059,7 @@ function extrasFor(lang: Lang): Extras {
 export const getMethodologyTool = defineTool({
   name: "get_methodology",
   description:
-    "[UPGRADE] Orientation for the local-file upgrade flow. Returns the dimensions the proprietary SuperAgentSkill engine evaluates and how to drive the loop — NOT the rubric, signals or thresholds. Read-only, no auth.",
+    "[UPGRADE] Orientation for the local-file upgrade flow. Returns the dimensions the engine evaluates, the doc classes it grades against, and how to drive the loop — NOT the rubric, signals or thresholds. Read-only, no auth.",
   parameters: z.object({}),
   execute: async () =>
     json({
@@ -1067,15 +1067,20 @@ export const getMethodologyTool = defineTool({
       name: "Super Agent Skill evaluation",
       proprietary: true,
       note:
-        "Scoring is performed server-side. Signal detection is multilingual (EN, PT-BR, ES, FR, DE, IT) and feedback (top_actions, diagnostics, format_caveat, next_steps) is returned in the detected language. Other languages may underscore by mismatch — write in one of the supported languages for best signal. The engine is calibrated for kebab-case Markdown skill files following the Anthropic SKILL.md conventions; long-form governance prose may underscore even when the underlying content is strong, because some signals look for structured cues (worked input/output blocks, named sections, acceptance criteria).",
+        "Scoring is performed server-side. Engine v4 splits the verdict into structural_score (format) and content_quality_score (substance) and exposes an expected_ceiling per doc_class so the operator knows the realistic top before chasing diminishing returns. Multilingual detection AND feedback (EN, PT-BR, ES, FR, DE, IT).",
       dimensions: (Object.keys(PILLAR_TITLE) as PillarId[]).map((id) => ({
         id,
         title: PILLAR_TITLE[id],
       })),
+      doc_classes: (Object.keys(DOC_CLASS_CEILING) as DocClass[]).map((c) => ({
+        id: c,
+        expected_ceiling: DOC_CLASS_CEILING[c],
+        rationale: DOC_CLASS_RATIONALE[c],
+      })),
       how_to_use: [
-        "1. review_skill — submit the file; get overall_score, per-dimension scores, signal-hit counts and file-anchored top_actions (with line numbers and excerpts when evidence exists).",
-        "2. You (the host agent) apply the actions in the user's repo.",
-        "3. review_skill again — confirm the score rose. Iterate until grade A.",
+        "1. review_skill — submit the file (declare `doc_class` if you know it; otherwise leave as `auto`). Read `input_warning`, `doc_class.expected_ceiling`, then `verdict_score` and `top_actions`.",
+        "2. You (the host agent) apply the file-anchored actions in the user's repo. Skip actions whose `evidence_anchored: false` if you'd otherwise quote a misleading line.",
+        "3. review_skill again with `previous_hash` + `previous_overall_score` from the prior response — you'll get a `delta_vs_previous`. Iterate until the verdict_score reaches the expected_ceiling; going beyond is cosmetic.",
       ],
     }),
 });
