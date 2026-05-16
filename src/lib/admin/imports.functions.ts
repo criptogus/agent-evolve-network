@@ -26,11 +26,13 @@ export const wizardCreatePackage = createServerFn({ method: "POST" })
       source_kind: "wizard",
       source_ref: vertical || "wizard",
     });
-    // Admin-only (requireAdmin) flow; publishing is an explicit authorized step.
+    // Publishing always goes through the single gated path
+    // (setReviewStatus → mandatory adversarial gate). `publish` only submits
+    // the draft into the review queue; it never auto-approves.
     if (data.publish) {
       await supabase
         .from("packages")
-        .update({ is_published: true, review_status: "approved" })
+        .update({ review_status: "pending", submitted_at: new Date().toISOString() })
         .eq("id", pkg.id);
     }
     return { package: pkg, draft };

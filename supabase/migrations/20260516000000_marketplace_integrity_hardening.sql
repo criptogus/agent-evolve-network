@@ -90,7 +90,79 @@ CREATE TRIGGER trg_guard_package_trust_insert
   BEFORE INSERT ON public.packages
   FOR EACH ROW EXECUTE FUNCTION public.guard_package_trust_insert();
 
--- 4. Defensive: any package that is published but somehow not approved must
+-- 4. Mandatory adversarial gate at the DATABASE layer. This is the single
+--    chokepoint: no code path (server fn, admin tool, direct service-role
+--    write) can flip a package to published/approved unless the CURRENT
+--    version has an adversarial run that clears the bar. Mirrors the
+--    application gate in review.functions.ts so the invariant holds even if
+--    application logic regresses.
+CREATE OR REPLACE FUNCTION public.require_adversarial_pass()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  _turning_on boolean;
+  _ver_id uuid;
+  _run record;
+  _crit_fail int;
+  _high_fail int;
+BEGIN
+  _turning_on :=
+    (NEW.is_published AND NOT COALESCE(OLD.is_published, false))
+    OR (NEW.review_status = 'approved' AND COALESCE(OLD.review_status, '') <> 'approved');
+
+  IF NOT _turning_on THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT id INTO _ver_id
+    FROM public.package_versions
+    WHERE package_id = NEW.id
+    ORDER BY created_at DESC
+    LIMIT 1;
+
+  IF _ver_id IS NULL THEN
+    RAISE EXCEPTION 'cannot publish/approve %, no package version exists', NEW.slug;
+  END IF;
+
+  SELECT total, passed, pass_rate, severity_weighted_score, by_severity
+    INTO _run
+    FROM public.adversarial_runs
+    WHERE package_id = NEW.id AND version_id = _ver_id
+    ORDER BY created_at DESC
+    LIMIT 1;
+
+  IF _run IS NULL OR COALESCE(_run.total, 0) = 0 THEN
+    RAISE EXCEPTION 'cannot publish/approve %, current version has no adversarial run', NEW.slug;
+  END IF;
+
+  _crit_fail := COALESCE((_run.by_severity->'critical'->>'total')::int, 0)
+              - COALESCE((_run.by_severity->'critical'->>'passed')::int, 0);
+  _high_fail := COALESCE((_run.by_severity->'high'->>'total')::int, 0)
+              - COALESCE((_run.by_severity->'high'->>'passed')::int, 0);
+
+  IF _crit_fail > 0 OR _high_fail > 0 THEN
+    RAISE EXCEPTION 'cannot publish/approve %, % critical / % high adversarial failures',
+      NEW.slug, _crit_fail, _high_fail;
+  END IF;
+  IF COALESCE(_run.severity_weighted_score, 0) < 0.9
+     OR COALESCE(_run.pass_rate, 0) < 0.9 THEN
+    RAISE EXCEPTION 'cannot publish/approve %, adversarial score below approval bar (sws=%, pass_rate=%)',
+      NEW.slug, _run.severity_weighted_score, _run.pass_rate;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_require_adversarial_pass ON public.packages;
+CREATE TRIGGER trg_require_adversarial_pass
+  BEFORE UPDATE ON public.packages
+  FOR EACH ROW EXECUTE FUNCTION public.require_adversarial_pass();
+
+-- 5. Defensive: any package that is published but somehow not approved must
 --    not leak through the marketplace. Reads are already gated by
 --    (is_published AND review_status='approved') in the read policy; this just
 --    normalizes any pre-existing drift created before this migration.

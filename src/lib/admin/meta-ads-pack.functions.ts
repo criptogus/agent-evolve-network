@@ -106,14 +106,14 @@ export const generateMetaAdsBlueprint = createServerFn({ method: "POST" })
       source_kind: "wizard",
       source_ref: `meta-ads-mcp:${bp.id}`,
     });
-    // insertDraftPackage always creates a private, unverified draft. This is an
-    // admin-only (requireAdmin) flow, so publishing is an explicit, authorized
-    // step — the DB trust-column trigger permits it because auth.uid() is an
-    // admin here.
+    // insertDraftPackage always creates a private, unverified draft. Even for
+    // this admin flow, publishing goes through the single gated path
+    // (setReviewStatus → mandatory adversarial gate). `publish` here only
+    // submits the draft into the review queue; it never auto-approves.
     if (data.publish) {
       await supabase
         .from("packages")
-        .update({ is_published: true, review_status: "approved" })
+        .update({ review_status: "pending", submitted_at: new Date().toISOString() })
         .eq("id", pkg.id);
     }
 
