@@ -5,7 +5,7 @@ import { ClientOnly } from "@/components/site/ClientOnly";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Typewriter } from "@/components/site/Typewriter";
-import { CopyButton } from "@/components/site/CopyButton";
+import { CopyButton, CodeBlockCopy } from "@/components/site/CopyButton";
 import { CountUp } from "@/components/site/CountUp";
 import { JsonLd } from "@/components/site/JsonLd";
 
