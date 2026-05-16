@@ -580,20 +580,27 @@ function scorePillar(id: PillarId, text: string): PillarDetail {
   let earned = 0;
   let total = 0;
   let hit = 0;
+  let structEarned = 0;
+  let structTotal = 0;
+  let contEarned = 0;
+  let contTotal = 0;
   const evidence: PillarDetail["evidence"] = [];
 
-  signals.forEach((s) => {
+  signals.forEach((s, idx) => {
     total += s.w;
     const primaryHit = s.primary.test(text);
     const secondaryHit = s.secondary ? s.secondary.test(text) : false;
     let frac = primaryHit ? 1 : secondaryHit ? 0.5 : 0;
-    // Negative signals: presence is bad. Absence (frac=0) becomes good (1).
-    // Crucially, a negative signal contributes to "hit" only when it ACTUALLY
-    // matched — so portability no longer hits 100 just from absence.
-    if (s.kind === "negative") {
-      frac = 1 - frac;
+    if (s.kind === "negative") frac = 1 - frac;
+    const earnedHere = frac * s.w;
+    earned += earnedHere;
+    if (isStructural(id, idx)) {
+      structTotal += s.w;
+      structEarned += earnedHere;
+    } else {
+      contTotal += s.w;
+      contEarned += earnedHere;
     }
-    earned += frac * s.w;
     if (primaryHit || secondaryHit) {
       hit += 1;
       const ev = findEvidence(text, primaryHit ? s.primary : (s.secondary as RegExp));
@@ -602,17 +609,24 @@ function scorePillar(id: PillarId, text: string): PillarDetail {
   });
 
   let score = total > 0 ? Math.round((earned / total) * 100) : 0;
-  // Cap any pillar that scored on zero positive evidence — prevents the
-  // "all-negative-signals → 100 by default" smell. Affects portability most.
   const positiveSignals = signals.filter((s) => s.kind === "positive").length;
   const positiveHits = signals.filter(
     (s) => s.kind === "positive" && (s.primary.test(text) || (s.secondary && s.secondary.test(text)))
   ).length;
-  if (positiveSignals > 0 && positiveHits === 0) {
-    score = Math.min(score, 60); // graceful cap, not zero
-  }
+  if (positiveSignals > 0 && positiveHits === 0) score = Math.min(score, 60);
   score = Math.max(0, Math.min(100, score));
-  return { id, score, deficit: 100 - score, signals_total: signals.length, signals_hit: hit, evidence };
+  return {
+    id,
+    score,
+    deficit: 100 - score,
+    signals_total: signals.length,
+    signals_hit: hit,
+    evidence,
+    structural_earned: structEarned,
+    structural_total: structTotal,
+    content_earned: contEarned,
+    content_total: contTotal,
+  };
 }
 
 function gradeBand(n: number): string {
