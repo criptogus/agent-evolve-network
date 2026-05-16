@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "validate:content": "node scripts/validate-content.mjs",
+    "validate:content": "node --experimental-strip-types scripts/validate-content.mjs",
     "sync:content": "node scripts/sync-content-to-registry.mjs",
     "sync:adversarial": "node scripts/sync-adversarial-cases.mjs",
     "eval:adversarial": "node scripts/eval-adversarial.mjs",
@@ -19,8 +19,10 @@
     "release:sign": "node scripts/sign-release-bundle.mjs",
     "release:verify": "node scripts/verify-release-bundle.mjs",
     "release:changelog": "node scripts/generate-changelog.mjs",
+    "trust:attest": "node scripts/generate-trust-attestation.mjs",
+    "trust:verify": "node scripts/verify-trust-attestation.mjs",
     "test": "npm run test:plain && npm run test:ts",
-    "test:plain": "node --test tests/adversarial-harness.test.mjs tests/trust.test.mjs tests/release-signing.test.mjs tests/cli-install.test.mjs",
+    "test:plain": "node --test tests/adversarial-harness.test.mjs tests/trust.test.mjs tests/release-signing.test.mjs tests/cli-install.test.mjs tests/trust-attestation.test.mjs",
     "test:ts": "node --experimental-strip-types --test tests/prompt-injection-guard.test.mjs tests/runtime.test.mjs tests/integrations.test.mjs tests/growth-revenue-split.test.mjs tests/trust-badge.test.mjs tests/bounties.test.mjs"
   },
   "dependencies": {
