@@ -301,10 +301,19 @@ export const autoCreateMissing = createServerFn({ method: "POST" })
         .eq("id", req.id);
     }
 
+    const feedback_request = await createFeedbackRequest(supabase, {
+      kind: "autocreate",
+      packageId: pkg.id,
+      sourceUserId: userId,
+      source: "ui",
+      context: { brief: data.brief.slice(0, 200), type: data.type },
+    });
+
     return {
       package: pkg,
       research_used: !!research,
       evaluation: evalRes?.evaluation ?? null,
       stages,
+      feedback_request,
     };
   });
