@@ -8,12 +8,6 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-
-# Local environment files (keep .env.example tracked)
-.env
-.env.*
-!.env.example
-
 dist
 dist-ssr
 .output
