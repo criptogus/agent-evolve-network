@@ -33,6 +33,15 @@ export const runForgeLoop = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!ver) throw new Response("Version not found", { status: 404 });
 
+    const { data: goldenRows } = await supabase
+      .from("package_golden_cases")
+      .select("title, input, expected_output, label_pass, label_source")
+      .eq("package_id", pkg.id)
+      .eq("is_active", true)
+      .limit(20);
+    const goldenCases =
+      (goldenRows as Array<{ title: string; input: string; expected_output: string; label_pass: boolean; label_source: string }>) || [];
+
     // 1) Evaluate current
     const before = await evaluatorPipeline({
       pkg: { name: pkg.name, type: pkg.type },
@@ -41,6 +50,7 @@ export const runForgeLoop = createServerFn({ method: "POST" })
         rules: ver.rules,
         examples: (ver.examples as Array<{ title: string; input: string; expected_output: string }>) || [],
       },
+      goldenCases,
     });
     await supabase.from("package_evaluations").insert({
       package_id: pkg.id,
@@ -59,6 +69,7 @@ export const runForgeLoop = createServerFn({ method: "POST" })
       example_results: before.evaluation.example_results,
       adversarial_results: before.adversarial,
       pipeline_stages: before.stages,
+      judge_calibration: before.judgeCalibration,
     });
 
     // 2) Auto-learn proposal
@@ -75,6 +86,13 @@ export const runForgeLoop = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(80);
 
+    const { data: feedback } = await supabase
+      .from("package_feedback")
+      .select("source, rating, sentiment, comments, agent_model")
+      .eq("package_id", pkg.id)
+      .order("created_at", { ascending: false })
+      .limit(120);
+
     const learn = await autoLearnPipeline({
       pkg: { name: pkg.name, type: pkg.type },
       version: { version: ver.version, system_prompt: ver.system_prompt, rules: ver.rules, examples: ver.examples },
@@ -85,6 +103,13 @@ export const runForgeLoop = createServerFn({ method: "POST" })
         suggested_patch: string | null;
         weight: number;
         created_at: string;
+      }>,
+      feedback: (feedback || []) as Array<{
+        source: string;
+        rating: number | null;
+        sentiment: string | null;
+        comments: string | null;
+        agent_model: string | null;
       }>,
     });
 
@@ -128,6 +153,7 @@ export const runForgeLoop = createServerFn({ method: "POST" })
           rules: mergedRules,
           examples: mergedExamples,
         },
+        goldenCases,
       });
       await supabase.from("package_evaluations").insert({
         package_id: pkg.id,
@@ -146,6 +172,8 @@ export const runForgeLoop = createServerFn({ method: "POST" })
         example_results: after.evaluation.example_results,
         adversarial_results: after.adversarial,
         pipeline_stages: after.stages,
+        judge_calibration: after.judgeCalibration,
+        evolution_trace: { evolution: learn.evolution, feedback_summary: learn.feedback_summary },
       });
     }
 

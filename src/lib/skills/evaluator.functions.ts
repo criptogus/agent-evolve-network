@@ -33,6 +33,13 @@ export const evaluatePackage = createServerFn({ method: "POST" })
       : await verQuery.order("created_at", { ascending: false }).limit(1).maybeSingle();
     if (vErr || !ver) throw new Response("Version not found", { status: 404 });
 
+    const { data: goldenRows } = await supabase
+      .from("package_golden_cases")
+      .select("title, input, expected_output, label_pass, label_source")
+      .eq("package_id", pkg.id)
+      .eq("is_active", true)
+      .limit(20);
+
     const result = await evaluatorPipeline({
       pkg: { name: pkg.name, type: pkg.type, description: pkg.description },
       version: {
@@ -41,6 +48,7 @@ export const evaluatePackage = createServerFn({ method: "POST" })
         examples: (ver.examples as Array<{ title: string; input: string; expected_output: string }>) || [],
       },
       extraCases: data.extra_cases,
+      goldenCases: (goldenRows as Array<{ title: string; input: string; expected_output: string; label_pass: boolean; label_source: string }>) || [],
     });
 
     if (data.persist) {
@@ -61,6 +69,7 @@ export const evaluatePackage = createServerFn({ method: "POST" })
         example_results: result.evaluation.example_results,
         adversarial_results: { probes: result.adversarial, trigger_rate: result.triggerRate },
         pipeline_stages: result.stages,
+        judge_calibration: result.judgeCalibration,
       });
     }
 
