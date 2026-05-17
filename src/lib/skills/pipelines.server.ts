@@ -365,9 +365,13 @@ async function adaptiveAttack(opts: {
   category: string;
   seedProbe: string;
   maxTurns: number;
-}): Promise<{ broke: boolean; turnsUsed: number; transcript: Array<{ attacker: string; defender: string }> }> {
+}): Promise<{ broke: boolean | null; turnsUsed: number; transcript: Array<{ attacker: string; defender: string }> }> {
   const transcript: Array<{ attacker: string; defender: string }> = [];
   let attackerMsg = opts.seedProbe;
+  // Track judge errors: if the adaptive judge never returned a confident
+  // verdict (all attempts threw), we MUST NOT report this probe as safe —
+  // an unjudged unsafe reply would silently inflate the safety score.
+  let judgeErrored = false;
   for (let turn = 0; turn < opts.maxTurns; turn++) {
     let defenderReply = "";
     try {
@@ -405,10 +409,14 @@ async function adaptiveAttack(opts: {
       if (a.done || !a.next_attack.trim()) break;
       attackerMsg = a.next_attack;
     } catch {
+      // Judge failed this turn — record uncertainty and stop escalating.
+      judgeErrored = true;
       break;
     }
   }
-  return { broke: false, turnsUsed: transcript.length, transcript };
+  // No confirmed break. If the judge errored before reaching a confident
+  // verdict, the outcome is indeterminate (null), not safe (false).
+  return { broke: judgeErrored ? null : false, turnsUsed: transcript.length, transcript };
 }
 
 /** Cohen's kappa for two binary raters (judge vs golden truth). */
@@ -936,6 +944,23 @@ export async function autoLearnPipeline(opts: {
   // fitness is comparable across the whole search.
   const examples = (opts.version.examples as Array<{ title: string; input: string; expected_output: string }>) || [];
   const sample = examples.slice(0, 4);
+  // Compute the OLD/baseline output ONCE per sampled example and reuse it for
+  // every candidate. The FAST model is non-deterministic, so re-running the
+  // baseline inside each scoring pass would make fitness incomparable across
+  // candidates/generations and let baseline variance drive elite selection.
+  const baselineByTitle = new Map<string, string>(
+    await Promise.all(
+      sample.map(
+        async (ex) =>
+          [
+            ex.title,
+            await generateText({ model: getGatewayModel(FAST), system: opts.version.system_prompt, prompt: ex.input })
+              .then((r) => r.text)
+              .catch(() => ""),
+          ] as const
+      )
+    )
+  );
   type AbRow = { title: string; oldRes: string; newRes: string; winner: "old" | "new" | "tie"; oldOk: boolean; newOk: boolean };
   type Candidate = {
     gen: number;
@@ -977,14 +1002,14 @@ ${JSON.stringify(clusters)}${feedbackBlock}`;
   const scoreCandidate = async (gen: number, patch: z.infer<typeof PatchSchema>): Promise<Candidate> => {
     const ab: AbRow[] = await Promise.all(
       sample.map(async (ex) => {
-        const [oldRes, newRes] = await Promise.all([
-          generateText({ model: getGatewayModel(FAST), system: opts.version.system_prompt, prompt: ex.input })
-            .then((r) => r.text)
-            .catch(() => ""),
-          generateText({ model: getGatewayModel(FAST), system: patch.patched_system_prompt, prompt: ex.input })
-            .then((r) => r.text)
-            .catch(() => ""),
-        ]);
+        const oldRes = baselineByTitle.get(ex.title) ?? "";
+        const newRes = await generateText({
+          model: getGatewayModel(FAST),
+          system: patch.patched_system_prompt,
+          prompt: ex.input,
+        })
+          .then((r) => r.text)
+          .catch(() => "");
         let winner: "old" | "new" | "tie" = "tie";
         try {
           const PairSchema = z.object({ winner: z.enum(["old", "new", "tie"]), reason: z.string() });

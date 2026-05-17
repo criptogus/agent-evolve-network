@@ -38,6 +38,8 @@ export const evaluatePackage = createServerFn({ method: "POST" })
       .select("title, input, expected_output, label_pass, label_source")
       .eq("package_id", pkg.id)
       .eq("is_active", true)
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
       .limit(20);
 
     const result = await evaluatorPipeline({
