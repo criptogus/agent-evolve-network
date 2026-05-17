@@ -46,6 +46,13 @@ export const autoLearnPackage = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(80);
 
+    const { data: feedback } = await supabase
+      .from("package_feedback")
+      .select("source, rating, sentiment, comments, agent_model")
+      .eq("package_id", pkg.id)
+      .order("created_at", { ascending: false })
+      .limit(120);
+
     const result = await autoLearnPipeline({
       pkg: { name: pkg.name, type: pkg.type },
       version: {
@@ -61,6 +68,13 @@ export const autoLearnPackage = createServerFn({ method: "POST" })
         suggested_patch: string | null;
         weight: number;
         created_at: string;
+      }>,
+      feedback: (feedback || []) as Array<{
+        source: string;
+        rating: number | null;
+        sentiment: string | null;
+        comments: string | null;
+        agent_model: string | null;
       }>,
     });
 
