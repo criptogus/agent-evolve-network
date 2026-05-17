@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireAdmin } from "./middleware";
 
 // Used by the admin layout guard.
@@ -17,9 +18,12 @@ export const getMyAdminStatus = createServerFn({ method: "GET" })
 export const claimAdminBootstrap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
-    const supabase = _sbCtx as any;
-    const { count, error: cErr } = await supabase
+    const { userId } = context as any;
+    // Use the service-role client so the "is there any admin yet?" check is a
+    // true global invariant. The user-scoped client is blinded by RLS
+    // (`roles read self`) and would report 0 admins to any non-admin caller,
+    // letting any authenticated user claim admin even after one exists.
+    const { count, error: cErr } = await supabaseAdmin
       .from("user_roles")
       .select("user_id", { count: "exact", head: true })
       .eq("role", "admin");
@@ -27,7 +31,9 @@ export const claimAdminBootstrap = createServerFn({ method: "POST" })
     if ((count ?? 0) > 0) {
       throw new Response("Admin already exists", { status: 409 });
     }
-    const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: "admin" });
+    const { error } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: userId, role: "admin" });
     if (error) throw new Response(error.message, { status: 500 });
     return { ok: true };
   });
@@ -46,7 +52,12 @@ export const listAccounts = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(200);
     if (data.search) {
-      q = q.or(`handle.ilike.%${data.search}%,display_name.ilike.%${data.search}%`);
+      // Strip PostgREST filter metacharacters to prevent filter injection
+      // through the interpolated `.or()` expression.
+      const term = data.search.replace(/[%,()*]/g, "").trim();
+      if (term) {
+        q = q.or(`handle.ilike.%${term}%,display_name.ilike.%${term}%`);
+      }
     }
     const { data: profiles, error } = await q;
     if (error) throw new Response(error.message, { status: 500 });
