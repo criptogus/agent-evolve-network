@@ -2337,6 +2337,15 @@ export type Database = {
         Args: { _credits: number; _kind: string; _referral_id: string }
         Returns: Json
       }
+      check_rls_coverage: {
+        Args: never
+        Returns: {
+          issue: string
+          policy_count: number
+          rls_enabled: boolean
+          table_name: string
+        }[]
+      }
       claim_referral: {
         Args: { _code: string; _package_slug?: string; _source_url?: string }
         Returns: Json
