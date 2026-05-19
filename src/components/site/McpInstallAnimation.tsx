@@ -84,21 +84,21 @@ export function McpInstallAnimation() {
   const client = CLIENTS[activeClient];
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-[oklch(0.14_0.01_270)] text-[13px] shadow-elevated">
+    <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-[oklch(0.14_0.01_270)] text-[12px] shadow-elevated sm:text-[13px]">
       {/* Title bar */}
-      <div className="flex items-center justify-between border-b border-white/5 px-4 py-2.5">
+      <div className="flex min-w-0 items-center justify-between gap-3 border-b border-white/5 px-4 py-2.5">
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-[oklch(0.55_0.21_28)]" />
           <span className="h-2.5 w-2.5 rounded-full bg-[oklch(0.78_0.16_85)]" />
           <span className="h-2.5 w-2.5 rounded-full bg-signal" />
-          <span className="ml-3 font-mono text-xs text-white/50">install.mcp</span>
+          <span className="ml-2 font-mono text-xs text-white/50 sm:ml-3">install.mcp</span>
         </div>
-        <span className="font-mono text-[11px] text-white/40">30 seconds</span>
+        <span className="shrink-0 font-mono text-[11px] text-white/40">30 seconds</span>
       </div>
 
-      <div className="min-h-[330px] p-5 font-mono leading-relaxed text-white/90">
+      <div className="min-h-[330px] p-4 font-mono leading-relaxed text-white/90 sm:p-5">
         {/* Step indicator */}
-        <div className="mb-5 flex items-center gap-2 text-[11px]">
+        <div className="mb-5 flex min-w-0 items-center gap-2 text-[11px]">
           {[0, 1, 2].map((i) => (
             <div key={i} className="flex items-center gap-2">
               <span
@@ -114,14 +114,14 @@ export function McpInstallAnimation() {
               {i < 2 && (
                 <span
                   className={
-                    "h-px w-10 transition-colors duration-500 " +
+                    "h-px w-8 transition-colors duration-500 sm:w-10 " +
                     (step > i ? "bg-signal/60" : "bg-white/10")
                   }
                 />
               )}
             </div>
           ))}
-          <span className="ml-3 text-white/40">
+          <span className="ml-1 min-w-0 flex-1 text-pretty text-white/40 sm:ml-3">
             {step === 0 && "Paste URL into client"}
             {step === 1 && `Authorize ${client.name} (OAuth)`}
             {step === 2 && "Tools are live"}
