@@ -27,11 +27,7 @@ export function Typewriter({
       timeout = setTimeout(() => setDeleting(true), pause);
     } else if (deleting && text === "") {
       setDeleting(false);
-      setIndex((i) => {
-        const nextIndex = (i + 1) % words.length;
-        setText(words[nextIndex] ?? "");
-        return nextIndex;
-      });
+      setIndex((i) => (i + 1) % words.length);
     } else {
       timeout = setTimeout(
         () => {
@@ -47,7 +43,7 @@ export function Typewriter({
 
   return (
     <span className={className}>
-      {text}
+      {text || words[index % words.length]}
       <span className="caret" aria-hidden />
     </span>
   );
