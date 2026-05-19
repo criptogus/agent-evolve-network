@@ -4,10 +4,11 @@ import { Check, Copy } from "lucide-react";
 interface CopyButtonProps {
   value: string;
   label?: string;
+  shortLabel?: string;
   className?: string;
 }
 
-export function CopyButton({ value, label = "copy", className = "" }: CopyButtonProps) {
+export function CopyButton({ value, label = "copy", shortLabel, className = "" }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -29,7 +30,8 @@ export function CopyButton({ value, label = "copy", className = "" }: CopyButton
       }
     >
       {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-      {copied ? "Copied" : label}
+      <span className={shortLabel ? "hidden sm:inline" : undefined}>{copied ? "Copied" : label}</span>
+      {shortLabel && <span className="sm:hidden">{copied ? "Copied" : shortLabel}</span>}
     </button>
   );
 }
