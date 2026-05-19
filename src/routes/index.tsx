@@ -131,14 +131,15 @@ function Hero() {
             </div>
             <h1 className="mt-5 text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-[64px]">
               Turn Claude or Cursor into a{" "}
-              <span className="relative inline-block max-w-full align-baseline text-primary">
-                {/* Sizer: longest phrase reserves space. Wraps on mobile so it
-                    never forces the column wider than the viewport. */}
-                <span aria-hidden className="invisible whitespace-normal sm:whitespace-nowrap">
+              <span className="relative inline align-baseline text-primary sm:inline-block sm:max-w-full">
+                {/* Sizer reserves space on sm+ so the absolute Typewriter never
+                    overflows. On mobile the Typewriter renders inline and wraps
+                    naturally with the heading. */}
+                <span aria-hidden className="hidden whitespace-nowrap invisible sm:inline">
                   fintech compliance officer.
                 </span>
                 <Typewriter
-                  className="absolute left-0 top-0 whitespace-normal sm:whitespace-nowrap"
+                  className="sm:absolute sm:left-0 sm:top-0 sm:whitespace-nowrap"
                   words={[
                     "cybersecurity expert.",
                     "senior SRE.",
