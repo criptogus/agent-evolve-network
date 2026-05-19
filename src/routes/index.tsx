@@ -215,14 +215,14 @@ function Hero() {
           ].map((m) => (
             <div
               key={m.label}
-              className="flex items-center gap-3 rounded-xl border border-border bg-surface/60 px-4 py-3"
+              className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-surface/60 px-3 py-3 sm:gap-3 sm:px-4"
             >
               <m.Icon className="h-5 w-5 shrink-0 text-primary" strokeWidth={1.75} aria-hidden />
               <div className="min-w-0">
                 <div className="font-mono text-xl font-semibold leading-none tracking-tight text-foreground">
                   <CountUp to={m.v} suffix={m.suffix} decimals={0} />
                 </div>
-                <div className="mt-1 truncate text-[11px] uppercase tracking-wider text-muted-foreground">
+                <div className="mt-1 text-[10px] uppercase leading-tight tracking-wider text-muted-foreground sm:text-[11px]">
                   {m.label}
                 </div>
               </div>
