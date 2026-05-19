@@ -159,17 +159,17 @@ function Hero() {
             </p>
 
             {/* MCP URL — primary above-the-fold action */}
-            <div className="mt-6 rounded-xl border border-border bg-background/80 p-3 shadow-elevated backdrop-blur">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden px-2">
+            <div className="mt-6 min-w-0 rounded-xl border border-border bg-background/80 p-3 shadow-elevated backdrop-blur">
+              <div className="flex min-w-0 items-center justify-between gap-2">
+                <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden px-1 sm:px-2">
                   <span className="hidden font-mono text-[10px] uppercase tracking-wider text-primary sm:inline">
                     MCP
                   </span>
                   <code className="truncate font-mono text-xs text-foreground sm:text-sm">{mcpUrl}</code>
                 </div>
-                <CopyButton value={mcpUrl} label="Copy URL" />
+                <CopyButton value={mcpUrl} label="Copy URL" className="shrink-0 px-2 sm:px-2.5" shortLabel="Copy" />
               </div>
-              <p className="mt-2 text-[11px] text-muted-foreground">
+              <p className="mt-2 break-words text-[11px] text-muted-foreground">
                 Paste into Claude → Settings → Connectors. Works immediately.
               </p>
             </div>
