@@ -139,13 +139,12 @@ export function McpInstallAnimation() {
           <div className="text-[11px] uppercase tracking-[0.18em] text-white/40">
             Your MCP endpoint
           </div>
-          <div className="mt-2 flex items-center gap-2 rounded-md border border-white/10 bg-black/30 px-3 py-2.5">
+          <div className="mt-2 flex min-w-0 items-center gap-2 rounded-md border border-white/10 bg-black/30 px-3 py-2.5">
             <span className="text-primary">→</span>
-            <span className="truncate text-white">
+            <span className="min-w-0 flex-1 truncate text-white">
               {MCP_URL.slice(0, typed)}
               {typed < MCP_URL.length && <span className="caret" aria-hidden />}
             </span>
-            <span className="ml-auto" />
             <button
               type="button"
               className={
@@ -158,7 +157,7 @@ export function McpInstallAnimation() {
               {copied ? "✓ copied" : "copy"}
             </button>
           </div>
-          <div className="mt-4 text-white/50">
+          <div className="mt-4 text-pretty text-white/50">
             That's it. One URL — no SDK, no keys, no DevOps.
           </div>
         </div>
@@ -196,7 +195,7 @@ export function McpInstallAnimation() {
                 </div>
               </div>
             </div>
-            <div className="mt-3 flex items-center gap-2 text-white/50">
+            <div className="mt-3 flex items-start gap-2 text-pretty text-white/50">
               <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
               Issuing access token via OAuth 2.1 + PKCE…
             </div>
