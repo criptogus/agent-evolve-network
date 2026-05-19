@@ -16,7 +16,7 @@ export function Typewriter({
   pause = 2200,
 }: TypewriterProps) {
   const [index, setIndex] = useState(0);
-  const [text, setText] = useState("");
+  const [text, setText] = useState(words[0] ?? "");
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -27,7 +27,11 @@ export function Typewriter({
       timeout = setTimeout(() => setDeleting(true), pause);
     } else if (deleting && text === "") {
       setDeleting(false);
-      setIndex((i) => (i + 1) % words.length);
+      setIndex((i) => {
+        const nextIndex = (i + 1) % words.length;
+        setText(words[nextIndex] ?? "");
+        return nextIndex;
+      });
     } else {
       timeout = setTimeout(
         () => {
