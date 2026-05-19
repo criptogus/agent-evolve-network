@@ -16,7 +16,7 @@ export function Typewriter({
   pause = 2200,
 }: TypewriterProps) {
   const [index, setIndex] = useState(0);
-  const [text, setText] = useState("");
+  const [text, setText] = useState(words[0] ?? "");
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export function Typewriter({
 
   return (
     <span className={className}>
-      {text}
+      {text || words[index % words.length]}
       <span className="caret" aria-hidden />
     </span>
   );

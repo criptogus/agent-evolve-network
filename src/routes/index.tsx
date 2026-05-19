@@ -121,17 +121,17 @@ function Hero() {
     <section className="relative overflow-hidden border-b border-border">
       <div className="absolute inset-0 grid-bg opacity-60" aria-hidden />
       <div className="absolute inset-0 hero-glow" aria-hidden />
-      <div className="relative mx-auto max-w-7xl px-6 pb-16 pt-16 md:pt-20 lg:pb-20">
+      <div className="relative mx-auto max-w-7xl px-4 pb-14 pt-14 sm:px-6 md:pt-20 lg:pb-20">
         <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
           {/* LEFT — message + primary action */}
-          <div className="fade-up text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-elevated px-3 py-1 text-xs text-muted-foreground shadow-sm">
+          <div className="min-w-0 fade-up text-center lg:text-left">
+            <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-surface-elevated px-3 py-1 text-xs text-muted-foreground shadow-sm sm:max-w-none">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-signal pulse-dot" />
-              <span>459+ expert skills · Works with Claude, Cursor &amp; ChatGPT</span>
+              <span className="min-w-0 truncate sm:whitespace-normal">459+ expert skills · Works with Claude, Cursor &amp; ChatGPT</span>
             </div>
-            <h1 className="mt-5 text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl xl:text-[64px]">
+            <h1 className="mt-5 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl xl:text-[64px]">
               Turn Claude or Cursor into a{" "}
-              <span className="relative inline align-baseline text-primary sm:inline-block sm:max-w-full">
+              <span className="relative block min-h-[2.15em] max-w-full overflow-hidden text-primary sm:inline-block sm:min-h-0 sm:max-w-full sm:overflow-visible">
                 {/* Sizer reserves space on sm+ so the absolute Typewriter never
                     overflows. On mobile the Typewriter renders inline and wraps
                     naturally with the heading. */}
@@ -139,7 +139,7 @@ function Hero() {
                   fintech compliance officer.
                 </span>
                 <Typewriter
-                  className="sm:absolute sm:left-0 sm:top-0 sm:whitespace-nowrap"
+                  className="inline-block max-w-full break-words text-center sm:absolute sm:left-0 sm:top-0 sm:whitespace-nowrap sm:text-left"
                   words={[
                     "cybersecurity expert.",
                     "senior SRE.",
@@ -149,27 +149,27 @@ function Hero() {
                     "CRO specialist.",
                   ]}
                 />
-              </span>{" "}
+              </span>
               <span className="text-foreground/90">In 30 seconds. No code.</span>
             </h1>
-            <p className="mx-auto mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground lg:mx-0 lg:text-lg">
+            <p className="mx-auto mt-5 max-w-xl text-pretty px-1 text-base leading-relaxed text-muted-foreground lg:mx-0 lg:px-0 lg:text-lg">
               Paste one link into your AI tool and it instantly gains{" "}
               <span className="text-foreground">459+ ready-to-use expert skills</span> —
               from code review to ad copy, tested against jailbreaks and signed for audit.
             </p>
 
             {/* MCP URL — primary above-the-fold action */}
-            <div className="mt-6 rounded-xl border border-border bg-background/80 p-3 shadow-elevated backdrop-blur">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden px-2">
+            <div className="mt-6 min-w-0 rounded-xl border border-border bg-background/80 p-3 shadow-elevated backdrop-blur">
+              <div className="flex min-w-0 items-center justify-between gap-2">
+                <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden px-1 sm:px-2">
                   <span className="hidden font-mono text-[10px] uppercase tracking-wider text-primary sm:inline">
                     MCP
                   </span>
                   <code className="truncate font-mono text-xs text-foreground sm:text-sm">{mcpUrl}</code>
                 </div>
-                <CopyButton value={mcpUrl} label="Copy URL" />
+                <CopyButton value={mcpUrl} label="Copy URL" className="shrink-0 px-2 sm:px-2.5" shortLabel="Copy" />
               </div>
-              <p className="mt-2 text-[11px] text-muted-foreground">
+              <p className="mt-2 break-words text-[11px] text-muted-foreground">
                 Paste into Claude → Settings → Connectors. Works immediately.
               </p>
             </div>
@@ -188,13 +188,13 @@ function Hero() {
                 Show me how to connect
               </Link>
             </div>
-            <p className="mt-3 text-xs text-muted-foreground">
+            <p className="mx-auto mt-3 max-w-[20rem] text-xs leading-relaxed text-muted-foreground sm:max-w-none">
               Free forever · No signup to browse · No credit card · Open source
             </p>
           </div>
 
           {/* RIGHT — live install demo */}
-          <div id="connect" className="fade-up lg:pl-2">
+          <div id="connect" className="min-w-0 fade-up lg:pl-2">
             <Suspense
               fallback={
                 <div className="h-[420px] animate-pulse rounded-xl border border-border bg-surface" aria-hidden />
@@ -215,14 +215,14 @@ function Hero() {
           ].map((m) => (
             <div
               key={m.label}
-              className="flex items-center gap-3 rounded-xl border border-border bg-surface/60 px-4 py-3"
+              className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-surface/60 px-3 py-3 sm:gap-3 sm:px-4"
             >
               <m.Icon className="h-5 w-5 shrink-0 text-primary" strokeWidth={1.75} aria-hidden />
               <div className="min-w-0">
                 <div className="font-mono text-xl font-semibold leading-none tracking-tight text-foreground">
                   <CountUp to={m.v} suffix={m.suffix} decimals={0} />
                 </div>
-                <div className="mt-1 truncate text-[11px] uppercase tracking-wider text-muted-foreground">
+                <div className="mt-1 text-[10px] uppercase leading-tight tracking-wider text-muted-foreground sm:text-[11px]">
                   {m.label}
                 </div>
               </div>

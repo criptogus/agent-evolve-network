@@ -4,10 +4,11 @@ import { Check, Copy } from "lucide-react";
 interface CopyButtonProps {
   value: string;
   label?: string;
+  shortLabel?: string;
   className?: string;
 }
 
-export function CopyButton({ value, label = "copy", className = "" }: CopyButtonProps) {
+export function CopyButton({ value, label = "copy", shortLabel, className = "" }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -29,7 +30,8 @@ export function CopyButton({ value, label = "copy", className = "" }: CopyButton
       }
     >
       {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-      {copied ? "Copied" : label}
+      <span className={shortLabel ? "hidden sm:inline" : undefined}>{copied ? "Copied" : label}</span>
+      {shortLabel && <span className="sm:hidden">{copied ? "Copied" : shortLabel}</span>}
     </button>
   );
 }
@@ -44,13 +46,13 @@ export function CodeBlockCopy({ code, label, className = "" }: CodeBlockCopyProp
   return (
     <div
       className={
-        "group relative flex items-center gap-3 overflow-hidden rounded-lg border border-border bg-[oklch(0.14_0.01_270)] px-4 py-3 font-mono text-[13px] text-white/90 shadow-elevated " +
+        "group relative flex min-w-0 items-center gap-2 overflow-hidden rounded-lg border border-border bg-[oklch(0.14_0.01_270)] px-3 py-3 font-mono text-[12px] text-white/90 shadow-elevated sm:gap-3 sm:px-4 sm:text-[13px] " +
         className
       }
     >
       <span className="text-primary">$</span>
-      <code className="flex-1 overflow-x-auto whitespace-nowrap">{code}</code>
-      <CopyButton value={code} label={label ?? "copy"} className="border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white" />
+      <code className="min-w-0 flex-1 truncate">{code}</code>
+      <CopyButton value={code} label={label ?? "copy"} shortLabel="copy" className="shrink-0 border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white" />
     </div>
   );
 }
