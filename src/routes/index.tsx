@@ -125,13 +125,13 @@ function Hero() {
         <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
           {/* LEFT — message + primary action */}
           <div className="fade-up text-center lg:text-left">
-            <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-surface-elevated px-3 py-1 text-xs text-muted-foreground shadow-sm">
+            <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-surface-elevated px-3 py-1 text-xs text-muted-foreground shadow-sm sm:max-w-none">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-signal pulse-dot" />
-              <span className="min-w-0 truncate">459+ expert skills · Works with Claude, Cursor &amp; ChatGPT</span>
+              <span className="min-w-0 truncate sm:whitespace-normal">459+ expert skills · Works with Claude, Cursor &amp; ChatGPT</span>
             </div>
-            <h1 className="mt-5 text-balance text-3xl font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl xl:text-[64px]">
+            <h1 className="mt-5 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl xl:text-[64px]">
               Turn Claude or Cursor into a{" "}
-              <span className="relative block min-h-[1.1em] max-w-full break-words text-primary sm:inline-block sm:min-h-0 sm:max-w-full">
+              <span className="relative block min-h-[2.15em] max-w-full overflow-hidden text-primary sm:inline-block sm:min-h-0 sm:max-w-full sm:overflow-visible">
                 {/* Sizer reserves space on sm+ so the absolute Typewriter never
                     overflows. On mobile the Typewriter renders inline and wraps
                     naturally with the heading. */}
@@ -139,7 +139,7 @@ function Hero() {
                   fintech compliance officer.
                 </span>
                 <Typewriter
-                  className="inline max-w-full break-words sm:absolute sm:left-0 sm:top-0 sm:whitespace-nowrap"
+                  className="inline-block max-w-full break-words text-center sm:absolute sm:left-0 sm:top-0 sm:whitespace-nowrap sm:text-left"
                   words={[
                     "cybersecurity expert.",
                     "senior SRE.",
@@ -152,7 +152,7 @@ function Hero() {
               </span>
               <span className="text-foreground/90">In 30 seconds. No code.</span>
             </h1>
-            <p className="mx-auto mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground lg:mx-0 lg:text-lg">
+            <p className="mx-auto mt-5 max-w-xl text-pretty px-1 text-base leading-relaxed text-muted-foreground lg:mx-0 lg:px-0 lg:text-lg">
               Paste one link into your AI tool and it instantly gains{" "}
               <span className="text-foreground">459+ ready-to-use expert skills</span> —
               from code review to ad copy, tested against jailbreaks and signed for audit.
@@ -188,7 +188,7 @@ function Hero() {
                 Show me how to connect
               </Link>
             </div>
-            <p className="mt-3 text-xs text-muted-foreground">
+            <p className="mx-auto mt-3 max-w-[20rem] text-xs leading-relaxed text-muted-foreground sm:max-w-none">
               Free forever · No signup to browse · No credit card · Open source
             </p>
           </div>
