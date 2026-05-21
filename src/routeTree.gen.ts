@@ -45,6 +45,7 @@ import { Route as UHandleRouteImport } from './routes/u.$handle'
 import { Route as SoulsSlugRouteImport } from './routes/souls.$slug'
 import { Route as RunSlugRouteImport } from './routes/run.$slug'
 import { Route as PacksSlugRouteImport } from './routes/packs.$slug'
+import { Route as OauthSuccessRouteImport } from './routes/oauth.success'
 import { Route as OauthAuthorizeRouteImport } from './routes/oauth.authorize'
 import { Route as MarketplaceRankingsRouteImport } from './routes/marketplace.rankings'
 import { Route as MarketplaceLeaderboardRouteImport } from './routes/marketplace.leaderboard'
@@ -283,6 +284,11 @@ const RunSlugRoute = RunSlugRouteImport.update({
 const PacksSlugRoute = PacksSlugRouteImport.update({
   id: '/packs/$slug',
   path: '/packs/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OauthSuccessRoute = OauthSuccessRouteImport.update({
+  id: '/oauth/success',
+  path: '/oauth/success',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OauthAuthorizeRoute = OauthAuthorizeRouteImport.update({
@@ -654,6 +660,7 @@ export interface FileRoutesByFullPath {
   '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
+  '/oauth/success': typeof OauthSuccessRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
   '/run/$slug': typeof RunSlugRoute
   '/souls/$slug': typeof SoulsSlugRoute
@@ -750,6 +757,7 @@ export interface FileRoutesByTo {
   '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
+  '/oauth/success': typeof OauthSuccessRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
   '/run/$slug': typeof RunSlugRoute
   '/souls/$slug': typeof SoulsSlugRoute
@@ -848,6 +856,7 @@ export interface FileRoutesById {
   '/marketplace/leaderboard': typeof MarketplaceLeaderboardRoute
   '/marketplace/rankings': typeof MarketplaceRankingsRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
+  '/oauth/success': typeof OauthSuccessRoute
   '/packs/$slug': typeof PacksSlugRouteWithChildren
   '/run/$slug': typeof RunSlugRoute
   '/souls/$slug': typeof SoulsSlugRoute
@@ -947,6 +956,7 @@ export interface FileRouteTypes {
     | '/marketplace/leaderboard'
     | '/marketplace/rankings'
     | '/oauth/authorize'
+    | '/oauth/success'
     | '/packs/$slug'
     | '/run/$slug'
     | '/souls/$slug'
@@ -1043,6 +1053,7 @@ export interface FileRouteTypes {
     | '/marketplace/leaderboard'
     | '/marketplace/rankings'
     | '/oauth/authorize'
+    | '/oauth/success'
     | '/packs/$slug'
     | '/run/$slug'
     | '/souls/$slug'
@@ -1140,6 +1151,7 @@ export interface FileRouteTypes {
     | '/marketplace/leaderboard'
     | '/marketplace/rankings'
     | '/oauth/authorize'
+    | '/oauth/success'
     | '/packs/$slug'
     | '/run/$slug'
     | '/souls/$slug'
@@ -1226,6 +1238,7 @@ export interface RootRouteChildren {
   MarketplaceLeaderboardRoute: typeof MarketplaceLeaderboardRoute
   MarketplaceRankingsRoute: typeof MarketplaceRankingsRoute
   OauthAuthorizeRoute: typeof OauthAuthorizeRoute
+  OauthSuccessRoute: typeof OauthSuccessRoute
   PacksSlugRoute: typeof PacksSlugRouteWithChildren
   RunSlugRoute: typeof RunSlugRoute
   SoulsSlugRoute: typeof SoulsSlugRoute
@@ -1505,6 +1518,13 @@ declare module '@tanstack/react-router' {
       path: '/packs/$slug'
       fullPath: '/packs/$slug'
       preLoaderRoute: typeof PacksSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oauth/success': {
+      id: '/oauth/success'
+      path: '/oauth/success'
+      fullPath: '/oauth/success'
+      preLoaderRoute: typeof OauthSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/oauth/authorize': {
@@ -2106,6 +2126,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketplaceLeaderboardRoute: MarketplaceLeaderboardRoute,
   MarketplaceRankingsRoute: MarketplaceRankingsRoute,
   OauthAuthorizeRoute: OauthAuthorizeRoute,
+  OauthSuccessRoute: OauthSuccessRoute,
   PacksSlugRoute: PacksSlugRouteWithChildren,
   RunSlugRoute: RunSlugRoute,
   SoulsSlugRoute: SoulsSlugRoute,
@@ -2138,3 +2159,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

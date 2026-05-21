@@ -177,8 +177,17 @@ POST /api/public/oauth/revoke                         → RFC 7009
 WWW-Authenticate: Bearer resource_metadata="https://superagentskill.com/.well-known/oauth-protected-resource/api/mcp"`}
           />
           <p className="mt-3 text-muted-foreground">
-            Compliant clients run the browser consent flow automatically. The fastest path on
-            any client is the CLI below — it does the whole dance for you.
+            Compliant clients run the browser consent flow automatically. After you click
+            <strong> Authorize</strong>, we route you to <code>/oauth/success</code> — a
+            friendly confirmation page that delivers the auth code to your client (loopback
+            listener or private-use URI scheme like <code>cursor://</code>, <code>vscode://</code>,
+            <code> claude://</code>, <code>codex://</code>, <code>lovable://</code>,
+            <code> hermes://</code>, <code>openclaw://</code>) and falls back to a
+            copy-pasteable code if your local listener already closed. No more browser
+            "site can't be reached" dead-ends.
+          </p>
+          <p className="mt-3 text-muted-foreground">
+            The fastest path on any client is the CLI below — it does the whole dance for you.
           </p>
 
           {/* CLI */}
