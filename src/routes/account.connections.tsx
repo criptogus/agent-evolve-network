@@ -4,9 +4,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { useState } from "react";
 import {
   listOauthConnections,
   revokeOauthConnection,
+  testOauthConnection,
 } from "@/lib/oauth/connections.functions";
 
 export const Route = createFileRoute("/account/connections")({
@@ -27,7 +29,11 @@ export const Route = createFileRoute("/account/connections")({
 function ConnectionsPage() {
   const list = useServerFn(listOauthConnections);
   const revoke = useServerFn(revokeOauthConnection);
+  const test = useServerFn(testOauthConnection);
   const qc = useQueryClient();
+  const [tests, setTests] = useState<
+    Record<string, { ok: boolean; reason?: string; last_used?: string | null }>
+  >({});
 
   const q = useQuery({ queryKey: ["mcp-connections"], queryFn: () => list() });
   const revokeMut = useMutation({
@@ -94,13 +100,35 @@ function ConnectionsPage() {
                       {c.last_used && ` · last used ${new Date(c.last_used).toLocaleDateString()}`}
                     </div>
                   </div>
-                  <button
-                    onClick={() => revokeMut.mutate(c.client_id)}
-                    disabled={revokeMut.isPending}
-                    className="text-xs text-muted-foreground hover:text-destructive disabled:opacity-50"
-                  >
-                    Revoke
-                  </button>
+                  <div className="flex items-center gap-3">
+                    {tests[c.client_id] && (
+                      <span
+                        className={`inline-flex items-center gap-1 text-xs ${
+                          tests[c.client_id].ok ? "text-signal" : "text-destructive"
+                        }`}
+                      >
+                        {tests[c.client_id].ok ? "✓ live" : `✗ ${tests[c.client_id].reason}`}
+                      </span>
+                    )}
+                    <button
+                      onClick={async () => {
+                        const r = await test({ data: { client_id: c.client_id } });
+                        setTests((p) => ({ ...p, [c.client_id]: r }));
+                        if (r.ok) toast.success(`${c.client_name} is connected.`);
+                        else toast.error(`${c.client_name}: ${r.reason ?? "no live token"}`);
+                      }}
+                      className="text-xs text-muted-foreground hover:text-primary"
+                    >
+                      Test
+                    </button>
+                    <button
+                      onClick={() => revokeMut.mutate(c.client_id)}
+                      disabled={revokeMut.isPending}
+                      className="text-xs text-muted-foreground hover:text-destructive disabled:opacity-50"
+                    >
+                      Revoke
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>

@@ -1,0 +1,39 @@
+name: Release super-agent CLI
+# Builds single-file binaries for Linux/macOS/Windows + macOS-arm64 and
+# attaches them to a GitHub release. Triggered manually or by a tag like
+# cli-v0.3.0. Users on machines without Node can then do:
+#   curl -fsSL https://github.com/criptogus/agent-evolve-network/releases/latest/download/super-agent-linux-x64 -o super-agent
+#   chmod +x super-agent && ./super-agent connect --client cursor
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "cli-v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build binaries
+        working-directory: cli
+        run: npm run build:bin
+      - name: Rename for release
+        working-directory: cli/dist
+        run: |
+          ls -la
+          for f in super-agent-*; do
+            mv "$f" "$(echo "$f" | sed 's/super-agent-/super-agent-/')"
+          done
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/cli-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: cli/dist/*
+          generate_release_notes: true

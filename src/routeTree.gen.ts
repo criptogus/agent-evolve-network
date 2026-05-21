@@ -53,6 +53,7 @@ import { Route as MarketplaceCategoriesRouteImport } from './routes/marketplace.
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
 import { Route as LegalDisclaimersRouteImport } from './routes/legal.disclaimers'
 import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
+import { Route as ConnectClientRouteImport } from './routes/connect.$client'
 import { Route as ComparePairRouteImport } from './routes/compare.$pair'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as BountiesNewRouteImport } from './routes/bounties.new'
@@ -325,6 +326,11 @@ const DocsMcpRoute = DocsMcpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
   getParentRoute: () => DocsRoute,
+} as any)
+const ConnectClientRoute = ConnectClientRouteImport.update({
+  id: '/$client',
+  path: '/$client',
+  getParentRoute: () => ConnectRoute,
 } as any)
 const ComparePairRoute = ComparePairRouteImport.update({
   id: '/compare/$pair',
@@ -603,7 +609,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/bounties': typeof BountiesRouteWithChildren
   '/community': typeof CommunityRoute
-  '/connect': typeof ConnectRoute
+  '/connect': typeof ConnectRouteWithChildren
   '/contributor-faq': typeof ContributorFaqRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
@@ -653,6 +659,7 @@ export interface FileRoutesByFullPath {
   '/bounties/new': typeof BountiesNewRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/compare/$pair': typeof ComparePairRoute
+  '/connect/$client': typeof ConnectClientRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
@@ -700,7 +707,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bounties': typeof BountiesRouteWithChildren
   '/community': typeof CommunityRoute
-  '/connect': typeof ConnectRoute
+  '/connect': typeof ConnectRouteWithChildren
   '/contributor-faq': typeof ContributorFaqRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
@@ -750,6 +757,7 @@ export interface FileRoutesByTo {
   '/bounties/new': typeof BountiesNewRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/compare/$pair': typeof ComparePairRoute
+  '/connect/$client': typeof ConnectClientRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
@@ -799,7 +807,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/bounties': typeof BountiesRouteWithChildren
   '/community': typeof CommunityRoute
-  '/connect': typeof ConnectRoute
+  '/connect': typeof ConnectRouteWithChildren
   '/contributor-faq': typeof ContributorFaqRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
@@ -849,6 +857,7 @@ export interface FileRoutesById {
   '/bounties/new': typeof BountiesNewRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/compare/$pair': typeof ComparePairRoute
+  '/connect/$client': typeof ConnectClientRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
@@ -949,6 +958,7 @@ export interface FileRouteTypes {
     | '/bounties/new'
     | '/collections/$slug'
     | '/compare/$pair'
+    | '/connect/$client'
     | '/docs/mcp'
     | '/legal/disclaimers'
     | '/marketplace/$packageId'
@@ -1046,6 +1056,7 @@ export interface FileRouteTypes {
     | '/bounties/new'
     | '/collections/$slug'
     | '/compare/$pair'
+    | '/connect/$client'
     | '/docs/mcp'
     | '/legal/disclaimers'
     | '/marketplace/$packageId'
@@ -1144,6 +1155,7 @@ export interface FileRouteTypes {
     | '/bounties/new'
     | '/collections/$slug'
     | '/compare/$pair'
+    | '/connect/$client'
     | '/docs/mcp'
     | '/legal/disclaimers'
     | '/marketplace/$packageId'
@@ -1193,7 +1205,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   BountiesRoute: typeof BountiesRouteWithChildren
   CommunityRoute: typeof CommunityRoute
-  ConnectRoute: typeof ConnectRoute
+  ConnectRoute: typeof ConnectRouteWithChildren
   ContributorFaqRoute: typeof ContributorFaqRoute
   DiscoverRoute: typeof DiscoverRoute
   DocsRoute: typeof DocsRouteWithChildren
@@ -1575,6 +1587,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/docs/mcp'
       preLoaderRoute: typeof DocsMcpRouteImport
       parentRoute: typeof DocsRoute
+    }
+    '/connect/$client': {
+      id: '/connect/$client'
+      path: '/$client'
+      fullPath: '/connect/$client'
+      preLoaderRoute: typeof ConnectClientRouteImport
+      parentRoute: typeof ConnectRoute
     }
     '/compare/$pair': {
       id: '/compare/$pair'
@@ -2001,6 +2020,17 @@ const BountiesRouteWithChildren = BountiesRoute._addFileChildren(
   BountiesRouteChildren,
 )
 
+interface ConnectRouteChildren {
+  ConnectClientRoute: typeof ConnectClientRoute
+}
+
+const ConnectRouteChildren: ConnectRouteChildren = {
+  ConnectClientRoute: ConnectClientRoute,
+}
+
+const ConnectRouteWithChildren =
+  ConnectRoute._addFileChildren(ConnectRouteChildren)
+
 interface DocsRouteChildren {
   DocsMcpRoute: typeof DocsMcpRoute
 }
@@ -2079,7 +2109,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   BountiesRoute: BountiesRouteWithChildren,
   CommunityRoute: CommunityRoute,
-  ConnectRoute: ConnectRoute,
+  ConnectRoute: ConnectRouteWithChildren,
   ContributorFaqRoute: ContributorFaqRoute,
   DiscoverRoute: DiscoverRoute,
   DocsRoute: DocsRouteWithChildren,
