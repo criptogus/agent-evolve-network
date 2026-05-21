@@ -46,7 +46,10 @@ const mcp = createMcpServer({
     "  - `request_primitive` if the user wants SuperAgentSkill to AUTHOR a brand-new primitive from scratch via the forge pipeline.",
     "",
     "## Auth",
-    "Read-only tools (overview, get_methodology, review_skill, list/search/get/trust) work anonymously. Write tools (upload_packages, request_primitive, report_execution) require an OAuth bearer — the host opens https://superagentskill.com/oauth/authorize automatically.",
+    "Read-only tools (overview, get_methodology, review_skill, list/search/get/trust) work anonymously. Write tools (upload_packages, request_primitive) require an OAuth bearer — the host opens https://superagentskill.com/oauth/authorize automatically. Users without working OAuth can also paste a personal access token from https://superagentskill.com/account/tokens.",
+    "",
+    "## Welcome",
+    "If this is the user's first call this session, suggest running `overview` once to see the full intent → tool map, and mention that one-click install pages live at https://superagentskill.com/connect/{client}.",
     "",
     "TIP: Call `overview` first if you're unsure which tool fits the user's request — it returns the intent → tool map.",
   ].join("\n"),
@@ -100,15 +103,37 @@ async function verifyBearer(token: string): Promise<{ user_id: string; source: "
   return null;
 }
 
-function unauthorized(reason: string) {
-  return new Response(JSON.stringify({ error: "unauthorized", reason }), {
-    status: 401,
-    headers: {
-      "Content-Type": "application/json",
-      "WWW-Authenticate": `Bearer realm="MCP", resource_metadata="${RESOURCE_METADATA_URL}", error="invalid_token", error_description="${reason}"`,
-      ...CORS_HEADERS,
+function unauthorized(reason: string, rpcId: string | number | null = null) {
+  // Return BOTH a JSON-RPC error (so MCP clients that surface error.data.hint
+  // in chat can render the recovery action inline) and the canonical
+  // WWW-Authenticate header (so OAuth-aware clients trigger discovery).
+  const hint = `Authorize at ${ORIGIN}/oauth/authorize or run \`npx -y super-agent login\`. You can also paste a personal access token from ${ORIGIN}/account/tokens.`;
+  return new Response(
+    JSON.stringify({
+      jsonrpc: "2.0",
+      id: rpcId,
+      error: {
+        code: -32001,
+        message: `Unauthorized: ${reason}`,
+        data: {
+          reason,
+          hint,
+          authorization_url: `${ORIGIN}/oauth/authorize`,
+          tokens_url: `${ORIGIN}/account/tokens`,
+          connect_url: `${ORIGIN}/connect`,
+          resource_metadata: RESOURCE_METADATA_URL,
+        },
+      },
+    }),
+    {
+      status: 401,
+      headers: {
+        "Content-Type": "application/json",
+        "WWW-Authenticate": `Bearer realm="MCP", resource_metadata="${RESOURCE_METADATA_URL}", error="invalid_token", error_description="${reason}"`,
+        ...CORS_HEADERS,
+      },
     },
-  });
+  );
 }
 
 // Tools that mutate user-owned state and require an OAuth bearer.
@@ -160,21 +185,9 @@ function rateLimited(quota: any, id: string | number | null) {
 }
 
 async function handle(request: Request): Promise<Response> {
-  const authHeader = request.headers.get("authorization") ?? "";
-  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-
-  let userId: string | null = null;
-  let authSource: "oauth" | "pat" | null = null;
-  if (token) {
-    const auth = await verifyBearer(token);
-    if (!auth) return unauthorized("token rejected");
-    userId = auth.user_id;
-    authSource = auth.source;
-  }
-
-  // Inspect the JSON-RPC body to decide:
-  //  - whether it's a tools/call (only those count against quota)
-  //  - whether anonymous callers are allowed to invoke this specific tool
+  // Inspect the JSON-RPC body up-front so unauthorized() can return a
+  // properly-framed JSON-RPC error (matched id, so clients can surface
+  // error.data.hint inline in chat).
   let toolName = "";
   let rpcId: string | number | null = null;
   let isToolsCall = false;
@@ -194,9 +207,21 @@ async function handle(request: Request): Promise<Response> {
     /* fall through */
   }
 
+  const authHeader = request.headers.get("authorization") ?? "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+
+  let userId: string | null = null;
+  let authSource: "oauth" | "pat" | null = null;
+  if (token) {
+    const auth = await verifyBearer(token);
+    if (!auth) return unauthorized("token rejected", rpcId);
+    userId = auth.user_id;
+    authSource = auth.source;
+  }
+
   // Auth gate for write tools (anonymous users blocked entirely).
   if (isToolsCall && !userId && WRITE_TOOLS.has(toolName)) {
-    return unauthorized("authentication required for this tool");
+    return unauthorized(`tool "${toolName}" requires authentication`, rpcId);
   }
 
   // Quota gate. Skip discovery / lifecycle methods (initialize, tools/list, ping…)

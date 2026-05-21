@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { CodeBlock } from "@/components/site/CodeBlock";
+import { InstallButtons } from "@/components/site/InstallButtons";
 
 export const Route = createFileRoute("/docs/mcp")({
   head: () => ({
@@ -271,6 +272,19 @@ npx -y super-agent setup cursor   # (re)write a client config from saved creds`}
 
           {/* Configs */}
           <h2 id="configs" className="mt-12 text-2xl font-semibold tracking-tight">Client configs</h2>
+
+          <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-5">
+            <p className="font-mono text-[11px] uppercase tracking-wider text-primary">
+              One-click install
+            </p>
+            <p className="mt-1 text-sm text-foreground/90">
+              Skip the JSON for Cursor and VS Code — the buttons below hand off to the app
+              with the server pre-configured.
+            </p>
+            <div className="mt-4">
+              <InstallButtons />
+            </div>
+          </div>
 
           <h3 className="mt-6 text-lg font-semibold">Claude Desktop</h3>
           <CodeBlock

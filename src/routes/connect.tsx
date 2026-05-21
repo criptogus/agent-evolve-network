@@ -4,6 +4,7 @@ import { ArrowRight, Check, Copy, Plug, Sparkles, Search, Upload, Terminal, Zap 
 import { SitePage } from "@/components/site/SitePage";
 import { CodeBlock } from "@/components/site/CodeBlock";
 import { McpTester } from "@/components/site/McpTester";
+import { InstallButtons } from "@/components/site/InstallButtons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/connect")({
@@ -534,6 +535,36 @@ function ConnectPage() {
               <span>4 write tools · token</span>
             </div>
           </div>
+        </section>
+
+        {/* ============ ONE-CLICK INSTALL ============ */}
+        <section className="mt-10 rounded-2xl border border-border bg-surface p-6">
+          <div className="flex items-center gap-2">
+            <Zap className="h-4 w-4 text-primary" />
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+              One click · zero JSON
+            </p>
+          </div>
+          <h2 className="mt-2 text-xl font-semibold tracking-tight">
+            Install in your editor with a single click
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            These buttons use the editor's own deep-link install scheme — the
+            app opens with the Super Agent Skill MCP server already configured.
+            Don't see your client? Use the copy-paste configs below or the CLI.
+          </p>
+          <div className="mt-5">
+            <InstallButtons />
+          </div>
+          <p className="mt-4 text-[11px] text-muted-foreground">
+            Paste-a-bearer route: generate a token at{" "}
+            <Link to="/account/tokens" className="text-primary hover:underline">
+              /account/tokens
+            </Link>{" "}
+            and drop it into any client that supports a static{" "}
+            <code className="font-mono">Authorization: Bearer …</code> header — useful for
+            Hermes, OpenClaw, Grok, n8n, or any runtime where the OAuth dance is flaky.
+          </p>
         </section>
 
         {/* ============ ONE-COMMAND (CLI) PATH ============ */}
