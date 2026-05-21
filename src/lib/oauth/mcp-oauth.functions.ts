@@ -60,5 +60,12 @@ export const issueOauthCode = createServerFn({ method: "POST" })
 
     const sep = data.redirect_uri.includes("?") ? "&" : "?";
     const stateQ = data.state ? `&state=${encodeURIComponent(data.state)}` : "";
-    return { redirect_to: `${data.redirect_uri}${sep}code=${encodeURIComponent(code)}${stateQ}` };
+    // We also return the raw `code` so the success page can show it as a
+    // manual paste fallback when the client's loopback listener is no
+    // longer up (or for clients that use private-use URI schemes that
+    // never actually surface back to the browser tab).
+    return {
+      redirect_to: `${data.redirect_uri}${sep}code=${encodeURIComponent(code)}${stateQ}`,
+      code,
+    };
   });

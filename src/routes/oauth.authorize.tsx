@@ -65,7 +65,7 @@ function AuthorizePage() {
   async function approve() {
     setWorking(true);
     try {
-      const { redirect_to } = await consent({
+      const { redirect_to, code } = await consent({
         data: {
           client_id: params.client_id,
           redirect_uri: params.redirect_uri,
@@ -75,7 +75,28 @@ function AuthorizePage() {
           code_challenge_method: "S256",
         },
       });
-      window.location.href = redirect_to;
+      // Hand off to /oauth/success via sessionStorage so the auth code
+      // never lands in the URL bar / history of the consent tab. The
+      // success page handles delivery to loopback listeners, private-use
+      // URI schemes, and https callbacks — and shows a friendly screen
+      // (with a manual paste fallback) instead of the browser's
+      // "site can't be reached" page when a loopback listener closed.
+      try {
+        window.sessionStorage.setItem(
+          "sas_oauth_handoff_v1",
+          JSON.stringify({
+            redirect_to,
+            code,
+            client_name: client?.client_name ?? params.client_id,
+            redirect_uri: params.redirect_uri,
+          }),
+        );
+        navigate({ to: "/oauth/success" });
+      } catch {
+        // sessionStorage blocked (rare): fall back to the original
+        // direct redirect so the flow still completes.
+        window.location.href = redirect_to;
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Authorization failed");
       setWorking(false);
