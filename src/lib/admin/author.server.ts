@@ -1,5 +1,5 @@
 import { generateText, Output } from "ai";
-import { getGatewayModel } from "@/lib/ai-gateway";
+import { getGatewayModel, describeGatewayConfig } from "@/lib/ai-gateway";
 import { PackageDraftSchema } from "@/lib/skills/schemas";
 
 const META_SYSTEM = `You are SkillForge Author, a proprietary meta-agent that designs production-grade agent packages.
@@ -13,15 +13,23 @@ Type semantics: skill = capability; playbook = multi-step decision flow; soul = 
 Slug must be lowercase-kebab.`;
 
 // Author model fallback chain. The structured-output path (Output.object →
-// tool/function calling) is sensitive to provider/model quirks, so we try a
-// short, ordered list before giving up. First success wins. Adding a model
-// here is cheap; do NOT silently swallow failures — every attempt logs the
-// model + the error so the cause is visible in the server logs.
+// tool/function calling) is sensitive to provider/model quirks, so we try
+// an ordered list before giving up. First success wins.
+//
+// The list intentionally mixes Google + OpenAI ids because production has
+// shifted gateways: deployments running the Lovable gateway respond to
+// google/* ids; deployments on a plain OpenAI-compatible gateway only
+// understand openai/* (and reject the Google ones with a 400). Including
+// both means at least one survives whichever gateway is configured.
+//
+// "default" is the env-configured AI_GATEWAY_MODEL — tried FIRST so a
+// well-configured deployment doesn't pay the latency of a doomed attempt.
 const AUTHOR_MODEL_FALLBACKS = [
-  "google/gemini-3-flash-preview",
+  "default",
   "google/gemini-2.5-flash",
   "google/gemini-2.5-pro",
-  "openai/gpt-5.1-mini",
+  "openai/gpt-4o-mini",
+  "openai/gpt-4o",
 ] as const;
 
 export async function generateDraft(
@@ -35,7 +43,23 @@ export async function generateDraft(
   }\n\nDesign a complete, production-ready ${type} package. Return ONLY the JSON.`;
 
   const attempts: Array<{ model: string; error: string }> = [];
-  for (const modelId of AUTHOR_MODEL_FALLBACKS) {
+  // Log the gateway config once per request so the cause of a total
+  // failure (e.g. "no AI gateway configured") is clear in the logs.
+  const cfg = describeGatewayConfig();
+  if (!cfg.configured) {
+    console.error("[skillforge.author] no AI gateway configured:", cfg);
+    throw new Error(
+      "SkillForge author cannot run: no AI gateway configured. Set AI_GATEWAY_API_KEY (or LOVABLE_API_KEY / OPENAI_API_KEY) in the server env.",
+    );
+  }
+  // De-dup: if `default` resolves to one of the explicit ids below, drop
+  // the duplicate so we don't pay double latency on the doomed second try.
+  const explicit = AUTHOR_MODEL_FALLBACKS.filter((m) => m !== "default");
+  const ordered =
+    cfg.defaultModel && explicit.includes(cfg.defaultModel as never)
+      ? explicit
+      : (["default", ...explicit] as readonly string[]);
+  for (const modelId of ordered) {
     try {
       const model = getGatewayModel(modelId);
       const { experimental_output } = await generateText({
