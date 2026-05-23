@@ -90,6 +90,7 @@ import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/tele
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
 import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packages'
 import { Route as ApiMcpHealthRouteImport } from './routes/api/mcp/health'
+import { Route as ApiAdminAiGatewayProbeRouteImport } from './routes/api/admin/ai-gateway-probe'
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
@@ -518,6 +519,11 @@ const ApiMcpHealthRoute = ApiMcpHealthRouteImport.update({
   path: '/health',
   getParentRoute: () => ApiMcpRoute,
 } as any)
+const ApiAdminAiGatewayProbeRoute = ApiAdminAiGatewayProbeRouteImport.update({
+  id: '/api/admin/ai-gateway-probe',
+  path: '/api/admin/ai-gateway-probe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminPackagesNewRoute = AdminPackagesNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -705,6 +711,7 @@ export interface FileRoutesByFullPath {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/api/admin/ai-gateway-probe': typeof ApiAdminAiGatewayProbeRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
@@ -807,6 +814,7 @@ export interface FileRoutesByTo {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/api/admin/ai-gateway-probe': typeof ApiAdminAiGatewayProbeRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
@@ -911,6 +919,7 @@ export interface FileRoutesById {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/api/admin/ai-gateway-probe': typeof ApiAdminAiGatewayProbeRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
@@ -1016,6 +1025,7 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/api/admin/ai-gateway-probe'
     | '/api/mcp/health'
     | '/api/public/packages'
     | '/api/public/search'
@@ -1118,6 +1128,7 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/api/admin/ai-gateway-probe'
     | '/api/mcp/health'
     | '/api/public/packages'
     | '/api/public/search'
@@ -1221,6 +1232,7 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/api/admin/ai-gateway-probe'
     | '/api/mcp/health'
     | '/api/public/packages'
     | '/api/public/search'
@@ -1307,6 +1319,7 @@ export interface RootRouteChildren {
   UHandleRoute: typeof UHandleRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   PacksIndexRoute: typeof PacksIndexRoute
+  ApiAdminAiGatewayProbeRoute: typeof ApiAdminAiGatewayProbeRoute
   ApiPublicPackagesRoute: typeof ApiPublicPackagesRouteWithChildren
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
@@ -1897,6 +1910,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMcpHealthRouteImport
       parentRoute: typeof ApiMcpRoute
     }
+    '/api/admin/ai-gateway-probe': {
+      id: '/api/admin/ai-gateway-probe'
+      path: '/api/admin/ai-gateway-probe'
+      fullPath: '/api/admin/ai-gateway-probe'
+      preLoaderRoute: typeof ApiAdminAiGatewayProbeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/packages/new': {
       id: '/admin/packages/new'
       path: '/new'
@@ -2256,6 +2276,7 @@ const rootRouteChildren: RootRouteChildren = {
   UHandleRoute: UHandleRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   PacksIndexRoute: PacksIndexRoute,
+  ApiAdminAiGatewayProbeRoute: ApiAdminAiGatewayProbeRoute,
   ApiPublicPackagesRoute: ApiPublicPackagesRouteWithChildren,
   ApiPublicSearchRoute: ApiPublicSearchRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
