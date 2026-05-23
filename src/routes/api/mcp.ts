@@ -79,6 +79,34 @@ function withCors(res: Response): Response {
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
 }
 
+/**
+ * Standard rate-limit headers (RFC 6585 + de-facto X-RateLimit-*). We emit
+ * these on every quota-bearing response — including 200s — so well-behaved
+ * clients can self-regulate and surface "X calls remaining" without having
+ * to wait for a 429.
+ */
+function withRateLimitHeaders(
+  res: Response,
+  quota: { limit?: number; used?: number; remaining?: number; reset_at?: string; window?: string } | null,
+): Response {
+  if (!quota) return res;
+  const headers = new Headers(res.headers);
+  if (typeof quota.limit === "number") headers.set("X-RateLimit-Limit", String(quota.limit));
+  const remaining =
+    typeof quota.remaining === "number"
+      ? quota.remaining
+      : typeof quota.limit === "number" && typeof quota.used === "number"
+        ? Math.max(0, quota.limit - quota.used)
+        : null;
+  if (remaining != null) headers.set("X-RateLimit-Remaining", String(remaining));
+  if (quota.reset_at) {
+    const epoch = Math.floor(new Date(quota.reset_at).getTime() / 1000);
+    if (!Number.isNaN(epoch)) headers.set("X-RateLimit-Reset", String(epoch));
+  }
+  if (quota.window) headers.set("X-RateLimit-Window", quota.window);
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
+
 /** Try OAuth tokens first, then fall back to legacy MCP personal tokens. */
 async function verifyBearer(token: string): Promise<{ user_id: string; source: "oauth" | "pat" } | null> {
   // OAuth access token
@@ -226,6 +254,7 @@ async function handle(request: Request): Promise<Response> {
 
   // Quota gate. Skip discovery / lifecycle methods (initialize, tools/list, ping…)
   // and ultra-cheap tools, since they're needed just to bootstrap the session.
+  let lastQuota: any = null;
   if (isToolsCall && !FREE_TOOLS.has(toolName)) {
     const identity = quotaIdentity(userId, request);
     const isWrite = WRITE_TOOLS.has(toolName);
@@ -235,19 +264,36 @@ async function handle(request: Request): Promise<Response> {
       _tool_name: toolName,
       _is_write: isWrite,
     } as never);
+    if (!quotaErr) lastQuota = quota ?? null;
     if (!quotaErr && quota && quota.allowed === false) {
-      return rateLimited(quota, rpcId);
+      return withRateLimitHeaders(rateLimited(quota, rpcId), quota);
     }
   }
 
-  if (userId && authSource) {
-    return withCors(
-      await mcp.handleRequest(request, {
-        auth: { token, claims: { user_id: userId, source: authSource } },
-      }),
-    );
+  // Funnel telemetry: fire-and-forget record of the first successful
+  // tools/call this caller has made. The RPC itself dedupes on event +
+  // (user_id | anon_hash) so we don't need to check here.
+  if (isToolsCall) {
+    const identity = quotaIdentity(userId, request);
+    const anonHash = userId ? null : identity.replace(/^ip:/, "");
+    void supabaseAdmin
+      .rpc("record_mcp_funnel_event", {
+        _event: WRITE_TOOLS.has(toolName) ? "mcp_first_write" : "mcp_first_call",
+        _client_id: null,
+        _client_name: null,
+        _anon_hash: anonHash,
+        _props: { tool: toolName, auth_source: authSource },
+      } as never)
+      .then(() => {}, () => {});
   }
-  return withCors(await mcp.handleRequest(request));
+
+  const handled =
+    userId && authSource
+      ? await mcp.handleRequest(request, {
+          auth: { token, claims: { user_id: userId, source: authSource } },
+        })
+      : await mcp.handleRequest(request);
+  return withRateLimitHeaders(withCors(handled), lastQuota);
 }
 
 export const Route = createFileRoute("/api/mcp")({

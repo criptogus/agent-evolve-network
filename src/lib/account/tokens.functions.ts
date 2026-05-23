@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { hashToken, newToken } from "./tokens.server";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+const supabaseAdmin = _supabaseAdmin as any;
 
 export const listMcpTokens = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -46,6 +48,16 @@ export const createMcpToken = createServerFn({ method: "POST" })
       .select("id,name,prefix,created_at")
       .single();
     if (error) throw new Response(error.message, { status: 500 });
+    // Fire-and-forget funnel event so /admin/funnel reflects PAT mints.
+    void supabaseAdmin
+      .rpc("record_mcp_funnel_event", {
+        _event: "pat_minted",
+        _client_id: null,
+        _client_name: null,
+        _anon_hash: null,
+        _props: { name_length: data.name.length },
+      } as never)
+      .then(() => {}, () => {});
     // Plaintext returned ONCE — never stored anywhere except hashed.
     return { token, ...row };
   });

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Nav } from "@/components/site/Nav";
 import { useAuth } from "@/hooks/use-auth";
 import { getOauthClient, issueOauthCode } from "@/lib/oauth/mcp-oauth.functions";
+import { recordFunnelEvent } from "@/lib/telemetry/funnel.functions";
 
 const ParamsSchema = z.object({
   client_id: z.string().min(3),
@@ -34,6 +35,7 @@ function AuthorizePage() {
   const navigate = useNavigate();
   const fetchClient = useServerFn(getOauthClient);
   const consent = useServerFn(issueOauthCode);
+  const track = useServerFn(recordFunnelEvent);
 
   const [client, setClient] = useState<
     | { client_id: string; client_name: string; redirect_uris: string[]; scope: string; client_uri?: string | null }
@@ -44,9 +46,18 @@ function AuthorizePage() {
 
   useEffect(() => {
     fetchClient({ data: { client_id: params.client_id } })
-      .then((c) => setClient(c))
+      .then((c) => {
+        setClient(c);
+        void track({
+          data: {
+            event: "oauth_authorize_viewed",
+            client_id: params.client_id,
+            client_name: c?.client_name,
+          },
+        }).catch(() => {});
+      })
       .catch((e) => setError(e instanceof Error ? e.message : "Unknown error"));
-  }, [params.client_id, fetchClient]);
+  }, [params.client_id, fetchClient, track]);
 
   const redirectOk = client?.redirect_uris.includes(params.redirect_uri);
 
@@ -75,6 +86,13 @@ function AuthorizePage() {
           code_challenge_method: "S256",
         },
       });
+      void track({
+        data: {
+          event: "oauth_authorize_approved",
+          client_id: params.client_id,
+          client_name: client?.client_name,
+        },
+      }).catch(() => {});
       // Hand off to /oauth/success via sessionStorage so the auth code
       // never lands in the URL bar / history of the consent tab. The
       // success page handles delivery to loopback listeners, private-use
@@ -108,6 +126,13 @@ function AuthorizePage() {
       setError("Invalid redirect URI — cannot deny safely.");
       return;
     }
+    void track({
+      data: {
+        event: "oauth_authorize_denied",
+        client_id: params.client_id,
+        client_name: client?.client_name,
+      },
+    }).catch(() => {});
     window.location.href = buildDeniedUrl();
   }
 

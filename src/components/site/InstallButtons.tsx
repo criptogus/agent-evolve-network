@@ -15,7 +15,9 @@
  * render a button for them here.
  */
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Check, ExternalLink } from "lucide-react";
+import { recordFunnelEvent } from "@/lib/telemetry/funnel.functions";
 
 const ENDPOINT = "https://superagentskill.com/api/mcp";
 const SERVER_NAME = "super-agent-skill";
@@ -74,6 +76,7 @@ const BUTTONS: ButtonSpec[] = [
 
 export function InstallButtons({ compact = false }: { compact?: boolean }) {
   const [clicked, setClicked] = useState<string | null>(null);
+  const track = useServerFn(recordFunnelEvent);
   return (
     <div className={compact ? "flex flex-wrap gap-2" : "grid gap-3 sm:grid-cols-3"}>
       {BUTTONS.map((b) => (
@@ -82,6 +85,9 @@ export function InstallButtons({ compact = false }: { compact?: boolean }) {
           href={b.href}
           onClick={() => {
             setClicked(b.id);
+            void track({
+              data: { event: "install_button_clicked", client_name: b.id },
+            }).catch(() => {});
             // The OS hand-off can be silent if the app isn't installed.
             // Clear after 4s so users can retry.
             setTimeout(() => setClicked((c) => (c === b.id ? null : c)), 4000);

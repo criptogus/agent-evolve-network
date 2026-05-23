@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { recordFunnelEvent } from "@/lib/telemetry/funnel.functions";
 import { ArrowRight, Check, Copy, Plug, Sparkles, Search, Upload, Terminal, Zap } from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
 import { CodeBlock } from "@/components/site/CodeBlock";
@@ -494,6 +496,10 @@ function PromptGrid({ prompts }: { prompts: Prompt[] }) {
 function ConnectPage() {
   const [activeClient, setActiveClient] = useState<string>(CLIENTS[0].id);
   const client = CLIENTS.find((c) => c.id === activeClient) ?? CLIENTS[0];
+  const track = useServerFn(recordFunnelEvent);
+  useEffect(() => {
+    void track({ data: { event: "connect_viewed" } }).catch(() => {});
+  }, [track]);
 
   return (
     <SitePage>
