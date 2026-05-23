@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Nav } from "@/components/site/Nav";
+import { useLang } from "@/hooks/use-lang";
+import type { Lang } from "@/lib/i18n";
 
 // We stash the sensitive payload (redirect_to URL + raw auth code) in
 // sessionStorage rather than putting it in the URL bar, so the auth code
@@ -48,10 +50,30 @@ function classifyRedirect(uri: string): "loopback" | "private-scheme" | "https" 
   return "private-scheme";
 }
 
+function LangSwitcher({ lang, onChange }: { lang: Lang; onChange: (l: Lang) => void }) {
+  return (
+    <div className="absolute right-4 top-4 flex gap-1 text-xs">
+      <button
+        onClick={() => onChange("en")}
+        className={`rounded px-2 py-1 ${lang === "en" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+      >
+        EN
+      </button>
+      <button
+        onClick={() => onChange("pt-BR")}
+        className={`rounded px-2 py-1 ${lang === "pt-BR" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+      >
+        PT
+      </button>
+    </div>
+  );
+}
+
 function SuccessPage() {
   const [handoff, setHandoff] = useState<Handoff | null>(null);
   const [copied, setCopied] = useState(false);
   const deliveredRef = useRef(false);
+  const { lang, setLang, t, tf } = useLang();
 
   useEffect(() => {
     const h = readHandoff();
@@ -114,12 +136,14 @@ function SuccessPage() {
     return (
       <div className="min-h-screen bg-background">
         <Nav />
-        <main className="mx-auto flex min-h-[70vh] max-w-xl items-center px-6 py-16">
+        <main className="relative mx-auto flex min-h-[70vh] max-w-xl items-center px-6 py-16">
+          <LangSwitcher lang={lang} onChange={setLang} />
           <div className="w-full rounded-2xl border border-border bg-card p-8 shadow-elevated">
-            <h1 className="text-2xl font-semibold tracking-tight">No pending connection</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {t("oauth_success_no_pending_title")}
+            </h1>
             <p className="mt-3 text-sm text-muted-foreground">
-              This page completes an MCP client authorization. Start the flow from your client
-              (Claude, Cursor, Codex, Lovable, OpenClaw, Hermes, …) or run{" "}
+              {t("oauth_success_no_pending_body")}{" "}
               <code className="rounded bg-surface-elevated px-1.5 py-0.5 font-mono text-xs">
                 npx -y super-agent connect
               </code>
@@ -129,7 +153,7 @@ function SuccessPage() {
               to="/docs/mcp"
               className="mt-6 inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
             >
-              Read the MCP docs
+              {t("oauth_success_read_docs")}
             </Link>
           </div>
         </main>
@@ -142,7 +166,8 @@ function SuccessPage() {
   return (
     <div className="min-h-screen bg-background">
       <Nav />
-      <main className="mx-auto flex min-h-[80vh] max-w-xl items-center px-6 py-16">
+      <main className="relative mx-auto flex min-h-[80vh] max-w-xl items-center px-6 py-16">
+        <LangSwitcher lang={lang} onChange={setLang} />
         <div className="w-full rounded-2xl border border-border bg-card p-8 shadow-elevated">
           <div className="flex items-center gap-3">
             <span
@@ -152,34 +177,32 @@ function SuccessPage() {
               ✓
             </span>
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              Authorization complete
+              {t("oauth_success_eyebrow")}
             </p>
           </div>
           <h1 className="mt-3 text-2xl font-semibold tracking-tight">
-            Connected to{" "}
+            {t("oauth_success_connected_to_prefix")}
             <span className="text-primary">{handoff.client_name}</span>
           </h1>
 
           {isHttps ? (
             <p className="mt-3 text-sm text-muted-foreground">
-              Returning you to <span className="font-mono text-xs">{handoff.client_name}</span>…
+              {tf("oauth_success_returning", { client: handoff.client_name })}
             </p>
           ) : (
             <>
               <p className="mt-3 text-sm text-muted-foreground">
-                You can close this tab and return to{" "}
-                <span className="font-medium text-foreground">{handoff.client_name}</span>.
-                The connection is already live.
+                {tf("oauth_success_close_tab", { client: handoff.client_name })}
               </p>
 
               <div className="mt-6 rounded-lg border border-dashed border-border bg-surface-elevated p-4 text-sm">
                 <div className="font-medium text-foreground">
-                  Didn't see your client connect?
+                  {t("oauth_success_didnt_connect")}
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {kind === "loopback"
-                    ? "The local listener may have closed before we delivered the code. Paste the code below into your CLI or client when prompted."
-                    : `If ${handoff.client_name} didn't open automatically, paste this code into the client when prompted.`}
+                    ? t("oauth_success_loopback_explain")
+                    : tf("oauth_success_scheme_explain", { client: handoff.client_name })}
                 </p>
                 <div className="mt-3 flex items-center gap-2">
                   <code className="flex-1 break-all rounded border border-border bg-background px-2 py-1.5 font-mono text-xs">
@@ -189,7 +212,7 @@ function SuccessPage() {
                     onClick={copyCode}
                     className="inline-flex h-8 items-center rounded-md border border-border bg-background px-3 text-xs font-medium hover:bg-accent"
                   >
-                    {copied ? "Copied" : "Copy"}
+                    {copied ? t("oauth_success_copied") : t("oauth_success_copy")}
                   </button>
                 </div>
                 {kind === "loopback" && (
@@ -197,7 +220,7 @@ function SuccessPage() {
                     href={handoff.redirect_to}
                     className="mt-3 inline-block text-xs text-primary underline-offset-4 hover:underline"
                   >
-                    Or retry sending to your local client →
+                    {t("oauth_success_retry_loopback")}
                   </a>
                 )}
                 {kind === "private-scheme" && (
@@ -205,7 +228,7 @@ function SuccessPage() {
                     href={handoff.redirect_to}
                     className="mt-3 inline-block text-xs text-primary underline-offset-4 hover:underline"
                   >
-                    Open in {handoff.client_name} →
+                    {tf("oauth_success_open_in_client", { client: handoff.client_name })}
                   </a>
                 )}
               </div>
@@ -214,14 +237,14 @@ function SuccessPage() {
 
           <div className="mt-8 flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
             <span>
-              Manage this connection at{" "}
+              {t("oauth_success_manage_at")}{" "}
               <Link to="/account/connections" className="text-primary hover:underline">
-                Account → Connections
+                {t("oauth_success_account_connections")}
               </Link>
               .
             </span>
             <Link to="/docs/mcp" className="text-primary hover:underline">
-              MCP docs ↗
+              {t("oauth_success_mcp_docs")}
             </Link>
           </div>
         </div>
