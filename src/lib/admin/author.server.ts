@@ -27,10 +27,16 @@ Slug must be lowercase-kebab.`;
 const AUTHOR_MODEL_FALLBACKS = [
   "default",
   "google/gemini-2.5-flash",
-  "google/gemini-2.5-pro",
   "openai/gpt-4o-mini",
-  "openai/gpt-4o",
 ] as const;
+
+// Per-attempt timeout. Vercel serverless caps the whole request; trying 3
+// models with no individual budget meant a single hung upstream (observed
+// ~35s) burned the entire function before any fallback ran. With 12s per
+// model the worst-case is ~36s of upstream + overhead, still under a 60s
+// function limit and surfacing the timeout as a normal attempt failure
+// that flips to the next model instead of a hard 504.
+const PER_ATTEMPT_TIMEOUT_MS = 12_000;
 
 export async function generateDraft(
   brief: string,
@@ -67,6 +73,7 @@ export async function generateDraft(
         system: META_SYSTEM,
         prompt,
         experimental_output: Output.object({ schema: PackageDraftSchema }),
+        abortSignal: AbortSignal.timeout(PER_ATTEMPT_TIMEOUT_MS),
       });
       if (experimental_output.type !== type) experimental_output.type = type;
       if (attempts.length > 0) {

@@ -155,6 +155,9 @@ export function Nav() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem asChild>
+                    <Link to="/account/packages">My packages</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/account/billing">Billing</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -225,6 +228,9 @@ export function Nav() {
                 <div className="mt-2 border-t border-border pt-4">
                   {user ? (
                     <div className="flex flex-col gap-1">
+                      <MobileLink to="/account/packages" onNavigate={() => setOpen(false)}>
+                        My packages
+                      </MobileLink>
                       <MobileLink to="/account/billing" onNavigate={() => setOpen(false)}>
                         Billing
                       </MobileLink>

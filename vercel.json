@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/jobs/drain-upload-queue?limit=5",
+      "schedule": "* * * * *"
+    }
+  ],
+  "functions": {
+    "src/routes/api/mcp.ts": { "maxDuration": 60 },
+    "src/routes/api/jobs/drain-upload-queue.ts": { "maxDuration": 60 }
+  }
+}
