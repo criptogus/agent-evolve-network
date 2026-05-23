@@ -328,6 +328,66 @@ export type Database = {
         }
         Relationships: []
       }
+      mcp_funnel_events: {
+        Row: {
+          anon_hash: string | null
+          client_id: string | null
+          client_name: string | null
+          created_at: string
+          event: string
+          id: number
+          props: Json
+          user_id: string | null
+        }
+        Insert: {
+          anon_hash?: string | null
+          client_id?: string | null
+          client_name?: string | null
+          created_at?: string
+          event: string
+          id?: number
+          props?: Json
+          user_id?: string | null
+        }
+        Update: {
+          anon_hash?: string | null
+          client_id?: string | null
+          client_name?: string | null
+          created_at?: string
+          event?: string
+          id?: number
+          props?: Json
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      mcp_idempotency: {
+        Row: {
+          created_at: string
+          expires_at: string
+          key_hash: string
+          response: Json
+          tool: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          key_hash: string
+          response: Json
+          tool: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          key_hash?: string
+          response?: Json
+          tool?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mcp_oauth_authorizations: {
         Row: {
           client_id: string
@@ -2446,6 +2506,27 @@ export type Database = {
         }
         Returns: Json
       }
+      mcp_funnel_summary: {
+        Args: { _days?: number }
+        Returns: {
+          count: number
+          distinct_users: number
+          event: string
+        }[]
+      }
+      mcp_idempotency_get: {
+        Args: { _key_hash: string; _tool: string; _user_id: string }
+        Returns: Json
+      }
+      mcp_idempotency_put: {
+        Args: {
+          _key_hash: string
+          _response: Json
+          _tool: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
       mcp_oauth_exchange_code: {
         Args: {
           _access_token_hash: string
@@ -2527,6 +2608,16 @@ export type Database = {
       next_sas_code: { Args: never; Returns: string }
       purchase_pack: { Args: { _pack_id: string }; Returns: Json }
       purchase_package: { Args: { _package_id: string }; Returns: Json }
+      record_mcp_funnel_event: {
+        Args: {
+          _anon_hash?: string
+          _client_id?: string
+          _client_name?: string
+          _event: string
+          _props?: Json
+        }
+        Returns: undefined
+      }
       report_review: {
         Args: { _details?: string; _reason: string; _review_id: string }
         Returns: string
