@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Nav } from "@/components/site/Nav";
+import { recordFunnelEvent } from "@/lib/telemetry/funnel.functions";
 
 // We stash the sensitive payload (redirect_to URL + raw auth code) in
 // sessionStorage rather than putting it in the URL bar, so the auth code
@@ -52,14 +54,18 @@ function SuccessPage() {
   const [handoff, setHandoff] = useState<Handoff | null>(null);
   const [copied, setCopied] = useState(false);
   const deliveredRef = useRef(false);
+  const track = useServerFn(recordFunnelEvent);
 
   useEffect(() => {
     const h = readHandoff();
     setHandoff(h);
-    // One-shot: clear immediately so a refresh of this URL doesn't
-    // re-replay the loopback delivery.
-    if (h) window.sessionStorage.removeItem(STORAGE_KEY);
-  }, []);
+    if (h) {
+      window.sessionStorage.removeItem(STORAGE_KEY);
+      void track({
+        data: { event: "oauth_success_shown", client_name: h.client_name },
+      }).catch(() => {});
+    }
+  }, [track]);
 
   const kind = useMemo(
     () => (handoff ? classifyRedirect(handoff.redirect_uri) : null),
@@ -71,6 +77,9 @@ function SuccessPage() {
     deliveredRef.current = true;
 
     if (kind === "loopback") {
+      void track({
+        data: { event: "oauth_loopback_attempted", client_name: handoff.client_name },
+      }).catch(() => {});
       // Fire-and-forget GET to the local listener so the CLI/desktop
       // client picks up the code. We do not navigate the tab — that's
       // exactly what produced the broken "site can't be reached" page
@@ -85,6 +94,9 @@ function SuccessPage() {
       return;
     }
     if (kind === "private-scheme") {
+      void track({
+        data: { event: "oauth_scheme_triggered", client_name: handoff.client_name },
+      }).catch(() => {});
       // Trigger the OS deep link. If the app is registered, the user
       // pops back into Claude/Cursor/etc. If not, the browser stays on
       // this page (which is fine — we show the manual fallback).
@@ -105,6 +117,9 @@ function SuccessPage() {
       await navigator.clipboard.writeText(handoff.code);
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
+      void track({
+        data: { event: "oauth_manual_code_copied", client_name: handoff.client_name },
+      }).catch(() => {});
     } catch {
       /* clipboard may be denied; the code is still visible */
     }

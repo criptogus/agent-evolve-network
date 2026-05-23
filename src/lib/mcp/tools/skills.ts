@@ -6,6 +6,7 @@ const supabaseAdmin = _supabaseAdmin as any;
 import { hashToken } from "@/lib/account/tokens.server";
 import { processBulkUpload } from "@/lib/uploads/uploads.server";
 import { getGatewayModel } from "@/lib/ai-gateway";
+import { getIdempotent, putIdempotent } from "@/lib/mcp/idempotency";
 
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 
@@ -185,24 +186,39 @@ export const searchRegistryTool = defineTool({
 export const requestPrimitiveTool = defineTool({
   name: "request_primitive",
   description:
-    "[PUBLISH] Submit a request for a primitive that does not yet exist. SuperAgentSkill researches and auto-creates it via the proprietary forge pipeline. Requires OAuth.",
+    "[PUBLISH] Submit a request for a primitive that does not yet exist. SuperAgentSkill researches and auto-creates it via the proprietary forge pipeline. Requires OAuth. Pass an `idempotency_key` (any opaque string you generate once per request) and retries return the original `request_id` instead of creating duplicates.",
   parameters: z.object({
     type: z.enum(["skill", "playbook", "soul", "guardrail"]),
     brief: z.string().min(20).max(2000).describe("What the primitive should do, with industry/context"),
     industry: z.string().max(80).optional(),
+    idempotency_key: z
+      .string()
+      .min(8)
+      .max(200)
+      .optional()
+      .describe("Opaque string generated once per logical request. Repeats within 24h return the original response."),
   }),
-  execute: async ({ type, brief, industry }) => {
+  execute: async ({ type, brief, industry, idempotency_key }, ctx) => {
+    const userId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
+    if (userId && idempotency_key) {
+      const cached = await getIdempotent(userId, "request_primitive", idempotency_key);
+      if (cached) return json({ ...(cached as object), replayed: true });
+    }
     const { data, error } = await supabaseAdmin
       .from("package_requests")
       .insert({ kind: type, brief, industry: industry ?? null, status: "queued" })
       .select("id,status")
       .single();
     if (error) return json({ error: error.message });
-    return json({
+    const response = {
       request_id: data.id,
       status: data.status,
       note: "Queued for the Super Agent Skill forge pipeline.",
-    });
+    };
+    if (userId && idempotency_key) {
+      await putIdempotent(userId, "request_primitive", idempotency_key, response);
+    }
+    return json(response);
   },
 });
 
@@ -261,7 +277,7 @@ export const getTrustTool = defineTool({
 export const uploadPackagesTool = defineTool({
   name: "upload_packages",
   description:
-    "[PRIVATE UPLOAD] Push local primitive(s) into the author's PRIVATE workspace. Files are normalised by the SkillForge author pipeline and stored as private drafts owned by the token holder — NOT visible in the public marketplace, search, or trust leaderboard. To list a draft for sale on the marketplace, the author must explicitly publish it from the website UI (/account/packages). This MCP tool intentionally has no `publish` parameter so agents cannot expose a user's skill publicly without their consent. Authenticates via the OAuth bearer of the active MCP session — no extra personal token needed.",
+    "[PRIVATE UPLOAD] Push local primitive(s) into the author's PRIVATE workspace. Files are normalised by the SkillForge author pipeline and stored as private drafts owned by the token holder — NOT visible in the public marketplace, search, or trust leaderboard. To list a draft for sale on the marketplace, the author must submit it for admin review from the website UI (/account/packages). This MCP tool intentionally has no `publish` parameter so agents cannot expose a user's skill publicly without their consent. Authenticates via the OAuth bearer of the active MCP session — no extra personal token needed. Pass an `idempotency_key` (any opaque string you generate once per upload) so retries on network failures don't create duplicates.",
   parameters: z.object({
     files: z
       .array(
@@ -278,8 +294,14 @@ export const uploadPackagesTool = defineTool({
       .min(8)
       .optional()
       .describe("Deprecated. Ignored when the request already carries an OAuth bearer; only used as a fallback for legacy personal MCP tokens."),
+    idempotency_key: z
+      .string()
+      .min(8)
+      .max(200)
+      .optional()
+      .describe("Opaque string generated once per logical upload. Repeats within 24h return the original response and DO NOT re-process the files."),
   }),
-  execute: async ({ auth_token, files }, ctx) => {
+  execute: async ({ auth_token, files, idempotency_key }, ctx) => {
     const sessionUserId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
     const userId = sessionUserId ?? (auth_token ? await resolveUserFromToken(auth_token) : null);
     if (!userId)
@@ -287,17 +309,25 @@ export const uploadPackagesTool = defineTool({
         error: "unauthorized",
         hint: "Connect via OAuth (the host opens https://superagentskill.com/oauth/authorize automatically) — no personal token needed.",
       });
+    if (idempotency_key) {
+      const cached = await getIdempotent(userId, "upload_packages", idempotency_key);
+      if (cached) return json({ ...(cached as object), replayed: true });
+    }
     try {
       // Always private. Marketplace listing requires an explicit user action in the UI.
       const results = await processBulkUpload(supabaseAdmin as any, userId, files);
       const ok = results.filter((r) => r.ok).length;
-      return json({
+      const response = {
         uploaded: ok,
         failed: results.length - ok,
         visibility: "private_draft",
-        next_step: "Open /account/packages on superagentskill.com to list a draft on the marketplace.",
+        next_step: "Open /account/packages on superagentskill.com to submit a draft for admin review.",
         results,
-      });
+      };
+      if (idempotency_key) {
+        await putIdempotent(userId, "upload_packages", idempotency_key, response);
+      }
+      return json(response);
     } catch (e: any) {
       return json({ error: e?.message ?? "upload_failed" });
     }

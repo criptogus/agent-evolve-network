@@ -13,6 +13,7 @@ import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as UseCasesRouteImport } from './routes/use-cases'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as StatusRouteImport } from './routes/status'
 import { Route as SkillforgeRouteImport } from './routes/skillforge'
 import { Route as SkillOfTheWeekRouteImport } from './routes/skill-of-the-week'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -22,6 +23,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RefundsRouteImport } from './routes/refunds'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PlayRouteImport } from './routes/play'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MatchRouteImport } from './routes/match'
 import { Route as LoginRouteImport } from './routes/login'
@@ -68,6 +70,7 @@ import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
 import { Route as AdminMetaAdsPackRouteImport } from './routes/admin.meta-ads-pack'
+import { Route as AdminFunnelRouteImport } from './routes/admin.funnel'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
 import { Route as AccountUsageRouteImport } from './routes/account.usage'
@@ -86,6 +89,7 @@ import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
 import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packages'
+import { Route as ApiMcpHealthRouteImport } from './routes/api/mcp/health'
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
@@ -125,6 +129,11 @@ const UploadRoute = UploadRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SkillforgeRoute = SkillforgeRouteImport.update({
@@ -170,6 +179,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayRoute = PlayRouteImport.update({
+  id: '/play',
+  path: '/play',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -402,6 +416,11 @@ const AdminMetaAdsPackRoute = AdminMetaAdsPackRouteImport.update({
   path: '/meta-ads-pack',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminFunnelRoute = AdminFunnelRouteImport.update({
+  id: '/funnel',
+  path: '/funnel',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCustomersRoute = AdminCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
@@ -493,6 +512,11 @@ const ApiPublicPackagesRoute = ApiPublicPackagesRouteImport.update({
   id: '/api/public/packages',
   path: '/api/public/packages',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMcpHealthRoute = ApiMcpHealthRouteImport.update({
+  id: '/health',
+  path: '/health',
+  getParentRoute: () => ApiMcpRoute,
 } as any)
 const AdminPackagesNewRoute = AdminPackagesNewRouteImport.update({
   id: '/new',
@@ -621,6 +645,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
   '/onboarding': typeof OnboardingRoute
+  '/play': typeof PlayRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
@@ -630,6 +655,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skill-of-the-week': typeof SkillOfTheWeekRoute
   '/skillforge': typeof SkillforgeRoute
+  '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
@@ -645,6 +671,7 @@ export interface FileRoutesByFullPath {
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
@@ -653,7 +680,7 @@ export interface FileRoutesByFullPath {
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/agents/md': typeof AgentsMdRoute
-  '/api/mcp': typeof ApiMcpRoute
+  '/api/mcp': typeof ApiMcpRouteWithChildren
   '/api/telemetry': typeof ApiTelemetryRoute
   '/bounties/$id': typeof BountiesIdRoute
   '/bounties/new': typeof BountiesNewRoute
@@ -678,6 +705,7 @@ export interface FileRoutesByFullPath {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -719,6 +747,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
   '/onboarding': typeof OnboardingRoute
+  '/play': typeof PlayRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
@@ -728,6 +757,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skill-of-the-week': typeof SkillOfTheWeekRoute
   '/skillforge': typeof SkillforgeRoute
+  '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
@@ -743,6 +773,7 @@ export interface FileRoutesByTo {
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
@@ -751,7 +782,7 @@ export interface FileRoutesByTo {
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/agents/md': typeof AgentsMdRoute
-  '/api/mcp': typeof ApiMcpRoute
+  '/api/mcp': typeof ApiMcpRouteWithChildren
   '/api/telemetry': typeof ApiTelemetryRoute
   '/bounties/$id': typeof BountiesIdRoute
   '/bounties/new': typeof BountiesNewRoute
@@ -776,6 +807,7 @@ export interface FileRoutesByTo {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -819,6 +851,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
   '/onboarding': typeof OnboardingRoute
+  '/play': typeof PlayRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
@@ -828,6 +861,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skill-of-the-week': typeof SkillOfTheWeekRoute
   '/skillforge': typeof SkillforgeRoute
+  '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
@@ -843,6 +877,7 @@ export interface FileRoutesById {
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/plans': typeof AdminPlansRoute
@@ -851,7 +886,7 @@ export interface FileRoutesById {
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/agents/md': typeof AgentsMdRoute
-  '/api/mcp': typeof ApiMcpRoute
+  '/api/mcp': typeof ApiMcpRouteWithChildren
   '/api/telemetry': typeof ApiTelemetryRoute
   '/bounties/$id': typeof BountiesIdRoute
   '/bounties/new': typeof BountiesNewRoute
@@ -876,6 +911,7 @@ export interface FileRoutesById {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -920,6 +956,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/match'
     | '/onboarding'
+    | '/play'
     | '/pricing'
     | '/privacy'
     | '/refunds'
@@ -929,6 +966,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/skill-of-the-week'
     | '/skillforge'
+    | '/status'
     | '/terms'
     | '/upload'
     | '/use-cases'
@@ -944,6 +982,7 @@ export interface FileRouteTypes {
     | '/account/usage'
     | '/admin/accounts'
     | '/admin/customers'
+    | '/admin/funnel'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
     | '/admin/plans'
@@ -977,6 +1016,7 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/api/mcp/health'
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1018,6 +1058,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/match'
     | '/onboarding'
+    | '/play'
     | '/pricing'
     | '/privacy'
     | '/refunds'
@@ -1027,6 +1068,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/skill-of-the-week'
     | '/skillforge'
+    | '/status'
     | '/terms'
     | '/upload'
     | '/use-cases'
@@ -1042,6 +1084,7 @@ export interface FileRouteTypes {
     | '/account/usage'
     | '/admin/accounts'
     | '/admin/customers'
+    | '/admin/funnel'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
     | '/admin/plans'
@@ -1075,6 +1118,7 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/api/mcp/health'
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1117,6 +1161,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/match'
     | '/onboarding'
+    | '/play'
     | '/pricing'
     | '/privacy'
     | '/refunds'
@@ -1126,6 +1171,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/skill-of-the-week'
     | '/skillforge'
+    | '/status'
     | '/terms'
     | '/upload'
     | '/use-cases'
@@ -1141,6 +1187,7 @@ export interface FileRouteTypes {
     | '/account/usage'
     | '/admin/accounts'
     | '/admin/customers'
+    | '/admin/funnel'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
     | '/admin/plans'
@@ -1174,6 +1221,7 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/api/mcp/health'
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1217,6 +1265,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MatchRoute: typeof MatchRoute
   OnboardingRoute: typeof OnboardingRoute
+  PlayRoute: typeof PlayRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   RefundsRoute: typeof RefundsRoute
@@ -1226,6 +1275,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SkillOfTheWeekRoute: typeof SkillOfTheWeekRoute
   SkillforgeRoute: typeof SkillforgeRoute
+  StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
   UploadRoute: typeof UploadRoute
   UseCasesRoute: typeof UseCasesRoute
@@ -1240,7 +1290,7 @@ export interface RootRouteChildren {
   AccountTokensRoute: typeof AccountTokensRoute
   AccountUsageRoute: typeof AccountUsageRoute
   AgentsMdRoute: typeof AgentsMdRoute
-  ApiMcpRoute: typeof ApiMcpRoute
+  ApiMcpRoute: typeof ApiMcpRouteWithChildren
   ApiTelemetryRoute: typeof ApiTelemetryRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
   ComparePairRoute: typeof ComparePairRoute
@@ -1308,6 +1358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/skillforge': {
       id: '/skillforge'
       path: '/skillforge'
@@ -1369,6 +1426,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play': {
+      id: '/play'
+      path: '/play'
+      fullPath: '/play'
+      preLoaderRoute: typeof PlayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -1693,6 +1757,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMetaAdsPackRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/funnel': {
+      id: '/admin/funnel'
+      path: '/funnel'
+      fullPath: '/admin/funnel'
+      preLoaderRoute: typeof AdminFunnelRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/customers': {
       id: '/admin/customers'
       path: '/customers'
@@ -1818,6 +1889,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/packages'
       preLoaderRoute: typeof ApiPublicPackagesRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/mcp/health': {
+      id: '/api/mcp/health'
+      path: '/health'
+      fullPath: '/api/mcp/health'
+      preLoaderRoute: typeof ApiMcpHealthRouteImport
+      parentRoute: typeof ApiMcpRoute
     }
     '/admin/packages/new': {
       id: '/admin/packages/new'
@@ -1977,6 +2055,7 @@ const AdminPackagesRouteWithChildren = AdminPackagesRoute._addFileChildren(
 interface AdminRouteChildren {
   AdminAccountsRoute: typeof AdminAccountsRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
+  AdminFunnelRoute: typeof AdminFunnelRoute
   AdminMetaAdsPackRoute: typeof AdminMetaAdsPackRoute
   AdminPackagesRoute: typeof AdminPackagesRouteWithChildren
   AdminPlansRoute: typeof AdminPlansRoute
@@ -1992,6 +2071,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAccountsRoute: AdminAccountsRoute,
   AdminCustomersRoute: AdminCustomersRoute,
+  AdminFunnelRoute: AdminFunnelRoute,
   AdminMetaAdsPackRoute: AdminMetaAdsPackRoute,
   AdminPackagesRoute: AdminPackagesRouteWithChildren,
   AdminPlansRoute: AdminPlansRoute,
@@ -2081,6 +2161,17 @@ const DotwellKnownOauthProtectedResourceRouteWithChildren =
     DotwellKnownOauthProtectedResourceRouteChildren,
   )
 
+interface ApiMcpRouteChildren {
+  ApiMcpHealthRoute: typeof ApiMcpHealthRoute
+}
+
+const ApiMcpRouteChildren: ApiMcpRouteChildren = {
+  ApiMcpHealthRoute: ApiMcpHealthRoute,
+}
+
+const ApiMcpRouteWithChildren =
+  ApiMcpRoute._addFileChildren(ApiMcpRouteChildren)
+
 interface PacksSlugRouteChildren {
   PacksSlugCustomizeRoute: typeof PacksSlugCustomizeRoute
 }
@@ -2121,6 +2212,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MatchRoute: MatchRoute,
   OnboardingRoute: OnboardingRoute,
+  PlayRoute: PlayRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   RefundsRoute: RefundsRoute,
@@ -2130,6 +2222,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SkillOfTheWeekRoute: SkillOfTheWeekRoute,
   SkillforgeRoute: SkillforgeRoute,
+  StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
   UploadRoute: UploadRoute,
   UseCasesRoute: UseCasesRoute,
@@ -2146,7 +2239,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountTokensRoute: AccountTokensRoute,
   AccountUsageRoute: AccountUsageRoute,
   AgentsMdRoute: AgentsMdRoute,
-  ApiMcpRoute: ApiMcpRoute,
+  ApiMcpRoute: ApiMcpRouteWithChildren,
   ApiTelemetryRoute: ApiTelemetryRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
   ComparePairRoute: ComparePairRoute,
