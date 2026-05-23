@@ -34,14 +34,16 @@ function TokensPage() {
   const PLACEHOLDER = "sas_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
   const q = useQuery({ queryKey: ["mcp-tokens"], queryFn: () => list() });
+  const trimmedName = name.trim();
   const createMut = useMutation({
-    mutationFn: () => create({ data: { name: name || "Default" } }),
+    mutationFn: () => create({ data: { name: trimmedName } }),
     onSuccess: (r) => {
       setFresh(r.token);
       setName("");
       qc.invalidateQueries({ queryKey: ["mcp-tokens"] });
     },
   });
+  const canMint = trimmedName.length > 0 && !createMut.isPending;
   const revokeMut = useMutation({
     mutationFn: (id: string) => revoke({ data: { id } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["mcp-tokens"] }),
@@ -82,21 +84,39 @@ function TokensPage() {
         {/* Create */}
         <div className="mt-8 rounded-2xl border border-border bg-surface p-5">
           <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">New token</div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Give the token a name so you can recognise it later (e.g. which device or
+            agent it's used from). Tokens without a name can't be minted — you'll thank
+            us when you need to revoke one.
+          </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && canMint) createMut.mutate();
+              }}
               placeholder="e.g. cursor-laptop"
+              aria-label="Token name"
+              required
               className="h-10 flex-1 rounded-md border border-border bg-background px-3 text-sm"
             />
             <button
-              onClick={() => createMut.mutate()}
-              disabled={createMut.isPending}
-              className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-95 disabled:opacity-50"
+              onClick={() => canMint && createMut.mutate()}
+              disabled={!canMint}
+              title={canMint ? "Mint a new token" : "Type a name first"}
+              className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {createMut.isPending ? "Minting…" : "Mint token"}
             </button>
           </div>
+          {!trimmedName && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Tip: a good name describes where the token will live, e.g.{" "}
+              <code className="font-mono">claude-desktop</code>,{" "}
+              <code className="font-mono">ci-deploy</code>, <code className="font-mono">cursor-mac</code>.
+            </p>
+          )}
           {fresh && (
             <div className="mt-4 rounded-lg border border-emerald-500/40 bg-emerald-500/5 p-3 text-sm">
               <div className="flex items-center justify-between gap-2">

@@ -18,7 +18,19 @@ export const listMcpTokens = createServerFn({ method: "GET" })
 
 export const createMcpToken = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ name: z.string().min(1).max(80) }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        // Trim and require a real name — empty / whitespace-only strings used to
+        // silently default to "Default" in the UI, which left users unable to
+        // tell their tokens apart in the revoke list. Force a deliberate label.
+        name: z
+          .string()
+          .transform((s) => s.trim())
+          .pipe(z.string().min(1, "name is required").max(80)),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { supabase: _sbCtx, userId  } = context as any;
     const supabase = _sbCtx as any;

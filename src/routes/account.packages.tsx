@@ -75,8 +75,16 @@ function AccountPackagesPage() {
       confirm_phrase?: string;
       price_credits?: number;
     }) => setPub({ data: input }),
-    onSuccess: (r) => {
-      toast.success(r.is_published ? "Listed on the marketplace." : "Reverted to private draft.");
+    onSuccess: (r: any) => {
+      if (r.submitted_for_review) {
+        toast.success(
+          "Submitted for review. An admin will approve before it appears on the marketplace.",
+        );
+      } else if (r.is_published) {
+        toast.success("Listed on the marketplace.");
+      } else {
+        toast.success("Reverted to private draft.");
+      }
       qc.invalidateQueries({ queryKey: ["account", "my-packages"] });
       closeDialog();
     },
@@ -97,7 +105,8 @@ function AccountPackagesPage() {
         <p className="mt-2 max-w-2xl text-muted-foreground">
           Everything you upload — via the site, the CLI, or an MCP agent — lands here as a{" "}
           <strong>private draft</strong>. Drafts are invisible to other users. To list a skill on
-          the public marketplace you must publish it explicitly from this page.
+          the public marketplace you must <strong>submit it for review</strong> from this page; an
+          admin then approves it after the adversarial gate passes. You can unpublish anytime.
         </p>
 
         <div className="mt-8 rounded-2xl border border-border bg-surface">
@@ -133,6 +142,12 @@ function AccountPackagesPage() {
                         <Badge className="bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400">
                           Public · marketplace
                         </Badge>
+                      ) : p.review_status === "pending" ? (
+                        <Badge className="bg-amber-500/15 text-amber-600 hover:bg-amber-500/20 dark:text-amber-400">
+                          Pending admin review
+                        </Badge>
+                      ) : p.review_status === "rejected" ? (
+                        <Badge variant="destructive">Rejected</Badge>
                       ) : (
                         <Badge variant="outline">Private draft</Badge>
                       )}
@@ -161,6 +176,10 @@ function AccountPackagesPage() {
                       >
                         Unpublish
                       </Button>
+                    ) : p.review_status === "pending" ? (
+                      <Button size="sm" variant="outline" disabled>
+                        Awaiting admin review
+                      </Button>
                     ) : (
                       <Button
                         size="sm"
@@ -169,7 +188,7 @@ function AccountPackagesPage() {
                           setPrice(String(p.price_credits ?? 0));
                         }}
                       >
-                        Publish to marketplace…
+                        Submit for review…
                       </Button>
                     )}
                   </div>
@@ -180,19 +199,23 @@ function AccountPackagesPage() {
         </div>
 
         <p className="mt-6 text-xs text-muted-foreground">
-          Tip: publishing requires typing a confirmation phrase. Agents (Claude, Cursor, Codex…)
-          cannot list a skill publicly through MCP — only you, from this page, can.
+          Publishing to the marketplace requires admin approval. From here you submit a
+          draft for review; an admin runs the adversarial gate and either approves it
+          (making it public) or sends it back with notes. Agents (Claude, Cursor, Codex…)
+          cannot list a skill publicly through MCP — only you, from this page, can
+          submit, and only an admin can approve.
         </p>
       </main>
 
       <Dialog open={!!target} onOpenChange={(open) => !open && closeDialog()}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Publish to the marketplace?</DialogTitle>
+            <DialogTitle>Submit for marketplace review?</DialogTitle>
             <DialogDescription>
-              This will make <strong>{target?.name}</strong> visible to every user on the public
-              marketplace, search, leaderboards, and trust feeds. You can unpublish at any time,
-              but downloads and execution reports collected while public are kept.
+              This sends <strong>{target?.name}</strong> to the admin review queue. After the
+              adversarial gate runs and an admin approves, it becomes visible on the public
+              marketplace, search, leaderboards, and trust feeds. Until then it stays a private
+              draft. You can withdraw or unpublish at any time.
             </DialogDescription>
           </DialogHeader>
 
@@ -256,7 +279,7 @@ function AccountPackagesPage() {
                 });
               }}
             >
-              {pubMut.isPending ? "Publishing…" : "Publish to marketplace"}
+              {pubMut.isPending ? "Submitting…" : "Submit for review"}
             </Button>
           </DialogFooter>
         </DialogContent>
