@@ -89,6 +89,7 @@ import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
 import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packages'
+import { Route as ApiPackagesUploadRouteImport } from './routes/api/packages.upload'
 import { Route as ApiMcpHealthRouteImport } from './routes/api/mcp/health'
 import { Route as ApiJobsDrainUploadQueueRouteImport } from './routes/api/jobs/drain-upload-queue'
 import { Route as ApiAdminAiGatewayProbeRouteImport } from './routes/api/admin/ai-gateway-probe'
@@ -515,6 +516,11 @@ const ApiPublicPackagesRoute = ApiPublicPackagesRouteImport.update({
   path: '/api/public/packages',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPackagesUploadRoute = ApiPackagesUploadRouteImport.update({
+  id: '/api/packages/upload',
+  path: '/api/packages/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMcpHealthRoute = ApiMcpHealthRouteImport.update({
   id: '/health',
   path: '/health',
@@ -720,6 +726,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/ai-gateway-probe': typeof ApiAdminAiGatewayProbeRoute
   '/api/jobs/drain-upload-queue': typeof ApiJobsDrainUploadQueueRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
+  '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -824,6 +831,7 @@ export interface FileRoutesByTo {
   '/api/admin/ai-gateway-probe': typeof ApiAdminAiGatewayProbeRoute
   '/api/jobs/drain-upload-queue': typeof ApiJobsDrainUploadQueueRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
+  '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -930,6 +938,7 @@ export interface FileRoutesById {
   '/api/admin/ai-gateway-probe': typeof ApiAdminAiGatewayProbeRoute
   '/api/jobs/drain-upload-queue': typeof ApiJobsDrainUploadQueueRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
+  '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -1037,6 +1046,7 @@ export interface FileRouteTypes {
     | '/api/admin/ai-gateway-probe'
     | '/api/jobs/drain-upload-queue'
     | '/api/mcp/health'
+    | '/api/packages/upload'
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1141,6 +1151,7 @@ export interface FileRouteTypes {
     | '/api/admin/ai-gateway-probe'
     | '/api/jobs/drain-upload-queue'
     | '/api/mcp/health'
+    | '/api/packages/upload'
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1246,6 +1257,7 @@ export interface FileRouteTypes {
     | '/api/admin/ai-gateway-probe'
     | '/api/jobs/drain-upload-queue'
     | '/api/mcp/health'
+    | '/api/packages/upload'
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1333,6 +1345,7 @@ export interface RootRouteChildren {
   PacksIndexRoute: typeof PacksIndexRoute
   ApiAdminAiGatewayProbeRoute: typeof ApiAdminAiGatewayProbeRoute
   ApiJobsDrainUploadQueueRoute: typeof ApiJobsDrainUploadQueueRoute
+  ApiPackagesUploadRoute: typeof ApiPackagesUploadRoute
   ApiPublicPackagesRoute: typeof ApiPublicPackagesRouteWithChildren
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
@@ -1916,6 +1929,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPackagesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/packages/upload': {
+      id: '/api/packages/upload'
+      path: '/api/packages/upload'
+      fullPath: '/api/packages/upload'
+      preLoaderRoute: typeof ApiPackagesUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/mcp/health': {
       id: '/api/mcp/health'
       path: '/health'
@@ -2298,6 +2318,7 @@ const rootRouteChildren: RootRouteChildren = {
   PacksIndexRoute: PacksIndexRoute,
   ApiAdminAiGatewayProbeRoute: ApiAdminAiGatewayProbeRoute,
   ApiJobsDrainUploadQueueRoute: ApiJobsDrainUploadQueueRoute,
+  ApiPackagesUploadRoute: ApiPackagesUploadRoute,
   ApiPublicPackagesRoute: ApiPublicPackagesRouteWithChildren,
   ApiPublicSearchRoute: ApiPublicSearchRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,

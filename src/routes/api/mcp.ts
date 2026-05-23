@@ -16,7 +16,7 @@ import {
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
 import { ORIGIN, sha256, CORS_HEADERS } from "@/lib/oauth/mcp-oauth.server";
-import { hashToken } from "@/lib/account/tokens.server";
+import { verifyBearer } from "@/lib/auth/bearer.server";
 
 const mcp = createMcpServer({
   name: "superagentskill",
@@ -105,30 +105,6 @@ function withRateLimitHeaders(
   }
   if (quota.window) headers.set("X-RateLimit-Window", quota.window);
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
-}
-
-/** Try OAuth tokens first, then fall back to legacy MCP personal tokens. */
-async function verifyBearer(token: string): Promise<{ user_id: string; source: "oauth" | "pat" } | null> {
-  // OAuth access token
-  const { data: oauth } = await supabaseAdmin.rpc("mcp_oauth_verify_access", {
-    _token_hash: sha256(token),
-  } as never);
-  const oauthRow = oauth as { user_id?: string } | null;
-  if (oauthRow?.user_id) return { user_id: oauthRow.user_id, source: "oauth" };
-
-  // Legacy personal access token (sas_...)
-  if (token.startsWith("sas_") && !token.startsWith("sas_at_") && !token.startsWith("sas_rt_") && !token.startsWith("sas_code_")) {
-    const { data } = await supabaseAdmin
-      .from("mcp_tokens")
-      .select("user_id,id")
-      .eq("token_hash", hashToken(token))
-      .maybeSingle();
-    if (data?.user_id) {
-      await supabaseAdmin.from("mcp_tokens").update({ last_used_at: new Date().toISOString() }).eq("id", data.id);
-      return { user_id: data.user_id, source: "pat" };
-    }
-  }
-  return null;
 }
 
 function unauthorized(reason: string, rpcId: string | number | null = null) {
