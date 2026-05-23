@@ -87,7 +87,16 @@ export async function processBulkUpload(
       out.type = inferred;
       out.forge_report_url = `/forge/report/${pkg.slug}`;
     } catch (e: any) {
-      out.error = e?.message ?? "failed";
+      const msg = e?.message ?? "failed";
+      out.error = msg;
+      // Server-side visibility — without this the MCP caller sees a
+      // generic "failed" while the real cause (model rejection, schema
+      // mismatch, DB error) is invisible. Keep the user/filename so we
+      // can correlate complaints to actual rows in the logs.
+      console.error(
+        `[uploads.processBulkUpload] user=${userId} file=${f.name} type=${f.type ?? "?"}: ${msg}`,
+        e,
+      );
     }
     results.push(out);
   }

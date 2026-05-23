@@ -12,25 +12,58 @@ You output strict JSON conforming to the PackageDraft schema. Every package must
 Type semantics: skill = capability; playbook = multi-step decision flow; soul = personality/values layer; guardrail = safety boundary.
 Slug must be lowercase-kebab.`;
 
+// Author model fallback chain. The structured-output path (Output.object →
+// tool/function calling) is sensitive to provider/model quirks, so we try a
+// short, ordered list before giving up. First success wins. Adding a model
+// here is cheap; do NOT silently swallow failures — every attempt logs the
+// model + the error so the cause is visible in the server logs.
+const AUTHOR_MODEL_FALLBACKS = [
+  "google/gemini-3-flash-preview",
+  "google/gemini-2.5-flash",
+  "google/gemini-2.5-pro",
+  "openai/gpt-5.1-mini",
+] as const;
+
 export async function generateDraft(
   brief: string,
   type: "skill" | "playbook" | "soul" | "guardrail",
   vertical?: string,
   grounding?: string
 ) {
-  const model = getGatewayModel("google/gemini-3-flash-preview");
   const prompt = `Brief:\n${brief}\n\nType: ${type}${vertical ? `\nVertical: ${vertical}` : ""}${
     grounding ? `\n\nGrounding research (use as ground truth):\n${grounding.slice(0, 8000)}` : ""
   }\n\nDesign a complete, production-ready ${type} package. Return ONLY the JSON.`;
 
-  const { experimental_output } = await generateText({
-    model,
-    system: META_SYSTEM,
-    prompt,
-    experimental_output: Output.object({ schema: PackageDraftSchema }),
-  });
-  if (experimental_output.type !== type) experimental_output.type = type;
-  return experimental_output;
+  const attempts: Array<{ model: string; error: string }> = [];
+  for (const modelId of AUTHOR_MODEL_FALLBACKS) {
+    try {
+      const model = getGatewayModel(modelId);
+      const { experimental_output } = await generateText({
+        model,
+        system: META_SYSTEM,
+        prompt,
+        experimental_output: Output.object({ schema: PackageDraftSchema }),
+      });
+      if (experimental_output.type !== type) experimental_output.type = type;
+      if (attempts.length > 0) {
+        // We recovered — log so we can spot a regression on the primary model.
+        console.warn(
+          `[skillforge.author] recovered on ${modelId} after ${attempts.length} failure(s):`,
+          attempts,
+        );
+      }
+      return experimental_output;
+    } catch (e: any) {
+      const msg = e?.message ?? String(e);
+      attempts.push({ model: modelId, error: msg });
+      console.error(`[skillforge.author] ${modelId} failed:`, msg);
+    }
+  }
+  // All fallbacks exhausted. Surface a structured error so the upload
+  // pipeline can report it back to the caller instead of silently
+  // recording "failed".
+  const summary = attempts.map((a) => `${a.model}: ${a.error}`).join(" | ");
+  throw new Error(`SkillForge author failed across all fallback models — ${summary}`);
 }
 
 export async function insertDraftPackage(

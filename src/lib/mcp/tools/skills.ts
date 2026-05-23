@@ -317,19 +317,39 @@ export const uploadPackagesTool = defineTool({
       // Always private. Marketplace listing requires an explicit user action in the UI.
       const results = await processBulkUpload(supabaseAdmin as any, userId, files);
       const ok = results.filter((r) => r.ok).length;
-      const response = {
+      const failed = results.length - ok;
+      // Surface the per-file errors at the top of the payload too. MCP
+      // clients (and the LLMs reading their output) often render only
+      // the first ~200 chars of a tool response and miss the buried
+      // `results[].error`, leaving users with a generic "failed: N"
+      // and no way to act. The summary line is short enough to survive
+      // truncation and points at the actual root cause.
+      const errorMessages = results
+        .filter((r) => !r.ok)
+        .map((r) => `${r.name}: ${r.error ?? "unknown"}`);
+      const response: Record<string, unknown> = {
         uploaded: ok,
-        failed: results.length - ok,
+        failed,
         visibility: "private_draft",
-        next_step: "Open /account/packages on superagentskill.com to submit a draft for admin review.",
+        next_step:
+          ok > 0
+            ? "Open /account/packages on superagentskill.com to submit a draft for admin review."
+            : "All files failed to normalise. See `error_summary` for the cause and retry.",
         results,
       };
-      if (idempotency_key) {
+      if (failed > 0) {
+        response.error_summary = errorMessages.slice(0, 3).join(" · ");
+      }
+      if (idempotency_key && ok > 0) {
+        // Only cache successful runs so a transient model failure doesn't
+        // poison the idempotency key for 24h.
         await putIdempotent(userId, "upload_packages", idempotency_key, response);
       }
       return json(response);
     } catch (e: any) {
-      return json({ error: e?.message ?? "upload_failed" });
+      const msg = e?.message ?? "upload_failed";
+      console.error(`[mcp.upload_packages] user=${userId} unexpected:`, e);
+      return json({ error: msg });
     }
   },
 });
