@@ -2,6 +2,14 @@
 import { generateDraft, insertDraftPackage, inferType } from "@/lib/admin/author.server";
 import { inspectContent } from "@/lib/security/prompt-injection-guard";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { enqueueUploadJobs, type QueuedJob } from "@/lib/uploads/queue.server";
+
+// How many files we attempt inline before queueing the rest. The
+// SkillForge author pipeline can spend 10–30s per file; Vercel's
+// function budget is ~60s. Doing one inline gives the caller immediate
+// confirmation that auth + DB + gateway are working, and the remaining
+// files run on the background queue (drained by cron once a minute).
+const INLINE_BUDGET = 1;
 
 export type UploadFileInput = {
   name: string;
@@ -32,9 +40,11 @@ export async function processBulkUpload(
   supabase: any,
   userId: string,
   files: UploadFileInput[]
-): Promise<UploadResult[]> {
+): Promise<{ results: UploadResult[]; queued: QueuedJob[] }> {
+  const inline = files.slice(0, INLINE_BUDGET);
+  const overflow = files.slice(INLINE_BUDGET);
   const results: UploadResult[] = [];
-  for (const f of files) {
+  for (const f of inline) {
     const out: UploadResult = { name: f.name, ok: false };
     try {
       const inferred = f.type ?? inferType(f.name, f.content);
@@ -100,5 +110,19 @@ export async function processBulkUpload(
     }
     results.push(out);
   }
-  return results;
+  let queued: QueuedJob[] = [];
+  if (overflow.length > 0) {
+    try {
+      queued = await enqueueUploadJobs(userId, overflow);
+    } catch (e: any) {
+      // If the queue itself is unavailable, fall back to per-file failure
+      // records so the caller knows the overflow didn't silently disappear.
+      const msg = e?.message ?? "enqueue failed";
+      console.error(`[uploads.processBulkUpload] enqueue failed user=${userId}: ${msg}`);
+      for (const f of overflow) {
+        results.push({ name: f.name, ok: false, error: `queue unavailable: ${msg}` });
+      }
+    }
+  }
+  return { results, queued };
 }

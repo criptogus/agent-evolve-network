@@ -90,6 +90,7 @@ import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/tele
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
 import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packages'
 import { Route as ApiMcpHealthRouteImport } from './routes/api/mcp/health'
+import { Route as ApiJobsDrainUploadQueueRouteImport } from './routes/api/jobs/drain-upload-queue'
 import { Route as ApiAdminAiGatewayProbeRouteImport } from './routes/api/admin/ai-gateway-probe'
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
@@ -519,6 +520,11 @@ const ApiMcpHealthRoute = ApiMcpHealthRouteImport.update({
   path: '/health',
   getParentRoute: () => ApiMcpRoute,
 } as any)
+const ApiJobsDrainUploadQueueRoute = ApiJobsDrainUploadQueueRouteImport.update({
+  id: '/api/jobs/drain-upload-queue',
+  path: '/api/jobs/drain-upload-queue',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminAiGatewayProbeRoute = ApiAdminAiGatewayProbeRouteImport.update({
   id: '/api/admin/ai-gateway-probe',
   path: '/api/admin/ai-gateway-probe',
@@ -712,6 +718,7 @@ export interface FileRoutesByFullPath {
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/api/admin/ai-gateway-probe': typeof ApiAdminAiGatewayProbeRoute
+  '/api/jobs/drain-upload-queue': typeof ApiJobsDrainUploadQueueRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
@@ -815,6 +822,7 @@ export interface FileRoutesByTo {
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/api/admin/ai-gateway-probe': typeof ApiAdminAiGatewayProbeRoute
+  '/api/jobs/drain-upload-queue': typeof ApiJobsDrainUploadQueueRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
@@ -920,6 +928,7 @@ export interface FileRoutesById {
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
   '/api/admin/ai-gateway-probe': typeof ApiAdminAiGatewayProbeRoute
+  '/api/jobs/drain-upload-queue': typeof ApiJobsDrainUploadQueueRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
@@ -1026,6 +1035,7 @@ export interface FileRouteTypes {
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/api/admin/ai-gateway-probe'
+    | '/api/jobs/drain-upload-queue'
     | '/api/mcp/health'
     | '/api/public/packages'
     | '/api/public/search'
@@ -1129,6 +1139,7 @@ export interface FileRouteTypes {
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/api/admin/ai-gateway-probe'
+    | '/api/jobs/drain-upload-queue'
     | '/api/mcp/health'
     | '/api/public/packages'
     | '/api/public/search'
@@ -1233,6 +1244,7 @@ export interface FileRouteTypes {
     | '/admin/import/markdown'
     | '/admin/packages/new'
     | '/api/admin/ai-gateway-probe'
+    | '/api/jobs/drain-upload-queue'
     | '/api/mcp/health'
     | '/api/public/packages'
     | '/api/public/search'
@@ -1320,6 +1332,7 @@ export interface RootRouteChildren {
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   PacksIndexRoute: typeof PacksIndexRoute
   ApiAdminAiGatewayProbeRoute: typeof ApiAdminAiGatewayProbeRoute
+  ApiJobsDrainUploadQueueRoute: typeof ApiJobsDrainUploadQueueRoute
   ApiPublicPackagesRoute: typeof ApiPublicPackagesRouteWithChildren
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
@@ -1910,6 +1923,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMcpHealthRouteImport
       parentRoute: typeof ApiMcpRoute
     }
+    '/api/jobs/drain-upload-queue': {
+      id: '/api/jobs/drain-upload-queue'
+      path: '/api/jobs/drain-upload-queue'
+      fullPath: '/api/jobs/drain-upload-queue'
+      preLoaderRoute: typeof ApiJobsDrainUploadQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/ai-gateway-probe': {
       id: '/api/admin/ai-gateway-probe'
       path: '/api/admin/ai-gateway-probe'
@@ -2277,6 +2297,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   PacksIndexRoute: PacksIndexRoute,
   ApiAdminAiGatewayProbeRoute: ApiAdminAiGatewayProbeRoute,
+  ApiJobsDrainUploadQueueRoute: ApiJobsDrainUploadQueueRoute,
   ApiPublicPackagesRoute: ApiPublicPackagesRouteWithChildren,
   ApiPublicSearchRoute: ApiPublicSearchRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,

@@ -31,7 +31,17 @@ export const listMyAuthoredPackages = createServerFn({ method: "GET" })
       .eq("author_id", userId)
       .order("created_at", { ascending: false });
     if (error) throw new Response(error.message, { status: 500 });
-    return { packages: data ?? [] };
+    // Surface in-flight upload jobs alongside finished packages so the
+    // user sees "Processing… (3 queued)" rather than an empty list right
+    // after an MCP bulk upload.
+    const { data: jobs } = await supabase
+      .from("package_upload_jobs")
+      .select("id, filename, inferred_type, status, error, slug, created_at")
+      .eq("user_id", userId)
+      .in("status", ["queued", "processing", "failed"])
+      .order("created_at", { ascending: false })
+      .limit(50);
+    return { packages: data ?? [], jobs: jobs ?? [] };
   });
 
 const PublishInput = z.object({

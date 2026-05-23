@@ -277,7 +277,7 @@ export const getTrustTool = defineTool({
 export const uploadPackagesTool = defineTool({
   name: "upload_packages",
   description:
-    "[PRIVATE UPLOAD] Push local primitive(s) into the author's PRIVATE workspace. Files are normalised by the SkillForge author pipeline and stored as private drafts owned by the token holder — NOT visible in the public marketplace, search, or trust leaderboard. To list a draft for sale on the marketplace, the author must submit it for admin review from the website UI (/account/packages). This MCP tool intentionally has no `publish` parameter so agents cannot expose a user's skill publicly without their consent. Authenticates via the OAuth bearer of the active MCP session — no extra personal token needed. Pass an `idempotency_key` (any opaque string you generate once per upload) so retries on network failures don't create duplicates.",
+    "[PRIVATE UPLOAD] Push local primitive(s) into the author's PRIVATE workspace. Files are normalised by the SkillForge author pipeline and stored as private drafts owned by the token holder — NOT visible in the public marketplace, search, or trust leaderboard. To list a draft for sale on the marketplace, the author must submit it for admin review from the website UI (/account/packages). This MCP tool intentionally has no `publish` parameter so agents cannot expose a user's skill publicly without their consent. Authenticates via the OAuth bearer of the active MCP session — no extra personal token needed. Pass an `idempotency_key` (any opaque string you generate once per upload) so retries on network failures don't create duplicates. Batching: the first file is processed inline; any additional files are queued and normalised by a background worker (drained roughly once per minute) — the response includes `queued: [{id, filename}]` so the caller can poll progress at /account/packages.",
   parameters: z.object({
     files: z
       .array(
@@ -315,7 +315,7 @@ export const uploadPackagesTool = defineTool({
     }
     try {
       // Always private. Marketplace listing requires an explicit user action in the UI.
-      const results = await processBulkUpload(supabaseAdmin as any, userId, files);
+      const { results, queued } = await processBulkUpload(supabaseAdmin as any, userId, files);
       const ok = results.filter((r) => r.ok).length;
       const failed = results.length - ok;
       // Surface the per-file errors at the top of the payload too. MCP
@@ -330,12 +330,16 @@ export const uploadPackagesTool = defineTool({
       const response: Record<string, unknown> = {
         uploaded: ok,
         failed,
+        queued_count: queued.length,
         visibility: "private_draft",
         next_step:
-          ok > 0
-            ? "Open /account/packages on superagentskill.com to submit a draft for admin review."
-            : "All files failed to normalise. See `error_summary` for the cause and retry.",
+          queued.length > 0
+            ? `Processed ${ok} inline; ${queued.length} more queued. The background worker normalises queued files within ~1 minute — open /account/packages on superagentskill.com to watch them appear.`
+            : ok > 0
+              ? "Open /account/packages on superagentskill.com to submit a draft for admin review."
+              : "All files failed to normalise. See `error_summary` for the cause and retry.",
         results,
+        queued,
       };
       if (failed > 0) {
         response.error_summary = errorMessages.slice(0, 3).join(" · ");

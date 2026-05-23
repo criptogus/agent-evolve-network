@@ -54,7 +54,16 @@ function AccountPackagesPage() {
   const setPub = useServerFn(setMyPackagePublished);
   const qc = useQueryClient();
 
-  const q = useQuery({ queryKey: ["account", "my-packages"], queryFn: () => list() });
+  const q = useQuery({
+    queryKey: ["account", "my-packages"],
+    queryFn: () => list(),
+    // Poll while there are jobs in flight so users watch the queue drain.
+    refetchInterval: (query) => {
+      const d: any = query.state.data;
+      const inflight = (d?.jobs ?? []).some((j: any) => j.status === "queued" || j.status === "processing");
+      return inflight ? 5_000 : false;
+    },
+  });
 
   const [target, setTarget] = useState<Pkg | null>(null);
   const [phrase, setPhrase] = useState("");
@@ -108,6 +117,37 @@ function AccountPackagesPage() {
           the public marketplace you must <strong>submit it for review</strong> from this page; an
           admin then approves it after the adversarial gate passes. You can unpublish anytime.
         </p>
+
+        {q.data && (q.data as any).jobs && (q.data as any).jobs.length > 0 && (
+          <div className="mt-8 rounded-2xl border border-border bg-surface">
+            <div className="border-b border-border/60 px-5 py-3 font-mono text-xs uppercase tracking-wider text-muted-foreground">
+              Upload queue
+            </div>
+            <ul className="divide-y divide-border/60">
+              {((q.data as any).jobs as Array<{ id: string; filename: string; inferred_type: string; status: string; error: string | null; slug: string | null }>).map((j) => (
+                <li key={j.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
+                  <div className="min-w-0">
+                    <span className="font-medium">{j.filename}</span>{" "}
+                    <Badge variant="secondary" className="ml-1">{j.inferred_type}</Badge>
+                  </div>
+                  <div className="shrink-0">
+                    {j.status === "queued" && <Badge variant="outline">Queued</Badge>}
+                    {j.status === "processing" && (
+                      <Badge className="bg-amber-500/15 text-amber-600 hover:bg-amber-500/20 dark:text-amber-400">
+                        Processing…
+                      </Badge>
+                    )}
+                    {j.status === "failed" && (
+                      <Badge variant="destructive" title={j.error ?? undefined}>
+                        Failed
+                      </Badge>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="mt-8 rounded-2xl border border-border bg-surface">
           <div className="border-b border-border/60 px-5 py-3 font-mono text-xs uppercase tracking-wider text-muted-foreground">
