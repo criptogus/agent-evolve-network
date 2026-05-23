@@ -85,16 +85,106 @@ export async function generateDraft(
       }
       return experimental_output;
     } catch (e: any) {
-      const msg = e?.message ?? String(e);
+      const msg = describeAttemptError(e);
       attempts.push({ model: modelId, error: msg });
-      console.error(`[skillforge.author] ${modelId} failed:`, msg);
+      console.error(`[skillforge.author] ${modelId} structured failed:`, msg);
     }
   }
-  // All fallbacks exhausted. Surface a structured error so the upload
+
+  // Structured-output path failed on every model. Most common cause is
+  // provider strict-mode rejecting the JSON schema generated from
+  // PackageDraftSchema (e.g. open `record<string, any>` slots) — both
+  // OpenAI and Gemini surface this as opaque "Bad Request" / "no object
+  // generated". Fall back to plain text: ask the model for raw JSON,
+  // parse it ourselves, validate with Zod. Loses provider-side schema
+  // guarantees but lets the user actually get a draft.
+  try {
+    const fallbackModel = getGatewayModel("default");
+    const { text } = await generateText({
+      model: fallbackModel,
+      system:
+        META_SYSTEM +
+        `\n\nReturn ONLY a single JSON object matching PackageDraft. No markdown, no prose, no code fences. ` +
+        `Required top-level keys: slug, name, type, description, long_description, system_prompt, rules, examples. ` +
+        `examples must contain >= 2 items. rules has: input_schema (object), output_schema (object), must (array), must_not (array).`,
+      prompt,
+      abortSignal: AbortSignal.timeout(PER_ATTEMPT_TIMEOUT_MS),
+    });
+    const json = extractJsonObject(text);
+    const parsed = PackageDraftSchema.safeParse(json);
+    if (!parsed.success) {
+      attempts.push({
+        model: "text-fallback",
+        error: `zod: ${parsed.error.issues.slice(0, 3).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}`,
+      });
+    } else {
+      const out = parsed.data;
+      if (out.type !== type) out.type = type;
+      console.warn(
+        `[skillforge.author] recovered via text fallback after ${attempts.length} structured failure(s):`,
+        attempts,
+      );
+      return out;
+    }
+  } catch (e: any) {
+    attempts.push({ model: "text-fallback", error: describeAttemptError(e) });
+    console.error(`[skillforge.author] text fallback failed:`, attempts[attempts.length - 1]?.error);
+  }
+
+  // All paths exhausted. Surface a structured error so the upload
   // pipeline can report it back to the caller instead of silently
   // recording "failed".
   const summary = attempts.map((a) => `${a.model}: ${a.error}`).join(" | ");
   throw new Error(`SkillForge author failed across all fallback models — ${summary}`);
+}
+
+// AI SDK errors hide the upstream body inside `e.text` (NoObjectGeneratedError),
+// `e.responseBody` (HTTP errors), or `e.cause`. Bare `e.message` strips all of
+// that and leaves operators chasing "Bad Request" with no context.
+function describeAttemptError(e: any): string {
+  const parts: string[] = [];
+  if (e?.message) parts.push(String(e.message));
+  if (e?.name && !parts[0]?.includes(e.name)) parts.unshift(String(e.name));
+  if (e?.text && typeof e.text === "string") parts.push(`text=${e.text.slice(0, 400)}`);
+  if (e?.responseBody && typeof e.responseBody === "string")
+    parts.push(`body=${e.responseBody.slice(0, 400)}`);
+  if (e?.cause?.message && e.cause.message !== e?.message)
+    parts.push(`cause=${String(e.cause.message).slice(0, 200)}`);
+  return parts.join(" | ") || String(e);
+}
+
+// Permissive JSON extractor: handles plain JSON, markdown-fenced JSON, and
+// preamble/postamble text the model sometimes adds despite instructions.
+function extractJsonObject(text: string): unknown {
+  const stripped = text.trim();
+  const tryParse = (s: string) => {
+    try { return JSON.parse(s); } catch { return undefined; }
+  };
+  const direct = tryParse(stripped);
+  if (direct !== undefined) return direct;
+  const fence = stripped.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence?.[1]) {
+    const v = tryParse(fence[1].trim());
+    if (v !== undefined) return v;
+  }
+  // Last resort: locate the first {...} block by brace balancing.
+  const start = stripped.indexOf("{");
+  if (start >= 0) {
+    let depth = 0;
+    for (let i = start; i < stripped.length; i++) {
+      const c = stripped[i];
+      if (c === "{") depth++;
+      else if (c === "}") {
+        depth--;
+        if (depth === 0) {
+          const v = tryParse(stripped.slice(start, i + 1));
+          if (v !== undefined) return v;
+          break;
+        }
+      }
+    }
+  }
+  throw new Error(`text fallback returned non-JSON: ${stripped.slice(0, 200)}`);
 }
 
 export async function insertDraftPackage(
