@@ -1068,6 +1068,57 @@ export type Database = {
         }
         Relationships: []
       }
+      package_upload_jobs: {
+        Row: {
+          attempts: number
+          content: string
+          created_at: string
+          error: string | null
+          filename: string
+          finished_at: string | null
+          id: string
+          inferred_type: string | null
+          package_id: string | null
+          result: Json | null
+          slug: string | null
+          started_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          content: string
+          created_at?: string
+          error?: string | null
+          filename: string
+          finished_at?: string | null
+          id?: string
+          inferred_type?: string | null
+          package_id?: string | null
+          result?: Json | null
+          slug?: string | null
+          started_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          content?: string
+          created_at?: string
+          error?: string | null
+          filename?: string
+          finished_at?: string | null
+          id?: string
+          inferred_type?: string | null
+          package_id?: string | null
+          result?: Json | null
+          slug?: string | null
+          started_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       package_versions: {
         Row: {
           compatibility: Json
