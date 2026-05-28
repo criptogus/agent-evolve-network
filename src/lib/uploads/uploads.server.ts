@@ -31,6 +31,47 @@ export type UploadResult = {
   };
 };
 
+export type UploadPreview = {
+  name: string;
+  accepted: boolean;
+  inferred_type: string;
+  reason?: string;
+  injection: {
+    severity: "none" | "low" | "medium" | "high" | "critical";
+    rejected: boolean;
+    findings: Array<{ pattern: string; category: string; severity: string }>;
+  };
+};
+
+/**
+ * Dry-run preview of an upload — NO authentication, NO LLM normalization, NO
+ * database writes. Runs only the deterministic, zero-cost checks (type
+ * inference + prompt-injection guard) so an agent can validate that a file
+ * WOULD be accepted before connecting OAuth. Safe to expose anonymously: it
+ * neither persists anything nor spends model budget.
+ */
+export function previewUpload(files: UploadFileInput[]): UploadPreview[] {
+  return files.map((f) => {
+    const inferred = f.type ?? inferType(f.name, f.content);
+    const guard = inspectContent(f.content, { rejectAtOrAbove: "high", fence: true });
+    return {
+      name: f.name,
+      accepted: !guard.rejected,
+      inferred_type: inferred,
+      reason: guard.rejected ? guard.reason : undefined,
+      injection: {
+        severity: guard.severity,
+        rejected: guard.rejected,
+        findings: guard.findings.map((g) => ({
+          pattern: g.pattern,
+          category: g.category,
+          severity: g.severity,
+        })),
+      },
+    };
+  });
+}
+
 /**
  * Process a batch of uploaded skill files. Each file becomes a draft package
  * owned by `userId`. Drafts are NOT auto-published — admins or the author can

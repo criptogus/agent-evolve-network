@@ -4,7 +4,7 @@ import { generateText, Output } from "ai";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
 import { hashToken } from "@/lib/account/tokens.server";
-import { processBulkUpload } from "@/lib/uploads/uploads.server";
+import { processBulkUpload, previewUpload } from "@/lib/uploads/uploads.server";
 import { getGatewayModel } from "@/lib/ai-gateway";
 import { getIdempotent, putIdempotent } from "@/lib/mcp/idempotency";
 
@@ -44,7 +44,7 @@ export const overviewTool = defineTool({
             "4. search_registry  — (optional) borrow patterns from high-trust primitives.",
             "(get_methodology is orientation only — the rubric/signals are server-side and not disclosed.)",
           ],
-          tools: ["get_methodology", "review_skill", "search_registry", "get_package"],
+          tools: ["get_methodology", "review_skill", "review_skills_batch", "search_registry", "get_package"],
         },
         discover_registry: {
           description:
@@ -74,8 +74,10 @@ export const overviewTool = defineTool({
         guardrail: "A safety / quality constraint enforced before, during or after another primitive runs.",
       },
       auth: {
-        anonymous_ok: ["overview", "get_methodology", "review_skill", "search_registry", "list_packages", "get_package", "get_skill_trust"],
+        anonymous_ok: ["overview", "get_methodology", "review_skill", "review_skills_batch", "search_registry", "list_packages", "get_package", "get_skill_trust"],
         oauth_required: ["upload_packages", "request_primitive", "report_execution"],
+        anonymous_dry_run: ["upload_packages", "request_primitive"],
+        anonymous_dry_run_note: "Pass dry_run:true to upload_packages / request_primitive to validate the flow anonymously — no persistence, no model budget, no OAuth.",
         oauth_endpoint: "https://superagentskill.com/oauth/authorize",
       },
       docs: "https://superagentskill.com/connect",
@@ -197,8 +199,20 @@ export const requestPrimitiveTool = defineTool({
       .max(200)
       .optional()
       .describe("Opaque string generated once per logical request. Repeats within 24h return the original response."),
+    dry_run: z
+      .boolean()
+      .default(false)
+      .describe("Preview the request WITHOUT authenticating or persisting: validates the brief and echoes the would-be queued payload so an agent can test the flow before connecting OAuth. Nothing is enqueued."),
   }),
-  execute: async ({ type, brief, industry, idempotency_key }, ctx) => {
+  execute: async ({ type, brief, industry, idempotency_key, dry_run }, ctx) => {
+    if (dry_run) {
+      return json({
+        dry_run: true,
+        would_create: { kind: type, brief, industry: industry ?? null, status: "queued" },
+        next_step:
+          "Validation-only preview — nothing was enqueued. Call request_primitive again with dry_run omitted while connected via OAuth to actually submit it to the forge pipeline.",
+      });
+    }
     const userId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
     if (userId && idempotency_key) {
       const cached = await getIdempotent(userId, "request_primitive", idempotency_key);
@@ -300,8 +314,27 @@ export const uploadPackagesTool = defineTool({
       .max(200)
       .optional()
       .describe("Opaque string generated once per logical upload. Repeats within 24h return the original response and DO NOT re-process the files."),
+    dry_run: z
+      .boolean()
+      .default(false)
+      .describe("Validate the files WITHOUT authenticating or persisting anything: returns per-file inferred type + prompt-injection guard verdict so an agent can confirm a file would be accepted before connecting OAuth. No drafts are created, no model budget spent."),
   }),
-  execute: async ({ auth_token, files, idempotency_key }, ctx) => {
+  execute: async ({ auth_token, files, idempotency_key, dry_run }, ctx) => {
+    // Dry-run preview is anonymous, side-effect-free, and zero-cost — it never
+    // touches the DB or the LLM, so it needs no auth. Lets agents test the flow.
+    if (dry_run) {
+      const preview = previewUpload(files);
+      const acceptable = preview.filter((p) => p.accepted).length;
+      return json({
+        dry_run: true,
+        files: preview.length,
+        acceptable,
+        rejected: preview.length - acceptable,
+        preview,
+        next_step:
+          "This was a validation-only preview — nothing was uploaded. To persist these as PRIVATE drafts, call upload_packages again with dry_run omitted while connected via OAuth.",
+      });
+    }
     const sessionUserId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
     const userId = sessionUserId ?? (auth_token ? await resolveUserFromToken(auth_token) : null);
     if (!userId)
@@ -487,8 +520,16 @@ function inputWarning(text: string): "short_input" | "summary_markers" | "outlin
   }
   const lines = t.split("\n");
   const headings = lines.filter((l) => /^#{1,6}\s/.test(l)).length;
-  const bodyLines = lines.filter((l) => l.trim().length > 0 && !/^#{1,6}\s/.test(l) && !/^\s*([-*]|\d+[.)])\s/.test(l)).length;
-  if (headings >= 6 && bodyLines < headings * 1.5) return "outline_only";
+  // Content lines include bullets and numbered list items — skills are
+  // legitimately bullet/step dense, so those ARE the body, not absence of it.
+  // Only flag an outline when headings dominate and there's almost no content
+  // of ANY kind underneath them (true skeleton). This avoids the false
+  // positive where a substantive, well-structured SKILL.md (lots of lists
+  // under named sections) was misread as "headings without body".
+  const contentLines = lines.filter(
+    (l) => l.trim().length > 0 && !/^#{1,6}\s/.test(l)
+  ).length;
+  if (headings >= 6 && contentLines < headings) return "outline_only";
   return null;
 }
 
@@ -669,7 +710,21 @@ function scorePillar(id: PillarId, text: string): PillarDetail {
   const positiveHits = signals.filter(
     (s) => s.kind === "positive" && (s.primary.test(text) || (s.secondary && s.secondary.test(text)))
   ).length;
-  if (positiveSignals > 0 && positiveHits === 0) score = Math.min(score, 60);
+  const negativeHits = signals.filter(
+    (s) => s.kind === "negative" && (s.primary.test(text) || (s.secondary && s.secondary.test(text)))
+  ).length;
+  // Portability is mostly penalty-driven (vendor lock-in). When there are no
+  // positive declarations AND no lock-in detected, the artifact is "portable
+  // by construction" — that's a soft pass, not a gap. Pinning it to a flat 60
+  // (the generic no-positive cap) made it look permanently broken/neutral and
+  // robbed it of diagnostic range. Give it a clear baseline so the dimension
+  // actually moves: lock-in pulls it down, an explicit cross-runtime
+  // declaration lifts it into "strong".
+  if (id === "portability" && positiveHits === 0 && negativeHits === 0) {
+    score = 68;
+  } else if (positiveSignals > 0 && positiveHits === 0) {
+    score = Math.min(score, 60);
+  }
   score = Math.max(0, Math.min(100, score));
   return {
     id,
@@ -1184,14 +1239,27 @@ Return one verdict per pillar. covered=true only if a reader would say the pilla
       .length(7),
   });
 
+  // The semantic pass is the highest-value feature for niche-jargon skills, so
+  // a single transient gateway blip should not silently drop it. Retry once
+  // with a short backoff and a slightly longer timeout before giving up.
+  let output: { verdicts: z.infer<typeof schema>["verdicts"] } | null = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await generateText({
+        model: getGatewayModel(SEMANTIC_MODEL),
+        system: sys,
+        prompt: user,
+        output: Output.object({ schema }),
+        abortSignal: AbortSignal.timeout(15_000),
+      });
+      output = res.output;
+      break;
+    } catch {
+      if (attempt === 0) await new Promise((r) => setTimeout(r, 600));
+    }
+  }
+  if (!output) return null;
   try {
-    const { output } = await generateText({
-      model: getGatewayModel(SEMANTIC_MODEL),
-      system: sys,
-      prompt: user,
-      output: Output.object({ schema }),
-      abortSignal: AbortSignal.timeout(12_000),
-    });
     const map = new Map<PillarId, SemanticPillarVerdict>();
     for (const v of output.verdicts) {
       // Validate the line/quote pair against the actual file. If the model
@@ -1252,10 +1320,220 @@ export const getMethodologyTool = defineTool({
     }),
 });
 
+// ----------------------------------------------------------------------------
+// Core review computation — shared by review_skill (single) and
+// review_skills_batch. Produces the full scored payload EXCEPT the per-call
+// concerns (caller delta + feedback request + next_steps), which the tools add.
+// ----------------------------------------------------------------------------
+type ReviewArgs = {
+  name: string;
+  type: "skill" | "playbook" | "soul" | "guardrail";
+  content: string;
+  doc_class: DocClassInput;
+  semantic_check: boolean;
+  language?: Exclude<Lang, "other">;
+};
+
+// Best-effort in-process result cache keyed by content + options. Iterative
+// review loops re-submit the same file repeatedly; a hit skips the
+// deterministic scoring AND the LLM semantic pass, cutting ~15-30s to ~0.
+// Ephemeral (per warm instance), TTL-bounded, size-capped (FIFO eviction).
+const REVIEW_CACHE = new Map<string, { core: Record<string, unknown>; at: number }>();
+const REVIEW_CACHE_MAX = 200;
+const REVIEW_CACHE_TTL_MS = 10 * 60 * 1000;
+
+function reviewCacheKey(a: ReviewArgs): string {
+  return [a.type, a.doc_class, a.semantic_check ? "sem" : "nosem", a.language ?? "auto", fnv1aHex(a.content)].join("|");
+}
+
+async function computeReview(a: ReviewArgs): Promise<Record<string, unknown>> {
+  const cacheKey = reviewCacheKey(a);
+  const hit = REVIEW_CACHE.get(cacheKey);
+  if (hit && Date.now() - hit.at < REVIEW_CACHE_TTL_MS) {
+    return { ...hit.core, cached: true };
+  }
+
+  const { name, type, content, doc_class, semantic_check, language: languageOverride } = a;
+  const ids = Object.keys(PILLAR_TITLE) as PillarId[];
+  const weights = TYPE_WEIGHTS[type] ?? TYPE_WEIGHTS.skill;
+  const details = ids.map((id) => scorePillar(id, content));
+  // Caller override wins (confidence 1.0); otherwise fall back to detection.
+  const detected = detectLanguage(content);
+  const language = languageOverride
+    ? { lang: languageOverride as Lang, confidence: 1 }
+    : detected;
+  const bundle = bundleFor(language.lang);
+  const extras = extrasFor(language.lang);
+
+  // Doc class — declared or inferred. Drives ceiling + grade axis.
+  const docClass: DocClass = doc_class === "auto" ? inferDocClass(content, type) : doc_class;
+  const ceiling = DOC_CLASS_CEILING[docClass];
+
+  // Pre-score input sanity. Surface BEFORE the score so the operator doesn't
+  // chase a misleading verdict on a summary.
+  const warnKind = inputWarning(content);
+  const inputWarn = warnKind
+    ? warnKind === "short_input"
+      ? extras.warn_short
+      : warnKind === "summary_markers"
+        ? extras.warn_summary
+        : extras.warn_outline
+    : null;
+
+  // Semantic pass — run when enabled and content is substantive. Only HARD
+  // truncation warnings (short_input / summary_markers) block it; an
+  // `outline_only` hint is soft and is exactly where the pass adds most value.
+  const blocksSemantic = warnKind === "short_input" || warnKind === "summary_markers";
+  const semantic =
+    semantic_check && !blocksSemantic && content.length >= 400
+      ? await semanticCheck(content, language.lang)
+      : null;
+
+  // Apply semantic uplift to pillar scores (never lowers a score).
+  const semanticUplifts: Record<string, { from: number; to: number; confidence: number }> = {};
+  if (semantic) {
+    for (const r of details) {
+      const v = semantic.get(r.id);
+      if (!v || !v.covered) continue;
+      const target = Math.round(40 + v.confidence * 45);
+      if (target > r.score) {
+        const from = r.score;
+        r.score = Math.min(82, target);
+        r.deficit = 100 - r.score;
+        const pillarTotal = r.structural_total + r.content_total;
+        if (pillarTotal > 0) {
+          const ratio = r.score / 100;
+          r.structural_earned = r.structural_total * ratio;
+          r.content_earned = r.content_total * ratio;
+        }
+        semanticUplifts[r.id] = { from, to: r.score, confidence: v.confidence };
+      }
+      if (v.evidence_line !== null && v.evidence_quote) {
+        const quote = v.evidence_quote.length > 140 ? v.evidence_quote.slice(0, 137) + "…" : v.evidence_quote;
+        r.evidence.unshift({ line: v.evidence_line, excerpt: quote });
+        if (r.signals_hit === 0) r.signals_hit = 1;
+      }
+    }
+  }
+
+  // Per-pillar overall score (existing logic — kept for back-compat).
+  let wSum = 0;
+  let wTotal = 0;
+  for (const r of details) {
+    const w = weights[r.id] ?? 1;
+    wSum += r.score * w;
+    wTotal += w;
+  }
+  const overall = Math.round(wSum / wTotal);
+
+  // Axis split, weighted by TYPE_WEIGHTS so axes share the overall scale.
+  let sEarned = 0, sTotal = 0, cEarned = 0, cTotal = 0;
+  for (const r of details) {
+    const w = weights[r.id] ?? 1;
+    sEarned += r.structural_earned * w;
+    sTotal += r.structural_total * w;
+    cEarned += r.content_earned * w;
+    cTotal += r.content_total * w;
+  }
+  const structuralScore = sTotal > 0 ? Math.round((sEarned / sTotal) * 100) : null;
+  const contentQualityScore = cTotal > 0 ? Math.round((cEarned / cTotal) * 100) : null;
+
+  const verdictScore =
+    docClass === "governance" && contentQualityScore !== null ? contentQualityScore : overall;
+
+  const pillars = details.map((r) => ({
+    pillar: r.id,
+    title: bundle.pillar_title[r.id],
+    score: r.score,
+    status: statusBand(r.score),
+    signals_hit: r.signals_hit,
+    signals_total: r.signals_total,
+    semantic_uplift: semanticUplifts[r.id] ?? null,
+    diagnostic:
+      r.score === 0
+        ? bundle.diag_zero
+        : r.id === "portability" && r.signals_hit === 0
+          ? (language.lang === "pt"
+              ? "Portável por construção: nenhum lock-in de fornecedor detectado. Para chegar a 'forte', declare suporte multi-runtime explicitamente (ex: 'validado em Claude, GPT e Gemini')."
+              : "Portable by construction: no vendor lock-in detected. To reach 'strong', declare multi-runtime support explicitly (e.g. 'validated on Claude, GPT and Gemini').")
+          : r.signals_hit === 0
+            ? bundle.diag_no_positive
+            : null,
+  }));
+
+  const ranked = [...details]
+    .map((r) => ({ ...r, impact: r.deficit * (weights[r.id] ?? 1) }))
+    .filter((r) => {
+      if (r.impact <= 0) return false;
+      if (docClass === "governance" && r.structural_total > r.content_total && r.score >= ceiling) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => b.impact - a.impact)
+    .slice(0, 4);
+
+  const topActions = ranked.map((r, i) => buildAction(r, content, i + 1, bundle));
+
+  const formatCaveat =
+    language.lang === "other"
+      ? bundle.caveat_other
+      : language.confidence < 0.5
+        ? bundle.caveat_low_conf
+        : null;
+
+  const contentHash = fnv1aHex(content);
+
+  const core: Record<string, unknown> = {
+    file: name,
+    type,
+    engine: ENGINE,
+    cached: false,
+    input_warning: inputWarn,
+    doc_class: {
+      value: docClass,
+      inferred: doc_class === "auto",
+      expected_ceiling: ceiling,
+      rationale: DOC_CLASS_RATIONALE[docClass],
+      ceiling_note: extras.ceiling_note(ceiling, docClass, DOC_CLASS_RATIONALE[docClass]),
+    },
+    overall_score: overall,
+    structural_score: structuralScore,
+    content_quality_score: contentQualityScore,
+    verdict_score: verdictScore,
+    grade: gradeBand(verdictScore),
+    axis_note: extras.axis_caveat,
+    semantic_pass: {
+      ran: semantic !== null,
+      model: semantic !== null ? SEMANTIC_MODEL : null,
+      skipped_reason: semantic === null
+        ? (!semantic_check ? "disabled_by_caller" : blocksSemantic ? "input_warning" : content.length < 400 ? "content_too_short" : "gateway_unavailable_or_errored")
+        : null,
+      uplifts: Object.entries(semanticUplifts).map(([pillar, u]) => ({ pillar, ...u })),
+    },
+    language: {
+      detected: language.lang,
+      confidence: Math.round(language.confidence * 100) / 100,
+      supported: ["en", "pt", "es", "fr", "de", "it"],
+    },
+    format_caveat: formatCaveat ?? bundle.caveat_default,
+    pillars,
+    top_actions: topActions,
+    content_hash: contentHash,
+  };
+
+  REVIEW_CACHE.set(cacheKey, { core, at: Date.now() });
+  if (REVIEW_CACHE.size > REVIEW_CACHE_MAX) {
+    const oldest = REVIEW_CACHE.keys().next().value;
+    if (oldest !== undefined) REVIEW_CACHE.delete(oldest);
+  }
+  return core;
+}
+
 export const reviewSkillTool = defineTool({
   name: "review_skill",
   description:
-    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns `overall_score` plus a split `structural_score` vs `content_quality_score` so format mismatch doesn't dominate the verdict; `expected_ceiling` per `doc_class` so the operator knows the realistic top before chasing diminishing returns; per-pillar scores (`signals_hit`/`signals_total`) and `top_actions` anchored to file evidence with an `evidence_anchored` honesty flag. A fast LLM-backed semantic pass runs alongside the deterministic detectors to fix false-zero pillars (content covered with unconventional vocabulary) and to relocate evidence anchors when the keyword match is misleading; set `semantic_check: false` to skip. Optional `doc_class` (skill | governance | playbook-ops | guardrail-ops | auto) and optional `previous_hash` + `previous_overall_score` produce a `delta` between runs. An `input_warning` is emitted BEFORE the score if the content looks truncated/summarised. Multilingual signal detection AND feedback (EN, PT-BR, ES, FR, DE, IT). Read-only, no auth.",
+    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns `overall_score` plus a split `structural_score` vs `content_quality_score` so format mismatch doesn't dominate the verdict; `expected_ceiling` per `doc_class` so the operator knows the realistic top before chasing diminishing returns; per-pillar scores (`signals_hit`/`signals_total`) and `top_actions` anchored to file evidence with an `evidence_anchored` honesty flag. A fast LLM-backed semantic pass runs alongside the deterministic detectors to fix false-zero pillars (content covered with unconventional vocabulary) and to relocate evidence anchors when the keyword match is misleading; set `semantic_check: false` to skip. Optional `doc_class` (skill | governance | playbook-ops | guardrail-ops | auto) and optional `previous_hash` + `previous_overall_score` produce a `delta` between runs. An `input_warning` is emitted BEFORE the score if the content looks truncated/summarised. Multilingual signal detection AND feedback (EN, PT-BR, ES, FR, DE, IT) — pass `language` to override auto-detection when the content mixes a base language with heavy English jargon. Read-only, no auth.",
   parameters: z.object({
     name: z.string().min(1).max(200).describe("File or skill name (for the report header only)"),
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).default("skill"),
@@ -1268,152 +1546,23 @@ export const reviewSkillTool = defineTool({
       .boolean()
       .default(true)
       .describe("Run the LLM-backed semantic pass to catch pillars covered with non-conventional vocabulary and to improve evidence anchors. Set false for offline/zero-cost runs."),
+    language: z
+      .enum(["en", "pt", "es", "fr", "de", "it"])
+      .optional()
+      .describe("Override the document language for localized feedback + semantic hint. Use this when the content mixes a base language with heavy English technical jargon (e.g. PT-BR fintech docs with `valuation`, `preferred stock`), where auto-detection can be low-confidence."),
     previous_hash: z.string().max(32).optional().describe("fnv1a hash from a previous run — enables delta_vs_previous in the response"),
     previous_overall_score: z.number().int().min(0).max(100).optional(),
   }),
-  execute: async ({ name, type, content, doc_class, semantic_check, previous_hash, previous_overall_score }) => {
-    const ids = Object.keys(PILLAR_TITLE) as PillarId[];
-    const weights = TYPE_WEIGHTS[type] ?? TYPE_WEIGHTS.skill;
-    const details = ids.map((id) => scorePillar(id, content));
-    const language = detectLanguage(content);
-    const bundle = bundleFor(language.lang);
-    const extras = extrasFor(language.lang);
-
-    // Doc class — declared or inferred. Drives ceiling + grade axis.
-    const docClass: DocClass = doc_class === "auto" ? inferDocClass(content, type) : doc_class;
-    const ceiling = DOC_CLASS_CEILING[docClass];
-
-    // Pre-score input sanity. Surface BEFORE the score so the operator doesn't
-    // chase a misleading verdict on a summary.
-    const warnKind = inputWarning(content);
-    const inputWarn = warnKind
-      ? warnKind === "short_input"
-        ? extras.warn_short
-        : warnKind === "summary_markers"
-          ? extras.warn_summary
-          : extras.warn_outline
-      : null;
-
-    // Semantic pass — only run when enabled, content is substantive, and the
-    // input isn't already flagged as truncated (no point asking an LLM to
-    // judge coverage of a summary). Result is a per-pillar verdict map or
-    // null if the gateway is unavailable / errored / disabled.
-    const semantic =
-      semantic_check && !warnKind && content.length >= 400
-        ? await semanticCheck(content, language.lang)
-        : null;
-
-    // Apply semantic uplift to pillar scores. Rationale: if a pillar scored
-    // low purely because the detectors didn't recognise the vocabulary, lift
-    // it toward (but not above) what the LLM thinks coverage warrants. This
-    // never lowers a score — keyword hits remain authoritative on the upside.
-    const semanticUplifts: Record<string, { from: number; to: number; confidence: number }> = {};
-    if (semantic) {
-      for (const r of details) {
-        const v = semantic.get(r.id);
-        if (!v || !v.covered) continue;
-        // Confidence-weighted target: 0.6 → ~60, 0.9 → ~78, 1.0 → ~82.
-        // Capped so the semantic pass never single-handedly pushes a pillar
-        // into "strong" without keyword corroboration.
-        const target = Math.round(40 + v.confidence * 45);
-        if (target > r.score) {
-          const from = r.score;
-          r.score = Math.min(82, target);
-          r.deficit = 100 - r.score;
-          // Re-pro-rate the axes so the verdict_score also benefits.
-          const pillarTotal = r.structural_total + r.content_total;
-          if (pillarTotal > 0) {
-            const ratio = r.score / 100;
-            r.structural_earned = r.structural_total * ratio;
-            r.content_earned = r.content_total * ratio;
-          }
-          semanticUplifts[r.id] = { from, to: r.score, confidence: v.confidence };
-        }
-        // Improve evidence anchor when the semantic pass found a better quote.
-        if (v.evidence_line !== null && v.evidence_quote) {
-          const quote = v.evidence_quote.length > 140 ? v.evidence_quote.slice(0, 137) + "…" : v.evidence_quote;
-          // Prepend so buildAction picks this up first; keep keyword evidence
-          // as fallback in case the LLM anchor is later contested.
-          r.evidence.unshift({ line: v.evidence_line, excerpt: quote });
-          // Treat as anchored even when keyword signals_hit was 0.
-          if (r.signals_hit === 0) r.signals_hit = 1;
-        }
-      }
-    }
-
-    // Per-pillar overall score (existing logic — kept for back-compat).
-    let wSum = 0;
-    let wTotal = 0;
-    for (const r of details) {
-      const w = weights[r.id] ?? 1;
-      wSum += r.score * w;
-      wTotal += w;
-    }
-    const overall = Math.round(wSum / wTotal);
-
-    // Axis split — weight each pillar's structural/content earnings by the
-    // pillar's TYPE_WEIGHTS so the axes share the same scale as overall_score.
-    let sEarned = 0, sTotal = 0, cEarned = 0, cTotal = 0;
-    for (const r of details) {
-      const w = weights[r.id] ?? 1;
-      sEarned += r.structural_earned * w;
-      sTotal += r.structural_total * w;
-      cEarned += r.content_earned * w;
-      cTotal += r.content_total * w;
-    }
-    const structuralScore = sTotal > 0 ? Math.round((sEarned / sTotal) * 100) : null;
-    const contentQualityScore = cTotal > 0 ? Math.round((cEarned / cTotal) * 100) : null;
-
-    // Verdict score: governance docs are graded on content_quality_score so
-    // the F-by-format-mismatch failure mode is fixed. Skill-class docs keep
-    // the blended overall score so the existing rubric isn't disturbed.
-    const verdictScore =
-      docClass === "governance" && contentQualityScore !== null
-        ? contentQualityScore
-        : overall;
-
-    const pillars = details.map((r) => ({
-      pillar: r.id,
-      title: bundle.pillar_title[r.id],
-      score: r.score,
-      status: statusBand(r.score),
-      signals_hit: r.signals_hit,
-      signals_total: r.signals_total,
-      semantic_uplift: semanticUplifts[r.id] ?? null,
-      diagnostic:
-        r.score === 0
-          ? bundle.diag_zero
-          : r.signals_hit === 0
-            ? bundle.diag_no_positive
-            : null,
-    }));
-
-    // Suppress actions that target structural improvements already above the
-    // ceiling — those are the "cosmetic" actions the operator was warned about.
-    const ranked = [...details]
-      .map((r) => ({ ...r, impact: r.deficit * (weights[r.id] ?? 1) }))
-      .filter((r) => {
-        if (r.impact <= 0) return false;
-        if (docClass === "governance" && r.structural_total > r.content_total && r.score >= ceiling) {
-          return false;
-        }
-        return true;
-      })
-      .sort((a, b) => b.impact - a.impact)
-      .slice(0, 4);
-
-    const topActions = ranked.map((r, i) => buildAction(r, content, i + 1, bundle));
-
-    const formatCaveat =
-      language.lang === "other"
-        ? bundle.caveat_other
-        : language.confidence < 0.5
-          ? bundle.caveat_low_conf
-          : null;
+  execute: async ({ name, type, content, doc_class, semantic_check, language: languageOverride, previous_hash, previous_overall_score }) => {
+    const core = await computeReview({ name, type, content, doc_class, semantic_check, language: languageOverride });
+    const overall = core.overall_score as number;
+    const verdictScore = core.verdict_score as number;
+    const docClassVal = (core.doc_class as { value: DocClass }).value;
+    const contentHash = core.content_hash as string;
+    const topActions = core.top_actions as unknown[];
 
     // Delta vs the caller's last run. Hash is non-crypto; client sends back
     // whatever we emitted previously and we compare overall + content hash.
-    const contentHash = fnv1aHex(content);
     const delta =
       typeof previous_overall_score === "number"
         ? {
@@ -1432,46 +1581,13 @@ export const reviewSkillTool = defineTool({
         kind: "review_skill",
         package_id: null,
         source: "mcp",
-        context: { file: name, type, doc_class: docClass, score: verdictScore },
+        context: { file: name, type, doc_class: docClassVal, score: verdictScore },
       })
       .select("id, expires_at")
       .single();
 
     return json({
-      file: name,
-      type,
-      engine: ENGINE,
-      input_warning: inputWarn,
-      doc_class: {
-        value: docClass,
-        inferred: doc_class === "auto",
-        expected_ceiling: ceiling,
-        rationale: DOC_CLASS_RATIONALE[docClass],
-        ceiling_note: extras.ceiling_note(ceiling, docClass, DOC_CLASS_RATIONALE[docClass]),
-      },
-      overall_score: overall,
-      structural_score: structuralScore,
-      content_quality_score: contentQualityScore,
-      verdict_score: verdictScore,
-      grade: gradeBand(verdictScore),
-      axis_note: extras.axis_caveat,
-      semantic_pass: {
-        ran: semantic !== null,
-        model: semantic !== null ? SEMANTIC_MODEL : null,
-        skipped_reason: semantic === null
-          ? (!semantic_check ? "disabled_by_caller" : warnKind ? "input_warning" : content.length < 400 ? "content_too_short" : "gateway_unavailable_or_errored")
-          : null,
-        uplifts: Object.entries(semanticUplifts).map(([pillar, u]) => ({ pillar, ...u })),
-      },
-      language: {
-        detected: language.lang,
-        confidence: Math.round(language.confidence * 100) / 100,
-        supported: ["en", "pt", "es", "fr", "de", "it"],
-      },
-      format_caveat: formatCaveat ?? bundle.caveat_default,
-      pillars,
-      top_actions: topActions,
-      content_hash: contentHash,
+      ...core,
       delta_vs_previous: delta,
       feedback_request: fbReq
         ? {
@@ -1493,6 +1609,87 @@ export const reviewSkillTool = defineTool({
               "Honour `doc_class.expected_ceiling` — actions beyond that point are cosmetic, not quality wins.",
               fbReq ? `When done iterating, call \`submit_feedback\` with request_id="${fbReq.id}" and a 1-5 rating.` : "",
             ].filter(Boolean),
+    });
+  },
+});
+
+export const reviewSkillsBatchTool = defineTool({
+  name: "review_skills_batch",
+  description:
+    "[UPGRADE] Batch variant of `review_skill` — score up to 10 local files in ONE call, evaluated in parallel. Same proprietary engine, same per-file payload (overall_score, structural/content split, pillars, top_actions, content_hash, semantic_pass). Ideal for a skill-optimizer iterating over many files: far lower round-trip latency than N individual calls, and identical re-submissions are served from a short-lived result cache. Returns `results[]` aligned to the input order plus a single shared `feedback_request`. Read-only, no auth.",
+  parameters: z.object({
+    files: z
+      .array(
+        z.object({
+          name: z.string().min(1).max(200),
+          type: z.enum(["skill", "playbook", "soul", "guardrail"]).default("skill"),
+          content: z.string().min(20).max(120_000),
+          doc_class: z
+            .enum(["skill", "governance", "playbook-ops", "guardrail-ops", "auto"])
+            .default("auto"),
+        })
+      )
+      .min(1)
+      .max(10),
+    semantic_check: z
+      .boolean()
+      .default(true)
+      .describe("Run the LLM-backed semantic pass per file. Set false for a fast, zero-cost deterministic-only batch."),
+    language: z
+      .enum(["en", "pt", "es", "fr", "de", "it"])
+      .optional()
+      .describe("Override the document language for ALL files in the batch (localized feedback + semantic hint)."),
+  }),
+  execute: async ({ files, semantic_check, language }) => {
+    const results = await Promise.all(
+      files.map((f) =>
+        computeReview({
+          name: f.name,
+          type: f.type,
+          content: f.content,
+          doc_class: f.doc_class,
+          semantic_check,
+          language,
+        }).catch((e: any) => ({ file: f.name, error: e?.message ?? "review_failed" }))
+      )
+    );
+
+    // One shared feedback request for the whole batch (cheaper than N inserts).
+    const { data: fbReq } = await supabaseAdmin
+      .from("package_feedback_requests")
+      .insert({
+        kind: "review_skill",
+        package_id: null,
+        source: "mcp",
+        context: { batch: true, count: files.length },
+      })
+      .select("id, expires_at")
+      .single();
+
+    const scored = results.filter((r) => typeof (r as { overall_score?: number }).overall_score === "number");
+    const avg =
+      scored.length > 0
+        ? Math.round(scored.reduce((s, r) => s + ((r as { verdict_score: number }).verdict_score ?? 0), 0) / scored.length)
+        : null;
+
+    return json({
+      engine: ENGINE,
+      count: files.length,
+      scored: scored.length,
+      avg_verdict_score: avg,
+      results,
+      feedback_request: fbReq
+        ? {
+            id: fbReq.id,
+            expires_at: fbReq.expires_at,
+            prompt: "After applying the actions, rate this batch review (1-5) via `submit_feedback`.",
+            tool: "submit_feedback",
+          }
+        : null,
+      next_steps: [
+        "Apply each file's `top_actions` in the user's repo; results are aligned to your input order.",
+        "Re-submit changed files (identical content is served from cache); compare `content_hash` to detect no-op edits.",
+      ],
     });
   },
 });

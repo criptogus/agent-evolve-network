@@ -11,6 +11,7 @@ import {
   getTrustTool,
   getMethodologyTool,
   reviewSkillTool,
+  reviewSkillsBatchTool,
   submitFeedbackTool,
 } from "@/lib/mcp/tools/skills";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -62,7 +63,7 @@ const mcp = createMcpServer({
     "  - `request_primitive` if the user wants SuperAgentSkill to AUTHOR a brand-new primitive from scratch via the forge pipeline.",
     "",
     "## Auth",
-    "Read-only tools (overview, get_methodology, review_skill, list/search/get/trust) work anonymously. Write tools (upload_packages, request_primitive) require an OAuth bearer — the host opens https://superagentskill.com/oauth/authorize automatically. Users without working OAuth can also paste a personal access token from https://superagentskill.com/account/tokens.",
+    "Read-only tools (overview, get_methodology, review_skill, review_skills_batch, list/search/get/trust) work anonymously. Write tools (upload_packages, request_primitive) require an OAuth bearer — the host opens https://superagentskill.com/oauth/authorize automatically. Users without working OAuth can also paste a personal access token from https://superagentskill.com/account/tokens. TIP: call upload_packages / request_primitive with dry_run:true to validate the flow anonymously (no persistence, no OAuth) before connecting.",
     "",
     "## Welcome",
     "If this is the user's first call this session, suggest running `overview` once to see the full intent → tool map, and mention that one-click install pages live at https://superagentskill.com/connect/{client}.",
@@ -73,6 +74,7 @@ const mcp = createMcpServer({
     overviewTool,
     getMethodologyTool,
     reviewSkillTool,
+    reviewSkillsBatchTool,
     searchRegistryTool,
     listPackagesTool,
     getPackageTool,
@@ -230,16 +232,18 @@ async function handle(request: Request): Promise<Response> {
   let toolName = "";
   let rpcId: string | number | null = null;
   let isToolsCall = false;
+  let isDryRun = false;
   try {
     const cloned = request.clone();
     const body = (await cloned.json().catch(() => null)) as
-      | { id?: string | number | null; method?: string; params?: { name?: string } }
+      | { id?: string | number | null; method?: string; params?: { name?: string; arguments?: { dry_run?: boolean } } }
       | null;
     if (body) {
       rpcId = body.id ?? null;
       if (body.method === "tools/call") {
         isToolsCall = true;
         toolName = body.params?.name ?? "";
+        isDryRun = body.params?.arguments?.dry_run === true;
       }
     }
   } catch {
@@ -269,8 +273,11 @@ async function handle(request: Request): Promise<Response> {
     }
   }
 
-  // Auth gate for write tools (anonymous users blocked entirely).
-  if (isToolsCall && !userId && WRITE_TOOLS.has(toolName)) {
+  // Auth gate for write tools (anonymous users blocked entirely). Exception:
+  // a `dry_run` call is a validation-only preview — it neither persists nor
+  // spends model budget — so it's allowed anonymously to let agents test the
+  // publish flow before connecting OAuth.
+  if (isToolsCall && !userId && WRITE_TOOLS.has(toolName) && !isDryRun) {
     return withAuthStatus(withCors(unauthorized(`tool "${toolName}" requires authentication`, rpcId, authStatus)), authStatus);
   }
 
