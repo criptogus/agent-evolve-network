@@ -57,7 +57,7 @@ export const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, Mcp-Session-Id, Mcp-Protocol-Version",
   // Browser MCP clients (Claude.ai web connectors) can only read the OAuth
   // challenge if WWW-Authenticate is explicitly exposed.
-  "Access-Control-Expose-Headers": "WWW-Authenticate, Mcp-Session-Id",
+  "Access-Control-Expose-Headers": "WWW-Authenticate, Mcp-Session-Id, X-MCP-Auth, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-RateLimit-Window",
   "Access-Control-Max-Age": "86400",
 };
 

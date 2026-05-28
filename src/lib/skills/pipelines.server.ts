@@ -943,7 +943,10 @@ export async function autoLearnPipeline(opts: {
   // version on the frozen baseline examples — the baseline never changes, so
   // fitness is comparable across the whole search.
   const examples = (opts.version.examples as Array<{ title: string; input: string; expected_output: string }>) || [];
-  const sample = examples.slice(0, 4);
+  // Larger A/B sample → lower variance in fitness. With 4 cases a single
+  // tie→new flip swung the ranking; 8 keeps fitness stable across generations
+  // without blowing the FAST budget (cost is N candidates × sample × 2 calls).
+  const sample = examples.slice(0, 8);
   // Compute the OLD/baseline output ONCE per sampled example and reuse it for
   // every candidate. The FAST model is non-deterministic, so re-running the
   // baseline inside each scoring pass would make fitness incomparable across
@@ -1100,10 +1103,13 @@ ${JSON.stringify(clusters)}${feedbackBlock}`;
   const best = elite[0];
   const patch = best.patch;
   const ab = best.ab;
-  // Regression: best elite does not beat current, OR fails to produce output
-  // on >40% of cases, OR low self-reported confidence.
+  // Regression: best elite does not strictly beat current, OR fails to
+  // produce output on >40% of cases, OR low self-reported confidence.
+  // Ties (newWins == oldWins) are treated as regression — the confidence/200
+  // tiebreaker in fitness can otherwise push a tied patch above 0 and ship
+  // a change that did not actually improve any case.
   const regression =
-    (best.oldWins > best.newWins && ab.length > 0) || best.newOkRate < 0.6;
+    (ab.length > 0 && best.newWins <= best.oldWins) || best.newOkRate < 0.6;
   const gate = !regression && best.fitness > 0 && patch.confidence >= 50;
   stages.push({
     name: "gate",

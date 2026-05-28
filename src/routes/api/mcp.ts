@@ -16,7 +16,23 @@ import {
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
 import { ORIGIN, sha256, CORS_HEADERS } from "@/lib/oauth/mcp-oauth.server";
-import { verifyBearer } from "@/lib/auth/bearer.server";
+import { verifyBearerDetailed } from "@/lib/auth/bearer.server";
+
+/**
+ * Diagnostic identity status echoed via the X-MCP-Auth header on every
+ * response. Lets a host MCP client tell at a glance why it ended up in the
+ * anonymous quota bucket — the #1 production support question for this
+ * endpoint. Stable string values, safe to log on the client side.
+ */
+type AuthStatus =
+  | "none"               // no Authorization header at all
+  | "malformed"          // header present but not `Bearer <token>`
+  | "oauth"              // verified via mcp_oauth_tokens
+  | "pat"                // verified via mcp_tokens
+  | "rejected:oauth"     // OAuth-shaped bearer that did not verify
+  | "rejected:pat"       // PAT-shaped bearer that did not verify
+  | "rejected:refresh-or-code" // caller sent refresh-token / auth code
+  | "rejected:unsupported";    // unknown bearer shape
 
 const mcp = createMcpServer({
   name: "superagentskill",
@@ -79,6 +95,13 @@ function withCors(res: Response): Response {
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
 }
 
+/** Stamp the auth-diagnostic header so the client can see why it was bucketed. */
+function withAuthStatus(res: Response, status: AuthStatus): Response {
+  const headers = new Headers(res.headers);
+  headers.set("X-MCP-Auth", status);
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
+
 /**
  * Standard rate-limit headers (RFC 6585 + de-facto X-RateLimit-*). We emit
  * these on every quota-bearing response — including 200s — so well-behaved
@@ -107,11 +130,21 @@ function withRateLimitHeaders(
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
 }
 
-function unauthorized(reason: string, rpcId: string | number | null = null) {
+function unauthorized(reason: string, rpcId: string | number | null = null, authStatus: AuthStatus = "rejected:unsupported") {
   // Return BOTH a JSON-RPC error (so MCP clients that surface error.data.hint
   // in chat can render the recovery action inline) and the canonical
   // WWW-Authenticate header (so OAuth-aware clients trigger discovery).
-  const hint = `Authorize at ${ORIGIN}/oauth/authorize or run \`npx -y super-agent login\`. You can also paste a personal access token from ${ORIGIN}/account/tokens.`;
+  // The recovery hint is tailored to the specific rejection reason so a
+  // client sending the wrong artefact (e.g. refresh token) gets a directly
+  // actionable message instead of a generic "Authorize at …" prompt.
+  const hint =
+    authStatus === "rejected:refresh-or-code"
+      ? `That looks like a refresh token or auth code, not an access token. Complete the OAuth flow at ${ORIGIN}/oauth/authorize and use the resulting access token in the Authorization header.`
+      : authStatus === "rejected:oauth"
+        ? `OAuth access token did not verify (revoked, expired, or issued in a different environment). Re-authorize at ${ORIGIN}/oauth/authorize or paste a personal access token from ${ORIGIN}/account/tokens.`
+        : authStatus === "rejected:pat"
+          ? `Personal access token not recognised. Issue a new one at ${ORIGIN}/account/tokens.`
+          : `Authorize at ${ORIGIN}/oauth/authorize or run \`npx -y super-agent login\`. You can also paste a personal access token from ${ORIGIN}/account/tokens.`;
   return new Response(
     JSON.stringify({
       jsonrpc: "2.0",
@@ -121,6 +154,7 @@ function unauthorized(reason: string, rpcId: string | number | null = null) {
         message: `Unauthorized: ${reason}`,
         data: {
           reason,
+          auth_status: authStatus,
           hint,
           authorization_url: `${ORIGIN}/oauth/authorize`,
           tokens_url: `${ORIGIN}/account/tokens`,
@@ -134,6 +168,7 @@ function unauthorized(reason: string, rpcId: string | number | null = null) {
       headers: {
         "Content-Type": "application/json",
         "WWW-Authenticate": `Bearer realm="MCP", resource_metadata="${RESOURCE_METADATA_URL}", error="invalid_token", error_description="${reason}"`,
+        "X-MCP-Auth": authStatus,
         ...CORS_HEADERS,
       },
     },
@@ -212,20 +247,31 @@ async function handle(request: Request): Promise<Response> {
   }
 
   const authHeader = request.headers.get("authorization") ?? "";
+  const hasAuthHeader = authHeader.length > 0;
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
 
   let userId: string | null = null;
   let authSource: "oauth" | "pat" | null = null;
+  let authStatus: AuthStatus = hasAuthHeader
+    ? token
+      ? "rejected:unsupported"
+      : "malformed"
+    : "none";
   if (token) {
-    const auth = await verifyBearer(token);
-    if (!auth) return unauthorized("token rejected", rpcId);
-    userId = auth.user_id;
-    authSource = auth.source;
+    const result = await verifyBearerDetailed(token);
+    if (result.ok) {
+      userId = result.auth.user_id;
+      authSource = result.auth.source;
+      authStatus = result.auth.source === "oauth" ? "oauth" : "pat";
+    } else {
+      authStatus = `rejected:${result.reason === "refresh-or-code" ? "refresh-or-code" : result.reason === "oauth-rejected" ? "oauth" : result.reason === "pat-rejected" ? "pat" : "unsupported"}` as AuthStatus;
+      return withAuthStatus(withCors(unauthorized("token rejected", rpcId, authStatus)), authStatus);
+    }
   }
 
   // Auth gate for write tools (anonymous users blocked entirely).
   if (isToolsCall && !userId && WRITE_TOOLS.has(toolName)) {
-    return unauthorized(`tool "${toolName}" requires authentication`, rpcId);
+    return withAuthStatus(withCors(unauthorized(`tool "${toolName}" requires authentication`, rpcId, authStatus)), authStatus);
   }
 
   // Quota gate. Skip discovery / lifecycle methods (initialize, tools/list, ping…)
@@ -242,7 +288,7 @@ async function handle(request: Request): Promise<Response> {
     } as never);
     if (!quotaErr) lastQuota = quota ?? null;
     if (!quotaErr && quota && quota.allowed === false) {
-      return withRateLimitHeaders(rateLimited(quota, rpcId), quota);
+      return withAuthStatus(withRateLimitHeaders(rateLimited(quota, rpcId), quota), authStatus);
     }
   }
 
@@ -269,7 +315,7 @@ async function handle(request: Request): Promise<Response> {
           auth: { token, claims: { user_id: userId, source: authSource } },
         })
       : await mcp.handleRequest(request);
-  return withRateLimitHeaders(withCors(handled), lastQuota);
+  return withAuthStatus(withRateLimitHeaders(withCors(handled), lastQuota), authStatus);
 }
 
 export const Route = createFileRoute("/api/mcp")({
