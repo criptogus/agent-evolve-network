@@ -24,10 +24,15 @@ Slug must be lowercase-kebab.`;
 //
 // "default" is the env-configured AI_GATEWAY_MODEL — tried FIRST so a
 // well-configured deployment doesn't pay the latency of a doomed attempt.
+// Models must be on the Lovable AI Gateway allowlist. `openai/gpt-4o-mini`
+// and other 4.x ids are NOT supported and return 400 — only gpt-5.x / gemini-2.5
+// + 3.x ids are accepted. Order: try the env default first, then a Pro
+// model that handles structured output reliably, then a fast OpenAI fallback.
 const AUTHOR_MODEL_FALLBACKS = [
   "default",
+  "google/gemini-2.5-pro",
+  "openai/gpt-5-mini",
   "google/gemini-2.5-flash",
-  "openai/gpt-4o-mini",
 ] as const;
 
 // Per-attempt timeout. Vercel serverless caps the whole request; trying 3
