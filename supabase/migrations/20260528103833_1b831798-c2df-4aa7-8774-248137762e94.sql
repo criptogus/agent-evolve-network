@@ -1,0 +1,1 @@
+REVOKE SELECT (referral_code) ON public.profiles FROM anon, authenticated;
