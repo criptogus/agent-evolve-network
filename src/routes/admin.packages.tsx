@@ -191,10 +191,12 @@ function PackagesPage() {
                 ))}
               </ul>
             </div>
-            <div>
-              <p className="font-medium">Patch rationale</p>
-              <p className="text-muted-foreground">{loopResult.data.patch.rationale}</p>
-            </div>
+            {loopResult.data.patch && (
+              <div>
+                <p className="font-medium">Patch rationale</p>
+                <p className="text-muted-foreground">{loopResult.data.patch.rationale}</p>
+              </div>
+            )}
             <details>
               <summary className="cursor-pointer text-xs text-muted-foreground">Pipeline stages</summary>
               <pre className="mt-2 whitespace-pre-wrap rounded bg-muted/40 p-2 text-xs">

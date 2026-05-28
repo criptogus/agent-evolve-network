@@ -864,12 +864,26 @@ function summarizeFeedback(rows: FeedbackRow[], llmWeight = 2.0, humanWeight = 1
 
 const ELITE_SIZE = 2;
 
+/**
+ * Execution telemetry signal — derived from real agent runs (skill_executions).
+ * This is the trajectory-driven signal: failures observed in production carry
+ * the strongest evidence about what the skill gets wrong in the wild.
+ */
+export type ExecutionSignal = {
+  total: number;
+  failures: number;
+  success_rate: number | null;
+  top_error_kinds: Array<{ kind: string; count: number }>;
+  by_model: Array<{ model: string; runs: number; success_rate: number }>;
+};
+
 export async function autoLearnPipeline(opts: {
   pkg: { name: string; type: string };
   version: { version: string; system_prompt: string; rules: unknown; examples: unknown };
   metrics: unknown[];
   learnings: Array<{ kind: string; evidence: unknown; suggested_patch: string | null; weight: number; created_at: string }>;
   feedback?: FeedbackRow[];
+  executions?: ExecutionSignal | null;
   generations?: number;
   candidatesPerGen?: number;
 }) {
@@ -877,6 +891,11 @@ export async function autoLearnPipeline(opts: {
   const generations = Math.max(1, Math.min(4, opts.generations ?? 2));
   const candidatesPerGen = Math.max(1, Math.min(4, opts.candidatesPerGen ?? 2));
   const feedbackSummary = summarizeFeedback(opts.feedback ?? []);
+  const exec = opts.executions ?? null;
+  const executionBlock =
+    exec && exec.total > 0
+      ? `\n\nEXECUTION TELEMETRY (real agent runs — strongest failure evidence; ${exec.total} runs, success_rate=${exec.success_rate}):\ntop_error_kinds: ${JSON.stringify(exec.top_error_kinds)}\nby_model: ${JSON.stringify(exec.by_model)}`
+      : "";
   const feedbackBlock =
     feedbackSummary.count > 0
       ? `\n\nCUSTOMER FEEDBACK (LLM feedback weighted ${feedbackSummary.llm_weight}× vs human ${feedbackSummary.human_weight}×; ${feedbackSummary.llm_count}/${feedbackSummary.count} from agents):\nweighted_avg_rating=${feedbackSummary.weighted_avg_rating}\nsentiment(weighted)=${JSON.stringify(feedbackSummary.sentiment_weighted)}\ntop_comments(LLM-first):\n${feedbackSummary.top_comments.map((c) => `- ${c}`).join("\n")}`
@@ -899,7 +918,7 @@ export async function autoLearnPipeline(opts: {
     const { experimental_output } = await generateText({
       model: getGatewayModel(DEEP),
       system: "You are SkillForge Root-Cause Analyst. From learnings, metrics AND customer feedback, isolate root causes (not symptoms). Treat LLM-agent feedback as the strongest signal (the agent directly observed the failure). For each cause, identify which package aspect to change. Output strict JSON.",
-      prompt: `LEARNINGS (last ${opts.learnings.length}):\n${JSON.stringify(opts.learnings).slice(0, 8000)}\n\nMETRICS:\n${JSON.stringify(opts.metrics).slice(0, 3000)}${feedbackBlock}`,
+      prompt: `LEARNINGS (last ${opts.learnings.length}):\n${JSON.stringify(opts.learnings).slice(0, 8000)}\n\nMETRICS:\n${JSON.stringify(opts.metrics).slice(0, 3000)}${feedbackBlock}${executionBlock}`,
       experimental_output: Output.object({ schema: RootCauseSchema }),
     });
     rootCauses = experimental_output.root_causes;
@@ -1000,7 +1019,7 @@ ROOT CAUSES:
 ${JSON.stringify(rootCauses)}
 
 CLUSTERS:
-${JSON.stringify(clusters)}${feedbackBlock}`;
+${JSON.stringify(clusters)}${feedbackBlock}${executionBlock}`;
 
   const scoreCandidate = async (gen: number, patch: z.infer<typeof PatchSchema>): Promise<Candidate> => {
     const ab: AbRow[] = await Promise.all(
