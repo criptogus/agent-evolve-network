@@ -135,6 +135,7 @@ export const runForgeLoop = createServerFn({ method: "POST" })
       improvement_actions: before.evaluation.improvement_actions,
       example_results: before.evaluation.example_results,
       adversarial_results: before.adversarial,
+      efficiency: before.efficiency,
       pipeline_stages: before.stages,
       judge_calibration: before.judgeCalibration,
     });
@@ -309,6 +310,7 @@ export const runForgeLoop = createServerFn({ method: "POST" })
           improvement_actions: after.evaluation.improvement_actions,
           example_results: after.evaluation.example_results,
           adversarial_results: after.adversarial,
+          efficiency: after.efficiency,
           pipeline_stages: after.stages,
           judge_calibration: after.judgeCalibration,
           evolution_trace: {
@@ -468,6 +470,7 @@ export const autoCreateMissing = createServerFn({ method: "POST" })
         improvement_actions: evalRes.evaluation.improvement_actions,
         example_results: evalRes.evaluation.example_results,
         adversarial_results: evalRes.adversarial,
+        efficiency: evalRes.efficiency,
         pipeline_stages: evalRes.stages,
       });
     }

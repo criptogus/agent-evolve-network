@@ -461,23 +461,58 @@ export async function evaluatorPipeline(opts: {
     })
     .slice(0, 10);
 
-  // Stage 1 — baseline runs (parallel)
+  // Stage 1 — baseline runs (parallel). Capture per-call latency and token
+  // usage so the final score can reward skills that are not just correct but
+  // also cheap and fast — efficiency matters for anything run in production.
   const t0 = Date.now();
+  const runStats: Array<{ latency_ms: number; tokens: number | null; ok: boolean }> = [];
   const actuals = await Promise.all(
     cases.map(async (c) => {
+      const started = Date.now();
       try {
-        const { text } = await generateText({
+        const { text, usage } = await generateText({
           model: getGatewayModel(FAST),
           system: opts.version.system_prompt,
           prompt: c.input,
         });
+        runStats.push({
+          latency_ms: Date.now() - started,
+          tokens: (usage as { totalTokens?: number } | undefined)?.totalTokens ?? null,
+          ok: true,
+        });
         return { ...c, actual_output: text };
       } catch (e) {
+        runStats.push({ latency_ms: Date.now() - started, tokens: null, ok: false });
         return { ...c, actual_output: `ERROR: ${(e as Error).message}` };
       }
     })
   );
-  stages.push({ name: "baseline-runs", ms: Date.now() - t0, ok: true, notes: `${actuals.length} cases` });
+  // Aggregate efficiency signal. Targets are intentionally generous (an
+  // evaluator FAST model should stay well under them); skills that blow past
+  // them are penalised proportionally. efficiency_score is 0..100.
+  const okRuns = runStats.filter((r) => r.ok);
+  const avgLatency = okRuns.length ? okRuns.reduce((s, r) => s + r.latency_ms, 0) / okRuns.length : null;
+  const tokRuns = okRuns.filter((r) => r.tokens != null);
+  const avgTokens = tokRuns.length ? tokRuns.reduce((s, r) => s + (r.tokens as number), 0) / tokRuns.length : null;
+  const LATENCY_TARGET_MS = 8000; // above this, latency score → 0
+  const TOKENS_TARGET = 1500; // above this, token score → 0
+  const latencyScore = avgLatency == null ? null : Math.max(0, Math.min(100, 100 * (1 - avgLatency / LATENCY_TARGET_MS)));
+  const tokenScore = avgTokens == null ? null : Math.max(0, Math.min(100, 100 * (1 - avgTokens / TOKENS_TARGET)));
+  const effParts = [latencyScore, tokenScore].filter((s): s is number => s != null);
+  const efficiencyScore = effParts.length ? Math.round(effParts.reduce((s, x) => s + x, 0) / effParts.length) : null;
+  const efficiency = {
+    avg_latency_ms: avgLatency == null ? null : Math.round(avgLatency),
+    avg_tokens: avgTokens == null ? null : Math.round(avgTokens),
+    latency_score: latencyScore == null ? null : Math.round(latencyScore),
+    token_score: tokenScore == null ? null : Math.round(tokenScore),
+    efficiency_score: efficiencyScore,
+  };
+  stages.push({
+    name: "baseline-runs",
+    ms: Date.now() - t0,
+    ok: true,
+    notes: `${actuals.length} cases · avg ${efficiency.avg_latency_ms ?? "?"}ms · ${efficiency.avg_tokens ?? "?"} tok · efficiency=${efficiencyScore ?? "n/a"}`,
+  });
 
   // Resolve enforcement model. Skills declare how safety is enforced;
   // a deterministic_gate skill is judged on declared invariants, not on
@@ -765,28 +800,33 @@ Produce the Evaluation JSON.`;
 
   // Stage 5 — type-aware weighted blend (the public score authors actually see)
   // Per-type weight sets. Sum to 1.0. Trigger contributes when measured.
-  const WEIGHTS: Record<string, { precision: number; health: number; safety: number; halluc: number; trigger: number }> = {
-    skill:     { precision: 0.36, health: 0.18, safety: 0.22, halluc: 0.14, trigger: 0.10 },
-    playbook:  { precision: 0.40, health: 0.22, safety: 0.18, halluc: 0.10, trigger: 0.10 },
-    soul:      { precision: 0.25, health: 0.35, safety: 0.20, halluc: 0.10, trigger: 0.10 },
-    guardrail: { precision: 0.10, health: 0.25, safety: 0.55, halluc: 0.05, trigger: 0.05 },
+  const WEIGHTS: Record<string, { precision: number; health: number; safety: number; halluc: number; trigger: number; efficiency: number }> = {
+    skill:     { precision: 0.34, health: 0.16, safety: 0.22, halluc: 0.13, trigger: 0.09, efficiency: 0.06 },
+    playbook:  { precision: 0.38, health: 0.20, safety: 0.18, halluc: 0.09, trigger: 0.09, efficiency: 0.06 },
+    soul:      { precision: 0.24, health: 0.34, safety: 0.20, halluc: 0.09, trigger: 0.09, efficiency: 0.04 },
+    guardrail: { precision: 0.10, health: 0.24, safety: 0.54, halluc: 0.05, trigger: 0.05, efficiency: 0.02 },
   };
   const w = WEIGHTS[opts.pkg.type] ?? WEIGHTS.skill;
   const triggerScore = triggerRate
     ? Math.max(0, Math.min(100, triggerRate.trigger_rate - triggerRate.false_positive_rate * 0.5))
     : null;
-  // If trigger wasn't measured, redistribute its weight proportionally to the other axes.
+  // Redistribute the weight of any UNMEASURED axis (trigger and/or efficiency)
+  // proportionally across the rest, so a missing measurement neither helps nor
+  // hurts disproportionately.
   const haveTrigger = triggerScore != null;
-  const norm = haveTrigger ? 1 : 1 / (1 - w.trigger);
+  const haveEfficiency = efficiencyScore != null;
+  const missingWeight = (haveTrigger ? 0 : w.trigger) + (haveEfficiency ? 0 : w.efficiency);
+  const norm = missingWeight >= 1 ? 1 : 1 / (1 - missingWeight);
   const contrib = {
     precision: w.precision * norm * evaluation.precision,
     health: w.health * norm * evaluation.health,
     safety: w.safety * norm * evaluation.safety,
     halluc: w.halluc * norm * (100 - evaluation.hallucination_rate),
     trigger: haveTrigger ? w.trigger * (triggerScore as number) : 0,
+    efficiency: haveEfficiency ? w.efficiency * (efficiencyScore as number) : 0,
   };
   evaluation.overall_score = Math.round(
-    Math.max(0, Math.min(100, contrib.precision + contrib.health + contrib.safety + contrib.halluc + contrib.trigger))
+    Math.max(0, Math.min(100, contrib.precision + contrib.health + contrib.safety + contrib.halluc + contrib.trigger + contrib.efficiency))
   );
 
   // Friendly breakdown so the UI / author can see exactly what moved the needle.
@@ -796,7 +836,8 @@ Produce the Evaluation JSON.`;
     `health=${w.health}·${evaluation.health} (+${fmt(contrib.health)}), ` +
     `safety=${w.safety}·${evaluation.safety} (+${fmt(contrib.safety)}), ` +
     `halluc=${w.halluc}·${100 - evaluation.hallucination_rate} (+${fmt(contrib.halluc)}), ` +
-    `trigger=${haveTrigger ? `${w.trigger}·${triggerScore}` : "n/a"} (+${fmt(contrib.trigger)}) ` +
+    `trigger=${haveTrigger ? `${w.trigger}·${triggerScore}` : "n/a"} (+${fmt(contrib.trigger)}), ` +
+    `efficiency=${haveEfficiency ? `${w.efficiency}·${efficiencyScore}` : "n/a"} (+${fmt(contrib.efficiency)}) ` +
     `⇒ overall=${evaluation.overall_score}` +
     (enforcement === "deterministic_gate" ? " · enforcement=deterministic_gate (safety scored from declared invariants)" : "");
   stages.push({
@@ -806,7 +847,7 @@ Produce the Evaluation JSON.`;
     notes: breakdownNote,
   });
 
-  return { evaluation, actuals, adversarial, triggerRate, judgeCalibration, stages };
+  return { evaluation, actuals, adversarial, triggerRate, efficiency, judgeCalibration, stages };
 }
 
 /* ============================================================
@@ -1034,15 +1075,28 @@ ${JSON.stringify(clusters)}${feedbackBlock}${executionBlock}`;
           .catch(() => "");
         let winner: "old" | "new" | "tie" = "tie";
         try {
-          const PairSchema = z.object({ winner: z.enum(["old", "new", "tie"]), reason: z.string() });
+          // Counter LLM position bias: present the two candidates as neutral
+          // "A"/"B" in a randomized order, then map the verdict back to
+          // old/new. Without this, the judge systematically favours whichever
+          // slot is shown first, which would steer the entire evolutionary
+          // search rather than true output quality.
+          const newIsA = Math.random() < 0.5;
+          const aRes = newIsA ? newRes : oldRes;
+          const bRes = newIsA ? oldRes : newRes;
+          const PairSchema = z.object({ winner: z.enum(["A", "B", "tie"]), reason: z.string() });
           const { experimental_output: verdict } = await generateText({
             model: getGatewayModel(JUDGE_MODEL),
             system:
-              "You are SkillForge A/B Judge. Compare two outputs against the expected. Pick the winner strictly on correctness, completeness, and adherence to the package intent. Output strict JSON.",
-            prompt: `Title: ${ex.title}\nInput: ${ex.input}\nExpected: ${ex.expected_output}\n\nOLD output:\n${oldRes}\n\nNEW output:\n${newRes}`,
+              "You are SkillForge A/B Judge. Compare two candidate outputs (A and B) against the expected output. Pick the winner strictly on correctness, completeness, and adherence to the package intent. A and B are interchangeable labels — do not prefer one slot. Output strict JSON.",
+            prompt: `Title: ${ex.title}\nInput: ${ex.input}\nExpected: ${ex.expected_output}\n\nOutput A:\n${aRes}\n\nOutput B:\n${bRes}`,
             experimental_output: Output.object({ schema: PairSchema }),
           });
-          winner = verdict.winner;
+          winner =
+            verdict.winner === "tie"
+              ? "tie"
+              : (verdict.winner === "A") === newIsA
+                ? "new"
+                : "old";
         } catch {
           /* keep tie */
         }
