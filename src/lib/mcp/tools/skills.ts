@@ -487,8 +487,16 @@ function inputWarning(text: string): "short_input" | "summary_markers" | "outlin
   }
   const lines = t.split("\n");
   const headings = lines.filter((l) => /^#{1,6}\s/.test(l)).length;
-  const bodyLines = lines.filter((l) => l.trim().length > 0 && !/^#{1,6}\s/.test(l) && !/^\s*([-*]|\d+[.)])\s/.test(l)).length;
-  if (headings >= 6 && bodyLines < headings * 1.5) return "outline_only";
+  // Content lines include bullets and numbered list items — skills are
+  // legitimately bullet/step dense, so those ARE the body, not absence of it.
+  // Only flag an outline when headings dominate and there's almost no content
+  // of ANY kind underneath them (true skeleton). This avoids the false
+  // positive where a substantive, well-structured SKILL.md (lots of lists
+  // under named sections) was misread as "headings without body".
+  const contentLines = lines.filter(
+    (l) => l.trim().length > 0 && !/^#{1,6}\s/.test(l)
+  ).length;
+  if (headings >= 6 && contentLines < headings) return "outline_only";
   return null;
 }
 
@@ -669,7 +677,21 @@ function scorePillar(id: PillarId, text: string): PillarDetail {
   const positiveHits = signals.filter(
     (s) => s.kind === "positive" && (s.primary.test(text) || (s.secondary && s.secondary.test(text)))
   ).length;
-  if (positiveSignals > 0 && positiveHits === 0) score = Math.min(score, 60);
+  const negativeHits = signals.filter(
+    (s) => s.kind === "negative" && (s.primary.test(text) || (s.secondary && s.secondary.test(text)))
+  ).length;
+  // Portability is mostly penalty-driven (vendor lock-in). When there are no
+  // positive declarations AND no lock-in detected, the artifact is "portable
+  // by construction" — that's a soft pass, not a gap. Pinning it to a flat 60
+  // (the generic no-positive cap) made it look permanently broken/neutral and
+  // robbed it of diagnostic range. Give it a clear baseline so the dimension
+  // actually moves: lock-in pulls it down, an explicit cross-runtime
+  // declaration lifts it into "strong".
+  if (id === "portability" && positiveHits === 0 && negativeHits === 0) {
+    score = 68;
+  } else if (positiveSignals > 0 && positiveHits === 0) {
+    score = Math.min(score, 60);
+  }
   score = Math.max(0, Math.min(100, score));
   return {
     id,
@@ -1184,14 +1206,27 @@ Return one verdict per pillar. covered=true only if a reader would say the pilla
       .length(7),
   });
 
+  // The semantic pass is the highest-value feature for niche-jargon skills, so
+  // a single transient gateway blip should not silently drop it. Retry once
+  // with a short backoff and a slightly longer timeout before giving up.
+  let output: { verdicts: z.infer<typeof schema>["verdicts"] } | null = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await generateText({
+        model: getGatewayModel(SEMANTIC_MODEL),
+        system: sys,
+        prompt: user,
+        output: Output.object({ schema }),
+        abortSignal: AbortSignal.timeout(15_000),
+      });
+      output = res.output;
+      break;
+    } catch {
+      if (attempt === 0) await new Promise((r) => setTimeout(r, 600));
+    }
+  }
+  if (!output) return null;
   try {
-    const { output } = await generateText({
-      model: getGatewayModel(SEMANTIC_MODEL),
-      system: sys,
-      prompt: user,
-      output: Output.object({ schema }),
-      abortSignal: AbortSignal.timeout(12_000),
-    });
     const map = new Map<PillarId, SemanticPillarVerdict>();
     for (const v of output.verdicts) {
       // Validate the line/quote pair against the actual file. If the model
@@ -1255,7 +1290,7 @@ export const getMethodologyTool = defineTool({
 export const reviewSkillTool = defineTool({
   name: "review_skill",
   description:
-    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns `overall_score` plus a split `structural_score` vs `content_quality_score` so format mismatch doesn't dominate the verdict; `expected_ceiling` per `doc_class` so the operator knows the realistic top before chasing diminishing returns; per-pillar scores (`signals_hit`/`signals_total`) and `top_actions` anchored to file evidence with an `evidence_anchored` honesty flag. A fast LLM-backed semantic pass runs alongside the deterministic detectors to fix false-zero pillars (content covered with unconventional vocabulary) and to relocate evidence anchors when the keyword match is misleading; set `semantic_check: false` to skip. Optional `doc_class` (skill | governance | playbook-ops | guardrail-ops | auto) and optional `previous_hash` + `previous_overall_score` produce a `delta` between runs. An `input_warning` is emitted BEFORE the score if the content looks truncated/summarised. Multilingual signal detection AND feedback (EN, PT-BR, ES, FR, DE, IT). Read-only, no auth.",
+    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns `overall_score` plus a split `structural_score` vs `content_quality_score` so format mismatch doesn't dominate the verdict; `expected_ceiling` per `doc_class` so the operator knows the realistic top before chasing diminishing returns; per-pillar scores (`signals_hit`/`signals_total`) and `top_actions` anchored to file evidence with an `evidence_anchored` honesty flag. A fast LLM-backed semantic pass runs alongside the deterministic detectors to fix false-zero pillars (content covered with unconventional vocabulary) and to relocate evidence anchors when the keyword match is misleading; set `semantic_check: false` to skip. Optional `doc_class` (skill | governance | playbook-ops | guardrail-ops | auto) and optional `previous_hash` + `previous_overall_score` produce a `delta` between runs. An `input_warning` is emitted BEFORE the score if the content looks truncated/summarised. Multilingual signal detection AND feedback (EN, PT-BR, ES, FR, DE, IT) — pass `language` to override auto-detection when the content mixes a base language with heavy English jargon. Read-only, no auth.",
   parameters: z.object({
     name: z.string().min(1).max(200).describe("File or skill name (for the report header only)"),
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).default("skill"),
@@ -1268,14 +1303,22 @@ export const reviewSkillTool = defineTool({
       .boolean()
       .default(true)
       .describe("Run the LLM-backed semantic pass to catch pillars covered with non-conventional vocabulary and to improve evidence anchors. Set false for offline/zero-cost runs."),
+    language: z
+      .enum(["en", "pt", "es", "fr", "de", "it"])
+      .optional()
+      .describe("Override the document language for localized feedback + semantic hint. Use this when the content mixes a base language with heavy English technical jargon (e.g. PT-BR fintech docs with `valuation`, `preferred stock`), where auto-detection can be low-confidence."),
     previous_hash: z.string().max(32).optional().describe("fnv1a hash from a previous run — enables delta_vs_previous in the response"),
     previous_overall_score: z.number().int().min(0).max(100).optional(),
   }),
-  execute: async ({ name, type, content, doc_class, semantic_check, previous_hash, previous_overall_score }) => {
+  execute: async ({ name, type, content, doc_class, semantic_check, language: languageOverride, previous_hash, previous_overall_score }) => {
     const ids = Object.keys(PILLAR_TITLE) as PillarId[];
     const weights = TYPE_WEIGHTS[type] ?? TYPE_WEIGHTS.skill;
     const details = ids.map((id) => scorePillar(id, content));
-    const language = detectLanguage(content);
+    // Caller override wins (confidence 1.0); otherwise fall back to detection.
+    const detected = detectLanguage(content);
+    const language = languageOverride
+      ? { lang: languageOverride as Lang, confidence: 1 }
+      : detected;
     const bundle = bundleFor(language.lang);
     const extras = extrasFor(language.lang);
 
@@ -1294,12 +1337,14 @@ export const reviewSkillTool = defineTool({
           : extras.warn_outline
       : null;
 
-    // Semantic pass — only run when enabled, content is substantive, and the
-    // input isn't already flagged as truncated (no point asking an LLM to
-    // judge coverage of a summary). Result is a per-pillar verdict map or
-    // null if the gateway is unavailable / errored / disabled.
+    // Semantic pass — run when enabled and content is substantive. Only HARD
+    // truncation warnings (short_input / summary_markers) block it, since there
+    // is no point asking an LLM to judge coverage of a fragment. An
+    // `outline_only` hint is soft — a heading-dense skill is exactly the case
+    // where semantic coverage detection adds the most value — so we still run.
+    const blocksSemantic = warnKind === "short_input" || warnKind === "summary_markers";
     const semantic =
-      semantic_check && !warnKind && content.length >= 400
+      semantic_check && !blocksSemantic && content.length >= 400
         ? await semanticCheck(content, language.lang)
         : null;
 
@@ -1383,9 +1428,13 @@ export const reviewSkillTool = defineTool({
       diagnostic:
         r.score === 0
           ? bundle.diag_zero
-          : r.signals_hit === 0
-            ? bundle.diag_no_positive
-            : null,
+          : r.id === "portability" && r.signals_hit === 0
+            ? (language.lang === "pt"
+                ? "Portável por construção: nenhum lock-in de fornecedor detectado. Para chegar a 'forte', declare suporte multi-runtime explicitamente (ex: 'validado em Claude, GPT e Gemini')."
+                : "Portable by construction: no vendor lock-in detected. To reach 'strong', declare multi-runtime support explicitly (e.g. 'validated on Claude, GPT and Gemini').")
+            : r.signals_hit === 0
+              ? bundle.diag_no_positive
+              : null,
     }));
 
     // Suppress actions that target structural improvements already above the
@@ -1459,7 +1508,7 @@ export const reviewSkillTool = defineTool({
         ran: semantic !== null,
         model: semantic !== null ? SEMANTIC_MODEL : null,
         skipped_reason: semantic === null
-          ? (!semantic_check ? "disabled_by_caller" : warnKind ? "input_warning" : content.length < 400 ? "content_too_short" : "gateway_unavailable_or_errored")
+          ? (!semantic_check ? "disabled_by_caller" : blocksSemantic ? "input_warning" : content.length < 400 ? "content_too_short" : "gateway_unavailable_or_errored")
           : null,
         uplifts: Object.entries(semanticUplifts).map(([pillar, u]) => ({ pillar, ...u })),
       },
