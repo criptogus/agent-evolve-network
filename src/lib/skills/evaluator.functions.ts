@@ -70,6 +70,7 @@ export const evaluatePackage = createServerFn({ method: "POST" })
         improvement_actions: result.evaluation.improvement_actions,
         example_results: result.evaluation.example_results,
         adversarial_results: { probes: result.adversarial, trigger_rate: result.triggerRate },
+        efficiency: result.efficiency,
         pipeline_stages: result.stages,
         judge_calibration: result.judgeCalibration,
       });
