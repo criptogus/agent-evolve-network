@@ -72,6 +72,7 @@ import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
 import { Route as AdminMetaAdsPackRouteImport } from './routes/admin.meta-ads-pack'
 import { Route as AdminFunnelRouteImport } from './routes/admin.funnel'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
+import { Route as AdminCalibrationRouteImport } from './routes/admin.calibration'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
 import { Route as AccountUsageRouteImport } from './routes/account.usage'
 import { Route as AccountTokensRouteImport } from './routes/account.tokens'
@@ -429,6 +430,11 @@ const AdminCustomersRoute = AdminCustomersRouteImport.update({
   path: '/customers',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCalibrationRoute = AdminCalibrationRouteImport.update({
+  id: '/calibration',
+  path: '/calibration',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAccountsRoute = AdminAccountsRouteImport.update({
   id: '/accounts',
   path: '/accounts',
@@ -688,6 +694,7 @@ export interface FileRoutesByFullPath {
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
@@ -793,6 +800,7 @@ export interface FileRoutesByTo {
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
@@ -900,6 +908,7 @@ export interface FileRoutesById {
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
@@ -1008,6 +1017,7 @@ export interface FileRouteTypes {
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
+    | '/admin/calibration'
     | '/admin/customers'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
@@ -1113,6 +1123,7 @@ export interface FileRouteTypes {
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
+    | '/admin/calibration'
     | '/admin/customers'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
@@ -1219,6 +1230,7 @@ export interface FileRouteTypes {
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
+    | '/admin/calibration'
     | '/admin/customers'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
@@ -1810,6 +1822,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCustomersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/calibration': {
+      id: '/admin/calibration'
+      path: '/calibration'
+      fullPath: '/admin/calibration'
+      preLoaderRoute: typeof AdminCalibrationRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/accounts': {
       id: '/admin/accounts'
       path: '/accounts'
@@ -2114,6 +2133,7 @@ const AdminPackagesRouteWithChildren = AdminPackagesRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminAccountsRoute: typeof AdminAccountsRoute
+  AdminCalibrationRoute: typeof AdminCalibrationRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminFunnelRoute: typeof AdminFunnelRoute
   AdminMetaAdsPackRoute: typeof AdminMetaAdsPackRoute
@@ -2130,6 +2150,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAccountsRoute: AdminAccountsRoute,
+  AdminCalibrationRoute: AdminCalibrationRoute,
   AdminCustomersRoute: AdminCustomersRoute,
   AdminFunnelRoute: AdminFunnelRoute,
   AdminMetaAdsPackRoute: AdminMetaAdsPackRoute,
@@ -2345,3 +2366,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
