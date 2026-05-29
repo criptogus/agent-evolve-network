@@ -11,7 +11,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-import { getGatewayModel } from "@/lib/ai-gateway";
+import { getGatewayModel, describeGatewayConfig } from "@/lib/ai-gateway";
 import { runAdversarialSuite, type ModelInvoker } from "./runner";
 import { judgeCalibration, type Verdict } from "./judge";
 import { getLlmJudgeOrNull, DEFAULT_JUDGE_MODEL } from "./judge.server";
@@ -256,7 +256,9 @@ export const runAdversarialWithJudge = createServerFn({ method: "POST" })
       by_severity: report.by_severity,
       outcomes: report.outcomes,
       duration_ms,
-      model: DEFAULT_JUDGE_MODEL,
+      // The model that produced the outputs under test (skill-under-test runs
+      // on the configured default), kept distinct from the judge model.
+      model: describeGatewayConfig().defaultModel,
       judge_model: judge ? DEFAULT_JUDGE_MODEL : null,
       judge_cases: cal?.model_judged ?? null,
       judge_overrides: cal?.overrides ?? null,

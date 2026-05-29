@@ -1,7 +1,7 @@
 import type { AdversarialCase } from "./loader";
 import { loadAdversarialCases, type LoadOptions } from "./loader";
 import { evaluateCase, summarize, type RobustnessReport } from "./scorer";
-import { cohenKappa, gradeWithJudge, rubricFromExpectations, type EnsembleMode, type JudgeFn, type Verdict } from "./judge";
+import { gradeWithJudge, judgeCalibration, rubricFromExpectations, type EnsembleMode, type JudgeFn, type Verdict } from "./judge";
 
 export type ModelInvoker = (input: {
   system_prompt: string;
@@ -102,18 +102,14 @@ export async function runAdversarialSuite(opts: RunOptions): Promise<Adversarial
   const report = summarize(outcomes) as AdversarialRunResult;
 
   if (judgeVerdicts.length > 0) {
-    const n = judgeVerdicts.length;
-    let agree = 0;
-    let overrides = 0;
-    for (let i = 0; i < n; i++) {
-      if (detVerdicts[i] === judgeVerdicts[i]) agree++;
-      else overrides++;
-    }
+    // Reuse the single κ/agreement implementation (judge ratings vs the
+    // deterministic grader as the reference rater). overrides = disagreements.
+    const cal = judgeCalibration(detVerdicts, judgeVerdicts);
     report.judge_calibration = {
-      model_judged: n,
-      overrides,
-      agreement: agree / n,
-      kappa: cohenKappa(detVerdicts, judgeVerdicts),
+      model_judged: cal.n,
+      overrides: cal.false_pass + cal.false_fail,
+      agreement: cal.agreement,
+      kappa: cal.kappa,
     };
   }
   return report;
