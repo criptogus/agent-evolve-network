@@ -153,10 +153,25 @@ function Hero() {
               <span className="text-foreground/90">In 30 seconds. No code.</span>
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-pretty px-1 text-base leading-relaxed text-muted-foreground lg:mx-0 lg:px-0 lg:text-lg">
-              Paste one link into your AI tool and it instantly gains{" "}
-              <span className="text-foreground">459+ ready-to-use expert skills</span> —
-              from code review to ad copy, tested against jailbreaks and signed for audit.
+              Paste one link into Claude, Cursor or ChatGPT and it instantly gains{" "}
+              <span className="text-foreground">459+ ready-to-use expert skills</span>.
+              No code, no setup, no retraining — and every skill is tested and signed,
+              so you can trust what it does.
             </p>
+
+            {/* Benefit cues — why it's worth the 30 seconds */}
+            <ul className="mx-auto mt-5 flex max-w-xl flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground lg:mx-0 lg:justify-start">
+              {[
+                "Works in 30 seconds",
+                "No code or fine-tuning",
+                "Tested against jailbreaks",
+              ].map((b) => (
+                <li key={b} className="inline-flex items-center gap-1.5">
+                  <span className="inline-block size-1.5 rounded-full bg-signal" aria-hidden />
+                  <span className="text-foreground/90">{b}</span>
+                </li>
+              ))}
+            </ul>
 
             {/* MCP URL — primary above-the-fold action */}
             <div className="mt-6 min-w-0 rounded-xl border border-border bg-background/80 p-3 shadow-elevated backdrop-blur">
@@ -417,7 +432,7 @@ function HowItWorks() {
     {
       n: "03",
       title: "Install with one click",
-      body: "Pick from 4,200+ ready-made experts — or describe what you need and we'll build a custom one from your own data.",
+      body: "Pick from hundreds of ready-made experts — or describe what you need and we'll build a custom one from your own data.",
     },
     {
       n: "04",
@@ -1861,7 +1876,7 @@ const QUOTES = [
   },
   {
     quote:
-      "The Health Score is the first metric our CTO actually trusts about an agent.",
+      "The Trust Score is the first metric our CTO actually trusts about an agent.",
     person: "Diego M.",
     role: "Director of Engineering · logistics",
   },
@@ -2051,7 +2066,7 @@ function FreeVsPremium() {
     "Curated, battle-tested stacks for your industry",
     "Elite playbooks shipped weekly by top operators",
     "Enterprise-grade agent systems & private packs",
-    "Priority Evolution Engine & guaranteed health scores",
+    "Priority Evolution Engine & guaranteed Trust Scores",
   ];
   return (
     <section className="border-b border-border bg-surface/40 py-24">
@@ -2077,7 +2092,7 @@ function FreeVsPremium() {
                 <h3 className="mt-1 text-2xl font-semibold tracking-tight">Free forever</h3>
               </div>
               <span className="rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                MIT-style
+                Apache 2.0 · CC BY-SA
               </span>
             </div>
             <ul className="mt-6 space-y-3 text-sm">
