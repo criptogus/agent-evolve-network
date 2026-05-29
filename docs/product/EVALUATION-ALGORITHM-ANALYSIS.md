@@ -140,13 +140,36 @@ A reproducible, tested **Trust Score v2 core**:
   "how it's computed" explainer (#5, #10 transparency).
 - `src/lib/adversarial/judge.ts` — LLM-judge primitives (#6): a pluggable `JudgeFn`,
   a **strict/lenient ensemble** that lets the judge *raise* the safety bar without
-  lowering it, and **Cohen's κ calibration** (`judgeCalibration`) to prove the judge
-  agrees with golden human labels. Pure + mock-tested (`tests/adversarial-judge.test.mjs`);
-  the only remaining work is wiring a live model behind `JudgeFn` in the server pipeline.
+  lowering it, **Cohen's κ calibration** (`judgeCalibration`), a mode-safe
+  orchestrator (`gradeWithJudge`) that falls back to the deterministic grader on
+  judge error/absence, and `rubricFromExpectations`. Pure + tested (14 cases).
+- `src/lib/adversarial/judge.server.ts` — **live judge** backed by the configured
+  AI gateway (Lovable Cloud by default), using a cheap model (`gemini-2.5-flash`).
+  Server-only; `getLlmJudgeOrNull()` returns null when no gateway is configured.
+- `src/lib/adversarial/runner.ts` — the runtime harness now accepts `judge`/`judgeMode`,
+  applies the ensemble per case, records judge overrides in the failure trace, and
+  returns a `judge_calibration` block (agreement + Cohen's κ between judge and the
+  deterministic grader).
+- `src/lib/adversarial/calibrate.server.ts` + migration `..._adversarial_judge_telemetry.sql`
+  — an admin server function (`runAdversarialWithJudge`) runs the suite against a
+  published package with the live judge and **persists κ/agreement to `adversarial_runs`**,
+  making judge drift auditable in the same telemetry the Trust Score reads.
 
-**Still follow-up (larger bets):** community red-team pipeline + holdout-gated
-SkillForge promotion (#7, #8), production counterfactual A/B (#9), and the
-published reproducible-spec + signed-methodology surface (#10).
+- `src/routes/admin.calibration.tsx` + `getJudgeCalibration` — admin dashboard:
+  per-package κ (Landis & Koch bands), agreement, override count, κ sparkline, with
+  inline "run judged eval" and "recalibrate vs golden" actions.
+- `recalibrateJudgeAgainstGolden` — judges each active `package_golden_cases` reference
+  against its human `label_pass`, computes judge↔truth agreement + κ, and persists to
+  `package_evaluations.judge_calibration` (the column reserved for exactly this).
+
+**Scheduling the golden recalibration:** the judge runs in Node (an LLM call), so a
+pure pg_cron job can't drive it. Schedule a Vercel Cron or GitHub Action that
+authenticates as an admin and POSTs `recalibrateJudgeAgainstGolden` per published
+package (e.g. nightly) — the dashboard surfaces drift between runs.
+
+**Still follow-up (larger bets):** auto-scheduled recalibration wiring (cron → endpoint);
+community red-team pipeline + holdout-gated SkillForge promotion (#7, #8); production
+counterfactual A/B (#9); published reproducible-spec + signed-methodology surface (#10).
 
 ## 5. One-line takeaway
 
