@@ -728,11 +728,14 @@ export type Database = {
         Row: {
           adversarial_results: Json
           created_at: string
+          efficiency: Json | null
+          evolution_trace: Json | null
           example_results: Json
           hallucination_rate: number | null
           health_score: number | null
           id: string
           improvement_actions: Json
+          judge_calibration: Json | null
           overall_score: number | null
           package_id: string
           pipeline_stages: Json
@@ -748,11 +751,14 @@ export type Database = {
         Insert: {
           adversarial_results?: Json
           created_at?: string
+          efficiency?: Json | null
+          evolution_trace?: Json | null
           example_results?: Json
           hallucination_rate?: number | null
           health_score?: number | null
           id?: string
           improvement_actions?: Json
+          judge_calibration?: Json | null
           overall_score?: number | null
           package_id: string
           pipeline_stages?: Json
@@ -768,11 +774,14 @@ export type Database = {
         Update: {
           adversarial_results?: Json
           created_at?: string
+          efficiency?: Json | null
+          evolution_trace?: Json | null
           example_results?: Json
           hallucination_rate?: number | null
           health_score?: number | null
           id?: string
           improvement_actions?: Json
+          judge_calibration?: Json | null
           overall_score?: number | null
           package_id?: string
           pipeline_stages?: Json
@@ -911,6 +920,73 @@ export type Database = {
             columns: ["version_id"]
             isOneToOne: false
             referencedRelation: "package_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      package_golden_cases: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expected_output: string
+          frozen: boolean
+          id: string
+          input: string
+          is_active: boolean
+          label_pass: boolean
+          label_source: string
+          origin_version_id: string | null
+          package_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expected_output: string
+          frozen?: boolean
+          id?: string
+          input: string
+          is_active?: boolean
+          label_pass?: boolean
+          label_source?: string
+          origin_version_id?: string | null
+          package_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expected_output?: string
+          frozen?: boolean
+          id?: string
+          input?: string
+          is_active?: boolean
+          label_pass?: boolean
+          label_source?: string
+          origin_version_id?: string | null
+          package_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_golden_cases_origin_version_id_fkey"
+            columns: ["origin_version_id"]
+            isOneToOne: false
+            referencedRelation: "package_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_golden_cases_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_golden_cases_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
             referencedColumns: ["id"]
           },
         ]
