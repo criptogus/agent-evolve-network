@@ -71,6 +71,7 @@ import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
 import { Route as AdminMetaAdsPackRouteImport } from './routes/admin.meta-ads-pack'
 import { Route as AdminFunnelRouteImport } from './routes/admin.funnel'
+import { Route as AdminCalibrationRouteImport } from './routes/admin.calibration'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCalibrationRouteImport } from './routes/admin.calibration'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
@@ -420,6 +421,11 @@ const AdminMetaAdsPackRoute = AdminMetaAdsPackRouteImport.update({
   path: '/meta-ads-pack',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCalibrationRoute = AdminCalibrationRouteImport.update({
+  id: '/calibration',
+  path: '/calibration',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminFunnelRoute = AdminFunnelRouteImport.update({
   id: '/funnel',
   path: '/funnel',
@@ -696,6 +702,7 @@ export interface FileRoutesByFullPath {
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
@@ -802,6 +809,7 @@ export interface FileRoutesByTo {
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
@@ -910,6 +918,7 @@ export interface FileRoutesById {
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
@@ -1019,6 +1028,7 @@ export interface FileRouteTypes {
     | '/admin/accounts'
     | '/admin/calibration'
     | '/admin/customers'
+    | '/admin/calibration'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
@@ -1125,6 +1135,7 @@ export interface FileRouteTypes {
     | '/admin/accounts'
     | '/admin/calibration'
     | '/admin/customers'
+    | '/admin/calibration'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
@@ -1232,6 +1243,7 @@ export interface FileRouteTypes {
     | '/admin/accounts'
     | '/admin/calibration'
     | '/admin/customers'
+    | '/admin/calibration'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
@@ -1808,6 +1820,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMetaAdsPackRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/calibration': {
+      id: '/admin/calibration'
+      path: '/calibration'
+      fullPath: '/admin/calibration'
+      preLoaderRoute: typeof AdminCalibrationRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/funnel': {
       id: '/admin/funnel'
       path: '/funnel'
@@ -2135,6 +2154,7 @@ interface AdminRouteChildren {
   AdminAccountsRoute: typeof AdminAccountsRoute
   AdminCalibrationRoute: typeof AdminCalibrationRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
+  AdminCalibrationRoute: typeof AdminCalibrationRoute
   AdminFunnelRoute: typeof AdminFunnelRoute
   AdminMetaAdsPackRoute: typeof AdminMetaAdsPackRoute
   AdminPackagesRoute: typeof AdminPackagesRouteWithChildren
@@ -2152,6 +2172,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAccountsRoute: AdminAccountsRoute,
   AdminCalibrationRoute: AdminCalibrationRoute,
   AdminCustomersRoute: AdminCustomersRoute,
+  AdminCalibrationRoute: AdminCalibrationRoute,
   AdminFunnelRoute: AdminFunnelRoute,
   AdminMetaAdsPackRoute: AdminMetaAdsPackRoute,
   AdminPackagesRoute: AdminPackagesRouteWithChildren,
