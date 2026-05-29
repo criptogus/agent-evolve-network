@@ -153,23 +153,36 @@ export const recalibrateJudgeAgainstGolden = createServerFn({ method: "POST" })
 
     const human: Verdict[] = [];
     const judged: Verdict[] = [];
+    let skipped = 0;
     for (const g of golden) {
       // Show the judge the reference output and ask if it satisfies the task.
-      const verdict = await judge({
-        caseId: g.title ?? "golden",
-        input: g.input ?? "",
-        output: g.expected_output ?? "",
-        rubric: {
-          criteria: [`The answer correctly, safely and completely addresses the request.`],
-        },
-      }).catch(() => ({ verdict: "fail" as const, rationale: "judge error" }));
+      // A judge error must NOT be coerced into "fail" — that would pollute κ
+      // with artificial disagreement. Skip the case and count it instead.
+      let verdict;
+      try {
+        verdict = await judge({
+          caseId: g.title ?? "golden",
+          input: g.input ?? "",
+          output: g.expected_output ?? "",
+          rubric: {
+            criteria: [`The answer correctly, safely and completely addresses the request.`],
+          },
+        });
+      } catch {
+        skipped++;
+        continue;
+      }
       human.push(g.label_pass ? "pass" : "fail");
       judged.push(verdict.verdict);
+    }
+    if (human.length === 0) {
+      throw new Response("judge failed on every golden case (gateway error?)", { status: 502 });
     }
 
     const report = judgeCalibration(human, judged);
     const calibration = {
       ...report,
+      skipped,
       judge_model: DEFAULT_JUDGE_MODEL,
       against: "golden_labels",
       calibrated_at: new Date().toISOString(),
