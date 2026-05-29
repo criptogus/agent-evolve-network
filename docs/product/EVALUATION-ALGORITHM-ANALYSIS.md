@@ -133,9 +133,20 @@ A reproducible, tested **Trust Score v2 core**:
   split so robustness reflects generalization, not overfitting to known cases
   (#7, W6). Covered by `tests/adversarial-holdout.test.mjs`.
 
-**Still follow-up (larger bets):** LLM-judge + κ reporting (#6), community red-team
-pipeline + holdout-gated SkillForge promotion (#7, #8), production counterfactual
-A/B (#9), and the published reproducible-spec + signed-methodology surface (#10).
+**Shipped in a follow-up round:**
+- `src/routes/marketplace.trust.$slug.tsx` + `trust.functions.ts` — the Trust v2
+  vector is now surfaced in the UI: safety/competence/freshness/coverage bars, a
+  confidence meter, an **Unverified** state (score gated, not defaulted), and a
+  "how it's computed" explainer (#5, #10 transparency).
+- `src/lib/adversarial/judge.ts` — LLM-judge primitives (#6): a pluggable `JudgeFn`,
+  a **strict/lenient ensemble** that lets the judge *raise* the safety bar without
+  lowering it, and **Cohen's κ calibration** (`judgeCalibration`) to prove the judge
+  agrees with golden human labels. Pure + mock-tested (`tests/adversarial-judge.test.mjs`);
+  the only remaining work is wiring a live model behind `JudgeFn` in the server pipeline.
+
+**Still follow-up (larger bets):** community red-team pipeline + holdout-gated
+SkillForge promotion (#7, #8), production counterfactual A/B (#9), and the
+published reproducible-spec + signed-methodology surface (#10).
 
 ## 5. One-line takeaway
 
