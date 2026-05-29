@@ -146,11 +146,17 @@ A reproducible, tested **Trust Score v2 core**:
 - `src/lib/adversarial/judge.server.ts` — **live judge** backed by the configured
   AI gateway (Lovable Cloud by default), using a cheap model (`gemini-2.5-flash`).
   Server-only; `getLlmJudgeOrNull()` returns null when no gateway is configured.
-- `src/lib/adversarial/runner.ts` — the runtime harness now accepts `judge`/`judgeMode`
-  and applies the ensemble per case, recording judge overrides in the failure trace.
+- `src/lib/adversarial/runner.ts` — the runtime harness now accepts `judge`/`judgeMode`,
+  applies the ensemble per case, records judge overrides in the failure trace, and
+  returns a `judge_calibration` block (agreement + Cohen's κ between judge and the
+  deterministic grader).
+- `src/lib/adversarial/calibrate.server.ts` + migration `..._adversarial_judge_telemetry.sql`
+  — an admin server function (`runAdversarialWithJudge`) runs the suite against a
+  published package with the live judge and **persists κ/agreement to `adversarial_runs`**,
+  making judge drift auditable in the same telemetry the Trust Score reads.
 
-**Still follow-up (larger bets):** persisting per-case judge verdicts + κ to the
-adversarial_runs telemetry and a calibration dashboard; community red-team pipeline
+**Still follow-up (larger bets):** a calibration dashboard UI; recalibrating the judge
+against `package_golden_cases` human labels on a schedule; community red-team pipeline
 + holdout-gated SkillForge promotion (#7, #8); production counterfactual A/B (#9);
 published reproducible-spec + signed-methodology surface (#10).
 
