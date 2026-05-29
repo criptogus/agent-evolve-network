@@ -86,7 +86,8 @@ export const getJudgeCalibration = createServerFn({ method: "GET" })
       .from("packages")
       .select("id, slug, name, type")
       .in("id", Array.from(byPkg.keys()));
-    const meta = new Map((pkgs ?? []).map((p: any) => [p.id, p]));
+    type PkgMeta = { id: string; slug: string; name: string; type: string };
+    const meta = new Map<string, PkgMeta>((pkgs ?? []).map((p: any) => [p.id as string, p as PkgMeta]));
 
     const rows: JudgeCalibrationRow[] = [];
     for (const [pkgId, list] of byPkg) {
