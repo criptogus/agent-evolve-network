@@ -114,6 +114,11 @@ export type Database = {
           duration_ms: number | null
           failed: number
           id: string
+          judge_agreement: number | null
+          judge_cases: number | null
+          judge_kappa: number | null
+          judge_model: string | null
+          judge_overrides: number | null
           model: string | null
           outcomes: Json
           package_id: string | null
@@ -133,6 +138,11 @@ export type Database = {
           duration_ms?: number | null
           failed: number
           id?: string
+          judge_agreement?: number | null
+          judge_cases?: number | null
+          judge_kappa?: number | null
+          judge_model?: string | null
+          judge_overrides?: number | null
           model?: string | null
           outcomes?: Json
           package_id?: string | null
@@ -152,6 +162,11 @@ export type Database = {
           duration_ms?: number | null
           failed?: number
           id?: string
+          judge_agreement?: number | null
+          judge_cases?: number | null
+          judge_kappa?: number | null
+          judge_model?: string | null
+          judge_overrides?: number | null
           model?: string | null
           outcomes?: Json
           package_id?: string | null
@@ -1156,6 +1171,64 @@ export type Database = {
         }
         Relationships: []
       }
+      package_releases: {
+        Row: {
+          content_hash: string
+          id: string
+          package_id: string
+          signature: string
+          signed_at: string
+          signed_by: string | null
+          signing_key_id: string
+          version: string
+          version_id: string
+        }
+        Insert: {
+          content_hash: string
+          id?: string
+          package_id: string
+          signature: string
+          signed_at?: string
+          signed_by?: string | null
+          signing_key_id: string
+          version: string
+          version_id: string
+        }
+        Update: {
+          content_hash?: string
+          id?: string
+          package_id?: string
+          signature?: string
+          signed_at?: string
+          signed_by?: string | null
+          signing_key_id?: string
+          version?: string
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_releases_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_releases_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_releases_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "package_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       package_requests: {
         Row: {
           auto_resolved: boolean
@@ -1203,6 +1276,81 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      package_trust_scores: {
+        Row: {
+          adversarial_pass_rate: number | null
+          adversarial_weighted_score: number | null
+          age_days: number | null
+          components: Json
+          computed_at: string
+          confidence: number | null
+          dim_competence: number | null
+          dim_coverage: number | null
+          dim_freshness: number | null
+          dim_safety: number | null
+          package_id: string
+          real_world_success_rate: number | null
+          schema_valid: boolean
+          score: number
+          signed_releases: number
+          trust_version: string
+          verified: boolean
+        }
+        Insert: {
+          adversarial_pass_rate?: number | null
+          adversarial_weighted_score?: number | null
+          age_days?: number | null
+          components?: Json
+          computed_at?: string
+          confidence?: number | null
+          dim_competence?: number | null
+          dim_coverage?: number | null
+          dim_freshness?: number | null
+          dim_safety?: number | null
+          package_id: string
+          real_world_success_rate?: number | null
+          schema_valid: boolean
+          score: number
+          signed_releases?: number
+          trust_version?: string
+          verified?: boolean
+        }
+        Update: {
+          adversarial_pass_rate?: number | null
+          adversarial_weighted_score?: number | null
+          age_days?: number | null
+          components?: Json
+          computed_at?: string
+          confidence?: number | null
+          dim_competence?: number | null
+          dim_coverage?: number | null
+          dim_freshness?: number | null
+          dim_safety?: number | null
+          package_id?: string
+          real_world_success_rate?: number | null
+          schema_valid?: boolean
+          score?: number
+          signed_releases?: number
+          trust_version?: string
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_trust_scores_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: true
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_trust_scores_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: true
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       package_upload_jobs: {
         Row: {
@@ -2684,6 +2832,7 @@ export type Database = {
       next_sas_code: { Args: never; Returns: string }
       purchase_pack: { Args: { _pack_id: string }; Returns: Json }
       purchase_package: { Args: { _package_id: string }; Returns: Json }
+      recompute_trust_scores_v2: { Args: never; Returns: number }
       record_mcp_funnel_event: {
         Args: {
           _anon_hash?: string
@@ -2740,6 +2889,11 @@ export type Database = {
           _rating: number
         }
         Returns: string
+      }
+      trust_saturate: { Args: { k: number; n: number }; Returns: number }
+      wilson_lower_bound: {
+        Args: { successes: number; total: number; z?: number }
+        Returns: number
       }
     }
     Enums: {
