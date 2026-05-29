@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent facts, customers, or competitor claims not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Critique a discovery transcript
     input: |
-      <fill with a realistic GTM scenario>
+      Rep spent 20 min on demo, asked no impact questions, vague next step ('I'll follow up').
     expected_output: |
-      <structured response per system prompt>
+      Scores Pain 2/5, Impact 1/5, Decision criteria 1/5, Next-step 1/5. Drills: quantify impact ('what does that cost you monthly?'), confirm decision process, book a specific next meeting on the call.
+  - title: Strong call
+    input: |
+      Rep surfaced quantified pain, mapped 3 stakeholders, booked a scoping call.
+    expected_output: |
+      Scores 4–5 across axes; one refinement (confirm budget authority) and a reinforcing drill. Highlights the multi-threading as best practice.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

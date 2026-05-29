@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent APIs, URLs, or facts not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Cache JSON at the edge with KV
     input: |
-      <fill with a realistic task>
+      Cache an upstream JSON API response in Workers KV for 60s and serve stale on origin error.
     expected_output: |
-      <structured response per system prompt>
+      Worker reads from KV first; on miss, fetches origin, writes KV with expirationTtl: 60, returns. On origin 5xx, serves last-good KV value. Uses `caches.default` for the colo cache layer; KV for cross-colo. Notes KV's eventual consistency (~60s global).
+  - title: Durable Object rate limiter
+    input: |
+      Implement a per-user 100 req/min limiter using a Durable Object.
+    expected_output: |
+      One DO instance per userId (idFromName). DO holds a token-bucket in storage; alarm() refills. Worker forwards to `env.LIMITER.get(id)`; returns 429 with Retry-After when empty. Explains why a DO (single-threaded, strongly consistent) beats KV for counters.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent APIs, URLs, or facts not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Hook-first Reel script
     input: |
-      <fill with a realistic task>
+      Topic: 'why your morning coffee is sabotaging your focus'; 30s.
     expected_output: |
-      <structured response per system prompt>
+      0-3s hook ('Stop drinking coffee first thing — here's why'), 3-20s 3 timed beats with b-roll cues, 20-27s payoff, 27-30s CTA. Includes 2 alt hooks and a CTA variant.
+  - title: Rework a flat script
+    input: |
+      Existing script opens with 'Hi guys, today I want to talk about...'.
+    expected_output: |
+      Replaces the slow open with a pattern-interrupt hook, tightens beats to retention-friendly lengths, adds b-roll/text-overlay cues, and 2 hook A/B variants.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

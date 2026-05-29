@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent APIs, URLs, or facts not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Generate a deck
     input: |
-      <fill with a realistic task>
+      Build a 5-slide launch deck: title, problem, solution, metrics chart, CTA — with speaker notes.
     expected_output: |
-      <structured response per system prompt>
+      python-pptx: title layout, content layouts with bullet placeholders, a CHART_TYPE.COLUMN_CLUSTERED for metrics, and `slide.notes_slide.notes_text_frame` per slide. Returns the script and saved .pptx path.
+  - title: Rebrand colors
+    input: |
+      Change all slide title colors to #0A66FF in an existing deck.
+    expected_output: |
+      Iterates slides → shapes → title placeholder runs, sets `run.font.color.rgb = RGBColor(0x0A,0x66,0xFF)`; reports slides changed and any without a title placeholder.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

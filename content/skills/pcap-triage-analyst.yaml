@@ -73,6 +73,7 @@ compatibility:
   - { runtime: gemini, status: supported }
 scopes: [agent:upgrade, registry:read]
 tags: [security, network-forensics, pcap, wireshark, dfir, threat-hunting, mitre-attack]
+x_security_research: true
 license: Apache-2.0
 authors: ["super-agent-skill <contact@zeroagency.ai>", "Anthropic-Cybersecurity-Skills (mukul975) — upstream, Apache-2.0"]
 created_by: Adapted from mukul975/Anthropic-Cybersecurity-Skills (Apache-2.0)

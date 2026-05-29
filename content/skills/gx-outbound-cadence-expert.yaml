@@ -26,12 +26,16 @@ rules:
     - Invent metrics, benchmarks, or platform features that do not exist.
     - Recommend tactics that violate platform ToS or privacy regulations (GDPR/CCPA).
 examples:
-  - title: Trigger phrasing
+  - title: Multi-channel cadence
     input: |
-      Apply the outbound skill to my project.
+      12-day cadence for VP Eng across email, LinkedIn, phone, video.
     expected_output: |
-      <produces the analysis, plan, or spec described in the skill's playbook>
-    rationale: Skill matches the user's intent.
+      Day-by-day touches with channel + purpose, personalization at the open and breakup, and a reply branch; caps daily volume to protect domain reputation.
+  - title: Improve reply rate
+    input: |
+      Current cadence gets 2% replies, all-email.
+    expected_output: |
+      Adds LinkedIn + a video touch, rewrites the opener to a specific trigger, shortens emails; sets reply-rate as the metric and an A/B on subject lines.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

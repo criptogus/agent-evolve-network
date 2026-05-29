@@ -26,12 +26,16 @@ rules:
     - Invent metrics, benchmarks, or platform features that do not exist.
     - Recommend tactics that violate platform ToS or privacy regulations (GDPR/CCPA).
 examples:
-  - title: Trigger phrasing
+  - title: Design an event taxonomy
     input: |
-      Apply the amplitude skill to my project.
+      We track nothing consistently; want product analytics for a B2B SaaS.
     expected_output: |
-      <produces the analysis, plan, or spec described in the skill's playbook>
-    rationale: Skill matches the user's intent.
+      Defines a noun-verb event schema, core events (Signup, Activated, Feature Used) with properties, a naming convention, and a governance doc. Maps to an activation funnel chart + retention cohort.
+  - title: Build a retention chart
+    input: |
+      Show weekly retention of users who completed onboarding.
+    expected_output: |
+      Cohort = completed Onboarding; retention event = any core action; weekly granularity; explains N-day vs unbounded retention and which to use here.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent facts, customers, or competitor claims not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Design a co-sell motion
     input: |
-      <fill with a realistic GTM scenario>
+      AWS partner, overlapping ICP in fintech, want sourced + influenced pipeline.
     expected_output: |
-      <structured response per system prompt>
+      ICP overlap definition, 2 joint plays, deal-registration rules, influenced/sourced attribution, and a revenue-split governance table. Defines the QBR cadence.
+  - title: Resolve a deal conflict
+    input: |
+      Both teams claim the same account.
+    expected_output: |
+      Applies the registration-precedence rule, proposes a split, and updates governance so the conflict class can't recur.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

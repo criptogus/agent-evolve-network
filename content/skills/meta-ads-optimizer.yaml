@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent APIs, URLs, or facts not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Audit a messy account
     input: |
-      <fill with a realistic task>
+      20 ad sets, overlapping audiences, CPA rising.
     expected_output: |
-      <structured response per system prompt>
+      Flags audience overlap and learning-phase fragmentation, consolidates to CBO with fewer ad sets, fixes the conversion event/attribution window, and proposes a creative refresh. Lists changes by impact.
+  - title: Diagnose rising CPA
+    input: |
+      CPA doubled over 2 weeks on a stable budget.
+    expected_output: |
+      Checks frequency/fatigue, audience saturation, and attribution changes; recommends new creative + audience expansion and a controlled test rather than knee-jerk budget cuts.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

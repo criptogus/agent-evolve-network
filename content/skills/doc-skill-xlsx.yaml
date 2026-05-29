@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent APIs, URLs, or facts not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Workbook with formula + chart
     input: |
-      <fill with a realistic task>
+      Build a monthly revenue workbook: data sheet, a SUM total, and a line chart on a summary sheet.
     expected_output: |
-      <structured response per system prompt>
+      openpyxl: write data, add `=SUM(B2:B13)`, create a LineChart referencing the data range, place it on a 'Summary' sheet. Returns the script and path.
+  - title: Conditional formatting
+    input: |
+      Highlight cells in column C red when value < 0.
+    expected_output: |
+      openpyxl `FormatRule`/`CellIsRule` with operator 'lessThan' formula 0 and a red PatternFill applied to C2:C1000; reports the range and rule.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

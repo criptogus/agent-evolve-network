@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent APIs, URLs, or facts not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Spec-first multi-file edit
     input: |
-      <fill with a realistic task>
+      Add a `lastLogin` timestamp to the User model and surface it in the profile API and UI.
     expected_output: |
-      <structured response per system prompt>
+      Writes a short spec (model migration, API field, UI binding), lists the exact files to touch, applies edits as a reviewable diff, and runs the type-checker before declaring done. Refuses to touch files outside the spec.
+  - title: Safe refactor with codemap
+    input: |
+      Rename `getUser()` to `fetchUser()` across the repo.
+    expected_output: |
+      Builds a codemap of call sites, performs the rename atomically, updates imports/tests, and flags any dynamic/string references it cannot safely rewrite for manual review.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

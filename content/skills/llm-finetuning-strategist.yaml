@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent APIs, URLs, or facts not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Choose a method
     input: |
-      <fill with a realistic task>
+      1k labeled support replies; want on-brand tone on a 7B model, small budget.
     expected_output: |
-      <structured response per system prompt>
+      Recommends LoRA SFT over full FT (data + budget), dataset format, key hyperparams (rank, lr, epochs), an eval set held out, and a stop criterion. Flags DPO as a later step if preference data appears.
+  - title: SFT vs DPO vs RLHF
+    input: |
+      When should I use DPO instead of SFT?
+    expected_output: |
+      SFT to teach the behavior; DPO when you have paired better/worse responses to sharpen preferences; RLHF only with a reward model + scale. Recommends SFT→DPO for most teams.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

@@ -26,12 +26,16 @@ rules:
     - Invent metrics, benchmarks, or platform features that do not exist.
     - Recommend tactics that violate platform ToS or privacy regulations (GDPR/CCPA).
 examples:
-  - title: Trigger phrasing
+  - title: Enrichment table
     input: |
-      Apply the clay skill to my project.
+      From a list of company domains, find the VP Sales + verified email and score ICP fit.
     expected_output: |
-      <produces the analysis, plan, or spec described in the skill's playbook>
-    rationale: Skill matches the user's intent.
+      Clay table: domain → company enrich → find people (title filter) → waterfall email finder → ICP score formula → filter verified → push to outbound. Notes provider waterfall order for cost.
+  - title: Dedupe + push
+    input: |
+      Avoid pushing leads already in HubSpot.
+    expected_output: |
+      Adds a HubSpot lookup column, filters out matches, pushes only net-new with a source tag; explains the lookup key (email) and rate limits.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

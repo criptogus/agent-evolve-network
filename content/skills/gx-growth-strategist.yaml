@@ -26,12 +26,16 @@ rules:
     - Invent metrics, benchmarks, or platform features that do not exist.
     - Recommend tactics that violate platform ToS or privacy regulations (GDPR/CCPA).
 examples:
-  - title: Trigger phrasing
+  - title: Pick a north-star
     input: |
-      Apply the growth skill to my project.
+      PLG productivity app, unclear what to optimize.
     expected_output: |
-      <produces the analysis, plan, or spec described in the skill's playbook>
-    rationale: Skill matches the user's intent.
+      Recommends 'weekly active teams completing a core action' over signups, maps the AARRR funnel, and proposes the first 3 experiments ranked by ICE.
+  - title: Diagnose a funnel drop
+    input: |
+      Signups up 30% but activation flat.
+    expected_output: |
+      Isolates the activation step losing users, forms a hypothesis (onboarding friction), and designs the test + metric to confirm before building.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

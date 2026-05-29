@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent APIs, URLs, or facts not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Pick + run a model
     input: |
-      <fill with a realistic task>
+      Need on-device English sentiment classification, low latency.
     expected_output: |
-      <structured response per system prompt>
+      Recommends a distilled model (e.g. distilbert-sst2), shows a transformers pipeline snippet, quantization for latency, and notes license + size tradeoffs vs an API.
+  - title: Deploy an endpoint
+    input: |
+      Serve a fine-tuned model with autoscaling.
+    expected_output: |
+      Inference Endpoints config (instance, autoscale to zero), a request example, and cost/cold-start notes; suggests TGI for LLMs.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

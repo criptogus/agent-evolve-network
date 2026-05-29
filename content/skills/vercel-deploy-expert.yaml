@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent APIs, URLs, or facts not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Build fails on deploy
     input: |
-      <fill with a realistic task>
+      Works locally, fails on Vercel with 'module not found'.
     expected_output: |
-      <structured response per system prompt>
+      Checks case-sensitive imports (Linux build), missing dependency vs devDependency, and Node version mismatch; prescribes the fix and a clean reproduce via `vercel build` locally.
+  - title: Configure ISR
+    input: |
+      Cache a product page but revalidate every 60s.
+    expected_output: |
+      Sets `revalidate: 60` (or route segment config), explains stale-while-revalidate behavior and on-demand revalidation for instant updates; warns about per-path cache costs.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent facts, customers, or competitor claims not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Battlecard vs incumbent
     input: |
-      <fill with a realistic GTM scenario>
+      We lose to BigCorp on 'all-in-one'; we win on speed and price.
     expected_output: |
-      <structured response per system prompt>
+      Positioning, 3 traps to set, landmines to avoid, objection handling for 'why not BigCorp', and proof points (benchmarks, customer quotes). One page, seller-ready.
+  - title: Counter a price objection
+    input: |
+      Prospect says competitor is 20% cheaper.
+    expected_output: |
+      Reframes to TCO + time-to-value, gives the discovery question to expose hidden costs, and the proof point; never disparages the competitor.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

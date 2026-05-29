@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent facts, customers, or competitor claims not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Tier a new segment
     input: |
-      <fill with a realistic GTM scenario>
+      200 mid-market SaaS accounts, intent data available, 4 AEs.
     expected_output: |
-      <structured response per system prompt>
+      T1 (high fit + active intent): 1:1 coverage, weekly touch. T2: 1:few, biweekly. T3: 1:many nurture. Defines firmographic fit score, intent threshold, and per-tier SLA; sizes T1 to AE capacity.
+  - title: Re-tier on intent spike
+    input: |
+      A T3 account starts showing surging intent on 'migration'.
+    expected_output: |
+      Promotes to T1 with a triggered SLA (AE touch <24h), attaches a migration play, and notes the re-tier rule so it's repeatable.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }
