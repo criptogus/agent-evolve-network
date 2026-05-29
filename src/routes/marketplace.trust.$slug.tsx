@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { getSkillTrust, type Finding, type Compat } from "@/lib/marketplace/trust.functions";
+import { getSkillTrust, type Finding, type Compat, type TrustV2 } from "@/lib/marketplace/trust.functions";
 
 export const Route = createFileRoute("/marketplace/trust/$slug")({
   loader: async ({ params }) => {
@@ -63,6 +63,7 @@ function TrustPage() {
   const t = data.trust;
   const score = t?.trust_score ?? null;
   const battle = t?.battle_tested;
+  const v2 = data.trust_v2 ?? null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -85,9 +86,24 @@ function TrustPage() {
                   Battle-tested
                 </span>
               )}
+              {v2 && !v2.verified && (
+                <span
+                  title="Not enough adversarial evidence yet to publish a verified score."
+                  className="rounded-md border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 font-mono text-[11px] uppercase tracking-widest text-amber-500"
+                >
+                  Unverified
+                </span>
+              )}
               <div className="rounded-md border border-border bg-surface px-4 py-3 text-right">
                 <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Trust score</div>
-                <div className="font-mono text-3xl font-semibold">{score ?? "—"}<span className="text-sm text-muted-foreground">/100</span></div>
+                {v2 && !v2.verified ? (
+                  <div className="font-mono text-3xl font-semibold text-muted-foreground">—</div>
+                ) : (
+                  <div className="font-mono text-3xl font-semibold">
+                    {score ?? "—"}
+                    <span className="text-sm text-muted-foreground">/100</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -100,6 +116,8 @@ function TrustPage() {
           <Stat label="Last 30 days" value={t?.window_30d?.runs ?? 0} sub={fmtPct(t?.window_30d?.success_rate)} />
           <Stat label="Lifetime" value={t?.lifetime?.runs ?? 0} sub={fmtPct(t?.lifetime?.success_rate)} />
         </div>
+
+        {v2 && <TrustVector v2={v2} />}
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <div className="rounded-lg border border-border bg-surface/40 p-5">
@@ -221,10 +239,14 @@ function TrustPage() {
         <div className="mt-10 rounded-lg border border-border bg-surface/40 p-5 text-sm text-muted-foreground">
           <h3 className="font-mono text-xs uppercase tracking-widest text-foreground">How this trust score is computed</h3>
           <p className="mt-2">
-            Composite of (a) 30-day success rate from real agent executions reported via the MCP{" "}
-            <code className="font-mono text-xs">report_execution</code> tool, (b) volume confidence (logarithmic on run count),
-            and (c) a penalty for unresolved critical robustness findings. Battle-tested badge requires ≥1,000 runs and ≥95%
-            success in the last 30 days.
+            <span className="font-medium text-foreground">Trust Score v2</span> is evidence-gated:
+            published score = quality × confidence, where quality is a weighted blend of four
+            dimensions (safety, competence, freshness, coverage). Pass and success rates use the{" "}
+            <span className="text-foreground">Wilson lower confidence bound</span>, so large samples
+            beat a handful of lucky runs, and an untested package shows <em>Unverified</em> rather
+            than a default number. Real-world signals come from agent executions reported via the MCP{" "}
+            <code className="font-mono text-xs">report_execution</code> tool. The formula is pure and
+            reproducible offline — see <code className="font-mono text-xs">src/lib/trust/scoring.ts</code>.
           </p>
         </div>
       </section>
@@ -232,6 +254,90 @@ function TrustPage() {
       <Footer />
     </div>
   );
+}
+
+const DIMENSIONS: { key: keyof TrustV2["dimensions"]; label: string; hint: string }[] = [
+  { key: "safety", label: "Safety", hint: "Adversarial robustness (lower-bounded + severity-weighted)" },
+  { key: "competence", label: "Competence", hint: "Real-world success rate (Wilson lower bound)" },
+  { key: "freshness", label: "Freshness", hint: "Recent verification + signed releases" },
+  { key: "coverage", label: "Coverage", hint: "How much evidence backs the score" },
+];
+
+function TrustVector({ v2 }: { v2: TrustV2 }) {
+  return (
+    <div className="mt-6 rounded-lg border border-border bg-surface/40 p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="font-mono text-sm uppercase tracking-widest text-muted-foreground">Trust vector</h2>
+        <div className="flex items-center gap-2">
+          <span className="rounded border border-border bg-surface px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            v{v2.version ?? "2"}
+          </span>
+          {v2.verified ? (
+            <span className="rounded border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-emerald-400">
+              Verified
+            </span>
+          ) : (
+            <span className="rounded border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-amber-500">
+              Unverified
+            </span>
+          )}
+        </div>
+      </div>
+
+      {!v2.verified && (
+        <p className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-600 dark:text-amber-400">
+          Not enough adversarial evidence yet to publish a verified score. We never default an
+          untested package to a comfortable number — the dimensions below show what evidence exists
+          so far, gated by confidence.
+        </p>
+      )}
+
+      <div className="mt-4 grid gap-3">
+        {DIMENSIONS.map((d) => (
+          <Bar key={d.key} label={d.label} hint={d.hint} value={v2.dimensions[d.key]} />
+        ))}
+      </div>
+
+      <div className="mt-5 border-t border-border pt-4">
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-mono uppercase tracking-widest text-muted-foreground">Confidence</span>
+          <span className="font-mono text-muted-foreground">{pct01(v2.confidence)}</span>
+        </div>
+        <div className="mt-2 h-2 rounded bg-border/40">
+          <div
+            className="h-2 rounded bg-signal"
+            style={{ width: `${Math.round((v2.confidence ?? 0) * 100)}%` }}
+          />
+        </div>
+        <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+          Published score = quality × confidence. More adversarial runs, case coverage and real-world
+          executions raise confidence — so a few lucky runs can't earn a high score.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Bar({ label, hint, value }: { label: string; hint: string; value: number | null }) {
+  const v = value ?? 0;
+  const tone = v >= 0.8 ? "bg-emerald-500/70" : v >= 0.5 ? "bg-primary" : "bg-amber-500/70";
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-28 shrink-0">
+        <div className="font-mono text-xs">{label}</div>
+        <div className="truncate text-[10px] text-muted-foreground" title={hint}>{hint}</div>
+      </div>
+      <div className="h-2 flex-1 rounded bg-border/40">
+        <div className={`h-2 rounded ${tone}`} style={{ width: `${Math.round(v * 100)}%` }} />
+      </div>
+      <div className="w-12 text-right font-mono text-xs text-muted-foreground">{pct01(value)}</div>
+    </div>
+  );
+}
+
+function pct01(v: number | null | undefined) {
+  if (v === null || v === undefined) return "—";
+  return `${Math.round(v * 100)}`;
 }
 
 function Stat({ label, value, sub }: { label: string; value: number; sub?: string | null }) {
