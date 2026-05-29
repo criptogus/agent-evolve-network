@@ -4,7 +4,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SitePage } from "@/components/site/SitePage";
-import { getJudgeCalibration, runAdversarialWithJudge, type JudgeCalibrationRow } from "@/lib/adversarial/calibrate.server";
+import {
+  getJudgeCalibration,
+  runAdversarialWithJudge,
+  recalibrateJudgeAgainstGolden,
+  type JudgeCalibrationRow,
+} from "@/lib/adversarial/calibrate.server";
 
 export const Route = createFileRoute("/admin/calibration")({
   head: () => ({
@@ -29,6 +34,7 @@ function kappaTone(k: number | null): { label: string; cls: string } {
 function AdminCalibrationPage() {
   const fetchCal = useServerFn(getJudgeCalibration);
   const runJudge = useServerFn(runAdversarialWithJudge);
+  const recalibrate = useServerFn(recalibrateJudgeAgainstGolden);
   const [days, setDays] = useState(90);
 
   const q = useQuery({
@@ -48,6 +54,17 @@ function AdminCalibrationPage() {
       q.refetch();
     },
     onError: (e: any) => toast.error(e?.message ?? "Run failed"),
+  });
+
+  const recal = useMutation({
+    mutationFn: (s: string) => recalibrate({ data: { slug: s } }),
+    onSuccess: (r) =>
+      toast.success(
+        `Golden recalibration · κ ${r.calibration.kappa.toFixed(2)} · agreement ${Math.round(
+          r.calibration.agreement * 100,
+        )}% · ${r.calibration.false_pass} false-pass`,
+      ),
+    onError: (e: any) => toast.error(e?.message ?? "Recalibration failed"),
   });
 
   const rows = (q.data?.rows ?? []) as JudgeCalibrationRow[];
@@ -88,6 +105,14 @@ function AdminCalibrationPage() {
               className="h-8 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground disabled:opacity-50"
             >
               {run.isPending ? "Running…" : "Run judged eval"}
+            </button>
+            <button
+              onClick={() => slug && recal.mutate(slug)}
+              disabled={!slug || recal.isPending}
+              title="Recalibrate the judge against this package's golden labels"
+              className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium hover:bg-accent disabled:opacity-50"
+            >
+              {recal.isPending ? "Calibrating…" : "Recalibrate vs golden"}
             </button>
           </div>
         </div>

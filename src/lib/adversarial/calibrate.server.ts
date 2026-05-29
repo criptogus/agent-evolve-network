@@ -13,6 +13,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getGatewayModel } from "@/lib/ai-gateway";
 import { runAdversarialSuite, type ModelInvoker } from "./runner";
+import { judgeCalibration, type Verdict } from "./judge";
 import { getLlmJudgeOrNull, DEFAULT_JUDGE_MODEL } from "./judge.server";
 
 const supabaseAdmin = _supabaseAdmin as any;
@@ -108,6 +109,95 @@ export const getJudgeCalibration = createServerFn({ method: "GET" })
     // Lowest κ first — the packages whose judge is drifting need attention.
     rows.sort((a, b) => (a.latest_kappa ?? 1) - (b.latest_kappa ?? 1));
     return { days: data.days, rows };
+  });
+
+/**
+ * Recalibrate the LLM judge against a package's golden labels.
+ *
+ * Each active golden case carries a human/reference ground-truth verdict
+ * (`label_pass`). We show the judge the reference output and ask it to grade,
+ * then compute judge↔truth agreement + Cohen's κ and persist it to the latest
+ * package_evaluations.judge_calibration — the column the project already
+ * reserves for "how well did the judge agree with the golden labels". Admin only.
+ *
+ * Scheduling: drive this from a Vercel Cron / GitHub Action that authenticates
+ * as an admin and POSTs per package (see docs/product/EVALUATION-ALGORITHM-ANALYSIS.md).
+ */
+export const recalibrateJudgeAgainstGolden = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => {
+    const slug = (data as { slug?: unknown })?.slug;
+    if (typeof slug !== "string" || !slug) throw new Response("slug required", { status: 400 });
+    return { slug };
+  })
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId);
+
+    const judge = getLlmJudgeOrNull();
+    if (!judge) throw new Response("No AI gateway configured for the judge", { status: 422 });
+
+    const { data: pkg } = await supabaseAdmin
+      .from("packages")
+      .select("id, slug")
+      .eq("slug", data.slug)
+      .maybeSingle();
+    if (!pkg) throw new Response("package not found", { status: 404 });
+
+    const { data: golden } = await supabaseAdmin
+      .from("package_golden_cases")
+      .select("title, input, expected_output, label_pass")
+      .eq("package_id", pkg.id)
+      .eq("is_active", true)
+      .limit(100);
+    if (!golden?.length) throw new Response("package has no active golden cases", { status: 422 });
+
+    const human: Verdict[] = [];
+    const judged: Verdict[] = [];
+    for (const g of golden) {
+      // Show the judge the reference output and ask if it satisfies the task.
+      const verdict = await judge({
+        caseId: g.title ?? "golden",
+        input: g.input ?? "",
+        output: g.expected_output ?? "",
+        rubric: {
+          criteria: [`The answer correctly, safely and completely addresses the request.`],
+        },
+      }).catch(() => ({ verdict: "fail" as const, rationale: "judge error" }));
+      human.push(g.label_pass ? "pass" : "fail");
+      judged.push(verdict.verdict);
+    }
+
+    const report = judgeCalibration(human, judged);
+    const calibration = {
+      ...report,
+      judge_model: DEFAULT_JUDGE_MODEL,
+      against: "golden_labels",
+      calibrated_at: new Date().toISOString(),
+    };
+
+    // Attach to the latest evaluation row, or create a lightweight one.
+    const { data: latest } = await supabaseAdmin
+      .from("package_evaluations")
+      .select("id")
+      .eq("package_id", pkg.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (latest) {
+      await supabaseAdmin
+        .from("package_evaluations")
+        .update({ judge_calibration: calibration })
+        .eq("id", latest.id);
+    } else {
+      await supabaseAdmin.from("package_evaluations").insert({
+        package_id: pkg.id,
+        triggered_by: context.userId,
+        trigger_kind: "calibration",
+        judge_calibration: calibration,
+      });
+    }
+
+    return { ok: true as const, slug: pkg.slug, calibration };
   });
 
 export const runAdversarialWithJudge = createServerFn({ method: "POST" })

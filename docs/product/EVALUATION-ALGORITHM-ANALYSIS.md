@@ -155,10 +155,21 @@ A reproducible, tested **Trust Score v2 core**:
   published package with the live judge and **persists κ/agreement to `adversarial_runs`**,
   making judge drift auditable in the same telemetry the Trust Score reads.
 
-**Still follow-up (larger bets):** a calibration dashboard UI; recalibrating the judge
-against `package_golden_cases` human labels on a schedule; community red-team pipeline
-+ holdout-gated SkillForge promotion (#7, #8); production counterfactual A/B (#9);
-published reproducible-spec + signed-methodology surface (#10).
+- `src/routes/admin.calibration.tsx` + `getJudgeCalibration` — admin dashboard:
+  per-package κ (Landis & Koch bands), agreement, override count, κ sparkline, with
+  inline "run judged eval" and "recalibrate vs golden" actions.
+- `recalibrateJudgeAgainstGolden` — judges each active `package_golden_cases` reference
+  against its human `label_pass`, computes judge↔truth agreement + κ, and persists to
+  `package_evaluations.judge_calibration` (the column reserved for exactly this).
+
+**Scheduling the golden recalibration:** the judge runs in Node (an LLM call), so a
+pure pg_cron job can't drive it. Schedule a Vercel Cron or GitHub Action that
+authenticates as an admin and POSTs `recalibrateJudgeAgainstGolden` per published
+package (e.g. nightly) — the dashboard surfaces drift between runs.
+
+**Still follow-up (larger bets):** auto-scheduled recalibration wiring (cron → endpoint);
+community red-team pipeline + holdout-gated SkillForge promotion (#7, #8); production
+counterfactual A/B (#9); published reproducible-spec + signed-methodology surface (#10).
 
 ## 5. One-line takeaway
 
