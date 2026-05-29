@@ -272,7 +272,7 @@ export const runForgeLoop = createServerFn({ method: "POST" })
       // Final validation on the full golden set before persisting.
       after = await evaluatorPipeline({
         pkg: { name: pkg.name, type: pkg.type },
-        version: { system_prompt: best.system_prompt, rules: best.rules, examples: best.examples },
+        version: { system_prompt: best.system_prompt, rules: best.rules, examples: best.examples as Array<{ title: string; input: string; expected_output: string }> },
         goldenCases,
       });
       // Hard gate: never deploy a champion that regresses on the full set.
