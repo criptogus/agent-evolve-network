@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent facts, customers, or competitor claims not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Stand up a reference program
     input: |
-      <fill with a realistic GTM scenario>
+      We have 12 happy customers but no structured references; sales keeps asking the same 3.
     expected_output: |
-      <structured response per system prompt>
+      Designs tiers (reference / story / advisory), a contribution cap to avoid champion burnout, an incentive ladder, and a reusable request workflow with SLA. Defines the activation metric (references available per quarter).
+  - title: Recruit an advisory board
+    input: |
+      Build a 6-person customer advisory board for our roadmap.
+    expected_output: |
+      ICP-balanced shortlist criteria, charter, cadence (quarterly), agenda template, and a value-exchange so members stay engaged; exit criteria for inactive members.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

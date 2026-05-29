@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent APIs, URLs, or facts not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Design a RAG pipeline
     input: |
-      <fill with a realistic task>
+      Q&A over 50k internal docs; answers must cite sources.
     expected_output: |
-      <structured response per system prompt>
+      Chunking (structure-aware, ~512 tok + overlap), embedding model choice, vector store, hybrid (BM25 + dense) retrieval, a reranker, and citation-enforcing prompt. Defines an eval set with retrieval@k + faithfulness.
+  - title: Fix poor recall
+    input: |
+      Retrieval misses obviously relevant docs.
+    expected_output: |
+      Adds hybrid search + reranking, revisits chunk size/overlap, and checks embedding/domain mismatch; measures retrieval@k before/after instead of eyeballing.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

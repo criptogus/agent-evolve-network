@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent facts, customers, or competitor claims not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Design tiers
     input: |
-      <fill with a realistic GTM scenario>
+      Flat $99/mo today; usage varies 10x across customers; margins thin on heavy users.
     expected_output: |
-      <structured response per system prompt>
+      Introduces a value metric (active seats or API calls), 3 tiers + usage overage, willingness-to-pay bands, and a margin guardrail on heavy users. Migration plan for existing customers.
+  - title: Add an enterprise tier
+    input: |
+      Large buyers want SSO, audit logs, SLA.
+    expected_output: |
+      Defines an Enterprise tier gating those features, a 'call us' motion, and the value metric anchor; models impact on ACV and margin.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

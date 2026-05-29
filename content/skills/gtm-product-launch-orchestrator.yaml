@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent facts, customers, or competitor claims not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Tier-1 launch plan
     input: |
-      <fill with a realistic GTM scenario>
+      Launching a major new product in 6 weeks across PLG + sales.
     expected_output: |
-      <structured response per system prompt>
+      Positioning + messaging, enablement (decks, battlecards, FAQ), channel plan (site, email, webinar, paid), and 30/60/90 success metrics with owners. Pre-launch readiness checklist.
+  - title: Right-size a small launch
+    input: |
+      Minor feature; don't over-invest.
+    expected_output: |
+      Recommends a Tier-3 motion (changelog + in-app + one email), skips the heavy enablement, and sets a single adoption metric.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent facts, customers, or competitor claims not grounded in the input.
 examples:
-  - title: Typical request
+  - title: 120-day renewal motion
     input: |
-      <fill with a realistic GTM scenario>
+      Enterprise renewal in 120 days, flat usage, champion engaged.
     expected_output: |
-      <structured response per system prompt>
+      120/90/60/30 plan with risk signals to watch, a value-realization review at 90, exec sponsor trigger if usage dips, and a save play library mapped to each risk.
+  - title: Escalate a red renewal
+    input: |
+      30 days out, usage dropped 50%, champion silent.
+    expected_output: |
+      Triggers exec sponsor + save play immediately, drafts the re-engagement message, and sets a go/no-go checkpoint at 2 weeks.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent APIs, URLs, or facts not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Subscriptions + webhook
     input: |
-      <fill with a realistic task>
+      Add monthly subscriptions with a 14-day trial and handle cancellations.
     expected_output: |
-      <structured response per system prompt>
+      Checkout Session in subscription mode with trial_period_days, then a webhook handler for customer.subscription.updated/deleted to sync entitlement. Verifies the signature and is idempotent on event id.
+  - title: Avoid double-fulfillment
+    input: |
+      Webhook sometimes fires twice.
+    expected_output: |
+      Persists processed event ids and no-ops on replay; relies on checkout.session.completed for fulfillment, not client redirects; notes test-clock testing.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

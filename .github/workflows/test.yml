@@ -28,4 +28,7 @@ jobs:
             tests/integrations.test.mjs \
             tests/growth-revenue-split.test.mjs \
             tests/trust-badge.test.mjs \
-            tests/bounties.test.mjs
+            tests/bounties.test.mjs \
+            tests/trust-scoring.test.mjs \
+            tests/adversarial-holdout.test.mjs \
+            tests/adversarial-judge.test.mjs

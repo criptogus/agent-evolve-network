@@ -26,12 +26,16 @@ rules:
     - Invent metrics, benchmarks, or platform features that do not exist.
     - Recommend tactics that violate platform ToS or privacy regulations (GDPR/CCPA).
 examples:
-  - title: Trigger phrasing
+  - title: Audit a landing page
     input: |
-      Apply the cro skill to my project.
+      Pricing page converts at 1.2%; high traffic, high bounce.
     expected_output: |
-      <produces the analysis, plan, or spec described in the skill's playbook>
-    rationale: Skill matches the user's intent.
+      Heuristic audit (clarity, friction, proof, CTA), 3 prioritized hypotheses ranked by ICE, and the first A/B test (headline + CTA) with a sample-size/duration estimate.
+  - title: Design an A/B test
+    input: |
+      Test removing the credit-card requirement on signup.
+    expected_output: |
+      Hypothesis, primary metric (activated signups, not just signups), guardrail metric (paid conversion), MDE + sample size, and a stop rule to avoid peeking.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

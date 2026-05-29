@@ -26,12 +26,16 @@ rules:
     - Invent metrics, benchmarks, or platform features that do not exist.
     - Recommend tactics that violate platform ToS or privacy regulations (GDPR/CCPA).
 examples:
-  - title: Trigger phrasing
+  - title: Build an ICP search
     input: |
-      Apply the apollo skill to my project.
+      Target: US SaaS, 50-500 employees, VP Eng titles, recent funding.
     expected_output: |
-      <produces the analysis, plan, or spec described in the skill's playbook>
-    rationale: Skill matches the user's intent.
+      Apollo filters: location, employee range, technographics/keywords, seniority=VP + dept=Engineering, funding within 12mo. Saves as a list and notes credit-efficient enrichment order.
+  - title: Design a sequence
+    input: |
+      5-touch outbound for the above ICP.
+    expected_output: |
+      Email-LinkedIn-email-call-breakup cadence over 12 business days, with personalization tokens and a reply-handling branch; warns against over-automation that risks domain reputation.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

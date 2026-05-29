@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent APIs, URLs, or facts not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Styled report with table
     input: |
-      <fill with a realistic task>
+      Generate a 1-page status report .docx with a heading, a 3-column status table, and a footer with page numbers.
     expected_output: |
-      <structured response per system prompt>
+      python-docx: `add_heading(level=1)`, `add_table(rows, cols=3)` with header row styled, footer via `section.footer` and a PAGE field. Returns the build script and the saved path.
+  - title: Track-changes-safe edit
+    input: |
+      Replace every 'Q3' with 'Q4' in an existing contract without breaking styles.
+    expected_output: |
+      Iterates `document.paragraphs` and runs, editing `run.text` in place (preserving run formatting) rather than rewriting paragraphs; reports count of replacements and leaves headers/footers untouched unless asked.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

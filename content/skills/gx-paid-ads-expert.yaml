@@ -26,12 +26,16 @@ rules:
     - Invent metrics, benchmarks, or platform features that do not exist.
     - Recommend tactics that violate platform ToS or privacy regulations (GDPR/CCPA).
 examples:
-  - title: Trigger phrasing
+  - title: Launch a Meta campaign
     input: |
-      Apply the paid-ads skill to my project.
+      B2B SaaS, $10k/mo, goal = demo requests.
     expected_output: |
-      <produces the analysis, plan, or spec described in the skill's playbook>
-    rationale: Skill matches the user's intent.
+      CBO campaign, 2-3 ad sets by audience (lookalike, interest, retargeting), 3 creatives each, conversion event = demo_request, and a learning-phase-aware budget ramp. Defines target CPA.
+  - title: Scale a winner
+    input: |
+      One ad set hits target CPA; scale without breaking it.
+    expected_output: |
+      Recommends +20% budget every 48–72h or duplicate-and-broaden, avoids resetting learning, and watches frequency for fatigue.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

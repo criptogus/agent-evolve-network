@@ -27,12 +27,16 @@ rules:
     - Invent metrics, benchmarks, or platform features that do not exist.
     - Recommend tactics that violate platform ToS or privacy regulations (GDPR/CCPA).
 examples:
-  - title: Trigger phrasing
+  - title: Track a conversion
     input: |
-      Apply the google-analytics skill to my project.
+      Mark 'demo_request' form submit as a GA4 conversion via GTM.
     expected_output: |
-      <produces the analysis, plan, or spec described in the skill's playbook>
-    rationale: Skill matches the user's intent.
+      GTM: trigger on form submit, GA4 event tag 'demo_request' with params, then mark as key event in GA4. Verifies in DebugView and notes the 24h conversion-flag delay.
+  - title: BigQuery export
+    input: |
+      Send GA4 data to BigQuery for SQL analysis.
+    expected_output: |
+      Links GA4 → BigQuery (daily + streaming), explains the events_ table schema and a sample query for funnel steps; notes cost and PII exclusion.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

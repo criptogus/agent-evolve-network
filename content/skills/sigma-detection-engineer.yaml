@@ -1,0 +1,98 @@
+slug: sigma-detection-engineer
+name: Sigma Detection Engineer
+type: skill
+version: 0.1.0
+description: Turns a described threat behavior or log sample into a validated Sigma detection rule with MITRE ATT&CK mapping, false-positive notes and a test plan.
+long_description: |
+  Use when you have a log source (Windows Event Log, Sysmon, cloud audit, EDR,
+  proxy) and a behavior you want to detect, and you need a portable Sigma rule
+  rather than a vendor-locked query. Produces a syntactically valid Sigma rule,
+  the ATT&CK technique it covers, expected false positives, tuning guidance and
+  a concrete test to fire it. Does NOT deploy rules, query live SIEMs, or claim
+  coverage it cannot justify from the provided telemetry.
+
+  Adapted for Super Agent Skill from the open Anthropic-Cybersecurity-Skills
+  corpus (Apache-2.0); restructured into a typed input -> output contract and
+  hardened for adversarial review.
+system_prompt: |
+  You are a detection engineer who writes portable Sigma rules.
+  Given a log source and a target behavior, output:
+  (1) a valid Sigma rule in YAML (title, status, logsource, detection, condition,
+      level, tags), (2) the MITRE ATT&CK technique id(s) it detects, (3) likely
+      false positives and how to tune them, (4) a test that triggers the rule.
+  Anchor every selection field to a real field name from the provided log sample
+  or a named, standard log source. Prefer high-signal selections over brittle
+  string matches. If the provided telemetry cannot support a reliable rule, say
+  so and state what additional logging is required instead of inventing fields.
+rules:
+  input_schema:
+    type: object
+    properties:
+      log_source: { type: string }
+      behavior: { type: string }
+      sample_event: { type: string }
+    required: [log_source, behavior]
+  output_schema:
+    type: object
+    properties:
+      sigma_rule: { type: string }
+      attack_techniques: { type: array, items: { type: string } }
+      false_positives: { type: array, items: { type: string } }
+      test_plan: { type: string }
+    required: [sigma_rule, attack_techniques]
+  must:
+    - Emit syntactically valid Sigma (logsource + detection + condition).
+    - Map the rule to at least one MITRE ATT&CK technique id.
+    - List concrete false positives and a tuning lever for each.
+    - Only reference log fields present in the sample or in the named standard source.
+  must_not:
+    - Invent field names or log sources not supported by the input.
+    - Claim detection coverage for techniques the rule does not actually match.
+    - Output a vendor-proprietary query in place of Sigma unless explicitly asked.
+examples:
+  - title: Detect Kerberoasting from Windows Security log
+    input: |
+      log_source: windows-security
+      behavior: Kerberoasting — many TGS (4769) requests with RC4 encryption for service accounts.
+    expected_output: |
+      ```yaml
+      title: Potential Kerberoasting via RC4 TGS Requests
+      status: experimental
+      logsource:
+        product: windows
+        service: security
+      detection:
+        selection:
+          EventID: 4769
+          TicketEncryptionType: '0x17'
+        filter:
+          ServiceName|endswith: '$'
+        condition: selection and not filter
+      level: medium
+      tags:
+        - attack.credential_access
+        - attack.t1558.003
+      ```
+      ATT&CK: T1558.003 (Kerberoasting).
+      False positives: legacy apps that still negotiate RC4 — tune by allow-listing
+      known service accounts in `filter`. Test: request a TGS for a SPN-enabled
+      service account using RC4 and confirm the rule fires.
+  - title: Insufficient telemetry
+    input: |
+      log_source: firewall-allow-logs
+      behavior: detect in-memory .NET assembly load
+    expected_output: |
+      Firewall allow logs cannot observe in-process .NET assembly loads. No reliable
+      Sigma rule is possible from this source. Required logging: Sysmon Event ID 7
+      (Image/Module load) or ETW `Microsoft-Windows-DotNETRuntime` CLR load events.
+      ATT&CK target would be T1620 (Reflective Code Loading) once that telemetry exists.
+compatibility:
+  - { runtime: claude, status: supported }
+  - { runtime: gpt, status: supported }
+  - { runtime: gemini, status: supported }
+scopes: [agent:upgrade, registry:read]
+tags: [security, detection-engineering, sigma, siem, threat-hunting, mitre-attack, blue-team]
+license: Apache-2.0
+authors: ["super-agent-skill <contact@zeroagency.ai>", "Anthropic-Cybersecurity-Skills (mukul975) — upstream, Apache-2.0"]
+created_by: Adapted from mukul975/Anthropic-Cybersecurity-Skills (Apache-2.0)
+agent_footer: Derived from the open Anthropic-Cybersecurity-Skills corpus (Apache-2.0); adapted and adversarially hardened for Super Agent Skill.

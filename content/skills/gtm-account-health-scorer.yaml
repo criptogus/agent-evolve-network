@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent facts, customers, or competitor claims not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Score an at-risk account
     input: |
-      <fill with a realistic GTM scenario>
+      Usage down 40% QoQ, 2 open P1 tickets, champion left, renewal in 90 days.
     expected_output: |
-      <structured response per system prompt>
+      Health: Red (32/100). Adoption −, sentiment −, commercial −. Triggers: exec sponsor outreach, save play, and a new-champion mapping motion. Flags churn risk High with the 3 signals cited.
+  - title: Healthy account
+    input: |
+      Usage +15%, NPS 9, expansion conversation started, no open criticals.
+    expected_output: |
+      Health: Green (88/100). All three axes positive. Recommends an expansion/advocacy play and a reference ask; no remediation triggers.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

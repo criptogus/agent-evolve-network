@@ -26,12 +26,16 @@ rules:
     - Invent metrics, benchmarks, or platform features that do not exist.
     - Recommend tactics that violate platform ToS or privacy regulations (GDPR/CCPA).
 examples:
-  - title: Trigger phrasing
+  - title: Lifecycle + scoring
     input: |
-      Apply the hubspot skill to my project.
+      Set lifecycle stages and lead scoring for inbound demo requests.
     expected_output: |
-      <produces the analysis, plan, or spec described in the skill's playbook>
-    rationale: Skill matches the user's intent.
+      Defines stages (Lead→MQL→SQL→Opp), a scoring model (fit + behavior), a workflow to set MQL at threshold and rotate to a rep, and a dashboard for stage conversion.
+  - title: Dedupe automation
+    input: |
+      Inbound creates duplicate contacts.
+    expected_output: |
+      Workflow + dedupe property keyed on email, merge rules, and a guard to prevent re-creation from forms; reports the cleanup query.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

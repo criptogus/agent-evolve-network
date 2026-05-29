@@ -26,12 +26,16 @@ rules:
     - Invent metrics, benchmarks, or platform features that do not exist.
     - Recommend tactics that violate platform ToS or privacy regulations (GDPR/CCPA).
 examples:
-  - title: Trigger phrasing
+  - title: Crawl/index audit
     input: |
-      Apply the seo skill to my project.
+      Pages aren't getting indexed; traffic flat.
     expected_output: |
-      <produces the analysis, plan, or spec described in the skill's playbook>
-    rationale: Skill matches the user's intent.
+      Checks robots.txt, canonical/noindex, sitemap submission, crawl stats, and JS-rendering; returns a prioritized fix list (indexability first) with expected impact.
+  - title: Core Web Vitals
+    input: |
+      LCP is 4.2s on mobile.
+    expected_output: |
+      Diagnoses the LCP element, recommends image preload + format + size, server response and render-blocking fixes, and a re-measure plan in CrUX/Lighthouse.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

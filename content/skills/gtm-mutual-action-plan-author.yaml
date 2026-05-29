@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent facts, customers, or competitor claims not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Draft a MAP
     input: |
-      <fill with a realistic GTM scenario>
+      Mid-funnel enterprise deal targeting close in 8 weeks; needs security review + procurement.
     expected_output: |
-      <structured response per system prompt>
+      Milestones with owners and dates (technical validation, security review, procurement, signature), exit criteria per stage, and buyer-side owners named. Shareable, buyer-aligned format.
+  - title: Add a slipped milestone
+    input: |
+      Security review is 2 weeks late.
+    expected_output: |
+      Re-sequences downstream dates, flags the new close-date risk, and assigns a buyer-side owner with a specific unblock action.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

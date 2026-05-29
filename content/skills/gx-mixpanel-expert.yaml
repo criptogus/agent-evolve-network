@@ -25,12 +25,16 @@ rules:
     - Invent metrics, benchmarks, or platform features that do not exist.
     - Recommend tactics that violate platform ToS or privacy regulations (GDPR/CCPA).
 examples:
-  - title: Trigger phrasing
+  - title: Tracking plan
     input: |
-      Apply the mixpanel skill to my project.
+      Implement a Mixpanel tracking plan for a checkout flow.
     expected_output: |
-      <produces the analysis, plan, or spec described in the skill's playbook>
-    rationale: Skill matches the user's intent.
+      Defines events (Checkout Started/Step Viewed/Purchased) with properties, identity management (identify on login), and a funnel + drop-off Board. Notes naming governance.
+  - title: Retention board
+    input: |
+      Measure week-over-week retention for buyers.
+    expected_output: |
+      Retention report: born event = Purchased, return event = any core action, weekly; explains addressable vs full retention and which fits.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

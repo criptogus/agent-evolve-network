@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent facts, customers, or competitor claims not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Map a complex deal
     input: |
-      <fill with a realistic GTM scenario>
+      $400k deal, 7 stakeholders, unclear who signs, one enthusiastic user.
     expected_output: |
-      <structured response per system prompt>
+      MEDDPICC map: identifies the user as a coach (not champion), names the missing economic buyer, marks decision process as Unknown (risk), and recommends a mobilizer play to reach power.
+  - title: Find the gap
+    input: |
+      Champion strong, but no access to the CFO with renewal in 60 days.
+    expected_output: |
+      Flags single-threaded risk, drafts a champion-led intro path to the economic buyer, and a business-case asset to justify the exec meeting.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

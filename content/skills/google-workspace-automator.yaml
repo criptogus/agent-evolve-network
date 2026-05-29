@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent APIs, URLs, or facts not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Label and archive email
     input: |
-      <fill with a realistic task>
+      Find Gmail threads older than 30 days from billing@ and archive them under a 'Billing/Old' label.
     expected_output: |
-      <structured response per system prompt>
+      Apps Script: `GmailApp.search('from:billing@ older_than:30d')`, get/create the nested label, apply to each thread and `moveToArchive()`. OAuth scope gmail.modify; reports thread count. Never deletes.
+  - title: Append rows to a Sheet
+    input: |
+      Append form responses to a 'Leads' sheet, deduping on email.
+    expected_output: |
+      SpreadsheetApp: read existing emails into a Set, append only new rows via `appendRow`, return added/skipped counts. Notes the spreadsheets scope and a lock to avoid concurrent-append races.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

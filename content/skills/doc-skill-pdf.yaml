@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent APIs, URLs, or facts not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Fill a PDF form
     input: |
-      <fill with a realistic task>
+      Fill the AcroForm fields name and date in invoice_template.pdf and flatten it.
     expected_output: |
-      <structured response per system prompt>
+      pypdf: load reader, `update_page_form_field_values()` for the named fields, set NeedAppearances, write out; flatten by setting field flags read-only. Returns the output path and the fields it could not find.
+  - title: Extract a table
+    input: |
+      Extract the line-items table from page 2 of an invoice into rows.
+    expected_output: |
+      pdfplumber: `page.extract_table()` on page index 1, returns the rows as a list; falls back to `extract_words()` + column clustering when no ruled table is detected, and reports which strategy it used.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

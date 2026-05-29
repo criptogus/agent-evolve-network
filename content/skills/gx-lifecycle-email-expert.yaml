@@ -26,12 +26,16 @@ rules:
     - Invent metrics, benchmarks, or platform features that do not exist.
     - Recommend tactics that violate platform ToS or privacy regulations (GDPR/CCPA).
 examples:
-  - title: Trigger phrasing
+  - title: Onboarding journey
     input: |
-      Apply the lifecycle skill to my project.
+      New trial users; want activation in 14 days.
     expected_output: |
-      <produces the analysis, plan, or spec described in the skill's playbook>
-    rationale: Skill matches the user's intent.
+      Behavior-triggered 5-email journey (welcome → first value → tips → social proof → trial-ending), each tied to an in-app milestone with a skip-if-activated branch; primary metric = activation.
+  - title: Win-back
+    input: |
+      Re-engage users inactive 30+ days.
+    expected_output: |
+      3-step win-back with a value reminder, an incentive, and a sunset/suppress step to protect deliverability; defines the re-activation metric.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }

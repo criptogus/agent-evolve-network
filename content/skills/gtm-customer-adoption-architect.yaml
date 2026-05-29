@@ -13,11 +13,16 @@ rules:
   must_not:
     - Invent facts, customers, or competitor claims not grounded in the input.
 examples:
-  - title: Typical request
+  - title: Adoption program for a new product
     input: |
-      <fill with a realistic GTM scenario>
+      Launching a new analytics module; we want 40% of accounts active in 60 days.
     expected_output: |
-      <structured response per system prompt>
+      Persona journeys (admin, end-user), milestone plays (setup → first insight → habit), and activation thresholds with a measurable definition of 'active'. 30/60 checkpoints.
+  - title: Rescue a stalled rollout
+    input: |
+      Account onboarded 90 days ago, still at 10% seat activation.
+    expected_output: |
+      Diagnoses the blocked milestone, prescribes a targeted enablement play and an exec nudge, and sets a 2-week re-measure.
 compatibility:
   - { runtime: claude, status: supported }
   - { runtime: gpt, status: supported }
