@@ -133,14 +133,14 @@ function Hero() {
       <div className="relative mx-auto max-w-7xl px-4 pb-14 pt-14 sm:px-6 md:pt-20 lg:pb-20">
         <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
           {/* LEFT — message + primary action */}
-          <div className="min-w-0 fade-up text-center lg:text-left">
+          <div className="relative z-10 min-w-0 fade-up text-center lg:text-left">
             <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-surface-elevated px-3 py-1 text-xs text-muted-foreground shadow-sm sm:max-w-none">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-signal pulse-dot" />
               <span className="min-w-0 truncate sm:whitespace-normal">459+ expert skills · Works with Claude, Cursor &amp; ChatGPT</span>
             </div>
             <h1 className="mt-5 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl xl:text-[64px]">
               Turn Claude or Cursor into a{" "}
-              <span className="relative block min-h-[2.15em] max-w-full overflow-hidden text-primary sm:inline-block sm:min-h-0 sm:max-w-full sm:overflow-visible">
+              <span className="relative z-10 block min-h-[2.15em] max-w-full overflow-hidden text-primary sm:inline-block sm:min-h-0 sm:max-w-full sm:overflow-visible">
                 {/* Sizer reserves space on sm+ so the absolute Typewriter never
                     overflows. On mobile the Typewriter renders inline and wraps
                     naturally with the heading. */}
