@@ -150,11 +150,11 @@ function Hero() {
                 <Typewriter
                   className="inline-block max-w-full break-words text-center sm:absolute sm:left-0 sm:top-0 sm:whitespace-nowrap sm:text-left"
                   words={[
-                    "cybersecurity expert.",
+                    "cybersec expert.",
                     "senior SRE.",
-                    "fintech compliance officer.",
-                    "HIPAA-aware clinician.",
-                    "Stripe payments expert.",
+                    "fintech officer.",
+                    "HIPAA clinician.",
+                    "Stripe expert.",
                     "CRO specialist.",
                   ]}
                 />
