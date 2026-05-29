@@ -11,12 +11,12 @@ interface TypewriterProps {
 export function Typewriter({
   words,
   className,
-  typeSpeed = 130,
-  deleteSpeed = 70,
-  pause = 2200,
+  typeSpeed = 80,
+  deleteSpeed = 45,
+  pause = 1600,
 }: TypewriterProps) {
   const [index, setIndex] = useState(0);
-  const [text, setText] = useState(words[0] ?? "");
+  const [text, setText] = useState("");
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export function Typewriter({
 
   return (
     <span className={className}>
-      {text || words[index % words.length]}
+      {text}
       <span className="caret" aria-hidden />
     </span>
   );
