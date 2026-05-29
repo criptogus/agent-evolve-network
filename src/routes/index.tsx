@@ -140,15 +140,9 @@ function Hero() {
             </div>
             <h1 className="mt-5 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl xl:text-[64px]">
               Turn Claude or Cursor into a{" "}
-              <span className="relative z-10 block min-h-[2.15em] max-w-full overflow-hidden text-primary sm:inline-block sm:min-h-0 sm:max-w-full sm:overflow-visible">
-                {/* Sizer reserves space on sm+ so the absolute Typewriter never
-                    overflows. On mobile the Typewriter renders inline and wraps
-                    naturally with the heading. */}
-                <span aria-hidden className="hidden whitespace-nowrap invisible sm:inline">
-                  fintech compliance officer.
-                </span>
+              <span className="block text-primary text-[1.5rem] sm:text-3xl lg:text-4xl xl:text-[2.75rem] leading-[1.15] mt-1">
                 <Typewriter
-                  className="inline-block max-w-full break-words text-center sm:absolute sm:left-0 sm:top-0 sm:whitespace-nowrap sm:text-left"
+                  className="inline-block max-w-full break-words"
                   words={[
                     "cybersecurity expert.",
                     "senior SRE.",
@@ -159,7 +153,7 @@ function Hero() {
                   ]}
                 />
               </span>
-              <span className="text-foreground/90">In 30 seconds. No code.</span>
+              <span className="mt-2 block text-foreground/90">In 30 seconds. No code.</span>
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-pretty px-1 text-base leading-relaxed text-muted-foreground lg:mx-0 lg:px-0 lg:text-lg">
               Paste one link into Claude, Cursor or ChatGPT and it instantly gains{" "}
