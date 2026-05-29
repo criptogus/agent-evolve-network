@@ -39,6 +39,77 @@ const skillInvoker: ModelInvoker = async ({ system_prompt, user_input, context }
   return text;
 };
 
+export type JudgeCalibrationRow = {
+  slug: string;
+  name: string;
+  type: string;
+  latest_kappa: number | null;
+  latest_agreement: number | null;
+  latest_overrides: number | null;
+  latest_cases: number | null;
+  runs: number;
+  last_run_at: string | null;
+  /** κ over recent runs, oldest→newest, for a sparkline. */
+  kappa_history: number[];
+};
+
+/** Per-package judge calibration history. Admin only. */
+export const getJudgeCalibration = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => {
+    const days = (d as { days?: unknown })?.days;
+    return { days: typeof days === "number" && days > 0 && days <= 365 ? days : 90 };
+  })
+  .handler(async ({ context, data }): Promise<{ days: number; rows: JudgeCalibrationRow[] }> => {
+    await assertAdmin(context.supabase, context.userId);
+
+    const since = new Date(Date.now() - data.days * 86400_000).toISOString();
+    const { data: runs, error } = await supabaseAdmin
+      .from("adversarial_runs")
+      .select("package_id, judge_kappa, judge_agreement, judge_overrides, judge_cases, created_at")
+      .not("judge_kappa", "is", null)
+      .gte("created_at", since)
+      .order("created_at", { ascending: true })
+      .limit(2000);
+    if (error) throw new Response(error.message, { status: 500 });
+
+    const byPkg = new Map<string, typeof runs>();
+    for (const r of runs ?? []) {
+      const arr = byPkg.get(r.package_id) ?? [];
+      arr.push(r);
+      byPkg.set(r.package_id, arr);
+    }
+    if (byPkg.size === 0) return { days: data.days, rows: [] };
+
+    const { data: pkgs } = await supabaseAdmin
+      .from("packages")
+      .select("id, slug, name, type")
+      .in("id", Array.from(byPkg.keys()));
+    const meta = new Map((pkgs ?? []).map((p: any) => [p.id, p]));
+
+    const rows: JudgeCalibrationRow[] = [];
+    for (const [pkgId, list] of byPkg) {
+      const m = meta.get(pkgId);
+      if (!m) continue;
+      const last = list[list.length - 1];
+      rows.push({
+        slug: m.slug,
+        name: m.name,
+        type: m.type,
+        latest_kappa: last.judge_kappa,
+        latest_agreement: last.judge_agreement,
+        latest_overrides: last.judge_overrides,
+        latest_cases: last.judge_cases,
+        runs: list.length,
+        last_run_at: last.created_at,
+        kappa_history: list.map((r) => Number(r.judge_kappa)).slice(-20),
+      });
+    }
+    // Lowest κ first — the packages whose judge is drifting need attention.
+    rows.sort((a, b) => (a.latest_kappa ?? 1) - (b.latest_kappa ?? 1));
+    return { days: data.days, rows };
+  });
+
 export const runAdversarialWithJudge = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => {
