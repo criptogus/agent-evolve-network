@@ -2,6 +2,10 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { parse as parseYaml } from "yaml";
 
+// Pure, dependency-free holdout helpers live in their own module so they can be
+// imported and tested without pulling in the YAML parser.
+export { splitTrainHoldout, caseHashUnit } from "./holdout";
+
 export type AdversarialVertical =
   | "security"
   | "fintech"
