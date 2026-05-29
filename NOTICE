@@ -1,0 +1,22 @@
+Super Agent Skill
+Copyright (c) Zero Agency / Super Agent Skill contributors.
+
+This product includes content adapted from third-party open-source projects.
+
+------------------------------------------------------------------------------
+Anthropic-Cybersecurity-Skills
+  Source : https://github.com/mukul975/Anthropic-Cybersecurity-Skills
+  License: Apache License 2.0
+  Use    : Selected cybersecurity skills were adapted into the Super Agent Skill
+           schema (content/skills/*.yaml) and hardened through our upskilling
+           pipeline (schema validation + adversarial harness + Trust Score).
+           Files derived from this source carry `license: Apache-2.0` and credit
+           the upstream in their `authors` / `created_by` fields. Changes were
+           made: reformatting to our typed input->output contract, authored
+           examples, and added rules/guardrails.
+
+  Adapted files (initial wave):
+    - content/skills/sigma-detection-engineer.yaml
+    - content/skills/pcap-triage-analyst.yaml
+    - content/skills/kubernetes-security-auditor.yaml
+------------------------------------------------------------------------------
