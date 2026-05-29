@@ -18,8 +18,8 @@ A prospect who notices 459 → 4,200 → 500 in one scroll loses trust instantly
 ### C2. "Trust Score" vs "Health Score" naming
 The product's flagship metric is **Trust Score** everywhere except testimonial quotes that say **"Health Score"** (`index.tsx:1864`) and FreeVsPremium "guaranteed health scores" (`index.tsx:2054`). Same concept, two names = confusion. Standardize on **Trust Score**.
 
-### C3. Fabricated-looking testimonials
-`CASES`/`QUOTES` use named people and specific orgs ("Mayo-affiliated clinic", "Dr. Helena Vasquez", "fintech unicorn") that read as real customers (`index.tsx:1816–1880`). The SocialProof header does disclaim "illustrative scenarios" (`index.tsx:1894`), but the cards themselves don't — this is a legal/trust risk and undermines the very "proof not prompts" positioning. **Either** secure real, attributable testimonials **or** visibly label each card as illustrative and drop fake names/affiliations.
+### C3. Fabricated-looking testimonials — RESOLVED (removed)
+`CASES`/`QUOTES` used named people and specific orgs that read as real customers. An "Illustrative" label was considered but rejected: explicitly flagging the section as not-real erodes trust more than it protects. **The entire SocialProof section was removed** from the home page (data + component) until real, attributable testimonials exist. Re-introduce only with verifiable, consented quotes.
 
 ### C4. License mislabel
 FreeVsPremium tags the open registry **"MIT-style"** (`index.tsx:2080`), but the repo is **Apache 2.0 (code) + CC BY-SA 4.0 (content)**. Small, but it's exactly the kind of inaccuracy a compliance buyer catches.
@@ -53,11 +53,12 @@ The route map is broad and well-organized (marketplace, trust pages, forge, acco
 - **Onboarding cohesion:** `connect`, `onboarding`, `welcome`, `match`, `generate`, `play`, `run` overlap — a single guided wizard (see PM analysis #1) would reduce the maze.
 - **Trust page legibility:** the Trust Score is the core differentiator; its detail page (`marketplace.trust.$slug.tsx`) should make the weighted formula visually scannable (a labeled bar per component) so security reviewers grok it in seconds.
 
-## 5. Quick wins (ship this PR)
+## 5. Quick wins — SHIPPED
 
-1. Unify all counts to one number (C1) and Trust Score naming (C2).
-2. Fix the "MIT-style" license label (C4).
-3. Soften jargon in the hero, lead with benefit + ease (H2).
-4. Add a clearer single primary CTA hierarchy (H3).
-
-These are addressed in the landing-page edits accompanying this audit.
+1. ✅ Unified counts (C1: removed "4,200+" / "4,218"; one number) and Trust Score naming (C2).
+2. ✅ Fixed the "MIT-style" license label → "Apache 2.0 · CC BY-SA" (C4).
+3. ✅ Softened jargon in the hero; benefit-first copy + ease cues (H2).
+4. ✅ Single primary CTA + quiet secondary text link (H3).
+5. ✅ MCP tool picker (Claude/Cursor/ChatGPT/Other) that swaps connect instructions (H4).
+6. ✅ Removed SocialProof entirely (C3).
+7. ✅ Trimmed message overload: dropped redundant `SkillLayerManifesto` + `NetworkSection`, reordered to ease-first narrative (H1).

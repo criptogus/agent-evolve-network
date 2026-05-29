@@ -117,6 +117,26 @@ One `[0,1]` Trust Score collapses safety, competence, and freshness. A guardrail
 | 3 | Holdout sets + community red-team + holdout-gated Forge (#7,#8) | Structural, highest defensibility |
 | 3 | Multi-dimensional badge + published reproducible spec (#5,#10) | Marketing + enterprise moat |
 
+## 4b. What shipped in this PR
+
+A reproducible, tested **Trust Score v2 core**:
+
+- `src/lib/trust/scoring.ts` — pure, offline-reproducible implementation:
+  Wilson lower-bound (#2), evidence-gating via a confidence factor with an
+  explicit `verified` flag instead of 0.5 defaults (#1, W2), a freshness term
+  replacing raw age (#4, W5), and a multi-dimensional vector — safety /
+  competence / freshness / coverage (#5, W8). Covered by `tests/trust-scoring.test.mjs`.
+- `supabase/migrations/20260529120000_trust_score_v2.sql` — `recompute_trust_scores_v2()`
+  mirrors the TS logic in pure SQL (Wilson + confidence + freshness + dimensions),
+  adds transparency columns, and repoints the nightly cron. v1 is left intact for rollback.
+- `src/lib/adversarial/holdout.ts` — deterministic, salt-rotatable train/holdout
+  split so robustness reflects generalization, not overfitting to known cases
+  (#7, W6). Covered by `tests/adversarial-holdout.test.mjs`.
+
+**Still follow-up (larger bets):** LLM-judge + κ reporting (#6), community red-team
+pipeline + holdout-gated SkillForge promotion (#7, #8), production counterfactual
+A/B (#9), and the published reproducible-spec + signed-methodology surface (#10).
+
 ## 5. One-line takeaway
 
 Today the algorithm is a solid weighted average over real signals. To make it **unique and uncopyable**, move from *averages over a static, substring-graded suite* to **confidence-bounded, recency- and model-aware scores over an adversary-sourced, holdout-protected, semantically-judged suite — with a published, reproducible, signed methodology.** That combination is something a prompt library on GitHub structurally cannot match.

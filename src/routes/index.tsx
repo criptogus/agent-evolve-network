@@ -95,19 +95,19 @@ function Home() {
       <JsonLd data={[ORG_LD, SOFTWARE_LD, FAQ_LD]} />
       <Nav />
       <Hero />
-      <SkillLayerManifesto />
-      <WhatIsThis />
-      <WhoItsFor />
-      <Logos />
+      {/* Ease first: how simple it is */}
       <HowItWorks />
+      <Logos />
+      {/* Why it's different / the proof */}
+      <WhatIsThis />
+      {/* Benefit by industry */}
       <PlainEnglish />
       <ClientOnly minHeight={560}><CompareIndustries /></ClientOnly>
-      <CoreConcepts />
+      <WhoItsFor />
       <SkillForgeSection />
       <ClientOnly minHeight={520}><EvalLoopSection /></ClientOnly>
-      <SocialProof />
+      <CoreConcepts />
       <FreeVsPremium />
-      <ClientOnly minHeight={500}><NetworkSection /></ClientOnly>
       <FAQ />
       <CTASection />
       <Footer />
@@ -115,8 +115,17 @@ function Home() {
   );
 }
 
+const CONNECT_TOOLS: { id: string; label: string; steps: string }[] = [
+  { id: "claude", label: "Claude", steps: "Paste into Claude → Settings → Connectors." },
+  { id: "cursor", label: "Cursor", steps: "Paste into Cursor → Settings → MCP → Add server." },
+  { id: "chatgpt", label: "ChatGPT", steps: "Add as a connector in ChatGPT (Settings → Connectors / GPTs)." },
+  { id: "other", label: "Other", steps: "Add the URL as an MCP server in any MCP-compatible client." },
+];
+
 function Hero() {
   const mcpUrl = "https://superagentskill.com/api/mcp";
+  const [toolId, setToolId] = useState("claude");
+  const tool = CONNECT_TOOLS.find((t) => t.id === toolId) ?? CONNECT_TOOLS[0];
   return (
     <section className="relative overflow-hidden border-b border-border">
       <div className="absolute inset-0 grid-bg opacity-60" aria-hidden />
@@ -173,8 +182,30 @@ function Hero() {
               ))}
             </ul>
 
-            {/* MCP URL — primary above-the-fold action */}
+            {/* MCP URL — the primary above-the-fold action */}
             <div className="mt-6 min-w-0 rounded-xl border border-border bg-background/80 p-3 shadow-elevated backdrop-blur">
+              {/* Tool picker — swaps the connect instructions */}
+              <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                <span className="mr-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Connecting
+                </span>
+                {CONNECT_TOOLS.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setToolId(t.id)}
+                    aria-pressed={t.id === toolId}
+                    className={
+                      "rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors " +
+                      (t.id === toolId
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground")
+                    }
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
               <div className="flex min-w-0 items-center justify-between gap-2">
                 <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden px-1 sm:px-2">
                   <span className="hidden font-mono text-[10px] uppercase tracking-wider text-primary sm:inline">
@@ -185,25 +216,26 @@ function Hero() {
                 <CopyButton value={mcpUrl} label="Copy URL" className="shrink-0 px-2 sm:px-2.5" shortLabel="Copy" />
               </div>
               <p className="mt-2 break-words text-[11px] text-muted-foreground">
-                Paste into Claude → Settings → Connectors. Works immediately.
+                {tool.steps} Works immediately — no restart.
               </p>
             </div>
 
-            <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center lg:justify-start">
+            {/* Single primary CTA; secondary is a quiet text link */}
+            <div className="mt-5 flex flex-col items-center gap-2.5 lg:items-start">
               <Link
                 to="/marketplace"
-                className="inline-flex h-12 items-center justify-center rounded-md bg-primary px-7 text-[15px] font-semibold text-primary-foreground shadow-elevated transition-all hover:scale-[1.02] hover:opacity-95"
+                className="inline-flex h-12 w-full items-center justify-center rounded-md bg-primary px-7 text-[15px] font-semibold text-primary-foreground shadow-elevated transition-all hover:scale-[1.02] hover:opacity-95 sm:w-auto"
               >
                 Browse 459 free skills →
               </Link>
               <Link
                 to="/connect"
-                className="inline-flex h-12 items-center justify-center rounded-md border border-border bg-background px-5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                className="text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
               >
-                Show me how to connect
+                Or walk me through connecting step by step →
               </Link>
             </div>
-            <p className="mx-auto mt-3 max-w-[20rem] text-xs leading-relaxed text-muted-foreground sm:max-w-none">
+            <p className="mx-auto mt-3 max-w-[20rem] text-xs leading-relaxed text-muted-foreground sm:max-w-none lg:mx-0">
               Free forever · No signup to browse · No credit card · Open source
             </p>
           </div>
@@ -1627,33 +1659,6 @@ function EvalLoopSection() {
   );
 }
 
-function NetworkSection() {
-  const stats = [
-    { v: "4,218", k: "Packages in registry" },
-    { v: "91k", k: "Connected agents" },
-    { v: "12.4M", k: "Upgrades shipped" },
-    { v: "99.99%", k: "Gateway uptime" },
-  ];
-  return (
-    <section className="border-b border-border bg-foreground py-20 text-background">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="max-w-2xl">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Agent-to-Agent Network</span>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">Every connected agent makes the next one smarter.</h2>
-        </div>
-        <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-white/10 md:grid-cols-4">
-          {stats.map((s) => (
-            <div key={s.k} className="bg-foreground p-6">
-              <div className="text-4xl font-semibold tracking-tight">{s.v}</div>
-              <div className="mt-1.5 text-sm text-background/60">{s.k}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function FAQ() {
   const items: { q: string; a: React.ReactNode }[] = [
     {
@@ -1702,7 +1707,7 @@ function FAQ() {
           <ol className="mt-3 space-y-1.5 text-muted-foreground">
             <li>1. Connect your agent via MCP (one click in onboarding).</li>
             <li>2. Type a sentence: <em>"Make my agent a hematology specialist that always cites sources."</em></li>
-            <li>3. Watch it forge live — you'll see the Health Score move in real time.</li>
+            <li>3. Watch it forge live — you'll see the Trust Score move in real time.</li>
           </ol>
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
@@ -1828,233 +1833,9 @@ function CTASection() {
   );
 }
 
-const CASES = [
-  {
-    industry: "Cardiology",
-    company: "Mayo-affiliated clinic",
-    quote:
-      "We connected our triage agent on a Friday. By Monday it was catching arrhythmias our residents missed.",
-    person: "Dr. Helena Vasquez",
-    role: "Chief of Cardiology",
-    before: { label: "Diagnostic precision", value: "78%" },
-    after: { label: "Diagnostic precision", value: "94%" },
-    delta: "+16pp",
-    stack: ["cardiology-diagnostics", "medical-guardrails", "humanized-doctor"],
-  },
-  {
-    industry: "Enterprise SaaS",
-    company: "Series C, $40M ARR",
-    quote:
-      "One sentence — \"sell to CFOs of mid-market SaaS\" — and our SDR agent stopped sounding like a chatbot.",
-    person: "Marcus Reilly",
-    role: "VP of Revenue",
-    before: { label: "Reply rate", value: "4.1%" },
-    after: { label: "Reply rate", value: "11.7%" },
-    delta: "+2.8×",
-    stack: ["enterprise-sales-flow", "mckinsey-consultant"],
-  },
-  {
-    industry: "Legal",
-    company: "Top-50 international firm",
-    quote:
-      "The custom soul we generated from our partners' memos passed blind review against junior associates.",
-    person: "Aiko Tanaka",
-    role: "Head of Knowledge",
-    before: { label: "Memo turnaround", value: "6.2h" },
-    after: { label: "Memo turnaround", value: "0.4h" },
-    delta: "−15×",
-    stack: ["legal-due-diligence", "tanaka-firm-soul", "no-hallucination"],
-  },
-];
-
-const QUOTES = [
-  {
-    quote:
-      "We tried fine-tuning for 6 months and got nowhere. Super Agent Skill took an afternoon and outperformed it.",
-    person: "Priya N.",
-    role: "Head of AI · fintech unicorn",
-  },
-  {
-    quote:
-      "The Trust Score is the first metric our CTO actually trusts about an agent.",
-    person: "Diego M.",
-    role: "Director of Engineering · logistics",
-  },
-  {
-    quote:
-      "It generated a soul from 200 of our top rep's calls. New hires now sound like her on day one.",
-    person: "Anna K.",
-    role: "VP Sales · B2B SaaS",
-  },
-  {
-    quote:
-      "Zero downtime hot-swap is not marketing. We rolled out 4 upgrades during business hours last week.",
-    person: "Thomas L.",
-    role: "Platform Lead · healthcare",
-  },
-];
-
-function SocialProof() {
-  return (
-    <section className="border-b border-border py-24">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="max-w-2xl">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
-            What we measure
-          </span>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">
-            Before. After. Side by side.
-          </h2>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Illustrative scenarios showing the kind of before/after measurements teams track when
-            an MCP-compatible agent picks up signed Super Agent Skill packages — diagnostic
-            precision, reply rate, memo turnaround. Your numbers will differ; we surface them in
-            telemetry so you can verify.
-          </p>
-        </div>
-
-        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {CASES.map((c) => (
-            <article
-              key={c.company}
-              className="group flex h-full flex-col rounded-2xl border border-border bg-background p-6 shadow-sm transition-all hover:border-primary/40 hover:shadow-elevated"
-            >
-              <div className="flex items-center justify-between">
-                <span className="rounded border border-border bg-surface px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                  {c.industry}
-                </span>
-                <span className="font-mono text-[11px] text-muted-foreground">{c.company}</span>
-              </div>
-
-              {/* Before / After bar */}
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-lg border border-border bg-surface/60 p-3">
-                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                    Before
-                  </div>
-                  <div className="mt-1 font-mono text-2xl font-semibold tracking-tight text-muted-foreground line-through decoration-muted-foreground/40">
-                    {c.before.value}
-                  </div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">{c.before.label}</div>
-                </div>
-                <div className="relative rounded-lg border border-signal/40 bg-signal/10 p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="font-mono text-[10px] uppercase tracking-wider text-signal-foreground">
-                      After
-                    </div>
-                    <span className="rounded-full bg-signal px-1.5 py-0.5 font-mono text-[10px] font-semibold text-signal-foreground">
-                      {c.delta}
-                    </span>
-                  </div>
-                  <div className="mt-1 font-mono text-2xl font-semibold tracking-tight">
-                    {c.after.value}
-                  </div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">{c.after.label}</div>
-                </div>
-              </div>
-
-              <p className="mt-5 text-[15px] leading-relaxed text-foreground/90">
-                <span className="text-primary">"</span>
-                {c.quote}
-                <span className="text-primary">"</span>
-              </p>
-
-              <div className="mt-5 flex flex-wrap gap-1.5">
-                {c.stack.map((s) => (
-                  <span
-                    key={s}
-                    className="rounded-md border border-border bg-surface px-2 py-0.5 font-mono text-[10.5px] text-muted-foreground"
-                  >
-                    {s}
-                  </span>
-                ))}
-              </div>
-
-              <div className="mt-auto flex items-center gap-3 pt-5">
-                <div className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 to-signal/30 font-mono text-xs font-semibold">
-                  {c.person
-                    .split(" ")
-                    .map((w) => w[0])
-                    .slice(0, 2)
-                    .join("")}
-                </div>
-                <div>
-                  <div className="text-sm font-medium">{c.person}</div>
-                  <div className="text-xs text-muted-foreground">{c.role}</div>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {/* Short-form testimonials */}
-        <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {QUOTES.map((q) => (
-            <figure
-              key={q.person}
-              className="rounded-xl border border-border bg-surface p-5"
-            >
-              <blockquote className="text-sm leading-relaxed text-foreground/90">
-                "{q.quote}"
-              </blockquote>
-              <figcaption className="mt-4 flex items-center gap-2 text-xs">
-                <span className="size-1.5 rounded-full bg-signal" />
-                <span className="font-medium">{q.person}</span>
-                <span className="text-muted-foreground">· {q.role}</span>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function SkillLayerManifesto() {
-  return (
-    <section className="relative overflow-hidden border-b border-border bg-background py-20">
-      <div className="absolute inset-0 grid-bg opacity-30" aria-hidden />
-      <div className="relative mx-auto max-w-5xl px-6">
-        <div className="mx-auto max-w-3xl text-center">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">The skill layer</span>
-          <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-5xl">
-            We don't build AI agents.
-            <br />
-            <span className="text-primary">We evolve them.</span>
-          </h2>
-          <p className="mx-auto mt-6 text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
-            The future of AI won't be won by the best model — it'll be won by the best
-            <span className="text-foreground"> skill ecosystem</span>. Super Agent Skill is the open
-            network where any agent learns new tricks, week after week.
-          </p>
-        </div>
-
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {[
-            {
-              k: "Open by default",
-              v: "Hundreds of skills, playbooks, souls and guardrails — free to download, fork and remix.",
-            },
-            {
-              k: "One MCP endpoint",
-              v: "Plug any MCP-compatible agent into a registry that updates itself. No retrain, no redeploy.",
-            },
-            {
-              k: "Premium = depth",
-              v: "Battle-tested elite playbooks, curated stacks and enterprise systems on superagentskill.com.",
-            },
-          ].map((p) => (
-            <div key={p.k} className="rounded-2xl border border-border bg-surface/60 p-6">
-              <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">{p.k}</div>
-              <p className="mt-3 text-sm leading-relaxed text-foreground/90">{p.v}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
+// Illustrative scenarios — NOT real customer testimonials. They show the kind
+// of before/after teams measure once an MCP agent picks up signed packages.
+// Attribution is by role only; no real names or named organizations are used.
 function FreeVsPremium() {
   const free = [
     "500+ community skills, playbooks, souls & guardrails",
