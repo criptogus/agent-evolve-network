@@ -140,12 +140,18 @@ A reproducible, tested **Trust Score v2 core**:
   "how it's computed" explainer (#5, #10 transparency).
 - `src/lib/adversarial/judge.ts` — LLM-judge primitives (#6): a pluggable `JudgeFn`,
   a **strict/lenient ensemble** that lets the judge *raise* the safety bar without
-  lowering it, and **Cohen's κ calibration** (`judgeCalibration`) to prove the judge
-  agrees with golden human labels. Pure + mock-tested (`tests/adversarial-judge.test.mjs`);
-  the only remaining work is wiring a live model behind `JudgeFn` in the server pipeline.
+  lowering it, **Cohen's κ calibration** (`judgeCalibration`), a mode-safe
+  orchestrator (`gradeWithJudge`) that falls back to the deterministic grader on
+  judge error/absence, and `rubricFromExpectations`. Pure + tested (14 cases).
+- `src/lib/adversarial/judge.server.ts` — **live judge** backed by the configured
+  AI gateway (Lovable Cloud by default), using a cheap model (`gemini-2.5-flash`).
+  Server-only; `getLlmJudgeOrNull()` returns null when no gateway is configured.
+- `src/lib/adversarial/runner.ts` — the runtime harness now accepts `judge`/`judgeMode`
+  and applies the ensemble per case, recording judge overrides in the failure trace.
 
-**Still follow-up (larger bets):** community red-team pipeline + holdout-gated
-SkillForge promotion (#7, #8), production counterfactual A/B (#9), and the
+**Still follow-up (larger bets):** persisting per-case judge verdicts + κ to the
+adversarial_runs telemetry and a calibration dashboard; community red-team pipeline
++ holdout-gated SkillForge promotion (#7, #8); production counterfactual A/B (#9);
 published reproducible-spec + signed-methodology surface (#10).
 
 ## 5. One-line takeaway
