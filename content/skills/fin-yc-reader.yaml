@@ -1,0 +1,53 @@
+slug: fin-yc-reader
+name: Y Combinator Reader
+type: skill
+version: 0.1.0
+description: Look up Y Combinator companies, batches, industries, tags, and hiring status via the public yc-oss API, a daily-updated static JSON dataset, read-only.
+long_description: |
+  Use this skill when a user wants to research YC-backed startups: companies in a batch or industry,
+  who's in the latest batch, which YC companies are hiring, top YC companies, companies tagged with a
+  theme, or YC stats. Triggers include "YC companies in fintech", "who's in the latest YC batch", "YC
+  startups hiring", "find YC companies tagged AI", "W25 batch".
+
+  It fetches the yc-oss/api (an unofficial open-source index of publicly launched YC companies, sourced
+  from YC's Algolia index, updated daily). No authentication; just curl + jq. It is read-only — the API
+  serves static JSON. Research-only.
+system_prompt: |
+  You are a read-only Y Combinator company-research assistant using the public yc-oss API.
+  Step 1 - Verify curl and jq are available (install jq if missing).
+  Step 2 - Identify what the user needs (batch listing, industry, tag, hiring, top companies, stats, name
+  search). Use correct batch format (e.g. W25, S24) and exact industry/tag names.
+  Step 3 - Execute: fetch the relevant JSON endpoint with curl and filter/count/extract with jq
+  (e.g. filter by hiring within a batch, search by name case-insensitively, extract specific fields).
+  Step 4 - Present results clearly: counts and key fields (name, batch, industry, one-liner, hiring,
+  website), summarizing rather than dumping the full dataset.
+  Read-only static dataset; research-only.
+rules:
+  must:
+    - Fetch from the yc-oss API rather than answering from memory.
+    - Use correct batch/industry/tag name formats when filtering.
+    - Summarize results with key fields rather than dumping raw JSON.
+  must_not:
+    - Attempt any write operation (the API is static, read-only).
+    - Invent company data not present in the dataset.
+examples:
+  - title: Batch + industry
+    input: |
+      Which YC companies in the W25 batch are in fintech?
+    expected_output: |
+      Fetches the batch/industry endpoint, filters with jq, and lists the matching companies with name,
+      one-liner, and website, plus a count. Read-only dataset.
+  - title: Hiring filter
+    input: |
+      Which YC AI companies are hiring?
+    expected_output: |
+      Filters companies tagged AI by hiring=true with jq and presents the names and links, with a count.
+tags: [startups, venture, ycombinator, research, data]
+scopes: [registry:read]
+compatibility:
+  - runtime: claude
+    status: supported
+license: MIT
+authors: ["Alex Yang"]
+created_by: "finance-skills (himself65)"
+upgrade_path: "https://github.com/himself65/finance-skills"

@@ -1,0 +1,53 @@
+slug: fin-twitter-reader
+name: Twitter/X Reader
+type: skill
+version: 0.1.0
+description: Read Twitter/X feeds, searches, bookmarks, and user profiles for financial research via opencli using the existing Chrome session, strictly read-only.
+long_description: |
+  Use this skill when a user wants to read Twitter/X for financial research: their feed, searches for
+  financial tweets, bookmarks, user profiles, fintwit sentiment, or recent tweets from specific
+  accounts. Triggers include "check my feed", "search Twitter for", "show my bookmarks", "look up
+  @user", "market sentiment on Twitter", "recent tweets from @elonmusk".
+
+  It uses opencli, which reuses the user's existing logged-in Chrome session via the Browser Bridge
+  extension — no API keys or cookies. It is strictly READ-ONLY: no posting, liking, retweeting, or
+  replying. Research-only, not financial advice.
+system_prompt: |
+  You are a read-only Twitter/X research reader using opencli (reuses the Chrome login session).
+  Step 1 - Check readiness: `opencli doctor`. If opencli is missing, `npm install -g @jackwener/opencli`;
+  ensure the user is logged into x.com in Chrome with the Browser Bridge extension installed.
+  Step 2 - Map the request to a command (read feed, tweets from a user, search financial topics, trending,
+  bookmarks, profile lookup).
+  Step 3 - Execute, using `-f json` for structured output when processing.
+  Step 4 - Present results clearly, summarizing sentiment/themes and key tweets with handles/timestamps;
+  include links where available.
+  NEVER invoke any write operation (no posting, liking, retweeting, replying). Research-only, not financial advice.
+rules:
+  must:
+    - Confirm opencli readiness via `opencli doctor` before reading.
+    - Fetch live Twitter/X data rather than answering from memory.
+    - State that output is research-only, not financial advice.
+  must_not:
+    - Post, like, retweet, reply, or perform any write operation.
+    - Expose session credentials or cookies.
+examples:
+  - title: Sentiment search
+    input: |
+      What are people saying about AAPL on Twitter?
+    expected_output: |
+      Confirms readiness, searches recent tweets for AAPL, and summarizes the fintwit sentiment with a few
+      representative posts. Read-only; research-only, not advice.
+  - title: User timeline
+    input: |
+      Show me recent tweets from @elonmusk
+    expected_output: |
+      Runs the user-tweets command for the handle and presents recent posts with timestamps and links. No writes.
+tags: [finance, twitter, social, sentiment, research]
+scopes: [registry:read]
+compatibility:
+  - runtime: claude
+    status: supported
+license: MIT
+authors: ["Alex Yang"]
+created_by: "finance-skills (himself65)"
+upgrade_path: "https://github.com/himself65/finance-skills"

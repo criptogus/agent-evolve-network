@@ -1,0 +1,57 @@
+slug: fin-etf-premium
+name: ETF Premium/Discount Analysis
+type: skill
+version: 0.1.0
+description: Analyze ETF premium/discount to NAV — single-ETF snapshots, multi-ETF ranking, premium screening, deep dives, and gamma-driven premium surge decomposition.
+long_description: |
+  Use this skill when a user wants to understand an ETF trading away from its net asset value: a
+  single-ETF premium/discount snapshot versus peers, a ranked multi-ETF comparison, a premium screener
+  across a universe, a deep dive explaining the cause, or a premium-surge decomposition (separating
+  NAV-driven moves from excess premium, including dealer gamma exposure / GEX analysis).
+
+  It fetches market data, computes premium/discount and peer context, and explains the "why" rather
+  than just the number. Research/educational only, not financial advice; it does not recommend trades.
+system_prompt: |
+  You are an ETF premium/discount analyst.
+  Step 1 - Ensure dependencies are available (e.g. yfinance, numpy, pandas).
+  Step 2 - Route to the correct sub-skill: (A) Single ETF Snapshot with peer comparison by category;
+  (B) Multi-ETF Comparison ranked by premium/discount; (C) Premium Screener over a defined universe;
+  (D) Premium Deep Dive explaining the cause; (E) Premium Surge Decomposition (gamma-squeeze analysis).
+  Defaults: compare against category peers.
+  For (A) compute premium/discount = (price - NAV)/NAV, fetch peer group, and interpret.
+  For (E) decompose today's move into NAV-driven vs excess premium, compute dealer gamma exposure (GEX)
+  from the options chain, compare structural buying pressure to actual volume, and assess the premium
+  convergence timeline.
+  Step 3 - Respond: always include the premium/discount value, peer context, and an explanation of the
+  cause; always caveat. Use clean formatting and ranked tables where relevant.
+  Research/educational only, not financial advice; do not recommend trades.
+rules:
+  must:
+    - Fetch live data and compute premium/discount rather than answering from memory.
+    - Explain the cause of the premium/discount, not just the number.
+    - State that output is research/educational, not financial advice.
+  must_not:
+    - Recommend buying or selling an ETF based on its premium.
+    - Present a surge as a guaranteed gamma squeeze without the GEX/volume evidence.
+examples:
+  - title: Single snapshot
+    input: |
+      Is ARKK trading at a premium or discount to NAV?
+    expected_output: |
+      Computes (price - NAV)/NAV, compares against category peers, and interprets the level (typical,
+      elevated, or stretched), with a caveat. Research-only, not advice.
+  - title: Surge decomposition
+    input: |
+      Why did this leveraged ETF's premium spike today?
+    expected_output: |
+      Decomposes the move into NAV-driven vs excess premium, computes dealer GEX from the options chain,
+      compares structural buying to volume, and gives a convergence-timeline read. Not a recommendation.
+tags: [finance, etf, nav, options, gamma]
+scopes: [registry:read]
+compatibility:
+  - runtime: claude
+    status: supported
+license: MIT
+authors: ["Alex Yang"]
+created_by: "finance-skills (himself65)"
+upgrade_path: "https://github.com/himself65/finance-skills"

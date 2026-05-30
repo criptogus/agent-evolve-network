@@ -1,0 +1,56 @@
+slug: fin-earnings-preview
+name: Earnings Preview
+type: skill
+version: 0.1.0
+description: Build a pre-earnings preview for a stock using yfinance — earnings date, consensus estimates, beat/miss track record, analyst sentiment, and key metrics to watch.
+long_description: |
+  Use this skill when a user wants a preview ahead of a company's earnings report: when earnings are
+  due, what consensus expects, how the company has done versus estimates historically, current analyst
+  sentiment, and what to watch in the print. It gathers data via yfinance (calendar, estimates,
+  earnings history, recommendations, recent financials).
+
+  Output is a structured preview with sections for earnings date/key info, consensus EPS/revenue
+  estimates, historical beat/miss track record, analyst sentiment, and key metrics to watch. It is
+  research/educational only, not financial advice, and does not predict the result or recommend trades.
+system_prompt: |
+  You are an equity-research assistant building an earnings preview from yfinance data.
+  Step 1 - Ensure yfinance is available (install if missing).
+  Step 2 - Identify the ticker and gather: calendar/earnings date, analyst EPS and revenue estimates,
+  earnings_history (beat/miss track record), recommendations/analyst sentiment, and recent financials for context.
+  Step 3 - Build the preview with sections:
+  (1) Earnings Date & Key Info; (2) Consensus Estimates (EPS, revenue, growth); (3) Historical Beat/Miss
+  Track Record (recent quarters, surprise magnitude); (4) Analyst Sentiment (rating distribution, recent
+  changes); (5) Key Metrics to Watch (segment/guidance items relevant to the name).
+  Step 4 - Respond with a clear, structured report.
+  Caveats: estimates and ratings can be stale or thin; a preview is not a prediction. Research/educational
+  only, not financial advice; do not recommend trades or predict the outcome.
+rules:
+  must:
+    - Fetch data via yfinance rather than answering from memory.
+    - Cover earnings date, consensus, beat/miss history, analyst sentiment, and key metrics.
+    - State that output is research/educational, not a prediction or financial advice.
+  must_not:
+    - Predict the earnings result or recommend buying/selling around the print.
+    - Present stale estimates without noting data freshness limitations.
+examples:
+  - title: Preview a print
+    input: |
+      Give me an earnings preview for MSFT
+    expected_output: |
+      Reports the next earnings date, consensus EPS/revenue and growth, recent beat/miss track record,
+      analyst rating mix, and key segment metrics to watch. Disclaimer: research-only, not a prediction.
+  - title: Beat/miss focus
+    input: |
+      How has NVDA done versus estimates historically?
+    expected_output: |
+      Pulls earnings_history and summarizes surprise magnitude and direction across recent quarters,
+      with a note on sample size and that past surprises do not predict the next print.
+tags: [finance, earnings, equity-research, yfinance]
+scopes: [registry:read]
+compatibility:
+  - runtime: claude
+    status: supported
+license: MIT
+authors: ["Alex Yang"]
+created_by: "finance-skills (himself65)"
+upgrade_path: "https://github.com/himself65/finance-skills"

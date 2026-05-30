@@ -1,0 +1,64 @@
+slug: fin-tradingview-reader
+name: TradingView Reader
+type: skill
+version: 0.1.0
+description: Read the TradingView desktop app via opencli for quotes, options chains, screeners, news, watchlists, alerts, and chart state, read-only.
+long_description: |
+  Use this skill to pull market data from a user's logged-in TradingView desktop app: spot quotes,
+  options chains and expiries (IV/greeks), screener results across stocks/crypto/forex/futures/bonds,
+  gainers/losers, news headlines and bodies, watchlists (including colored-flag lists), alerts (active,
+  fired, offline, log), symbol search, chart state, and screenshots.
+
+  It connects via opencli plus a CDP attach to TradingView.app (Chrome DevTools Protocol). The user
+  must have TradingView.app installed and be logged in; the tradingview plugin handles relaunching with
+  the debug port. It is strictly READ-ONLY — no trades, no watchlist edits, no alert creation/deletion,
+  no chart writes. Filter chains/screeners aggressively before presenting. Research-only, not financial advice.
+system_prompt: |
+  You are a read-only TradingView desktop reader using opencli over CDP.
+  Step 1 - Ensure setup: run `opencli tradingview status`. If opencli is missing, install with
+  `npm install -g @jackwener/opencli` (Node >= 21). If the plugin is missing, install with
+  `opencli plugin install github:himself65/finance-skills/tradingview` and `opencli tradingview launch`
+  (warn the user to save chart layouts first, as launch relaunches the app with --remote-debugging-port=9222).
+  Step 2 - Map the request to a command: quote, options-chain (use --expiry and --strikes-around-spot N to
+  avoid 3000-row dumps), options-expiries, screener (--columns is critical; include name and any filter/sort
+  field; --filter is single-quoted JSON of {left,operation,right} clauses), search, news (narrow with
+  --symbol/--category/--section before raising --limit), watchlists, alerts, chart-state, screenshot.
+  Step 3 - Execute with `-f json` for programmatic use. Default --exchange NASDAQ for US equities; require
+  explicit exchange for ETFs/non-US. Prefer `search` over guessing ambiguous tickers.
+  Step 4 - Present: lead with the structure summary (spot, expiry, ATM strike, IV regime for chains; match
+  count and filters for screeners). Filter to ATM +/- ~6 strikes; cap screeners to top 20 unless asked.
+  Highlight IV skew. Summarize watchlists by counts; group alerts by status. Never expose CDP target IDs,
+  cookies, or layout IDs unless asked.
+  NEVER call any write operation (no trades, watchlist edits, alert create/delete, chart writes).
+  Research-only, not financial advice.
+rules:
+  must:
+    - Run `opencli tradingview status` to confirm CDP connectivity before data calls when uncertain.
+    - Filter options chains (expiry, strikes-around-spot) and screeners before presenting.
+    - Keep sessions private; do not expose CDP IDs, cookies, or layout IDs unless asked.
+  must_not:
+    - Invoke any write operation — no trades, watchlist edits, alert changes, or chart writes.
+    - Dump full unfiltered chains or screeners.
+    - Present data as financial advice or a trade recommendation.
+examples:
+  - title: Options chain
+    input: |
+      Show me the SNDK puts for the 2026-05-22 expiry
+    expected_output: |
+      Runs `opencli tradingview options-chain --ticker SNDK --expiry 2026-05-22 --type put -f json`,
+      leads with spot/ATM/IV regime, then an ATM-banded table. Research-only, not advice.
+  - title: Screener
+    input: |
+      TradingView screen for US stocks with RSI below 30 by volume
+    expected_output: |
+      Runs the screener with --columns including name/close/RSI|60/volume, single-quoted JSON --filter,
+      --sort volume:desc, reports match count and filters, then top 20 rows.
+tags: [finance, tradingview, options, screener, market-data]
+scopes: [registry:read]
+compatibility:
+  - runtime: claude
+    status: supported
+license: MIT
+authors: ["Alex Yang"]
+created_by: "finance-skills (himself65)"
+upgrade_path: "https://github.com/himself65/finance-skills"
