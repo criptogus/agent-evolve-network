@@ -1,6 +1,6 @@
 {
   "name": "@superagentskill/sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Official TypeScript SDK for the Super Agent Skill MCP server. Strongly-typed tool calls, automatic retries with exponential backoff, idempotency keys, rate-limit aware, Bearer-token auth.",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,14 +12,26 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "prepublishOnly": "npm run build"
   },
-  "keywords": ["mcp", "claude", "agent", "skill", "ai", "superagentskill"],
+  "keywords": [
+    "mcp",
+    "claude",
+    "agent",
+    "skill",
+    "ai",
+    "superagentskill"
+  ],
   "license": "MIT",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "homepage": "https://superagentskill.com/docs/mcp",
   "repository": {
     "type": "git",
