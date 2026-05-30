@@ -28,4 +28,22 @@ Out of scope:
 - Vulnerabilities in upstream dependencies already tracked by their maintainers
 - Denial-of-service via unrealistic input volume
 
+## How packages are scanned
+
+Every package published to the marketplace passes through layered scanning
+before it can be synced or released:
+
+1. **`validate:content`** — schema, slug uniqueness, file naming, example count.
+2. **`audit:skills`** (blocking gate) — a high-precision, schema-aware scan for
+   prompt-injection / jailbreak signals (shared with the runtime guard) and
+   malicious "functions" embedded in instructions (RCE, credential exfiltration,
+   reverse shells, beacons, hardcoded keys, obfuscated payloads). Runs in CI on
+   every PR touching `content/`.
+3. **`scan:skillspector`** (advisory) — an independent second opinion from
+   [NVIDIA SkillSpector](https://github.com/NVIDIA/skillspector). Each package
+   is rendered to a `SKILL.md` and scanned against NVIDIA's broader catalogue of
+   vulnerability patterns plus AST/YARA behavioural detection. Findings are
+   uploaded to the repo's Security tab as SARIF; they do not block merges by
+   default. See `CONTRIBUTING.md` for setup.
+
 Thank you for helping keep the ecosystem safe.

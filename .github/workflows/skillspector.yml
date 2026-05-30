@@ -1,0 +1,86 @@
+name: SkillSpector scan
+
+# Complementary, ADVISORY security scan for marketplace packages, powered by
+# NVIDIA SkillSpector (https://github.com/NVIDIA/skillspector). It runs
+# alongside — not instead of — the curated, blocking `audit:skills` gate in
+# validate-content.yml. SkillSpector adds NVIDIA's broader catalogue of
+# vulnerability patterns plus AST/YARA behavioural detection, and findings are
+# surfaced in the repo's Security tab as a SARIF report.
+#
+# Findings here do NOT block merges (continue-on-error). To make it blocking,
+# drop `continue-on-error` from the scan step and pass `--block` to the wrapper.
+
+on:
+  pull_request:
+    paths:
+      - "content/skills/**"
+      - "content/playbooks/**"
+      - "content/souls/**"
+      - "content/integrations/**"
+      - "scripts/scan-skillspector.mjs"
+      - ".github/workflows/skillspector.yml"
+
+permissions:
+  contents: read
+  security-events: write # required to upload SARIF to code scanning
+
+# Pin SkillSpector to a known-good ref so a surprise upstream change can't break
+# or silently weaken the gate. Bump deliberately.
+env:
+  SKILLSPECTOR_REF: main
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install JS dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install SkillSpector
+        run: |
+          python3 --version
+          git clone --depth 1 --branch "$SKILLSPECTOR_REF" https://github.com/NVIDIA/skillspector.git "$RUNNER_TEMP/skillspector"
+          pipx install uv || python3 -m pip install --user uv
+          uv tool install --python 3.12 "$RUNNER_TEMP/skillspector"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Determine changed packages
+        id: changed
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          files=$(git diff --name-only "$base" HEAD -- \
+            'content/skills/*.yaml' 'content/skills/*.yml' \
+            'content/playbooks/*.yaml' 'content/playbooks/*.yml' \
+            'content/souls/*.yaml' 'content/souls/*.yml' \
+            'content/integrations/*.yaml' 'content/integrations/*.yml' \
+            | grep -v '/_' || true)
+          {
+            echo "files<<EOF"
+            echo "$files"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Changed packages:"; echo "$files"
+
+      - name: Run SkillSpector (advisory)
+        if: steps.changed.outputs.files != ''
+        continue-on-error: true
+        env:
+          SKILLSPECTOR_LOG_LEVEL: ERROR
+        run: |
+          # Static analysis only — no LLM provider key needed in CI.
+          node scripts/scan-skillspector.mjs ${{ steps.changed.outputs.files }} \
+            --sarif skillspector.sarif
+
+      - name: Upload SARIF to code scanning
+        if: steps.changed.outputs.files != '' && hashFiles('skillspector.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: skillspector.sarif
+          category: skillspector
