@@ -89,6 +89,30 @@ non-allowlisted hosts, hardcoded keys, and obfuscated payloads. A package is
 tag so its quoted example payloads are treated as data, not as attacks. Both
 scripts run in CI on every PR that touches `content/`.
 
+#### Optional second opinion — SkillSpector
+
+```bash
+npm run scan:skillspector            # all packages
+npm run scan:skillspector content/skills/your-skill.yaml   # one package
+```
+
+`scan:skillspector` layers [NVIDIA SkillSpector](https://github.com/NVIDIA/skillspector)
+on top of `audit:skills` as an independent, advisory scan. It renders each YAML
+package into a throwaway `SKILL.md` and runs SkillSpector's broader catalogue of
+vulnerability patterns (prompt injection, data exfiltration, privilege
+escalation, supply-chain, excessive agency, MCP tool poisoning, …) plus AST/YARA
+behavioural detection. It is **optional**: if SkillSpector is not installed the
+command skips gracefully, and in CI its findings are reported in the repo's
+Security tab without blocking merges. Install it once with:
+
+```bash
+git clone https://github.com/NVIDIA/skillspector && cd skillspector
+uv tool install --python 3.12 .
+```
+
+Pass `--block` to fail on any package scoring at/above the risk threshold
+(default 50; override with `SKILLSPECTOR_THRESHOLD`).
+
 ### Step 5 — Open a pull request
 
 Use the **Package submission** PR template. Include:
