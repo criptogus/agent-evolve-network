@@ -1,23 +1,43 @@
 {
   "name": "super-agent",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Plug-and-play Super Agent Skill MCP: OAuth login, client auto-config, local stdio bridge, and skill package install for Claude / Cursor / Codex / VS Code / Windsurf.",
   "type": "module",
   "bin": {
     "super-agent": "./super-agent.mjs"
   },
-  "files": ["super-agent.mjs", "README.md"],
+  "files": [
+    "super-agent.mjs",
+    "README.md"
+  ],
   "scripts": {
     "build:bin": "npx -y @yao-pkg/pkg . --targets node20-linux-x64,node20-macos-x64,node20-macos-arm64,node20-win-x64 --out-path dist",
     "build:bun": "bun build ./super-agent.mjs --compile --outfile dist/super-agent"
   },
   "pkg": {
-    "scripts": ["super-agent.mjs"],
+    "scripts": [
+      "super-agent.mjs"
+    ],
     "outputPath": "dist"
   },
-  "keywords": ["claude", "cursor", "continue", "cline", "mcp", "skill", "agent", "ai"],
+  "keywords": [
+    "claude",
+    "cursor",
+    "continue",
+    "cline",
+    "mcp",
+    "skill",
+    "agent",
+    "ai"
+  ],
   "license": "MIT",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "homepage": "https://superagentskill.com",
-  "repository": { "type": "git", "url": "https://github.com/criptogus/agent-evolve-network", "directory": "cli" }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/criptogus/agent-evolve-network",
+    "directory": "cli"
+  }
 }
