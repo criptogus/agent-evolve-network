@@ -142,7 +142,7 @@ function Hero() {
               Turn Claude or Cursor into a{" "}
               <span className="block text-primary text-[1.5rem] sm:text-3xl lg:text-4xl xl:text-[2.75rem] leading-[1.15] mt-1">
                 <Typewriter
-                  className="inline-block max-w-full break-words text-lg"
+                  className="inline-block max-w-full break-words"
                   words={[
                     "cybersec expert.",
                     "senior SRE.",
