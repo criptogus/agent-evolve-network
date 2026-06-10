@@ -26,17 +26,36 @@ export function renderTrustBadge(b: BadgeInput): string {
   return svg(label, valueText, color);
 }
 
-export function renderAdversarialBadge(opts: { vertical?: string; pass_rate?: number | null }): string {
+export function renderAdversarialBadge(opts: {
+  vertical?: string;
+  pass_rate?: number | null;
+}): string {
   const label = `adversarial${opts.vertical ? `:${opts.vertical}` : ""}`;
   const has = typeof opts.pass_rate === "number" && Number.isFinite(opts.pass_rate);
   const valueText = has ? `${(opts.pass_rate! * 100).toFixed(0)}%` : "—";
   const color = has
-    ? (opts.pass_rate! >= 0.9 ? COLOR_HEX.green
-      : opts.pass_rate! >= 0.75 ? COLOR_HEX.yellow
-      : opts.pass_rate! >= 0.5 ? COLOR_HEX.orange
-      : COLOR_HEX.red)
+    ? opts.pass_rate! >= 0.9
+      ? COLOR_HEX.green
+      : opts.pass_rate! >= 0.75
+        ? COLOR_HEX.yellow
+        : opts.pass_rate! >= 0.5
+          ? COLOR_HEX.orange
+          : COLOR_HEX.red
     : COLOR_HEX.gray;
   return svg(label, valueText, color);
+}
+
+// Badge for external certifications (/api/public/certify). The label is
+// "skill audit" — NOT "trust score" — because a content audit alone doesn't
+// carry the adversarial + real-world evidence the registry Trust Score does.
+export function renderCertifiedBadge(opts: {
+  value?: string | null;
+  score0to100?: number | null;
+}): string {
+  const has = typeof opts.score0to100 === "number" && Number.isFinite(opts.score0to100);
+  const valueText = has && opts.value ? opts.value : "—";
+  const color = has ? COLOR_HEX[badgeColor(opts.score0to100! / 100)] : COLOR_HEX.gray;
+  return svg("skill audit", valueText, color);
 }
 
 // Minimal shields.io-shaped badge — no external font needed.
@@ -70,5 +89,8 @@ function textWidth(s: string): number {
 }
 
 function esc(s: string): string {
-  return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
+  return s.replace(
+    /[&<>"]/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!,
+  );
 }

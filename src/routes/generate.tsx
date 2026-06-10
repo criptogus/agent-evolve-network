@@ -28,7 +28,7 @@ import { LeadGateModal } from "@/components/generate/LeadGateModal";
 
 export const Route = createFileRoute("/generate")({
   component: GeneratePage,
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { prompt?: string } => ({
     prompt: typeof search.prompt === "string" ? search.prompt : undefined,
   }),
   head: () => ({

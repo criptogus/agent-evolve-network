@@ -69,12 +69,20 @@ export function Proof() {
             execution feeds the Trust Score. Skills that survive real workloads bubble up; ones that
             drift get re-scored and patched automatically.
           </p>
-          <Link
-            to="/evaluation"
-            className="inline-flex h-9 items-center rounded-md border border-border bg-surface-elevated px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            See how skills are evaluated →
-          </Link>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <Link
+              to="/evaluation"
+              className="inline-flex h-9 items-center rounded-md border border-border bg-surface-elevated px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            >
+              See how skills are evaluated →
+            </Link>
+            <Link
+              to="/certify"
+              className="inline-flex h-9 items-center rounded-md border border-border bg-surface-elevated px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            >
+              Certify your own skill →
+            </Link>
+          </div>
         </div>
       </div>
     </section>

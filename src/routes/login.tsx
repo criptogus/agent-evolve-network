@@ -13,12 +13,17 @@ export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
       { title: "Sign in — Super Agent Skill" },
-      { name: "description", content: "Sign in to manage your connected agents, packages and subscription." },
+      {
+        name: "description",
+        content: "Sign in to manage your connected agents, packages and subscription.",
+      },
       { name: "robots", content: "noindex" },
     ],
     links: [{ rel: "canonical", href: "https://superagentskill.com/login" }],
   }),
-  validateSearch: (s: Record<string, unknown>) => ({ next: typeof s.next === "string" ? s.next : undefined }),
+  validateSearch: (s: Record<string, unknown>): { next?: string } => ({
+    next: typeof s.next === "string" ? s.next : undefined,
+  }),
   component: LoginPage,
 });
 
@@ -50,13 +55,21 @@ function LoginPage() {
       try {
         const r = await claimReferral({ data: { code, source_url: window.location.href } });
         if (r?.ok) clearStoredRef();
-      } catch { /* non-fatal */ }
+      } catch {
+        /* non-fatal */
+      }
     };
     supabase.auth.getSession().then(async ({ data }) => {
-      if (data.session) { await tryClaim(); goNext(); }
+      if (data.session) {
+        await tryClaim();
+        goNext();
+      }
     });
     const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
-      if (s) { await tryClaim(); goNext(); }
+      if (s) {
+        await tryClaim();
+        goNext();
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate, next]);
@@ -138,8 +151,12 @@ function LoginPage() {
           </form>
 
           <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-            <Link to="/reset-password" className="hover:text-foreground">Forgot password?</Link>
-            <Link to="/signup" className="hover:text-foreground">Create account →</Link>
+            <Link to="/reset-password" className="hover:text-foreground">
+              Forgot password?
+            </Link>
+            <Link to="/signup" className="hover:text-foreground">
+              Create account →
+            </Link>
           </div>
         </div>
       </section>
@@ -151,10 +168,22 @@ function LoginPage() {
 function GoogleIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden>
-      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.4 0-11.5-5.1-11.5-11.5S17.6 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.7 6.5 29.1 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5 43.5 34.8 43.5 24c0-1.2-.1-2.4-.4-3.5z" />
-      <path fill="#FF3D00" d="M6.3 14.1l6.6 4.8C14.7 15.1 19 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.7 6.5 29.1 4.5 24 4.5 16.3 4.5 9.7 8.9 6.3 14.1z" />
-      <path fill="#4CAF50" d="M24 43.5c5.1 0 9.7-1.9 13.2-5l-6.1-5c-2 1.4-4.5 2.2-7.1 2.2-5.3 0-9.7-3.1-11.3-7.4l-6.5 5C9.6 39 16.2 43.5 24 43.5z" />
-      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.1 5C40.8 35.4 43.5 30.1 43.5 24c0-1.2-.1-2.4 0.1-3.5z" />
+      <path
+        fill="#FFC107"
+        d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.4 0-11.5-5.1-11.5-11.5S17.6 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.7 6.5 29.1 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5 43.5 34.8 43.5 24c0-1.2-.1-2.4-.4-3.5z"
+      />
+      <path
+        fill="#FF3D00"
+        d="M6.3 14.1l6.6 4.8C14.7 15.1 19 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.7 6.5 29.1 4.5 24 4.5 16.3 4.5 9.7 8.9 6.3 14.1z"
+      />
+      <path
+        fill="#4CAF50"
+        d="M24 43.5c5.1 0 9.7-1.9 13.2-5l-6.1-5c-2 1.4-4.5 2.2-7.1 2.2-5.3 0-9.7-3.1-11.3-7.4l-6.5 5C9.6 39 16.2 43.5 24 43.5z"
+      />
+      <path
+        fill="#1976D2"
+        d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.1 5C40.8 35.4 43.5 30.1 43.5 24c0-1.2-.1-2.4 0.1-3.5z"
+      />
     </svg>
   );
 }
