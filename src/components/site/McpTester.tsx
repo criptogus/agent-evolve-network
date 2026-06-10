@@ -78,9 +78,20 @@ function unwrapToolResult(parsed: any): any {
   return parsed?.result ?? parsed;
 }
 
-export function McpTester() {
-  const [tool, setTool] = useState<ToolKey>("list_packages");
-  const [args, setArgs] = useState<Record<string, any>>(TOOL_DEFAULTS.list_packages);
+export function McpTester({
+  initialTool,
+  initialArgs,
+}: {
+  initialTool?: ToolKey;
+  initialArgs?: Record<string, any>;
+} = {}) {
+  const startTool: ToolKey =
+    initialTool && initialTool in TOOL_DEFAULTS ? initialTool : "list_packages";
+  const [tool, setTool] = useState<ToolKey>(startTool);
+  const [args, setArgs] = useState<Record<string, any>>({
+    ...structuredClone(TOOL_DEFAULTS[startTool]),
+    ...initialArgs,
+  });
   const [token, setToken] = useState("");
   const [rememberToken, setRememberToken] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
@@ -112,8 +123,7 @@ export function McpTester() {
     setResult(null);
   };
 
-  const updateArg = (k: string, v: any) =>
-    setArgs((prev) => ({ ...prev, [k]: v }));
+  const updateArg = (k: string, v: any) => setArgs((prev) => ({ ...prev, [k]: v }));
 
   const updateFile = (i: number, k: string, v: any) =>
     setArgs((prev) => {
@@ -206,7 +216,7 @@ export function McpTester() {
       await callRpc({
         method: "tools/call",
         params: { name: tool, arguments: cleanArgs() },
-      })
+      }),
     );
     setPending(false);
   };
@@ -266,8 +276,7 @@ export function McpTester() {
         </span>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        Calls{" "}
-        <code className="rounded bg-muted px-1 py-0.5 text-xs">POST {ENDPOINT}</code> with the
+        Calls <code className="rounded bg-muted px-1 py-0.5 text-xs">POST {ENDPOINT}</code> with the
         proper <code className="rounded bg-muted px-1 py-0.5 text-xs">Accept</code> header. Read
         tools work anonymously; write tools need a token from{" "}
         <Link to="/account/tokens" className="text-primary hover:underline">
@@ -315,9 +324,7 @@ export function McpTester() {
             }`}
           >
             {t}
-            {TOOL_REQUIRES_AUTH[t] && (
-              <span className="ml-1.5 text-[10px] opacity-60">🔒</span>
-            )}
+            {TOOL_REQUIRES_AUTH[t] && <span className="ml-1.5 text-[10px] opacity-60">🔒</span>}
           </button>
         ))}
       </div>
@@ -438,10 +445,7 @@ export function McpTester() {
             </Field>
             <div className="md:col-span-3 space-y-3">
               {(args.files ?? []).map((f: any, i: number) => (
-                <div
-                  key={i}
-                  className="rounded-lg border border-border bg-background p-3"
-                >
+                <div key={i} className="rounded-lg border border-border bg-background p-3">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <input
                       value={f.name}
@@ -529,11 +533,7 @@ export function McpTester() {
         {result && (
           <span className="font-mono text-xs text-muted-foreground">
             <span
-              className={
-                result.ok
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-destructive"
-              }
+              className={result.ok ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}
             >
               {result.status || "ERR"}
             </span>{" "}

@@ -102,7 +102,7 @@ Agent → respond using that prompt + rules.
 - Read tools are public. Mutating tools require a bearer token.
 - The registry is global; expect new primitives to appear every day.
 - Examples in \`get_package\` are ground truth — match their output shape.
-- Do not cache \`system_prompt\` longer than 1 hour; the Evolution Engine
+- Do not cache \`system_prompt\` longer than 1 hour; SkillForge
   may have hot-swapped a better version.
 `;
 

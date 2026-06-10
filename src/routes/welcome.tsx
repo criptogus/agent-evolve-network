@@ -5,6 +5,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { CodeBlock } from "@/components/site/CodeBlock";
 import { Logo } from "@/components/site/Logo";
+import { PACKAGES_LABEL } from "@/lib/site-stats";
 
 const ENDPOINT = "https://superagentskill.com/api/mcp";
 
@@ -444,7 +445,7 @@ function WelcomePage() {
                   to="/marketplace"
                   className="mt-5 inline-flex h-9 items-center rounded-md border border-border bg-surface-elevated px-4 text-xs font-medium hover:bg-accent"
                 >
-                  Browse all 500+ packages →
+                  Browse all {PACKAGES_LABEL} packages →
                 </Link>
               </div>
 
@@ -515,7 +516,7 @@ function WelcomePage() {
                 <div className="font-mono text-[10px] uppercase tracking-wider text-primary">Step 4</div>
                 <div className="mt-2 text-base font-semibold">Browse packages</div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  500+ skills, playbooks, souls and guardrails.
+                  {PACKAGES_LABEL} skills, playbooks, souls and guardrails.
                 </p>
               </Link>
               <Link
@@ -533,7 +534,7 @@ function WelcomePage() {
                 <div className="font-mono text-[10px] uppercase tracking-wider text-primary">Step 6</div>
                 <div className="mt-2 text-base font-semibold">Read the docs</div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Health Score, Evolution Engine, write your own skill.
+                  Health Score, SkillForge, write your own skill.
                 </p>
               </Link>
             </div>

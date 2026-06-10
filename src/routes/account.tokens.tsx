@@ -203,7 +203,7 @@ function TokensPage() {
           {q.isError && (
             <div className="p-5 text-sm">
               <span className="text-destructive">Sign in to manage tokens.</span>{" "}
-              <Link to="/onboarding" className="text-primary">Connect →</Link>
+              <Link to="/connect" className="text-primary">Connect →</Link>
             </div>
           )}
           {q.data && q.data.items.length === 0 && (

@@ -35,16 +35,14 @@ const BROWSE: NavItem[] = [
   { to: "/discover", label: "Discover", hint: "Find skills" },
   { to: "/marketplace", label: "Marketplace", hint: "Top skills" },
   { to: "/packs", label: "Packs", hint: "Curated bundles" },
+  { to: "/match", label: "Match", hint: "Pair skills to a goal" },
 ];
 
 const CREATE: NavItem[] = [
-  { to: "/upload", label: "Upload a skill", hint: "Turn it into a super skill" },
-  { to: "/generate", label: "Generate a skill", hint: "From a one-line idea" },
-  { to: "/skillforge", label: "SkillForge", hint: "Guided builder" },
-  { to: "/forge", label: "Forge", hint: "Advanced editor" },
-  { to: "/discover", label: "Discover", hint: "AI auto-forges what's missing" },
-  { to: "/evaluation", label: "Evaluation", hint: "Test & benchmark" },
-  { to: "/match", label: "Match", hint: "Pair skills to a goal" },
+  { to: "/generate", label: "Create a skill", hint: "From a one-line idea" },
+  { to: "/upload", label: "Upload a skill", hint: "Bring your own file" },
+  { to: "/forge", label: "Skill Studio", hint: "Advanced editor & evaluation" },
+  { to: "/skillforge", label: "My SkillForge", hint: "Your installed stack & health" },
 ];
 
 const COMMUNITY: NavItem[] = [
@@ -76,9 +74,7 @@ function NavDropdown({ label, items }: { label: string; items: NavItem[] }) {
           <DropdownMenuItem key={item.to} asChild>
             <Link to={item.to} className="flex flex-col items-start gap-0.5 py-2">
               <span className="text-sm font-medium">{item.label}</span>
-              {item.hint && (
-                <span className="text-xs text-muted-foreground">{item.hint}</span>
-              )}
+              {item.hint && <span className="text-xs text-muted-foreground">{item.hint}</span>}
             </Link>
           </DropdownMenuItem>
         ))}
@@ -170,7 +166,6 @@ export function Nav() {
                     <Link to="/account/tokens">API tokens</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuSeparator />
                   {isAdmin && (
                     <DropdownMenuItem asChild>
                       <Link to="/admin">Admin</Link>
@@ -222,7 +217,11 @@ export function Nav() {
               <nav className="mt-6 flex flex-col gap-4">
                 <MobileSection title="Browse" items={BROWSE} onNavigate={() => setOpen(false)} />
                 <MobileSection title="Create" items={CREATE} onNavigate={() => setOpen(false)} />
-                <MobileSection title="Community" items={COMMUNITY} onNavigate={() => setOpen(false)} />
+                <MobileSection
+                  title="Community"
+                  items={COMMUNITY}
+                  onNavigate={() => setOpen(false)}
+                />
                 <MobileSection title="More" items={SIMPLE} onNavigate={() => setOpen(false)} />
 
                 <div className="mt-2 border-t border-border pt-4">
@@ -249,7 +248,10 @@ export function Nav() {
                         </MobileLink>
                       )}
                       <button
-                        onClick={() => { setOpen(false); signOut(); }}
+                        onClick={() => {
+                          setOpen(false);
+                          signOut();
+                        }}
                         className="rounded-md px-3 py-2.5 text-left text-[15px] text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
                       >
                         Sign out

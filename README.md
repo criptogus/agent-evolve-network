@@ -9,12 +9,12 @@
 > **Turn any agent into a domain expert in seconds.**
 > Plug in. Upload a skill. *"I know kung fu."* — signed at release, adversarially benchmarked, Trust Score your security team can verify.
 
-**500+ signed, adversarially-tested skills, playbooks, souls and guardrails — one MCP endpoint or `npx super-agent install` away from any AI agent.**
+**600+ signed, adversarially-tested skills, playbooks, souls and guardrails — one MCP endpoint or `npx super-agent install` away from any AI agent.**
 
 Think of it as a **library of instant expertise** for AI: pick a skill, beam it in, and your agent suddenly knows OWASP, MEDDPICC, ECG triage, SOC 2 evidence collection, or whatever your domain demands. Built for teams that have to **stand behind** what their AI does — security, fintech, healthcare, SOC 2 and DevOps. Works with Claude, Cursor, ChatGPT, Continue, Cline. No fine-tuning. No vendor lock-in.
 
 [![Website](https://img.shields.io/badge/🌐_superagentskill.com-Visit-0A66FF?style=for-the-badge)](https://superagentskill.com)
-[![Marketplace](https://img.shields.io/badge/🛒_Browse_500+_packages-Free-8b5cf6?style=for-the-badge)](https://superagentskill.com/marketplace)
+[![Marketplace](https://img.shields.io/badge/🛒_Browse_600+_packages-Free-8b5cf6?style=for-the-badge)](https://superagentskill.com/marketplace)
 [![MCP](https://img.shields.io/badge/🔌_MCP_endpoint-Live-22c55e?style=for-the-badge)](https://superagentskill.com/api/mcp)
 
 [![License: Apache 2.0](https://img.shields.io/badge/code-Apache_2.0-000?style=flat-square)](LICENSE)
@@ -34,7 +34,7 @@ Models are commodities. **Expertise is the moat.** Today there are abundant mode
 
 Super Agent Skill is the **university for AI agents** — a Matrix-style upload that turns any model into a domain expert in seconds. Open source by default, community-curated, free to download, and continuously evolved by an automated quality loop (SkillForge).
 
-- **Free tier** — the open campus. 500+ packages. Fork, remix, install, redistribute.
+- **Free tier** — the open campus. 600+ packages. Fork, remix, install, redistribute.
 - **Premium tier** — [superagentskill.com](https://superagentskill.com) curates battle-tested elite stacks, enterprise playbooks and private packs for teams that want depth, not just breadth.
 
 The open network feeds the premium layer. The premium layer funds the open network. **That's the flywheel.**
@@ -141,7 +141,7 @@ content/
 └── schemas/        → JSON Schemas (every package validates against these)
 ```
 
-> 💡 This GitHub repo is the **open seed** — the canonical, public-domain core. The full **500+ library** lives at [superagentskill.com/marketplace](https://superagentskill.com/marketplace), where SkillForge keeps it sharp.
+> 💡 This GitHub repo is the **open seed** — the canonical, public-domain core. The full **600+ library** lives at [superagentskill.com/marketplace](https://superagentskill.com/marketplace), where SkillForge keeps it sharp.
 
 ---
 
@@ -215,7 +215,7 @@ Your work isn't just merged — it's *amplified*.
 - [x] MCP server with discover / install / evaluate / report-execution tools
 - [x] SkillForge evolution loop (eval → patch → re-score)
 - [x] Public **Trust Score**, model compatibility matrix, drift detection
-- [x] 500+ packages live in the hosted registry
+- [x] 600+ packages live in the hosted registry
 - [ ] CLI (`npx sas init`, `sas publish`, `sas eval`)
 - [ ] Cryptographically signed package releases
 - [ ] Versioned downloadable registry bundles
@@ -247,7 +247,7 @@ By contributing you agree your work is licensed under the same terms — and tha
 
 ### 🚀 Ready to make your agent a specialist?
 
-**[→ Browse 500+ free packages at superagentskill.com](https://superagentskill.com/marketplace)**
+**[→ Browse 600+ free packages at superagentskill.com](https://superagentskill.com/marketplace)**
 
 **Built by makers, for makers. Star the repo ⭐ if you believe agents should belong to everyone.**
 

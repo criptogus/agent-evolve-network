@@ -190,7 +190,7 @@ function UploadPage() {
           <div className="mt-4 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
             {error}{" "}
             {error.toLowerCase().includes("sign in") && (
-              <Link to="/onboarding" className="underline">Connect your agent →</Link>
+              <Link to="/connect" className="underline">Connect your agent →</Link>
             )}
           </div>
         )}

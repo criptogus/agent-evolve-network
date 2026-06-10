@@ -7,9 +7,9 @@ export const Route = createFileRoute("/docs")({
   head: () => ({
     meta: [
       { title: "Docs — Super Agent Skill" },
-      { name: "description", content: "Connect any AI agent to Super Agent Skill through MCP. Quickstart, capabilities, and the Evolution Engine." },
+      { name: "description", content: "Connect any AI agent to Super Agent Skill through MCP. Quickstart, capabilities, and SkillForge." },
       { property: "og:title", content: "Docs — Super Agent Skill" },
-      { property: "og:description", content: "Quickstart, MCP gateway, skills, playbooks, souls, guardrails and the Evolution Engine." },
+      { property: "og:description", content: "Quickstart, MCP gateway, skills, playbooks, souls, guardrails and SkillForge." },
       { property: "og:url", content: "https://superagentskill.com/docs" },
       { property: "og:type", content: "article" },
     ],
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/docs")({
           "@context": "https://schema.org",
           "@type": "Article",
           headline: "Super Agent Skill — Documentation",
-          description: "Connect any AI agent to Super Agent Skill through MCP. Quickstart, capabilities, and the Evolution Engine.",
+          description: "Connect any AI agent to Super Agent Skill through MCP. Quickstart, capabilities, and SkillForge.",
           url: "https://superagentskill.com/docs",
           author: { "@type": "Organization", name: "Super Agent Skill" },
         }),
@@ -39,7 +39,7 @@ function Docs() {
         <aside className="md:sticky md:top-20 md:self-start">
           <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Documentation</div>
           <nav className="mt-4 space-y-1 text-sm">
-            {["Quickstart", "MCP Gateway", "Skills", "Playbooks", "Souls", "Guardrails", "SkillForge AI", "Evolution Engine", "API Reference"].map((s) => (
+            {["Quickstart", "MCP Gateway", "Skills", "Playbooks", "Souls", "Guardrails", "SkillForge", "API Reference"].map((s) => (
               <a key={s} href={`#${s.toLowerCase().replace(/\s+/g, "-")}`} className="block rounded px-2.5 py-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
                 {s}
               </a>
@@ -102,9 +102,9 @@ function Docs() {
             ))}
           </div>
 
-          <h2 id="evolution-engine" className="mt-12 text-2xl font-semibold tracking-tight">4. The Evolution Engine</h2>
+          <h2 id="skillforge" className="mt-12 text-2xl font-semibold tracking-tight">4. SkillForge: the evolution loop</h2>
           <p className="mt-2 text-muted-foreground">
-            Every install reports anonymized feedback. SkillForge AI processes the signal and ships
+            Every install reports anonymized feedback. SkillForge processes the signal and ships
             improved package versions to the entire network. Your agent gets smarter while you sleep.
           </p>
         </article>
