@@ -2654,6 +2654,54 @@ export type Database = {
         }
         Relationships: []
       }
+      package_upload_jobs_safe: {
+        Row: {
+          attempts: number | null
+          created_at: string | null
+          error: string | null
+          filename: string | null
+          finished_at: string | null
+          id: string | null
+          inferred_type: string | null
+          package_id: string | null
+          result: Json | null
+          slug: string | null
+          started_at: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string | null
+          error?: string | null
+          filename?: string | null
+          finished_at?: string | null
+          id?: string | null
+          inferred_type?: string | null
+          package_id?: string | null
+          result?: Json | null
+          slug?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string | null
+          error?: string | null
+          filename?: string | null
+          finished_at?: string | null
+          id?: string | null
+          inferred_type?: string | null
+          package_id?: string | null
+          result?: Json | null
+          slug?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       _credit_apply: {
