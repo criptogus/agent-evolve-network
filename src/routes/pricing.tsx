@@ -57,7 +57,7 @@ function Pricing() {
 
   const onCta = (tierName: string) => {
     if (tierName === "Hacker") return window.location.assign(user ? "/account/billing" : "/signup");
-    if (tierName === "Enterprise") return window.location.assign("mailto:contact@zeroagency.ai?subject=Enterprise%20inquiry");
+    if (tierName === "Enterprise") return window.location.assign("mailto:enterprise@superagentskill.com?subject=Enterprise%20inquiry");
     if (!user) return window.location.assign("/signup?next=/pricing");
     if (isActive) return window.location.assign("/account/billing");
     openCheckout({
@@ -78,7 +78,7 @@ function Pricing() {
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Pricing</span>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-6xl">Aligned with the value your agent ships.</h1>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Creators keep 80–85% on every package sold. Super Agent Skill takes 15–20% to power the gateway, registry and Evolution Engine.
+            Creators keep 80–85% on every package sold. Super Agent Skill takes 15–20% to power the gateway, registry and SkillForge.
           </p>
         </div>
       </section>

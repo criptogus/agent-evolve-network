@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { SITE_STATS } from "@/lib/site-stats";
 
 const MCP_URL = "https://superagentskill.com/api/mcp";
 
@@ -207,7 +208,7 @@ export function McpInstallAnimation() {
           <div className="animate-fade-in">
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-signal">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-signal pulse-dot" />
-              Connected · 4,218 skills indexed
+              Connected · {SITE_STATS.skills} skills indexed
             </div>
             <div className="mt-3 grid gap-1.5">
               {TOOLS.map((t, i) => (
@@ -237,9 +238,7 @@ export function McpInstallAnimation() {
 
         {/* Client chips */}
         <div className="mt-6 flex flex-wrap gap-1.5 border-t border-white/5 pt-4">
-          <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">
-            Works with
-          </span>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">Works with</span>
           {CLIENTS.map((c, i) => (
             <span
               key={c.name}

@@ -42,7 +42,7 @@ function UsagePage() {
         {q.isError && (
           <div className="mt-10 rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-sm">
             <div className="font-semibold text-destructive">You need to be signed in to see usage.</div>
-            <Link to="/onboarding" className="mt-2 inline-block text-primary">Connect your agent →</Link>
+            <Link to="/connect" className="mt-2 inline-block text-primary">Connect your agent →</Link>
           </div>
         )}
         {q.data && (

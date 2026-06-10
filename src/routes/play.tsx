@@ -1,9 +1,27 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { z } from "zod";
 import { Sparkles, Zap } from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
 import { McpTester } from "@/components/site/McpTester";
 
+// `?slug=<package>` deep-links from package pages prefill a get_package call,
+// so visitors can test-drive a skill before installing it.
+const SearchSchema = z.object({
+  tool: z
+    .enum([
+      "list_packages",
+      "search_registry",
+      "get_package",
+      "request_primitive",
+      "upload_packages",
+    ])
+    .optional()
+    .catch(undefined),
+  slug: z.string().optional().catch(undefined),
+});
+
 export const Route = createFileRoute("/play")({
+  validateSearch: (s) => SearchSchema.parse(s),
   head: () => ({
     meta: [
       { title: "Playground — Super Agent Skill MCP" },
@@ -19,19 +37,20 @@ export const Route = createFileRoute("/play")({
 });
 
 function PlaygroundPage() {
+  const search = Route.useSearch();
+  const initialTool = search.slug && !search.tool ? "get_package" : search.tool;
+  const initialArgs = search.slug ? { slug: search.slug } : undefined;
   return (
     <SitePage>
       <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
-        <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">
-          Playground
-        </p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">Playground</p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight md:text-5xl">
           Try the MCP server in your browser.
         </h1>
         <p className="mt-4 max-w-2xl text-base text-muted-foreground">
           Pick a tool, fill the args, hit run. Read tools work anonymously; write tools need a
-          token. Same endpoint your agents hit (<code className="font-mono text-xs">/api/mcp</code>),
-          same shape, same rate limits — nothing to install.
+          token. Same endpoint your agents hit (<code className="font-mono text-xs">/api/mcp</code>
+          ), same shape, same rate limits — nothing to install.
         </p>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -53,7 +72,11 @@ function PlaygroundPage() {
         </div>
 
         <div className="mt-10">
-          <McpTester />
+          <McpTester
+            key={`${initialTool ?? "default"}-${search.slug ?? ""}`}
+            initialTool={initialTool}
+            initialArgs={initialArgs}
+          />
         </div>
 
         <section className="mt-12 rounded-2xl border border-primary/30 bg-primary/5 p-5">

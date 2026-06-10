@@ -168,10 +168,11 @@ function Marketplace() {
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
-              to="/marketplace/leaderboard"
+              to="/discover"
+              search={{ type: "skill", category: null, q: null, sort: "popular", page: 1 }}
               className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary hover:text-primary"
             >
-              🏆 Top 50 leaderboard
+              🏆 Most installed
             </Link>
             <Link
               to="/marketplace/categories"

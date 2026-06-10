@@ -62,7 +62,10 @@ export const Route = createFileRoute("/marketplace/$packageId")({
       <div className="mx-auto max-w-3xl px-6 py-24 text-center">
         <h1 className="text-3xl font-semibold tracking-tight">Package not found</h1>
         <p className="mt-2 text-muted-foreground">It may have been unpublished or renamed.</p>
-        <Link to="/marketplace" className="mt-6 inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
+        <Link
+          to="/marketplace"
+          className="mt-6 inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
+        >
           Back to marketplace
         </Link>
       </div>
@@ -97,7 +100,7 @@ function PackageDetail() {
       .catch(() => setStatus(null));
   }, [user, pkg.id, statusFn]);
 
-  const installed = status?.installed ? status.version ?? undefined : undefined;
+  const installed = status?.installed ? (status.version ?? undefined) : undefined;
   const isUpgrade = !!installed && selectedVersion !== installed;
   const isOutdated = !!installed && installed !== pkg.latest;
 
@@ -136,7 +139,10 @@ function PackageDetail() {
       <section className="border-b border-border bg-surface/40">
         <div className="mx-auto max-w-7xl px-6 py-10">
           <TermsStatusBanner className="mb-5" />
-          <Link to="/marketplace" className="text-xs text-muted-foreground transition-colors hover:text-foreground">
+          <Link
+            to="/marketplace"
+            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+          >
             ← Marketplace
           </Link>
           <div className="mt-4 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
@@ -147,7 +153,9 @@ function PackageDetail() {
                   v{pkg.latest} · {pkg.size} · {pkg.license}
                 </span>
               </div>
-              <h1 className="mt-3 truncate font-mono text-3xl font-semibold tracking-tight md:text-4xl">{pkg.name}</h1>
+              <h1 className="mt-3 truncate font-mono text-3xl font-semibold tracking-tight md:text-4xl">
+                {pkg.name}
+              </h1>
               <p className="mt-2 text-base text-muted-foreground">{pkg.description}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {pkg.vertical && (
@@ -162,7 +170,10 @@ function PackageDetail() {
                   {pkg.author}
                   {pkg.authorVerified && <VerifiedBadge />}
                 </span>
-                <span>★ {pkg.rating} <span className="text-muted-foreground/60">({pkg.reviews.toLocaleString()})</span></span>
+                <span>
+                  ★ {pkg.rating}{" "}
+                  <span className="text-muted-foreground/60">({pkg.reviews.toLocaleString()})</span>
+                </span>
                 <span>{pkg.downloads} installs</span>
               </div>
               <div className="mt-4">
@@ -178,7 +189,9 @@ function PackageDetail() {
 
             {/* Install panel */}
             <div className="w-full shrink-0 rounded-xl border border-border bg-background p-5 shadow-elevated md:w-[340px]">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Version</label>
+              <label className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                Version
+              </label>
               <select
                 value={selectedVersion}
                 onChange={(e) => setSelectedVersion(e.target.value)}
@@ -213,7 +226,9 @@ function PackageDetail() {
 
               {isOutdated && (
                 <button
-                  onClick={() => { if (requireAuth("update this package")) handleUpdateToLatest(); }}
+                  onClick={() => {
+                    if (requireAuth("update this package")) handleUpdateToLatest();
+                  }}
                   disabled={updating}
                   className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-95 disabled:opacity-60"
                 >
@@ -222,7 +237,9 @@ function PackageDetail() {
               )}
 
               <button
-                onClick={() => { if (requireAuth("install this package")) setInstallOpen(true); }}
+                onClick={() => {
+                  if (requireAuth("install this package")) setInstallOpen(true);
+                }}
                 className={`${isOutdated ? "mt-2 h-10 border border-border bg-background text-foreground hover:bg-accent" : "mt-4 h-11 bg-primary text-primary-foreground hover:opacity-95 shadow-sm"} inline-flex w-full items-center justify-center rounded-md text-sm font-semibold transition-all`}
               >
                 {isUpgrade
@@ -242,11 +259,24 @@ function PackageDetail() {
                 </button>
               )}
 
+              <Link
+                to="/play"
+                search={{ tool: "get_package", slug: pkg.id }}
+                className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-border bg-background text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+              >
+                ▶ Test drive in the playground — no install
+              </Link>
+
               <div className="mt-3 text-center text-[11px] text-muted-foreground">
                 {user ? (
-                  <>via MCP · scoped <span className="font-mono text-foreground">agent:upgrade</span></>
+                  <>
+                    via MCP · scoped{" "}
+                    <span className="font-mono text-foreground">agent:upgrade</span>
+                  </>
                 ) : (
-                  <Link to="/login" className="text-primary underline-offset-2 hover:underline">Sign in to install</Link>
+                  <Link to="/login" className="text-primary underline-offset-2 hover:underline">
+                    Sign in to install
+                  </Link>
                 )}
               </div>
 
@@ -269,7 +299,9 @@ function PackageDetail() {
                 }`}
               >
                 {t}
-                {tab === t && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-primary" />}
+                {tab === t && (
+                  <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-primary" />
+                )}
               </button>
             ))}
           </div>
@@ -329,7 +361,11 @@ function OverviewTab({ pkg }: { pkg: Package }) {
               <CopyButton value={pkg.systemPrompt} label="Copy system prompt" />
             </div>
             <div className="mt-3">
-              <CodeBlock filename={`${pkg.id}.system-prompt.md`} lang="md" code={pkg.systemPrompt} />
+              <CodeBlock
+                filename={`${pkg.id}.system-prompt.md`}
+                lang="md"
+                code={pkg.systemPrompt}
+              />
             </div>
           </>
         )}
@@ -338,8 +374,12 @@ function OverviewTab({ pkg }: { pkg: Package }) {
         <div className="mt-4 space-y-3">
           {pkg.examples.map((ex) => (
             <div key={ex.title} className="rounded-xl border border-border bg-surface p-5">
-              <div className="font-mono text-[11px] uppercase tracking-wider text-primary">{ex.title}</div>
-              <pre className="mt-2 whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/90">{ex.body}</pre>
+              <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
+                {ex.title}
+              </div>
+              <pre className="mt-2 whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/90">
+                {ex.body}
+              </pre>
             </div>
           ))}
         </div>
@@ -356,7 +396,9 @@ function OverviewTab({ pkg }: { pkg: Package }) {
       {/* Side metrics */}
       <aside className="space-y-4">
         <div className="rounded-xl border border-border bg-background p-5">
-          <div className="font-mono text-[11px] uppercase tracking-wider text-primary">Performance</div>
+          <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
+            Performance
+          </div>
           <div className="mt-3 space-y-3">
             {pkg.metrics.map((m) => (
               <div key={m.label} className="flex items-end justify-between">
@@ -371,9 +413,13 @@ function OverviewTab({ pkg }: { pkg: Package }) {
         </div>
 
         <div className="rounded-xl border border-border bg-background p-5">
-          <div className="font-mono text-[11px] uppercase tracking-wider text-primary">Dependencies</div>
+          <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
+            Dependencies
+          </div>
           {pkg.dependencies.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">No dependencies. Standalone package.</p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              No dependencies. Standalone package.
+            </p>
           ) : (
             <ul className="mt-3 space-y-2">
               {pkg.dependencies.map((d) => (
@@ -387,10 +433,15 @@ function OverviewTab({ pkg }: { pkg: Package }) {
         </div>
 
         <div className="rounded-xl border border-border bg-background p-5">
-          <div className="font-mono text-[11px] uppercase tracking-wider text-primary">Required scopes</div>
+          <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
+            Required scopes
+          </div>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {pkg.scopes.map((s) => (
-              <span key={s} className="rounded-md border border-border bg-surface px-2 py-1 font-mono text-[11px]">
+              <span
+                key={s}
+                className="rounded-md border border-border bg-surface px-2 py-1 font-mono text-[11px]"
+              >
                 {s}
               </span>
             ))}
@@ -455,8 +506,8 @@ function CompatibilityTab({ pkg }: { pkg: Package }) {
   return (
     <div>
       <p className="max-w-2xl text-sm text-muted-foreground">
-        Compatibility is verified through the MCP gateway across major agent runtimes. Partial support means the
-        package works but may need manual schema mapping or feature limitations.
+        Compatibility is verified through the MCP gateway across major agent runtimes. Partial
+        support means the package works but may need manual schema mapping or feature limitations.
       </p>
       <div className="mt-6 grid gap-3 md:grid-cols-2">
         {pkg.compatibility.map((c) => (
@@ -515,7 +566,9 @@ function StatusPill({ status }: { status: "stable" | "beta" | "deprecated" }) {
         ? "border-amber-500/30 bg-amber-500/10 text-amber-700"
         : "border-border bg-surface text-muted-foreground";
   return (
-    <span className={`rounded border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${cls}`}>
+    <span
+      className={`rounded border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${cls}`}
+    >
       {status}
     </span>
   );
@@ -523,7 +576,10 @@ function StatusPill({ status }: { status: "stable" | "beta" | "deprecated" }) {
 
 function VerifiedBadge() {
   return (
-    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground" title="Verified author">
+    <span
+      className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground"
+      title="Verified author"
+    >
       ✓
     </span>
   );
@@ -531,13 +587,27 @@ function VerifiedBadge() {
 
 function ReviewStatusPill({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
-    approved: { label: "✓ Approved", cls: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" },
-    pending: { label: "⏳ Pending review", cls: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400" },
-    rejected: { label: "✕ Rejected", cls: "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400" },
+    approved: {
+      label: "✓ Approved",
+      cls: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+    },
+    pending: {
+      label: "⏳ Pending review",
+      cls: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+    },
+    rejected: {
+      label: "✕ Rejected",
+      cls: "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400",
+    },
   };
-  const conf = map[status] ?? { label: status, cls: "border-border bg-muted/40 text-muted-foreground" };
+  const conf = map[status] ?? {
+    label: status,
+    cls: "border-border bg-muted/40 text-muted-foreground",
+  };
   return (
-    <span className={`rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${conf.cls}`}>
+    <span
+      className={`rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${conf.cls}`}
+    >
       {conf.label}
     </span>
   );
@@ -549,7 +619,9 @@ function CompatibilitySummary({ checks }: { checks: CompatibilityCheck[] }) {
   const unsupported = checks.filter((c) => c.status === "unsupported").length;
   return (
     <div className="mt-4 rounded-md border border-border bg-surface p-3">
-      <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Compatibility</div>
+      <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+        Compatibility
+      </div>
       <div className="mt-1.5 flex items-center gap-3 text-xs">
         <span className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-signal" />
@@ -640,7 +712,10 @@ function InstallModal({
               {pkg.name}@{version}
             </div>
           </div>
-          <button onClick={onClose} className="text-muted-foreground transition-colors hover:text-foreground">
+          <button
+            onClick={onClose}
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
             ✕
           </button>
         </div>
@@ -687,7 +762,8 @@ function InstallModal({
 
             {blocked && (
               <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-xs text-foreground">
-                <span className="font-mono text-primary">Blocked:</span> {compat.detail} Switch runtime or wait for support.
+                <span className="font-mono text-primary">Blocked:</span> {compat.detail} Switch
+                runtime or wait for support.
               </div>
             )}
 
@@ -731,14 +807,31 @@ function InstallModal({
 
         {phase === "failed" && (
           <div className="space-y-5 p-6 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground">!</div>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
+              !
+            </div>
             <div>
               <div className="text-lg font-semibold tracking-tight">Install failed</div>
-              <div className="mt-1 text-sm text-muted-foreground">{error ?? "Something went wrong."}</div>
+              <div className="mt-1 text-sm text-muted-foreground">
+                {error ?? "Something went wrong."}
+              </div>
             </div>
             <div className="flex justify-center gap-2 pt-2">
-              <button onClick={onClose} className="inline-flex h-10 items-center rounded-md border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-accent">Close</button>
-              <button onClick={() => { setError(null); setPhase("installing"); }} className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:opacity-95">Retry</button>
+              <button
+                onClick={onClose}
+                className="inline-flex h-10 items-center rounded-md border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-accent"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  setError(null);
+                  setPhase("installing");
+                }}
+                className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:opacity-95"
+              >
+                Retry
+              </button>
             </div>
           </div>
         )}
