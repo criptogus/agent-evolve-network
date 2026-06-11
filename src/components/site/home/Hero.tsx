@@ -45,7 +45,7 @@ export function Hero() {
             </div>
             <h1 className="mt-5 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl xl:text-[64px]">
               Turn Claude or Cursor into a{" "}
-              <span className="block text-primary text-[1.5rem] sm:text-3xl lg:text-4xl xl:text-[2.75rem] leading-[1.15] mt-1">
+              <span className="block text-primary text-[1.75rem] sm:text-4xl lg:text-5xl xl:text-[3.5rem] leading-[1.15] mt-1">
                 <Typewriter
                   className="inline-block max-w-full break-words"
                   words={[
