@@ -201,6 +201,13 @@ export type Database = {
             referencedRelation: "package_versions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "adversarial_runs_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "package_versions_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       credit_ledger: {
@@ -291,6 +298,13 @@ export type Database = {
             columns: ["applied_in_version_id"]
             isOneToOne: false
             referencedRelation: "package_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learnings_applied_in_version_id_fkey"
+            columns: ["applied_in_version_id"]
+            isOneToOne: false
+            referencedRelation: "package_versions_public"
             referencedColumns: ["id"]
           },
           {
@@ -937,6 +951,13 @@ export type Database = {
             referencedRelation: "package_versions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "package_feedback_requests_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "package_versions_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       package_golden_cases: {
@@ -988,6 +1009,13 @@ export type Database = {
             columns: ["origin_version_id"]
             isOneToOne: false
             referencedRelation: "package_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_golden_cases_origin_version_id_fkey"
+            columns: ["origin_version_id"]
+            isOneToOne: false
+            referencedRelation: "package_versions_public"
             referencedColumns: ["id"]
           },
           {
@@ -1225,6 +1253,13 @@ export type Database = {
             columns: ["version_id"]
             isOneToOne: false
             referencedRelation: "package_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_releases_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "package_versions_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1472,6 +1507,13 @@ export type Database = {
             columns: ["parent_version_id"]
             isOneToOne: false
             referencedRelation: "package_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_versions_parent_version_id_fkey"
+            columns: ["parent_version_id"]
+            isOneToOne: false
+            referencedRelation: "package_versions_public"
             referencedColumns: ["id"]
           },
         ]
@@ -2701,6 +2743,49 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      package_versions_public: {
+        Row: {
+          compatibility: Json | null
+          created_at: string | null
+          examples: Json | null
+          id: string | null
+          notes: string | null
+          package_id: string | null
+          parent_version_id: string | null
+          status: Database["public"]["Enums"]["version_status"] | null
+          version: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_versions_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_versions_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_versions_parent_version_id_fkey"
+            columns: ["parent_version_id"]
+            isOneToOne: false
+            referencedRelation: "package_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_versions_parent_version_id_fkey"
+            columns: ["parent_version_id"]
+            isOneToOne: false
+            referencedRelation: "package_versions_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
