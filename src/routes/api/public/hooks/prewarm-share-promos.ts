@@ -53,11 +53,14 @@ export const Route = createFileRoute("/api/public/hooks/prewarm-share-promos")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Auth: require Supabase anon key in `apikey` header (matches pg_cron pattern)
-        const apikey = request.headers.get("apikey");
-        const expected =
-          process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
-        if (!apikey || !expected || apikey !== expected) {
+        // Auth: require a server-only shared secret. The Supabase publishable
+        // anon key is shipped in the browser bundle and must NOT gate this
+        // hook (it triggers up to 25 AI generations per call).
+        const expected = process.env.PREWARM_SECRET;
+        const provided =
+          request.headers.get("x-prewarm-secret") ||
+          (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
+        if (!expected || !provided || provided !== expected) {
           return new Response("Unauthorized", { status: 401 });
         }
 
