@@ -100,14 +100,44 @@ export async function getOrGenerateBody(input: Omit<Input, "url">): Promise<stri
   return body;
 }
 
+async function resolveAuthoritative(
+  type: Input["type"],
+  slug: string,
+): Promise<{ name: string; description: string } | null> {
+  if (type === "pack") {
+    const { data } = await supabaseAdmin
+      .from("packs")
+      .select("name,description,is_published,review_status")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (!data || !data.is_published || data.review_status !== "approved") return null;
+    return { name: data.name, description: data.description ?? data.name };
+  }
+  const { data } = await supabaseAdmin
+    .from("packages")
+    .select("name,description,type,is_published,review_status")
+    .eq("slug", slug)
+    .eq("type", type)
+    .maybeSingle();
+  if (!data || !data.is_published || data.review_status !== "approved") return null;
+  return { name: data.name, description: data.description ?? data.name };
+}
+
 export const getSharePromo = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => InputSchema.parse(data))
   .handler(async ({ data }) => {
+    // Ignore client-supplied name/description — always look them up from the
+    // authoritative packages/packs row to prevent cache poisoning of the
+    // shared (type,slug)-keyed promo body.
+    const authoritative = await resolveAuthoritative(data.type, data.slug);
+    if (!authoritative) {
+      throw new Error("Package not found or not published");
+    }
     const body = await getOrGenerateBody({
       slug: data.slug,
       type: data.type,
-      name: data.name,
-      description: data.description,
+      name: authoritative.name,
+      description: authoritative.description,
     });
     return { text: assemble(body, data.url) };
   });
