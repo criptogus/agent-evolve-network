@@ -8,12 +8,10 @@ const supabaseAdmin = _supabaseAdmin as any;
 const InputSchema = z.object({
   slug: z.string().min(1).max(120),
   type: z.enum(["skill", "playbook", "soul", "guardrail", "pack"]),
-  name: z.string().min(1).max(160),
-  description: z.string().min(1).max(800),
   url: z.string().url(),
 });
 
-type Input = z.infer<typeof InputSchema>;
+type Input = z.infer<typeof InputSchema> & { name: string; description: string };
 
 const TYPE_LABEL: Record<Input["type"], string> = {
   skill: "AI skill",
