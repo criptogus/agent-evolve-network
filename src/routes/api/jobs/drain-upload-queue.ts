@@ -14,19 +14,25 @@ import { drainUploadQueue } from "@/lib/uploads/queue.server";
 
 async function handle(req: Request): Promise<Response> {
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = req.headers.get("authorization") ?? "";
-    const url = new URL(req.url);
-    const provided =
-      (auth.startsWith("Bearer ") ? auth.slice(7).trim() : "") ||
-      url.searchParams.get("secret") ||
-      "";
-    if (provided !== secret) {
-      return new Response(JSON.stringify({ error: "forbidden" }), {
-        status: 403,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+  if (!secret) {
+    // Fail closed: never allow unauthenticated access when the secret is unset.
+    console.error("[drain-upload-queue] CRON_SECRET is not configured");
+    return new Response(JSON.stringify({ error: "server_misconfigured" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+  const auth = req.headers.get("authorization") ?? "";
+  const url = new URL(req.url);
+  const provided =
+    (auth.startsWith("Bearer ") ? auth.slice(7).trim() : "") ||
+    url.searchParams.get("secret") ||
+    "";
+  if (provided !== secret) {
+    return new Response(JSON.stringify({ error: "forbidden" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
   }
   try {
     const url = new URL(req.url);
