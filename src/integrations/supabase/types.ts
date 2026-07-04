@@ -210,6 +210,103 @@ export type Database = {
           },
         ]
       }
+      cloud_skill_versions: {
+        Row: {
+          changelog: string | null
+          cloud_skill_id: string
+          content: string
+          created_at: string
+          id: string
+          variables: Json
+          version: number
+        }
+        Insert: {
+          changelog?: string | null
+          cloud_skill_id: string
+          content: string
+          created_at?: string
+          id?: string
+          variables?: Json
+          version: number
+        }
+        Update: {
+          changelog?: string | null
+          cloud_skill_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          variables?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cloud_skill_versions_cloud_skill_id_fkey"
+            columns: ["cloud_skill_id"]
+            isOneToOne: false
+            referencedRelation: "cloud_skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cloud_skills: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          description: string | null
+          forked_from: string | null
+          id: string
+          is_public: boolean
+          name: string
+          slug: string
+          tags: string[]
+          updated_at: string
+          user_id: string
+          variables: Json
+          version: number
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          description?: string | null
+          forked_from?: string | null
+          id?: string
+          is_public?: boolean
+          name: string
+          slug: string
+          tags?: string[]
+          updated_at?: string
+          user_id: string
+          variables?: Json
+          version?: number
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          description?: string | null
+          forked_from?: string | null
+          id?: string
+          is_public?: boolean
+          name?: string
+          slug?: string
+          tags?: string[]
+          updated_at?: string
+          user_id?: string
+          variables?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cloud_skills_forked_from_fkey"
+            columns: ["forked_from"]
+            isOneToOne: false
+            referencedRelation: "cloud_skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_ledger: {
         Row: {
           balance_after: number
@@ -2830,6 +2927,10 @@ export type Database = {
       get_review_eligibility: { Args: { _package_id: string }; Returns: Json }
       get_skill_trust: { Args: { _slug: string }; Returns: Json }
       grant_signup_bonus: { Args: { _user_id: string }; Returns: undefined }
+      has_active_paid_subscription: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       has_active_subscription:
         | { Args: { _user_id: string }; Returns: boolean }
         | { Args: { _user_id: string; check_env?: string }; Returns: boolean }
