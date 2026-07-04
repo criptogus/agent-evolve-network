@@ -169,7 +169,7 @@ function CloudSkillsPage() {
   async function handleExport(skill: CloudSkill) {
     try {
       const result = await exportFn({ data: { id: skill.id, format: "markdown" } });
-      await navigator.clipboard.writeText(result.data);
+      await navigator.clipboard.writeText(typeof result.data === "string" ? result.data : JSON.stringify(result.data, null, 2));
       toast.success("Copied to clipboard as SKILL.md");
     } catch (e: any) {
       toast.error(e?.message ?? "Export failed");
