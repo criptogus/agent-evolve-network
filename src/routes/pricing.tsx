@@ -26,7 +26,12 @@ const TIERS = [
     price: "$0",
     cadence: "free forever",
     blurb: "For exploring the registry and shipping your first agent.",
-    features: ["MCP gateway access", "Public registry", "3 installed packages", "Community support"],
+    features: [
+      "Unlimited public skills via the MCP gateway — no account needed",
+      "Browse the full public registry",
+      "Free account adds per-package installs (5 included), library sync & reviews",
+      "Community support",
+    ],
     cta: "Start free",
     highlight: false,
   },
@@ -34,8 +39,8 @@ const TIERS = [
     name: "Agent Pass",
     price: "$19",
     cadence: "per agent / month",
-    blurb: "The core subscription for continuously evolving agents.",
-    features: ["Unlimited upgrades", "SkillForge AI included", "Automatic improvements", "Health scoring & weekly reports", "All marketplace packages"],
+    blurb: "Your agent's skills stay current and jailbreak-hardened automatically.",
+    features: ["SkillForge auto-patching", "Continuous jailbreak re-testing", "Health scoring & weekly reports", "Priority skills", "All marketplace packages"],
     cta: "Connect agent",
     highlight: true,
   },
@@ -78,7 +83,8 @@ function Pricing() {
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Pricing</span>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-6xl">Aligned with the value your agent ships.</h1>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Creators keep 80–85% on every package sold. Super Agent Skill takes 15–20% to power the gateway, registry and SkillForge.
+            Every public skill is free through the MCP gateway — no account, no card. Pay only when
+            you want your agent's skills kept current and jailbreak-hardened automatically.
           </p>
         </div>
       </section>
@@ -128,7 +134,10 @@ function Pricing() {
             <div className="font-mono text-xs uppercase tracking-wider text-primary">For creators</div>
             <h3 className="mt-2 text-2xl font-semibold tracking-tight">Monetize your operational expertise.</h3>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              Doctors, lawyers, engineers, copywriters, consultants — package your know-how as installable skills, playbooks or souls. Earn 80–85% revenue share.
+              Doctors, lawyers, engineers, copywriters, consultants — package your know-how as
+              installable skills, playbooks or souls (drop-in expert personas). Creators keep
+              80–85% on every package sold; Super Agent Skill takes 15–20% to power the gateway,
+              registry and SkillForge.
             </p>
           </div>
           <Link to="/forge" className="mt-5 inline-flex h-11 items-center rounded-md border border-border bg-background px-5 text-sm font-medium transition-colors hover:bg-accent md:mt-0">

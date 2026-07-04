@@ -32,7 +32,7 @@ export function Faq() {
               (enterprise sales motion, chest-pain triage, ad experiments).
             </li>
             <li>
-              · <span className="text-foreground">Souls</span> — personality and decision style
+              · <span className="text-foreground">Souls</span> — drop-in expert personas: personality and decision style
               (Challenger rep, founder voice, calm clinician).
             </li>
             <li>
@@ -99,9 +99,12 @@ export function Faq() {
       q: "How much does it cost?",
       a: (
         <>
-          Hacker is free forever — browse and install from the public registry, no credit card.
-          Agent Pass is $19 per agent per month with unlimited upgrades and SkillForge included.
-          Enterprise is custom, with private registry, SSO and audit logs.{" "}
+          Hacker is free forever — every public skill via the MCP gateway, plus browsing, with no
+          account needed. A free account adds per-package installs, library sync and reviews. Agent
+          Pass is $19 per agent per month: SkillForge auto-patching, continuous jailbreak
+          re-testing, health scoring with weekly reports, and priority skills — your agent's skills
+          stay current and jailbreak-hardened automatically. Enterprise is custom, with private
+          registry, SSO and audit logs.{" "}
           <Link to="/pricing" className="text-primary hover:underline">
             See pricing →
           </Link>

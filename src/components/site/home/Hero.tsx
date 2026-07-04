@@ -57,8 +57,37 @@ export function Hero() {
               </Link>
             </div>
             <p className="mx-auto mt-3 max-w-[22rem] text-xs leading-relaxed text-muted-foreground sm:max-w-none lg:mx-0">
-              Free forever · No credit card · No signup to browse · Open source (Apache 2.0)
+              Free forever: unlimited public skills via the MCP gateway · No credit card · No
+              signup to browse · Open source (Apache 2.0)
             </p>
+
+            {/* Proof strip */}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+              <a
+                href="https://github.com/criptogus/agent-evolve-network"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Star on GitHub"
+              >
+                <img
+                  src="https://img.shields.io/github/stars/criptogus/agent-evolve-network?style=social"
+                  alt="GitHub stars"
+                  className="h-5"
+                  loading="lazy"
+                />
+              </a>
+              <a
+                href="https://superagentskill.com/community"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+              >
+                Join the Discord
+              </a>
+              <span className="text-xs text-muted-foreground">
+                Every skill adversarially tested before publish
+              </span>
+            </div>
 
             {/* Secondary path for people who already know MCP */}
             <div className="mx-auto mt-8 max-w-xl rounded-xl border border-border bg-background/80 p-3 text-left shadow-sm backdrop-blur lg:mx-0">
@@ -105,7 +134,7 @@ export function Hero() {
           {[
             { v: SITE_STATS.skills, suffix: "+", label: "Expert skills" },
             { v: SITE_STATS.playbooks, suffix: "+", label: "Playbooks" },
-            { v: SITE_STATS.souls, suffix: "+", label: "Souls" },
+            { v: SITE_STATS.souls, suffix: "+", label: "Souls (expert personas)" },
             { v: SITE_STATS.mcpSetupSeconds, suffix: "s", label: "Setup time" },
           ].map((m) => (
             <div key={m.label} className="flex min-w-0 flex-col px-2">
