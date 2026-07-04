@@ -26,7 +26,7 @@ export const listMyAuthoredPackages = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("packages")
       .select(
-        "id, slug, name, type, description, latest_version, is_published, review_status, price_credits, install_count, created_at"
+        "id, slug, name, type, description, latest_version, is_published, review_status, review_notes, submitted_at, reviewed_at, price_credits, install_count, created_at"
       )
       .eq("author_id", userId)
       .order("created_at", { ascending: false });

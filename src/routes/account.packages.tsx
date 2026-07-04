@@ -44,6 +44,9 @@ type Pkg = {
   latest_version: string;
   is_published: boolean;
   review_status: string;
+  review_notes: string | null;
+  submitted_at: string | null;
+  reviewed_at: string | null;
   price_credits: number;
   install_count: number;
   created_at: string;
@@ -188,6 +191,8 @@ function AccountPackagesPage() {
                         </Badge>
                       ) : p.review_status === "rejected" ? (
                         <Badge variant="destructive">Rejected</Badge>
+                      ) : p.review_status === "paused" ? (
+                        <Badge variant="outline">Paused</Badge>
                       ) : (
                         <Badge variant="outline">Private draft</Badge>
                       )}
@@ -201,6 +206,24 @@ function AccountPackagesPage() {
                     {p.description && (
                       <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
                         {p.description}
+                      </p>
+                    )}
+                    {p.review_status === "pending" && (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {p.submitted_at && (
+                          <>Submitted {new Date(p.submitted_at).toLocaleDateString()} · </>
+                        )}
+                        Reviews typically complete within 3 business days.
+                      </p>
+                    )}
+                    {p.review_status === "rejected" && (
+                      <p className="mt-1 text-xs text-destructive">
+                        {p.reviewed_at && (
+                          <>Reviewed {new Date(p.reviewed_at).toLocaleDateString()} · </>
+                        )}
+                        {p.review_notes
+                          ? <>Reason: {p.review_notes}</>
+                          : "Rejected by review — resubmit after addressing admin feedback."}
                       </p>
                     )}
                   </div>
@@ -239,6 +262,14 @@ function AccountPackagesPage() {
         </div>
 
         <p className="mt-6 text-xs text-muted-foreground">
+          Reviews typically complete within 3 business days. Before submitting, check the{" "}
+          <Link to="/contributor-faq" className="text-primary hover:underline">
+            contributor guidelines
+          </Link>{" "}
+          to avoid common rejection reasons.
+        </p>
+
+        <p className="mt-3 text-xs text-muted-foreground">
           Publishing to the marketplace requires admin approval. From here you submit a
           draft for review; an admin runs the adversarial gate and either approves it
           (making it public) or sends it back with notes. Agents (Claude, Cursor, Codex…)
