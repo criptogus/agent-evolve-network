@@ -14,6 +14,14 @@ import {
   reviewSkillsBatchTool,
   submitFeedbackTool,
 } from "@/lib/mcp/tools/skills";
+import {
+  cloudSkillsListTool,
+  cloudSkillsGetTool,
+  cloudSkillsSaveTool,
+  cloudSkillsDeleteTool,
+  cloudSkillsExportTool,
+  cloudSkillsImportTool,
+} from "@/lib/mcp/tools/cloud-skills";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
 import { ORIGIN, sha256, CORS_HEADERS } from "@/lib/oauth/mcp-oauth.server";
@@ -62,6 +70,15 @@ const mcp = createMcpServer({
     "  - `upload_packages` with the raw file content(s) → normalised by the SkillForge author pipeline, inserted as PRIVATE drafts owned by the token holder. Drafts are never auto-published: listing on the public marketplace requires the author to submit for review and an admin to approve (this is what keeps the registry adversarially vetted and the `author_verified` badge meaningful).",
     "  - `request_primitive` if the user wants SuperAgentSkill to AUTHOR a brand-new primitive from scratch via the forge pipeline.",
     "",
+    "## 4. CLOUD SKILL MANAGER (paid subscribers only)",
+    "Save, sync and reuse your skills across projects, CLIs and devices. Agent Pass or Enterprise subscription required.",
+    "  - `cloud_skills_save` to push a local skill to your cloud library (creates or updates by slug).",
+    "  - `cloud_skills_list` to browse your saved skills (filter by category, tag, or query).",
+    "  - `cloud_skills_get` to fetch the full content of a saved skill by slug.",
+    "  - `cloud_skills_export` to export a skill as SKILL.md (Markdown + YAML frontmatter) ready to paste.",
+    "  - `cloud_skills_import` to import a SKILL.md file into your cloud library.",
+    "  - `cloud_skills_delete` to remove a skill from your library.",
+    "",
     "## Auth",
     "Read-only tools (overview, get_methodology, review_skill, review_skills_batch, list/search/get/trust) work anonymously. Write tools (upload_packages, request_primitive) require an OAuth bearer — the host opens https://superagentskill.com/oauth/authorize automatically. Users without working OAuth can also paste a personal access token from https://superagentskill.com/account/tokens. TIP: call upload_packages / request_primitive with dry_run:true to validate the flow anonymously (no persistence, no OAuth) before connecting.",
     "",
@@ -83,6 +100,12 @@ const mcp = createMcpServer({
     requestPrimitiveTool,
     reportExecutionTool,
     submitFeedbackTool,
+    cloudSkillsListTool,
+    cloudSkillsGetTool,
+    cloudSkillsSaveTool,
+    cloudSkillsDeleteTool,
+    cloudSkillsExportTool,
+    cloudSkillsImportTool,
   ],
 });
 
