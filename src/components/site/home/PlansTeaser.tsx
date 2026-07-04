@@ -4,16 +4,16 @@ import { PACKAGES_LABEL } from "@/lib/site-stats";
 // Plan names must match /pricing exactly: Hacker, Agent Pass, Enterprise.
 export function PlansTeaser() {
   const hacker = [
-    `${PACKAGES_LABEL} community skills, playbooks, souls & guardrails`,
+    `${PACKAGES_LABEL} public skills, playbooks, souls (drop-in expert personas) & guardrails — unlimited via the MCP gateway, no account needed`,
     "MCP gateway for any agent (Claude, Cursor, ChatGPT…)",
-    "Daily evaluation & community-driven upgrades",
+    "Free account adds per-package installs, library sync & reviews",
     "Public registry, GitHub-native, fork anything",
   ];
   const agentPass = [
-    "Unlimited installs & automatic upgrades",
-    "SkillForge: custom skills forged from your own context",
+    "SkillForge auto-patching — skills stay current automatically",
+    "Continuous jailbreak re-testing on every installed skill",
     "Health scoring & weekly reports per agent",
-    "All marketplace packages included",
+    "Priority skills & all marketplace packages included",
   ];
   return (
     <section className="border-b border-border py-24">
@@ -25,8 +25,9 @@ export function PlansTeaser() {
             <span className="text-primary">superpowers</span>.
           </h2>
           <p className="mt-4 text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
-            Hacker is free forever. Agent Pass is $19 per agent per month. Enterprise adds private
-            registry, SSO and audit logs.
+            Hacker is free forever — every public skill, via one MCP URL, no account. Agent Pass is
+            $19 per agent per month: your agent's skills stay current and jailbreak-hardened
+            automatically. Enterprise adds private registry, SSO and audit logs.
           </p>
         </div>
 

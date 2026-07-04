@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+import { searchPackages } from "@/lib/search/packages.server";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -8,59 +7,42 @@ const CORS = {
   "Access-Control-Allow-Headers": "Content-Type, Accept",
 };
 
-// GET /api/public/search?q=foo&type=skill&limit=20
-// Public free-text search. Filters out drafts at the DB query level.
+const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json", ...CORS, ...extra },
+  });
+
+// GET /api/public/search?q=foo&type=skill&limit=20&offset=0
+// Public free-text search backed by the `search_packages` RPC (weighted
+// tsvector + install-count boost, published/approved only), with an ILIKE
+// fallback while the migration hasn't been applied yet.
 export const Route = createFileRoute("/api/public/search")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       GET: async ({ request }) => {
         const url = new URL(request.url);
-        const q = (url.searchParams.get("q") ?? "").replace(/[%,()]/g, " ").trim();
+        const q = (url.searchParams.get("q") ?? "").trim();
         const type = url.searchParams.get("type");
-        const limit = Math.min(Math.max(Number(url.searchParams.get("limit") ?? 20), 1), 50);
+        const limit = Math.min(Math.max(Number(url.searchParams.get("limit") ?? 20) || 20, 1), 50);
+        const offset = Math.max(Number(url.searchParams.get("offset") ?? 0) || 0, 0);
 
         if (!q || q.length < 2) {
-          return new Response(JSON.stringify({ results: [] }), {
-            status: 200,
-            headers: { "Content-Type": "application/json", ...CORS },
-          });
+          return json({ results: [] });
         }
 
-        let query = supabaseAdmin
-          .from("packages")
-          .select("slug,name,type,description,latest_version,install_count")
-          .eq("is_published", true)
-          .eq("review_status", "approved")
-          .or(`name.ilike.%${q}%,description.ilike.%${q}%,long_description.ilike.%${q}%`)
-          .order("install_count", { ascending: false })
-          .limit(limit);
-        if (type) query = query.eq("type", type);
-
-        const { data, error } = await query;
-        if (error) {
-          console.error("[api/public/search] db error:", error);
-          return new Response(JSON.stringify({ error: "internal_server_error" }), {
-            status: 500,
-            headers: { "Content-Type": "application/json", ...CORS },
-          });
+        try {
+          const results = await searchPackages({ q, type, limit, offset });
+          return json(
+            { query: q, count: results.length, limit, offset, results },
+            200,
+            { "Cache-Control": "public, max-age=30" },
+          );
+        } catch (e) {
+          console.error("[api/public/search] db error:", e);
+          return json({ error: "internal_server_error" }, 500);
         }
-        const results = (data ?? []).map((r: any) => ({
-          slug: r.slug,
-          type: r.type,
-          score: r.install_count ?? 0,
-          snippet: r.description ?? "",
-          name: r.name,
-          latest_version: r.latest_version,
-        }));
-        return new Response(JSON.stringify({ query: q, count: results.length, results }), {
-          status: 200,
-          headers: {
-            "Content-Type": "application/json",
-            "Cache-Control": "public, max-age=30",
-            ...CORS,
-          },
-        });
       },
     },
   },

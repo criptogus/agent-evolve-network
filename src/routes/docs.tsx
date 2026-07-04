@@ -58,6 +58,7 @@ function Docs() {
               "Guardrails",
               "SkillForge",
               "Certification API",
+              "Security & permissions",
               "API Reference",
             ].map((s) => (
               <a
@@ -179,6 +180,53 @@ function Docs() {
               certification guide
             </Link>{" "}
             for the full flow.
+          </p>
+
+          <h2 id="security-&-permissions" className="mt-12 text-2xl font-semibold tracking-tight">
+            6. Security &amp; permissions
+          </h2>
+          <p className="mt-2 text-muted-foreground">
+            The MCP gateway is deliberately narrow. Read-only tools —{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">overview</code>,{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">get_methodology</code>,{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">review_skill</code> /{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">review_skills_batch</code>, and
+            registry search / list / get / trust lookups — work anonymously and only read public
+            registry data. Write tools ({" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">upload_packages</code>,{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">request_primitive</code>) require
+            an OAuth bearer or a personal access token. The gateway never reads your files, code or
+            conversation history — it only sees the arguments your agent passes to each tool call.
+          </p>
+          <p className="mt-3 text-muted-foreground">
+            <span className="font-medium text-foreground">Data flow:</span> your agent calls the
+            gateway over HTTPS; the gateway returns signed package content from the public
+            registry. Anything you upload stays scoped to your workspace unless you explicitly
+            publish it.
+          </p>
+          <p className="mt-3 text-muted-foreground">
+            <span className="font-medium text-foreground">Telemetry opt-out:</span> the CLI sends
+            anonymized install telemetry only; disable it with{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">SUPER_AGENT_TELEMETRY=0</code>.
+          </p>
+          <p className="mt-3 text-muted-foreground">
+            Verify packages yourself on each package's Trust page (
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">/marketplace/trust/&lt;slug&gt;</code>
+            , linked from every{" "}
+            <Link to="/marketplace" className="text-primary hover:underline">
+              marketplace
+            </Link>{" "}
+            listing){" "}
+            and report vulnerabilities via{" "}
+            <a
+              href="https://github.com/criptogus/agent-evolve-network/blob/main/SECURITY.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              SECURITY.md
+            </a>
+            .
           </p>
         </article>
       </div>

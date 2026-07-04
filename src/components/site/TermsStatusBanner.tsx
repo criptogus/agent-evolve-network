@@ -33,8 +33,15 @@ export function TermsStatusBanner({ className = "" }: { className?: string }) {
           <span className="font-mono uppercase tracking-wider">Browsing only</span>
         </span>
         <span className="text-foreground/80">
-          Preview every skill freely. <span className="text-muted-foreground">Locked:</span>{" "}
-          <span className="font-medium text-foreground">install · customize · auto-create</span>.
+          Browse free, no account. To install per-package and sync your library, create a free
+          account — or skip signup entirely:{" "}
+          <Link
+            to="/docs/mcp"
+            className="font-medium text-foreground underline-offset-2 hover:underline"
+          >
+            add our MCP gateway URL
+          </Link>{" "}
+          to your agent.
         </span>
         <Link
           to="/signup"

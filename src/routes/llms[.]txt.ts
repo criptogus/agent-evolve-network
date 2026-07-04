@@ -1,4 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+
+const supabaseAdmin = _supabaseAdmin as any;
 
 const BODY = `# Super Agent Skill
 > The MCP infrastructure layer for AI agents. Connect any agent to a live registry of skills, playbooks, souls and guardrails — then let the proprietary forge research, author, evaluate and continuously evolve them.
@@ -67,11 +70,42 @@ Creators keep 80–85% of every package sold.
 - Agent manual:   https://superagentskill.com/agents.md
 `;
 
+type CatalogRow = { slug: string; name: string; type: string; description: string | null };
+
+// Generated catalog: one line per published package so LLMs can cite and
+// deep-link every skill directly. Fails soft — on any DB error the file is
+// served without the catalog section.
+async function buildCatalogSection(): Promise<string> {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("packages")
+      .select("slug,name,type,description")
+      .eq("is_published", true)
+      .eq("review_status", "approved")
+      .order("install_count", { ascending: false })
+      .order("name", { ascending: true })
+      .limit(2000);
+    if (error || !data?.length) return "";
+    const lines = (data as CatalogRow[]).map((p) => {
+      const desc = (p.description ?? "").replace(/\s+/g, " ").trim();
+      const url = `https://superagentskill.com/marketplace/${encodeURIComponent(p.slug)}`;
+      const exportUrl =
+        p.type === "skill"
+          ? ` · markdown: https://superagentskill.com/api/skills/${encodeURIComponent(p.slug)}/export.md`
+          : "";
+      return `- ${p.name} (${p.type}): ${desc} — ${url}${exportUrl}`;
+    });
+    return `\n## Catalog (published packages)\n${lines.join("\n")}\n`;
+  } catch {
+    return "";
+  }
+}
+
 export const Route = createFileRoute("/llms.txt")({
   server: {
     handlers: {
       GET: async () =>
-        new Response(BODY, {
+        new Response(BODY + (await buildCatalogSection()), {
           headers: {
             "Content-Type": "text/plain; charset=utf-8",
             "Cache-Control": "public, max-age=300",
