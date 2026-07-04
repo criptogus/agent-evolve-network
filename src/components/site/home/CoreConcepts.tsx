@@ -4,24 +4,28 @@ export function CoreConcepts() {
   const items = [
     {
       tag: "SKILLS",
+      plain: "What your agent can do",
       title: "Capabilities, installable.",
       body: "Cardiology Diagnostics. Growth Hacking. Legal Due Diligence. Discrete units of expertise an agent can install on demand.",
       sample: ["cardiology-diagnostics", "growth-hacking-pro", "legal-due-diligence"],
     },
     {
       tag: "PLAYBOOKS",
+      plain: "How it runs a process end-to-end",
       title: "Workflows that ship results.",
       body: "Complete operational logic for real-world processes — from enterprise sales motions to medical consultations.",
       sample: ["enterprise-sales-flow", "medical-consultation-v2", "startup-validation"],
     },
     {
       tag: "SOULS",
+      plain: "How it sounds and decides",
       title: "Personality as code.",
       body: "Tone, style, principles, decision-making. Give your agent a Challenger-rep soul, a McKinsey soul, or a humanized doctor soul.",
       sample: ["challenger-rep-soul", "mckinsey-consultant", "humanized-doctor"],
     },
     {
       tag: "GUARDRAILS",
+      plain: "What it must never do",
       title: "Safety, by default.",
       body: "Block hallucinations, regulatory violations, out-of-domain behavior and unsafe actions before they reach your users.",
       sample: ["medical-guardrails", "finance-compliance", "no-hallucination"],
@@ -36,7 +40,7 @@ export function CoreConcepts() {
               The Stack
             </span>
             <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">
-              Four primitives. Infinite agents.
+              Four building blocks. Infinite agents.
             </h2>
           </div>
           <Link
@@ -52,8 +56,11 @@ export function CoreConcepts() {
               key={it.tag}
               className="group rounded-2xl border border-border bg-background p-7 shadow-sm transition-all hover:border-primary/40 hover:shadow-elevated"
             >
-              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
-                {it.tag}
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                  {it.tag}
+                </span>
+                <span className="text-xs text-muted-foreground">{it.plain}</span>
               </div>
               <h3 className="mt-3 text-2xl font-semibold tracking-tight">{it.title}</h3>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{it.body}</p>

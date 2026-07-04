@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+
 export function HowItWorks() {
   const steps = [
     {
@@ -8,7 +10,7 @@ export function HowItWorks() {
     {
       n: "02",
       title: "Pick a skill — or describe one",
-      body: "Browse ready-made experts, or just say what you do: “I run a cardiology clinic.” SkillForge installs the right skills, playbooks and guardrails — or forges a custom one from your own context.",
+      body: "Browse ready-made experts, or just say what you do: “I run a cardiology clinic.” The right skills and guardrails get installed — or a custom one is built from your own context.",
     },
     {
       n: "03",
@@ -42,6 +44,14 @@ export function HowItWorks() {
         <p className="mt-6 text-center text-xs uppercase tracking-[0.2em] text-muted-foreground">
           One endpoint · Claude Code · Cursor · ChatGPT · Continue · Cline · Any MCP client
         </p>
+        <div className="mt-8 text-center">
+          <Link
+            to="/connect"
+            className="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-elevated transition-all hover:opacity-95"
+          >
+            Start with step 1 — connect free →
+          </Link>
+        </div>
       </div>
     </section>
   );

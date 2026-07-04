@@ -16,7 +16,7 @@ export function PlansTeaser() {
     "All marketplace packages included",
   ];
   return (
-    <section className="border-b border-border bg-surface/40 py-24">
+    <section className="border-b border-border py-24">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-2xl text-center">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Pricing</span>
