@@ -10,6 +10,20 @@ import { BuyButton, PriceBadge } from "@/components/marketplace/BuyButton";
 import { Stars } from "@/components/reviews/Stars";
 import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 import { SoulDisclaimerBadge, SOUL_DISCLAIMER_SHORT } from "@/components/souls/SoulDisclaimer";
+import {
+  BadgeCheck,
+  BarChart3,
+  Bot,
+  FolderOpen,
+  Palette,
+  ShoppingBag,
+  Smartphone,
+  Sparkles,
+  Trophy,
+  User,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 
 export const Route = createFileRoute("/marketplace/")({
   head: () => ({
@@ -62,24 +76,28 @@ const INSTALL_BUCKETS = [
 ] as const;
 type InstallBucket = (typeof INSTALL_BUCKETS)[number]["value"];
 
-const VERTICAL_GROUPS = [
-  { value: "all", label: "All", emoji: "✨", verticals: [] as string[] },
+const VERTICAL_GROUPS: {
+  value: string;
+  label: string;
+  icon: LucideIcon;
+  verticals: readonly string[];
+}[] = [
+  { value: "all", label: "All", icon: Sparkles, verticals: [] },
   {
     value: "shop_restaurant",
     label: "Shop & Restaurant",
-    emoji: "🛍️",
+    icon: ShoppingBag,
     verticals: ["retail", "restaurant", "operations", "customer-experience"],
   },
-  { value: "data", label: "Data", emoji: "📊", verticals: ["data"] },
-  { value: "mobile", label: "Mobile", emoji: "📱", verticals: ["mobile"] },
+  { value: "data", label: "Data", icon: BarChart3, verticals: ["data"] },
+  { value: "mobile", label: "Mobile", icon: Smartphone, verticals: ["mobile"] },
   {
     value: "creative",
     label: "Creative",
-    emoji: "🎨",
+    icon: Palette,
     verticals: ["creative", "productivity", "strategy", "career", "marketing"],
   },
-] as const;
-type VerticalGroupKey = (typeof VERTICAL_GROUPS)[number]["value"];
+];
 
 function Marketplace() {
   const fetchFn = useServerFn(listMarketplace);
@@ -172,19 +190,24 @@ function Marketplace() {
               search={{ type: "skill", category: null, q: null, sort: "popular", page: 1 }}
               className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary hover:text-primary"
             >
-              🏆 Most installed
+              <Trophy className="h-3.5 w-3.5" aria-hidden />
+              Most installed
             </Link>
             <Link
               to="/marketplace/categories"
               className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary hover:text-primary"
             >
-              📂 Browse by category
+              <FolderOpen className="h-3.5 w-3.5" aria-hidden />
+              Browse by category
             </Link>
             <Link
               to="/marketplace/rankings"
               className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary hover:text-primary"
             >
-              🧑 Humans vs 🤖 Agents
+              <User className="h-3.5 w-3.5" aria-hidden />
+              Humans vs
+              <Bot className="h-3.5 w-3.5" aria-hidden />
+              Agents
             </Link>
           </div>
 
@@ -204,7 +227,7 @@ function Marketplace() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
                   aria-label="Clear search"
                 >
-                  ✕
+                  <X className="h-3.5 w-3.5" aria-hidden />
                 </button>
               )}
             </div>
@@ -226,42 +249,50 @@ function Marketplace() {
             </div>
           </div>
 
-          {/* Quick filters: vertical groups */}
-          <div className="mt-4 flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-              Quick filters
-            </span>
-            {VERTICAL_GROUPS.map((g) => {
-              const active = verticalGroup === g.value;
-              const count =
+          {/* Quick filters: vertical groups (chips with 0 results are hidden) */}
+          {(() => {
+            const chips = VERTICAL_GROUPS.map((g) => ({
+              ...g,
+              count:
                 g.value === "all"
                   ? items.length
-                  : items.filter(
-                      (it) =>
-                        it.vertical && (g.verticals as readonly string[]).includes(it.vertical),
-                    ).length;
-              return (
-                <button
-                  key={g.value}
-                  onClick={() => {
-                    setVerticalGroup(g.value);
-                    setVertical("all");
-                  }}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                    active
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-background text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <span aria-hidden>{g.emoji}</span>
-                  <span>{g.label}</span>
-                  <span className={`text-[10px] ${active ? "opacity-80" : "opacity-60"}`}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+                  : items.filter((it) => it.vertical && g.verticals.includes(it.vertical)).length,
+            })).filter((g) => g.count > 0);
+            // Only worth showing when at least 2 non-"all" groups have items
+            if (chips.filter((g) => g.value !== "all").length < 2) return null;
+            return (
+              <div className="mt-4 flex flex-wrap items-center gap-1.5">
+                <span className="mr-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+                  Quick filters
+                </span>
+                {chips.map((g) => {
+                  const active = verticalGroup === g.value;
+                  const Icon = g.icon;
+                  return (
+                    <button
+                      key={g.value}
+                      onClick={() => {
+                        setVerticalGroup(g.value);
+                        setVertical("all");
+                      }}
+                      aria-pressed={active}
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                        active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Icon className="h-3.5 w-3.5" aria-hidden />
+                      <span>{g.label}</span>
+                      <span className={`text-[10px] ${active ? "opacity-80" : "opacity-60"}`}>
+                        {g.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
           {/* Category chips */}
           {verticals.length > 0 && (
@@ -399,12 +430,11 @@ function Card({ p }: { p: MarketplaceItem }) {
       ? ({ to: "/souls/$slug", params: { slug: p.slug } } as const)
       : ({ to: "/marketplace/$packageId", params: { packageId: p.slug } } as const);
   return (
-    <Link
+    <div
       key={p.id}
-      {...linkProps}
-      className="group flex flex-col rounded-xl border border-border bg-background p-5 transition-all hover:border-primary/40 hover:shadow-elevated"
+      className="group relative flex flex-col rounded-xl border border-border bg-background p-5 transition-all focus-within:border-primary/40 hover:border-primary/40 hover:shadow-elevated"
     >
-      <div className="flex items-center justify-between gap-2">
+      <div className="relative z-10 flex items-center justify-between gap-2">
         <TypeBadge type={p.type} />
         <div className="flex items-center gap-2">
           {p.type !== "soul" && <PriceBadge priceCredits={p.price_credits} />}
@@ -419,8 +449,13 @@ function Card({ p }: { p: MarketplaceItem }) {
           />
         </div>
       </div>
-      <div className="mt-3 font-mono text-[15px] font-semibold leading-tight">{p.name}</div>
-      <div className="mt-1 text-xs text-muted-foreground">
+      <div className="mt-3 font-mono text-[15px] font-semibold leading-tight">
+        {/* Stretched link: covers the whole card; interactive siblings sit above it via z-10 */}
+        <Link {...linkProps} className="after:absolute after:inset-0 after:content-['']">
+          {p.name}
+        </Link>
+      </div>
+      <div className="relative z-10 mt-1 self-start text-xs text-muted-foreground">
         <AuthorLink handle={p.author_handle} verified={p.author_verified} />
         {p.install_count > 0 && <> · {p.install_count.toLocaleString()} installs</>}
       </div>
@@ -435,8 +470,24 @@ function Card({ p }: { p: MarketplaceItem }) {
             <Stars value={p.rating_avg} size={11} />
             <span className="font-mono text-foreground">{p.rating_avg.toFixed(1)}</span>
             <span>({p.rating_count})</span>
-            {p.rating_human_count > 0 && <span title="Human ratings">· 🧑 {p.rating_human_count}</span>}
-            {p.rating_agent_count > 0 && <span title="Agent ratings">· 🤖 {p.rating_agent_count}</span>}
+            {p.rating_human_count > 0 && (
+              <span className="inline-flex items-center gap-1">
+                · <User className="h-3 w-3" aria-hidden />
+                {p.rating_human_count}
+                <span className="sr-only">
+                  {p.rating_human_count === 1 ? "human review" : "human reviews"}
+                </span>
+              </span>
+            )}
+            {p.rating_agent_count > 0 && (
+              <span className="inline-flex items-center gap-1">
+                · <Bot className="h-3 w-3" aria-hidden />
+                {p.rating_agent_count}
+                <span className="sr-only">
+                  {p.rating_agent_count === 1 ? "agent review" : "agent reviews"}
+                </span>
+              </span>
+            )}
           </>
         ) : (
           <span>No ratings yet</span>
@@ -454,14 +505,20 @@ function Card({ p }: { p: MarketplaceItem }) {
         </div>
       )}
       <div className="mt-auto flex items-center gap-2 pt-5">
-        <div className="inline-flex h-9 flex-1 items-center justify-center rounded-md bg-foreground text-sm font-medium text-background transition-opacity group-hover:opacity-90">
+        {/* Part of the stretched title link visually; not a separate interactive element */}
+        <div
+          aria-hidden
+          className="pointer-events-none inline-flex h-9 flex-1 items-center justify-center rounded-md bg-foreground text-sm font-medium text-background transition-opacity group-hover:opacity-90"
+        >
           {p.type === "soul" ? "View soul →" : p.price_credits > 0 ? "View →" : "View package →"}
         </div>
         {p.type !== "soul" && p.price_credits > 0 && (
-          <BuyButton packageId={p.id} priceCredits={p.price_credits} />
+          <div className="relative z-10">
+            <BuyButton packageId={p.id} priceCredits={p.price_credits} />
+          </div>
         )}
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -547,7 +604,12 @@ export function AuthorLink({ handle, verified }: { handle: string; verified?: bo
       className="font-medium text-muted-foreground hover:text-primary hover:underline"
     >
       {handle}
-      {verified && <span className="ml-1 text-primary">✓</span>}
+      {verified && (
+        <span className="ml-1 inline-flex text-primary">
+          <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
+          <span className="sr-only">Verified author</span>
+        </span>
+      )}
     </button>
   );
 }

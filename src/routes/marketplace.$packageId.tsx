@@ -5,7 +5,7 @@ import { Footer } from "@/components/site/Footer";
 import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { CodeBlock } from "@/components/site/CodeBlock";
-import { CopyButton } from "@/components/site/CopyButton";
+import { CopyButton, CodeBlockCopy } from "@/components/site/CopyButton";
 import { TypingLines } from "@/components/site/Typewriter";
 import { TypeBadge } from "./marketplace.index";
 import type { Package, CompatibilityCheck } from "@/data/packages";
@@ -75,6 +75,8 @@ export const Route = createFileRoute("/marketplace/$packageId")({
 });
 
 type Tab = "overview" | "versions" | "compatibility" | "changelog";
+
+const MCP_GATEWAY_URL = "https://superagentskill.com/api/mcp";
 
 function PackageDetail() {
   const { pkg } = Route.useLoaderData();
@@ -188,8 +190,30 @@ function PackageDetail() {
             </div>
 
             {/* Install panel */}
-            <div className="w-full shrink-0 rounded-xl border border-border bg-background p-5 shadow-elevated md:w-[340px]">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+            <div className="w-full shrink-0 md:w-[340px]">
+            <div className="rounded-xl border border-border bg-background p-5 shadow-elevated">
+              {/* Primary: no-signup MCP path */}
+              <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
+                Install via MCP — no account needed
+              </div>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Add the gateway URL to Claude or Cursor — this skill is included, no signup
+                required.
+              </p>
+              <div className="mt-3 space-y-2">
+                <CodeBlockCopy code={MCP_GATEWAY_URL} label="gateway URL" />
+                <CodeBlockCopy code={`npx super-agent install ${pkg.id}`} label="install command" />
+              </div>
+
+              <div className="mt-5 flex items-center gap-3">
+                <span className="h-px flex-1 bg-border" />
+                <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  or with an account
+                </span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+
+              <label className="mt-4 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
                 Version
               </label>
               <select
@@ -240,7 +264,7 @@ function PackageDetail() {
                 onClick={() => {
                   if (requireAuth("install this package")) setInstallOpen(true);
                 }}
-                className={`${isOutdated ? "mt-2 h-10 border border-border bg-background text-foreground hover:bg-accent" : "mt-4 h-11 bg-primary text-primary-foreground hover:opacity-95 shadow-sm"} inline-flex w-full items-center justify-center rounded-md text-sm font-semibold transition-all`}
+                className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background text-sm font-semibold text-foreground transition-all hover:bg-accent"
               >
                 {isUpgrade
                   ? `Upgrade → v${selectedVersion}`
@@ -281,6 +305,9 @@ function PackageDetail() {
               </div>
 
               <CompatibilitySummary checks={pkg.compatibility} />
+            </div>
+
+            <TrustPanel pkg={pkg} />
             </div>
           </div>
         </div>
@@ -340,6 +367,53 @@ function PackageDetail() {
   );
 }
 
+/* ---------------- Trust panel ---------------- */
+
+function TrustPanel({ pkg }: { pkg: Package }) {
+  const lastUpdated = pkg.versions[0]?.date ?? "—";
+  const badgeMarkdown = `[![Trust Score](https://superagentskill.com/api/badges/trust/${pkg.id}.svg)](https://superagentskill.com/marketplace/${pkg.id})`;
+  return (
+    <div className="mt-4 rounded-xl border border-border bg-background p-5">
+      <div className="font-mono text-[11px] uppercase tracking-wider text-primary">Trust</div>
+      <dl className="mt-3 space-y-2 text-xs">
+        <div className="flex items-center justify-between gap-2">
+          <dt className="text-muted-foreground">Review status</dt>
+          <dd>
+            {pkg.reviewStatus ? (
+              <ReviewStatusPill status={pkg.reviewStatus} />
+            ) : (
+              <span className="text-muted-foreground">—</span>
+            )}
+          </dd>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <dt className="text-muted-foreground">Latest version</dt>
+          <dd className="font-mono text-foreground">v{pkg.latest}</dd>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <dt className="text-muted-foreground">Last updated</dt>
+          <dd className="text-foreground">{lastUpdated}</dd>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <dt className="text-muted-foreground">License</dt>
+          <dd className="font-mono text-foreground">{pkg.license}</dd>
+        </div>
+      </dl>
+      <Link
+        to="/marketplace/trust/$slug"
+        params={{ slug: pkg.id }}
+        className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-md border border-primary/40 bg-primary/5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
+      >
+        View full trust report →
+      </Link>
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <span className="text-[11px] text-muted-foreground">Embed trust badge in your README</span>
+        <CopyButton value={badgeMarkdown} label="badge markdown" shortLabel="badge" />
+      </div>
+    </div>
+  );
+}
+
 /* ---------------- Tabs ---------------- */
 
 function OverviewTab({ pkg }: { pkg: Package }) {
@@ -385,11 +459,13 @@ function OverviewTab({ pkg }: { pkg: Package }) {
         </div>
 
         <h3 className="mt-10 text-base font-semibold tracking-tight">Install via MCP</h3>
-        <div className="mt-4">
-          <CodeBlock
-            filename="agent terminal"
-            code={`> Super Agent Skill: install ${pkg.name}@${pkg.latest}\n\n→ Resolving dependencies........... ok\n→ Checking compatibility........... ok\n→ Negotiating scopes............... ${pkg.scopes.join(", ")}\n→ Installing....................... ok\n\n● Ready. Health score updated.`}
-          />
+        <p className="mt-2 text-sm text-muted-foreground">
+          Add the gateway URL to Claude, Cursor or any MCP-capable agent — this skill is included,
+          no account needed. Or use the CLI:
+        </p>
+        <div className="mt-4 space-y-2">
+          <CodeBlockCopy code={MCP_GATEWAY_URL} label="MCP gateway URL" />
+          <CodeBlockCopy code={`npx super-agent install ${pkg.id}`} label="CLI install" />
         </div>
       </div>
 
@@ -670,12 +746,9 @@ function InstallModal({
     `> Super Agent Skill: ${isUpgrade ? "upgrade" : "install"} ${pkg.name}@${version}`,
     "",
     `→ Target runtime................. ${runtime}`,
-    `→ Resolving dependencies......... ${pkg.dependencies.length || "0"} packages`,
-    `→ Verifying signatures........... ok`,
-    `→ Negotiating scopes............. ${pkg.scopes.join(", ")}`,
-    `→ Hot-swapping capability........ ok`,
+    `→ Scopes requested............... ${pkg.scopes.join(", ")}`,
     "",
-    `● ${isUpgrade ? "Upgraded" : "Installed"} ${pkg.name}@${version}`,
+    `Registering install with your library…`,
   ];
 
   useEffect(() => {
@@ -787,6 +860,9 @@ function InstallModal({
 
         {phase === "installing" && (
           <div className="overflow-hidden bg-[oklch(0.14_0.01_270)]">
+            <div className="px-5 pt-3 font-mono text-[10px] uppercase tracking-wider text-white/40">
+              Illustration — install is running via the MCP gateway
+            </div>
             <TypingLines
               lines={installLines}
               speed={14}
