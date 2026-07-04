@@ -81,6 +81,7 @@ import { Route as AccountReferralsRouteImport } from './routes/account.referrals
 import { Route as AccountPackagesRouteImport } from './routes/account.packages'
 import { Route as AccountCreditsRouteImport } from './routes/account.credits'
 import { Route as AccountConnectionsRouteImport } from './routes/account.connections'
+import { Route as AccountCloudSkillsRouteImport } from './routes/account.cloud-skills'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known.oauth-protected-resource'
 import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known.oauth-authorization-server'
@@ -479,6 +480,11 @@ const AccountConnectionsRoute = AccountConnectionsRouteImport.update({
   path: '/account/connections',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountCloudSkillsRoute = AccountCloudSkillsRouteImport.update({
+  id: '/account/cloud-skills',
+  path: '/account/cloud-skills',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountBillingRoute = AccountBillingRouteImport.update({
   id: '/account/billing',
   path: '/account/billing',
@@ -713,6 +719,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
   '/account/billing': typeof AccountBillingRoute
+  '/account/cloud-skills': typeof AccountCloudSkillsRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
   '/account/packages': typeof AccountPackagesRoute
@@ -823,6 +830,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
   '/account/billing': typeof AccountBillingRoute
+  '/account/cloud-skills': typeof AccountCloudSkillsRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
   '/account/packages': typeof AccountPackagesRoute
@@ -935,6 +943,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
   '/account/billing': typeof AccountBillingRoute
+  '/account/cloud-skills': typeof AccountCloudSkillsRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
   '/account/packages': typeof AccountPackagesRoute
@@ -1048,6 +1057,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
     | '/account/billing'
+    | '/account/cloud-skills'
     | '/account/connections'
     | '/account/credits'
     | '/account/packages'
@@ -1158,6 +1168,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
     | '/account/billing'
+    | '/account/cloud-skills'
     | '/account/connections'
     | '/account/credits'
     | '/account/packages'
@@ -1269,6 +1280,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
     | '/account/billing'
+    | '/account/cloud-skills'
     | '/account/connections'
     | '/account/credits'
     | '/account/packages'
@@ -1381,6 +1393,7 @@ export interface RootRouteChildren {
   DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRouteWithChildren
   AccountBillingRoute: typeof AccountBillingRoute
+  AccountCloudSkillsRoute: typeof AccountCloudSkillsRoute
   AccountConnectionsRoute: typeof AccountConnectionsRoute
   AccountCreditsRoute: typeof AccountCreditsRoute
   AccountPackagesRoute: typeof AccountPackagesRoute
@@ -1938,6 +1951,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountConnectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/cloud-skills': {
+      id: '/account/cloud-skills'
+      path: '/account/cloud-skills'
+      fullPath: '/account/cloud-skills'
+      preLoaderRoute: typeof AccountCloudSkillsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/billing': {
       id: '/account/billing'
       path: '/account/billing'
@@ -2395,6 +2415,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotwellKnownOauthProtectedResourceRoute:
     DotwellKnownOauthProtectedResourceRouteWithChildren,
   AccountBillingRoute: AccountBillingRoute,
+  AccountCloudSkillsRoute: AccountCloudSkillsRoute,
   AccountConnectionsRoute: AccountConnectionsRoute,
   AccountCreditsRoute: AccountCreditsRoute,
   AccountPackagesRoute: AccountPackagesRoute,
