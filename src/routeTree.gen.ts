@@ -79,6 +79,8 @@ import { Route as AccountUsageRouteImport } from './routes/account.usage'
 import { Route as AccountTokensRouteImport } from './routes/account.tokens'
 import { Route as AccountReferralsRouteImport } from './routes/account.referrals'
 import { Route as AccountPackagesRouteImport } from './routes/account.packages'
+import { Route as AccountLibraryRouteImport } from './routes/account.library'
+import { Route as AccountEarningsRouteImport } from './routes/account.earnings'
 import { Route as AccountCreditsRouteImport } from './routes/account.credits'
 import { Route as AccountConnectionsRouteImport } from './routes/account.connections'
 import { Route as AccountCloudSkillsRouteImport } from './routes/account.cloud-skills'
@@ -470,6 +472,16 @@ const AccountPackagesRoute = AccountPackagesRouteImport.update({
   path: '/account/packages',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountLibraryRoute = AccountLibraryRouteImport.update({
+  id: '/account/library',
+  path: '/account/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountEarningsRoute = AccountEarningsRouteImport.update({
+  id: '/account/earnings',
+  path: '/account/earnings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountCreditsRoute = AccountCreditsRouteImport.update({
   id: '/account/credits',
   path: '/account/credits',
@@ -722,6 +734,8 @@ export interface FileRoutesByFullPath {
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
+  '/account/earnings': typeof AccountEarningsRoute
+  '/account/library': typeof AccountLibraryRoute
   '/account/packages': typeof AccountPackagesRoute
   '/account/referrals': typeof AccountReferralsRoute
   '/account/tokens': typeof AccountTokensRoute
@@ -833,6 +847,8 @@ export interface FileRoutesByTo {
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
+  '/account/earnings': typeof AccountEarningsRoute
+  '/account/library': typeof AccountLibraryRoute
   '/account/packages': typeof AccountPackagesRoute
   '/account/referrals': typeof AccountReferralsRoute
   '/account/tokens': typeof AccountTokensRoute
@@ -946,6 +962,8 @@ export interface FileRoutesById {
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
+  '/account/earnings': typeof AccountEarningsRoute
+  '/account/library': typeof AccountLibraryRoute
   '/account/packages': typeof AccountPackagesRoute
   '/account/referrals': typeof AccountReferralsRoute
   '/account/tokens': typeof AccountTokensRoute
@@ -1060,6 +1078,8 @@ export interface FileRouteTypes {
     | '/account/cloud-skills'
     | '/account/connections'
     | '/account/credits'
+    | '/account/earnings'
+    | '/account/library'
     | '/account/packages'
     | '/account/referrals'
     | '/account/tokens'
@@ -1171,6 +1191,8 @@ export interface FileRouteTypes {
     | '/account/cloud-skills'
     | '/account/connections'
     | '/account/credits'
+    | '/account/earnings'
+    | '/account/library'
     | '/account/packages'
     | '/account/referrals'
     | '/account/tokens'
@@ -1283,6 +1305,8 @@ export interface FileRouteTypes {
     | '/account/cloud-skills'
     | '/account/connections'
     | '/account/credits'
+    | '/account/earnings'
+    | '/account/library'
     | '/account/packages'
     | '/account/referrals'
     | '/account/tokens'
@@ -1396,6 +1420,8 @@ export interface RootRouteChildren {
   AccountCloudSkillsRoute: typeof AccountCloudSkillsRoute
   AccountConnectionsRoute: typeof AccountConnectionsRoute
   AccountCreditsRoute: typeof AccountCreditsRoute
+  AccountEarningsRoute: typeof AccountEarningsRoute
+  AccountLibraryRoute: typeof AccountLibraryRoute
   AccountPackagesRoute: typeof AccountPackagesRoute
   AccountReferralsRoute: typeof AccountReferralsRoute
   AccountTokensRoute: typeof AccountTokensRoute
@@ -1937,6 +1963,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountPackagesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/library': {
+      id: '/account/library'
+      path: '/account/library'
+      fullPath: '/account/library'
+      preLoaderRoute: typeof AccountLibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/earnings': {
+      id: '/account/earnings'
+      path: '/account/earnings'
+      fullPath: '/account/earnings'
+      preLoaderRoute: typeof AccountEarningsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/credits': {
       id: '/account/credits'
       path: '/account/credits'
@@ -2418,6 +2458,8 @@ const rootRouteChildren: RootRouteChildren = {
   AccountCloudSkillsRoute: AccountCloudSkillsRoute,
   AccountConnectionsRoute: AccountConnectionsRoute,
   AccountCreditsRoute: AccountCreditsRoute,
+  AccountEarningsRoute: AccountEarningsRoute,
+  AccountLibraryRoute: AccountLibraryRoute,
   AccountPackagesRoute: AccountPackagesRoute,
   AccountReferralsRoute: AccountReferralsRoute,
   AccountTokensRoute: AccountTokensRoute,
@@ -2472,3 +2514,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

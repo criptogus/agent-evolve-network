@@ -154,6 +154,12 @@ export function Nav() {
                     <Link to="/account/packages">My packages</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link to="/account/library">My library</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/account/earnings">Earnings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/account/billing">Billing</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -229,6 +235,12 @@ export function Nav() {
                     <div className="flex flex-col gap-1">
                       <MobileLink to="/account/packages" onNavigate={() => setOpen(false)}>
                         My packages
+                      </MobileLink>
+                      <MobileLink to="/account/library" onNavigate={() => setOpen(false)}>
+                        My library
+                      </MobileLink>
+                      <MobileLink to="/account/earnings" onNavigate={() => setOpen(false)}>
+                        Earnings
                       </MobileLink>
                       <MobileLink to="/account/billing" onNavigate={() => setOpen(false)}>
                         Billing

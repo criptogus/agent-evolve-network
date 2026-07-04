@@ -19,6 +19,8 @@ import {
 } from "@/lib/marketplace/telemetry.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/lib/require-auth";
+import { toggleStar, isStarred, type StarState } from "@/lib/favorites/favorites.functions";
+import { Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 
@@ -89,6 +91,31 @@ function PackageDetail() {
   const [uninstalling, setUninstalling] = useState(false);
   const [updating, setUpdating] = useState(false);
   const statusFn = useServerFn(getInstallStatus);
+  const isStarredFn = useServerFn(isStarred);
+  const toggleStarFn = useServerFn(toggleStar);
+  const [star, setStar] = useState<StarState | null>(null);
+  const [starPending, setStarPending] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      setStar(null);
+      return;
+    }
+    isStarredFn({ data: { slug: pkg.id } })
+      .then((s) => setStar(s))
+      .catch(() => setStar(null));
+  }, [user, pkg.id, isStarredFn]);
+
+  const handleToggleStar = async () => {
+    if (!requireAuth("save this package to your library")) return;
+    setStarPending(true);
+    try {
+      const next = await toggleStarFn({ data: { slug: pkg.id } });
+      setStar(next);
+    } finally {
+      setStarPending(false);
+    }
+  };
   const uninstallFn = useServerFn(uninstallPackageBySlug);
   const updateFn = useServerFn(updatePackageBySlug);
 
@@ -178,7 +205,27 @@ function PackageDetail() {
                 </span>
                 <span>{pkg.downloads} installs</span>
               </div>
-              <div className="mt-4">
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <button
+                  onClick={handleToggleStar}
+                  disabled={starPending}
+                  aria-label={star?.starred ? "Remove from my library" : "Save to my library"}
+                  aria-pressed={!!star?.starred}
+                  className={`inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-medium transition-colors disabled:opacity-60 ${
+                    star?.starred
+                      ? "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                      : "border-border bg-background text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Star
+                    className="h-3.5 w-3.5"
+                    fill={star?.starred ? "currentColor" : "none"}
+                  />
+                  {star?.starred ? "Saved" : "Save"}
+                  {star != null && (
+                    <span className="font-mono text-[11px] opacity-70">{star.star_count}</span>
+                  )}
+                </button>
                 <ShareOnXButton
                   slug={pkg.id}
                   type={pkg.type as "skill" | "playbook" | "soul" | "guardrail"}
