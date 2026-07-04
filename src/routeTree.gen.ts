@@ -37,6 +37,7 @@ import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as ContributorFaqRouteImport } from './routes/contributor-faq'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as CommunityRouteImport } from './routes/community'
+import { Route as CertifyRouteImport } from './routes/certify'
 import { Route as BountiesRouteImport } from './routes/bounties'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -90,6 +91,7 @@ import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
 import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packages'
+import { Route as ApiPublicCertifyRouteImport } from './routes/api/public/certify'
 import { Route as ApiPackagesUploadRouteImport } from './routes/api/packages.upload'
 import { Route as ApiMcpHealthRouteImport } from './routes/api/mcp/health'
 import { Route as ApiJobsDrainUploadQueueRouteImport } from './routes/api/jobs/drain-upload-queue'
@@ -106,6 +108,7 @@ import { Route as ApiPublicOauthRevokeRouteImport } from './routes/api/public/oa
 import { Route as ApiPublicOauthRegisterRouteImport } from './routes/api/public/oauth/register'
 import { Route as ApiPublicMcpHealthRouteImport } from './routes/api/public/mcp.health'
 import { Route as ApiPublicHooksPrewarmSharePromosRouteImport } from './routes/api/public/hooks/prewarm-share-promos'
+import { Route as ApiPublicCertificationsIdRouteImport } from './routes/api/public/certifications.$id'
 import { Route as ApiPublicDotwellKnownOauthProtectedResourceRouteImport } from './routes/api/public/[.]well-known.oauth-protected-resource'
 import { Route as ApiPublicDotwellKnownOauthAuthorizationServerRouteImport } from './routes/api/public/[.]well-known.oauth-authorization-server'
 import { Route as ApiOgSkillOfTheWeekSvgRouteImport } from './routes/api/og.skill-of-the-week.svg'
@@ -113,6 +116,7 @@ import { Route as ApiIntegrationsSlugInstallRouteImport } from './routes/api/int
 import { Route as DotwellKnownOauthProtectedResourceApiMcpRouteImport } from './routes/[.]well-known.oauth-protected-resource.api.mcp'
 import { Route as DotwellKnownOauthAuthorizationServerApiMcpRouteImport } from './routes/[.]well-known.oauth-authorization-server.api.mcp'
 import { Route as ApiBadgesTrustSlugSvgRouteImport } from './routes/api/badges.trust.$slug.svg'
+import { Route as ApiBadgesCertifiedIdSvgRouteImport } from './routes/api/badges.certified.$id.svg'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
 const WelcomeRoute = WelcomeRouteImport.update({
@@ -253,6 +257,11 @@ const ConnectRoute = ConnectRouteImport.update({
 const CommunityRoute = CommunityRouteImport.update({
   id: '/community',
   path: '/community',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CertifyRoute = CertifyRouteImport.update({
+  id: '/certify',
+  path: '/certify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BountiesRoute = BountiesRouteImport.update({
@@ -522,6 +531,11 @@ const ApiPublicPackagesRoute = ApiPublicPackagesRouteImport.update({
   path: '/api/public/packages',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCertifyRoute = ApiPublicCertifyRouteImport.update({
+  id: '/api/public/certify',
+  path: '/api/public/certify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPackagesUploadRoute = ApiPackagesUploadRouteImport.update({
   id: '/api/packages/upload',
   path: '/api/packages/upload',
@@ -605,6 +619,12 @@ const ApiPublicHooksPrewarmSharePromosRoute =
     path: '/api/public/hooks/prewarm-share-promos',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCertificationsIdRoute =
+  ApiPublicCertificationsIdRouteImport.update({
+    id: '/api/public/certifications/$id',
+    path: '/api/public/certifications/$id',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicDotwellKnownOauthProtectedResourceRoute =
   ApiPublicDotwellKnownOauthProtectedResourceRouteImport.update({
     id: '/api/public/.well-known/oauth-protected-resource',
@@ -645,6 +665,11 @@ const ApiBadgesTrustSlugSvgRoute = ApiBadgesTrustSlugSvgRouteImport.update({
   path: '/api/badges/trust/$slug/svg',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBadgesCertifiedIdSvgRoute = ApiBadgesCertifiedIdSvgRouteImport.update({
+  id: '/api/badges/certified/$id/svg',
+  path: '/api/badges/certified/$id/svg',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPacksCustomizationIdDownloadExtRoute =
   ApiPacksCustomizationIdDownloadExtRouteImport.update({
     id: '/api/packs/customization/$id/download/$ext',
@@ -656,6 +681,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/bounties': typeof BountiesRouteWithChildren
+  '/certify': typeof CertifyRoute
   '/community': typeof CommunityRoute
   '/connect': typeof ConnectRouteWithChildren
   '/contributor-faq': typeof ContributorFaqRoute
@@ -734,6 +760,7 @@ export interface FileRoutesByFullPath {
   '/api/jobs/drain-upload-queue': typeof ApiJobsDrainUploadQueueRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/packages/upload': typeof ApiPackagesUploadRoute
+  '/api/public/certify': typeof ApiPublicCertifyRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -747,6 +774,7 @@ export interface FileRoutesByFullPath {
   '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
+  '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
@@ -756,12 +784,14 @@ export interface FileRoutesByFullPath {
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
+  '/api/badges/certified/$id/svg': typeof ApiBadgesCertifiedIdSvgRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bounties': typeof BountiesRouteWithChildren
+  '/certify': typeof CertifyRoute
   '/community': typeof CommunityRoute
   '/connect': typeof ConnectRouteWithChildren
   '/contributor-faq': typeof ContributorFaqRoute
@@ -840,6 +870,7 @@ export interface FileRoutesByTo {
   '/api/jobs/drain-upload-queue': typeof ApiJobsDrainUploadQueueRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/packages/upload': typeof ApiPackagesUploadRoute
+  '/api/public/certify': typeof ApiPublicCertifyRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -853,6 +884,7 @@ export interface FileRoutesByTo {
   '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
+  '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
@@ -862,6 +894,7 @@ export interface FileRoutesByTo {
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
+  '/api/badges/certified/$id/svg': typeof ApiBadgesCertifiedIdSvgRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -870,6 +903,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/bounties': typeof BountiesRouteWithChildren
+  '/certify': typeof CertifyRoute
   '/community': typeof CommunityRoute
   '/connect': typeof ConnectRouteWithChildren
   '/contributor-faq': typeof ContributorFaqRoute
@@ -948,6 +982,7 @@ export interface FileRoutesById {
   '/api/jobs/drain-upload-queue': typeof ApiJobsDrainUploadQueueRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/packages/upload': typeof ApiPackagesUploadRoute
+  '/api/public/certify': typeof ApiPublicCertifyRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -961,6 +996,7 @@ export interface FileRoutesById {
   '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
+  '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
@@ -970,6 +1006,7 @@ export interface FileRoutesById {
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
+  '/api/badges/certified/$id/svg': typeof ApiBadgesCertifiedIdSvgRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -979,6 +1016,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/bounties'
+    | '/certify'
     | '/community'
     | '/connect'
     | '/contributor-faq'
@@ -1057,6 +1095,7 @@ export interface FileRouteTypes {
     | '/api/jobs/drain-upload-queue'
     | '/api/mcp/health'
     | '/api/packages/upload'
+    | '/api/public/certify'
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1070,6 +1109,7 @@ export interface FileRouteTypes {
     | '/api/og/skill-of-the-week/svg'
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
+    | '/api/public/certifications/$id'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/oauth/register'
@@ -1079,12 +1119,14 @@ export interface FileRouteTypes {
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
+    | '/api/badges/certified/$id/svg'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/bounties'
+    | '/certify'
     | '/community'
     | '/connect'
     | '/contributor-faq'
@@ -1163,6 +1205,7 @@ export interface FileRouteTypes {
     | '/api/jobs/drain-upload-queue'
     | '/api/mcp/health'
     | '/api/packages/upload'
+    | '/api/public/certify'
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1176,6 +1219,7 @@ export interface FileRouteTypes {
     | '/api/og/skill-of-the-week/svg'
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
+    | '/api/public/certifications/$id'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/oauth/register'
@@ -1185,6 +1229,7 @@ export interface FileRouteTypes {
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
+    | '/api/badges/certified/$id/svg'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   id:
@@ -1192,6 +1237,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/bounties'
+    | '/certify'
     | '/community'
     | '/connect'
     | '/contributor-faq'
@@ -1270,6 +1316,7 @@ export interface FileRouteTypes {
     | '/api/jobs/drain-upload-queue'
     | '/api/mcp/health'
     | '/api/packages/upload'
+    | '/api/public/certify'
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1283,6 +1330,7 @@ export interface FileRouteTypes {
     | '/api/og/skill-of-the-week/svg'
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
+    | '/api/public/certifications/$id'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/oauth/register'
@@ -1292,6 +1340,7 @@ export interface FileRouteTypes {
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
+    | '/api/badges/certified/$id/svg'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
@@ -1300,6 +1349,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   BountiesRoute: typeof BountiesRouteWithChildren
+  CertifyRoute: typeof CertifyRoute
   CommunityRoute: typeof CommunityRoute
   ConnectRoute: typeof ConnectRouteWithChildren
   ContributorFaqRoute: typeof ContributorFaqRoute
@@ -1358,6 +1408,7 @@ export interface RootRouteChildren {
   ApiAdminAiGatewayProbeRoute: typeof ApiAdminAiGatewayProbeRoute
   ApiJobsDrainUploadQueueRoute: typeof ApiJobsDrainUploadQueueRoute
   ApiPackagesUploadRoute: typeof ApiPackagesUploadRoute
+  ApiPublicCertifyRoute: typeof ApiPublicCertifyRoute
   ApiPublicPackagesRoute: typeof ApiPublicPackagesRouteWithChildren
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
@@ -1367,6 +1418,7 @@ export interface RootRouteChildren {
   ApiOgSkillOfTheWeekSvgRoute: typeof ApiOgSkillOfTheWeekSvgRoute
   ApiPublicDotwellKnownOauthAuthorizationServerRoute: typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   ApiPublicDotwellKnownOauthProtectedResourceRoute: typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
+  ApiPublicCertificationsIdRoute: typeof ApiPublicCertificationsIdRoute
   ApiPublicHooksPrewarmSharePromosRoute: typeof ApiPublicHooksPrewarmSharePromosRoute
   ApiPublicMcpHealthRoute: typeof ApiPublicMcpHealthRoute
   ApiPublicOauthRegisterRoute: typeof ApiPublicOauthRegisterRoute
@@ -1375,6 +1427,7 @@ export interface RootRouteChildren {
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiSkillsSlugExportRoute: typeof ApiSkillsSlugExportRoute
   ApiSkillsSlugExportDotmdRoute: typeof ApiSkillsSlugExportDotmdRoute
+  ApiBadgesCertifiedIdSvgRoute: typeof ApiBadgesCertifiedIdSvgRoute
   ApiBadgesTrustSlugSvgRoute: typeof ApiBadgesTrustSlugSvgRoute
   ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1575,6 +1628,13 @@ declare module '@tanstack/react-router' {
       path: '/community'
       fullPath: '/community'
       preLoaderRoute: typeof CommunityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/certify': {
+      id: '/certify'
+      path: '/certify'
+      fullPath: '/certify'
+      preLoaderRoute: typeof CertifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bounties': {
@@ -1948,6 +2008,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPackagesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/certify': {
+      id: '/api/public/certify'
+      path: '/api/public/certify'
+      fullPath: '/api/public/certify'
+      preLoaderRoute: typeof ApiPublicCertifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/packages/upload': {
       id: '/api/packages/upload'
       path: '/api/packages/upload'
@@ -2060,6 +2127,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPrewarmSharePromosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/certifications/$id': {
+      id: '/api/public/certifications/$id'
+      path: '/api/public/certifications/$id'
+      fullPath: '/api/public/certifications/$id'
+      preLoaderRoute: typeof ApiPublicCertificationsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/.well-known/oauth-protected-resource': {
       id: '/api/public/.well-known/oauth-protected-resource'
       path: '/api/public/.well-known/oauth-protected-resource'
@@ -2107,6 +2181,13 @@ declare module '@tanstack/react-router' {
       path: '/api/badges/trust/$slug/svg'
       fullPath: '/api/badges/trust/$slug/svg'
       preLoaderRoute: typeof ApiBadgesTrustSlugSvgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/badges/certified/$id/svg': {
+      id: '/api/badges/certified/$id/svg'
+      path: '/api/badges/certified/$id/svg'
+      fullPath: '/api/badges/certified/$id/svg'
+      preLoaderRoute: typeof ApiBadgesCertifiedIdSvgRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/packs/customization/$id/download/$ext': {
@@ -2280,6 +2361,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   BountiesRoute: BountiesRouteWithChildren,
+  CertifyRoute: CertifyRoute,
   CommunityRoute: CommunityRoute,
   ConnectRoute: ConnectRouteWithChildren,
   ContributorFaqRoute: ContributorFaqRoute,
@@ -2340,6 +2422,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminAiGatewayProbeRoute: ApiAdminAiGatewayProbeRoute,
   ApiJobsDrainUploadQueueRoute: ApiJobsDrainUploadQueueRoute,
   ApiPackagesUploadRoute: ApiPackagesUploadRoute,
+  ApiPublicCertifyRoute: ApiPublicCertifyRoute,
   ApiPublicPackagesRoute: ApiPublicPackagesRouteWithChildren,
   ApiPublicSearchRoute: ApiPublicSearchRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
@@ -2351,6 +2434,7 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicDotwellKnownOauthAuthorizationServerRoute,
   ApiPublicDotwellKnownOauthProtectedResourceRoute:
     ApiPublicDotwellKnownOauthProtectedResourceRoute,
+  ApiPublicCertificationsIdRoute: ApiPublicCertificationsIdRoute,
   ApiPublicHooksPrewarmSharePromosRoute: ApiPublicHooksPrewarmSharePromosRoute,
   ApiPublicMcpHealthRoute: ApiPublicMcpHealthRoute,
   ApiPublicOauthRegisterRoute: ApiPublicOauthRegisterRoute,
@@ -2359,6 +2443,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiSkillsSlugExportRoute: ApiSkillsSlugExportRoute,
   ApiSkillsSlugExportDotmdRoute: ApiSkillsSlugExportDotmdRoute,
+  ApiBadgesCertifiedIdSvgRoute: ApiBadgesCertifiedIdSvgRoute,
   ApiBadgesTrustSlugSvgRoute: ApiBadgesTrustSlugSvgRoute,
   ApiPacksCustomizationIdDownloadExtRoute:
     ApiPacksCustomizationIdDownloadExtRoute,

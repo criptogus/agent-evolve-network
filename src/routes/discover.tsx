@@ -1,4 +1,10 @@
-import { createFileRoute, Link, useRouter, useNavigate, useRouterState } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  useRouter,
+  useNavigate,
+  useRouterState,
+} from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
@@ -30,6 +36,8 @@ const SearchSchema = z.object({
   sort: z.enum(["popular", "newest", "oldest", "name"]).catch("popular").default("popular"),
   page: z.number().int().min(1).catch(1).default(1),
 });
+
+type DiscoverSearch = z.infer<typeof SearchSchema>;
 
 const PAGE_SIZE = 24;
 
@@ -130,7 +138,11 @@ const STYLES = [
 
 const GOVERNANCE_LEVELS = [
   { key: "L1", label: "L1 · Observability", body: "Logs decisions and outputs. No blocking." },
-  { key: "L2", label: "L2 · Soft warnings", body: "Flags risky outputs. User confirms to proceed." },
+  {
+    key: "L2",
+    label: "L2 · Soft warnings",
+    body: "Flags risky outputs. User confirms to proceed.",
+  },
   { key: "L3", label: "L3 · Hard block", body: "Blocks unsafe actions. Escalates to a human." },
   { key: "L4", label: "L4 · Sandboxed", body: "Read-only mode. No writes, no external calls." },
 ];
@@ -225,9 +237,7 @@ function Pagination({
           <button
             key={p}
             onClick={() => onPage(p)}
-            className={
-              btn + (p === page ? " border-primary bg-primary/10 text-foreground" : "")
-            }
+            className={btn + (p === page ? " border-primary bg-primary/10 text-foreground" : "")}
           >
             {p}
           </button>
@@ -256,7 +266,10 @@ function pageItemToItem(p: DiscoverItem): Item {
     new Set(
       [
         (p.vertical ?? "general").toLowerCase(),
-        ...p.slug.toLowerCase().split(/[\s-]+/).filter((w) => w.length > 2),
+        ...p.slug
+          .toLowerCase()
+          .split(/[\s-]+/)
+          .filter((w) => w.length > 2),
       ].slice(0, 5),
     ),
   );
@@ -273,7 +286,8 @@ function pageItemToItem(p: DiscoverItem): Item {
 }
 
 function DiscoverPage() {
-  const loaderData = Route.useLoaderData() as import("@/lib/marketplace/discover.functions").DiscoverPage;
+  const loaderData =
+    Route.useLoaderData() as import("@/lib/marketplace/discover.functions").DiscoverPage;
   const search = Route.useSearch();
   const router = useRouter();
   const navigate = useNavigate({ from: "/discover" });
@@ -286,10 +300,7 @@ function DiscoverPage() {
   const total = loaderData.total;
   const fetchedAt = loaderData.fetchedAt;
 
-  const items: Item[] = useMemo(
-    () => loaderData.items.map(pageItemToItem),
-    [loaderData.items],
-  );
+  const items: Item[] = useMemo(() => loaderData.items.map(pageItemToItem), [loaderData.items]);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   // Detect any in-flight loader/navigation so we can show subtle loading UI.
@@ -305,7 +316,11 @@ function DiscoverPage() {
     if (query === current) return;
     const id = window.setTimeout(() => {
       navigate({
-        search: (s: Record<string, unknown>) => ({ ...s, q: query.trim() ? query.trim() : undefined, page: 1 }),
+        search: (s: DiscoverSearch) => ({
+          ...s,
+          q: query.trim() ? query.trim() : undefined,
+          page: 1,
+        }),
         replace: true,
       });
     }, 300);
@@ -344,23 +359,23 @@ function DiscoverPage() {
     if (t === type) return;
     setPendingType(t);
     navigate({
-      search: (s: Record<string, unknown>) => ({ ...s, type: t, category: undefined, page: 1 }),
+      search: (s: DiscoverSearch) => ({ ...s, type: t, category: undefined, page: 1 }),
       replace: true,
     });
   };
 
   const setCategory = (c: string | null) =>
     navigate({
-      search: (s: Record<string, unknown>) => ({ ...s, category: c ?? undefined, page: 1 }),
+      search: (s: DiscoverSearch) => ({ ...s, category: c ?? undefined, page: 1 }),
       replace: true,
     });
 
   const goToPage = (p: number) =>
-    navigate({ search: (s: Record<string, unknown>) => ({ ...s, page: p }), replace: false });
+    navigate({ search: (s: DiscoverSearch) => ({ ...s, page: p }), replace: false });
 
   const setSort = (sortValue: SortKey) =>
     navigate({
-      search: (s: Record<string, unknown>) => ({ ...s, sort: sortValue, page: 1 }),
+      search: (s: DiscoverSearch) => ({ ...s, sort: sortValue, page: 1 }),
       replace: true,
     });
   const sort: SortKey = (search.sort ?? "popular") as SortKey;
@@ -504,7 +519,8 @@ function DiscoverPage() {
                 {total === 1 ? "" : "s"}
                 {category && (
                   <>
-                    {" "}in <span className="text-foreground">{category}</span>
+                    {" "}
+                    in <span className="text-foreground">{category}</span>
                     <button
                       onClick={() => setCategory(null)}
                       className="ml-2 text-xs text-muted-foreground underline hover:text-foreground"
@@ -564,11 +580,7 @@ function DiscoverPage() {
                 </div>
 
                 {totalPages > 1 && (
-                  <Pagination
-                    page={page}
-                    totalPages={totalPages}
-                    onPage={goToPage}
-                  />
+                  <Pagination page={page} totalPages={totalPages} onPage={goToPage} />
                 )}
               </>
             )}
@@ -669,7 +681,9 @@ function FacetGroup({
             onClick={() => onChange(null)}
             className={
               "flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm transition-colors " +
-              (value === null ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")
+              (value === null
+                ? "bg-accent text-foreground"
+                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground")
             }
           >
             <span>All</span>
@@ -721,7 +735,9 @@ function EmptyState({
       <div className="mx-auto inline-flex size-10 items-center justify-center rounded-full bg-primary/10 font-mono text-primary">
         ›_
       </div>
-      <h3 className="mt-4 text-lg font-semibold">No matching {TYPE_META[type].plural.toLowerCase()} yet.</h3>
+      <h3 className="mt-4 text-lg font-semibold">
+        No matching {TYPE_META[type].plural.toLowerCase()} yet.
+      </h3>
       <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
         SkillForge can research the state of the art and ship a beta — usually in under a minute.
       </p>
@@ -731,7 +747,9 @@ function EmptyState({
           disabled={isPending}
           className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-95 disabled:opacity-60"
         >
-          {isPending ? "Researching → authoring → evaluating…" : `Auto-create "${query || `custom ${type}`}"`}
+          {isPending
+            ? "Researching → authoring → evaluating…"
+            : `Auto-create "${query || `custom ${type}`}"`}
         </button>
         <button
           onClick={onUseLocal}
@@ -745,13 +763,13 @@ function EmptyState({
         <div className="mx-auto mt-4 max-w-xl rounded-md border border-border bg-background p-4 text-left text-sm">
           <p className="font-medium">Shipped: {result.package.name}</p>
           <p className="text-xs text-muted-foreground">
-            slug <code>{result.package.slug}</code> · research {result.research_used ? "✓" : "—"} ·
-            {" "}{result.stages.length} pipeline stages
+            slug <code>{result.package.slug}</code> · research {result.research_used ? "✓" : "—"} ·{" "}
+            {result.stages.length} pipeline stages
           </p>
           {result.evaluation && (
             <p className="mt-1 text-xs">
-              Evaluator: overall {Math.round(result.evaluation.overall_score)} ·
-              verdict <strong>{result.evaluation.verdict}</strong>
+              Evaluator: overall {Math.round(result.evaluation.overall_score)} · verdict{" "}
+              <strong>{result.evaluation.verdict}</strong>
             </p>
           )}
           <Link
