@@ -80,7 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Super Agent Skill" },
+      { title: "Super Agent Skill — Signed Skills for AI Agents" },
       { name: "description", content: "Super Agent Skill turns AI agents into continuously evolving specialists via MCP." },
       { name: "author", content: "Super Agent Skill" },
       { name: "google-site-verification", content: "_XaKwKLlTaHmSy8DgH5RB4dmOTlyKH0HYjcRylGuacQ" },

@@ -11,28 +11,46 @@ import { PlansTeaser } from "@/components/site/home/PlansTeaser";
 import { Faq } from "@/components/site/home/Faq";
 import { CtaSection } from "@/components/site/home/CtaSection";
 import { SKILLS_LABEL } from "@/lib/site-stats";
+import { getLiveSiteStats } from "@/lib/site-stats.functions";
+import { canonicalLink } from "@/lib/seo/canonical";
 
-const DESCRIPTION = `Paste one link and your AI agent gains ${SKILLS_LABEL} expert skills — every one signed, tested against jailbreaks, and scored in public. Works with Claude, Cursor and ChatGPT. No code, no fine-tuning.`;
+const TITLE =
+  "Claude Skills & AI Agent Skills Marketplace — Signed & Tested | Super Agent Skill";
+
+// Same OG image the root layout ships; public/ has no raster og.png yet.
+const OG_IMAGE =
+  "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31e8f1c8-d61a-43e0-a6cf-bc7dc826978f/id-preview-a810735d--b00a8021-9d8d-4f49-a581-628727b71f68.lovable.app-1778445620031.png";
+
+function buildDescription(skillsLabel: string) {
+  return `Marketplace of ${skillsLabel} MCP skills for Claude, Cursor and ChatGPT — every skill signed, adversarially tested against jailbreaks, and scored in public. Connect once via MCP; no code, no fine-tuning.`;
+}
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Super Agent Skill — Expert skills for AI agents, signed and tested" },
-      { name: "description", content: DESCRIPTION },
-      {
-        property: "og:title",
-        content: "Expert skills for AI agents — signed, tested, installed in 30 seconds",
-      },
-      { property: "og:description", content: DESCRIPTION },
-      { property: "og:url", content: "https://superagentskill.com/" },
-      {
-        name: "twitter:title",
-        content: "Expert skills for AI agents — signed, tested, installed in 30s",
-      },
-      { name: "twitter:description", content: DESCRIPTION },
-    ],
-    links: [{ rel: "canonical", href: "https://superagentskill.com/" }],
-  }),
+  loader: async () => {
+    // Live registry counts with a static fallback — never throws.
+    const stats = await getLiveSiteStats().catch(() => null);
+    return { stats };
+  },
+  head: ({ loaderData }) => {
+    const skillsLabel = loaderData?.stats?.live ? `${loaderData.stats.skills}+` : SKILLS_LABEL;
+    const description = buildDescription(skillsLabel);
+    return {
+      meta: [
+        { title: TITLE },
+        { name: "description", content: description },
+        { property: "og:title", content: TITLE },
+        { property: "og:description", content: description },
+        { property: "og:url", content: "https://superagentskill.com/" },
+        { property: "og:image", content: OG_IMAGE },
+        {
+          name: "twitter:title",
+          content: "Claude & AI agent skills — signed, tested, installed in 30s",
+        },
+        { name: "twitter:description", content: description },
+      ],
+      links: [canonicalLink("/")],
+    };
+  },
   component: Home,
 });
 
@@ -41,7 +59,7 @@ const ORG_LD = {
   "@type": "Organization",
   name: "Super Agent Skill",
   url: "https://superagentskill.com",
-  logo: "https://superagentskill.com/favicon.ico",
+  logo: "https://superagentskill.com/favicon.svg",
   sameAs: ["https://github.com/criptogus/agent-evolve-network"],
 };
 
