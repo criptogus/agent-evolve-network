@@ -22,15 +22,15 @@ export function CtaSection() {
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             to="/connect"
-            className="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95"
+            className="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-elevated transition-all hover:opacity-95"
           >
-            Connect your agent →
+            Connect your agent — free →
           </Link>
           <Link
             to="/marketplace"
             className="inline-flex h-11 items-center rounded-md border border-border bg-surface-elevated px-6 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Browse the registry
+            Browse the skills
           </Link>
         </div>
       </div>

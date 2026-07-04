@@ -302,7 +302,7 @@ export function IndustryDemo() {
                   search={{ prompt: e.prompt }}
                   className="group mt-1 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-95"
                 >
-                  Forge live
+                  Try this live
                   <span className="transition-transform group-hover:translate-x-0.5">→</span>
                 </Link>
               </div>
