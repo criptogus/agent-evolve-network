@@ -6,7 +6,13 @@ import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.
 const supabaseAdmin = _supabaseAdmin as any;
 import { createSharedRun } from "@/lib/runs/shared.functions";
 
-type Pkg = { id: string; slug: string; name: string; description: string | null; is_published: boolean };
+type Pkg = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  is_published: boolean;
+};
 
 export const Route = createFileRoute("/run/$slug")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -20,7 +26,8 @@ export const Route = createFileRoute("/run/$slug")({
       .maybeSingle();
     if (error || !pkg) throw new Response("not found", { status: 404 });
 
-    let sharedRun = null;
+    type SharedRun = { prompt: string; output: string; created_at: string; view_count: number };
+    let sharedRun: SharedRun | null = null;
     const token = (deps as { token?: string } | undefined)?.token;
     if (token) {
       const { data: sr } = await supabaseAdmin
@@ -29,7 +36,7 @@ export const Route = createFileRoute("/run/$slug")({
         .eq("share_token", token)
         .eq("package_slug", params.slug)
         .maybeSingle();
-      sharedRun = sr ?? null;
+      sharedRun = (sr as SharedRun | null) ?? null;
       if (sr) {
         await supabaseAdmin
           .from("shared_runs")
@@ -44,7 +51,10 @@ export const Route = createFileRoute("/run/$slug")({
   head: ({ params, loaderData }) => ({
     meta: [
       { title: `Try ${loaderData?.pkg.name ?? params.slug} — Super Agent Skill` },
-      { name: "description", content: `Run ${loaderData?.pkg.name ?? params.slug} on a sample prompt and share the result.` },
+      {
+        name: "description",
+        content: `Run ${loaderData?.pkg.name ?? params.slug} on a sample prompt and share the result.`,
+      },
       { property: "og:title", content: `${loaderData?.pkg.name ?? params.slug} — try it now` },
     ],
   }),
@@ -80,99 +90,129 @@ function RunPage() {
 
   return (
     <SitePage>
-    <main className="mx-auto max-w-2xl p-6">
-      <a href={`/packs/${pkg.slug}`} className="text-sm underline text-muted-foreground">← {pkg.name}</a>
+      <main className="mx-auto max-w-2xl p-6">
+        <a href={`/packs/${pkg.slug}`} className="text-sm underline text-muted-foreground">
+          ← {pkg.name}
+        </a>
 
-      <h1 className="text-3xl font-bold mt-3 mb-2">Try {pkg.name}</h1>
-      <p className="text-muted-foreground mb-6">{pkg.description}</p>
+        <h1 className="text-3xl font-bold mt-3 mb-2">Try {pkg.name}</h1>
+        <p className="text-muted-foreground mb-6">{pkg.description}</p>
 
-      {!sharedRun && (
-        <form onSubmit={run} className="space-y-3 mb-8">
-          <textarea
-            className="w-full border rounded p-3 min-h-[140px]"
-            placeholder="Paste a prompt or sample input…"
-            required minLength={4} maxLength={8000}
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-          />
-          <button
-            disabled={busy}
-            className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-all hover:opacity-95 disabled:opacity-50"
-          >
-            {busy && (
-              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden>
-                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" fill="none" strokeOpacity="0.25" />
-                <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-              </svg>
-            )}
-            {busy ? "Running on the registry…" : "Run and share"}
-          </button>
-        </form>
-      )}
+        {!sharedRun && (
+          <form onSubmit={run} className="space-y-3 mb-8">
+            <textarea
+              className="w-full border rounded p-3 min-h-[140px]"
+              placeholder="Paste a prompt or sample input…"
+              required
+              minLength={4}
+              maxLength={8000}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+            />
+            <button
+              disabled={busy}
+              className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-all hover:opacity-95 disabled:opacity-50"
+            >
+              {busy && (
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden>
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="9"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    fill="none"
+                    strokeOpacity="0.25"
+                  />
+                  <path
+                    d="M21 12a9 9 0 0 0-9-9"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    fill="none"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              )}
+              {busy ? "Running on the registry…" : "Run and share"}
+            </button>
+          </form>
+        )}
 
-      {busy && !sharedRun && (
-        <section className="rounded-lg border bg-muted/20 p-5">
-          <div className="h-3 w-24 animate-pulse rounded bg-muted-foreground/20" />
-          <div className="mt-3 h-4 w-3/4 animate-pulse rounded bg-muted-foreground/15" />
-          <div className="mt-2 h-4 w-2/3 animate-pulse rounded bg-muted-foreground/15" />
-          <div className="mt-6 h-3 w-20 animate-pulse rounded bg-muted-foreground/20" />
-          <div className="mt-3 h-4 w-5/6 animate-pulse rounded bg-muted-foreground/15" />
-          <div className="mt-2 h-4 w-4/6 animate-pulse rounded bg-muted-foreground/15" />
-        </section>
-      )}
+        {busy && !sharedRun && (
+          <section className="rounded-lg border bg-muted/20 p-5">
+            <div className="h-3 w-24 animate-pulse rounded bg-muted-foreground/20" />
+            <div className="mt-3 h-4 w-3/4 animate-pulse rounded bg-muted-foreground/15" />
+            <div className="mt-2 h-4 w-2/3 animate-pulse rounded bg-muted-foreground/15" />
+            <div className="mt-6 h-3 w-20 animate-pulse rounded bg-muted-foreground/20" />
+            <div className="mt-3 h-4 w-5/6 animate-pulse rounded bg-muted-foreground/15" />
+            <div className="mt-2 h-4 w-4/6 animate-pulse rounded bg-muted-foreground/15" />
+          </section>
+        )}
 
-      {sharedRun && (
-        <section className="relative overflow-hidden rounded-lg border bg-muted/30 p-5">
-          <svg
-            aria-hidden
-            className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.06]"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <defs>
-              <pattern
-                id="sas-watermark"
-                x="0" y="0" width="220" height="120" patternUnits="userSpaceOnUse"
-                patternTransform="rotate(-22)"
-              >
-                <text
-                  x="0" y="60"
-                  fontFamily="ui-sans-serif, system-ui, sans-serif"
-                  fontSize="14" fontWeight="600"
-                  letterSpacing="0.18em"
-                  textAnchor="start"
-                  className="fill-foreground"
+        {sharedRun && (
+          <section className="relative overflow-hidden rounded-lg border bg-muted/30 p-5">
+            <svg
+              aria-hidden
+              className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.06]"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <pattern
+                  id="sas-watermark"
+                  x="0"
+                  y="0"
+                  width="220"
+                  height="120"
+                  patternUnits="userSpaceOnUse"
+                  patternTransform="rotate(-22)"
                 >
-                  SUPER · AGENT · SKILL
-                </text>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#sas-watermark)" />
-          </svg>
-          <div className="relative">
-            <h2 className="mb-2 text-sm uppercase tracking-wide text-muted-foreground">Prompt</h2>
-            <pre className="mb-4 whitespace-pre-wrap text-sm">{sharedRun.prompt}</pre>
-            <h2 className="mb-2 text-sm uppercase tracking-wide text-muted-foreground">Output</h2>
-            <pre className="whitespace-pre-wrap text-sm">{sharedRun.output}</pre>
-            <footer className="mt-4 flex justify-between text-xs text-muted-foreground">
-              <span>Shared run · {new Date(sharedRun.created_at).toLocaleString()} · {sharedRun.view_count + 1} views</span>
-              <a className="underline" href={`/packs/${pkg.slug}`}>Open in {pkg.name} →</a>
-            </footer>
-          </div>
+                  <text
+                    x="0"
+                    y="60"
+                    fontFamily="ui-sans-serif, system-ui, sans-serif"
+                    fontSize="14"
+                    fontWeight="600"
+                    letterSpacing="0.18em"
+                    textAnchor="start"
+                    className="fill-foreground"
+                  >
+                    SUPER · AGENT · SKILL
+                  </text>
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#sas-watermark)" />
+            </svg>
+            <div className="relative">
+              <h2 className="mb-2 text-sm uppercase tracking-wide text-muted-foreground">Prompt</h2>
+              <pre className="mb-4 whitespace-pre-wrap text-sm">{sharedRun.prompt}</pre>
+              <h2 className="mb-2 text-sm uppercase tracking-wide text-muted-foreground">Output</h2>
+              <pre className="whitespace-pre-wrap text-sm">{sharedRun.output}</pre>
+              <footer className="mt-4 flex justify-between text-xs text-muted-foreground">
+                <span>
+                  Shared run · {new Date(sharedRun.created_at).toLocaleString()} ·{" "}
+                  {sharedRun.view_count + 1} views
+                </span>
+                <a className="underline" href={`/packs/${pkg.slug}`}>
+                  Open in {pkg.name} →
+                </a>
+              </footer>
+            </div>
+          </section>
+        )}
+
+        {token && (
+          <p className="mt-4 text-sm text-muted-foreground">Share link copied to your clipboard.</p>
+        )}
+
+        <section className="mt-10 border-t pt-6 text-sm text-muted-foreground">
+          Want full output without watermark?{" "}
+          <a className="underline" href={`/signup?next=/packs/${pkg.slug}`}>
+            Create an account
+          </a>{" "}
+          or install locally with{" "}
+          <code className="bg-muted px-1">npx super-agent install {pkg.slug}</code>.
         </section>
-      )}
-
-      {token && (
-        <p className="mt-4 text-sm text-muted-foreground">
-          Share link copied to your clipboard.
-        </p>
-      )}
-
-      <section className="mt-10 border-t pt-6 text-sm text-muted-foreground">
-        Want full output without watermark?{" "}
-        <a className="underline" href={`/signup?next=/packs/${pkg.slug}`}>Create an account</a>{" "}
-        or install locally with <code className="bg-muted px-1">npx super-agent install {pkg.slug}</code>.
-      </section>
-    </main>
+      </main>
     </SitePage>
   );
 }

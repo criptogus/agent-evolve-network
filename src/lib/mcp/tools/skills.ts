@@ -1339,7 +1339,7 @@ export const getMethodologyTool = defineTool({
 // review_skills_batch. Produces the full scored payload EXCEPT the per-call
 // concerns (caller delta + feedback request + next_steps), which the tools add.
 // ----------------------------------------------------------------------------
-type ReviewArgs = {
+export type ReviewArgs = {
   name: string;
   type: "skill" | "playbook" | "soul" | "guardrail";
   content: string;
@@ -1360,7 +1360,9 @@ function reviewCacheKey(a: ReviewArgs): string {
   return [a.type, a.doc_class, a.semantic_check ? "sem" : "nosem", a.language ?? "auto", fnv1aHex(a.content)].join("|");
 }
 
-async function computeReview(a: ReviewArgs): Promise<Record<string, unknown>> {
+// Exported so the public certification API (/api/public/certify) runs the
+// exact same engine as the review_skill MCP tool — one scorer, two doors.
+export async function computeReview(a: ReviewArgs): Promise<Record<string, unknown>> {
   const cacheKey = reviewCacheKey(a);
   const hit = REVIEW_CACHE.get(cacheKey);
   if (hit && Date.now() - hit.at < REVIEW_CACHE_TTL_MS) {

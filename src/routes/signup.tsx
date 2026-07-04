@@ -13,14 +13,24 @@ export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
       { title: "Create account — Super Agent Skill" },
-      { name: "description", content: "Create your Super Agent Skill account and connect any MCP-compatible agent in 30 seconds." },
+      {
+        name: "description",
+        content:
+          "Create your Super Agent Skill account and connect any MCP-compatible agent in 30 seconds.",
+      },
       { property: "og:title", content: "Create account — Super Agent Skill" },
-      { property: "og:description", content: "Create your account and connect Claude, Cursor, Codex or Grok via MCP in 30 seconds." },
+      {
+        property: "og:description",
+        content:
+          "Create your account and connect Claude, Cursor, Codex or Grok via MCP in 30 seconds.",
+      },
       { name: "robots", content: "noindex" },
     ],
     links: [{ rel: "canonical", href: "https://superagentskill.com/signup" }],
   }),
-  validateSearch: (s: Record<string, unknown>) => ({ next: typeof s.next === "string" ? s.next : undefined }),
+  validateSearch: (s: Record<string, unknown>): { next?: string } => ({
+    next: typeof s.next === "string" ? s.next : undefined,
+  }),
   component: SignupPage,
 });
 
@@ -44,13 +54,21 @@ function SignupPage() {
       try {
         const r = await claimReferral({ data: { code, source_url: window.location.href } });
         if (r?.ok) clearStoredRef();
-      } catch { /* non-fatal */ }
+      } catch {
+        /* non-fatal */
+      }
     };
     supabase.auth.getSession().then(async ({ data }) => {
-      if (data.session) { await tryClaim(); navigate({ to: target, replace: true }); }
+      if (data.session) {
+        await tryClaim();
+        navigate({ to: target, replace: true });
+      }
     });
     const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
-      if (s) { await tryClaim(); navigate({ to: target, replace: true }); }
+      if (s) {
+        await tryClaim();
+        navigate({ to: target, replace: true });
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate, next]);
@@ -67,7 +85,11 @@ function SignupPage() {
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: name, accepted_terms_at: new Date().toISOString(), accepted_ip_assignment: true },
+        data: {
+          full_name: name,
+          accepted_terms_at: new Date().toISOString(),
+          accepted_ip_assignment: true,
+        },
       },
     });
     setBusy(false);
@@ -101,7 +123,9 @@ function SignupPage() {
         </Link>
         <div className="w-full rounded-2xl border border-border bg-background p-7 shadow-elevated">
           <h1 className="text-2xl font-semibold tracking-tight">Create your account</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Start with the free Hacker plan. Upgrade anytime.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Start with the free Hacker plan. Upgrade anytime.
+          </p>
 
           <button
             type="button"
@@ -167,15 +191,18 @@ function SignupPage() {
                 <li className="flex gap-2">
                   <span className="text-primary">→</span>
                   <span>
-                    Any <span className="text-foreground">skill, playbook, soul or guardrail</span> you
-                    publish, submit for review, or upload to be improved becomes the{" "}
-                    <span className="text-foreground">exclusive property of Super Agent Skill, Inc.</span>
+                    Any <span className="text-foreground">skill, playbook, soul or guardrail</span>{" "}
+                    you publish, submit for review, or upload to be improved becomes the{" "}
+                    <span className="text-foreground">
+                      exclusive property of Super Agent Skill, Inc.
+                    </span>
                   </span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-primary">→</span>
                   <span>
-                    We may <span className="text-foreground">use, modify, sublicense and resell</span> it
+                    We may{" "}
+                    <span className="text-foreground">use, modify, sublicense and resell</span> it
                     worldwide, without further notice or compensation.
                   </span>
                 </li>
@@ -229,7 +256,9 @@ function SignupPage() {
 
           <p className="mt-4 text-center text-xs text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="text-foreground hover:underline">Sign in</Link>
+            <Link to="/login" className="text-foreground hover:underline">
+              Sign in
+            </Link>
           </p>
         </div>
       </section>

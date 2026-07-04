@@ -13,11 +13,14 @@ export const Route = createFileRoute("/account/billing")({
   head: () => ({
     meta: [
       { title: "Billing — Super Agent Skill" },
-      { name: "description", content: "Manage your Super Agent Skill subscription, plan and invoices." },
+      {
+        name: "description",
+        content: "Manage your Super Agent Skill subscription, plan and invoices.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (s: Record<string, unknown>): { checkout?: string; session_id?: string } => ({
     checkout: typeof s.checkout === "string" ? s.checkout : undefined,
     session_id: typeof s.session_id === "string" ? s.session_id : undefined,
   }),
@@ -40,7 +43,10 @@ function BillingPage() {
       toast.success("Payment received — finalizing your subscription...");
       const t = setInterval(refetch, 2500);
       const stop = setTimeout(() => clearInterval(t), 30000);
-      return () => { clearInterval(t); clearTimeout(stop); };
+      return () => {
+        clearInterval(t);
+        clearTimeout(stop);
+      };
     }
   }, [search.checkout, refetch]);
 
@@ -75,13 +81,19 @@ function BillingPage() {
       <section className="mx-auto max-w-4xl px-6 py-12">
         <div className="flex items-end justify-between">
           <div>
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Account</span>
+            <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
+              Account
+            </span>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">Billing</h1>
             <p className="mt-1 text-sm text-muted-foreground">{user?.email}</p>
           </div>
           <div className="flex gap-2 text-sm">
-            <Link to="/account/usage" className="text-muted-foreground hover:text-foreground">Usage</Link>
-            <Link to="/account/tokens" className="text-muted-foreground hover:text-foreground">Tokens</Link>
+            <Link to="/account/usage" className="text-muted-foreground hover:text-foreground">
+              Usage
+            </Link>
+            <Link to="/account/tokens" className="text-muted-foreground hover:text-foreground">
+              Tokens
+            </Link>
           </div>
         </div>
 
@@ -100,9 +112,11 @@ function BillingPage() {
               )}
               {subscription && (
                 <div className="mt-1 text-xs">
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 font-mono uppercase tracking-wider ${
-                    isActive ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"
-                  }`}>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 font-mono uppercase tracking-wider ${
+                      isActive ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"
+                    }`}
+                  >
                     {subscription.status}
                   </span>
                 </div>
@@ -141,8 +155,14 @@ function BillingPage() {
       </section>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={closeCheckout}>
-          <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-background shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={closeCheckout}
+        >
+          <div
+            className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-background shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={closeCheckout}
               className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-md bg-background/90 text-sm hover:bg-accent"
@@ -163,9 +183,11 @@ function BillingPage() {
 function Feature({ title, included }: { title: string; included: boolean }) {
   return (
     <div className="flex items-center gap-2 text-sm">
-      <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-xs ${
-        included ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-      }`}>
+      <span
+        className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-xs ${
+          included ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+        }`}
+      >
         {included ? "✓" : "—"}
       </span>
       <span className={included ? "text-foreground" : "text-muted-foreground"}>{title}</span>
