@@ -1,0 +1,12 @@
+# Data (contains personal research and briefs)
+data/
+
+# Logs
+logs/
+*.log
+
+# User config (may contain sensitive info)
+config.json
+
+# Keep example config
+!config.json.example

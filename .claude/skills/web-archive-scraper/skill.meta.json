@@ -1,0 +1,15 @@
+{
+  "slug": "web-archive-scraper",
+  "category": "capabilities",
+  "tags": [
+    "monitoring"
+  ],
+  "installation": {
+    "base_command": "npx goose-skills install web-archive-scraper",
+    "supports": [
+      "claude",
+      "cursor",
+      "codex"
+    ]
+  }
+}
