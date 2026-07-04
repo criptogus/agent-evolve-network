@@ -66,6 +66,19 @@ export const overviewTool = defineTool({
           ],
           tools: ["upload_packages", "request_primitive"],
         },
+        cloud_skill_manager: {
+          description:
+            "Save, sync and reuse YOUR skills across projects, CLIs and devices. Your personal cloud library. Requires OAuth + paid subscription (Agent Pass or Enterprise).",
+          workflow: [
+            "1. cloud_skills_save   — push a local skill to the cloud (creates or updates by slug).",
+            "2. cloud_skills_list   — browse your saved skills (filter by category, tag, query).",
+            "3. cloud_skills_get    — fetch the full content of a saved skill by slug.",
+            "4. cloud_skills_export — export as SKILL.md ready to paste into any project.",
+            "5. cloud_skills_import — import a SKILL.md file into your cloud library.",
+            "6. cloud_skills_delete — remove a skill from your library.",
+          ],
+          tools: ["cloud_skills_list", "cloud_skills_get", "cloud_skills_save", "cloud_skills_delete", "cloud_skills_export", "cloud_skills_import"],
+        },
       },
       primitive_types: {
         skill: "A focused capability the agent can invoke (e.g. 'write-cold-outreach', 'audit-rls-policies').",
@@ -75,7 +88,8 @@ export const overviewTool = defineTool({
       },
       auth: {
         anonymous_ok: ["overview", "get_methodology", "review_skill", "review_skills_batch", "search_registry", "list_packages", "get_package", "get_skill_trust"],
-        oauth_required: ["upload_packages", "request_primitive", "report_execution"],
+        oauth_required: ["upload_packages", "request_primitive", "report_execution", "cloud_skills_*"],
+        paid_subscription_required: ["cloud_skills_list", "cloud_skills_get", "cloud_skills_save", "cloud_skills_delete", "cloud_skills_export", "cloud_skills_import"],
         anonymous_dry_run: ["upload_packages", "request_primitive"],
         anonymous_dry_run_note: "Pass dry_run:true to upload_packages / request_primitive to validate the flow anonymously — no persistence, no model budget, no OAuth.",
         oauth_endpoint: "https://superagentskill.com/oauth/authorize",
