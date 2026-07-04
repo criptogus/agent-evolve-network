@@ -463,6 +463,6 @@ export const listCloudSkillCategories = createServerFn({ method: "GET" })
       .select("category")
       .eq("user_id", userId);
 
-    const categories = [...new Set((data ?? []).map((r: any) => r.category))].sort();
+    const categories = ([...new Set((data ?? []).map((r: any) => r.category))] as string[]).sort();
     return { categories };
   });
