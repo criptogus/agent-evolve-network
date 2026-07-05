@@ -346,6 +346,42 @@ export type Database = {
         }
         Relationships: []
       }
+      external_certifications: {
+        Row: {
+          content_sha256: string
+          created_at: string
+          engine_version: string
+          grade: string
+          id: string
+          name: string
+          overall_score: number
+          report: Json
+          type: string
+        }
+        Insert: {
+          content_sha256: string
+          created_at?: string
+          engine_version: string
+          grade: string
+          id?: string
+          name: string
+          overall_score: number
+          report?: Json
+          type: string
+        }
+        Update: {
+          content_sha256?: string
+          created_at?: string
+          engine_version?: string
+          grade?: string
+          id?: string
+          name?: string
+          overall_score?: number
+          report?: Json
+          type?: string
+        }
+        Relationships: []
+      }
       learnings: {
         Row: {
           applied_in_version_id: string | null
@@ -1409,6 +1445,39 @@ export type Database = {
         }
         Relationships: []
       }
+      package_stars: {
+        Row: {
+          created_at: string
+          package_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          package_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          package_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_stars_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_stars_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       package_trust_scores: {
         Row: {
           adversarial_pass_rate: number | null
@@ -1635,9 +1704,11 @@ export type Database = {
           reviewed_at: string | null
           reviewed_by: string | null
           scopes: string[]
+          search_vector: unknown
           slug: string
           source_kind: string
           source_ref: string | null
+          star_count: number
           submitted_at: string | null
           type: Database["public"]["Enums"]["package_type"]
           updated_at: string
@@ -1661,9 +1732,11 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           scopes?: string[]
+          search_vector?: unknown
           slug: string
           source_kind?: string
           source_ref?: string | null
+          star_count?: number
           submitted_at?: string | null
           type: Database["public"]["Enums"]["package_type"]
           updated_at?: string
@@ -1687,9 +1760,11 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           scopes?: string[]
+          search_vector?: unknown
           slug?: string
           source_kind?: string
           source_ref?: string | null
+          star_count?: number
           submitted_at?: string | null
           type?: Database["public"]["Enums"]["package_type"]
           updated_at?: string
@@ -3098,6 +3173,23 @@ export type Database = {
       resolve_report: {
         Args: { _report_id: string; _resolution?: string; _status: string }
         Returns: undefined
+      }
+      search_packages: {
+        Args: {
+          limit_count?: number
+          offset_count?: number
+          package_type?: string
+          query: string
+        }
+        Returns: {
+          description: string
+          install_count: number
+          latest_version: string
+          name: string
+          rank: number
+          slug: string
+          type: string
+        }[]
       }
       seed_robustness_findings_for: {
         Args: { _package_id: string }
