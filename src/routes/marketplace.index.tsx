@@ -6,6 +6,13 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
+import {
+  isTrustDemoted,
+  TRUST_TIER_LABELS,
+  TRUST_TIER_RANK,
+  trustTier,
+  type TrustTier,
+} from "@/lib/marketplace/trust-tiers";
 import { BuyButton, PriceBadge } from "@/components/marketplace/BuyButton";
 import { Stars } from "@/components/reviews/Stars";
 import { ShareOnXButton } from "@/components/share/ShareOnXButton";
@@ -16,6 +23,7 @@ import {
   Bot,
   FolderOpen,
   Palette,
+  ShieldCheck,
   ShoppingBag,
   Smartphone,
   Sparkles,
@@ -62,6 +70,7 @@ const SORTS = [
   { value: "installs_desc", label: "Most installed" },
   { value: "installs_asc", label: "Least installed" },
   { value: "rating_desc", label: "Top rated" },
+  { value: "trust_desc", label: "Trust score" },
   { value: "recent", label: "Newest" },
   { value: "name_asc", label: "Name A→Z" },
 ] as const;
@@ -142,8 +151,22 @@ function Marketplace() {
     const sorted = [...result];
     sorted.sort((a, b) => {
       switch (sort) {
-        case "installs_desc":
+        case "installs_desc": {
+          // Default sort only: curation demotion. Unscored / below-Baseline
+          // packages sort after trust-scored ones (nothing is hidden); order
+          // within each group stays install-count based.
+          const demoteA = isTrustDemoted(trustTier(a.trust_score, a.trust_verified)) ? 1 : 0;
+          const demoteB = isTrustDemoted(trustTier(b.trust_score, b.trust_verified)) ? 1 : 0;
+          if (demoteA !== demoteB) return demoteA - demoteB;
           return b.install_count - a.install_count;
+        }
+        case "trust_desc": {
+          const tierA = trustTier(a.trust_score, a.trust_verified);
+          const tierB = trustTier(b.trust_score, b.trust_verified);
+          if (TRUST_TIER_RANK[tierA] !== TRUST_TIER_RANK[tierB])
+            return TRUST_TIER_RANK[tierA] - TRUST_TIER_RANK[tierB];
+          return (b.trust_score ?? -1) - (a.trust_score ?? -1) || b.install_count - a.install_count;
+        }
         case "installs_asc":
           return a.install_count - b.install_count;
         case "rating_desc":
@@ -435,7 +458,10 @@ function Card({ p }: { p: MarketplaceItem }) {
       className="group relative flex flex-col rounded-xl border border-border bg-background p-5 transition-all focus-within:border-primary/40 hover:border-primary/40 hover:shadow-elevated"
     >
       <div className="relative z-10 flex items-center justify-between gap-2">
-        <TypeBadge type={p.type} />
+        <div className="flex items-center gap-1.5">
+          <TypeBadge type={p.type} />
+          <TrustTierChip tier={trustTier(p.trust_score, p.trust_verified)} score={p.trust_score} />
+        </div>
         <div className="flex items-center gap-2">
           {p.type !== "soul" && <PriceBadge priceCredits={p.price_credits} />}
           <span className="font-mono text-[10px] text-muted-foreground">v{p.latest_version}</span>
@@ -519,6 +545,32 @@ function Card({ p }: { p: MarketplaceItem }) {
         )}
       </div>
     </div>
+  );
+}
+
+function TrustTierChip({ tier, score }: { tier: TrustTier; score: number | null }) {
+  const cls: Record<TrustTier, string> = {
+    verified: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+    high: "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400",
+    baseline: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+    low: "border-border bg-muted/40 text-muted-foreground",
+    unscored: "border-border bg-muted/40 text-muted-foreground",
+  };
+  const title =
+    score != null
+      ? `Trust score ${(score * 100).toFixed(0)}/100${tier === "verified" ? " · adversarially verified" : ""}`
+      : "No trust score yet — not adversarially tested";
+  return (
+    <span
+      title={title}
+      className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider ${cls[tier]}`}
+    >
+      <ShieldCheck className="h-3 w-3" aria-hidden />
+      {TRUST_TIER_LABELS[tier]}
+      <span className="sr-only">
+        {score != null ? ` trust tier, score ${(score * 100).toFixed(0)} out of 100` : " trust tier"}
+      </span>
+    </span>
   );
 }
 
