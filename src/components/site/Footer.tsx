@@ -29,6 +29,7 @@ export function Footer() {
             { label: "Marketplace", to: "/marketplace" },
             { label: "Packs", to: "/packs" },
             { label: "Pricing", to: "/pricing" },
+            { label: "Enterprise", to: "/enterprise" },
             { label: "Docs", to: "/docs" },
           ]} />
           <FooterCol title="Creators" links={[
