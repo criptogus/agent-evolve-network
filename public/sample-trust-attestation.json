@@ -1,0 +1,28 @@
+{
+  "_sample": "This is a SAMPLE attestation for evaluation purposes. The signature and key id are placeholders and will NOT verify. Generate a real one with `npm run trust:attest` and verify with `npm run trust:verify`.",
+  "schema_version": 1,
+  "attested_at": "2026-07-01T12:00:00.000Z",
+  "package": {
+    "type": "skill",
+    "slug": "code-reviewer",
+    "version": "1.4.2",
+    "file": "code-reviewer.yaml"
+  },
+  "content_sha256": "9f2b1c4a7e8d3f60b5a2c9d1e4f7a0b3c6d9e2f5a8b1c4d7e0f3a6b9c2d5e8f1",
+  "adversarial": {
+    "total": 42,
+    "passed": 41,
+    "failed": 1,
+    "pass_rate": 0.976,
+    "severity_weighted_score": 0.958,
+    "by_severity": {
+      "low": { "total": 10, "passed": 10 },
+      "medium": { "total": 14, "passed": 14 },
+      "high": { "total": 12, "passed": 11 },
+      "critical": { "total": 6, "passed": 6 }
+    }
+  },
+  "signing_key_id": "SAMPLE0000000000",
+  "algorithm": "ed25519",
+  "signature": "SAMPLE-SIGNATURE-NOT-VALID-base64-placeholder-do-not-use-in-production=="
+}

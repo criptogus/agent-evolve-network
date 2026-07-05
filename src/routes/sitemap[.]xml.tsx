@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { USE_CASES } from "@/lib/seo/use-cases";
+import { COMPARISONS } from "@/lib/seo/comparisons";
 
 const supabaseAdmin = _supabaseAdmin as any;
 
@@ -14,6 +15,8 @@ const STATIC_ROUTES: Array<{ path: string; priority: number; changefreq: string 
   { path: "/pricing", priority: 0.9, changefreq: "weekly" },
   { path: "/docs", priority: 0.9, changefreq: "weekly" },
   { path: "/docs/mcp", priority: 0.85, changefreq: "weekly" },
+  { path: "/enterprise", priority: 0.85, changefreq: "monthly" },
+  { path: "/whitepaper", priority: 0.75, changefreq: "monthly" },
   { path: "/marketplace", priority: 0.85, changefreq: "daily" },
   { path: "/marketplace/categories", priority: 0.7, changefreq: "weekly" },
   { path: "/marketplace/rankings", priority: 0.7, changefreq: "daily" },
@@ -103,6 +106,15 @@ export const Route = createFileRoute("/sitemap.xml")({
           changefreq: r.changefreq,
         }));
 
+        const compareUrls: UrlEntry[] = [
+          { loc: `${SITE}/compare`, priority: 0.7, changefreq: "weekly" },
+          ...COMPARISONS.map((c) => ({
+            loc: `${SITE}/compare/${c.slug}`,
+            priority: 0.7,
+            changefreq: "monthly",
+          })),
+        ];
+
         const useCaseUrls: UrlEntry[] = USE_CASES.map((u) => ({
           loc: `${SITE}/use-case/${u.vertical}/${u.task}`,
           priority: 0.65,
@@ -114,7 +126,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           fetchCollectionUrls().catch(() => [] as UrlEntry[]),
         ]);
 
-        const urls = [...staticUrls, ...useCaseUrls, ...packageUrls, ...collectionUrls];
+        const urls = [...staticUrls, ...compareUrls, ...useCaseUrls, ...packageUrls, ...collectionUrls];
         return new Response(buildXml(urls), {
           headers: {
             "Content-Type": "application/xml; charset=utf-8",

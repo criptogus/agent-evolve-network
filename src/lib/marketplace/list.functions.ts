@@ -22,6 +22,10 @@ export type MarketplaceItem = {
   rating_human_avg: number;
   rating_agent_count: number;
   rating_agent_avg: number;
+  /** Trust Score 0..1 from package_trust_scores; null when never scored. */
+  trust_score: number | null;
+  /** Evidence-gated verification flag from package_trust_scores. */
+  trust_verified: boolean;
 };
 
 type ListPayload = { items: MarketplaceItem[]; verticals: string[] };
@@ -92,11 +96,33 @@ async function fetchMarketplace(): Promise<ListPayload> {
       }
     }
 
+    // Trust scores per package (single batched query, keyed by package id).
+    // Fail soft: on any error every package renders as "Unscored".
+    const trustByPkg = new Map<string, { score: number | null; verified: boolean }>();
+    if (ids.length) {
+      try {
+        const { data: ts } = await supabaseAdmin
+          .from("package_trust_scores")
+          .select("package_id, score, verified")
+          .in("package_id", ids);
+        for (const t of ts ?? []) {
+          const score = t.score == null ? null : Number(t.score);
+          trustByPkg.set(t.package_id, {
+            score: score != null && Number.isFinite(score) ? score : null,
+            verified: Boolean(t.verified),
+          });
+        }
+      } catch {
+        /* trust data unavailable → leave map empty */
+      }
+    }
+
     const round2 = (n: number) => Math.round(n * 100) / 100;
     const items: MarketplaceItem[] = (pkgs ?? []).map((p) => {
       const rt =
         ratingByPkg.get(p.id) ??
         { sum: 0, count: 0, humanSum: 0, humanCount: 0, agentSum: 0, agentCount: 0 };
+      const trust = trustByPkg.get(p.id);
       return {
         ...p,
         type: p.type as MarketplaceItem["type"],
@@ -108,6 +134,8 @@ async function fetchMarketplace(): Promise<ListPayload> {
         rating_human_avg: rt.humanCount ? round2(rt.humanSum / rt.humanCount) : 0,
         rating_agent_count: rt.agentCount,
         rating_agent_avg: rt.agentCount ? round2(rt.agentSum / rt.agentCount) : 0,
+        trust_score: trust?.score ?? null,
+        trust_verified: trust?.verified ?? false,
       };
     });
 

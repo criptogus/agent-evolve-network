@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SitePage } from "@/components/site/SitePage";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+import { findComparison, type Comparison } from "@/lib/seo/comparisons";
+import { canonicalLink, SITE_URL } from "@/lib/seo/canonical";
 const supabaseAdmin = _supabaseAdmin as any;
 
 // SEO landing: /compare/<slug-a>-vs-<slug-b>
@@ -34,25 +36,80 @@ async function loadSide(slug: string): Promise<Side> {
   };
 }
 
+type LoaderData =
+  | { kind: "editorial"; comparison: Comparison }
+  | { kind: "pair"; left: Side; right: Side };
+
 export const Route = createFileRoute("/compare/$pair")({
-  loader: async ({ params }) => {
+  loader: async ({ params }): Promise<LoaderData> => {
+    // Curated editorial comparisons take precedence over package pairs.
+    const comparison = findComparison(params.pair);
+    if (comparison) return { kind: "editorial", comparison };
     const m = params.pair.match(/^([a-z0-9-]+)-vs-([a-z0-9-]+)$/);
     if (!m) throw new Response("invalid pair", { status: 400 });
     const [, a, b] = m;
     const [left, right] = await Promise.all([loadSide(a), loadSide(b)]);
-    return { left, right };
+    return { kind: "pair", left, right };
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: `${loaderData?.left.slug} vs ${loaderData?.right.slug} — Super Agent Skill` },
-      { name: "description", content: `Head-to-head comparison of ${loaderData?.left.name ?? loaderData?.left.slug} and ${loaderData?.right.name ?? loaderData?.right.slug} on trust score, adversarial robustness, and recent usage.` },
-    ],
-  }),
+  head: ({ loaderData, params }) => {
+    if (loaderData?.kind === "editorial") {
+      const c = loaderData.comparison;
+      const url = `${SITE_URL}/compare/${c.slug}`;
+      return {
+        meta: [
+          { title: `${c.title} — Super Agent Skill` },
+          { name: "description", content: c.metaDescription },
+          { property: "og:title", content: c.title },
+          { property: "og:description", content: c.metaDescription },
+          { property: "og:type", content: "article" },
+          { property: "og:url", content: url },
+        ],
+        links: [canonicalLink(`/compare/${c.slug}`)],
+        scripts: [
+          {
+            type: "application/ld+json",
+            children: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: c.faqs.map((f) => ({
+                "@type": "Question",
+                name: f.question,
+                acceptedAnswer: { "@type": "Answer", text: f.answer },
+              })),
+            }),
+          },
+          {
+            type: "application/ld+json",
+            children: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Article",
+              headline: c.title,
+              description: c.metaDescription,
+              url,
+              author: { "@type": "Organization", name: "Super Agent Skill" },
+              publisher: { "@type": "Organization", name: "Super Agent Skill", url: SITE_URL },
+            }),
+          },
+        ],
+      };
+    }
+    const left = loaderData?.kind === "pair" ? loaderData.left : null;
+    const right = loaderData?.kind === "pair" ? loaderData.right : null;
+    return {
+      meta: [
+        { title: `${left?.slug ?? ""} vs ${right?.slug ?? ""} — Super Agent Skill` },
+        { name: "description", content: `Head-to-head comparison of ${left?.name ?? left?.slug} and ${right?.name ?? right?.slug} on trust score, adversarial robustness, and recent usage.` },
+      ],
+      links: params?.pair ? [canonicalLink(`/compare/${params.pair}`)] : [],
+    };
+  },
   component: ComparePage,
 });
 
 function ComparePage() {
-  const { left, right } = Route.useLoaderData();
+  const data = Route.useLoaderData();
+  if (data.kind === "editorial") return <EditorialCompare comparison={data.comparison} />;
+  const { left, right } = data;
   return (
     <SitePage>
     <main className="mx-auto max-w-4xl p-6">
@@ -151,4 +208,66 @@ function ScoreBar({ value }: { value: number | null }) {
 
 function pct(n: number | null): string {
   return n === null ? "—" : `${(Number(n) * 100).toFixed(0)}%`;
+}
+
+function EditorialCompare({ comparison: c }: { comparison: Comparison }) {
+  return (
+    <SitePage>
+      <main className="mx-auto max-w-3xl p-6">
+        <nav className="mb-4 text-sm text-muted-foreground">
+          <a href="/compare" className="hover:underline">Comparisons</a>
+          <span className="mx-2">/</span>
+          <span>{c.title}</span>
+        </nav>
+        <h1 className="text-3xl font-bold mb-4">{c.title}</h1>
+        <p className="text-lg text-muted-foreground mb-8">{c.lede}</p>
+
+        {c.sections.map((s) => (
+          <section key={s.heading} className="mb-8">
+            <h2 className="text-xl font-semibold mb-3">{s.heading}</h2>
+            {s.paragraphs.map((p, i) => (
+              <p key={i} className="mb-3 leading-relaxed text-foreground/90">{p}</p>
+            ))}
+          </section>
+        ))}
+
+        <section className="mb-10 border rounded-lg p-5 bg-muted/40">
+          <h2 className="text-xl font-semibold mb-2">The verdict</h2>
+          <p className="leading-relaxed">{c.verdict}</p>
+        </section>
+
+        <section className="mb-10">
+          <h2 className="text-xl font-semibold mb-4">Frequently asked questions</h2>
+          <div className="space-y-5">
+            {c.faqs.map((f) => (
+              <div key={f.question}>
+                <h3 className="font-medium mb-1">{f.question}</h3>
+                <p className="text-muted-foreground leading-relaxed">{f.answer}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="grid gap-4 sm:grid-cols-2 mb-8">
+          <a href="/marketplace" className="border rounded-lg p-5 hover:bg-accent">
+            <div className="font-semibold mb-1">Browse verified skills →</div>
+            <p className="text-sm text-muted-foreground">
+              Every listing shows its Trust Score, adversarial pass rate, and Ed25519 signing status.
+            </p>
+          </a>
+          <a href="/connect" className="border rounded-lg p-5 hover:bg-accent">
+            <div className="font-semibold mb-1">Connect via MCP →</div>
+            <p className="text-sm text-muted-foreground">
+              One URL installs the marketplace into any MCP-capable agent. No SDK, no migration.
+            </p>
+          </a>
+        </section>
+
+        <p className="text-sm text-muted-foreground">
+          Want to audit us? Run <code className="px-1 py-0.5 bg-muted rounded">npm run trust:verify</code> to
+          recompute any Trust Score and verify signatures offline.
+        </p>
+      </main>
+    </SitePage>
+  );
 }

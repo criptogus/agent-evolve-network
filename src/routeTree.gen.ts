@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WhitepaperRouteImport } from './routes/whitepaper'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as UseCasesRouteImport } from './routes/use-cases'
 import { Route as UploadRouteImport } from './routes/upload'
@@ -32,6 +33,7 @@ import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as ForgeRouteImport } from './routes/forge'
 import { Route as EvaluationRouteImport } from './routes/evaluation'
+import { Route as EnterpriseRouteImport } from './routes/enterprise'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as ContributorFaqRouteImport } from './routes/contributor-faq'
@@ -43,6 +45,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PacksIndexRouteImport } from './routes/packs.index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
+import { Route as CompareIndexRouteImport } from './routes/compare.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as UHandleRouteImport } from './routes/u.$handle'
 import { Route as SoulsSlugRouteImport } from './routes/souls.$slug'
@@ -122,6 +125,11 @@ import { Route as ApiBadgesTrustSlugSvgRouteImport } from './routes/api/badges.t
 import { Route as ApiBadgesCertifiedIdSvgRouteImport } from './routes/api/badges.certified.$id.svg'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
+const WhitepaperRoute = WhitepaperRouteImport.update({
+  id: '/whitepaper',
+  path: '/whitepaper',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WelcomeRoute = WelcomeRouteImport.update({
   id: '/welcome',
   path: '/welcome',
@@ -237,6 +245,11 @@ const EvaluationRoute = EvaluationRouteImport.update({
   path: '/evaluation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EnterpriseRoute = EnterpriseRouteImport.update({
+  id: '/enterprise',
+  path: '/enterprise',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
@@ -290,6 +303,11 @@ const PacksIndexRoute = PacksIndexRouteImport.update({
 const MarketplaceIndexRoute = MarketplaceIndexRouteImport.update({
   id: '/marketplace/',
   path: '/marketplace/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareIndexRoute = CompareIndexRouteImport.update({
+  id: '/compare/',
+  path: '/compare/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -705,6 +723,7 @@ export interface FileRoutesByFullPath {
   '/contributor-faq': typeof ContributorFaqRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
+  '/enterprise': typeof EnterpriseRoute
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
@@ -728,6 +747,7 @@ export interface FileRoutesByFullPath {
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
+  '/whitepaper': typeof WhitepaperRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
   '/account/billing': typeof AccountBillingRoute
@@ -772,6 +792,7 @@ export interface FileRoutesByFullPath {
   '/souls/$slug': typeof SoulsSlugRoute
   '/u/$handle': typeof UHandleRoute
   '/admin/': typeof AdminIndexRoute
+  '/compare/': typeof CompareIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/packs/': typeof PacksIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
@@ -818,6 +839,7 @@ export interface FileRoutesByTo {
   '/contributor-faq': typeof ContributorFaqRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
+  '/enterprise': typeof EnterpriseRoute
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
@@ -841,6 +863,7 @@ export interface FileRoutesByTo {
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
+  '/whitepaper': typeof WhitepaperRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
   '/account/billing': typeof AccountBillingRoute
@@ -885,6 +908,7 @@ export interface FileRoutesByTo {
   '/souls/$slug': typeof SoulsSlugRoute
   '/u/$handle': typeof UHandleRoute
   '/admin': typeof AdminIndexRoute
+  '/compare': typeof CompareIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
   '/packs': typeof PacksIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
@@ -933,6 +957,7 @@ export interface FileRoutesById {
   '/contributor-faq': typeof ContributorFaqRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
+  '/enterprise': typeof EnterpriseRoute
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
@@ -956,6 +981,7 @@ export interface FileRoutesById {
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
+  '/whitepaper': typeof WhitepaperRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
   '/account/billing': typeof AccountBillingRoute
@@ -1000,6 +1026,7 @@ export interface FileRoutesById {
   '/souls/$slug': typeof SoulsSlugRoute
   '/u/$handle': typeof UHandleRoute
   '/admin/': typeof AdminIndexRoute
+  '/compare/': typeof CompareIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/packs/': typeof PacksIndexRoute
   '/admin/import/github': typeof AdminImportGithubRoute
@@ -1049,6 +1076,7 @@ export interface FileRouteTypes {
     | '/contributor-faq'
     | '/discover'
     | '/docs'
+    | '/enterprise'
     | '/evaluation'
     | '/forge'
     | '/generate'
@@ -1072,6 +1100,7 @@ export interface FileRouteTypes {
     | '/upload'
     | '/use-cases'
     | '/welcome'
+    | '/whitepaper'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
     | '/account/billing'
@@ -1116,6 +1145,7 @@ export interface FileRouteTypes {
     | '/souls/$slug'
     | '/u/$handle'
     | '/admin/'
+    | '/compare/'
     | '/marketplace/'
     | '/packs/'
     | '/admin/import/github'
@@ -1162,6 +1192,7 @@ export interface FileRouteTypes {
     | '/contributor-faq'
     | '/discover'
     | '/docs'
+    | '/enterprise'
     | '/evaluation'
     | '/forge'
     | '/generate'
@@ -1185,6 +1216,7 @@ export interface FileRouteTypes {
     | '/upload'
     | '/use-cases'
     | '/welcome'
+    | '/whitepaper'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
     | '/account/billing'
@@ -1229,6 +1261,7 @@ export interface FileRouteTypes {
     | '/souls/$slug'
     | '/u/$handle'
     | '/admin'
+    | '/compare'
     | '/marketplace'
     | '/packs'
     | '/admin/import/github'
@@ -1276,6 +1309,7 @@ export interface FileRouteTypes {
     | '/contributor-faq'
     | '/discover'
     | '/docs'
+    | '/enterprise'
     | '/evaluation'
     | '/forge'
     | '/generate'
@@ -1299,6 +1333,7 @@ export interface FileRouteTypes {
     | '/upload'
     | '/use-cases'
     | '/welcome'
+    | '/whitepaper'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
     | '/account/billing'
@@ -1343,6 +1378,7 @@ export interface FileRouteTypes {
     | '/souls/$slug'
     | '/u/$handle'
     | '/admin/'
+    | '/compare/'
     | '/marketplace/'
     | '/packs/'
     | '/admin/import/github'
@@ -1391,6 +1427,7 @@ export interface RootRouteChildren {
   ContributorFaqRoute: typeof ContributorFaqRoute
   DiscoverRoute: typeof DiscoverRoute
   DocsRoute: typeof DocsRouteWithChildren
+  EnterpriseRoute: typeof EnterpriseRoute
   EvaluationRoute: typeof EvaluationRoute
   ForgeRoute: typeof ForgeRouteWithChildren
   GenerateRoute: typeof GenerateRoute
@@ -1414,6 +1451,7 @@ export interface RootRouteChildren {
   UploadRoute: typeof UploadRoute
   UseCasesRoute: typeof UseCasesRoute
   WelcomeRoute: typeof WelcomeRoute
+  WhitepaperRoute: typeof WhitepaperRoute
   DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRouteWithChildren
   AccountBillingRoute: typeof AccountBillingRoute
@@ -1442,6 +1480,7 @@ export interface RootRouteChildren {
   RunSlugRoute: typeof RunSlugRoute
   SoulsSlugRoute: typeof SoulsSlugRoute
   UHandleRoute: typeof UHandleRoute
+  CompareIndexRoute: typeof CompareIndexRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   PacksIndexRoute: typeof PacksIndexRoute
   ApiAdminAiGatewayProbeRoute: typeof ApiAdminAiGatewayProbeRoute
@@ -1473,6 +1512,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/whitepaper': {
+      id: '/whitepaper'
+      path: '/whitepaper'
+      fullPath: '/whitepaper'
+      preLoaderRoute: typeof WhitepaperRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/welcome': {
       id: '/welcome'
       path: '/welcome'
@@ -1634,6 +1680,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EvaluationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/enterprise': {
+      id: '/enterprise'
+      path: '/enterprise'
+      fullPath: '/enterprise'
+      preLoaderRoute: typeof EnterpriseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/docs': {
       id: '/docs'
       path: '/docs'
@@ -1709,6 +1762,13 @@ declare module '@tanstack/react-router' {
       path: '/marketplace'
       fullPath: '/marketplace/'
       preLoaderRoute: typeof MarketplaceIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare/': {
+      id: '/compare/'
+      path: '/compare'
+      fullPath: '/compare/'
+      preLoaderRoute: typeof CompareIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -2427,6 +2487,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContributorFaqRoute: ContributorFaqRoute,
   DiscoverRoute: DiscoverRoute,
   DocsRoute: DocsRouteWithChildren,
+  EnterpriseRoute: EnterpriseRoute,
   EvaluationRoute: EvaluationRoute,
   ForgeRoute: ForgeRouteWithChildren,
   GenerateRoute: GenerateRoute,
@@ -2450,6 +2511,7 @@ const rootRouteChildren: RootRouteChildren = {
   UploadRoute: UploadRoute,
   UseCasesRoute: UseCasesRoute,
   WelcomeRoute: WelcomeRoute,
+  WhitepaperRoute: WhitepaperRoute,
   DotwellKnownOauthAuthorizationServerRoute:
     DotwellKnownOauthAuthorizationServerRouteWithChildren,
   DotwellKnownOauthProtectedResourceRoute:
@@ -2480,6 +2542,7 @@ const rootRouteChildren: RootRouteChildren = {
   RunSlugRoute: RunSlugRoute,
   SoulsSlugRoute: SoulsSlugRoute,
   UHandleRoute: UHandleRoute,
+  CompareIndexRoute: CompareIndexRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   PacksIndexRoute: PacksIndexRoute,
   ApiAdminAiGatewayProbeRoute: ApiAdminAiGatewayProbeRoute,
