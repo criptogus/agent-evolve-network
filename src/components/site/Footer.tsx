@@ -71,7 +71,7 @@ export function Footer() {
             className="font-mono"
             title={`Built ${PLATFORM_BUILD_DATE} · see docs/VERSIONING.md`}
           >
-            {formatVersionLabel()}
+            {formatVersionLabel()} · built {PLATFORM_BUILD_DATE}
           </span>
         </div>
       </div>
