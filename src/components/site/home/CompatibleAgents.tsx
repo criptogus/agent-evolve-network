@@ -15,10 +15,10 @@ const AGENTS: Agent[] = [
   { name: "Open Claw", glyph: "⚡", href: "/connect/openclaw" },
   { name: "Cursor", glyph: "▸", href: "/connect/cursor" },
   { name: "VS Code", glyph: "</>", href: "/connect/vscode" },
-  { name: "ChatGPT", glyph: "●", href: "/connect/chatgpt" },
-  { name: "Windsurf", glyph: "≋", href: "/connect/windsurf" },
-  { name: "Cline", glyph: "⌘", href: "/connect/cline" },
-  { name: "Continue", glyph: "↗", href: "/connect/continue" },
+  { name: "ChatGPT", glyph: "●", href: "/connect" },
+  { name: "Windsurf", glyph: "≋", href: "/connect" },
+  { name: "Cline", glyph: "⌘", href: "/connect" },
+  { name: "Continue", glyph: "↗", href: "/connect" },
   { name: "Any MCP client", glyph: "∞", href: "/connect" },
 ];
 
