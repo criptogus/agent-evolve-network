@@ -55,6 +55,7 @@ export function Footer() {
             { label: "llms.txt", href: "/llms.txt" },
           ]} />
           <FooterCol title="Company" links={[
+            { label: "About", to: "/about" },
             { label: "Terms", to: "/terms" },
             { label: "Privacy", to: "/privacy" },
             { label: "Contributor FAQ", to: "/contributor-faq" },

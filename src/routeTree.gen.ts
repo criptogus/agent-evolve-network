@@ -42,6 +42,7 @@ import { Route as CommunityRouteImport } from './routes/community'
 import { Route as CertifyRouteImport } from './routes/certify'
 import { Route as BountiesRouteImport } from './routes/bounties'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PacksIndexRouteImport } from './routes/packs.index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
@@ -289,6 +290,11 @@ const BountiesRoute = BountiesRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -722,6 +728,7 @@ const ApiPacksCustomizationIdDownloadExtRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/bounties': typeof BountiesRouteWithChildren
   '/certify': typeof CertifyRoute
@@ -840,6 +847,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/bounties': typeof BountiesRouteWithChildren
   '/certify': typeof CertifyRoute
   '/community': typeof CommunityRoute
@@ -958,6 +966,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/bounties': typeof BountiesRouteWithChildren
   '/certify': typeof CertifyRoute
@@ -1078,6 +1087,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/admin'
     | '/bounties'
     | '/certify'
@@ -1196,6 +1206,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/bounties'
     | '/certify'
     | '/community'
@@ -1313,6 +1324,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/admin'
     | '/bounties'
     | '/certify'
@@ -1432,6 +1444,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
   BountiesRoute: typeof BountiesRouteWithChildren
   CertifyRoute: typeof CertifyRoute
@@ -1755,6 +1768,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -2500,6 +2520,7 @@ const ApiPublicPackagesRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
   BountiesRoute: BountiesRouteWithChildren,
   CertifyRoute: CertifyRoute,
