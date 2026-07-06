@@ -1,0 +1,56 @@
+name: auto-bump-version
+
+# Automatically bump PLATFORM_VERSION and prepend a CHANGELOG entry
+# after every merge to main. See docs/VERSIONING.md.
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: auto-bump-version
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    # Skip the bot's own commit to avoid infinite loops.
+    if: "!contains(github.event.head_commit.message, 'chore: bump platform version')"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Compute and apply bump
+        id: bump
+        run: |
+          set -euo pipefail
+          BEFORE=$(node -e "console.log(require('./package.json').version)")
+          node scripts/bump-version.mjs
+          AFTER=$(node -e "console.log(require('./package.json').version)")
+          echo "before=$BEFORE" >> "$GITHUB_OUTPUT"
+          echo "after=$AFTER" >> "$GITHUB_OUTPUT"
+          if [ "$BEFORE" = "$AFTER" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit, tag, and push
+        if: steps.bump.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name  "lovable-version-bot"
+          git config user.email "bot@superagentskill.com"
+          git add src/lib/version.ts package.json CHANGELOG.md
+          git commit -m "chore: bump platform version ${{ steps.bump.outputs.before }} -> ${{ steps.bump.outputs.after }}"
+          git tag "v${{ steps.bump.outputs.after }}"
+          git push origin HEAD:main --follow-tags
