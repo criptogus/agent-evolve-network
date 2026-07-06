@@ -24,7 +24,7 @@ const AGENTS: Agent[] = [
 
 export function CompatibleAgents() {
   return (
-    <section className="border-b border-border bg-surface/40 py-16">
+    <section data-testid="compatible-agents" className="border-b border-border bg-surface/40 py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
