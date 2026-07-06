@@ -9,7 +9,7 @@ import { badgeValue } from "@/lib/certify/core";
 //     ![skill audit](https://superagentskill.com/api/badges/certified/<id>.svg)
 //   Cached for 5 minutes at the edge; renders a gray "—" badge on any error.
 
-export const Route = createFileRoute("/api/badges/certified/$id.svg")({
+export const Route = createFileRoute("/api/badges/certified/{$id}.svg")({
   server: {
     handlers: {
       GET: async ({ params }) => {
