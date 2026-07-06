@@ -1,7 +1,5 @@
 # Changelog
 
-# Changelog
-
 All notable changes to this project are documented here. The platform
 follows the evolution policy in [`docs/VERSIONING.md`](docs/VERSIONING.md)
 and uses [Semantic Versioning](https://semver.org/) (pre-1.0, alpha stage).
@@ -23,15 +21,13 @@ Component artifacts are versioned and released independently via git tags:
 - Evolution policy documented in `docs/VERSIONING.md` (SemVer, stages,
   codenames, shipping checklist).
 
-- **Content marketplace** — `content-v*` tags publish a GitHub Release with
-  per-category bundles and an auto-generated changelog.
-- **`super-agent` CLI** — `cli-v*` tags publish cross-platform binaries.
-- **`@superagentskill/sdk`** — versioned in `packages/sdk-ts/package.json`.
+> Historical entries below predate the platform-wide versioning policy and
+> refer to the content marketplace release line (`content-v*` tags).
 
-## [1.0.0] — 2026-05-30
+## [content-v1.0.0] — 2026-05-30
 
-First tagged release. Marks the marketplace as stable and establishes public
-versioning across the platform, CLI, and SDK.
+First tagged marketplace release. Marks the content marketplace as stable
+and establishes public versioning across the CLI and SDK.
 
 ### Added
 
@@ -55,4 +51,4 @@ versioning across the platform, CLI, and SDK.
   schema validation → `audit:skills` (blocking) → SkillSpector (advisory).
 - Resolved outbound-URL findings flagged by `audit:skills` in the finance skills.
 
-[1.0.0]: https://github.com/criptogus/agent-evolve-network/releases/tag/content-v1.0.0
+[content-v1.0.0]: https://github.com/criptogus/agent-evolve-network/releases/tag/content-v1.0.0
