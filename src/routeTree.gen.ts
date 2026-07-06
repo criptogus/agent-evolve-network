@@ -94,6 +94,7 @@ import { Route as UseCaseVerticalTaskRouteImport } from './routes/use-case.$vert
 import { Route as PacksSlugCustomizeRouteImport } from './routes/packs.$slug.customize'
 import { Route as MarketplaceTrustSlugRouteImport } from './routes/marketplace.trust.$slug'
 import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug'
+import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
 import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packages'
@@ -552,6 +553,11 @@ const ForgeReportSlugRoute = ForgeReportSlugRouteImport.update({
   path: '/report/$slug',
   getParentRoute: () => ForgeRoute,
 } as any)
+const ApiPublicVersionRoute = ApiPublicVersionRouteImport.update({
+  id: '/api/public/version',
+  path: '/api/public/version',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicTelemetryRoute = ApiPublicTelemetryRouteImport.update({
   id: '/api/public/telemetry',
   path: '/api/public/telemetry',
@@ -807,6 +813,7 @@ export interface FileRoutesByFullPath {
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
+  '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
@@ -923,6 +930,7 @@ export interface FileRoutesByTo {
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
+  '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
@@ -1041,6 +1049,7 @@ export interface FileRoutesById {
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
+  '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
@@ -1160,6 +1169,7 @@ export interface FileRouteTypes {
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
+    | '/api/public/version'
     | '/forge/report/$slug'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
@@ -1276,6 +1286,7 @@ export interface FileRouteTypes {
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
+    | '/api/public/version'
     | '/forge/report/$slug'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
@@ -1393,6 +1404,7 @@ export interface FileRouteTypes {
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
+    | '/api/public/version'
     | '/forge/report/$slug'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
@@ -1491,6 +1503,7 @@ export interface RootRouteChildren {
   ApiPublicPackagesRoute: typeof ApiPublicPackagesRouteWithChildren
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
+  ApiPublicVersionRoute: typeof ApiPublicVersionRoute
   MarketplaceTrustSlugRoute: typeof MarketplaceTrustSlugRoute
   UseCaseVerticalTaskRoute: typeof UseCaseVerticalTaskRoute
   ApiBadgesCertifiedChar123idChar125DotsvgRoute: typeof ApiBadgesCertifiedChar123idChar125DotsvgRoute
@@ -2108,6 +2121,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgeReportSlugRouteImport
       parentRoute: typeof ForgeRoute
     }
+    '/api/public/version': {
+      id: '/api/public/version'
+      path: '/api/public/version'
+      fullPath: '/api/public/version'
+      preLoaderRoute: typeof ApiPublicVersionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/telemetry': {
       id: '/api/public/telemetry'
       path: '/api/public/telemetry'
@@ -2553,6 +2573,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicPackagesRoute: ApiPublicPackagesRouteWithChildren,
   ApiPublicSearchRoute: ApiPublicSearchRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
+  ApiPublicVersionRoute: ApiPublicVersionRoute,
   MarketplaceTrustSlugRoute: MarketplaceTrustSlugRoute,
   UseCaseVerticalTaskRoute: UseCaseVerticalTaskRoute,
   ApiBadgesCertifiedChar123idChar125DotsvgRoute:
