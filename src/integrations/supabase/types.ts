@@ -1710,6 +1710,7 @@ export type Database = {
           source_ref: string | null
           star_count: number
           submitted_at: string | null
+          tags: string[]
           type: Database["public"]["Enums"]["package_type"]
           updated_at: string
         }
@@ -1738,6 +1739,7 @@ export type Database = {
           source_ref?: string | null
           star_count?: number
           submitted_at?: string | null
+          tags?: string[]
           type: Database["public"]["Enums"]["package_type"]
           updated_at?: string
         }
@@ -1766,6 +1768,7 @@ export type Database = {
           source_ref?: string | null
           star_count?: number
           submitted_at?: string | null
+          tags?: string[]
           type?: Database["public"]["Enums"]["package_type"]
           updated_at?: string
         }
