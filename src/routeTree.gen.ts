@@ -119,10 +119,10 @@ import { Route as ApiPublicDotwellKnownOauthProtectedResourceRouteImport } from 
 import { Route as ApiPublicDotwellKnownOauthAuthorizationServerRouteImport } from './routes/api/public/[.]well-known.oauth-authorization-server'
 import { Route as ApiOgSkillOfTheWeekSvgRouteImport } from './routes/api/og.skill-of-the-week.svg'
 import { Route as ApiIntegrationsSlugInstallRouteImport } from './routes/api/integrations.$slug.install'
+import { Route as ApiBadgesCertifiedIdDotsvgRouteImport } from './routes/api/badges.certified.$id[.]svg'
 import { Route as DotwellKnownOauthProtectedResourceApiMcpRouteImport } from './routes/[.]well-known.oauth-protected-resource.api.mcp'
 import { Route as DotwellKnownOauthAuthorizationServerApiMcpRouteImport } from './routes/[.]well-known.oauth-authorization-server.api.mcp'
 import { Route as ApiBadgesTrustSlugSvgRouteImport } from './routes/api/badges.trust.$slug.svg'
-import { Route as ApiBadgesCertifiedIdSvgRouteImport } from './routes/api/badges.certified.$id.svg'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
 const WhitepaperRoute = WhitepaperRouteImport.update({
@@ -684,6 +684,12 @@ const ApiIntegrationsSlugInstallRoute =
     path: '/api/integrations/$slug/install',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiBadgesCertifiedIdDotsvgRoute =
+  ApiBadgesCertifiedIdDotsvgRouteImport.update({
+    id: '/api/badges/certified/$id.svg',
+    path: '/api/badges/certified/$id.svg',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const DotwellKnownOauthProtectedResourceApiMcpRoute =
   DotwellKnownOauthProtectedResourceApiMcpRouteImport.update({
     id: '/api/mcp',
@@ -699,11 +705,6 @@ const DotwellKnownOauthAuthorizationServerApiMcpRoute =
 const ApiBadgesTrustSlugSvgRoute = ApiBadgesTrustSlugSvgRouteImport.update({
   id: '/api/badges/trust/$slug/svg',
   path: '/api/badges/trust/$slug/svg',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiBadgesCertifiedIdSvgRoute = ApiBadgesCertifiedIdSvgRouteImport.update({
-  id: '/api/badges/certified/$id/svg',
-  path: '/api/badges/certified/$id/svg',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPacksCustomizationIdDownloadExtRoute =
@@ -812,6 +813,7 @@ export interface FileRoutesByFullPath {
   '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
   '/.well-known/oauth-authorization-server/api/mcp': typeof DotwellKnownOauthAuthorizationServerApiMcpRoute
   '/.well-known/oauth-protected-resource/api/mcp': typeof DotwellKnownOauthProtectedResourceApiMcpRoute
+  '/api/badges/certified/$id.svg': typeof ApiBadgesCertifiedIdDotsvgRoute
   '/api/integrations/$slug/install': typeof ApiIntegrationsSlugInstallRoute
   '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
@@ -826,7 +828,6 @@ export interface FileRoutesByFullPath {
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
-  '/api/badges/certified/$id/svg': typeof ApiBadgesCertifiedIdSvgRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -928,6 +929,7 @@ export interface FileRoutesByTo {
   '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
   '/.well-known/oauth-authorization-server/api/mcp': typeof DotwellKnownOauthAuthorizationServerApiMcpRoute
   '/.well-known/oauth-protected-resource/api/mcp': typeof DotwellKnownOauthProtectedResourceApiMcpRoute
+  '/api/badges/certified/$id.svg': typeof ApiBadgesCertifiedIdDotsvgRoute
   '/api/integrations/$slug/install': typeof ApiIntegrationsSlugInstallRoute
   '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
@@ -942,7 +944,6 @@ export interface FileRoutesByTo {
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
-  '/api/badges/certified/$id/svg': typeof ApiBadgesCertifiedIdSvgRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1046,6 +1047,7 @@ export interface FileRoutesById {
   '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
   '/.well-known/oauth-authorization-server/api/mcp': typeof DotwellKnownOauthAuthorizationServerApiMcpRoute
   '/.well-known/oauth-protected-resource/api/mcp': typeof DotwellKnownOauthProtectedResourceApiMcpRoute
+  '/api/badges/certified/$id.svg': typeof ApiBadgesCertifiedIdDotsvgRoute
   '/api/integrations/$slug/install': typeof ApiIntegrationsSlugInstallRoute
   '/api/og/skill-of-the-week/svg': typeof ApiOgSkillOfTheWeekSvgRoute
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
@@ -1060,7 +1062,6 @@ export interface FileRoutesById {
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
-  '/api/badges/certified/$id/svg': typeof ApiBadgesCertifiedIdSvgRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1165,6 +1166,7 @@ export interface FileRouteTypes {
     | '/use-case/$vertical/$task'
     | '/.well-known/oauth-authorization-server/api/mcp'
     | '/.well-known/oauth-protected-resource/api/mcp'
+    | '/api/badges/certified/$id.svg'
     | '/api/integrations/$slug/install'
     | '/api/og/skill-of-the-week/svg'
     | '/api/public/.well-known/oauth-authorization-server'
@@ -1179,7 +1181,6 @@ export interface FileRouteTypes {
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
-    | '/api/badges/certified/$id/svg'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
@@ -1281,6 +1282,7 @@ export interface FileRouteTypes {
     | '/use-case/$vertical/$task'
     | '/.well-known/oauth-authorization-server/api/mcp'
     | '/.well-known/oauth-protected-resource/api/mcp'
+    | '/api/badges/certified/$id.svg'
     | '/api/integrations/$slug/install'
     | '/api/og/skill-of-the-week/svg'
     | '/api/public/.well-known/oauth-authorization-server'
@@ -1295,7 +1297,6 @@ export interface FileRouteTypes {
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
-    | '/api/badges/certified/$id/svg'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   id:
@@ -1398,6 +1399,7 @@ export interface FileRouteTypes {
     | '/use-case/$vertical/$task'
     | '/.well-known/oauth-authorization-server/api/mcp'
     | '/.well-known/oauth-protected-resource/api/mcp'
+    | '/api/badges/certified/$id.svg'
     | '/api/integrations/$slug/install'
     | '/api/og/skill-of-the-week/svg'
     | '/api/public/.well-known/oauth-authorization-server'
@@ -1412,7 +1414,6 @@ export interface FileRouteTypes {
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
-    | '/api/badges/certified/$id/svg'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
@@ -1492,6 +1493,7 @@ export interface RootRouteChildren {
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
   MarketplaceTrustSlugRoute: typeof MarketplaceTrustSlugRoute
   UseCaseVerticalTaskRoute: typeof UseCaseVerticalTaskRoute
+  ApiBadgesCertifiedIdDotsvgRoute: typeof ApiBadgesCertifiedIdDotsvgRoute
   ApiIntegrationsSlugInstallRoute: typeof ApiIntegrationsSlugInstallRoute
   ApiOgSkillOfTheWeekSvgRoute: typeof ApiOgSkillOfTheWeekSvgRoute
   ApiPublicDotwellKnownOauthAuthorizationServerRoute: typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
@@ -1505,7 +1507,6 @@ export interface RootRouteChildren {
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiSkillsSlugExportRoute: typeof ApiSkillsSlugExportRoute
   ApiSkillsSlugExportDotmdRoute: typeof ApiSkillsSlugExportDotmdRoute
-  ApiBadgesCertifiedIdSvgRoute: typeof ApiBadgesCertifiedIdSvgRoute
   ApiBadgesTrustSlugSvgRoute: typeof ApiBadgesTrustSlugSvgRoute
   ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -2282,6 +2283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiIntegrationsSlugInstallRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/badges/certified/$id.svg': {
+      id: '/api/badges/certified/$id.svg'
+      path: '/api/badges/certified/$id.svg'
+      fullPath: '/api/badges/certified/$id.svg'
+      preLoaderRoute: typeof ApiBadgesCertifiedIdDotsvgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.well-known/oauth-protected-resource/api/mcp': {
       id: '/.well-known/oauth-protected-resource/api/mcp'
       path: '/api/mcp'
@@ -2301,13 +2309,6 @@ declare module '@tanstack/react-router' {
       path: '/api/badges/trust/$slug/svg'
       fullPath: '/api/badges/trust/$slug/svg'
       preLoaderRoute: typeof ApiBadgesTrustSlugSvgRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/badges/certified/$id/svg': {
-      id: '/api/badges/certified/$id/svg'
-      path: '/api/badges/certified/$id/svg'
-      fullPath: '/api/badges/certified/$id/svg'
-      preLoaderRoute: typeof ApiBadgesCertifiedIdSvgRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/packs/customization/$id/download/$ext': {
@@ -2554,6 +2555,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
   MarketplaceTrustSlugRoute: MarketplaceTrustSlugRoute,
   UseCaseVerticalTaskRoute: UseCaseVerticalTaskRoute,
+  ApiBadgesCertifiedIdDotsvgRoute: ApiBadgesCertifiedIdDotsvgRoute,
   ApiIntegrationsSlugInstallRoute: ApiIntegrationsSlugInstallRoute,
   ApiOgSkillOfTheWeekSvgRoute: ApiOgSkillOfTheWeekSvgRoute,
   ApiPublicDotwellKnownOauthAuthorizationServerRoute:
@@ -2569,7 +2571,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiSkillsSlugExportRoute: ApiSkillsSlugExportRoute,
   ApiSkillsSlugExportDotmdRoute: ApiSkillsSlugExportDotmdRoute,
-  ApiBadgesCertifiedIdSvgRoute: ApiBadgesCertifiedIdSvgRoute,
   ApiBadgesTrustSlugSvgRoute: ApiBadgesTrustSlugSvgRoute,
   ApiPacksCustomizationIdDownloadExtRoute:
     ApiPacksCustomizationIdDownloadExtRoute,
@@ -2577,13 +2578,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
