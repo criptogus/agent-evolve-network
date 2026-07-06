@@ -3,6 +3,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { JsonLd } from "@/components/site/JsonLd";
 import { Hero } from "@/components/site/home/Hero";
+import { CompatibleAgents } from "@/components/site/home/CompatibleAgents";
 import { HowItWorks } from "@/components/site/home/HowItWorks";
 import { Proof } from "@/components/site/home/Proof";
 import { IndustryDemo } from "@/components/site/home/IndustryDemo";
@@ -128,6 +129,7 @@ function Home() {
       <JsonLd data={[ORG_LD, SOFTWARE_LD, FAQ_LD]} />
       <Nav />
       <Hero />
+      <CompatibleAgents />
       <HowItWorks />
       <IndustryDemo />
       <Proof />
