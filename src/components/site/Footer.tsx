@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Logo } from "./Logo";
 import { supabase } from "@/integrations/supabase/client";
+import { formatVersionLabel, PLATFORM_BUILD_DATE } from "@/lib/version";
 
 export function Footer() {
   return (
@@ -65,7 +66,12 @@ export function Footer() {
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-2 px-6 py-5 text-xs text-muted-foreground sm:flex-row sm:items-center">
           <span>© {new Date().getFullYear()} Super Agent Skill, Inc. — Made for agents, not for slides.</span>
-          <span className="font-mono">v3.0 · MCP-native</span>
+          <span
+            className="font-mono"
+            title={`Built ${PLATFORM_BUILD_DATE} · see docs/VERSIONING.md`}
+          >
+            {formatVersionLabel()}
+          </span>
         </div>
       </div>
     </footer>
