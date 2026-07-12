@@ -11,51 +11,43 @@ Component artifacts are versioned and released independently via git tags:
 - **`super-agent` CLI** — `cli-v*` tags publish cross-platform binaries.
 - **`@superagentskill/sdk`** — versioned in `packages/sdk-ts/package.json`.
 
-## [0.1.6] — 2026-07-06 — *Genesis* (alpha) — Maintenance release
+## [0.1.6] — 2026-07-06 — *Genesis* (alpha) — MCP compatibility polish
 
 ### Changed
 
-- Adicionou compatibilidade MCP
-- Changes
-- Changes
-- Changes
-- Changes
+- Added MCP compatibility improvements across clients (Hermes, Cursor, Claude, Codex, VS Code).
+- Surfaced universal compatibility on the landing page.
 
-## [0.1.5] — 2026-07-06 — *Genesis* (alpha) — Maintenance release
+## [0.1.5] — 2026-07-06 — *Genesis* (alpha) — RLS hardening
 
 ### Changed
 
-- Restricted permissive SELECT RLS
-- Changes
+- Restricted overly permissive SELECT policies on trust, metrics, and release tables.
 
-## [0.1.4] — 2026-07-06 — *Genesis* (alpha) — Maintenance release
-
-### Changed
-
-- Changes
-
-## [0.1.3] — 2026-07-06 — *Genesis* (alpha) — Maintenance release
+## [0.1.4] — 2026-07-06 — *Genesis* (alpha) — Public catalog fixes
 
 ### Changed
 
-- Changes
-- Changes
+- Fixed anonymous access to the public package catalog and certified badge SVGs.
 
-## [0.1.2] — 2026-07-06 — *Genesis* (alpha) — Maintenance release
-
-### Changed
-
-- Configurou auto-bump de versão
-
-## [0.1.1] — 2026-07-06 — *Genesis* (alpha) — Maintenance release
+## [0.1.3] — 2026-07-06 — *Genesis* (alpha) — Trust score reliability
 
 ### Changed
 
-- Changes
-- Added public version endpoint
-- Changes
-- Changes
-- Implementou lógica de versioning
+- Fixed trust score lookup errors affecting marketplace listings and the get_skill_trust MCP tool.
+
+## [0.1.2] — 2026-07-06 — *Genesis* (alpha) — Automated version bumping
+
+### Changed
+
+- Configured CI to auto-bump the platform version and update the changelog on every deploy.
+
+## [0.1.1] — 2026-07-06 — *Genesis* (alpha) — Public version endpoint
+
+### Changed
+
+- Added a public GET /api/public/version endpoint returning version, stage, codename, and build date.
+- Implemented the platform versioning logic and single source of truth.
 
 ## [0.1.0] — 2026-07-06 — *Genesis* (alpha)
 
