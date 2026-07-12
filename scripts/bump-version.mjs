@@ -102,6 +102,13 @@ function classify(commitList) {
 
 const kind = overrideBump ?? classify(commits);
 
+// Low-quality placeholder subjects that should never appear in the changelog.
+const LOW_QUALITY = /^(changes?|update|updates|fix|fixes|wip|tweak|tweaks|misc|misc\.|minor|patch|refactor|cleanup|chore|edit|edits)\.?$/i;
+
+function stripConventionalPrefix(s) {
+  return s.replace(/^([a-z]+)(\([^)]+\))?!?:\s*/i, "").trim();
+}
+
 // Skip if nothing meaningful and no override.
 const meaningful = commits.filter((c) => {
   const s = (c.split("\n")[0] ?? "").toLowerCase();
@@ -119,12 +126,22 @@ const nextVersion = bump(currentVersion, kind);
 const today = new Date().toISOString().slice(0, 10);
 
 // ---------- build changelog highlights from commit subjects ----------
+const seen = new Set();
 const highlights = meaningful
   .map((c) => (c.split("\n")[0] ?? "").trim())
-  .map((s) => s.replace(/^([a-z]+)(\([^)]+\))?!?:\s*/i, ""))
+  .map(stripConventionalPrefix)
   .filter(Boolean)
+  .filter((s) => s.length >= 8) // reject 1-2 word noise
+  .filter((s) => !LOW_QUALITY.test(s))
+  .filter((s) => {
+    const key = s.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  })
   .slice(0, 5);
 if (highlights.length === 0) highlights.push("Housekeeping and minor improvements.");
+
 
 const kindLabel = kind === "major" ? "major" : kind === "minor" ? "minor" : "patch";
 const title =
