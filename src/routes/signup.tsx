@@ -85,11 +85,6 @@ function SignupPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!accepted) {
-      track("signup_failed", { method: "email", reason: "terms_not_accepted" });
-      toast.error("You must accept the Terms and Contributor IP Assignment to continue.");
-      return;
-    }
     setBusy(true);
     track("signup_started", { method: "email" });
     const { error } = await supabase.auth.signUp({
@@ -115,11 +110,6 @@ function SignupPage() {
   };
 
   const onGoogle = async () => {
-    if (!accepted) {
-      track("signup_failed", { method: "google", reason: "terms_not_accepted" });
-      toast.error("You must accept the Terms and Contributor IP Assignment to continue.");
-      return;
-    }
     setBusy(true);
     track("signup_started", { method: "google" });
     const { error } = await lovable.auth.signInWithOAuth("google", {
@@ -133,11 +123,6 @@ function SignupPage() {
   };
 
   const onGithub = async () => {
-    if (!accepted) {
-      track("signup_failed", { method: "github", reason: "terms_not_accepted" });
-      toast.error("You must accept the Terms and Contributor IP Assignment to continue.");
-      return;
-    }
     setBusy(true);
     track("signup_started", { method: "github" });
     const { error } = await supabase.auth.signInWithOAuth({
@@ -152,6 +137,7 @@ function SignupPage() {
       setBusy(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background">
