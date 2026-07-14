@@ -156,8 +156,7 @@ function SignupPage() {
           <button
             type="button"
             onClick={onGoogle}
-            disabled={busy || !accepted}
-            title={!accepted ? "Accept the Terms below first" : undefined}
+            disabled={busy}
             className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-border bg-background text-sm font-medium hover:bg-surface disabled:opacity-50"
           >
             Continue with Google
@@ -166,8 +165,7 @@ function SignupPage() {
           <button
             type="button"
             onClick={onGithub}
-            disabled={busy || !accepted}
-            title={!accepted ? "Accept the Terms below first" : undefined}
+            disabled={busy}
             className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-border bg-background text-sm font-medium hover:bg-surface disabled:opacity-50"
           >
             <GithubIcon /> Continue with GitHub
