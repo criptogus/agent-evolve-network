@@ -25,6 +25,13 @@ const EVENTS = [
   "mcp_first_write",
   "install_button_clicked",
   "pat_minted",
+  // Landing / signup funnel
+  "hero_viewed",
+  "cta_clicked",
+  "signup_viewed",
+  "signup_started",
+  "signup_completed",
+  "signup_failed",
 ] as const;
 
 const Input = z.object({
