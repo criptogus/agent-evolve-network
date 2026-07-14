@@ -51,6 +51,8 @@ function SignupPage() {
   const [password, setPassword] = useState("");
   const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
+  const track = useTrack();
+  useTrackOnce("signup_viewed", { next: next ?? null });
 
   useEffect(() => {
     // First-touch referral capture from ?ref=CODE on landing.
