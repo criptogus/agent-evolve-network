@@ -18,8 +18,11 @@ const MCP_URL = "https://superagentskill.com/api/mcp";
  * know what MCP is. The step-by-step connect flow lives at /connect.
  */
 export function Hero() {
+  useTrackOnce("hero_viewed", { path: "/" });
+  const track = useTrack();
   return (
     <section className="relative overflow-hidden border-b border-border">
+
       <div className="absolute inset-0 grid-bg opacity-60" aria-hidden />
       <div className="absolute inset-0 hero-glow" aria-hidden />
       <div className="relative mx-auto max-w-7xl px-4 pb-14 pt-14 sm:px-6 md:pt-20 lg:pb-20">
