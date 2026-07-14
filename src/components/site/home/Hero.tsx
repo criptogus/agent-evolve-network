@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import { CopyButton } from "@/components/site/CopyButton";
 import { CountUp } from "@/components/site/CountUp";
 import { SITE_STATS, SKILLS_LABEL } from "@/lib/site-stats";
+import { useTrack, useTrackOnce } from "@/lib/telemetry/use-track";
 
 const McpInstallAnimation = lazy(() =>
   import("@/components/site/McpInstallAnimation").then((m) => ({ default: m.McpInstallAnimation })),
