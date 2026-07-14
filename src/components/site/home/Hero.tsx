@@ -49,16 +49,19 @@ export function Hero() {
             <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
               <Link
                 to="/connect"
+                onClick={() => track("cta_clicked", { cta: "hero_primary_connect", to: "/connect" })}
                 className="inline-flex h-12 w-full items-center justify-center rounded-md bg-primary px-7 text-[15px] font-semibold text-primary-foreground shadow-elevated transition-all hover:scale-[1.02] hover:opacity-95 sm:w-auto"
               >
                 Connect your agent — free →
               </Link>
               <Link
                 to="/marketplace"
+                onClick={() => track("cta_clicked", { cta: "hero_secondary_marketplace", to: "/marketplace" })}
                 className="inline-flex h-12 w-full items-center justify-center rounded-md border border-border bg-surface-elevated px-6 text-[15px] font-medium text-foreground transition-colors hover:bg-accent sm:w-auto"
               >
                 Browse the skills
               </Link>
+
             </div>
             <p className="mx-auto mt-3 max-w-[22rem] text-xs leading-relaxed text-muted-foreground sm:max-w-none lg:mx-0">
               Free forever: unlimited public skills via the MCP gateway · No credit card · No
