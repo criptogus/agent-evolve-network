@@ -328,13 +328,22 @@ async function handle(request: Request): Promise<Response> {
   if (isToolsCall) {
     const identity = quotaIdentity(userId, request);
     const anonHash = userId ? null : identity.replace(/^ip:/, "");
+    const ua = request.headers.get("user-agent") ?? "";
+    const { classifyUserAgent } = await import("@/lib/telemetry/bot-detect");
+    const cls = classifyUserAgent(ua);
     void supabaseAdmin
       .rpc("record_mcp_funnel_event", {
         _event: WRITE_TOOLS.has(toolName) ? "mcp_first_write" : "mcp_first_call",
         _client_id: null,
         _client_name: null,
         _anon_hash: anonHash,
-        _props: { tool: toolName, auth_source: authSource },
+        _props: {
+          tool: toolName,
+          auth_source: authSource,
+          is_bot: cls.isBot,
+          ua_family: cls.family,
+          ua: ua.slice(0, 300),
+        },
       } as never)
       .then(() => {}, () => {});
   }

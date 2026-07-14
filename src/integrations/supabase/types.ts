@@ -3042,12 +3042,39 @@ export type Database = {
         }
         Returns: Json
       }
-      mcp_funnel_summary: {
+      mcp_funnel_summary:
+        | {
+            Args: { _days?: number }
+            Returns: {
+              count: number
+              distinct_users: number
+              event: string
+            }[]
+          }
+        | {
+            Args: { _days?: number; _exclude_bots?: boolean }
+            Returns: {
+              count: number
+              distinct_users: number
+              event: string
+            }[]
+          }
+      mcp_funnel_traffic_breakdown: {
         Args: { _days?: number }
         Returns: {
-          count: number
-          distinct_users: number
+          bot_count: number
+          bot_distinct: number
           event: string
+          human_count: number
+          human_distinct: number
+        }[]
+      }
+      mcp_funnel_ua_families: {
+        Args: { _days?: number; _limit?: number }
+        Returns: {
+          count: number
+          is_bot: boolean
+          ua_family: string
         }[]
       }
       mcp_idempotency_get: {
