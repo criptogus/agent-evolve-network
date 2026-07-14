@@ -8,6 +8,7 @@ import { Logo } from "@/components/site/Logo";
 import { toast } from "sonner";
 import { captureRefFromUrl, getStoredRef, clearStoredRef } from "@/lib/referrals/capture";
 import { claimReferral } from "@/lib/referrals/referrals.functions";
+import { useTrack, useTrackOnce } from "@/lib/telemetry/use-track";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
