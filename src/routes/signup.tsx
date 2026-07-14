@@ -8,6 +8,7 @@ import { Logo } from "@/components/site/Logo";
 import { toast } from "sonner";
 import { captureRefFromUrl, getStoredRef, clearStoredRef } from "@/lib/referrals/capture";
 import { claimReferral } from "@/lib/referrals/referrals.functions";
+import { useTrack, useTrackOnce } from "@/lib/telemetry/use-track";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -50,6 +51,8 @@ function SignupPage() {
   const [password, setPassword] = useState("");
   const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
+  const track = useTrack();
+  useTrackOnce("signup_viewed", { next: next ?? null });
 
   useEffect(() => {
     // First-touch referral capture from ?ref=CODE on landing.
@@ -84,10 +87,12 @@ function SignupPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!accepted) {
+      track("signup_failed", { method: "email", reason: "terms_not_accepted" });
       toast.error("You must accept the Terms and Contributor IP Assignment to continue.");
       return;
     }
     setBusy(true);
+    track("signup_started", { method: "email" });
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -101,21 +106,28 @@ function SignupPage() {
       },
     });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      track("signup_failed", { method: "email", reason: error.message.slice(0, 120) });
+      return toast.error(error.message);
+    }
+    track("signup_completed", { method: "email" });
     toast.success("Check your inbox to confirm your email");
     navigate({ to: "/login", search: { next } });
   };
 
   const onGoogle = async () => {
     if (!accepted) {
+      track("signup_failed", { method: "google", reason: "terms_not_accepted" });
       toast.error("You must accept the Terms and Contributor IP Assignment to continue.");
       return;
     }
     setBusy(true);
+    track("signup_started", { method: "google" });
     const { error } = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: `${window.location.origin}${next || "/account/billing"}`,
     });
     if (error) {
+      track("signup_failed", { method: "google", reason: (error.message ?? "unknown").slice(0, 120) });
       toast.error(error.message ?? "Could not sign up with Google");
       setBusy(false);
     }
@@ -123,10 +135,12 @@ function SignupPage() {
 
   const onGithub = async () => {
     if (!accepted) {
+      track("signup_failed", { method: "github", reason: "terms_not_accepted" });
       toast.error("You must accept the Terms and Contributor IP Assignment to continue.");
       return;
     }
     setBusy(true);
+    track("signup_started", { method: "github" });
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
@@ -134,6 +148,7 @@ function SignupPage() {
       },
     });
     if (error) {
+      track("signup_failed", { method: "github", reason: (error.message ?? "unknown").slice(0, 120) });
       toast.error(error.message ?? "Could not sign up with GitHub");
       setBusy(false);
     }
