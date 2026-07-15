@@ -107,6 +107,7 @@ import { Route as ApiAdminAiGatewayProbeRouteImport } from './routes/api/admin/a
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiSkillsSlugExportDotmdRouteImport } from './routes/api/skills.$slug.export[.]md'
 import { Route as ApiSkillsSlugExportRouteImport } from './routes/api/skills.$slug.export'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
@@ -619,6 +620,12 @@ const AdminImportGithubRoute = AdminImportGithubRouteImport.update({
   path: '/import/github',
   getParentRoute: () => AdminRoute,
 } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiSkillsSlugExportDotmdRoute =
   ApiSkillsSlugExportDotmdRouteImport.update({
     id: '/api/skills/$slug/export.md',
@@ -842,6 +849,7 @@ export interface FileRoutesByFullPath {
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -960,6 +968,7 @@ export interface FileRoutesByTo {
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1080,6 +1089,7 @@ export interface FileRoutesById {
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1201,6 +1211,7 @@ export interface FileRouteTypes {
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
+    | '/lovable/email/queue/process'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
@@ -1319,6 +1330,7 @@ export interface FileRouteTypes {
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
+    | '/lovable/email/queue/process'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   id:
@@ -1438,6 +1450,7 @@ export interface FileRouteTypes {
     | '/api/public/payments/webhook'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
+    | '/lovable/email/queue/process'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
@@ -1533,6 +1546,7 @@ export interface RootRouteChildren {
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiSkillsSlugExportRoute: typeof ApiSkillsSlugExportRoute
   ApiSkillsSlugExportDotmdRoute: typeof ApiSkillsSlugExportDotmdRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   ApiBadgesTrustSlugSvgRoute: typeof ApiBadgesTrustSlugSvgRoute
   ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -2225,6 +2239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminImportGithubRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/skills/$slug/export.md': {
       id: '/api/skills/$slug/export.md'
       path: '/api/skills/$slug/export.md'
@@ -2614,6 +2635,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiSkillsSlugExportRoute: ApiSkillsSlugExportRoute,
   ApiSkillsSlugExportDotmdRoute: ApiSkillsSlugExportDotmdRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   ApiBadgesTrustSlugSvgRoute: ApiBadgesTrustSlugSvgRoute,
   ApiPacksCustomizationIdDownloadExtRoute:
     ApiPacksCustomizationIdDownloadExtRoute,
