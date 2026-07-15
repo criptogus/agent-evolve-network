@@ -5,25 +5,15 @@ import { createCheckoutSession } from "@/lib/payments.functions";
 interface Props {
   priceId: string;
   quantity?: number;
-  customerEmail?: string;
-  userId?: string;
   returnUrl?: string;
 }
 
-export function StripeEmbeddedCheckout({
-  priceId,
-  quantity,
-  customerEmail,
-  userId,
-  returnUrl,
-}: Props) {
+export function StripeEmbeddedCheckout({ priceId, quantity, returnUrl }: Props) {
   const fetchClientSecret = async (): Promise<string> => {
     const secret = await createCheckoutSession({
       data: {
         priceId,
         quantity,
-        customerEmail,
-        userId,
         returnUrl: returnUrl || window.location.href,
         environment: getStripeEnvironment(),
       },
