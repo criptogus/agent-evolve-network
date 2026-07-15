@@ -54,8 +54,6 @@ function BillingPage() {
     if (!user) return;
     openCheckout({
       priceId: "agent_pass_pro_monthly",
-      customerEmail: user.email ?? undefined,
-      userId: user.id,
       returnUrl: `${window.location.origin}/account/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
     });
   };

@@ -4,8 +4,6 @@ import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 interface CheckoutOptions {
   priceId: string;
   quantity?: number;
-  customerEmail?: string;
-  userId?: string;
   returnUrl?: string;
 }
 
