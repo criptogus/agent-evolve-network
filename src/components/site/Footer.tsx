@@ -45,7 +45,6 @@ export function Footer() {
             { label: "Use cases", to: "/use-cases" },
             { label: "Bounties", to: "/bounties" },
             { label: "Affiliate leaderboard", to: "/leaderboard" },
-            { label: "Discord", href: "https://superagentskill.com/community" },
           ]} />
           <FooterCol title="Open source" links={[
             { label: "GitHub repo", href: "https://github.com/criptogus/agent-evolve-network" },
