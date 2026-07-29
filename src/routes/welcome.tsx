@@ -43,6 +43,76 @@ type Client = {
   featured?: boolean;
 };
 
+function QuickCopyStrip({
+  clients,
+  onFocus,
+}: {
+  clients: Client[];
+  onFocus: (id: string) => void;
+}) {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const copy = async (c: Client) => {
+    try {
+      await navigator.clipboard.writeText(c.code);
+      setCopiedId(c.id);
+      onFocus(c.id);
+      setTimeout(() => setCopiedId((v) => (v === c.id ? null : v)), 1600);
+    } catch {
+      /* noop */
+    }
+  };
+  return (
+    <div className="mb-8 rounded-2xl border border-primary/30 bg-primary/[0.04] p-5">
+      <div className="flex items-center gap-2">
+        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+          Quick copy
+        </span>
+        <span className="h-px flex-1 bg-primary/20" aria-hidden />
+        <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+          One click → paste in your AI
+        </span>
+      </div>
+      <ul className="mt-4 grid gap-3 md:grid-cols-3">
+        {clients.map((c) => (
+          <li
+            key={c.id}
+            className="flex flex-col gap-3 rounded-xl border border-border bg-background p-4"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <span className="text-primary">★</span>
+                  {c.name}
+                </div>
+                <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {c.badge.split("·")[0].trim()}
+                </div>
+              </div>
+            </div>
+            <pre className="max-h-20 overflow-hidden rounded-md border border-border bg-[oklch(0.16_0.01_270)] px-3 py-2 font-mono text-[11px] leading-relaxed text-white/80">
+              <code className="line-clamp-3 block">{c.code}</code>
+            </pre>
+            <button
+              onClick={() => copy(c)}
+              aria-label={`Copy ${c.name} install ${c.lang === "json" || c.lang === "toml" ? "config" : "command"}`}
+              className={`inline-flex h-9 items-center justify-center rounded-md px-3 text-xs font-semibold transition-all ${
+                copiedId === c.id
+                  ? "bg-signal/20 text-signal"
+                  : "bg-primary text-primary-foreground hover:opacity-95"
+              }`}
+            >
+              {copiedId === c.id
+                ? "✓ Copied"
+                : `Copy ${c.lang === "json" || c.lang === "toml" || c.lang === "txt" ? "config" : "command"}`}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+
 const CLIENTS: Client[] = [
   {
     id: "hermes",
@@ -349,6 +419,11 @@ function WelcomePage() {
       <section className="mx-auto max-w-5xl px-6 py-12">
         {/* Step 1 — Pick your AI + config */}
         {step === 1 && (
+          <>
+          <QuickCopyStrip
+            clients={CLIENTS.filter((c) => c.featured)}
+            onFocus={(id) => setActive(id)}
+          />
           <div className="grid gap-8 md:grid-cols-[260px_1fr]">
             <aside>
               <div className="flex items-center gap-2">
@@ -449,6 +524,7 @@ function WelcomePage() {
               </div>
             </div>
           </div>
+          </>
         )}
 
         {/* Step 2 — Magic prompt */}
