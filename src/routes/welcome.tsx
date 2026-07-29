@@ -392,61 +392,9 @@ function WelcomePage() {
         {step === 1 && (
           <div className="grid gap-8 md:grid-cols-[260px_1fr]">
             <aside>
-              <div className="flex items-center gap-2">
-                <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
-                  Featured
-                </div>
-                <span className="h-px flex-1 bg-border" aria-hidden />
-              </div>
-              <ul className="mt-3 space-y-1.5">
-                {CLIENTS.filter((c) => c.featured).map((c) => (
-                  <li key={c.id}>
-                    <button
-                      onClick={() => setActive(c.id)}
-                      className={`flex w-full items-center justify-between rounded-lg border-2 px-3 py-2.5 text-left text-sm transition-all ${
-                        active === c.id
-                          ? "border-primary bg-primary/10 text-foreground shadow-elevated"
-                          : "border-primary/30 bg-primary/5 text-foreground hover:border-primary/60 hover:bg-primary/10"
-                      }`}
-                    >
-                      <span className="flex items-center gap-2 font-semibold">
-                        <span className="text-primary">★</span>
-                        {c.name}
-                      </span>
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-primary/80">
-                        {c.badge.split("·")[0].trim()}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-6 flex items-center gap-2">
-                <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                  Also supported
-                </div>
-                <span className="h-px flex-1 bg-border" aria-hidden />
-              </div>
-              <ul className="mt-3 space-y-1">
-                {CLIENTS.filter((c) => !c.featured).map((c) => (
-                  <li key={c.id}>
-                    <button
-                      onClick={() => setActive(c.id)}
-                      className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition-colors ${
-                        active === c.id
-                          ? "border-primary bg-primary/10 text-foreground"
-                          : "border-border bg-surface text-foreground/80 hover:bg-accent"
-                      }`}
-                    >
-                      <span className="font-medium">{c.name}</span>
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                        {c.badge}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <ClientSearchSidebar active={active} setActive={setActive} />
             </aside>
+
 
             <div>
               <div className="rounded-2xl border border-border bg-surface/40 p-6">
