@@ -112,6 +112,199 @@ function QuickCopyStrip({
   );
 }
 
+type VerifyState = "idle" | "checking" | "ok" | "fail";
+
+function InstallChecklist({
+  client,
+  verifyState,
+  onVerify,
+}: {
+  client: Client;
+  verifyState: VerifyState;
+  onVerify: () => void;
+}) {
+  // Track checked step indices per-client (persist in localStorage)
+  const storageKey = `sak-welcome-checklist:${client.id}`;
+  const [checked, setChecked] = useState<Set<number>>(new Set());
+  const [pasted, setPasted] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      setChecked(raw ? new Set(JSON.parse(raw) as number[]) : new Set());
+      setPasted(localStorage.getItem(`${storageKey}:pasted`) === "1");
+    } catch {
+      setChecked(new Set());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client.id]);
+
+  const persist = (next: Set<number>) => {
+    setChecked(next);
+    try {
+      localStorage.setItem(storageKey, JSON.stringify([...next]));
+    } catch {
+      /* noop */
+    }
+  };
+  const toggle = (i: number) => {
+    const next = new Set(checked);
+    next.has(i) ? next.delete(i) : next.add(i);
+    persist(next);
+  };
+  const markPasted = async () => {
+    try {
+      await navigator.clipboard.writeText(client.code);
+    } catch {
+      /* noop */
+    }
+    setPasted(true);
+    try {
+      localStorage.setItem(`${storageKey}:pasted`, "1");
+    } catch {
+      /* noop */
+    }
+  };
+
+  const total = client.steps.length + 2; // steps + paste + verify
+  const done = checked.size + (pasted ? 1 : 0) + (verifyState === "ok" ? 1 : 0);
+  const pct = Math.round((done / total) * 100);
+
+  return (
+    <div className="mt-5">
+      <div className="mb-3 flex items-center justify-between text-xs">
+        <span className="font-mono uppercase tracking-wider text-muted-foreground">
+          Install checklist · {done}/{total}
+        </span>
+        <span className="font-mono text-muted-foreground">{pct}%</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-surface-elevated">
+        <div
+          className="h-full bg-primary transition-all"
+          style={{ width: `${pct}%` }}
+          aria-hidden
+        />
+      </div>
+
+      <ol className="mt-5 space-y-2">
+        {client.steps.map((s, i) => {
+          const isChecked = checked.has(i);
+          return (
+            <li key={i}>
+              <button
+                type="button"
+                onClick={() => toggle(i)}
+                aria-pressed={isChecked}
+                className={`flex w-full items-start gap-3 rounded-lg border p-3 text-left text-sm transition-all ${
+                  isChecked
+                    ? "border-signal/40 bg-signal/5"
+                    : "border-border bg-background hover:border-primary/40 hover:bg-primary/5"
+                }`}
+              >
+                <span
+                  className={`mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-md border font-mono text-[11px] ${
+                    isChecked
+                      ? "border-signal bg-signal text-background"
+                      : "border-border bg-surface text-muted-foreground"
+                  }`}
+                  aria-hidden
+                >
+                  {isChecked ? "✓" : i + 1}
+                </span>
+                <span
+                  className={
+                    isChecked ? "text-muted-foreground line-through" : "text-foreground/90"
+                  }
+                >
+                  {s}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="mt-4">
+        <div className="mb-2 flex items-center justify-between text-xs">
+          <span className="font-mono uppercase tracking-wider text-primary">
+            {client.lang === "bash" ? "Command" : "Config"} to paste
+          </span>
+          {pasted && (
+            <span className="font-mono text-signal">✓ Copied</span>
+          )}
+        </div>
+        <CodeBlock code={client.code} lang={client.lang} filename={client.filename} />
+        <button
+          type="button"
+          onClick={markPasted}
+          className={`mt-2 inline-flex h-9 items-center rounded-md px-3 text-xs font-semibold transition-all ${
+            pasted
+              ? "border border-signal/40 bg-signal/10 text-signal"
+              : "bg-primary text-primary-foreground hover:opacity-95"
+          }`}
+        >
+          {pasted ? "✓ Copied — mark step as done" : `Copy & mark as pasted`}
+        </button>
+      </div>
+
+      <div
+        className={`mt-4 rounded-xl border p-4 ${
+          verifyState === "ok"
+            ? "border-signal/40 bg-signal/5"
+            : verifyState === "fail"
+              ? "border-destructive/40 bg-destructive/5"
+              : "border-border bg-background"
+        }`}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <span
+                className={`inline-flex size-5 shrink-0 items-center justify-center rounded-md border font-mono text-[11px] ${
+                  verifyState === "ok"
+                    ? "border-signal bg-signal text-background"
+                    : "border-border bg-surface text-muted-foreground"
+                }`}
+                aria-hidden
+              >
+                {verifyState === "ok" ? "✓" : client.steps.length + 1}
+              </span>
+              Validate the connection
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              We'll ping the MCP gateway from your browser to confirm {client.name} can reach it.
+            </p>
+            {verifyState === "ok" && (
+              <p className="mt-2 text-xs text-signal">
+                ● Endpoint reachable. {client.name} is ready to talk to Super Agent Skill.
+              </p>
+            )}
+            {verifyState === "fail" && (
+              <p className="mt-2 text-xs text-destructive">
+                ● Couldn't reach the endpoint. Check your network or firewall, then retry.
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={onVerify}
+            disabled={verifyState === "checking"}
+            className="inline-flex h-9 shrink-0 items-center rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground hover:opacity-95 disabled:opacity-60"
+          >
+            {verifyState === "checking"
+              ? "Checking…"
+              : verifyState === "ok"
+                ? "Re-run check"
+                : "Run check"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
 
 const CLIENTS: Client[] = [
   {
