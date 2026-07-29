@@ -492,20 +492,11 @@ function WelcomePage() {
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{client.blurb}</p>
 
-                <ol className="mt-5 space-y-2 text-sm">
-                  {client.steps.map((s, i) => (
-                    <li key={i} className="flex gap-3">
-                      <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[10px] text-primary">
-                        {i + 1}
-                      </span>
-                      <span className="text-foreground/90">{s}</span>
-                    </li>
-                  ))}
-                </ol>
-
-                <div className="mt-6">
-                  <CodeBlock code={client.code} lang={client.lang} filename={client.filename} />
-                </div>
+                <InstallChecklist
+                  client={client}
+                  verifyState={verifyState}
+                  onVerify={checkEndpoint}
+                />
 
                 {client.notes && (
                   <p className="mt-3 text-xs text-muted-foreground">
