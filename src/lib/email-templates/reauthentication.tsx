@@ -1,5 +1,4 @@
 import * as React from 'react'
-
 import {
   Body,
   Container,
@@ -7,8 +6,10 @@ import {
   Heading,
   Html,
   Preview,
+  Section,
   Text,
 } from '@react-email/components'
+import { BRAND, styles } from './_brand'
 
 interface ReauthenticationEmailProps {
   token: string
@@ -17,15 +18,29 @@ interface ReauthenticationEmailProps {
 export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Your verification code</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>Confirm reauthentication</Heading>
-        <Text style={text}>Use the code below to confirm your identity:</Text>
-        <Text style={codeStyle}>{token}</Text>
-        <Text style={footer}>
-          This code will expire shortly. If you didn't request this, you can
-          safely ignore this email.
+    <Preview>Your {BRAND.name} verification code</Preview>
+    <Body style={styles.main}>
+      <Container style={styles.container}>
+        <Section style={styles.card}>
+          <Section style={styles.brandRow}>
+            <span style={styles.brandDot} />
+            <span style={styles.brandName}>{BRAND.name}</span>
+          </Section>
+          <Heading style={styles.h1}>Confirm it's you</Heading>
+          <Text style={styles.text}>
+            Enter this verification code in {BRAND.name} to confirm your
+            identity. It expires shortly.
+          </Text>
+          <Text style={styles.code}>{token}</Text>
+          <Text style={{ ...styles.text, fontSize: '13px', margin: 0 }}>
+            Didn't request this? You can safely ignore this email.
+          </Text>
+        </Section>
+        <Text style={styles.footer}>
+          Sent by {BRAND.name} ·{' '}
+          <a href={BRAND.url} style={styles.footerLink}>
+            superagentskill.com
+          </a>
         </Text>
       </Container>
     </Body>
@@ -33,26 +48,3 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
 )
 
 export default ReauthenticationEmail
-
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const codeStyle = {
-  fontFamily: 'Courier, monospace',
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 30px',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
