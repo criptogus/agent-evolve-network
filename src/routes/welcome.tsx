@@ -117,20 +117,24 @@ const CLIENTS: Client[] = [
   {
     id: "hermes",
     name: "Hermes",
-    badge: "Native · 1-click",
+    badge: "One-liner install",
     featured: true,
     blurb:
-      "Hermes is our reference agent runtime — MCP is preconfigured. One command wires Super Agent Skill in and every session picks up new skills automatically.",
+      "Hermes doesn't ship Super Agent Skill preconfigured, so we host a tiny installer that edits your ~/.hermes/config.yaml idempotently (with backup) and adds the MCP server in one shot.",
     steps: [
-      "Open Hermes → Skills → Connect a server.",
-      "Confirm the pre-filled Super Agent Skill endpoint.",
-      "Approve. Tools appear in the composer immediately — no restart.",
+      "Copy the one-liner below and run it in your terminal.",
+      "The script backs up your existing config and adds the superagent-skill MCP block.",
+      "Run `hermes mcp list` to confirm the tools are available. Restart Hermes if it was open.",
     ],
-    filename: "terminal (optional CLI)",
+    filename: "terminal — safe, idempotent, backs up your config",
     lang: "bash",
-    code: `hermes mcp add super-agent-skill ${ENDPOINT}`,
-    notes: "Recommended. Hermes ships MCP on by default — zero config in the UI path.",
+    code: `curl -fsSL https://superagentskill.com/api/public/install.hermes.sh | bash`,
+    notes:
+      "The installer only appends the MCP server if it's missing. Prefer to edit by hand? Add a `superagent-skill` entry to `mcp_servers` in ~/.hermes/config.yaml pointing at " +
+      ENDPOINT +
+      ".",
   },
+
   {
     id: "claude-code",
     name: "Claude Code (CLI)",
