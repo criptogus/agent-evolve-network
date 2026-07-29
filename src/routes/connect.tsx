@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { recordFunnelEvent } from "@/lib/telemetry/funnel.functions";
-import { ArrowRight, Check, Copy, Plug, Sparkles, Search, Upload, Terminal, Zap } from "lucide-react";
+import { ArrowRight, Check, Copy, Plug, Sparkles, Search, Upload, Terminal, Zap, Star } from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
 import { CodeBlock } from "@/components/site/CodeBlock";
 import { McpTester } from "@/components/site/McpTester";
@@ -12,15 +12,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export const Route = createFileRoute("/connect")({
   head: () => ({
     meta: [
-      { title: "Connect MCP — Lovable, Claude, Cursor, Codex, VS Code & more" },
+      { title: "Connect MCP — Hermes (recommended) + every other coding agent" },
       {
         name: "description",
         content:
-          "Plug Super Agent Skill into any MCP-compatible client in under 30 seconds. Copy-paste configs for Lovable, Claude Desktop, Claude Code, Cursor, Windsurf, Codex CLI, OpenCode, VS Code, Zed and more.",
+          "Plug Super Agent Skill into any MCP-compatible client in under 30 seconds. Hermes is our featured runtime — one curl and you're done. Copy-paste configs for Claude, Cursor, Codex, VS Code, Zed and more.",
       },
-      { property: "og:title", content: "Connect MCP — Super Agent Skill" },
+      { property: "og:title", content: "Connect MCP — Super Agent Skill × Hermes" },
     ],
   }),
+
   component: ConnectPage,
 });
 
@@ -45,7 +46,30 @@ type Prompt = { title: string; code: string };
 
 /* ---------------- data ---------------- */
 
+const HERMES_INSTALL = `curl -fsSL https://superagentskill.com/api/public/install.hermes.sh | bash`;
+
 const CLIENTS: Client[] = [
+  {
+    id: "hermes",
+    name: "Hermes",
+    short: "Reference runtime",
+    badge: "★ Featured · one-liner",
+    blurb:
+      "Hermes is our recommended agent runtime. One curl edits ~/.hermes/config.yaml idempotently (with backup) and wires Super Agent Skill in — every session picks up new skills automatically.",
+    steps: [
+      "Run the one-liner in any terminal.",
+      "The installer backs up your config, appends the superagent-skill MCP block, and exits.",
+      "Run `hermes mcp list` to confirm — tools appear immediately, no restart needed.",
+    ],
+    filename: "terminal — idempotent, backs up your config",
+    lang: "bash",
+    code: HERMES_INSTALL,
+    notes:
+      "Prefer to edit by hand? Add a `superagent-skill` entry to `mcp_servers` in ~/.hermes/config.yaml pointing at " +
+      ENDPOINT +
+      " (transport: http).",
+  },
+
   {
     id: "lovable",
     name: "Lovable",
