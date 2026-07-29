@@ -13,6 +13,7 @@ import { Route as WhitepaperRouteImport } from './routes/whitepaper'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as UseCasesRouteImport } from './routes/use-cases'
 import { Route as UploadRouteImport } from './routes/upload'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as SkillforgeRouteImport } from './routes/skillforge'
@@ -152,6 +153,11 @@ const UseCasesRoute = UseCasesRouteImport.update({
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
   path: '/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -803,6 +809,7 @@ export interface FileRoutesByFullPath {
   '/skillforge': typeof SkillforgeRoute
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
@@ -928,6 +935,7 @@ export interface FileRoutesByTo {
   '/skillforge': typeof SkillforgeRoute
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
@@ -1055,6 +1063,7 @@ export interface FileRoutesById {
   '/skillforge': typeof SkillforgeRoute
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/upload': typeof UploadRoute
   '/use-cases': typeof UseCasesRoute
   '/welcome': typeof WelcomeRoute
@@ -1183,6 +1192,7 @@ export interface FileRouteTypes {
     | '/skillforge'
     | '/status'
     | '/terms'
+    | '/unsubscribe'
     | '/upload'
     | '/use-cases'
     | '/welcome'
@@ -1308,6 +1318,7 @@ export interface FileRouteTypes {
     | '/skillforge'
     | '/status'
     | '/terms'
+    | '/unsubscribe'
     | '/upload'
     | '/use-cases'
     | '/welcome'
@@ -1434,6 +1445,7 @@ export interface FileRouteTypes {
     | '/skillforge'
     | '/status'
     | '/terms'
+    | '/unsubscribe'
     | '/upload'
     | '/use-cases'
     | '/welcome'
@@ -1561,6 +1573,7 @@ export interface RootRouteChildren {
   SkillforgeRoute: typeof SkillforgeRoute
   StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
+  UnsubscribeRoute: typeof UnsubscribeRoute
   UploadRoute: typeof UploadRoute
   UseCasesRoute: typeof UseCasesRoute
   WelcomeRoute: typeof WelcomeRoute
@@ -1659,6 +1672,13 @@ declare module '@tanstack/react-router' {
       path: '/upload'
       fullPath: '/upload'
       preLoaderRoute: typeof UploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -2693,6 +2713,7 @@ const rootRouteChildren: RootRouteChildren = {
   SkillforgeRoute: SkillforgeRoute,
   StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
+  UnsubscribeRoute: UnsubscribeRoute,
   UploadRoute: UploadRoute,
   UseCasesRoute: UseCasesRoute,
   WelcomeRoute: WelcomeRoute,
