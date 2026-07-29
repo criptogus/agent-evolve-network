@@ -88,7 +88,19 @@ const CLIENTS: Client[] = [
     filename: "terminal",
     lang: "bash",
     code: `claude mcp add super-agent-skill ${ENDPOINT}`,
+    docs: {
+      links: [
+        { label: "Claude Code — MCP docs", href: "https://docs.anthropic.com/en/docs/claude-code/mcp" },
+        { label: "claude mcp CLI reference", href: "https://docs.anthropic.com/en/docs/claude-code/cli-reference#mcp" },
+        { label: "Example: code review with SAK skills", href: "https://docs.superagentskill.com/examples/claude-code-review" },
+      ],
+      example: {
+        title: "Try it now in Claude Code",
+        prompt: "Using super-agent-skill, install the 'typescript-reviewer' skill and review the diff in this repo before I commit.",
+      },
+    },
   },
+
   {
     id: "chatgpt",
     name: "ChatGPT",
