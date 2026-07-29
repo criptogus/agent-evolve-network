@@ -40,13 +40,43 @@ type Client = {
   lang: string;
   code: string;
   notes?: string;
+  featured?: boolean;
 };
 
 const CLIENTS: Client[] = [
   {
+    id: "hermes",
+    name: "Hermes",
+    badge: "Native · 1-click",
+    featured: true,
+    blurb:
+      "Hermes is our reference agent runtime — MCP is preconfigured. One command wires Super Agent Skill in and every session picks up new skills automatically.",
+    steps: [
+      "Open Hermes → Skills → Connect a server.",
+      "Confirm the pre-filled Super Agent Skill endpoint.",
+      "Approve. Tools appear in the composer immediately — no restart.",
+    ],
+    filename: "terminal (optional CLI)",
+    lang: "bash",
+    code: `hermes mcp add super-agent-skill ${ENDPOINT}`,
+    notes: "Recommended. Hermes ships MCP on by default — zero config in the UI path.",
+  },
+  {
+    id: "claude-code",
+    name: "Claude Code (CLI)",
+    badge: "One command",
+    featured: true,
+    blurb: "Anthropic's official CLI. One command and the tools are wired into every session.",
+    steps: ["Run the command in your terminal.", "Open any project — tools are auto-loaded."],
+    filename: "terminal",
+    lang: "bash",
+    code: `claude mcp add super-agent-skill ${ENDPOINT}`,
+  },
+  {
     id: "chatgpt",
     name: "ChatGPT",
-    badge: "Custom GPT · Pro/Team/Enterprise",
+    badge: "Custom connector · Pro/Team/Enterprise",
+    featured: true,
     blurb:
       "Add Super Agent Skill as a custom connector inside ChatGPT. Available on Pro, Team, Enterprise and Edu plans.",
     steps: [
@@ -83,16 +113,6 @@ Auth: None (read-only)`,
   }
 }`,
     notes: "Windows: %APPDATA%\\Claude\\claude_desktop_config.json — Linux: ~/.config/Claude/claude_desktop_config.json",
-  },
-  {
-    id: "claude-code",
-    name: "Claude Code (CLI)",
-    badge: "One command",
-    blurb: "Anthropic's official CLI. One command and the tools are wired into every session.",
-    steps: ["Run the command in your terminal.", "Open any project — tools are auto-loaded."],
-    filename: "terminal",
-    lang: "bash",
-    code: `claude mcp add super-agent-skill ${ENDPOINT}`,
   },
   {
     id: "cursor",
@@ -331,11 +351,43 @@ function WelcomePage() {
         {step === 1 && (
           <div className="grid gap-8 md:grid-cols-[260px_1fr]">
             <aside>
-              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                Your AI tool
+              <div className="flex items-center gap-2">
+                <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                  Featured
+                </div>
+                <span className="h-px flex-1 bg-border" aria-hidden />
+              </div>
+              <ul className="mt-3 space-y-1.5">
+                {CLIENTS.filter((c) => c.featured).map((c) => (
+                  <li key={c.id}>
+                    <button
+                      onClick={() => setActive(c.id)}
+                      className={`flex w-full items-center justify-between rounded-lg border-2 px-3 py-2.5 text-left text-sm transition-all ${
+                        active === c.id
+                          ? "border-primary bg-primary/10 text-foreground shadow-elevated"
+                          : "border-primary/30 bg-primary/5 text-foreground hover:border-primary/60 hover:bg-primary/10"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2 font-semibold">
+                        <span className="text-primary">★</span>
+                        {c.name}
+                      </span>
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-primary/80">
+                        {c.badge.split("·")[0].trim()}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-6 flex items-center gap-2">
+                <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Also supported
+                </div>
+                <span className="h-px flex-1 bg-border" aria-hidden />
               </div>
               <ul className="mt-3 space-y-1">
-                {CLIENTS.map((c) => (
+                {CLIENTS.filter((c) => !c.featured).map((c) => (
                   <li key={c.id}>
                     <button
                       onClick={() => setActive(c.id)}
