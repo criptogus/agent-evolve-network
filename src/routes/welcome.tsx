@@ -876,3 +876,131 @@ function WelcomePage() {
     </div>
   );
 }
+
+const FAQ_ITEMS: { q: string; a: React.ReactNode }[] = [
+  {
+    q: "O MCP server não aparece na lista do cliente (Claude/ChatGPT/Cursor). O que fazer?",
+    a: (
+      <>
+        <p>Na maioria dos casos é uma das três causas abaixo:</p>
+        <ol className="ml-5 list-decimal space-y-1">
+          <li>O cliente não foi <strong>reiniciado</strong> após colar a config. Feche completamente (não só a janela) e abra de novo.</li>
+          <li>O JSON tem uma <strong>vírgula extra</strong> ou está dentro do bloco errado. Cole exatamente o snippet do passo 1 — sem editar chaves.</li>
+          <li>Há outro MCP com o mesmo <code>name</code>. Renomeie um dos dois para evitar colisão.</li>
+        </ol>
+      </>
+    ),
+  },
+  {
+    q: "Aparece 'connection failed' ou 'unauthorized' ao conectar.",
+    a: (
+      <>
+        <p>Isso quase sempre é token faltando ou expirado:</p>
+        <ul className="ml-5 list-disc space-y-1">
+          <li>Gere um novo token em <Link to="/account" className="underline">/account</Link> e substitua o antigo na config.</li>
+          <li>Confira que o header é <code>Authorization: Bearer &lt;token&gt;</code> — sem aspas ou espaços extras.</li>
+          <li>Se estiver atrás de VPN/proxy corporativo, teste em rede aberta para descartar bloqueio de saída.</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    q: "As ferramentas aparecem, mas retornam 'tool not available' ou timeout.",
+    a: (
+      <>
+        <p>Rode a <strong>validação de conexão</strong> do checklist no passo 1. Se falhar:</p>
+        <ul className="ml-5 list-disc space-y-1">
+          <li>Verifique o status em <a href="https://status.superagentskill.com" className="underline" target="_blank" rel="noreferrer">status.superagentskill.com</a>.</li>
+          <li>Timeout &gt; 30s costuma ser rede local. Teste <code>curl</code> no endpoint mostrado no bloco de código.</li>
+          <li>Reinstale a skill pelo <Link to="/marketplace" className="underline">/marketplace</Link> — versões antigas podem ter sido despublicadas.</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    q: "No ChatGPT (Desktop) o conector some depois de reiniciar.",
+    a: (
+      <p>
+        O ChatGPT Desktop exige que o arquivo de config esteja no diretório oficial do app.
+        Confira o caminho exato mostrado no snippet do passo 1 para o seu SO — colar em <code>~/</code> ou na Downloads não funciona.
+      </p>
+    ),
+  },
+  {
+    q: "Claude Code diz 'MCP server crashed' logo ao abrir.",
+    a: (
+      <>
+        <p>Geralmente é a versão do Node ou do runtime local:</p>
+        <ul className="ml-5 list-disc space-y-1">
+          <li>Use Node 20+ (<code>node -v</code>).</li>
+          <li>Rode <code>claude mcp list</code> e depois <code>claude mcp logs superagentskill</code> para ver o stack trace.</li>
+          <li>Se o erro citar <code>ENOTFOUND</code>, é DNS/proxy — não é a nossa API.</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    q: "Consigo instalar mas nenhuma skill executa. Onde vejo logs?",
+    a: (
+      <p>
+        Toda execução aparece em <Link to="/runs" className="underline">/runs</Link> com input, output e custo. Se a execução nem chega lá, o problema é na
+        camada do cliente MCP — cheque os logs locais dele (varia por app) antes de abrir suporte.
+      </p>
+    ),
+  },
+  {
+    q: "Preciso pagar para testar?",
+    a: (
+      <p>
+        Não. O plano free inclui créditos suficientes para instalar e rodar skills de avaliação. O upgrade só é necessário para volume de produção ou skills premium — detalhes em <Link to="/pricing" className="underline">/pricing</Link>.
+      </p>
+    ),
+  },
+];
+
+function TroubleshootingFAQ() {
+  const [open, setOpen] = useState<number | null>(0);
+  return (
+    <section className="mx-auto max-w-4xl px-6 pb-24">
+      <div className="mb-8 text-center">
+        <h2 className="text-3xl font-semibold tracking-tight">FAQ & Troubleshooting</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          MCP server não apareceu no seu cliente? Comece por aqui.
+        </p>
+      </div>
+      <ul className="space-y-3">
+        {FAQ_ITEMS.map((item, i) => {
+          const isOpen = open === i;
+          return (
+            <li key={i} className="rounded-xl border border-border bg-surface/40">
+              <button
+                type="button"
+                onClick={() => setOpen(isOpen ? null : i)}
+                aria-expanded={isOpen}
+                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+              >
+                <span className="text-sm font-medium">{item.q}</span>
+                <span className="shrink-0 text-muted-foreground" aria-hidden>
+                  {isOpen ? "−" : "+"}
+                </span>
+              </button>
+              {isOpen && (
+                <div className="space-y-2 border-t border-border px-5 py-4 text-sm text-muted-foreground">
+                  {item.a}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      <div className="mt-8 rounded-xl border border-border bg-surface/40 p-5 text-center text-sm">
+        Ainda travado?{" "}
+        <a href="mailto:support@superagentskill.com" className="underline">
+          support@superagentskill.com
+        </a>{" "}
+        — inclua o nome do cliente MCP e a saída da validação do passo 1.
+      </div>
+    </section>
+  );
+}
+
