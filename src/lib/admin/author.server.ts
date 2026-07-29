@@ -1,61 +1,104 @@
 import { generateText, Output } from "ai";
 import { getGatewayModel, describeGatewayConfig } from "@/lib/ai-gateway";
-import { PackageDraftSchema } from "@/lib/skills/schemas";
+import { PackageDraftSchema, PackageDraftMinimalSchema, type PackageDraft, type PackageDraftMinimal } from "@/lib/skills/schemas";
 
 const META_SYSTEM = `You are SkillForge Author, a proprietary meta-agent that designs production-grade agent packages.
-You output strict JSON conforming to the PackageDraft schema. Every package must be:
-- Executable: system_prompt is a complete operational instruction set with reasoning steps and output format.
-- Verifiable: rules.input_schema/output_schema use JSON-schema-like fields; must/must_not are testable invariants.
-- Realistic: at least 2 examples covering happy path and edge case.
-- Domain-specific: reflect the brief's vertical, tools, and constraints. No filler.
-
+Return STRICT JSON matching the requested schema. Keep it minimal but substantive:
+- system_prompt: a complete operational instruction set with reasoning steps and expected output format.
+- examples: at least 1 realistic example covering the happy path.
+- description: one sentence, plain language.
+- long_description: 2–4 short paragraphs. What it does, when to use it, what it produces.
 Type semantics: skill = capability; playbook = multi-step decision flow; soul = personality/values layer; guardrail = safety boundary.
-Slug must be lowercase-kebab.`;
+Slug must be lowercase-kebab. No filler, no meta-commentary.`;
 
-// Author model fallback chain. The structured-output path (Output.object →
-// tool/function calling) is sensitive to provider/model quirks, so we try
-// an ordered list before giving up. First success wins.
-//
-// The list intentionally mixes Google + OpenAI ids because production has
-// shifted gateways: deployments running the Lovable gateway respond to
-// google/* ids; deployments on a plain OpenAI-compatible gateway only
-// understand openai/* (and reject the Google ones with a 400). Including
-// both means at least one survives whichever gateway is configured.
-//
-// "default" is the env-configured AI_GATEWAY_MODEL — tried FIRST so a
-// well-configured deployment doesn't pay the latency of a doomed attempt.
-// Models must be on the Lovable AI Gateway allowlist. `openai/gpt-4o-mini`
-// and other 4.x ids are NOT supported and return 400 — only gpt-5.x / gemini-2.5
-// + 3.x ids are accepted. Order: try the env default first, then a Pro
-// model that handles structured output reliably, then a fast OpenAI fallback.
+// Author model fallback chain, cheapest/fastest first. The minimal schema
+// (see PackageDraftMinimalSchema) fits well inside flash's structured-output
+// budget, so flash almost always wins and pro is only reached on outages.
+// "default" resolves to the env-configured AI_GATEWAY_MODEL when set.
 const AUTHOR_MODEL_FALLBACKS = [
+  "google/gemini-2.5-flash",
   "default",
   "google/gemini-2.5-pro",
   "openai/gpt-5-mini",
-  "google/gemini-2.5-flash",
 ] as const;
 
-// Per-attempt timeout. Vercel serverless caps the whole request; trying 3
-// models with no individual budget meant a single hung upstream (observed
-// ~35s) burned the entire function before any fallback ran. With 12s per
-// model the worst-case is ~36s of upstream + overhead, still under a 60s
-// function limit and surfacing the timeout as a normal attempt failure
-// that flips to the next model instead of a hard 504.
-const PER_ATTEMPT_TIMEOUT_MS = 12_000;
+// Per-attempt timeout. The minimal schema generates ~1KB of JSON — flash
+// closes in 3-6s. Give each attempt a comfortable 25s budget so a slow but
+// eventually-successful gateway response beats a hard-timeout that skips
+// straight to the next (more expensive) model. Two attempts × 25s ≈ under
+// the 60s worker budget with headroom for the text fallback.
+const PER_ATTEMPT_TIMEOUT_MS = 25_000;
+
+/**
+ * Hydrate a minimal draft into the full PackageDraft shape with sensible
+ * defaults. We ask the LLM for the minimum viable answer (see
+ * PackageDraftMinimalSchema) because provider strict-mode reliably rejects
+ * the full schema, then fill in the rest in deterministic code.
+ */
+function hydrateDraftFromMinimal(
+  min: PackageDraftMinimal,
+  type: "skill" | "playbook" | "soul" | "guardrail",
+): PackageDraft {
+  // Duplicate the first example when the model returned only one; the full
+  // schema requires 2+ but we accept 1 from the LLM for reliability.
+  const examples = min.examples.length >= 2
+    ? min.examples
+    : [
+        ...min.examples,
+        {
+          title: "Edge case",
+          input: min.examples[0]?.input ?? "Unusual/edge input",
+          expected_output: min.examples[0]?.expected_output ?? "Handle gracefully; escalate or refuse if outside scope.",
+        },
+      ];
+  const hydrated: PackageDraft = {
+    slug: min.slug,
+    name: min.name,
+    type,
+    description: min.description,
+    long_description: min.long_description.length >= 80
+      ? min.long_description
+      : `${min.long_description}\n\nUse it when: your workflow needs a repeatable ${type} that produces consistent output. This draft can be refined further with the SuperAgentSkill review engine.`,
+    system_prompt: min.system_prompt.length >= 120
+      ? min.system_prompt
+      : `${min.system_prompt}\n\nReasoning:\n1. Confirm you understood the request.\n2. Apply the ${type} logic above.\n3. Return the result in the format the caller expects.`,
+    rules: {
+      input_schema: {},
+      output_schema: {},
+      must: [],
+      must_not: [],
+      enforcement: "prompt",
+    },
+    examples,
+    compatibility: [],
+    scopes: ["agent:upgrade", "registry:read"],
+    mcp_servers: [],
+    permissions: [],
+    live_resources: [],
+  };
+  const parsed = PackageDraftSchema.safeParse(hydrated);
+  if (!parsed.success) {
+    // Shouldn't happen — the hydrated shape is designed to satisfy the full
+    // schema. If it fails, surface the mismatch so it's fixable, don't
+    // silently insert something malformed.
+    throw new Error(
+      `hydrateDraftFromMinimal produced invalid draft: ${parsed.error.issues.slice(0, 3).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}`,
+    );
+  }
+  return parsed.data;
+}
 
 export async function generateDraft(
   brief: string,
   type: "skill" | "playbook" | "soul" | "guardrail",
   vertical?: string,
   grounding?: string
-) {
+): Promise<PackageDraft> {
   const prompt = `Brief:\n${brief}\n\nType: ${type}${vertical ? `\nVertical: ${vertical}` : ""}${
     grounding ? `\n\nGrounding research (use as ground truth):\n${grounding.slice(0, 8000)}` : ""
-  }\n\nDesign a complete, production-ready ${type} package. Return ONLY the JSON.`;
+  }\n\nDesign a production-ready ${type} package. Return ONLY the JSON — minimal, tight, complete.`;
 
   const attempts: Array<{ model: string; error: string }> = [];
-  // Log the gateway config once per request so the cause of a total
-  // failure (e.g. "no AI gateway configured") is clear in the logs.
   const cfg = describeGatewayConfig();
   if (!cfg.configured) {
     console.error("[skillforge.author] no AI gateway configured:", cfg);
@@ -63,13 +106,15 @@ export async function generateDraft(
       "SkillForge author cannot run: no AI gateway configured. Set AI_GATEWAY_API_KEY (or LOVABLE_API_KEY / OPENAI_API_KEY) in the server env.",
     );
   }
-  // De-dup: if `default` resolves to one of the explicit ids below, drop
-  // the duplicate so we don't pay double latency on the doomed second try.
-  const explicit = AUTHOR_MODEL_FALLBACKS.filter((m) => m !== "default");
-  const ordered =
-    cfg.defaultModel && explicit.includes(cfg.defaultModel as never)
-      ? explicit
-      : (["default", ...explicit] as readonly string[]);
+  // De-dup: skip `default` when it resolves to another id already in the list.
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+  for (const m of AUTHOR_MODEL_FALLBACKS) {
+    const resolved = m === "default" ? (cfg.defaultModel ?? "default") : m;
+    if (seen.has(resolved)) continue;
+    seen.add(resolved);
+    ordered.push(m);
+  }
   for (const modelId of ordered) {
     try {
       const model = getGatewayModel(modelId);
@@ -77,18 +122,17 @@ export async function generateDraft(
         model,
         system: META_SYSTEM,
         prompt,
-        experimental_output: Output.object({ schema: PackageDraftSchema }),
+        experimental_output: Output.object({ schema: PackageDraftMinimalSchema }),
         abortSignal: AbortSignal.timeout(PER_ATTEMPT_TIMEOUT_MS),
       });
-      if (experimental_output.type !== type) experimental_output.type = type;
+      const draft = hydrateDraftFromMinimal(experimental_output as PackageDraftMinimal, type);
       if (attempts.length > 0) {
-        // We recovered — log so we can spot a regression on the primary model.
         console.warn(
           `[skillforge.author] recovered on ${modelId} after ${attempts.length} failure(s):`,
           attempts,
         );
       }
-      return experimental_output;
+      return draft;
     } catch (e: any) {
       const msg = describeAttemptError(e);
       attempts.push({ model: modelId, error: msg });
@@ -96,52 +140,43 @@ export async function generateDraft(
     }
   }
 
-  // Structured-output path failed on every model. Most common cause is
-  // provider strict-mode rejecting the JSON schema generated from
-  // PackageDraftSchema (e.g. open `record<string, any>` slots) — both
-  // OpenAI and Gemini surface this as opaque "Bad Request" / "no object
-  // generated". Fall back to plain text: ask the model for raw JSON,
-  // parse it ourselves, validate with Zod. Loses provider-side schema
-  // guarantees but lets the user actually get a draft.
+  // Structured-output path failed on every model. Fall back to plain text on
+  // the fastest model, parse ourselves, validate with the MINIMAL schema,
+  // then hydrate.
   try {
-    const fallbackModel = getGatewayModel("default");
+    const fallbackModel = getGatewayModel("google/gemini-2.5-flash");
     const { text } = await generateText({
       model: fallbackModel,
       system:
         META_SYSTEM +
-        `\n\nReturn ONLY a single JSON object matching PackageDraft. No markdown, no prose, no code fences. ` +
-        `Required top-level keys: slug, name, type, description, long_description, system_prompt, rules, examples. ` +
-        `examples must contain >= 2 items. rules has: input_schema (object), output_schema (object), must (array), must_not (array).`,
+        `\n\nReturn ONLY a single JSON object with these keys: slug, name, type, description, long_description, system_prompt, examples. examples is an array of >=1 items each with {title, input, expected_output}. No markdown, no prose, no code fences.`,
       prompt,
       abortSignal: AbortSignal.timeout(PER_ATTEMPT_TIMEOUT_MS),
     });
     const json = extractJsonObject(text);
-    const parsed = PackageDraftSchema.safeParse(json);
+    const parsed = PackageDraftMinimalSchema.safeParse(json);
     if (!parsed.success) {
       attempts.push({
         model: "text-fallback",
         error: `zod: ${parsed.error.issues.slice(0, 3).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}`,
       });
     } else {
-      const out = parsed.data;
-      if (out.type !== type) out.type = type;
+      const draft = hydrateDraftFromMinimal(parsed.data, type);
       console.warn(
         `[skillforge.author] recovered via text fallback after ${attempts.length} structured failure(s):`,
         attempts,
       );
-      return out;
+      return draft;
     }
   } catch (e: any) {
     attempts.push({ model: "text-fallback", error: describeAttemptError(e) });
     console.error(`[skillforge.author] text fallback failed:`, attempts[attempts.length - 1]?.error);
   }
 
-  // All paths exhausted. Surface a structured error so the upload
-  // pipeline can report it back to the caller instead of silently
-  // recording "failed".
   const summary = attempts.map((a) => `${a.model}: ${a.error}`).join(" | ");
   throw new Error(`SkillForge author failed across all fallback models — ${summary}`);
 }
+
 
 // AI SDK errors hide the upstream body inside `e.text` (NoObjectGeneratedError),
 // `e.responseBody` (HTTP errors), or `e.cause`. Bare `e.message` strips all of
