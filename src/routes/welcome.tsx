@@ -641,3 +641,131 @@ function WelcomePage() {
     </div>
   );
 }
+
+function ClientSearchSidebar({
+  active,
+  setActive,
+}: {
+  active: string;
+  setActive: (id: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
+
+  const matches = (c: (typeof CLIENTS)[number]) =>
+    !q ||
+    c.name.toLowerCase().includes(q) ||
+    c.id.toLowerCase().includes(q) ||
+    c.badge.toLowerCase().includes(q) ||
+    (c.blurb ?? "").toLowerCase().includes(q);
+
+  const featured = CLIENTS.filter((c) => c.featured && matches(c));
+  const others = CLIENTS.filter((c) => !c.featured && matches(c));
+  const total = featured.length + others.length;
+
+  return (
+    <div>
+      <label className="relative block">
+        <span className="sr-only">Search MCP clients</span>
+        <span
+          aria-hidden
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        >
+          ⌕
+        </span>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search clients (Claude, Cursor, ChatGPT…)"
+          className="h-10 w-full rounded-md border border-border bg-surface pl-8 pr-8 text-sm placeholder:text-muted-foreground/70 focus:border-primary focus:outline-none"
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery("")}
+            aria-label="Clear search"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-xs text-muted-foreground hover:bg-accent"
+          >
+            ✕
+          </button>
+        )}
+      </label>
+      {q && (
+        <div className="mt-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+          {total} match{total === 1 ? "" : "es"}
+        </div>
+      )}
+
+      {featured.length > 0 && (
+        <>
+          <div className="mt-4 flex items-center gap-2">
+            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+              Featured
+            </div>
+            <span className="h-px flex-1 bg-border" aria-hidden />
+          </div>
+          <ul className="mt-3 space-y-1.5">
+            {featured.map((c) => (
+              <li key={c.id}>
+                <button
+                  onClick={() => setActive(c.id)}
+                  className={`flex w-full items-center justify-between rounded-lg border-2 px-3 py-2.5 text-left text-sm transition-all ${
+                    active === c.id
+                      ? "border-primary bg-primary/10 text-foreground shadow-elevated"
+                      : "border-primary/30 bg-primary/5 text-foreground hover:border-primary/60 hover:bg-primary/10"
+                  }`}
+                >
+                  <span className="flex items-center gap-2 font-semibold">
+                    <span className="text-primary">★</span>
+                    {c.name}
+                  </span>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-primary/80">
+                    {c.badge.split("·")[0].trim()}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {others.length > 0 && (
+        <>
+          <div className="mt-6 flex items-center gap-2">
+            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              {featured.length === 0 && q ? "Matches" : "Also supported"}
+            </div>
+            <span className="h-px flex-1 bg-border" aria-hidden />
+          </div>
+          <ul className="mt-3 space-y-1">
+            {others.map((c) => (
+              <li key={c.id}>
+                <button
+                  onClick={() => setActive(c.id)}
+                  className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition-colors ${
+                    active === c.id
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border bg-surface text-foreground/80 hover:bg-accent"
+                  }`}
+                >
+                  <span className="font-medium">{c.name}</span>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {c.badge}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {total === 0 && (
+        <div className="mt-6 rounded-md border border-dashed border-border bg-surface/40 p-4 text-center text-xs text-muted-foreground">
+          No clients matched “{query}”. Any MCP-compatible client works with the endpoint on the right.
+        </div>
+      )}
+    </div>
+  );
+}
+
