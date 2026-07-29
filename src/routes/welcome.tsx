@@ -40,9 +40,38 @@ type Client = {
   lang: string;
   code: string;
   notes?: string;
+  featured?: boolean;
 };
 
 const CLIENTS: Client[] = [
+  {
+    id: "hermes",
+    name: "Hermes",
+    badge: "Native · 1-click",
+    featured: true,
+    blurb:
+      "Hermes is our reference agent runtime — MCP is preconfigured. One command wires Super Agent Skill in and every session picks up new skills automatically.",
+    steps: [
+      "Open Hermes → Skills → Connect a server.",
+      "Confirm the pre-filled Super Agent Skill endpoint.",
+      "Approve. Tools appear in the composer immediately — no restart.",
+    ],
+    filename: "terminal (optional CLI)",
+    lang: "bash",
+    code: `hermes mcp add super-agent-skill ${ENDPOINT}`,
+    notes: "Recommended. Hermes ships MCP on by default — zero config in the UI path.",
+  },
+  {
+    id: "claude-code",
+    name: "Claude Code (CLI)",
+    badge: "One command",
+    featured: true,
+    blurb: "Anthropic's official CLI. One command and the tools are wired into every session.",
+    steps: ["Run the command in your terminal.", "Open any project — tools are auto-loaded."],
+    filename: "terminal",
+    lang: "bash",
+    code: `claude mcp add super-agent-skill ${ENDPOINT}`,
+  },
   {
     id: "chatgpt",
     name: "ChatGPT",
