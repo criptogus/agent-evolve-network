@@ -83,14 +83,6 @@ export function Hero() {
                   loading="lazy"
                 />
               </a>
-              <a
-                href="https://superagentskill.com/community"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-              >
-                Join the Discord
-              </a>
               <span className="text-xs text-muted-foreground">
                 Every skill adversarially tested before publish
               </span>
