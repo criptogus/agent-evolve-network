@@ -12,7 +12,7 @@
  * We are still pre-1.0: rapid evolution, no stability guarantees.
  */
 
-export const PLATFORM_VERSION = "0.1.26" as const;
+export const PLATFORM_VERSION = "0.1.25" as const;
 export const PLATFORM_CODENAME = "Genesis" as const;
 export const PLATFORM_STAGE: "alpha" | "beta" | "ga" = "alpha";
 export const PLATFORM_BUILD_DATE = "2026-07-29" as const;
@@ -31,21 +31,11 @@ export type ChangelogEntry = {
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: "0.1.26",
-    date: "2026-07-29",
-    kind: "patch",
-    title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
-  },
-  {
     version: "0.1.25",
     date: "2026-07-29",
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Added docs panel to clients",
       "Adicionou QuickCopy no Welcome",
     ],
   },

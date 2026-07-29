@@ -65,6 +65,34 @@ export const PackageDraftSchema = z.object({
 
 export type PackageDraft = z.infer<typeof PackageDraftSchema>;
 
+/**
+ * Minimal draft schema used at the LLM structured-output boundary.
+ *
+ * Every provider (OpenAI strict-mode, Gemini) chokes on the full
+ * PackageDraftSchema — deeply nested optional arrays, `record<string, any>`
+ * open slots, min-length constraints and 8 required top-level keys blow past
+ * the schema compiler and cause "response did not match schema" 400s.
+ *
+ * We ask the model for the smallest possible correct answer here and fill in
+ * defaults (rules/compatibility/scopes/etc.) in code — see
+ * `hydrateDraftFromMinimal` in `author.server.ts`. The stored row still
+ * validates against the full `PackageDraftSchema`.
+ */
+export const PackageDraftMinimalSchema = z.object({
+  slug: z.string().min(2).max(64).regex(/^[a-z0-9-]+$/, "lowercase, hyphens, numbers"),
+  name: z.string().min(2).max(120),
+  type: packageTypeEnum,
+  description: z.string().min(20).max(280),
+  long_description: z.string().min(40).max(4000),
+  system_prompt: z.string().min(60),
+  examples: z.array(z.object({
+    title: z.string(),
+    input: z.string(),
+    expected_output: z.string(),
+  })).min(1).max(6),
+});
+export type PackageDraftMinimal = z.infer<typeof PackageDraftMinimalSchema>;
+
 export const EvaluationSchema = z.object({
   overall_score: z.number().min(0).max(100),
   precision: z.number().min(0).max(100),

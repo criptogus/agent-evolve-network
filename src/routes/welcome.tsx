@@ -41,41 +41,98 @@ type Client = {
   code: string;
   notes?: string;
   featured?: boolean;
-  docs?: {
-    links: { label: string; href: string }[];
-    example: { title: string; prompt: string };
-  };
 };
+
+function QuickCopyStrip({
+  clients,
+  onFocus,
+}: {
+  clients: Client[];
+  onFocus: (id: string) => void;
+}) {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const copy = async (c: Client) => {
+    try {
+      await navigator.clipboard.writeText(c.code);
+      setCopiedId(c.id);
+      onFocus(c.id);
+      setTimeout(() => setCopiedId((v) => (v === c.id ? null : v)), 1600);
+    } catch {
+      /* noop */
+    }
+  };
+  return (
+    <div className="mb-8 rounded-2xl border border-primary/30 bg-primary/[0.04] p-5">
+      <div className="flex items-center gap-2">
+        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+          Quick copy
+        </span>
+        <span className="h-px flex-1 bg-primary/20" aria-hidden />
+        <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+          One click → paste in your AI
+        </span>
+      </div>
+      <ul className="mt-4 grid gap-3 md:grid-cols-3">
+        {clients.map((c) => (
+          <li
+            key={c.id}
+            className="flex flex-col gap-3 rounded-xl border border-border bg-background p-4"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <span className="text-primary">★</span>
+                  {c.name}
+                </div>
+                <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {c.badge.split("·")[0].trim()}
+                </div>
+              </div>
+            </div>
+            <pre className="max-h-20 overflow-hidden rounded-md border border-border bg-[oklch(0.16_0.01_270)] px-3 py-2 font-mono text-[11px] leading-relaxed text-white/80">
+              <code className="line-clamp-3 block">{c.code}</code>
+            </pre>
+            <button
+              onClick={() => copy(c)}
+              aria-label={`Copy ${c.name} install ${c.lang === "json" || c.lang === "toml" ? "config" : "command"}`}
+              className={`inline-flex h-9 items-center justify-center rounded-md px-3 text-xs font-semibold transition-all ${
+                copiedId === c.id
+                  ? "bg-signal/20 text-signal"
+                  : "bg-primary text-primary-foreground hover:opacity-95"
+              }`}
+            >
+              {copiedId === c.id
+                ? "✓ Copied"
+                : `Copy ${c.lang === "json" || c.lang === "toml" || c.lang === "txt" ? "config" : "command"}`}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 
 const CLIENTS: Client[] = [
   {
     id: "hermes",
     name: "Hermes",
-    badge: "Native · 1-click",
+    badge: "One-liner install",
     featured: true,
     blurb:
-      "Hermes is our reference agent runtime — MCP is preconfigured. One command wires Super Agent Skill in and every session picks up new skills automatically.",
+      "Hermes doesn't ship Super Agent Skill preconfigured, so we host a tiny installer that edits your ~/.hermes/config.yaml idempotently (with backup) and adds the MCP server in one shot.",
     steps: [
-      "Open Hermes → Skills → Connect a server.",
-      "Confirm the pre-filled Super Agent Skill endpoint.",
-      "Approve. Tools appear in the composer immediately — no restart.",
+      "Copy the one-liner below and run it in your terminal.",
+      "The script backs up your existing config and adds the superagent-skill MCP block.",
+      "Run `hermes mcp list` to confirm the tools are available. Restart Hermes if it was open.",
     ],
-    filename: "terminal (optional CLI)",
+    filename: "terminal — safe, idempotent, backs up your config",
     lang: "bash",
-    code: `hermes mcp add super-agent-skill ${ENDPOINT}`,
-    notes: "Recommended. Hermes ships MCP on by default — zero config in the UI path.",
-    docs: {
-      links: [
-        { label: "Hermes MCP guide", href: "https://docs.superagentskill.com/hermes/mcp" },
-        { label: "hermes mcp CLI reference", href: "https://docs.superagentskill.com/hermes/cli#mcp" },
-        { label: "Example: research + summary skill", href: "https://docs.superagentskill.com/examples/hermes-research" },
-      ],
-      example: {
-        title: "Try it now in Hermes",
-        prompt: "Use super-agent-skill to find the top-rated research assistant, install it, then summarize the latest paper on MoE routing.",
-      },
-    },
+    code: `curl -fsSL https://superagentskill.com/api/public/install.hermes.sh | bash`,
+    notes:
+      "The installer only appends the MCP server if it's missing. Prefer to edit by hand? Add a `superagent-skill` entry to `mcp_servers` in ~/.hermes/config.yaml pointing at " +
+      ENDPOINT +
+      ".",
   },
 
   {
@@ -88,19 +145,7 @@ const CLIENTS: Client[] = [
     filename: "terminal",
     lang: "bash",
     code: `claude mcp add super-agent-skill ${ENDPOINT}`,
-    docs: {
-      links: [
-        { label: "Claude Code — MCP docs", href: "https://docs.anthropic.com/en/docs/claude-code/mcp" },
-        { label: "claude mcp CLI reference", href: "https://docs.anthropic.com/en/docs/claude-code/cli-reference#mcp" },
-        { label: "Example: code review with SAK skills", href: "https://docs.superagentskill.com/examples/claude-code-review" },
-      ],
-      example: {
-        title: "Try it now in Claude Code",
-        prompt: "Using super-agent-skill, install the 'typescript-reviewer' skill and review the diff in this repo before I commit.",
-      },
-    },
   },
-
   {
     id: "chatgpt",
     name: "ChatGPT",
@@ -120,19 +165,7 @@ const CLIENTS: Client[] = [
 URL:  ${ENDPOINT}
 Auth: None (read-only)`,
     notes: "On Free / Plus, use the prompt method on the next step instead — it works in any chat.",
-    docs: {
-      links: [
-        { label: "ChatGPT custom connectors (MCP)", href: "https://help.openai.com/en/articles/11487775-connectors-in-chatgpt" },
-        { label: "MCP spec — Streamable HTTP", href: "https://modelcontextprotocol.io/specification/2025-06-18/basic/transports" },
-        { label: "Example: research + doc drafting", href: "https://docs.superagentskill.com/examples/chatgpt-research" },
-      ],
-      example: {
-        title: "Try it now in ChatGPT",
-        prompt: "Open the Super Agent Skill connector, install the 'market-researcher' skill, and give me a 5-bullet brief on the EV charger market in Brazil.",
-      },
-    },
   },
-
   {
     id: "claude-desktop",
     name: "Claude Desktop",
@@ -390,11 +423,68 @@ function WelcomePage() {
       <section className="mx-auto max-w-5xl px-6 py-12">
         {/* Step 1 — Pick your AI + config */}
         {step === 1 && (
+          <>
+          <QuickCopyStrip
+            clients={CLIENTS.filter((c) => c.featured)}
+            onFocus={(id) => setActive(id)}
+          />
           <div className="grid gap-8 md:grid-cols-[260px_1fr]">
             <aside>
-              <ClientSearchSidebar active={active} setActive={setActive} />
-            </aside>
+              <div className="flex items-center gap-2">
+                <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                  Featured
+                </div>
+                <span className="h-px flex-1 bg-border" aria-hidden />
+              </div>
+              <ul className="mt-3 space-y-1.5">
+                {CLIENTS.filter((c) => c.featured).map((c) => (
+                  <li key={c.id}>
+                    <button
+                      onClick={() => setActive(c.id)}
+                      className={`flex w-full items-center justify-between rounded-lg border-2 px-3 py-2.5 text-left text-sm transition-all ${
+                        active === c.id
+                          ? "border-primary bg-primary/10 text-foreground shadow-elevated"
+                          : "border-primary/30 bg-primary/5 text-foreground hover:border-primary/60 hover:bg-primary/10"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2 font-semibold">
+                        <span className="text-primary">★</span>
+                        {c.name}
+                      </span>
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-primary/80">
+                        {c.badge.split("·")[0].trim()}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
 
+              <div className="mt-6 flex items-center gap-2">
+                <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Also supported
+                </div>
+                <span className="h-px flex-1 bg-border" aria-hidden />
+              </div>
+              <ul className="mt-3 space-y-1">
+                {CLIENTS.filter((c) => !c.featured).map((c) => (
+                  <li key={c.id}>
+                    <button
+                      onClick={() => setActive(c.id)}
+                      className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition-colors ${
+                        active === c.id
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border bg-surface text-foreground/80 hover:bg-accent"
+                      }`}
+                    >
+                      <span className="font-medium">{c.name}</span>
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                        {c.badge}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </aside>
 
             <div>
               <div className="rounded-2xl border border-border bg-surface/40 p-6">
@@ -426,46 +516,7 @@ function WelcomePage() {
                     <span className="font-medium text-foreground/80">Note:</span> {client.notes}
                   </p>
                 )}
-
-                {client.docs && (
-                  <div className="mt-6 rounded-xl border border-border bg-background/60 p-4">
-                    <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
-                      Docs & examples
-                    </div>
-                    <ul className="mt-3 space-y-1.5 text-sm">
-                      {client.docs.links.map((l) => (
-                        <li key={l.href}>
-                          <a
-                            href={l.href}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 text-foreground/90 underline decoration-border underline-offset-4 hover:text-primary hover:decoration-primary"
-                          >
-                            {l.label}
-                            <span aria-hidden className="text-muted-foreground">↗</span>
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="mt-4 rounded-md border border-dashed border-border bg-surface/60 p-3">
-                      <div className="mb-1.5 text-xs font-medium text-foreground/80">
-                        {client.docs.example.title}
-                      </div>
-                      <p className="font-mono text-xs leading-relaxed text-muted-foreground">
-                        “{client.docs.example.prompt}”
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => navigator.clipboard?.writeText(client.docs!.example.prompt)}
-                        className="mt-2 inline-flex h-7 items-center rounded border border-border bg-surface-elevated px-2 text-[11px] font-medium hover:bg-accent"
-                      >
-                        Copy example prompt
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
-
 
               <div className="mt-6 flex justify-end">
                 <button
@@ -477,6 +528,7 @@ function WelcomePage() {
               </div>
             </div>
           </div>
+          </>
         )}
 
         {/* Step 2 — Magic prompt */}
@@ -641,131 +693,3 @@ function WelcomePage() {
     </div>
   );
 }
-
-function ClientSearchSidebar({
-  active,
-  setActive,
-}: {
-  active: string;
-  setActive: (id: string) => void;
-}) {
-  const [query, setQuery] = useState("");
-  const q = query.trim().toLowerCase();
-
-  const matches = (c: (typeof CLIENTS)[number]) =>
-    !q ||
-    c.name.toLowerCase().includes(q) ||
-    c.id.toLowerCase().includes(q) ||
-    c.badge.toLowerCase().includes(q) ||
-    (c.blurb ?? "").toLowerCase().includes(q);
-
-  const featured = CLIENTS.filter((c) => c.featured && matches(c));
-  const others = CLIENTS.filter((c) => !c.featured && matches(c));
-  const total = featured.length + others.length;
-
-  return (
-    <div>
-      <label className="relative block">
-        <span className="sr-only">Search MCP clients</span>
-        <span
-          aria-hidden
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-        >
-          ⌕
-        </span>
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search clients (Claude, Cursor, ChatGPT…)"
-          className="h-10 w-full rounded-md border border-border bg-surface pl-8 pr-8 text-sm placeholder:text-muted-foreground/70 focus:border-primary focus:outline-none"
-        />
-        {query && (
-          <button
-            type="button"
-            onClick={() => setQuery("")}
-            aria-label="Clear search"
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-xs text-muted-foreground hover:bg-accent"
-          >
-            ✕
-          </button>
-        )}
-      </label>
-      {q && (
-        <div className="mt-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-          {total} match{total === 1 ? "" : "es"}
-        </div>
-      )}
-
-      {featured.length > 0 && (
-        <>
-          <div className="mt-4 flex items-center gap-2">
-            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
-              Featured
-            </div>
-            <span className="h-px flex-1 bg-border" aria-hidden />
-          </div>
-          <ul className="mt-3 space-y-1.5">
-            {featured.map((c) => (
-              <li key={c.id}>
-                <button
-                  onClick={() => setActive(c.id)}
-                  className={`flex w-full items-center justify-between rounded-lg border-2 px-3 py-2.5 text-left text-sm transition-all ${
-                    active === c.id
-                      ? "border-primary bg-primary/10 text-foreground shadow-elevated"
-                      : "border-primary/30 bg-primary/5 text-foreground hover:border-primary/60 hover:bg-primary/10"
-                  }`}
-                >
-                  <span className="flex items-center gap-2 font-semibold">
-                    <span className="text-primary">★</span>
-                    {c.name}
-                  </span>
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-primary/80">
-                    {c.badge.split("·")[0].trim()}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-
-      {others.length > 0 && (
-        <>
-          <div className="mt-6 flex items-center gap-2">
-            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-              {featured.length === 0 && q ? "Matches" : "Also supported"}
-            </div>
-            <span className="h-px flex-1 bg-border" aria-hidden />
-          </div>
-          <ul className="mt-3 space-y-1">
-            {others.map((c) => (
-              <li key={c.id}>
-                <button
-                  onClick={() => setActive(c.id)}
-                  className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition-colors ${
-                    active === c.id
-                      ? "border-primary bg-primary/10 text-foreground"
-                      : "border-border bg-surface text-foreground/80 hover:bg-accent"
-                  }`}
-                >
-                  <span className="font-medium">{c.name}</span>
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {c.badge}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-
-      {total === 0 && (
-        <div className="mt-6 rounded-md border border-dashed border-border bg-surface/40 p-4 text-center text-xs text-muted-foreground">
-          No clients matched “{query}”. Any MCP-compatible client works with the endpoint on the right.
-        </div>
-      )}
-    </div>
-  );
-}
-

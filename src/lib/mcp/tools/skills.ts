@@ -529,7 +529,22 @@ function fnv1aHex(s: string): string {
 function inputWarning(text: string): "short_input" | "summary_markers" | "outline_only" | null {
   const t = text.trim();
   if (t.length < 400) return "short_input";
-  if (/(\.{3,}|\[truncated\]|\[\.\.\.\]|truncated for brevity|condensed|abbreviated|resumido|truncado|condensado|abrégé|tronqué|gekürzt|abgekürzt|troncato|abbreviato)/i.test(t)) {
+  // Strip fenced code blocks and inline code BEFORE scanning for truncation
+  // markers. A `...` inside a code fence or inline backticks is almost always
+  // a Python spread, an ellipsis in a template, or a placeholder in an
+  // example — NOT a signal that the document was truncated. Scanning the raw
+  // text was producing false-positive `summary_markers` warnings that killed
+  // the semantic pass on otherwise valid skills.
+  const prose = t
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`[^`\n]*`/g, " ");
+  if (/(\[truncated\]|\[\.\.\.\]|truncated for brevity|condensed|abbreviated|resumido|truncado|condensado|abrégé|tronqué|gekürzt|abgekürzt|troncato|abbreviato)/i.test(prose)) {
+    return "summary_markers";
+  }
+  // A bare `...` only counts as a truncation marker when it stands alone on
+  // its own line (or line-end) — that's the classic "…rest omitted…" pattern.
+  // Prose ellipses in the middle of a sentence don't qualify.
+  if (/(^|\n)\s*\.{3,}\s*($|\n)/.test(prose)) {
     return "summary_markers";
   }
   const lines = t.split("\n");
@@ -546,6 +561,7 @@ function inputWarning(text: string): "short_input" | "summary_markers" | "outlin
   if (headings >= 6 && contentLines < headings) return "outline_only";
   return null;
 }
+
 
 // Each signal is bilingual (EN + PT-BR alternates) so non-English docs are not
 // silently zeroed. `kind`: "positive" = presence improves score; "negative" =
@@ -1274,14 +1290,20 @@ Return one verdict per pillar. covered=true only if a reader would say the pilla
       .length(7),
   });
 
-  // The semantic pass is the highest-value feature for niche-jargon skills, so
-  // a single transient gateway blip should not silently drop it. Retry once
-  // with a short backoff and a slightly longer timeout before giving up.
+  // The semantic pass is the highest-value feature for niche-jargon skills
+  // and for non-English content, so a single transient gateway blip should
+  // not silently drop it. Three attempts: primary model twice (short backoff),
+  // then one final try on the flash fallback. Each attempt has its own
+  // timeout so a slow upstream doesn't burn the whole budget.
+  const SEMANTIC_FALLBACK_MODEL = "google/gemini-2.5-flash";
   let output: { verdicts: z.infer<typeof schema>["verdicts"] } | null = null;
-  for (let attempt = 0; attempt < 2; attempt++) {
+  const attempts: Array<{ model: string; ms: number; error: string }> = [];
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const modelId = attempt < 2 ? SEMANTIC_MODEL : SEMANTIC_FALLBACK_MODEL;
+    const t0 = Date.now();
     try {
       const res = await generateText({
-        model: getGatewayModel(SEMANTIC_MODEL),
+        model: getGatewayModel(modelId),
         system: sys,
         prompt: user,
         output: Output.object({ schema }),
@@ -1289,11 +1311,16 @@ Return one verdict per pillar. covered=true only if a reader would say the pilla
       });
       output = res.output;
       break;
-    } catch {
-      if (attempt === 0) await new Promise((r) => setTimeout(r, 600));
+    } catch (e: any) {
+      attempts.push({ model: modelId, ms: Date.now() - t0, error: e?.message ?? String(e) });
+      if (attempt < 2) await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
     }
   }
-  if (!output) return null;
+  if (!output) {
+    console.warn(`[review.semantic] all ${attempts.length} attempts failed:`, attempts);
+    return null;
+  }
+
   try {
     const map = new Map<PillarId, SemanticPillarVerdict>();
     for (const v of output.verdicts) {
@@ -1490,25 +1517,36 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
   const verdictScore =
     docClass === "governance" && contentQualityScore !== null ? contentQualityScore : overall;
 
-  const pillars = details.map((r) => ({
-    pillar: r.id,
-    title: bundle.pillar_title[r.id],
-    score: r.score,
-    status: statusBand(r.score),
-    signals_hit: r.signals_hit,
-    signals_total: r.signals_total,
-    semantic_uplift: semanticUplifts[r.id] ?? null,
-    diagnostic:
-      r.score === 0
-        ? bundle.diag_zero
-        : r.id === "portability" && r.signals_hit === 0
-          ? (language.lang === "pt"
-              ? "Portável por construção: nenhum lock-in de fornecedor detectado. Para chegar a 'forte', declare suporte multi-runtime explicitamente (ex: 'validado em Claude, GPT e Gemini')."
-              : "Portable by construction: no vendor lock-in detected. To reach 'strong', declare multi-runtime support explicitly (e.g. 'validated on Claude, GPT and Gemini').")
-          : r.signals_hit === 0
-            ? bundle.diag_no_positive
-            : null,
-  }));
+  const pillars = details.map((r) => {
+    // Portability's 0/N signals + score ~68 baseline is intentional (see
+    // scorePillar: "portable by construction"). Expose that reasoning so the
+    // score isn't perceived as arbitrary. Same for language-fairness caps.
+    const baseline: string | null =
+      r.id === "portability" && r.signals_hit === 0
+        ? "portable_by_construction"
+        : null;
+    return {
+      pillar: r.id,
+      title: bundle.pillar_title[r.id],
+      score: r.score,
+      status: statusBand(r.score),
+      signals_hit: r.signals_hit,
+      signals_total: r.signals_total,
+      semantic_uplift: semanticUplifts[r.id] ?? null,
+      baseline,
+      diagnostic:
+        r.score === 0
+          ? bundle.diag_zero
+          : r.id === "portability" && r.signals_hit === 0
+            ? (language.lang === "pt"
+                ? "Portável por construção: nenhum lock-in de fornecedor detectado (baseline ~68). Para chegar a 'forte', declare suporte multi-runtime explicitamente (ex: 'validado em Claude, GPT e Gemini')."
+                : "Portable by construction: no vendor lock-in detected (baseline ~68). To reach 'strong', declare multi-runtime support explicitly (e.g. 'validated on Claude, GPT and Gemini').")
+            : r.signals_hit === 0
+              ? bundle.diag_no_positive
+              : null,
+    };
+  });
+
 
   const ranked = [...details]
     .map((r) => ({ ...r, impact: r.deficit * (weights[r.id] ?? 1) }))
@@ -1560,6 +1598,20 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
         : null,
       uplifts: Object.entries(semanticUplifts).map(([pillar, u]) => ({ pillar, ...u })),
     },
+    // Explicit plateau signal for non-English content when the semantic pass
+    // couldn't run (gateway blip, disabled, etc.). Without it operators see a
+    // C+ ceiling in PT/ES/FR/DE/IT and assume the engine is broken. This
+    // tells them where the ceiling comes from and what to do next.
+    plateau_reason:
+      language.lang !== "en" && language.lang !== "other" && semantic === null && semantic_check
+        ? {
+            code: "non_english_semantic_pass_unavailable",
+            note:
+              language.lang === "pt"
+                ? "O passe semântico não rodou (gateway indisponível). Em português a análise fica limitada aos detectores determinísticos, que têm cobertura mais estreita que em inglês — teto realista ~65 nessa passagem. Rode novamente em 30-60s para tentar de novo."
+                : "Semantic pass did not run (gateway unavailable). In non-English content the analysis falls back to deterministic detectors, whose coverage is narrower than in English — realistic ceiling ~65 on this pass. Re-run in 30-60s to try again.",
+          }
+        : null,
     language: {
       detected: language.lang,
       confidence: Math.round(language.confidence * 100) / 100,
@@ -1570,6 +1622,7 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
     top_actions: topActions,
     content_hash: contentHash,
   };
+
 
   REVIEW_CACHE.set(cacheKey, { core, at: Date.now() });
   if (REVIEW_CACHE.size > REVIEW_CACHE_MAX) {

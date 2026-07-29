@@ -4,12 +4,15 @@ import { inspectContent } from "@/lib/security/prompt-injection-guard";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { enqueueUploadJobs, type QueuedJob } from "@/lib/uploads/queue.server";
 
-// How many files we attempt inline before queueing the rest. The
-// SkillForge author pipeline can spend 10–30s per file; Vercel's
-// function budget is ~60s. Doing one inline gives the caller immediate
-// confirmation that auth + DB + gateway are working, and the remaining
-// files run on the background queue (drained by cron once a minute).
-const INLINE_BUDGET = 1;
+// How many files we attempt inline before queueing the rest. Set to 0 —
+// the SkillForge author pipeline spends 5-25s per file and any inline work
+// risks blowing the request budget on Cloudflare Workers/Vercel. Queueing
+// everything means the MCP `upload_packages` response returns in <2s with
+// `queued: [...]` and the background worker (drained every ~1min by cron)
+// does the heavy lifting. This eliminated the "response did not match
+// schema" and timeout errors that were breaking the core loop.
+const INLINE_BUDGET = 0;
+
 
 export type UploadFileInput = {
   name: string;

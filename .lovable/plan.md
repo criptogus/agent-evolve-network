@@ -1,105 +1,118 @@
-# Programa de Referral + Mais Canais de Viralização
-
 ## Objetivo
-Transformar cada usuário em um divulgador. Toda URL compartilhada do marketplace (skill, pack, soul, playbook, guardrail) carrega um **código de referral**. Quando alguém novo se cadastra por esse link e vira assinante pago, o divulgador ganha créditos no marketplace.
 
-## 1. Modelo de dados (migrations)
+Fechar o core loop do produto atacando os 3 bloqueadores do Tier 1 na ordem 1→2→3, e resolver a integração Hermes com um script hospedado. Cada passo tem critério de sucesso mensurável.
 
-**`profiles.referral_code`** (text, unique) — código curto (8 chars base32), gerado automaticamente no signup via trigger.
+---
 
-**`referrals`** — eventos de atribuição:
-- `id`, `referrer_id` (uuid), `referred_user_id` (uuid, unique), `code` (text), `landed_at`, `signed_up_at`, `subscribed_at` (nullable), `first_purchase_at` (nullable), `status` (`pending` | `signed_up` | `subscribed` | `rewarded`), `source_url` (text), `package_slug` (nullable).
+## Passo 1 — Consertar `upload_packages` (core loop)
 
-**`referral_rewards`** — recompensas pagas (auditoria, idempotência):
-- `id`, `referral_id` (unique por tipo), `referrer_id`, `kind` (`signup` | `subscription` | `purchase`), `credits`, `ledger_entry_id`, `created_at`.
+**Sintoma:** `No object generated: response did not match schema` + timeout no `upload_packages`.
 
-**RPC `award_referral_credits(_referral_id uuid, _kind text, _credits int)`** — security definer; insere em `credit_ledger` (motivo `promo`, ref_type `referral`) **e** `referral_rewards` numa transação. Idempotente via unique `(referral_id, kind)`.
+**Causa raiz:** `PackageDraftSchema` (108 linhas em `src/lib/skills/schemas.ts`) é muito exigente para o structured-output dos providers:
+- 8 campos top-level, muitos deles obrigatórios com min-length agressivo (`system_prompt >=120`, `long_description >=80`)
+- `examples` exige `>=2` itens, cada um com 4 campos
+- `rules.input_schema` é `z.record(z.any())` — providers em strict mode rejeitam `additionalProperties`
+- Arrays opcionais (`mcp_servers`, `permissions`, `live_resources`) inflam o schema JSON e degradam o modelo
+- Budget de 12s/tentativa não sobra para o modelo gerar ~2KB de JSON válido
 
-**Regras de recompensa (configuráveis em `plans` ou constantes server):**
-- Signup do indicado: **+20 créditos** ao referrer.
-- Indicado vira assinante pago: **+200 créditos** ao referrer + **+50 bônus** ao indicado.
-- Cada compra do indicado nos primeiros 90 dias: **5%** dos créditos pagos vão ao referrer.
+**Fix:**
+1. **`schemas.ts`** — criar `PackageDraftMinimalSchema` só com `{ slug, name, type, description, long_description, system_prompt, examples[>=1] }`. Todos os outros campos viram opcionais e são preenchidos com defaults sensatos no pós-processamento (não no schema do LLM).
+2. **`author.server.ts`** — reescrever `generateDraft`:
+   - Usar `PackageDraftMinimalSchema` no `Output.object`
+   - Aumentar timeout para 25s por tentativa (Vercel/Cloudflare Workers tem 60s; 25×2 tentativas + overhead = 55s)
+   - Trocar ordem: `google/gemini-2.5-flash` primeiro (rápido e barato, suficiente pro schema mínimo) → `google/gemini-2.5-pro` (fallback qualidade) → text fallback já existente
+   - Pós-processar: preencher `rules`, `compatibility`, `scopes` com defaults ANTES de gravar em `packages`/`package_versions`
+3. **`uploads.server.ts`** — mudar `INLINE_BUDGET` de 1 para 0. Ou seja: **tudo vira fila**. O MCP responde em <2s com `queued: [...]` e o worker processa em background. Elimina totalmente o risco de timeout no request principal.
+4. **`packages.upload.ts` (REST)** — mesma coisa: enfileirar em vez de processar inline.
+5. **Migration** — nada novo aqui; a fila `package_upload_jobs` já existe.
 
-Anti-fraude básico: mesmo IP/device do referrer não credita; auto-referral bloqueado; cap mensal de 5.000 créditos por referrer.
+**Critério de sucesso:** subir 3 skills pelo MCP retorna `{queued: 3, uploaded: 0, next_step: "..."}` em <3s, e todas aparecem em `/account/packages` em <2min.
 
-## 2. Captura do código (`?ref=CODE`)
+---
 
-- Componente `ReferralCapture` montado em `__root.tsx`: lê `?ref=` da URL, grava em cookie `sas_ref` (90 dias) **e** localStorage. Não sobrescreve se já houver.
-- No fluxo de signup (`/signup`, OAuth callback): após criar o user, chamar server fn `claimReferral({ code })` que cria a linha em `referrals` com `referrer_id` resolvido pelo código (rejeita auto-referral / já existente).
-- Webhook do Stripe (`api/public/payments/webhook.ts`): ao confirmar primeira assinatura ativa, busca `referrals` desse user e dispara `award_referral_credits` (kind=subscription). Idem em `purchase_package` RPC para a recompensa por compra.
+## Passo 2 — Desbloquear Cloudflare 403 (porta de entrada)
 
-## 3. URLs com referral
+**Sintoma:** `urllib.error.HTTPError: HTTP 403 Access denied (Ray ID: ...)` na primeira chamada MCP de agentes em ambientes Vercel/Replit/Codespaces.
 
-- Helper `buildShareUrl(path, user)` → adiciona `?ref={code}` se houver user logado.
-- Atualizar `ShareOnXButton` para usar esse helper.
-- Atualizar `getSharePromo` para receber a URL já com `ref`.
+**Causa raiz provável:** Cloudflare Bot Fight Mode classifica UAs de runtimes (`python-urllib`, `node-fetch`, `curl` sem TLS handshake fresh) como bots.
 
-## 4. Mais canais de compartilhamento
+**Fix — em camadas, todas server-side (não mexemos no Cloudflare do domínio):**
+1. **`src/routes/api/mcp.ts` e `src/routes/api/public/mcp.health.ts`** — garantir que:
+   - `OPTIONS` retorna 204 com CORS liberado
+   - Responde a `GET` (não só POST) com um payload de `{ ok: true, hint: "POST JSON-RPC..." }` — hoje um GET pode cair no fallback do CF e virar 403 antes de chegar ao Worker
+   - Aceita `User-Agent` vazio ou qualquer UA — sem checagem local
+2. **Novo endpoint público `/api/public/mcp.probe`** que responde 200 a qualquer método com um JSON estático — serve como "health check anônimo" que o cliente NPM (Passo 4) usa antes de mandar chamadas reais. Se o probe passar mas a chamada real falhar, é WAF; se ambos falharem, é rede.
+3. **Documentar em `/docs/mcp`** que `curl -H "Accept: application/json, text/event-stream"` é obrigatório, e recomendar o cliente oficial (Passo 4) para não lidar com SSE parsing.
+4. **NÃO** vou fazer whitelist de IPs no Cloudflare — isso é ação manual no dashboard e o usuário disse que não tem acesso ao Supabase dashboard; presumo mesma coisa para Cloudflare. Se precisar, vou reportar como próximo passo manual.
 
-Componente novo `ShareMenu` (dropdown) substituindo o botão único nas páginas: `/marketplace`, `/marketplace/$packageId`, `/packs/$slug`, `/souls/$slug`.
+**Critério de sucesso:** `curl -X POST https://superagentskill.com/api/mcp` de um IP de Replit retorna 200 (não 403).
 
-Canais:
-- **X (Twitter)** — já existe, manter.
-- **LinkedIn** — `linkedin.com/sharing/share-offsite/?url=...`.
-- **Reddit** — `reddit.com/submit?url=...&title=...`.
-- **WhatsApp** — `wa.me/?text=...` (mobile-first).
-- **Copy link** — copia URL com `?ref=` + toast.
-- **Embed badge** — modal com snippet HTML (`<a><img src="/api/public/badge/{slug}.svg?ref=CODE" /></a>`) — gera SVG dinâmico server-side (rota `/api/public/badge/$slug.svg`) com nome + estrelas + "Get on SuperAgentSkill".
-- **QR code** — modal com QR (lib `qrcode`) da URL com ref, baixável como PNG. Útil para slides/eventos.
+---
 
-Cada canal usa o mesmo `getSharePromo` para texto AI, cacheado por `(slug, channel)`.
+## Passo 3 — Estabilizar semantic pass (diferencial)
 
-## 5. Página `/account/referrals`
+**Sintoma:** `gateway_unavailable_or_errored` + falso positivo do `input_warning` por causa de `...` em code blocks.
 
-Nova rota mostrando:
-- Link pessoal (`https://superagentskill.com/?ref=CODE`) com botão copy.
-- Stats: cliques, signups, assinantes convertidos, créditos ganhos.
-- Tabela `referrals` do usuário (status + data).
-- Leaderboard mensal top-10 referrers (público, opt-in via flag em `profiles`).
+**Causa raiz:**
+- Semantic pass é síncrono e bloqueia a resposta do `review_skill`; qualquer glitch no gateway derruba o pillar
+- Detector de truncamento não distingue `...` dentro de fence de código vs prosa
 
-Adicionar card no `/account/credits` com resumo + CTA "Convide e ganhe".
+**Fix:**
+1. **`src/lib/mcp/tools/skills.ts`** — no `review_skill`:
+   - Ajustar heurística de `input_warning`: só flagar `...` quando aparece fora de code fences (` ``` ... ``` ` e ` ` ` ` `` ` `) E fora de aspas
+   - Wrap do semantic pass em retry (2 tentativas com backoff 500ms) + fallback graceful: se o gateway falhar, retornar `semantic_pass: { status: "unavailable", pillars_affected: [...] }` em vez de matar o report inteiro
+   - Sinalizar no scorecard `plateau_reason: "non_english_content"` quando `lang != "en"` e semantic pass ficou degradado — resolve o item 7 do feedback (transparência PT)
+2. Corrigir a contradição do pillar Portabilidade: se `signals_matched == 0`, forçar `score = baseline` (não 68) — item 8 do feedback.
 
-## 6. Tracking de cliques
+**Critério de sucesso:** rodar `review_skill` no mesmo skill 3x seguidas retorna semantic pass funcionando em ≥2/3 e nunca joga fora o report inteiro por falso positivo.
 
-Rota `/api/public/r/$code` que: registra clique (tabela `referral_clicks` simples: code, ts, ua_hash, ip_hash, target), seta cookie e redireciona para `?ref=CODE` na URL alvo (passada via `?to=`). `ShareMenu` usa essa rota como wrapper opcional para canais onde queremos contar cliques sem JS no destino.
+---
 
-## 7. SEO/OG
+## Passo 4 — Bônus: script Hermes hospedado
 
-`ShareMenu` mantém `og:image` por item (já existe). Embed badge SVG inclui `Cache-Control: public, max-age=300`.
+Cria `src/routes/api/public/install.hermes.sh.ts` que serve um bash script:
+
+```bash
+curl -fsSL https://superagentskill.com/install/hermes.sh | bash
+```
+
+O script:
+1. Detecta o path do `~/.hermes/config.yaml`
+2. Faz backup (`config.yaml.bak.<timestamp>`)
+3. Adiciona um bloco `mcp_servers: superagent-skill: ...` idempotente (não duplica se já existir)
+4. Sugere ao usuário rodar `hermes mcp list` para validar
+
+Também adiciona um botão de copiar comando na `/welcome` para o card do Hermes.
+
+**Critério de sucesso:** rodar o one-liner num Hermes limpo faz a tool `review_skill` aparecer em `hermes mcp list`.
 
 ---
 
 ## Detalhes técnicos
 
-**Arquivos novos:**
-- `supabase/migrations/<ts>_referrals.sql` — tabelas, trigger de `referral_code`, RPC.
-- `src/lib/referrals/referrals.functions.ts` — `claimReferral`, `getMyReferralStats`, `getReferralLeaderboard`.
-- `src/lib/referrals/capture.ts` — leitura de `?ref` + cookie/localStorage.
-- `src/components/referrals/ReferralCapture.tsx` — montado em `__root.tsx`.
-- `src/components/share/ShareMenu.tsx` — dropdown multi-canal, com QR e embed.
-- `src/components/share/ShareBadgeModal.tsx`, `ShareQrModal.tsx`.
-- `src/routes/account.referrals.tsx`.
-- `src/routes/api/public/r.$code.ts` — tracker + redirect.
-- `src/routes/api/public/badge.$slug[.]svg.ts` — SVG dinâmico.
+**Arquivos alterados:**
+- `src/lib/skills/schemas.ts` — novo `PackageDraftMinimalSchema`
+- `src/lib/admin/author.server.ts` — nova ordem de fallback, timeout maior, pós-processamento
+- `src/lib/uploads/uploads.server.ts` — `INLINE_BUDGET = 0`
+- `src/lib/uploads/queue.server.ts` — usar schema minimal
+- `src/lib/mcp/tools/skills.ts` — heurística `...`, retry semantic, fix pillar 0/6
+- `src/routes/api/mcp.ts` — GET response, CORS
+- `src/routes/api/public/mcp.health.ts` — reforçar
+- `src/routes/api/public/mcp.probe.ts` — novo
+- `src/routes/api/public/install.hermes[.]sh.ts` — novo
+- `src/routes/welcome.tsx` — botão do script Hermes
 
-**Arquivos editados:**
-- `src/routes/__root.tsx` — montar `ReferralCapture`.
-- `src/routes/signup.tsx` + OAuth callback — chamar `claimReferral`.
-- `src/routes/api/public/payments/webhook.ts` — disparar reward em `subscription`.
-- `src/lib/credits/credits.functions.ts` (`purchasePackage`) — após compra, conferir referral ativo e dar 5%.
-- `src/lib/share/share-promo.functions.ts` — aceitar `channel`, ajustar prompt por canal.
-- `src/components/share/ShareOnXButton.tsx` — virar wrapper de `ShareMenu` ou ser substituído nas 4 páginas que o usam.
-- `src/components/site/Nav.tsx` ou `account.*` — adicionar link "Referrals".
-- `package.json` — adicionar `qrcode`.
+**Sem migrations novas.** Estruturas de fila já existem.
 
-**Anti-fraude:**
-- Hash de IP via crypto (não armazenar plain).
-- Bloqueio: `referrer_id != referred_user_id`; mesmo `ip_hash` nas últimas 24h reduz peso pra 0.
-- Cap mensal aplicado no RPC `award_referral_credits`.
+**Verificação:** após cada passo, rodar `code--exec bun run typecheck` e testar via `curl` contra o preview.
 
-**Idempotência:** unique `(referral_id, kind)` em `referral_rewards` impede dupla recompensa em retries de webhook.
+---
 
-## Fora de escopo (deixar para depois)
-- Tier system (bronze/silver/gold).
-- Pagamento em dinheiro (apenas créditos por enquanto).
-- Notificações por email ao referrer (pode entrar numa V2 com Resend).
+## Fora do escopo (Tier 2/3, ficam para depois)
+
+- Marketplace seeding com 30-50 skills (item 5)
+- Client oficial `npx superagent-eval` (item 6) — o script Hermes cobre parte disso
+- PR oficial no repo do Hermes
+- Verified badge, pricing freemium, multi-idioma es/fr/de
+
+Confirma este plano? Assim que aprovar, executo os 4 passos em sequência e volto com relatório do que passou/falhou.

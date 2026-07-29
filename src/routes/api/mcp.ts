@@ -361,9 +361,41 @@ export const Route = createFileRoute("/api/mcp")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS_HEADERS }),
-      GET: async ({ request }) => handle(request),
+      // A bare GET is what agents in Vercel/Replit/Codespaces try first as a
+      // sniff test. If we let it fall through to mcp.handleRequest the SDK
+      // returns a JSON-RPC error that some hosts (and the Cloudflare edge
+      // ahead of us) misread as a hostile bot response. Short-circuit with a
+      // friendly 200 that tells the caller how to actually talk to us; the
+      // real POST flow still goes through handle().
+      GET: async ({ request }) => {
+        const accept = request.headers.get("accept") ?? "";
+        // If the client already asks for SSE (session resume), keep the
+        // MCP-SDK behaviour — it needs to establish the stream.
+        if (accept.includes("text/event-stream")) return handle(request);
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            name: "superagentskill",
+            transport: "streamable-http",
+            endpoint: "/api/mcp",
+            usage: "POST JSON-RPC 2.0 payloads to this URL. Set Accept: application/json, text/event-stream.",
+            docs: `${ORIGIN}/docs/mcp`,
+            probe: `${ORIGIN}/api/public/mcp/probe`,
+            ts: new Date().toISOString(),
+          }),
+          {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              "Cache-Control": "no-store",
+              ...CORS_HEADERS,
+            },
+          },
+        );
+      },
       POST: async ({ request }) => handle(request),
       DELETE: async ({ request }) => handle(request),
     },
   },
 });
+
