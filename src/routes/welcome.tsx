@@ -478,7 +478,46 @@ function WelcomePage() {
                     <span className="font-medium text-foreground/80">Note:</span> {client.notes}
                   </p>
                 )}
+
+                {client.docs && (
+                  <div className="mt-6 rounded-xl border border-border bg-background/60 p-4">
+                    <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+                      Docs & examples
+                    </div>
+                    <ul className="mt-3 space-y-1.5 text-sm">
+                      {client.docs.links.map((l) => (
+                        <li key={l.href}>
+                          <a
+                            href={l.href}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 text-foreground/90 underline decoration-border underline-offset-4 hover:text-primary hover:decoration-primary"
+                          >
+                            {l.label}
+                            <span aria-hidden className="text-muted-foreground">↗</span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-4 rounded-md border border-dashed border-border bg-surface/60 p-3">
+                      <div className="mb-1.5 text-xs font-medium text-foreground/80">
+                        {client.docs.example.title}
+                      </div>
+                      <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+                        “{client.docs.example.prompt}”
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => navigator.clipboard?.writeText(client.docs!.example.prompt)}
+                        className="mt-2 inline-flex h-7 items-center rounded border border-border bg-surface-elevated px-2 text-[11px] font-medium hover:bg-accent"
+                      >
+                        Copy example prompt
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
+
 
               <div className="mt-6 flex justify-end">
                 <button
