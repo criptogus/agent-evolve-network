@@ -122,7 +122,9 @@ import { Route as ApiPublicPackagesSlugRouteImport } from './routes/api/public/p
 import { Route as ApiPublicOauthTokenRouteImport } from './routes/api/public/oauth/token'
 import { Route as ApiPublicOauthRevokeRouteImport } from './routes/api/public/oauth/revoke'
 import { Route as ApiPublicOauthRegisterRouteImport } from './routes/api/public/oauth/register'
+import { Route as ApiPublicMcpProbeRouteImport } from './routes/api/public/mcp.probe'
 import { Route as ApiPublicMcpHealthRouteImport } from './routes/api/public/mcp.health'
+import { Route as ApiPublicInstallHermesDotshRouteImport } from './routes/api/public/install.hermes[.]sh'
 import { Route as ApiPublicHooksPrewarmSharePromosRouteImport } from './routes/api/public/hooks/prewarm-share-promos'
 import { Route as ApiPublicCertificationsIdRouteImport } from './routes/api/public/certifications.$id'
 import { Route as ApiPublicDotwellKnownOauthProtectedResourceRouteImport } from './routes/api/public/[.]well-known.oauth-protected-resource'
@@ -707,11 +709,22 @@ const ApiPublicOauthRegisterRoute = ApiPublicOauthRegisterRouteImport.update({
   path: '/api/public/oauth/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicMcpProbeRoute = ApiPublicMcpProbeRouteImport.update({
+  id: '/api/public/mcp/probe',
+  path: '/api/public/mcp/probe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicMcpHealthRoute = ApiPublicMcpHealthRouteImport.update({
   id: '/api/public/mcp/health',
   path: '/api/public/mcp/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicInstallHermesDotshRoute =
+  ApiPublicInstallHermesDotshRouteImport.update({
+    id: '/api/public/install/hermes.sh',
+    path: '/api/public/install/hermes.sh',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksPrewarmSharePromosRoute =
   ApiPublicHooksPrewarmSharePromosRouteImport.update({
     id: '/api/public/hooks/prewarm-share-promos',
@@ -888,7 +901,9 @@ export interface FileRoutesByFullPath {
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
+  '/api/public/install/hermes.sh': typeof ApiPublicInstallHermesDotshRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
+  '/api/public/mcp/probe': typeof ApiPublicMcpProbeRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
   '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
@@ -1014,7 +1029,9 @@ export interface FileRoutesByTo {
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
+  '/api/public/install/hermes.sh': typeof ApiPublicInstallHermesDotshRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
+  '/api/public/mcp/probe': typeof ApiPublicMcpProbeRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
   '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
@@ -1142,7 +1159,9 @@ export interface FileRoutesById {
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
+  '/api/public/install/hermes.sh': typeof ApiPublicInstallHermesDotshRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
+  '/api/public/mcp/probe': typeof ApiPublicMcpProbeRoute
   '/api/public/oauth/register': typeof ApiPublicOauthRegisterRoute
   '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
@@ -1271,7 +1290,9 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
     | '/api/public/hooks/prewarm-share-promos'
+    | '/api/public/install/hermes.sh'
     | '/api/public/mcp/health'
+    | '/api/public/mcp/probe'
     | '/api/public/oauth/register'
     | '/api/public/oauth/revoke'
     | '/api/public/oauth/token'
@@ -1397,7 +1418,9 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
     | '/api/public/hooks/prewarm-share-promos'
+    | '/api/public/install/hermes.sh'
     | '/api/public/mcp/health'
+    | '/api/public/mcp/probe'
     | '/api/public/oauth/register'
     | '/api/public/oauth/revoke'
     | '/api/public/oauth/token'
@@ -1524,7 +1547,9 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
     | '/api/public/hooks/prewarm-share-promos'
+    | '/api/public/install/hermes.sh'
     | '/api/public/mcp/health'
+    | '/api/public/mcp/probe'
     | '/api/public/oauth/register'
     | '/api/public/oauth/revoke'
     | '/api/public/oauth/token'
@@ -1628,7 +1653,9 @@ export interface RootRouteChildren {
   ApiPublicDotwellKnownOauthProtectedResourceRoute: typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   ApiPublicCertificationsIdRoute: typeof ApiPublicCertificationsIdRoute
   ApiPublicHooksPrewarmSharePromosRoute: typeof ApiPublicHooksPrewarmSharePromosRoute
+  ApiPublicInstallHermesDotshRoute: typeof ApiPublicInstallHermesDotshRoute
   ApiPublicMcpHealthRoute: typeof ApiPublicMcpHealthRoute
+  ApiPublicMcpProbeRoute: typeof ApiPublicMcpProbeRoute
   ApiPublicOauthRegisterRoute: typeof ApiPublicOauthRegisterRoute
   ApiPublicOauthRevokeRoute: typeof ApiPublicOauthRevokeRoute
   ApiPublicOauthTokenRoute: typeof ApiPublicOauthTokenRoute
@@ -2437,11 +2464,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicOauthRegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/mcp/probe': {
+      id: '/api/public/mcp/probe'
+      path: '/api/public/mcp/probe'
+      fullPath: '/api/public/mcp/probe'
+      preLoaderRoute: typeof ApiPublicMcpProbeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/mcp/health': {
       id: '/api/public/mcp/health'
       path: '/api/public/mcp/health'
       fullPath: '/api/public/mcp/health'
       preLoaderRoute: typeof ApiPublicMcpHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/install/hermes.sh': {
+      id: '/api/public/install/hermes.sh'
+      path: '/api/public/install/hermes.sh'
+      fullPath: '/api/public/install/hermes.sh'
+      preLoaderRoute: typeof ApiPublicInstallHermesDotshRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/prewarm-share-promos': {
@@ -2773,7 +2814,9 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicDotwellKnownOauthProtectedResourceRoute,
   ApiPublicCertificationsIdRoute: ApiPublicCertificationsIdRoute,
   ApiPublicHooksPrewarmSharePromosRoute: ApiPublicHooksPrewarmSharePromosRoute,
+  ApiPublicInstallHermesDotshRoute: ApiPublicInstallHermesDotshRoute,
   ApiPublicMcpHealthRoute: ApiPublicMcpHealthRoute,
+  ApiPublicMcpProbeRoute: ApiPublicMcpProbeRoute,
   ApiPublicOauthRegisterRoute: ApiPublicOauthRegisterRoute,
   ApiPublicOauthRevokeRoute: ApiPublicOauthRevokeRoute,
   ApiPublicOauthTokenRoute: ApiPublicOauthTokenRoute,

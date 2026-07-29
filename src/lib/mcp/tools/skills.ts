@@ -1598,6 +1598,20 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
         : null,
       uplifts: Object.entries(semanticUplifts).map(([pillar, u]) => ({ pillar, ...u })),
     },
+    // Explicit plateau signal for non-English content when the semantic pass
+    // couldn't run (gateway blip, disabled, etc.). Without it operators see a
+    // C+ ceiling in PT/ES/FR/DE/IT and assume the engine is broken. This
+    // tells them where the ceiling comes from and what to do next.
+    plateau_reason:
+      language.lang !== "en" && language.lang !== "other" && semantic === null && semantic_check
+        ? {
+            code: "non_english_semantic_pass_unavailable",
+            note:
+              language.lang === "pt"
+                ? "O passe semântico não rodou (gateway indisponível). Em português a análise fica limitada aos detectores determinísticos, que têm cobertura mais estreita que em inglês — teto realista ~65 nessa passagem. Rode novamente em 30-60s para tentar de novo."
+                : "Semantic pass did not run (gateway unavailable). In non-English content the analysis falls back to deterministic detectors, whose coverage is narrower than in English — realistic ceiling ~65 on this pass. Re-run in 30-60s to try again.",
+          }
+        : null,
     language: {
       detected: language.lang,
       confidence: Math.round(language.confidence * 100) / 100,
@@ -1608,6 +1622,7 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
     top_actions: topActions,
     content_hash: contentHash,
   };
+
 
   REVIEW_CACHE.set(cacheKey, { core, at: Date.now() });
   if (REVIEW_CACHE.size > REVIEW_CACHE_MAX) {
