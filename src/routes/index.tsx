@@ -6,6 +6,7 @@ import { Hero } from "@/components/site/home/Hero";
 import { CompatibleAgents } from "@/components/site/home/CompatibleAgents";
 import { HowItWorks } from "@/components/site/home/HowItWorks";
 import { Proof } from "@/components/site/home/Proof";
+import { GradeImpact } from "@/components/site/home/GradeImpact";
 import { IndustryDemo } from "@/components/site/home/IndustryDemo";
 import { CoreConcepts } from "@/components/site/home/CoreConcepts";
 import { PlansTeaser } from "@/components/site/home/PlansTeaser";
@@ -133,6 +134,7 @@ function Home() {
       <HowItWorks />
       <IndustryDemo />
       <Proof />
+      <GradeImpact />
       <CoreConcepts />
       <PlansTeaser />
       <Faq />
