@@ -65,7 +65,19 @@ const CLIENTS: Client[] = [
     lang: "bash",
     code: `hermes mcp add super-agent-skill ${ENDPOINT}`,
     notes: "Recommended. Hermes ships MCP on by default — zero config in the UI path.",
+    docs: {
+      links: [
+        { label: "Hermes MCP guide", href: "https://docs.superagentskill.com/hermes/mcp" },
+        { label: "hermes mcp CLI reference", href: "https://docs.superagentskill.com/hermes/cli#mcp" },
+        { label: "Example: research + summary skill", href: "https://docs.superagentskill.com/examples/hermes-research" },
+      ],
+      example: {
+        title: "Try it now in Hermes",
+        prompt: "Use super-agent-skill to find the top-rated research assistant, install it, then summarize the latest paper on MoE routing.",
+      },
+    },
   },
+
   {
     id: "claude-code",
     name: "Claude Code (CLI)",
