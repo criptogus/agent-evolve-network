@@ -108,7 +108,7 @@ const headers = {
   "X-Content-Type-Options": "nosniff",
 };
 
-export const Route = createFileRoute("/api/public/install/hermes.sh")({
+export const Route = createFileRoute("/api/public/install.hermes.sh")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers }),
@@ -117,3 +117,4 @@ export const Route = createFileRoute("/api/public/install/hermes.sh")({
     },
   },
 });
+
