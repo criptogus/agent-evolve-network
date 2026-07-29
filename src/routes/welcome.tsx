@@ -349,6 +349,11 @@ function WelcomePage() {
       <section className="mx-auto max-w-5xl px-6 py-12">
         {/* Step 1 — Pick your AI + config */}
         {step === 1 && (
+          <>
+          <QuickCopyStrip
+            clients={CLIENTS.filter((c) => c.featured)}
+            onFocus={(id) => setActive(id)}
+          />
           <div className="grid gap-8 md:grid-cols-[260px_1fr]">
             <aside>
               <div className="flex items-center gap-2">
