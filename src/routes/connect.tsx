@@ -545,11 +545,12 @@ function ConnectPage() {
             <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">
               One MCP server.
               <br />
-              <span className="text-muted-foreground">Every coding agent.</span>
+              <span className="text-muted-foreground">Every coding agent — Hermes first.</span>
             </h1>
             <p className="mt-4 max-w-xl text-base text-muted-foreground">
-              Plug Super Agent Skill into Lovable, Claude, Cursor, Codex, VS Code, Zed, n8n and any
-              MCP-compatible runtime. Read tools work anonymously — write tools need a token.
+              Hermes is our featured runtime — one <code className="rounded bg-muted px-1 py-0.5 font-mono text-[13px]">curl</code> and
+              you're wired. Claude, Cursor, Codex, VS Code, Zed, n8n and every other
+              MCP-compatible client just below. Read tools are anonymous; write tools take a token.
             </p>
           </div>
 
@@ -574,6 +575,69 @@ function ConnectPage() {
             </div>
           </div>
         </section>
+
+        {/* ============ HERMES SPOTLIGHT ============ */}
+        <section
+          id="hermes"
+          className="mt-10 overflow-hidden rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-surface to-surface p-6 shadow-elevated md:p-8"
+          aria-label="Recommended: Hermes"
+        >
+          <div className="grid gap-6 md:grid-cols-[1.1fr_1fr] md:items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+                <Star className="h-3 w-3 fill-primary" />
+                Recommended runtime · Featured
+              </div>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
+                Hermes × Super Agent Skill
+              </h2>
+              <p className="mt-3 max-w-lg text-sm text-muted-foreground md:text-base">
+                Hermes is our reference agent runtime. It picks up new skills every session,
+                proxies OAuth for write tools, and the installer below is idempotent — safe to
+                re-run any time. If you're deciding what to try first, start here.
+              </p>
+              <ul className="mt-5 grid gap-2 text-sm text-muted-foreground">
+                <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-signal" /> One command · zero JSON · backs up your existing config.</li>
+                <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-signal" /> Auto-refreshes the skill catalog on every session start.</li>
+                <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-signal" /> OAuth-ready for <code className="rounded bg-muted px-1 text-[11px]">upload_packages</code> and other write tools.</li>
+              </ul>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveClient("hermes");
+                    document.getElementById("clients")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-95"
+                >
+                  Full Hermes setup <ArrowRight className="h-4 w-4" />
+                </button>
+                <a
+                  href="https://superagentskill.com/api/public/install.hermes.sh"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                >
+                  <Terminal className="h-4 w-4" /> View install script
+                </a>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-background/60 p-4 shadow-sm backdrop-blur">
+              <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                Paste in your terminal
+              </p>
+              <div className="mt-3">
+                <CodeBlock filename="terminal — safe to re-run" lang="bash" code={HERMES_INSTALL} />
+              </div>
+              <p className="mt-3 text-[11px] text-muted-foreground">
+                Prefers offline verification? Read the script first — it's a signed <code className="font-mono">.sh</code> served
+                from <code className="font-mono">/api/public/</code>, no external redirects.
+              </p>
+            </div>
+          </div>
+        </section>
+
 
         {/* ============ ONE-CLICK INSTALL ============ */}
         <section className="mt-10 rounded-2xl border border-border bg-surface p-6">
