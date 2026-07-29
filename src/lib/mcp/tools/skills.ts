@@ -569,23 +569,23 @@ const SIGNALS: Record<PillarId, Signal[]> = {
   ],
   scope: [
     { w: 1.2, kind: "positive", primary: /\b(use when|use this when|job:|purpose:|when to use|use quando|propósito:|quando usar|usar cuando|propósito:|cuándo usar|utiliser quand|but:|quand utiliser|verwenden wenn|zweck:|wann verwenden|usare quando|scopo:|quando usare)\b/i, secondary: /\b(applies to|aplica-se a|aplica a|s'applique à|gilt für|si applica a)/i },
-    { w: 1, kind: "positive", primary: /\b(trigger|invoke|activate when|gatilho|acionar|ativar quando|disparador|activar cuando|déclencheur|activer quand|auslöser|aktivieren wenn|trigger|attivare quando)\b/i, secondary: /\b(when the user|quando o usuário|cuando el usuario|quand l'utilisateur|wenn der nutzer|quando l'utente)/i },
-    { w: 1, kind: "positive", primary: /\b(anti-trigger|do not use|skip when|not for|anti-gatilho|não usar|pular quando|não para|no usar|saltar cuando|ne pas utiliser|sauter quand|nicht verwenden|überspringen wenn|non usare|saltare quando)\b/i, secondary: /\b(unless|except when|a menos que|exceto quando|a menos que|excepto cuando|sauf si|à moins que|es sei denn|außer wenn|a meno che|tranne quando)/i },
+    { w: 1, kind: "positive", primary: /\b(trigger|invoke|activate when|gatilho|acionar|ativar quando|disparar quando|quando disparar|quando invocar|quando chamar|disparador|activar cuando|déclencheur|activer quand|auslöser|aktivieren wenn|trigger|attivare quando)\b/i, secondary: /\b(when the user|quando o usuário|quando o agente|cuando el usuario|quand l'utilisateur|wenn der nutzer|quando l'utente)/i },
+    { w: 1, kind: "positive", primary: /\b(anti-trigger|do not use|skip when|not for|anti-gatilho|não usar|quando não usar|não use quando|não se aplica|pular quando|não para|no usar|saltar cuando|ne pas utiliser|sauter quand|nicht verwenden|überspringen wenn|non usare|saltare quando)\b/i, secondary: /\b(unless|except when|a menos que|exceto quando|salvo|a menos que|excepto cuando|sauf si|à moins que|es sei denn|außer wenn|a meno che|tranne quando)/i },
     { w: 0.8, kind: "positive", primary: /\b(target user|audience|intended for|público-alvo|audiência|destinado a|usuario objetivo|audiencia|destinado a|utilisateur cible|public|destiné à|zielgruppe|nutzer|bestimmt für|utente target|pubblico|destinato a)/i, secondary: /\b(role of the user|papel do usuário|rol del usuario|rôle de l'utilisateur|rolle des nutzers|ruolo dell'utente)/i },
   ],
   procedure: [
     { w: 1.4, kind: "positive", primary: /^\s*\d+[.)]/m, secondary: /^\s*[-*] /m },
-    { w: 1.1, kind: "positive", primary: /\b(input:|output:|success:|done when|entrada:|saída:|sucesso:|pronto quando|entrada:|salida:|éxito:|hecho cuando|entrée:|sortie:|succès:|terminé quand|eingabe:|ausgabe:|erfolg:|fertig wenn|ingresso:|uscita:|successo:|fatto quando)|✓/i, secondary: /\b(returns?:|produces?:|retorna:|devuelve:|retourne:|gibt zurück:|restituisce:)/i },
+    { w: 1.1, kind: "positive", primary: /\b(input:|output:|success:|done when|entrada:|saída:|recebe:|retorna:|devolve:|sucesso:|pronto quando|entrada:|salida:|éxito:|hecho cuando|entrée:|sortie:|succès:|terminé quand|eingabe:|ausgabe:|erfolg:|fertig wenn|ingresso:|uscita:|successo:|fatto quando)|✓/i, secondary: /\b(returns?:|produces?:|retorna:|produz:|devuelve:|retourne:|gibt zurück:|restituisce:)/i },
     { w: 1, kind: "positive", primary: /\b(if .*(then|→)|otherwise|else if|branch|fork|se .*(então|→)|caso contrário|senão|si .*(entonces|→)|de lo contrario|si .*(alors|→)|sinon|wenn .*(dann|→)|sonst|se .*(allora|→)|altrimenti)/i, secondary: /\b(case|depending on|caso|dependendo|caso|dependiendo|cas|selon|fall|abhängig|caso|a seconda)/i },
     { w: 1, kind: "positive", primary: /\b(stop when|definition of done|finish when|terminate|parar quando|definição de pronto|finalizar quando|parar cuando|definición de hecho|terminar cuando|arrêter quand|définition de terminé|finir quand|stoppen wenn|definition fertig|beenden wenn|fermare quando|definizione di fatto|finire quando)/i, secondary: /\b(until|até|hasta|jusqu'à|bis|finché)/i },
   ],
   examples: [
-    { w: 1.3, kind: "positive", primary: /\b(example|sample|worked|walkthrough|exemplo|amostra|passo a passo|ejemplo|muestra|paso a paso|exemple|échantillon|pas à pas|beispiel|muster|schritt für schritt|esempio|campione|passo passo)/i, secondary: /\b(e\.g\.|for instance|por exemplo|por ejemplo|par exemple|zum beispiel|z\.b\.|ad esempio)/i },
-    { w: 1.2, kind: "positive", primary: /\b(bad example|anti-example|wrong:|fails when|counter-?example|exemplo ruim|errado:|falha quando|contra-?exemplo|mal ejemplo|incorrecto:|falla cuando|contra-?ejemplo|mauvais exemple|incorrect:|échoue quand|contre-?exemple|schlechtes beispiel|falsch:|scheitert wenn|gegenbeispiel|esempio sbagliato|errato:|fallisce quando|controesempio)|❌/i, secondary: /\b(pitfall|mistake|armadilha|erro comum|trampa|error común|piège|erreur|fallstrick|fehler|insidia|errore)/i },
+    { w: 1.3, kind: "positive", primary: /\b(example|sample|worked|walkthrough|exemplo|amostra|passo[- ]a[- ]passo|ejemplo|muestra|paso a paso|exemple|échantillon|pas à pas|beispiel|muster|schritt für schritt|esempio|campione|passo passo)/i, secondary: /\b(e\.g\.|for instance|por exemplo|tipo assim|como por exemplo|por ejemplo|par exemple|zum beispiel|z\.b\.|ad esempio)/i },
+    { w: 1.2, kind: "positive", primary: /\b(bad example|anti-example|wrong:|fails when|counter-?example|exemplo ruim|mau exemplo|exemplo negativo|não faça|errado:|não recomendado|falha quando|contra-?exemplo|mal ejemplo|incorrecto:|falla cuando|contra-?ejemplo|mauvais exemple|incorrect:|échoue quand|contre-?exemple|schlechtes beispiel|falsch:|scheitert wenn|gegenbeispiel|esempio sbagliato|errato:|fallisce quando|controesempio)|❌/i, secondary: /\b(pitfall|mistake|armadilha|erro comum|pegadinha|trampa|error común|piège|erreur|fallstrick|fehler|insidia|errore)/i },
     { w: 1, kind: "positive", primary: /\b(messy|edge case|ambiguous|partial input|real-world|caso extremo|ambíguo|caso real|mundo real|caso límite|ambiguo|entrada parcial|caso real|cas limite|ambigu|entrée partielle|monde réel|grenzfall|mehrdeutig|teileingabe|reale welt|caso limite|ambiguo|input parziale|mondo reale)/i, secondary: /\b(unhappy path|corner case|caminho infeliz|caso de canto|caso de esquina|cas extrême|sonderfall|caso d'angolo)/i },
   ],
   guardrails: [
-    { w: 1.2, kind: "positive", primary: /\b(failure mode|known issue|risk:|pitfall|threat model|modo de falha|problema conhecido|risco:|armadilha|modelo de ameaça|modo de fallo|problema conocido|riesgo:|modelo de amenaza|mode d'échec|problème connu|risque:|modèle de menace|fehlermodus|bekanntes problem|risiko:|bedrohungsmodell|modalità di guasto|problema noto|rischio:|modello di minaccia)/i, secondary: /\b(can go wrong|caveat|pode dar errado|ressalva|puede fallar|salvedad|peut échouer|mise en garde|kann schiefgehen|vorbehalt|può andare male|avvertenza)/i },
+    { w: 1.2, kind: "positive", primary: /\b(failure mode|known issue|risk:|pitfall|threat model|modo de falha|falhas conhecidas|pontos? de falha|problema conhecido|risco:|riscos:|armadilha|modelo de ameaça|modo de fallo|problema conocido|riesgo:|modelo de amenaza|mode d'échec|problème connu|risque:|modèle de menace|fehlermodus|bekanntes problem|risiko:|bedrohungsmodell|modalità di guasto|problema noto|rischio:|modello di minaccia)/i, secondary: /\b(can go wrong|caveat|pode dar errado|pode falhar|ressalva|puede fallar|salvedad|peut échouer|mise en garde|kann schiefgehen|vorbehalt|può andare male|avvertenza)/i },
     { w: 1.2, kind: "positive", primary: /\b(mitigat|prevent|guard against|defen[sc]e|countermeasure|mitiga|preven[ir]|proteger contra|defesa|contramedida|mitigar|prevenir|proteger contra|defensa|contramedida|atténu|prévenir|défense|contre[- ]mesure|abmilder|verhindern|verteidigung|gegenmaßnahme|mitigare|prevenire|difesa|contromisura)/i, secondary: /\b(to avoid|para evitar|para evitar|pour éviter|um zu vermeiden|per evitare)/i },
     { w: 1.3, kind: "positive", primary: /\b(prompt injection|untrusted|treat .* as data|ignore instructions|injeção de prompt|não-confiável|tratar .* como dados|ignorar instruções|inyección de prompt|no confiable|tratar .* como datos|ignorar instrucciones|injection de prompt|non fiable|traiter .* comme des données|ignorer les instructions|prompt[- ]injektion|nicht vertrauenswürdig|als daten behandeln|anweisungen ignorieren|iniezione di prompt|non affidabile|trattare .* come dati|ignorare istruzioni)/i, secondary: /\b(sanitiz|do not follow instructions|sanitiza|não seguir instruções|saniti[zs]ar|no seguir instrucciones|assainir|ne pas suivre les instructions|bereinigen|anweisungen nicht befolgen|sanific|non seguire istruzioni)/i },
     { w: 1, kind: "positive", primary: /\b(pii|secret|redact|do not log|citation|cite sources|lgpd|gdpr|dados pessoais|segredo|redigir|não registrar|citação|citar fontes|datos personales|secreto|redactar|no registrar|cita|citar fuentes|données personnelles|secret|caviarder|ne pas journaliser|citation|citer les sources|personenbezogene daten|geheim|schwärzen|nicht protokollieren|zitat|quellen zitieren|dati personali|segreto|oscurare|non registrare|citazione|citare fonti)\b/i, secondary: /\b(confidential|sensitive data|confidencial|dados sensíveis|confidencial|datos sensibles|confidentiel|données sensibles|vertraulich|sensible daten|confidenziale|dati sensibili)/i },
@@ -593,9 +593,9 @@ const SIGNALS: Record<PillarId, Signal[]> = {
     { w: 1.4, kind: "positive", primary: /\b(deterministic gate|exit code|regression suite|policy engine|opa\b|cedar\b|fail[- ]closed|automated test|external enforcement|gate determinístico|código de saída|suíte de regressão|motor de política|falha[- ]segura|teste automatizado|aplicación externa|puerta determinista|código de salida|suite de regresión|motor de políticas|fallo[- ]seguro|prueba automatizada|porte déterministe|code de sortie|suite de régression|moteur de politique|test automatisé|deterministisches gate|exit-code|regressionssuite|richtlinien-engine|fehlersicher|automatisierter test|gate deterministico|codice di uscita|suite di regressione|motore di policy|fail-safe|test automatizzato)/i, secondary: /\b(regex check|ast check|signed (release|bundle)|verificação por regex|verificação de ast|release assinado|verificación regex|verificación ast|release firmado|vérification regex|version signée|signierter release|controllo regex|release firmato)/i },
   ],
   trust: [
-    { w: 1, kind: "positive", primary: /\b(validated on|tested on|claude|gpt-|gemini|llama|validado em|testado em|validado en|probado en|validé sur|testé sur|validiert auf|getestet auf|validato su|testato su)/i, secondary: /\b(model:|benchmarked|modelo:|avaliado em|modelo:|evaluado|modèle:|évalué|modell:|bewertet|modello:|valutato)/i },
-    { w: 1.1, kind: "positive", primary: /\b(acceptance criteri|success criter|self-eval|self check|critério de aceitação|critério de sucesso|auto-avaliação|criterio de aceptación|criterio de éxito|autoevaluación|critère d'acceptation|critère de succès|auto-évaluation|akzeptanzkriteri|erfolgskriteri|selbstbewertung|criterio di accettazione|criterio di successo|auto-valutazione)/i, secondary: /\b(pass if|must satisfy|aprova se|deve satisfazer|aprueba si|debe satisfacer|réussit si|doit satisfaire|besteht wenn|muss erfüllen|passa se|deve soddisfare)/i },
-    { w: 1.1, kind: "positive", primary: /\b(output schema|return json|structured (output|result)|esquema de saída|retornar json|saída estruturada|esquema de salida|devolver json|salida estructurada|schéma de sortie|retourner json|sortie structurée|ausgabeschema|json zurückgeben|strukturierte ausgabe|schema di output|restituire json|output strutturato)/i, secondary: /\b(named sections|format:|seções nomeadas|formato:|secciones nombradas|formato:|sections nommées|format:|benannte abschnitte|format:|sezioni nominate|formato:)/i },
+    { w: 1, kind: "positive", primary: /\b(validated on|tested on|claude|gpt-|gemini|llama|validado em|testado em|avaliado em|verificado em|homologado em|validado en|probado en|validé sur|testé sur|validiert auf|getestet auf|validato su|testato su)/i, secondary: /\b(model:|benchmarked|modelo:|avaliado em|modelo:|evaluado|modèle:|évalué|modell:|bewertet|modello:|valutato)/i },
+    { w: 1.1, kind: "positive", primary: /\b(acceptance criteri|success criter|self-eval|self check|critério de aceitação|critérios de aceitação|critério de sucesso|auto-avaliação|autoavaliação|criterio de aceptación|criterio de éxito|autoevaluación|critère d'acceptation|critère de succès|auto-évaluation|akzeptanzkriteri|erfolgskriteri|selbstbewertung|criterio di accettazione|criterio di successo|auto-valutazione)/i, secondary: /\b(pass if|must satisfy|aprova se|passa se|deve satisfazer|precisa satisfazer|aprueba si|debe satisfacer|réussit si|doit satisfaire|besteht wenn|muss erfüllen|passa se|deve soddisfare)/i },
+    { w: 1.1, kind: "positive", primary: /\b(output schema|return json|structured (output|result)|esquema de saída|schema de saída|retornar json|devolver json|saída estruturada|output estruturado|resultado estruturado|esquema de salida|devolver json|salida estructurada|schéma de sortie|retourner json|sortie structurée|ausgabeschema|json zurückgeben|strukturierte ausgabe|schema di output|restituire json|output strutturato)/i, secondary: /\b(named sections|format:|seções nomeadas|formato:|secciones nombradas|formato:|sections nommées|format:|benannte abschnitte|format:|sezioni nominate|formato:)/i },
     { w: 0.9, kind: "positive", primary: /\b(report_execution|telemetry|emit metrics|telemetria|emitir métricas|telemetría|emitir métricas|télémétrie|émettre des métriques|telemetrie|metriken senden|telemetria|emettere metriche)/i, secondary: /\b(track success|rastrear sucesso|rastrear éxito|suivre le succès|erfolg verfolgen|tracciare successo)/i },
   ],
   portability: [
@@ -686,7 +686,7 @@ function findEvidence(text: string, re: RegExp): { line: number; excerpt: string
   return { line, excerpt };
 }
 
-function scorePillar(id: PillarId, text: string): PillarDetail {
+function scorePillar(id: PillarId, text: string, lang: Lang = "en"): PillarDetail {
   const signals = SIGNALS[id];
   let earned = 0;
   let total = 0;
@@ -737,9 +737,17 @@ function scorePillar(id: PillarId, text: string): PillarDetail {
   if (id === "portability" && positiveHits === 0 && negativeHits === 0) {
     score = 68;
   } else if (positiveSignals > 0 && positiveHits === 0) {
-    score = Math.min(score, 60);
+    // Language-fairness: the "no positive signals" cap sits at 60 for EN docs,
+    // where the detector has the richest vocabulary coverage. For PT/ES/FR/DE/IT
+    // the detector has narrower coverage by construction, so a native-language
+    // skill can miss keyword hits even when the content is present. Raise the
+    // cap slightly for non-EN docs to close the structural gap; the semantic
+    // pass (see computeReview) then does the substantive re-scoring.
+    const nonEnCap = lang !== "en" && lang !== "other" ? 68 : 60;
+    score = Math.min(score, nonEnCap);
   }
   score = Math.max(0, Math.min(100, score));
+
   return {
     id,
     score,
@@ -769,25 +777,38 @@ function statusBand(n: number): "strong" | "adequate" | "weak" {
 // Cheap heuristic — counts function-words across major Latin-script languages.
 // Used to emit a `language` hint, choose localized messages, and decide a
 // low-confidence caveat. Does NOT alter scoring.
+//
+// Fairness note: PT/ES/FR/DE/IT docs often mix in English technical jargon
+// ("input", "output", "trigger", code blocks), which used to flip detection
+// to "en" — dragging the writer into the EN-only signal path and unfairly
+// depressing their score. Diacritics are language-specific and effectively
+// impossible to fake, so we weight each diacritic hit ×2 and we strip the
+// most generic English function words that also appear verbatim in Latinate
+// languages (`use`, `with`, `from`, `that`, `this`). We also lower the
+// confidence divisor so a well-signed PT/ES/FR doc doesn't get flagged
+// "low-confidence" and pushed toward the EN fallback.
 type Lang = "en" | "pt" | "es" | "fr" | "de" | "it" | "other";
 function detectLanguage(text: string): { lang: Lang; confidence: number } {
   const sample = text.slice(0, 8000).toLowerCase();
+  const wordMatch = (re: RegExp) => (sample.match(re) ?? []).length;
+  const diaMatch = (re: RegExp) => (sample.match(re) ?? []).length;
   const counts: Record<Exclude<Lang, "other">, number> = {
-    en: (sample.match(/\b(the|and|when|use|trigger|example|input|output|scope|values|user|must|should|never|with|from|that|this)\b/g) ?? []).length,
-    pt: (sample.match(/\b(não|você|são|também|então|porque|usuário|exemplo|gatilho|fora|valores|critério|saída|entrada|para|com|está|isso)\b|[ãõçáéíóúâêô]/g) ?? []).length,
-    es: (sample.match(/\b(no|usted|son|también|entonces|porque|usuario|ejemplo|disparador|fuera|valores|criterio|salida|entrada|para|con|está|esto|cuando|debe)\b|[ñáéíóúü¿¡]/g) ?? []).length,
-    fr: (sample.match(/\b(le|la|les|et|ne|pas|vous|êtes|aussi|alors|parce|utilisateur|exemple|déclencheur|valeurs|critère|sortie|entrée|pour|avec|est|cela|quand|doit)\b|[àâçéèêëîïôûùüÿœ]/g) ?? []).length,
-    de: (sample.match(/\b(der|die|das|und|nicht|sie|sind|auch|dann|weil|nutzer|beispiel|auslöser|werte|kriterium|ausgabe|eingabe|für|mit|ist|dies|wenn|muss)\b|[äöüß]/g) ?? []).length,
-    it: (sample.match(/\b(il|la|le|e|non|lei|sei|sono|anche|allora|perché|utente|esempio|trigger|valori|criterio|uscita|ingresso|per|con|è|questo|quando|deve)\b|[àèéìíîòóùú]/g) ?? []).length,
+    en: wordMatch(/\b(the|and|when|trigger|example|input|output|scope|values|user|must|should|never)\b/g),
+    pt: wordMatch(/\b(não|você|são|também|então|porque|usuário|exemplo|gatilho|fora|valores|critério|saída|entrada|para|está|isso|quando|deve|pode|será|seja|tem|têm)\b/g) + 2 * diaMatch(/[ãõçáéíóúâêô]/g),
+    es: wordMatch(/\b(no|usted|son|también|entonces|porque|usuario|ejemplo|disparador|fuera|valores|criterio|salida|entrada|para|está|esto|cuando|debe)\b/g) + 2 * diaMatch(/[ñáéíóúü¿¡]/g),
+    fr: wordMatch(/\b(le|la|les|et|ne|pas|vous|êtes|aussi|alors|parce|utilisateur|exemple|déclencheur|valeurs|critère|sortie|entrée|pour|avec|est|cela|quand|doit)\b/g) + 2 * diaMatch(/[àâçéèêëîïôûùüÿœ]/g),
+    de: wordMatch(/\b(der|die|das|und|nicht|sie|sind|auch|dann|weil|nutzer|beispiel|auslöser|werte|kriterium|ausgabe|eingabe|für|mit|ist|dies|wenn|muss)\b/g) + 2 * diaMatch(/[äöüß]/g),
+    it: wordMatch(/\b(il|la|le|non|lei|sei|sono|anche|allora|perché|utente|esempio|trigger|valori|criterio|uscita|ingresso|per|con|questo|quando|deve)\b/g) + 2 * diaMatch(/[àèéìíîòóù]/g),
   };
   const entries = Object.entries(counts) as Array<[Exclude<Lang, "other">, number]>;
   entries.sort((a, b) => b[1] - a[1]);
   const [topLang, topHits] = entries[0];
   const [, secondHits] = entries[1];
-  if (topHits < 8) return { lang: "other", confidence: 0.3 };
-  if (topHits < secondHits * 1.2) return { lang: "other", confidence: 0.4 };
-  return { lang: topLang, confidence: Math.min(1, topHits / 60) };
+  if (topHits < 6) return { lang: "other", confidence: 0.3 };
+  if (topHits < secondHits * 1.15) return { lang: "other", confidence: 0.4 };
+  return { lang: topLang, confidence: Math.min(1, topHits / 40) };
 }
+
 
 // Localized message bundle. EN is the canonical fallback; other languages
 // override only what's needed. Keys cover everything user-visible from the
@@ -1372,7 +1393,9 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
   const { name, type, content, doc_class, semantic_check, language: languageOverride } = a;
   const ids = Object.keys(PILLAR_TITLE) as PillarId[];
   const weights = TYPE_WEIGHTS[type] ?? TYPE_WEIGHTS.skill;
-  const details = ids.map((id) => scorePillar(id, content));
+  // Detect language BEFORE scoring so scorePillar can apply the language-fairness
+  // cap (non-EN docs get a slightly higher no-positive-signals ceiling to offset
+  // the regex detector's naturally narrower coverage outside English).
   // Caller override wins (confidence 1.0); otherwise fall back to detection.
   const detected = detectLanguage(content);
   const language = languageOverride
@@ -1380,6 +1403,8 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
     : detected;
   const bundle = bundleFor(language.lang);
   const extras = extrasFor(language.lang);
+  const details = ids.map((id) => scorePillar(id, content, language.lang));
+
 
   // Doc class — declared or inferred. Drives ceiling + grade axis.
   const docClass: DocClass = doc_class === "auto" ? inferDocClass(content, type) : doc_class;
@@ -1414,7 +1439,15 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
       const target = Math.round(40 + v.confidence * 45);
       if (target > r.score) {
         const from = r.score;
-        r.score = Math.min(82, target);
+        // Semantic uplift ceiling: EN docs cap at 82 (the deterministic detectors
+        // are richest in EN, so a keyword-blind semantic pass alone shouldn't push
+        // an EN skill to A grade). For non-EN docs the ceiling rises to 90 —
+        // the semantic pass is the primary way a well-written PT/ES/FR/DE/IT
+        // skill demonstrates coverage the (naturally sparser) native-language
+        // regexes miss, so it must be able to reach A on merit.
+        const uplistCap = language.lang !== "en" && language.lang !== "other" ? 90 : 82;
+        r.score = Math.min(uplistCap, target);
+
         r.deficit = 100 - r.score;
         const pillarTotal = r.structural_total + r.content_total;
         if (pillarTotal > 0) {
