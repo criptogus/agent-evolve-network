@@ -59,6 +59,7 @@ import { Route as MarketplaceLeaderboardRouteImport } from './routes/marketplace
 import { Route as MarketplaceCategoriesRouteImport } from './routes/marketplace.categories'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
 import { Route as LegalDisclaimersRouteImport } from './routes/legal.disclaimers'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
 import { Route as ConnectClientRouteImport } from './routes/connect.$client'
 import { Route as ComparePairRouteImport } from './routes/compare.$pair'
@@ -94,6 +95,7 @@ import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './rout
 import { Route as UseCaseVerticalTaskRouteImport } from './routes/use-case.$vertical.$task'
 import { Route as PacksSlugCustomizeRouteImport } from './routes/packs.$slug.customize'
 import { Route as MarketplaceTrustSlugRouteImport } from './routes/marketplace.trust.$slug'
+import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug'
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
@@ -107,6 +109,8 @@ import { Route as ApiAdminAiGatewayProbeRouteImport } from './routes/api/admin/a
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
+import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -380,6 +384,11 @@ const LegalDisclaimersRoute = LegalDisclaimersRouteImport.update({
   path: '/legal/disclaimers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DocsMcpRoute = DocsMcpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
@@ -557,6 +566,11 @@ const MarketplaceTrustSlugRoute = MarketplaceTrustSlugRouteImport.update({
   path: '/marketplace/trust/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
+  id: '/lovable/email/suppression',
+  path: '/lovable/email/suppression',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgeReportSlugRoute = ForgeReportSlugRouteImport.update({
   id: '/report/$slug',
   path: '/report/$slug',
@@ -622,6 +636,18 @@ const AdminImportGithubRoute = AdminImportGithubRouteImport.update({
   path: '/import/github',
   getParentRoute: () => AdminRoute,
 } as any)
+const LovableEmailTransactionalSendRoute =
+  LovableEmailTransactionalSendRouteImport.update({
+    id: '/lovable/email/transactional/send',
+    path: '/lovable/email/transactional/send',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -813,6 +839,7 @@ export interface FileRoutesByFullPath {
   '/compare/$pair': typeof ComparePairRoute
   '/connect/$client': typeof ConnectClientRoute
   '/docs/mcp': typeof DocsMcpRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
@@ -841,6 +868,7 @@ export interface FileRoutesByFullPath {
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
@@ -864,6 +892,8 @@ export interface FileRoutesByFullPath {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -934,6 +964,7 @@ export interface FileRoutesByTo {
   '/compare/$pair': typeof ComparePairRoute
   '/connect/$client': typeof ConnectClientRoute
   '/docs/mcp': typeof DocsMcpRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
@@ -962,6 +993,7 @@ export interface FileRoutesByTo {
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
@@ -985,6 +1017,8 @@ export interface FileRoutesByTo {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1057,6 +1091,7 @@ export interface FileRoutesById {
   '/compare/$pair': typeof ComparePairRoute
   '/connect/$client': typeof ConnectClientRoute
   '/docs/mcp': typeof DocsMcpRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
@@ -1085,6 +1120,7 @@ export interface FileRoutesById {
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/marketplace/trust/$slug': typeof MarketplaceTrustSlugRoute
   '/packs/$slug/customize': typeof PacksSlugCustomizeRoute
   '/use-case/$vertical/$task': typeof UseCaseVerticalTaskRoute
@@ -1108,6 +1144,8 @@ export interface FileRoutesById {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1181,6 +1219,7 @@ export interface FileRouteTypes {
     | '/compare/$pair'
     | '/connect/$client'
     | '/docs/mcp'
+    | '/email/unsubscribe'
     | '/legal/disclaimers'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
@@ -1209,6 +1248,7 @@ export interface FileRouteTypes {
     | '/api/public/telemetry'
     | '/api/public/version'
     | '/forge/report/$slug'
+    | '/lovable/email/suppression'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
     | '/use-case/$vertical/$task'
@@ -1232,6 +1272,8 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
@@ -1302,6 +1344,7 @@ export interface FileRouteTypes {
     | '/compare/$pair'
     | '/connect/$client'
     | '/docs/mcp'
+    | '/email/unsubscribe'
     | '/legal/disclaimers'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
@@ -1330,6 +1373,7 @@ export interface FileRouteTypes {
     | '/api/public/telemetry'
     | '/api/public/version'
     | '/forge/report/$slug'
+    | '/lovable/email/suppression'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
     | '/use-case/$vertical/$task'
@@ -1353,6 +1397,8 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   id:
@@ -1424,6 +1470,7 @@ export interface FileRouteTypes {
     | '/compare/$pair'
     | '/connect/$client'
     | '/docs/mcp'
+    | '/email/unsubscribe'
     | '/legal/disclaimers'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
@@ -1452,6 +1499,7 @@ export interface FileRouteTypes {
     | '/api/public/telemetry'
     | '/api/public/version'
     | '/forge/report/$slug'
+    | '/lovable/email/suppression'
     | '/marketplace/trust/$slug'
     | '/packs/$slug/customize'
     | '/use-case/$vertical/$task'
@@ -1475,6 +1523,8 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
@@ -1532,6 +1582,7 @@ export interface RootRouteChildren {
   ApiTelemetryRoute: typeof ApiTelemetryRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
   ComparePairRoute: typeof ComparePairRoute
+  EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   LegalDisclaimersRoute: typeof LegalDisclaimersRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
   MarketplaceCategoriesRoute: typeof MarketplaceCategoriesRoute
@@ -1554,6 +1605,7 @@ export interface RootRouteChildren {
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
+  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   MarketplaceTrustSlugRoute: typeof MarketplaceTrustSlugRoute
   UseCaseVerticalTaskRoute: typeof UseCaseVerticalTaskRoute
   ApiBadgesCertifiedChar123idChar125DotsvgRoute: typeof ApiBadgesCertifiedChar123idChar125DotsvgRoute
@@ -1573,6 +1625,8 @@ export interface RootRouteChildren {
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
+  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
   ApiBadgesTrustSlugSvgRoute: typeof ApiBadgesTrustSlugSvgRoute
   ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1929,6 +1983,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalDisclaimersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/docs/mcp': {
       id: '/docs/mcp'
       path: '/mcp'
@@ -2174,6 +2235,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketplaceTrustSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forge/report/$slug': {
       id: '/forge/report/$slug'
       path: '/report/$slug'
@@ -2264,6 +2332,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/import/github'
       preLoaderRoute: typeof AdminImportGithubRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
@@ -2634,6 +2716,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTelemetryRoute: ApiTelemetryRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
   ComparePairRoute: ComparePairRoute,
+  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   LegalDisclaimersRoute: LegalDisclaimersRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
   MarketplaceCategoriesRoute: MarketplaceCategoriesRoute,
@@ -2656,6 +2739,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicSearchRoute: ApiPublicSearchRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,
+  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   MarketplaceTrustSlugRoute: MarketplaceTrustSlugRoute,
   UseCaseVerticalTaskRoute: UseCaseVerticalTaskRoute,
   ApiBadgesCertifiedChar123idChar125DotsvgRoute:
@@ -2678,6 +2762,8 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
+  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
   ApiBadgesTrustSlugSvgRoute: ApiBadgesTrustSlugSvgRoute,
   ApiPacksCustomizationIdDownloadExtRoute:
     ApiPacksCustomizationIdDownloadExtRoute,
