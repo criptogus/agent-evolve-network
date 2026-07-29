@@ -41,269 +41,11 @@ type Client = {
   code: string;
   notes?: string;
   featured?: boolean;
+  docs?: {
+    links: { label: string; href: string }[];
+    example: { title: string; prompt: string };
+  };
 };
-
-function QuickCopyStrip({
-  clients,
-  onFocus,
-}: {
-  clients: Client[];
-  onFocus: (id: string) => void;
-}) {
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const copy = async (c: Client) => {
-    try {
-      await navigator.clipboard.writeText(c.code);
-      setCopiedId(c.id);
-      onFocus(c.id);
-      setTimeout(() => setCopiedId((v) => (v === c.id ? null : v)), 1600);
-    } catch {
-      /* noop */
-    }
-  };
-  return (
-    <div className="mb-8 rounded-2xl border border-primary/30 bg-primary/[0.04] p-5">
-      <div className="flex items-center gap-2">
-        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
-          Quick copy
-        </span>
-        <span className="h-px flex-1 bg-primary/20" aria-hidden />
-        <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-          One click → paste in your AI
-        </span>
-      </div>
-      <ul className="mt-4 grid gap-3 md:grid-cols-3">
-        {clients.map((c) => (
-          <li
-            key={c.id}
-            className="flex flex-col gap-3 rounded-xl border border-border bg-background p-4"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-2 text-sm font-semibold">
-                  <span className="text-primary">★</span>
-                  {c.name}
-                </div>
-                <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                  {c.badge.split("·")[0].trim()}
-                </div>
-              </div>
-            </div>
-            <pre className="max-h-20 overflow-hidden rounded-md border border-border bg-[oklch(0.16_0.01_270)] px-3 py-2 font-mono text-[11px] leading-relaxed text-white/80">
-              <code className="line-clamp-3 block">{c.code}</code>
-            </pre>
-            <button
-              onClick={() => copy(c)}
-              aria-label={`Copy ${c.name} install ${c.lang === "json" || c.lang === "toml" ? "config" : "command"}`}
-              className={`inline-flex h-9 items-center justify-center rounded-md px-3 text-xs font-semibold transition-all ${
-                copiedId === c.id
-                  ? "bg-signal/20 text-signal"
-                  : "bg-primary text-primary-foreground hover:opacity-95"
-              }`}
-            >
-              {copiedId === c.id
-                ? "✓ Copied"
-                : `Copy ${c.lang === "json" || c.lang === "toml" || c.lang === "txt" ? "config" : "command"}`}
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-type VerifyState = "idle" | "checking" | "ok" | "fail";
-
-function InstallChecklist({
-  client,
-  verifyState,
-  onVerify,
-}: {
-  client: Client;
-  verifyState: VerifyState;
-  onVerify: () => void;
-}) {
-  // Track checked step indices per-client (persist in localStorage)
-  const storageKey = `sak-welcome-checklist:${client.id}`;
-  const [checked, setChecked] = useState<Set<number>>(new Set());
-  const [pasted, setPasted] = useState(false);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      setChecked(raw ? new Set(JSON.parse(raw) as number[]) : new Set());
-      setPasted(localStorage.getItem(`${storageKey}:pasted`) === "1");
-    } catch {
-      setChecked(new Set());
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client.id]);
-
-  const persist = (next: Set<number>) => {
-    setChecked(next);
-    try {
-      localStorage.setItem(storageKey, JSON.stringify([...next]));
-    } catch {
-      /* noop */
-    }
-  };
-  const toggle = (i: number) => {
-    const next = new Set(checked);
-    next.has(i) ? next.delete(i) : next.add(i);
-    persist(next);
-  };
-  const markPasted = async () => {
-    try {
-      await navigator.clipboard.writeText(client.code);
-    } catch {
-      /* noop */
-    }
-    setPasted(true);
-    try {
-      localStorage.setItem(`${storageKey}:pasted`, "1");
-    } catch {
-      /* noop */
-    }
-  };
-
-  const total = client.steps.length + 2; // steps + paste + verify
-  const done = checked.size + (pasted ? 1 : 0) + (verifyState === "ok" ? 1 : 0);
-  const pct = Math.round((done / total) * 100);
-
-  return (
-    <div className="mt-5">
-      <div className="mb-3 flex items-center justify-between text-xs">
-        <span className="font-mono uppercase tracking-wider text-muted-foreground">
-          Install checklist · {done}/{total}
-        </span>
-        <span className="font-mono text-muted-foreground">{pct}%</span>
-      </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-surface-elevated">
-        <div
-          className="h-full bg-primary transition-all"
-          style={{ width: `${pct}%` }}
-          aria-hidden
-        />
-      </div>
-
-      <ol className="mt-5 space-y-2">
-        {client.steps.map((s, i) => {
-          const isChecked = checked.has(i);
-          return (
-            <li key={i}>
-              <button
-                type="button"
-                onClick={() => toggle(i)}
-                aria-pressed={isChecked}
-                className={`flex w-full items-start gap-3 rounded-lg border p-3 text-left text-sm transition-all ${
-                  isChecked
-                    ? "border-signal/40 bg-signal/5"
-                    : "border-border bg-background hover:border-primary/40 hover:bg-primary/5"
-                }`}
-              >
-                <span
-                  className={`mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-md border font-mono text-[11px] ${
-                    isChecked
-                      ? "border-signal bg-signal text-background"
-                      : "border-border bg-surface text-muted-foreground"
-                  }`}
-                  aria-hidden
-                >
-                  {isChecked ? "✓" : i + 1}
-                </span>
-                <span
-                  className={
-                    isChecked ? "text-muted-foreground line-through" : "text-foreground/90"
-                  }
-                >
-                  {s}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
-
-      <div className="mt-4">
-        <div className="mb-2 flex items-center justify-between text-xs">
-          <span className="font-mono uppercase tracking-wider text-primary">
-            {client.lang === "bash" ? "Command" : "Config"} to paste
-          </span>
-          {pasted && (
-            <span className="font-mono text-signal">✓ Copied</span>
-          )}
-        </div>
-        <CodeBlock code={client.code} lang={client.lang} filename={client.filename} />
-        <button
-          type="button"
-          onClick={markPasted}
-          className={`mt-2 inline-flex h-9 items-center rounded-md px-3 text-xs font-semibold transition-all ${
-            pasted
-              ? "border border-signal/40 bg-signal/10 text-signal"
-              : "bg-primary text-primary-foreground hover:opacity-95"
-          }`}
-        >
-          {pasted ? "✓ Copied — mark step as done" : `Copy & mark as pasted`}
-        </button>
-      </div>
-
-      <div
-        className={`mt-4 rounded-xl border p-4 ${
-          verifyState === "ok"
-            ? "border-signal/40 bg-signal/5"
-            : verifyState === "fail"
-              ? "border-destructive/40 bg-destructive/5"
-              : "border-border bg-background"
-        }`}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <span
-                className={`inline-flex size-5 shrink-0 items-center justify-center rounded-md border font-mono text-[11px] ${
-                  verifyState === "ok"
-                    ? "border-signal bg-signal text-background"
-                    : "border-border bg-surface text-muted-foreground"
-                }`}
-                aria-hidden
-              >
-                {verifyState === "ok" ? "✓" : client.steps.length + 1}
-              </span>
-              Validate the connection
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              We'll ping the MCP gateway from your browser to confirm {client.name} can reach it.
-            </p>
-            {verifyState === "ok" && (
-              <p className="mt-2 text-xs text-signal">
-                ● Endpoint reachable. {client.name} is ready to talk to Super Agent Skill.
-              </p>
-            )}
-            {verifyState === "fail" && (
-              <p className="mt-2 text-xs text-destructive">
-                ● Couldn't reach the endpoint. Check your network or firewall, then retry.
-              </p>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={onVerify}
-            disabled={verifyState === "checking"}
-            className="inline-flex h-9 shrink-0 items-center rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground hover:opacity-95 disabled:opacity-60"
-          >
-            {verifyState === "checking"
-              ? "Checking…"
-              : verifyState === "ok"
-                ? "Re-run check"
-                : "Run check"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
 
 
 const CLIENTS: Client[] = [
@@ -323,7 +65,19 @@ const CLIENTS: Client[] = [
     lang: "bash",
     code: `hermes mcp add super-agent-skill ${ENDPOINT}`,
     notes: "Recommended. Hermes ships MCP on by default — zero config in the UI path.",
+    docs: {
+      links: [
+        { label: "Hermes MCP guide", href: "https://docs.superagentskill.com/hermes/mcp" },
+        { label: "hermes mcp CLI reference", href: "https://docs.superagentskill.com/hermes/cli#mcp" },
+        { label: "Example: research + summary skill", href: "https://docs.superagentskill.com/examples/hermes-research" },
+      ],
+      example: {
+        title: "Try it now in Hermes",
+        prompt: "Use super-agent-skill to find the top-rated research assistant, install it, then summarize the latest paper on MoE routing.",
+      },
+    },
   },
+
   {
     id: "claude-code",
     name: "Claude Code (CLI)",
@@ -334,7 +88,19 @@ const CLIENTS: Client[] = [
     filename: "terminal",
     lang: "bash",
     code: `claude mcp add super-agent-skill ${ENDPOINT}`,
+    docs: {
+      links: [
+        { label: "Claude Code — MCP docs", href: "https://docs.anthropic.com/en/docs/claude-code/mcp" },
+        { label: "claude mcp CLI reference", href: "https://docs.anthropic.com/en/docs/claude-code/cli-reference#mcp" },
+        { label: "Example: code review with SAK skills", href: "https://docs.superagentskill.com/examples/claude-code-review" },
+      ],
+      example: {
+        title: "Try it now in Claude Code",
+        prompt: "Using super-agent-skill, install the 'typescript-reviewer' skill and review the diff in this repo before I commit.",
+      },
+    },
   },
+
   {
     id: "chatgpt",
     name: "ChatGPT",
@@ -354,7 +120,19 @@ const CLIENTS: Client[] = [
 URL:  ${ENDPOINT}
 Auth: None (read-only)`,
     notes: "On Free / Plus, use the prompt method on the next step instead — it works in any chat.",
+    docs: {
+      links: [
+        { label: "ChatGPT custom connectors (MCP)", href: "https://help.openai.com/en/articles/11487775-connectors-in-chatgpt" },
+        { label: "MCP spec — Streamable HTTP", href: "https://modelcontextprotocol.io/specification/2025-06-18/basic/transports" },
+        { label: "Example: research + doc drafting", href: "https://docs.superagentskill.com/examples/chatgpt-research" },
+      ],
+      example: {
+        title: "Try it now in ChatGPT",
+        prompt: "Open the Super Agent Skill connector, install the 'market-researcher' skill, and give me a 5-bullet brief on the EV charger market in Brazil.",
+      },
+    },
   },
+
   {
     id: "claude-desktop",
     name: "Claude Desktop",
@@ -612,11 +390,6 @@ function WelcomePage() {
       <section className="mx-auto max-w-5xl px-6 py-12">
         {/* Step 1 — Pick your AI + config */}
         {step === 1 && (
-          <>
-          <QuickCopyStrip
-            clients={CLIENTS.filter((c) => c.featured)}
-            onFocus={(id) => setActive(id)}
-          />
           <div className="grid gap-8 md:grid-cols-[260px_1fr]">
             <aside>
               <div className="flex items-center gap-2">
@@ -685,18 +458,66 @@ function WelcomePage() {
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{client.blurb}</p>
 
-                <InstallChecklist
-                  client={client}
-                  verifyState={verifyState}
-                  onVerify={checkEndpoint}
-                />
+                <ol className="mt-5 space-y-2 text-sm">
+                  {client.steps.map((s, i) => (
+                    <li key={i} className="flex gap-3">
+                      <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[10px] text-primary">
+                        {i + 1}
+                      </span>
+                      <span className="text-foreground/90">{s}</span>
+                    </li>
+                  ))}
+                </ol>
+
+                <div className="mt-6">
+                  <CodeBlock code={client.code} lang={client.lang} filename={client.filename} />
+                </div>
 
                 {client.notes && (
                   <p className="mt-3 text-xs text-muted-foreground">
                     <span className="font-medium text-foreground/80">Note:</span> {client.notes}
                   </p>
                 )}
+
+                {client.docs && (
+                  <div className="mt-6 rounded-xl border border-border bg-background/60 p-4">
+                    <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+                      Docs & examples
+                    </div>
+                    <ul className="mt-3 space-y-1.5 text-sm">
+                      {client.docs.links.map((l) => (
+                        <li key={l.href}>
+                          <a
+                            href={l.href}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 text-foreground/90 underline decoration-border underline-offset-4 hover:text-primary hover:decoration-primary"
+                          >
+                            {l.label}
+                            <span aria-hidden className="text-muted-foreground">↗</span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-4 rounded-md border border-dashed border-border bg-surface/60 p-3">
+                      <div className="mb-1.5 text-xs font-medium text-foreground/80">
+                        {client.docs.example.title}
+                      </div>
+                      <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+                        “{client.docs.example.prompt}”
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => navigator.clipboard?.writeText(client.docs!.example.prompt)}
+                        className="mt-2 inline-flex h-7 items-center rounded border border-border bg-surface-elevated px-2 text-[11px] font-medium hover:bg-accent"
+                      >
+                        Copy example prompt
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
+
 
               <div className="mt-6 flex justify-end">
                 <button
@@ -708,7 +529,6 @@ function WelcomePage() {
               </div>
             </div>
           </div>
-          </>
         )}
 
         {/* Step 2 — Magic prompt */}
@@ -869,138 +689,7 @@ function WelcomePage() {
         )}
       </section>
 
-      <TroubleshootingFAQ />
-
       <Footer />
-
     </div>
   );
 }
-
-const FAQ_ITEMS: { q: string; a: React.ReactNode }[] = [
-  {
-    q: "O MCP server não aparece na lista do cliente (Claude/ChatGPT/Cursor). O que fazer?",
-    a: (
-      <>
-        <p>Na maioria dos casos é uma das três causas abaixo:</p>
-        <ol className="ml-5 list-decimal space-y-1">
-          <li>O cliente não foi <strong>reiniciado</strong> após colar a config. Feche completamente (não só a janela) e abra de novo.</li>
-          <li>O JSON tem uma <strong>vírgula extra</strong> ou está dentro do bloco errado. Cole exatamente o snippet do passo 1 — sem editar chaves.</li>
-          <li>Há outro MCP com o mesmo <code>name</code>. Renomeie um dos dois para evitar colisão.</li>
-        </ol>
-      </>
-    ),
-  },
-  {
-    q: "Aparece 'connection failed' ou 'unauthorized' ao conectar.",
-    a: (
-      <>
-        <p>Isso quase sempre é token faltando ou expirado:</p>
-        <ul className="ml-5 list-disc space-y-1">
-          <li>Gere um novo token em <Link to="/account" className="underline">/account</Link> e substitua o antigo na config.</li>
-          <li>Confira que o header é <code>Authorization: Bearer &lt;token&gt;</code> — sem aspas ou espaços extras.</li>
-          <li>Se estiver atrás de VPN/proxy corporativo, teste em rede aberta para descartar bloqueio de saída.</li>
-        </ul>
-      </>
-    ),
-  },
-  {
-    q: "As ferramentas aparecem, mas retornam 'tool not available' ou timeout.",
-    a: (
-      <>
-        <p>Rode a <strong>validação de conexão</strong> do checklist no passo 1. Se falhar:</p>
-        <ul className="ml-5 list-disc space-y-1">
-          <li>Verifique o status em <a href="https://status.superagentskill.com" className="underline" target="_blank" rel="noreferrer">status.superagentskill.com</a>.</li>
-          <li>Timeout &gt; 30s costuma ser rede local. Teste <code>curl</code> no endpoint mostrado no bloco de código.</li>
-          <li>Reinstale a skill pelo <Link to="/marketplace" className="underline">/marketplace</Link> — versões antigas podem ter sido despublicadas.</li>
-        </ul>
-      </>
-    ),
-  },
-  {
-    q: "No ChatGPT (Desktop) o conector some depois de reiniciar.",
-    a: (
-      <p>
-        O ChatGPT Desktop exige que o arquivo de config esteja no diretório oficial do app.
-        Confira o caminho exato mostrado no snippet do passo 1 para o seu SO — colar em <code>~/</code> ou na Downloads não funciona.
-      </p>
-    ),
-  },
-  {
-    q: "Claude Code diz 'MCP server crashed' logo ao abrir.",
-    a: (
-      <>
-        <p>Geralmente é a versão do Node ou do runtime local:</p>
-        <ul className="ml-5 list-disc space-y-1">
-          <li>Use Node 20+ (<code>node -v</code>).</li>
-          <li>Rode <code>claude mcp list</code> e depois <code>claude mcp logs superagentskill</code> para ver o stack trace.</li>
-          <li>Se o erro citar <code>ENOTFOUND</code>, é DNS/proxy — não é a nossa API.</li>
-        </ul>
-      </>
-    ),
-  },
-  {
-    q: "Consigo instalar mas nenhuma skill executa. Onde vejo logs?",
-    a: (
-      <p>
-        Toda execução aparece em <Link to="/runs" className="underline">/runs</Link> com input, output e custo. Se a execução nem chega lá, o problema é na
-        camada do cliente MCP — cheque os logs locais dele (varia por app) antes de abrir suporte.
-      </p>
-    ),
-  },
-  {
-    q: "Preciso pagar para testar?",
-    a: (
-      <p>
-        Não. O plano free inclui créditos suficientes para instalar e rodar skills de avaliação. O upgrade só é necessário para volume de produção ou skills premium — detalhes em <Link to="/pricing" className="underline">/pricing</Link>.
-      </p>
-    ),
-  },
-];
-
-function TroubleshootingFAQ() {
-  const [open, setOpen] = useState<number | null>(0);
-  return (
-    <section className="mx-auto max-w-4xl px-6 pb-24">
-      <div className="mb-8 text-center">
-        <h2 className="text-3xl font-semibold tracking-tight">FAQ & Troubleshooting</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          MCP server não apareceu no seu cliente? Comece por aqui.
-        </p>
-      </div>
-      <ul className="space-y-3">
-        {FAQ_ITEMS.map((item, i) => {
-          const isOpen = open === i;
-          return (
-            <li key={i} className="rounded-xl border border-border bg-surface/40">
-              <button
-                type="button"
-                onClick={() => setOpen(isOpen ? null : i)}
-                aria-expanded={isOpen}
-                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
-              >
-                <span className="text-sm font-medium">{item.q}</span>
-                <span className="shrink-0 text-muted-foreground" aria-hidden>
-                  {isOpen ? "−" : "+"}
-                </span>
-              </button>
-              {isOpen && (
-                <div className="space-y-2 border-t border-border px-5 py-4 text-sm text-muted-foreground">
-                  {item.a}
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-      <div className="mt-8 rounded-xl border border-border bg-surface/40 p-5 text-center text-sm">
-        Ainda travado?{" "}
-        <a href="mailto:support@superagentskill.com" className="underline">
-          support@superagentskill.com
-        </a>{" "}
-        — inclua o nome do cliente MCP e a saída da validação do passo 1.
-      </div>
-    </section>
-  );
-}
-
