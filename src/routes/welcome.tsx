@@ -869,7 +869,10 @@ function WelcomePage() {
         )}
       </section>
 
+      <TroubleshootingFAQ />
+
       <Footer />
+
     </div>
   );
 }
