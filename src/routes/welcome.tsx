@@ -454,6 +454,7 @@ function WelcomePage() {
               </div>
             </div>
           </div>
+          </>
         )}
 
         {/* Step 2 — Magic prompt */}
