@@ -41,7 +41,12 @@ type Client = {
   code: string;
   notes?: string;
   featured?: boolean;
+  docs?: {
+    links: { label: string; href: string }[];
+    example: { title: string; prompt: string };
+  };
 };
+
 
 const CLIENTS: Client[] = [
   {
