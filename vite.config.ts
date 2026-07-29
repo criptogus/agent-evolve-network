@@ -6,12 +6,13 @@
 // You can pass additional config via defineConfig({ vite: { ... } }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { loadEnv } from "vite";
+import path from "node:path";
 
 // Force-inline Supabase publishable env into the client bundle.
-// The default Lovable env injection has been observed to miss these on some builds,
-// which causes `Missing Supabase environment variable(s)` runtime crashes on routes
-// that touch the supabase client (e.g. /login). Publishable/anon values are safe to ship.
 const env = loadEnv(process.env.NODE_ENV || "production", process.cwd(), "");
+// Populate process.env for server routes (needs non-VITE_ vars like SUPABASE_SERVICE_ROLE_KEY)
+Object.assign(process.env, env);
+
 const SUPABASE_URL = env.VITE_SUPABASE_URL || env.SUPABASE_URL || "https://ynxuotbjfxkcrfvkrltr.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY =
   env.VITE_SUPABASE_PUBLISHABLE_KEY ||
@@ -29,6 +30,13 @@ export default defineConfig({
       "import.meta.env.VITE_SUPABASE_PROJECT_ID": JSON.stringify(
         env.VITE_SUPABASE_PROJECT_ID || "ynxuotbjfxkcrfvkrltr",
       ),
+    },
+    resolve: {
+      alias: {
+        "entities/lib/decode.js": path.resolve(__dirname, "node_modules/entities/lib/decode.js"),
+        "entities/lib/encode.js": path.resolve(__dirname, "node_modules/entities/lib/encode.js"),
+        "entities": path.resolve(__dirname, "node_modules/entities"),
+      },
     },
   },
 });
