@@ -120,7 +120,19 @@ const CLIENTS: Client[] = [
 URL:  ${ENDPOINT}
 Auth: None (read-only)`,
     notes: "On Free / Plus, use the prompt method on the next step instead — it works in any chat.",
+    docs: {
+      links: [
+        { label: "ChatGPT custom connectors (MCP)", href: "https://help.openai.com/en/articles/11487775-connectors-in-chatgpt" },
+        { label: "MCP spec — Streamable HTTP", href: "https://modelcontextprotocol.io/specification/2025-06-18/basic/transports" },
+        { label: "Example: research + doc drafting", href: "https://docs.superagentskill.com/examples/chatgpt-research" },
+      ],
+      example: {
+        title: "Try it now in ChatGPT",
+        prompt: "Open the Super Agent Skill connector, install the 'market-researcher' skill, and give me a 5-bullet brief on the EV charger market in Brazil.",
+      },
+    },
   },
+
   {
     id: "claude-desktop",
     name: "Claude Desktop",
