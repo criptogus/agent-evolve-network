@@ -57,20 +57,36 @@ export type UploadPackagesInput = {
   files: UploadFile[];
   /** Repeats within 24h replay the original response and DO NOT re-process the files. */
   idempotency_key?: string;
+  /** Validate only: no auth, no persistence, no model spend. */
+  dry_run?: boolean;
 };
+/**
+ * Strict result row. Every key is always present; unset values are `null`.
+ * `status` is authoritative — `queued` means a background job owns the file.
+ */
 export type UploadResultItem = {
+  name: string;
+  status: "done" | "queued" | "failed";
   ok: boolean;
-  slug?: string;
-  name?: string;
-  type?: PrimitiveType;
-  error?: string;
+  type: PrimitiveType | null;
+  slug: string | null;
+  package_id: string | null;
+  job_id: string | null;
+  forge_report_url: string | null;
+  error: string | null;
 };
 export type UploadPackagesOutput = {
+  /** done + queued */
+  accepted: number;
+  /** normalised inline and already persisted as drafts */
   uploaded: number;
+  queued_count: number;
   failed: number;
   visibility: "private_draft";
-  next_step: string;
   results: UploadResultItem[];
+  queued: Array<{ id: string; filename: string; inferred_type: string }>;
+  error_summary: string | null;
+  next_step: string;
   replayed?: true;
 };
 
