@@ -432,45 +432,84 @@ export const uploadPackagesTool = defineTool({
     }
     try {
       // Always private. Marketplace listing requires an explicit user action in the UI.
-      const { results, queued } = await processBulkUpload(supabaseAdmin as any, userId, files);
-      const ok = results.filter((r) => r.ok).length;
-      const failed = results.length - ok;
-      // Surface the per-file errors at the top of the payload too. MCP
-      // clients (and the LLMs reading their output) often render only
-      // the first ~200 chars of a tool response and miss the buried
-      // `results[].error`, leaving users with a generic "failed: N"
-      // and no way to act. The summary line is short enough to survive
-      // truncation and points at the actual root cause.
+      // Hard wall-clock cap: the accept path is queue-only (no model calls),
+      // so anything slower than this is a stuck dependency, not real work.
+      // Returning a schema-valid payload beats letting the host time out at 35s.
+      const TOOL_BUDGET_MS = 20_000;
+      const { results, queued } = await Promise.race([
+        processBulkUpload(supabaseAdmin as any, userId, files),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("accept_timeout: upload queue did not respond in 20s")), TOOL_BUDGET_MS),
+        ),
+      ]);
+      const done = results.filter((r) => r.status === "done").length;
+      const queuedCount = results.filter((r) => r.status === "queued").length;
+      const failed = results.filter((r) => r.status === "failed").length;
       const errorMessages = results
-        .filter((r) => !r.ok)
+        .filter((r) => r.status === "failed")
         .map((r) => `${r.name}: ${r.error ?? "unknown"}`);
-      const response: Record<string, unknown> = {
-        uploaded: ok,
+      // STRICT response shape — every key below is always present, and
+      // `results` always carries exactly one row per input file with an
+      // explicit `status`. Clients (and our SDK types) can validate this
+      // without conditionals.
+      const response = {
+        accepted: done + queuedCount,
+        uploaded: done,
+        queued_count: queuedCount,
         failed,
-        queued_count: queued.length,
-        visibility: "private_draft",
+        visibility: "private_draft" as const,
+        results: results.map((r) => ({
+          name: r.name,
+          status: r.status,
+          ok: r.ok,
+          type: r.type ?? null,
+          slug: r.slug ?? null,
+          package_id: r.package_id ?? null,
+          job_id: r.job_id ?? null,
+          forge_report_url: r.forge_report_url ?? null,
+          error: r.error ?? null,
+        })),
+        queued: queued.map((j) => ({ id: j.id, filename: j.filename, inferred_type: j.inferred_type })),
+        error_summary: errorMessages.length > 0 ? errorMessages.slice(0, 3).join(" · ") : null,
         next_step:
-          queued.length > 0
-            ? `Processed ${ok} inline; ${queued.length} more queued. The background worker normalises queued files within ~1 minute — open /account/packages on superagentskill.com to watch them appear.`
-            : ok > 0
-              ? "Open /account/packages on superagentskill.com to submit a draft for admin review."
-              : "All files failed to normalise. See `error_summary` for the cause and retry.",
-        results,
-        queued,
+          queuedCount > 0
+            ? `${queuedCount} file(s) accepted and queued. The background worker normalises them within ~1 minute — open https://superagentskill.com/account/packages to watch them appear.`
+            : done > 0
+              ? "Open https://superagentskill.com/account/packages to submit a draft for admin review."
+              : "No file was accepted. See `error_summary` for the cause and retry.",
       };
-      if (failed > 0) {
-        response.error_summary = errorMessages.slice(0, 3).join(" · ");
-      }
-      if (idempotency_key && ok > 0) {
-        // Only cache successful runs so a transient model failure doesn't
-        // poison the idempotency key for 24h.
+      if (idempotency_key && response.accepted > 0) {
+        // Only cache runs that accepted at least one file so a transient
+        // failure doesn't poison the idempotency key for 24h.
         await putIdempotent(userId, "upload_packages", idempotency_key, response);
       }
       return json(response);
     } catch (e: any) {
       const msg = e?.message ?? "upload_failed";
       console.error(`[mcp.upload_packages] user=${userId} unexpected:`, e);
-      return json({ error: msg });
+      // Keep the failure inside the same shape so hosts that validate the
+      // tool output don't report "response did not match schema".
+      return json({
+        accepted: 0,
+        uploaded: 0,
+        queued_count: 0,
+        failed: files.length,
+        visibility: "private_draft" as const,
+        results: files.map((f) => ({
+          name: f.name,
+          status: "failed" as const,
+          ok: false,
+          type: f.type ?? null,
+          slug: null,
+          package_id: null,
+          job_id: null,
+          forge_report_url: null,
+          error: msg,
+        })),
+        queued: [],
+        error_summary: msg,
+        next_step: "Upload failed before anything was persisted. Retry with the same idempotency_key.",
+      });
     }
   },
 });
