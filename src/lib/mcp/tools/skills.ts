@@ -605,18 +605,30 @@ function inputWarning(text: string): "short_input" | "summary_markers" | "outlin
   // example — NOT a signal that the document was truncated. Scanning the raw
   // text was producing false-positive `summary_markers` warnings that killed
   // the semantic pass on otherwise valid skills.
+  // Also strip YAML frontmatter: `description: "algo — condensado"` is normal
+  // metadata prose, not evidence that the body was cut. Em dashes and inline
+  // ellipses are never markers on their own.
   const prose = t
+    .replace(/^---\n[\s\S]*?\n---/, " ")
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/`[^`\n]*`/g, " ");
-  if (/(\[truncated\]|\[\.\.\.\]|truncated for brevity|condensed|abbreviated|resumido|truncado|condensado|abrégé|tronqué|gekürzt|abgekürzt|troncato|abbreviato)/i.test(prose)) {
+  // Only bracketed / explicit elision phrases count. Bare words like
+  // "condensed", "resumido" or "abbreviated" appear constantly in legitimate
+  // prose ("a condensed deal memo"), so they no longer trip the warning.
+  if (
+    /(\[truncated\]|\[\.\.\.\]|\[…\]|\[snip\]|\[omitted\]|\[resumido\]|\[truncado\]|truncated for brevity|omitted for brevity|rest omitted|remainder omitted|resto omitido|omitido por brevidade|abgeschnitten für kürze|tronqué par souci de brièveté)/i.test(
+      prose,
+    )
+  ) {
     return "summary_markers";
   }
   // A bare `...` only counts as a truncation marker when it stands alone on
   // its own line (or line-end) — that's the classic "…rest omitted…" pattern.
   // Prose ellipses in the middle of a sentence don't qualify.
-  if (/(^|\n)\s*\.{3,}\s*($|\n)/.test(prose)) {
+  if (/(^|\n)\s*(\.{3,}|…)\s*($|\n)/.test(prose)) {
     return "summary_markers";
   }
+
   const lines = t.split("\n");
   const headings = lines.filter((l) => /^#{1,6}\s/.test(l)).length;
   // Content lines include bullets and numbered list items — skills are
