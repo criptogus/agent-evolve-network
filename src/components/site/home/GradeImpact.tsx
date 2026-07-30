@@ -169,7 +169,9 @@ export function GradeImpact() {
                 className="grid grid-cols-2 gap-2 px-5 py-4 md:grid-cols-12 md:items-center md:gap-4"
               >
                 <div className="col-span-2 md:col-span-5">
-                  <div className="text-sm font-semibold text-foreground">{row.metric}</div>
+                  <div className="text-sm font-semibold text-foreground">
+                    <MetricTip label={row.metric} tip={row.tip} />
+                  </div>
                   <div className="mt-0.5 text-xs text-muted-foreground">{row.detail}</div>
                 </div>
                 <div className="md:col-span-2 md:text-right">
