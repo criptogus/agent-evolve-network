@@ -23,6 +23,13 @@ export type UploadFileInput = {
 export type UploadResult = {
   name: string;
   ok: boolean;
+  /**
+   * Explicit lifecycle state so the caller never has to infer it from
+   * `ok`+absence of fields. `queued` means the file was accepted and a
+   * background job owns it (poll /account/packages).
+   */
+  status: "done" | "failed" | "queued";
+  job_id?: string;
   package_id?: string;
   slug?: string;
   type?: string;
