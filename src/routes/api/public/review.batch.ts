@@ -167,7 +167,7 @@ export const Route = createFileRoute("/api/public/review/batch")({
             {
               ok: false,
               error: "too_many_items",
-              message: ``items` holds ${rawItems.length} documents; the maximum is ${MAX_ITEMS} per request. Split the batch.`,
+              message: `\`items\` holds ${rawItems.length} documents; the maximum is ${MAX_ITEMS} per request. Split the batch.`,
             },
             413,
           );
