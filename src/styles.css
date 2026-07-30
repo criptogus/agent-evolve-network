@@ -249,6 +249,23 @@
   }
   .fade-up { animation: fade-up 0.6s ease-out both; }
 
+  /* Cinematic chart reveal utilities */
+  .chart-fade { animation: chart-fade 0.8s ease-out both; }
+  .chart-slide-up { animation: chart-slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .chart-slide-right { animation: chart-slide-right 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .chart-grow-up { animation: chart-grow-up 1s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .chart-scale-in { animation: chart-scale-in 0.6s ease-out both; }
+
+  .chart-delay-100 { animation-delay: 100ms; }
+  .chart-delay-200 { animation-delay: 200ms; }
+  .chart-delay-300 { animation-delay: 300ms; }
+  .chart-delay-400 { animation-delay: 400ms; }
+  .chart-delay-500 { animation-delay: 500ms; }
+  .chart-delay-600 { animation-delay: 600ms; }
+  .chart-delay-700 { animation-delay: 700ms; }
+  .chart-delay-800 { animation-delay: 800ms; }
+  .chart-delay-900 { animation-delay: 900ms; }
+
   /* Skip link for keyboard users */
   .skip-link {
     position: absolute;
