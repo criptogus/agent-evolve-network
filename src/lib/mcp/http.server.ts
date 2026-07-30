@@ -23,6 +23,7 @@ import {
   cloudSkillsExportTool,
   cloudSkillsImportTool,
 } from "@/lib/mcp/tools/cloud-skills";
+import { listAgentsTool, installAgentTool } from "@/lib/mcp/tools/agents";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
 import { ORIGIN, sha256, CORS_HEADERS } from "@/lib/oauth/mcp-oauth.server";
@@ -80,6 +81,11 @@ const mcp = createMcpServer({
     "  - `cloud_skills_import` to import a SKILL.md file into your cloud library.",
     "  - `cloud_skills_delete` to remove a skill from your library.",
     "",
+    "## 5. AGENT STORE (paid subscribers only)",
+    "Ready-to-use agents bundling a soul + skills + playbooks: CEO, COO, CTO, CMO, HR Director, Agent Architect, Corporate Finance, Board Meetings, Google Ads, Meta Ads, Newsletter, LinkedIn, X.",
+    "  - `list_agents` to browse the catalog (free, anonymous).",
+    "  - `install_agent` to get the full bundle as files to write into the user's repo (default `.agents/<slug>/`), or as a single system prompt.",
+    "",
     "## Auth",
     "Read-only tools (overview, get_methodology, review_skill, review_skills_batch, list/search/get/trust) work anonymously. Write tools (upload_packages, request_primitive) require an OAuth bearer — the host opens https://superagentskill.com/oauth/authorize automatically. Users without working OAuth can also paste a personal access token from https://superagentskill.com/account/tokens. TIP: call upload_packages / request_primitive with dry_run:true to validate the flow anonymously (no persistence, no OAuth) before connecting.",
     "",
@@ -109,6 +115,8 @@ const mcp = createMcpServer({
     cloudSkillsDeleteTool,
     cloudSkillsExportTool,
     cloudSkillsImportTool,
+    listAgentsTool,
+    installAgentTool,
   ],
 });
 
@@ -213,7 +221,7 @@ const WRITE_TOOLS = new Set(["upload_packages", "request_primitive"]);
 // Tools that are SO cheap / discovery-oriented they don't count against quota.
 // `report_execution` is included so post-run telemetry is truly best-effort
 // and never blocks a user's flow on quota.
-const FREE_TOOLS = new Set(["overview", "get_methodology", "report_execution"]);
+const FREE_TOOLS = new Set(["overview", "get_methodology", "report_execution", "list_agents"]);
 
 /** Stable, hashed identity for quota bucketing. */
 function quotaIdentity(userId: string | null, request: Request): string {
