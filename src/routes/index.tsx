@@ -6,6 +6,7 @@ import { Hero } from "@/components/site/home/Hero";
 import { CompatibleAgents } from "@/components/site/home/CompatibleAgents";
 import { HowItWorks } from "@/components/site/home/HowItWorks";
 import { Proof } from "@/components/site/home/Proof";
+import { SecurityPromise } from "@/components/site/home/SecurityPromise";
 import { GradeImpact } from "@/components/site/home/GradeImpact";
 import { IndustryDemo } from "@/components/site/home/IndustryDemo";
 import { CoreConcepts } from "@/components/site/home/CoreConcepts";
@@ -137,6 +138,9 @@ function Home() {
       <HowItWorks />
       <IndustryDemo />
       <Proof />
+      {/* IP / security objection — address the fear of uploading proprietary
+          skills before the visitor reaches pricing or the FAQ. */}
+      <SecurityPromise />
       <CoreConcepts />
       <PlansTeaser />
       <Faq />
