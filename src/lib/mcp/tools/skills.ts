@@ -8,6 +8,7 @@ import { processBulkUpload, previewUpload } from "@/lib/uploads/uploads.server";
 import { getGatewayModel } from "@/lib/ai-gateway";
 import { getIdempotent, putIdempotent } from "@/lib/mcp/idempotency";
 import { twoProportionUplift } from "@/lib/experiments/uplift";
+import { projectImpact, projectionToText } from "@/lib/skills/impact-projection";
 
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 
