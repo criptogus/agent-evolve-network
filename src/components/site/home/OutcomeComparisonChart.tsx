@@ -163,10 +163,10 @@ export function OutcomeComparisonChart() {
               badge: "F · no proof",
               tone: "baseline",
               rows: [
-                { k: "Completion rate", v: "42%", s: "of runs finish the task" },
-                { k: "Human intervention", v: "49%", s: "of runs need a rescue" },
-                { k: "Latency saved", v: "0s", s: "vs. workspace baseline" },
-                { k: "Tokens saved", v: "0", s: "18,400 avg. per task" },
+                { k: "Completion rate", v: "42%", s: "of runs finish the task", tip: "Percentage of production executions that reached the stated end-state without crashing or giving up." },
+                { k: "Human intervention", v: "49%", s: "of runs need a rescue", tip: "Runs where a human had to rewrite the prompt, correct output, or restart the agent." },
+                { k: "Latency saved", v: "0s", s: "vs. workspace baseline", tip: "Difference between the skill's p95 latency and the workspace's own baseline for the same task." },
+                { k: "Tokens saved", v: "0", s: "18,400 avg. per task", tip: "Average input + output tokens consumed to complete one task." },
               ],
             },
             {
@@ -175,10 +175,10 @@ export function OutcomeComparisonChart() {
               badge: "A · certified",
               tone: "sak",
               rows: [
-                { k: "Completion rate", v: "94%", s: "of runs finish the task" },
-                { k: "Human intervention", v: "4%", s: "of runs need a rescue" },
-                { k: "Latency saved", v: "−35.2s", s: "p95 42s → 6.8s" },
-                { k: "Tokens saved", v: "−14,300", s: "4,100 avg. per task" },
+                { k: "Completion rate", v: "94%", s: "of runs finish the task", tip: "Percentage of production executions that reached the stated end-state without crashing or giving up." },
+                { k: "Human intervention", v: "4%", s: "of runs need a rescue", tip: "Runs where a human had to rewrite the prompt, correct output, or restart the agent." },
+                { k: "Latency saved", v: "−35.2s", s: "p95 42s → 6.8s", tip: "Difference between the skill's p95 latency and the workspace's own baseline for the same task." },
+                { k: "Tokens saved", v: "−14,300", s: "4,100 avg. per task", tip: "Average input + output tokens consumed to complete one task." },
               ],
             },
           ] as const
