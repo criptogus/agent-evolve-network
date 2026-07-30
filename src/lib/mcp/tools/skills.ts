@@ -1386,12 +1386,26 @@ function extrasFor(lang: Lang): Extras {
 // the pure keyword score if the gateway is unavailable, the call errors, or
 // the response shape is malformed — the engine never degrades on outage.
 // ----------------------------------------------------------------------------
+type SubstanceExcerpt = { line: number | null; quote: string; verified: boolean };
+
 type SemanticPillarVerdict = {
   pillar: PillarId;
   covered: boolean;
   confidence: number;
   evidence_line: number | null;
   evidence_quote: string | null;
+  /** LLM-judged substance, 0-100, independent from the deterministic format signals. */
+  substance_score: number;
+  /** Plain-text justification, written in the document's language. */
+  rationale: string;
+  /** Passages from the file that sustain the judgement. */
+  excerpts: SubstanceExcerpt[];
+};
+
+type SubstancePass = {
+  verdicts: Map<PillarId, SemanticPillarVerdict>;
+  /** Document-level justification, written in the document's language. */
+  summary: string;
 };
 
 const SEMANTIC_MODEL = "google/gemini-3-flash-preview";
