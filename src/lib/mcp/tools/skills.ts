@@ -886,12 +886,42 @@ function detectLanguage(text: string): { lang: Lang; confidence: number } {
     de: wordMatch(/\b(der|die|das|und|nicht|sie|sind|auch|dann|weil|nutzer|beispiel|auslöser|werte|kriterium|ausgabe|eingabe|für|mit|ist|dies|wenn|muss)\b/g) + 2 * diaMatch(/[äöüß]/g),
     it: wordMatch(/\b(il|la|le|non|lei|sei|sono|anche|allora|perché|utente|esempio|trigger|valori|criterio|uscita|ingresso|per|con|questo|quando|deve)\b/g) + 2 * diaMatch(/[àèéìíîòóù]/g),
   };
+  // Diacritic hits per language, kept separate from the blended counts.
+  // Technical docs in PT/ES/FR/DE/IT are saturated with English jargon
+  // ("input", "output", "trigger", code identifiers), which used to push EN
+  // into a near-tie and drop the doc into "other" (confidence 0.4) — the
+  // exact failure a client reported for an 841-line Portuguese skill.
+  // Diacritics cannot be faked by jargon, so they are the tie-breaker.
+  const dia: Record<Exclude<Lang, "other" | "en">, number> = {
+    pt: diaMatch(/[ãõçáéíóúâêô]/g),
+    es: diaMatch(/[ñáéíóúü¿¡]/g),
+    fr: diaMatch(/[àâçéèêëîïôûùüÿœ]/g),
+    de: diaMatch(/[äöüß]/g),
+    it: diaMatch(/[àèéìíîòóù]/g),
+  };
   const entries = Object.entries(counts) as Array<[Exclude<Lang, "other">, number]>;
   entries.sort((a, b) => b[1] - a[1]);
   const [topLang, topHits] = entries[0];
-  const [, secondHits] = entries[1];
-  if (topHits < 6) return { lang: "other", confidence: 0.3 };
-  if (topHits < secondHits * 1.15) return { lang: "other", confidence: 0.4 };
+  const [secondLang, secondHits] = entries[1];
+  const bestDia = (Object.entries(dia) as Array<[Exclude<Lang, "other" | "en">, number]>).sort(
+    (a, b) => b[1] - a[1],
+  )[0];
+  if (topHits < 6) {
+    // Too few function-word hits to call it — unless diacritics alone are
+    // decisive (short but clearly accented docs).
+    if (bestDia && bestDia[1] >= 8) return { lang: bestDia[0], confidence: 0.6 };
+    return { lang: "other", confidence: 0.3 };
+  }
+  if (topHits < secondHits * 1.15) {
+    // Near-tie. If one side has real diacritic evidence, it wins — an EN doc
+    // has essentially zero diacritics, so a tie between EN and an accented
+    // language is not ambiguity, it's jargon noise.
+    const contender = topLang === "en" ? secondLang : topLang;
+    if (contender !== "en" && (dia[contender as keyof typeof dia] ?? 0) >= 4) {
+      return { lang: contender, confidence: Math.min(1, counts[contender] / 30) };
+    }
+    return { lang: "other", confidence: 0.4 };
+  }
   return { lang: topLang, confidence: Math.min(1, topHits / 40) };
 }
 
@@ -1522,10 +1552,10 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
   // truncation warnings (short_input / summary_markers) block it; an
   // `outline_only` hint is soft and is exactly where the pass adds most value.
   const blocksSemantic = warnKind === "short_input" || warnKind === "summary_markers";
-  const semantic =
-    semantic_check && !blocksSemantic && content.length >= 400
-      ? await semanticCheck(content, language.lang)
-      : null;
+  const semanticEligible = semantic_check && !blocksSemantic && content.length >= 400;
+  const semantic = semanticEligible ? await semanticCheck(content, language.lang) : null;
+  // Eligible but null ⇒ the gateway errored after retries — a degraded run.
+  const semanticFailed = semanticEligible && semantic === null;
 
   // Apply semantic uplift to pillar scores (never lowers a score).
   const semanticUplifts: Record<string, { from: number; to: number; confidence: number }> = {};
@@ -1660,11 +1690,20 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
     verdict_score: verdictScore,
     grade: gradeBand(verdictScore),
     axis_note: extras.axis_caveat,
+    // A gateway failure must never masquerade as a definitive verdict: the
+    // deterministic-only score can sit ±20 below a semantically-judged one,
+    // which reads as "the score is random" to the operator. `partial: true`
+    // says loudly that this run is a lower bound, and partial results are
+    // never cached so an immediate retry gets a fresh semantic attempt.
+    partial: semanticFailed,
     semantic_pass: {
       ran: semantic !== null,
       model: semantic !== null ? SEMANTIC_MODEL : null,
       skipped_reason: semantic === null
         ? (!semantic_check ? "disabled_by_caller" : blocksSemantic ? "input_warning" : content.length < 400 ? "content_too_short" : "gateway_unavailable_or_errored")
+        : null,
+      warning: semanticFailed
+        ? "PARTIAL RESULT: the semantic pass errored, so this score reflects deterministic detectors only and is a LOWER BOUND — treat it as provisional and re-run in 30-60s. It was not cached."
         : null,
       uplifts: Object.entries(semanticUplifts).map(([pillar, u]) => ({ pillar, ...u })),
     },
@@ -1694,7 +1733,9 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
   };
 
 
-  REVIEW_CACHE.set(cacheKey, { core, at: Date.now() });
+  // Never cache a partial (semantic-degraded) result: a retry moments later
+  // deserves a fresh semantic attempt, not a 10-minute-cached lower bound.
+  if (!semanticFailed) REVIEW_CACHE.set(cacheKey, { core, at: Date.now() });
   if (REVIEW_CACHE.size > REVIEW_CACHE_MAX) {
     const oldest = REVIEW_CACHE.keys().next().value;
     if (oldest !== undefined) REVIEW_CACHE.delete(oldest);

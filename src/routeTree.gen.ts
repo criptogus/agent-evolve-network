@@ -74,6 +74,7 @@ import { Route as AdminReviewReportsRouteImport } from './routes/admin.review-re
 import { Route as AdminRoiRouteImport } from './routes/admin.roi'
 import { Route as AgentsMdRouteImport } from './routes/agents.md'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
+import { Route as ApiReviewRouteImport } from './routes/api/review'
 import { Route as ApiTelemetryRouteImport } from './routes/api/telemetry'
 import { Route as BountiesIdRouteImport } from './routes/bounties.$id'
 import { Route as BountiesNewRouteImport } from './routes/bounties.new'
@@ -466,6 +467,11 @@ const AgentsMdRoute = AgentsMdRouteImport.update({
 const ApiMcpRoute = ApiMcpRouteImport.update({
   id: '/api/mcp',
   path: '/api/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReviewRoute = ApiReviewRouteImport.update({
+  id: '/api/review',
+  path: '/api/review',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTelemetryRoute = ApiTelemetryRouteImport.update({
@@ -879,6 +885,7 @@ export interface FileRoutesByFullPath {
   '/admin/roi': typeof AdminRoiRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRouteWithChildren
+  '/api/review': typeof ApiReviewRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/bounties/$id': typeof BountiesIdRoute
   '/bounties/new': typeof BountiesNewRoute
@@ -1011,6 +1018,7 @@ export interface FileRoutesByTo {
   '/admin/roi': typeof AdminRoiRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRouteWithChildren
+  '/api/review': typeof ApiReviewRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/bounties/$id': typeof BountiesIdRoute
   '/bounties/new': typeof BountiesNewRoute
@@ -1145,6 +1153,7 @@ export interface FileRoutesById {
   '/admin/roi': typeof AdminRoiRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRouteWithChildren
+  '/api/review': typeof ApiReviewRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/bounties/$id': typeof BountiesIdRoute
   '/bounties/new': typeof BountiesNewRoute
@@ -1280,6 +1289,7 @@ export interface FileRouteTypes {
     | '/admin/roi'
     | '/agents/md'
     | '/api/mcp'
+    | '/api/review'
     | '/api/telemetry'
     | '/bounties/$id'
     | '/bounties/new'
@@ -1412,6 +1422,7 @@ export interface FileRouteTypes {
     | '/admin/roi'
     | '/agents/md'
     | '/api/mcp'
+    | '/api/review'
     | '/api/telemetry'
     | '/bounties/$id'
     | '/bounties/new'
@@ -1545,6 +1556,7 @@ export interface FileRouteTypes {
     | '/admin/roi'
     | '/agents/md'
     | '/api/mcp'
+    | '/api/review'
     | '/api/telemetry'
     | '/bounties/$id'
     | '/bounties/new'
@@ -1667,6 +1679,7 @@ export interface RootRouteChildren {
   AccountUsageRoute: typeof AccountUsageRoute
   AgentsMdRoute: typeof AgentsMdRoute
   ApiMcpRoute: typeof ApiMcpRouteWithChildren
+  ApiReviewRoute: typeof ApiReviewRoute
   ApiTelemetryRoute: typeof ApiTelemetryRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
   ComparePairRoute: typeof ComparePairRoute
@@ -2175,6 +2188,13 @@ declare module '@tanstack/react-router' {
       path: '/api/mcp'
       fullPath: '/api/mcp'
       preLoaderRoute: typeof ApiMcpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/review': {
+      id: '/api/review'
+      path: '/api/review'
+      fullPath: '/api/review'
+      preLoaderRoute: typeof ApiReviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/telemetry': {
@@ -2870,6 +2890,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountUsageRoute: AccountUsageRoute,
   AgentsMdRoute: AgentsMdRoute,
   ApiMcpRoute: ApiMcpRouteWithChildren,
+  ApiReviewRoute: ApiReviewRoute,
   ApiTelemetryRoute: ApiTelemetryRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
   ComparePairRoute: ComparePairRoute,

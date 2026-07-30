@@ -154,16 +154,44 @@ export async function processBulkUpload(
     }
     results.push(out);
   }
+  // Validate BEFORE enqueueing: run the deterministic, zero-cost checks (type
+  // inference + prompt-injection guard) synchronously so the caller learns in
+  // this response whether each file was accepted — instead of watching a
+  // queued job die minutes later. Rejected files never enter the queue; the
+  // heavy LLM normalisation stays async in the worker.
+  const accepted: typeof overflow = [];
+  for (const f of overflow) {
+    const guard = inspectContent(f.content, { rejectAtOrAbove: "high", fence: true });
+    if (guard.rejected) {
+      try {
+        await (supabaseAdmin as any).from("upload_injection_audit").insert({
+          user_id: userId,
+          filename: f.name,
+          inferred_type: f.type ?? inferType(f.name, f.content),
+          severity: guard.severity,
+          rejected: true,
+          findings: guard.findings,
+          content_sample: f.content.slice(0, 1024),
+        });
+      } catch {
+        /* audit is best-effort */
+      }
+      results.push({ name: f.name, ok: false, error: guard.reason });
+      continue;
+    }
+    accepted.push(f);
+  }
+
   let queued: QueuedJob[] = [];
-  if (overflow.length > 0) {
+  if (accepted.length > 0) {
     try {
-      queued = await enqueueUploadJobs(userId, overflow);
+      queued = await enqueueUploadJobs(userId, accepted);
     } catch (e: any) {
       // If the queue itself is unavailable, fall back to per-file failure
       // records so the caller knows the overflow didn't silently disappear.
       const msg = e?.message ?? "enqueue failed";
       console.error(`[uploads.processBulkUpload] enqueue failed user=${userId}: ${msg}`);
-      for (const f of overflow) {
+      for (const f of accepted) {
         results.push({ name: f.name, ok: false, error: `queue unavailable: ${msg}` });
       }
     }
