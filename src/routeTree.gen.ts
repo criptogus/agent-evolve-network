@@ -73,6 +73,7 @@ import { Route as AdminReviewAuditRouteImport } from './routes/admin.review-audi
 import { Route as AdminReviewReportsRouteImport } from './routes/admin.review-reports'
 import { Route as AdminRoiRouteImport } from './routes/admin.roi'
 import { Route as AgentsIndexRouteImport } from './routes/agents.index'
+import { Route as AgentsSlugRouteImport } from './routes/agents.$slug'
 import { Route as AgentsMdRouteImport } from './routes/agents.md'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as ApiReviewRouteImport } from './routes/api/review'
@@ -468,6 +469,11 @@ const AdminRoiRoute = AdminRoiRouteImport.update({
 const AgentsIndexRoute = AgentsIndexRouteImport.update({
   id: '/agents/',
   path: '/agents/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsSlugRoute = AgentsSlugRouteImport.update({
+  id: '/agents/$slug',
+  path: '/agents/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgentsMdRoute = AgentsMdRouteImport.update({
@@ -922,6 +928,7 @@ export interface FileRoutesByFullPath {
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/admin/roi': typeof AdminRoiRoute
+  '/agents/$slug': typeof AgentsSlugRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRouteWithChildren
   '/api/review': typeof ApiReviewRoute
@@ -1061,6 +1068,7 @@ export interface FileRoutesByTo {
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/admin/roi': typeof AdminRoiRoute
+  '/agents/$slug': typeof AgentsSlugRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRouteWithChildren
   '/api/review': typeof ApiReviewRoute
@@ -1202,6 +1210,7 @@ export interface FileRoutesById {
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/admin/roi': typeof AdminRoiRoute
+  '/agents/$slug': typeof AgentsSlugRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRouteWithChildren
   '/api/review': typeof ApiReviewRoute
@@ -1344,6 +1353,7 @@ export interface FileRouteTypes {
     | '/admin/review-audit'
     | '/admin/review-reports'
     | '/admin/roi'
+    | '/agents/$slug'
     | '/agents/md'
     | '/api/mcp'
     | '/api/review'
@@ -1483,6 +1493,7 @@ export interface FileRouteTypes {
     | '/admin/review-audit'
     | '/admin/review-reports'
     | '/admin/roi'
+    | '/agents/$slug'
     | '/agents/md'
     | '/api/mcp'
     | '/api/review'
@@ -1623,6 +1634,7 @@ export interface FileRouteTypes {
     | '/admin/review-audit'
     | '/admin/review-reports'
     | '/admin/roi'
+    | '/agents/$slug'
     | '/agents/md'
     | '/api/mcp'
     | '/api/review'
@@ -1752,6 +1764,7 @@ export interface RootRouteChildren {
   AccountReferralsRoute: typeof AccountReferralsRoute
   AccountTokensRoute: typeof AccountTokensRoute
   AccountUsageRoute: typeof AccountUsageRoute
+  AgentsSlugRoute: typeof AgentsSlugRoute
   AgentsMdRoute: typeof AgentsMdRoute
   ApiMcpRoute: typeof ApiMcpRouteWithChildren
   ApiReviewRoute: typeof ApiReviewRoute
@@ -2259,6 +2272,13 @@ declare module '@tanstack/react-router' {
       path: '/agents'
       fullPath: '/agents/'
       preLoaderRoute: typeof AgentsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents/$slug': {
+      id: '/agents/$slug'
+      path: '/agents/$slug'
+      fullPath: '/agents/$slug'
+      preLoaderRoute: typeof AgentsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agents/md': {
@@ -3026,6 +3046,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountReferralsRoute: AccountReferralsRoute,
   AccountTokensRoute: AccountTokensRoute,
   AccountUsageRoute: AccountUsageRoute,
+  AgentsSlugRoute: AgentsSlugRoute,
   AgentsMdRoute: AgentsMdRoute,
   ApiMcpRoute: ApiMcpRouteWithChildren,
   ApiReviewRoute: ApiReviewRoute,

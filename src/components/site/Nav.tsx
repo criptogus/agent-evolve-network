@@ -34,6 +34,7 @@ type NavItem = { to: string; label: string; hint?: string };
 const BROWSE: NavItem[] = [
   { to: "/discover", label: "Discover", hint: "Find skills" },
   { to: "/marketplace", label: "Marketplace", hint: "Top skills" },
+  { to: "/agents", label: "Agents", hint: "Ready-to-use agents" },
   { to: "/packs", label: "Packs", hint: "Curated bundles" },
   { to: "/match", label: "Match", hint: "Pair skills to a goal" },
 ];
