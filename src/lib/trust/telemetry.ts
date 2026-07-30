@@ -10,7 +10,26 @@ export const ExecutionEventSchema = z.object({
   success: z.boolean(),
   error_class: z.string().max(64).nullish(),
   guardrail_triggered: z.array(z.string().max(64)).max(20).default([]),
+
+  // ---- Outcome instrumentation: proves the customer got value, not just that
+  // the skill executed. All optional so existing callers keep working.
+  /** Did the end user's task actually get done? */
+  task_completed: z.boolean().nullish(),
+  /** Did a human have to step in to finish/fix it? */
+  human_intervention: z.boolean().nullish(),
+  /** End-user signal: 1 = thumbs up, -1 = thumbs down, 0 = neutral. */
+  user_rating: z.union([z.literal(-1), z.literal(0), z.literal(1)]).nullish(),
+  /** Baseline (skill off / previous version) cost for savings math. */
+  baseline_latency_ms: z.number().int().nonnegative().max(600_000).nullish(),
+  baseline_tokens: z.number().int().nonnegative().max(2_000_000).nullish(),
+
+  // ---- A/B attribution
+  /** Experiment arm this execution belongs to. */
+  arm: z.enum(["control", "treatment"]).nullish(),
+  /** Experiment identifier, e.g. "code-reviewer:on-vs-off". */
+  experiment_key: z.string().max(96).nullish(),
 });
+
 
 export type ExecutionEvent = z.infer<typeof ExecutionEventSchema>;
 
