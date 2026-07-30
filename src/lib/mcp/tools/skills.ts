@@ -2017,6 +2017,7 @@ export const reviewSkillTool = defineTool({
               MESSAGES.en.next_diagnostic,
               "Pass `previous_hash` + `previous_overall_score` from this response into the next call to get a `delta_vs_previous`.",
               "Honour `doc_class.expected_ceiling` — actions beyond that point are cosmetic, not quality wins.",
+              "Read `substance.rationale` and `substance.pillars[].rationale` + `.evidence[]` — that is the LLM-judged content verdict, independent from `format_score`. A high format_score with a low substance_score means the file looks right and says little; fix substance first.",
               fbReq ? `When done iterating, call \`submit_feedback\` with request_id="${fbReq.id}" and a 1-5 rating.` : "",
             ].filter(Boolean),
     });
