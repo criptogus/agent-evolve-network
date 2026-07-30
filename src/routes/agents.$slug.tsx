@@ -140,7 +140,7 @@ function AgentDetail() {
                     </Button>
                     {!user && (
                       <Button variant="outline" asChild>
-                        <Link to="/auth">Sign in</Link>
+                        <Link to="/login">Sign in</Link>
                       </Button>
                     )}
                   </div>
