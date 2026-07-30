@@ -115,6 +115,14 @@ const FAQ_LD = {
         text: "Hacker is free forever. Agent Pass is $19 per agent per month with unlimited upgrades. Enterprise is custom with private registry, SSO and audit logs.",
       },
     },
+    {
+      "@type": "Question",
+      name: "If I upload a proprietary skill, can Super Agent Skill copy it?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No. You retain full ownership and control. Your source code is evaluated in an isolated sandbox, never used to train shared models, and never exposed to other users. Public listings only show metadata, Trust Score and signed release artifacts that you choose to publish. Private packages stay scoped to your workspace.",
+      },
+    },
   ],
 };
 
