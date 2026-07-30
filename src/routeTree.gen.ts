@@ -69,6 +69,7 @@ import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminReviewRouteImport } from './routes/admin.review'
 import { Route as AdminReviewAuditRouteImport } from './routes/admin.review-audit'
 import { Route as AdminReviewReportsRouteImport } from './routes/admin.review-reports'
+import { Route as AdminRoiRouteImport } from './routes/admin.roi'
 import { Route as AgentsMdRouteImport } from './routes/agents.md'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as ApiTelemetryRouteImport } from './routes/api/telemetry'
@@ -437,6 +438,11 @@ const AdminReviewAuditRoute = AdminReviewAuditRouteImport.update({
 const AdminReviewReportsRoute = AdminReviewReportsRouteImport.update({
   id: '/review-reports',
   path: '/review-reports',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRoiRoute = AdminRoiRouteImport.update({
+  id: '/roi',
+  path: '/roi',
   getParentRoute: () => AdminRoute,
 } as any)
 const AgentsMdRoute = AgentsMdRouteImport.update({
@@ -850,6 +856,7 @@ export interface FileRoutesByFullPath {
   '/admin/review': typeof AdminReviewRoute
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
+  '/admin/roi': typeof AdminRoiRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRouteWithChildren
   '/api/telemetry': typeof ApiTelemetryRoute
@@ -978,6 +985,7 @@ export interface FileRoutesByTo {
   '/admin/review': typeof AdminReviewRoute
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
+  '/admin/roi': typeof AdminRoiRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRouteWithChildren
   '/api/telemetry': typeof ApiTelemetryRoute
@@ -1108,6 +1116,7 @@ export interface FileRoutesById {
   '/admin/review': typeof AdminReviewRoute
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
+  '/admin/roi': typeof AdminRoiRoute
   '/agents/md': typeof AgentsMdRoute
   '/api/mcp': typeof ApiMcpRouteWithChildren
   '/api/telemetry': typeof ApiTelemetryRoute
@@ -1239,6 +1248,7 @@ export interface FileRouteTypes {
     | '/admin/review'
     | '/admin/review-audit'
     | '/admin/review-reports'
+    | '/admin/roi'
     | '/agents/md'
     | '/api/mcp'
     | '/api/telemetry'
@@ -1367,6 +1377,7 @@ export interface FileRouteTypes {
     | '/admin/review'
     | '/admin/review-audit'
     | '/admin/review-reports'
+    | '/admin/roi'
     | '/agents/md'
     | '/api/mcp'
     | '/api/telemetry'
@@ -1496,6 +1507,7 @@ export interface FileRouteTypes {
     | '/admin/review'
     | '/admin/review-audit'
     | '/admin/review-reports'
+    | '/admin/roi'
     | '/agents/md'
     | '/api/mcp'
     | '/api/telemetry'
@@ -2093,6 +2105,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReviewReportsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/roi': {
+      id: '/admin/roi'
+      path: '/roi'
+      fullPath: '/admin/roi'
+      preLoaderRoute: typeof AdminRoiRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/agents/md': {
       id: '/agents/md'
       path: '/agents/md'
@@ -2589,6 +2608,7 @@ interface AdminRouteChildren {
   AdminReviewRoute: typeof AdminReviewRoute
   AdminReviewAuditRoute: typeof AdminReviewAuditRoute
   AdminReviewReportsRoute: typeof AdminReviewReportsRoute
+  AdminRoiRoute: typeof AdminRoiRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminImportGithubRoute: typeof AdminImportGithubRoute
   AdminImportMarkdownRoute: typeof AdminImportMarkdownRoute
@@ -2606,6 +2626,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminReviewRoute: AdminReviewRoute,
   AdminReviewAuditRoute: AdminReviewAuditRoute,
   AdminReviewReportsRoute: AdminReviewReportsRoute,
+  AdminRoiRoute: AdminRoiRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminImportGithubRoute: AdminImportGithubRoute,
   AdminImportMarkdownRoute: AdminImportMarkdownRoute,
@@ -2835,13 +2856,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

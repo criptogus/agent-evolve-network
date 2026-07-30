@@ -65,7 +65,16 @@ export const Route = createFileRoute("/api/public/telemetry")({
               _tokens_out: null,
               _error_kind: event.error_class ?? null,
               _agent_fp: agentFp,
+              _arm: event.arm ?? null,
+              _experiment_key: event.experiment_key ?? null,
+              _task_completed: event.task_completed ?? null,
+              _human_intervention: event.human_intervention ?? null,
+              _user_rating: event.user_rating ?? null,
+              _baseline_latency_ms: event.baseline_latency_ms ?? null,
+              _baseline_tokens: event.baseline_tokens ?? null,
+              _workspace_hash: row.workspace_hash,
             } as any)
+
             .then(() => {})
             .catch(() => {});
           return new Response(

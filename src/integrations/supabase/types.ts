@@ -2627,48 +2627,72 @@ export type Database = {
       skill_executions: {
         Row: {
           agent_fp: string | null
+          arm: string | null
+          baseline_latency_ms: number | null
+          baseline_tokens: number | null
           created_at: string
           error_kind: string | null
+          experiment_key: string | null
+          human_intervention: boolean | null
           id: string
           latency_ms: number | null
           model: string | null
           package_id: string
           package_slug: string
           success: boolean
+          task_completed: boolean | null
           tokens_in: number | null
           tokens_out: number | null
           user_id: string | null
+          user_rating: number | null
           version: string | null
+          workspace_hash: string | null
         }
         Insert: {
           agent_fp?: string | null
+          arm?: string | null
+          baseline_latency_ms?: number | null
+          baseline_tokens?: number | null
           created_at?: string
           error_kind?: string | null
+          experiment_key?: string | null
+          human_intervention?: boolean | null
           id?: string
           latency_ms?: number | null
           model?: string | null
           package_id: string
           package_slug: string
           success: boolean
+          task_completed?: boolean | null
           tokens_in?: number | null
           tokens_out?: number | null
           user_id?: string | null
+          user_rating?: number | null
           version?: string | null
+          workspace_hash?: string | null
         }
         Update: {
           agent_fp?: string | null
+          arm?: string | null
+          baseline_latency_ms?: number | null
+          baseline_tokens?: number | null
           created_at?: string
           error_kind?: string | null
+          experiment_key?: string | null
+          human_intervention?: boolean | null
           id?: string
           latency_ms?: number | null
           model?: string | null
           package_id?: string
           package_slug?: string
           success?: boolean
+          task_completed?: boolean | null
           tokens_in?: number | null
           tokens_out?: number | null
           user_id?: string | null
+          user_rating?: number | null
           version?: string | null
+          workspace_hash?: string | null
         }
         Relationships: [
           {
@@ -2680,6 +2704,66 @@ export type Database = {
           },
           {
             foreignKeyName: "skill_executions_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skill_experiments: {
+        Row: {
+          control_share: number
+          created_at: string
+          created_by: string | null
+          ended_at: string | null
+          hypothesis: string | null
+          id: string
+          key: string
+          package_id: string | null
+          package_slug: string
+          started_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          control_share?: number
+          created_at?: string
+          created_by?: string | null
+          ended_at?: string | null
+          hypothesis?: string | null
+          id?: string
+          key: string
+          package_id?: string | null
+          package_slug: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          control_share?: number
+          created_at?: string
+          created_by?: string | null
+          ended_at?: string | null
+          hypothesis?: string | null
+          id?: string
+          key?: string
+          package_id?: string | null
+          package_slug?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_experiments_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_experiments_package_id_fkey"
             columns: ["package_id"]
             isOneToOne: false
             referencedRelation: "packages"
@@ -3087,6 +3171,16 @@ export type Database = {
         }
         Returns: number
       }
+      attach_execution_outcome: {
+        Args: {
+          _agent_fp?: string
+          _execution_id: string
+          _human_intervention?: boolean
+          _task_completed?: boolean
+          _user_rating?: number
+        }
+        Returns: boolean
+      }
       award_referral_credits: {
         Args: { _credits: number; _kind: string; _referral_id: string }
         Returns: Json
@@ -3124,6 +3218,28 @@ export type Database = {
       get_package_ratings: { Args: { _package_id: string }; Returns: Json }
       get_review_eligibility: { Args: { _package_id: string }; Returns: Json }
       get_skill_trust: { Args: { _slug: string }; Returns: Json }
+      get_skill_uplift: {
+        Args: { _days?: number; _slug: string }
+        Returns: Json
+      }
+      get_workspace_roi: {
+        Args: { _days?: number }
+        Returns: {
+          completed: number
+          completion_rate: number
+          executions: number
+          guardrail_blocks: number
+          intervention_rate: number
+          interventions: number
+          last_seen: string
+          latency_saved_ms: number
+          packages_used: number
+          thumbs_down: number
+          thumbs_up: number
+          tokens_saved: number
+          workspace_hash: string
+        }[]
+      }
       grant_signup_bonus: { Args: { _user_id: string }; Returns: undefined }
       has_active_paid_subscription: {
         Args: { _user_id: string }
@@ -3326,14 +3442,22 @@ export type Database = {
       report_skill_execution: {
         Args: {
           _agent_fp?: string
+          _arm?: string
+          _baseline_latency_ms?: number
+          _baseline_tokens?: number
           _error_kind?: string
+          _experiment_key?: string
+          _human_intervention?: boolean
           _latency_ms?: number
           _model?: string
           _slug: string
           _success: boolean
+          _task_completed?: boolean
           _tokens_in?: number
           _tokens_out?: number
+          _user_rating?: number
           _version?: string
+          _workspace_hash?: string
         }
         Returns: string
       }
