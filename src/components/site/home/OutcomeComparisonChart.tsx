@@ -1,3 +1,4 @@
+import { Info } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -9,6 +10,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  Tooltip as UiTooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Presentation-only figures: the same 90-day network medians the comparison
 // table cites (outcome fields recorded per execution — task completed, human
