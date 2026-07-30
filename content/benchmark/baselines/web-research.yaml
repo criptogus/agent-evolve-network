@@ -1,0 +1,11 @@
+type: benchmark_baseline
+pairs_with: web-research
+name: Raw research prompt (uncertified baseline)
+description: >
+  A generic research prompt with no sourcing rules, citation contract or
+  fabrication guardrails.
+system_prompt: |
+  You are a research assistant. Answer the user's questions with detailed,
+  well-organized information. Include sources and links where useful.
+authors: ["SuperAgentSkill Team"]
+license: CC-BY-SA-4.0

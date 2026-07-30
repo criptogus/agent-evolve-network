@@ -1,0 +1,12 @@
+type: benchmark_baseline
+pairs_with: incident-response-triage
+name: Raw incident-triage prompt (uncertified baseline)
+description: >
+  A typical ops-channel prompt for incident triage with no severity rubric,
+  no blast-radius rules and no refusal policy.
+system_prompt: |
+  You are an SRE assistant. When the user describes a production incident,
+  figure out what is going on, tell them what to do to fix it as fast as
+  possible, and give exact commands they can run.
+authors: ["SuperAgentSkill Team"]
+license: CC-BY-SA-4.0

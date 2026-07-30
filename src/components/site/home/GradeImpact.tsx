@@ -112,11 +112,12 @@ export function GradeImpact() {
             A random skill vs. a SAK <span className="text-primary">A-grade</span> skill
           </h2>
           <p className="mt-5 text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
-            Tangible numbers, measured across the last 90 days of production runs on the SAK network
-            — the same task, one ungraded skill from the wild, one certified A on SuperAgent Skill.
+            The same task, two skills: one ungraded prompt from the wild, one certified A on
+            SuperAgent Skill. Figures below are certification targets, illustrative of the gap the
+            SAK pipeline is designed to produce — each one flips to a live, measured number as the
+            paired-benchmark telemetry reaches sample-size thresholds.
           </p>
         </div>
-
 
         {/* Header cards */}
         <div className="mx-auto mt-10 grid max-w-3xl gap-4 md:grid-cols-2">
@@ -249,8 +250,8 @@ export function GradeImpact() {
             Quer ver o mesmo delta no seu agente?
           </h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            Acompanhe pass rate, intervenção humana, latência e ROI por skill no painel SAK. Entre na
-            fila de acesso ou veja seus números agora.
+            Acompanhe pass rate, intervenção humana, latência e ROI por skill no painel SAK. Entre
+            na fila de acesso ou veja seus números agora.
           </p>
           <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
@@ -272,9 +273,10 @@ export function GradeImpact() {
         </div>
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          Numbers reflect the median gap between the bottom-quartile ungraded skill and the median
-          A-grade skill on SAK over the last 90 days. Your mileage will vary — every skill page
-          shows its live numbers.
+          Illustrative certification targets, not yet measured medians. Comparative numbers are
+          produced by our paired adversarial benchmark (same suite, certified skill vs. raw baseline
+          prompt, Wilson 95% lower bounds, Ed25519-signed results) and replace these figures as
+          sample thresholds are met — every skill page shows its live numbers today.
         </p>
       </div>
     </section>
