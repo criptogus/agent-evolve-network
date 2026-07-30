@@ -211,10 +211,11 @@ export function GradeImpact() {
             { k: "2.2×", v: "more tasks completed per agent per day" },
             { k: "$33/1k runs", v: "saved on LLM spend at the same volume" },
             { k: "300× fewer", v: "leaks & jailbreaks reaching production" },
-          ].map((s) => (
+          ].map((s, idx) => (
             <div
               key={s.k}
-              className="rounded-2xl border border-border bg-background p-5 text-center"
+              className="rounded-2xl border border-border bg-background p-5 text-center chart-slide-up chart-fade opacity-0"
+              style={{ animationDelay: `${800 + idx * 100}ms` }}
             >
               <div className="font-mono text-2xl font-semibold text-primary">{s.k}</div>
               <div className="mt-1 text-sm text-muted-foreground">{s.v}</div>
