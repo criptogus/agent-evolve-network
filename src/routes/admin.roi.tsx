@@ -197,7 +197,129 @@ function AdminRoiPage() {
           ) : null}
         </section>
 
+        {/* Per-execution outcome */}
+        <section className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold">Outcome por execução</h2>
+              <p className="text-sm text-muted-foreground">
+                Valor além do pass rate: tarefa concluída, intervenção humana e latência
+                economizada vs. baseline, execução por execução
+                {querySlug ? (
+                  <>
+                    {" "}
+                    (filtrado por <code>{querySlug}</code>)
+                  </>
+                ) : null}
+                .
+              </p>
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={onlyWithOutcome}
+                onChange={(e) => setOnlyWithOutcome(e.target.checked)}
+                className="size-4 rounded border-border"
+              />
+              Só com outcome reportado
+            </label>
+          </div>
+
+          {outcomes.data ? (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Stat
+                label="Cobertura de outcome"
+                value={pct(outcomes.data.summary.outcome_coverage)}
+                sub={`${outcomes.data.summary.with_outcome}/${outcomes.data.summary.rows} execuções`}
+              />
+              <Stat
+                label="Tarefas concluídas"
+                value={pct(outcomes.data.summary.completion_rate)}
+                sub="entre execuções com outcome"
+              />
+              <Stat
+                label="Intervenção humana"
+                value={pct(outcomes.data.summary.intervention_rate)}
+                sub={`👍 ${outcomes.data.summary.thumbs_up} · 👎 ${outcomes.data.summary.thumbs_down}`}
+              />
+              <Stat
+                label="Latência economizada"
+                value={`${(outcomes.data.summary.latency_saved_ms / 1000).toFixed(1)}s`}
+                sub={`média ${outcomes.data.summary.avg_latency_saved_ms} ms/execução`}
+              />
+            </div>
+          ) : null}
+
+          {outcomes.isLoading ? (
+            <p className="text-sm text-muted-foreground">Carregando execuções…</p>
+          ) : null}
+          {outcomes.error ? (
+            <p className="text-sm text-destructive">Falha ao carregar (admin apenas).</p>
+          ) : null}
+
+          {outcomes.data?.executions.length ? (
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <Th>Quando</Th>
+                    <Th>Pacote</Th>
+                    <Th>Braço</Th>
+                    <Th>Exec</Th>
+                    <Th>Tarefa concluída</Th>
+                    <Th>Intervenção</Th>
+                    <Th>Latência</Th>
+                    <Th>Latência salva</Th>
+                    <Th>Tokens salvos</Th>
+                    <Th>Nota</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {outcomes.data.executions.map((e) => (
+                    <tr key={e.id} className="border-t border-border">
+                      <Td className="whitespace-nowrap text-xs text-muted-foreground">
+                        {new Date(e.created_at).toLocaleString("pt-BR")}
+                      </Td>
+                      <Td className="font-mono text-xs">
+                        {e.package_slug}
+                        {e.version ? `@${e.version}` : ""}
+                      </Td>
+                      <Td className="text-xs">{e.arm ?? "—"}</Td>
+                      <Td>{e.success ? "ok" : (e.error_kind ?? "erro")}</Td>
+                      <Td>{tri(e.task_completed)}</Td>
+                      <Td>{tri(e.human_intervention)}</Td>
+                      <Td>{e.latency_ms != null ? `${e.latency_ms} ms` : "—"}</Td>
+                      <Td
+                        className={
+                          e.latency_saved_ms == null
+                            ? ""
+                            : e.latency_saved_ms >= 0
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-destructive"
+                        }
+                      >
+                        {e.latency_saved_ms != null ? `${e.latency_saved_ms} ms` : "—"}
+                      </Td>
+                      <Td>
+                        {e.tokens_saved != null
+                          ? e.tokens_saved.toLocaleString("pt-BR")
+                          : "—"}
+                      </Td>
+                      <Td>{e.user_rating === 1 ? "👍" : e.user_rating === -1 ? "👎" : "—"}</Td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : !outcomes.isLoading ? (
+            <p className="text-sm text-muted-foreground">
+              Nenhuma execução{onlyWithOutcome ? " com outcome reportado" : ""} nesse período.
+            </p>
+          ) : null}
+        </section>
+
         {/* Experiments */}
+
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">Experimentos</h2>
           {experiments.data?.experiments?.length ? (
