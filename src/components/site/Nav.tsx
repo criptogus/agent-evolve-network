@@ -171,6 +171,10 @@ export function Nav() {
                   <DropdownMenuItem asChild>
                     <Link to="/account/tokens">API tokens</Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/account/encryption">Encryption (BYOK)</Link>
+                  </DropdownMenuItem>
+
                   <DropdownMenuSeparator />
                   {isAdmin && (
                     <DropdownMenuItem asChild>
