@@ -264,6 +264,16 @@ export const reportExecutionTool = defineTool({
     tokens_out: z.number().int().min(0).max(2_000_000).optional(),
     error_kind: z.string().max(80).optional().describe("Short tag like timeout, refusal, hallucination, tool_error"),
     agent_fp: z.string().max(128).optional().describe("Opaque per-agent fingerprint hash for rate limiting"),
+    // ---- Outcome instrumentation (proves customer value, not just execution)
+    task_completed: z.boolean().optional().describe("Did the user's task actually get done?"),
+    human_intervention: z.boolean().optional().describe("Did a human have to step in to finish/fix it?"),
+    user_rating: z.union([z.literal(-1), z.literal(0), z.literal(1)]).optional().describe("End-user signal: 1 up, -1 down"),
+    baseline_latency_ms: z.number().int().min(0).max(10 * 60 * 1000).optional().describe("Latency without the skill (or previous version)"),
+    baseline_tokens: z.number().int().min(0).max(2_000_000).optional().describe("Tokens without the skill (or previous version)"),
+    // ---- Counterfactual A/B attribution
+    arm: z.enum(["control", "treatment"]).optional().describe("control = skill off / previous version"),
+    experiment_key: z.string().max(96).optional().describe("Experiment id, e.g. code-reviewer:on-vs-off"),
+    workspace_hash: z.string().max(64).optional().describe("Opaque workspace id for per-customer ROI"),
   }),
   execute: async (input) => {
     const { data, error } = await supabaseAdmin.rpc("report_skill_execution", {
@@ -276,11 +286,69 @@ export const reportExecutionTool = defineTool({
       _tokens_out: input.tokens_out,
       _error_kind: input.error_kind,
       _agent_fp: input.agent_fp,
+      _arm: input.arm ?? null,
+      _experiment_key: input.experiment_key ?? null,
+      _task_completed: input.task_completed ?? null,
+      _human_intervention: input.human_intervention ?? null,
+      _user_rating: input.user_rating ?? null,
+      _baseline_latency_ms: input.baseline_latency_ms ?? null,
+      _baseline_tokens: input.baseline_tokens ?? null,
+      _workspace_hash: input.workspace_hash ?? null,
     } as any);
     if (error) return json({ ok: false, error: error.message });
     return json({ ok: true, execution_id: data });
   },
 });
+
+export const reportOutcomeTool = defineTool({
+  name: "report_skill_outcome",
+  description:
+    "[TRUST] Attach the OUTCOME of a previously reported execution (task completed, human intervention needed, thumbs up/down) once you know it. Feeds the customer-value/uplift reports. Pass the execution_id returned by report_skill_execution.",
+  parameters: z.object({
+    execution_id: z.string().uuid(),
+    task_completed: z.boolean().optional(),
+    human_intervention: z.boolean().optional(),
+    user_rating: z.union([z.literal(-1), z.literal(0), z.literal(1)]).optional(),
+    agent_fp: z.string().max(128).optional().describe("Same fingerprint used when reporting the execution"),
+  }),
+  execute: async (input) => {
+    const { data, error } = await supabaseAdmin.rpc("attach_execution_outcome", {
+      _execution_id: input.execution_id,
+      _task_completed: input.task_completed ?? null,
+      _human_intervention: input.human_intervention ?? null,
+      _user_rating: input.user_rating ?? null,
+      _agent_fp: input.agent_fp ?? null,
+    } as any);
+    if (error) return json({ ok: false, error: error.message });
+    return json({ ok: true, updated: data === true });
+  },
+});
+
+export const getUpliftTool = defineTool({
+  name: "get_skill_uplift",
+  description:
+    "[DISCOVER/TRUST] Counterfactual 'skill on vs. off' result for a primitive: completion rate per arm, absolute/relative uplift and whether the difference is statistically significant. Use it to justify installing a skill with numbers, not vibes.",
+  parameters: z.object({
+    slug: z.string().min(1),
+    days: z.number().int().min(1).max(365).optional(),
+  }),
+  execute: async ({ slug, days }) => {
+    const { data, error } = await supabaseAdmin.rpc("get_skill_uplift", {
+      _slug: slug,
+      _days: days ?? 30,
+    } as any);
+    if (error) return json({ ok: false, error: error.message });
+    const arms = ((data as any)?.arms ?? {}) as Record<string, any>;
+    const c = arms.control ?? { n: 0, completed: 0 };
+    const t = arms.treatment ?? { n: 0, completed: 0 };
+    const stats = twoProportionUplift(
+      { n: Number(c.n ?? 0), completed: Number(c.completed ?? 0) },
+      { n: Number(t.n ?? 0), completed: Number(t.completed ?? 0) },
+    );
+    return json({ ok: true, slug, window_days: days ?? 30, arms, uplift: stats });
+  },
+});
+
 
 export const getTrustTool = defineTool({
   name: "get_skill_trust",
