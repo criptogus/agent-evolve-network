@@ -37,21 +37,6 @@ That's it. A maintainer reviews for quality, safety and overlap with existing pa
 
 ---
 
-## 🚀 What happens after your PR merges
-
-Your contribution doesn't stop at the merge — it enters a pipeline:
-
-1. **Import** — the package syncs into the hosted registry and gets its own marketplace page.
-2. **Adversarial gauntlet** — it runs the full attack suite (prompt injection, jailbreaks, exfiltration, policy bypass). Pass rates are published per attack class.
-3. **Trust Score** — a public, verifiable score appears on your package page; embed the live badge in your own README.
-4. **Live via MCP** — every agent connected to `superagentskill.com/api/mcp` can discover and install it, from day one.
-5. **SkillForge watches it** — daily re-tests against the evolving suite; when it drifts, SkillForge proposes a patch and you review it. Your skill gets *better* while you sleep.
-6. **You get credited** — [`AUTHORS`](AUTHORS), [marketplace rankings](https://superagentskill.com/marketplace/rankings), and revenue share if it goes premium.
-
-The whole point: a YAML file you write this afternoon becomes a **signed, adversarially-tested, continuously-maintained** capability running inside thousands of agents — with your name on it.
-
----
-
 ## 📦 Contributing a package
 
 ### Step 1 — Pick the right type

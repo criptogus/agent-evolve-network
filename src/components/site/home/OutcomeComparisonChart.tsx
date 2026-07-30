@@ -1,3 +1,4 @@
+import { Info } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -9,6 +10,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  Tooltip as UiTooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Presentation-only figures: the same 90-day network medians the comparison
 // table cites (outcome fields recorded per execution — task completed, human
@@ -98,6 +105,24 @@ function OutcomeTooltip({
 
 const AXIS_TICK = { fill: "var(--muted-foreground)", fontSize: 11 } as const;
 
+export function MetricTip({ label, tip }: { label: React.ReactNode; tip: string }) {
+  return (
+    <TooltipProvider delayDuration={150}>
+      <UiTooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex cursor-help items-center gap-1">
+            {label}
+            <Info className="h-3 w-3 text-muted-foreground/70" aria-hidden />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs text-balance bg-popover text-popover-foreground border-border shadow-elevated">
+          {tip}
+        </TooltipContent>
+      </UiTooltip>
+    </TooltipProvider>
+  );
+}
+
 /**
  * Headline chart for the A-grade hero section: outcome metrics per execution
  * over the last 90 days, random skill vs. certified A-grade skill.
@@ -138,10 +163,10 @@ export function OutcomeComparisonChart() {
               badge: "F · no proof",
               tone: "baseline",
               rows: [
-                { k: "Completion rate", v: "42%", s: "of runs finish the task" },
-                { k: "Human intervention", v: "49%", s: "of runs need a rescue" },
-                { k: "Latency saved", v: "0s", s: "vs. workspace baseline" },
-                { k: "Tokens saved", v: "0", s: "18,400 avg. per task" },
+                { k: "Completion rate", v: "42%", s: "of runs finish the task", tip: "Percentage of production executions that reached the stated end-state without crashing or giving up." },
+                { k: "Human intervention", v: "49%", s: "of runs need a rescue", tip: "Runs where a human had to rewrite the prompt, correct output, or restart the agent." },
+                { k: "Latency saved", v: "0s", s: "vs. workspace baseline", tip: "Difference between the skill's p95 latency and the workspace's own baseline for the same task." },
+                { k: "Tokens saved", v: "0", s: "18,400 avg. per task", tip: "Average input + output tokens consumed to complete one task." },
               ],
             },
             {
@@ -150,10 +175,10 @@ export function OutcomeComparisonChart() {
               badge: "A · certified",
               tone: "sak",
               rows: [
-                { k: "Completion rate", v: "94%", s: "of runs finish the task" },
-                { k: "Human intervention", v: "4%", s: "of runs need a rescue" },
-                { k: "Latency saved", v: "−35.2s", s: "p95 42s → 6.8s" },
-                { k: "Tokens saved", v: "−14,300", s: "4,100 avg. per task" },
+                { k: "Completion rate", v: "94%", s: "of runs finish the task", tip: "Percentage of production executions that reached the stated end-state without crashing or giving up." },
+                { k: "Human intervention", v: "4%", s: "of runs need a rescue", tip: "Runs where a human had to rewrite the prompt, correct output, or restart the agent." },
+                { k: "Latency saved", v: "−35.2s", s: "p95 42s → 6.8s", tip: "Difference between the skill's p95 latency and the workspace's own baseline for the same task." },
+                { k: "Tokens saved", v: "−14,300", s: "4,100 avg. per task", tip: "Average input + output tokens consumed to complete one task." },
               ],
             },
           ] as const
@@ -195,7 +220,9 @@ export function OutcomeComparisonChart() {
                 {col.rows.map((r) => (
                   <div key={r.k} className="flex items-baseline justify-between gap-3 py-2.5">
                     <div>
-                      <dt className="text-sm font-medium text-foreground">{r.k}</dt>
+                      <dt className="text-sm font-medium text-foreground">
+                        <MetricTip label={r.k} tip={r.tip} />
+                      </dt>
                       <dd className="text-[11px] text-muted-foreground">{r.s}</dd>
                     </div>
                     <span
@@ -252,6 +279,42 @@ export function OutcomeComparisonChart() {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+      </div>
+
+      <div className="mt-5 rounded-xl border border-border bg-surface-muted/40 p-4">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+          How these numbers are measured
+        </h4>
+        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+          Every execution on the SAK network reports the same outcome fields: task completion, human
+          intervention, end-user rating, retry count, latency vs. baseline, and tokens consumed. We
+          pair the same task across two skills — one ungraded skill found in the wild, one SAK
+          A-grade certified skill — then aggregate the last 90 days of production runs. The chart
+          shows medians; the column cards show the headline deltas visitors feel first.
+        </p>
+        <ul className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
+          <li className="flex gap-2">
+            <span className="font-mono text-primary">01</span>
+            <span>
+              <strong className="text-foreground">Same task.</strong> Identical prompt, toolset
+              and success criteria for both skills.
+            </span>
+          </li>
+          <li className="flex gap-2">
+            <span className="font-mono text-primary">02</span>
+            <span>
+              <strong className="text-foreground">Per-execution.</strong> Outcomes are recorded
+              on every run, not sampled or inferred.
+            </span>
+          </li>
+          <li className="flex gap-2">
+            <span className="font-mono text-primary">03</span>
+            <span>
+              <strong className="text-foreground">90-day median.</strong> Rolling window removes
+              outliers and single-day spikes.
+            </span>
+          </li>
+        </ul>
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">

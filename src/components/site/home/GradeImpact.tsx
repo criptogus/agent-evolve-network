@@ -1,11 +1,12 @@
 import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { SakValueCharts } from "./SakValueCharts";
-import { OutcomeComparisonChart } from "./OutcomeComparisonChart";
+import { OutcomeComparisonChart, MetricTip } from "./OutcomeComparisonChart";
 
 type Row = {
   metric: string;
   detail: string;
+  tip: string;
   bad: string;
   good: string;
   delta: string;
@@ -16,6 +17,7 @@ const ROWS: Row[] = [
   {
     metric: "Task success rate",
     detail: "Real-world executions that complete without human rescue",
+    tip: "Measured per execution on the SAK network: did the run reach the stated end-state with no human rewrite or restart?",
     bad: "42%",
     good: "94%",
     delta: "+124%",
@@ -24,6 +26,7 @@ const ROWS: Row[] = [
   {
     metric: "Prompt-injection resistance",
     detail: "% of adversarial attempts blocked by the skill",
+    tip: "SkillForge runs a fixed adversarial harness (jailbreak, role-play, data-exfiltration probes) and records the block rate.",
     bad: "18%",
     good: "99.2%",
     delta: "+451%",
@@ -32,6 +35,7 @@ const ROWS: Row[] = [
   {
     metric: "Hallucination rate",
     detail: "Fabricated facts, tools or citations per 1k runs",
+    tip: "Outputs are checked against a ground-truth oracle for invented facts, tools, URLs or citations.",
     bad: "31%",
     good: "1.4%",
     delta: "−95%",
@@ -40,6 +44,7 @@ const ROWS: Row[] = [
   {
     metric: "Avg. tokens per task",
     detail: "Wasted context = wasted money on every call",
+    tip: "Total input + output tokens consumed to complete one representative task, averaged over the last 90 days.",
     bad: "18,400",
     good: "4,100",
     delta: "−78%",
@@ -48,6 +53,7 @@ const ROWS: Row[] = [
   {
     metric: "p95 latency",
     detail: "How long the slowest 5% of calls take",
+    tip: "The 95th percentile wall-clock time for the skill to finish the task, including retries.",
     bad: "42s",
     good: "6.8s",
     delta: "−84%",
@@ -56,6 +62,7 @@ const ROWS: Row[] = [
   {
     metric: "Cost per 1,000 runs",
     detail: "Blended LLM + retry + human-in-the-loop cost",
+    tip: "Blended cost of model tokens, retry loops and estimated human rescue time for 1,000 production runs.",
     bad: "$38.20",
     good: "$4.90",
     delta: "−87%",
@@ -64,6 +71,7 @@ const ROWS: Row[] = [
   {
     metric: "PII / secret leakage",
     detail: "Sensitive strings surfaced in outputs or logs",
+    tip: "Detected by scanning outputs and logs for known synthetic secrets and PII markers during adversarial runs.",
     bad: "6.1%",
     good: "0.02%",
     delta: "−99.7%",
@@ -72,6 +80,7 @@ const ROWS: Row[] = [
   {
     metric: "Mean time to patch a CVE",
     detail: "From disclosure to a signed, verified release",
+    tip: "Median hours from a published CVE affecting a dependency to a signed, re-tested release on the marketplace.",
     bad: "27 days",
     good: "under 24h",
     delta: "−96%",
@@ -160,7 +169,9 @@ export function GradeImpact() {
                 className="grid grid-cols-2 gap-2 px-5 py-4 md:grid-cols-12 md:items-center md:gap-4"
               >
                 <div className="col-span-2 md:col-span-5">
-                  <div className="text-sm font-semibold text-foreground">{row.metric}</div>
+                  <div className="text-sm font-semibold text-foreground">
+                    <MetricTip label={row.metric} tip={row.tip} />
+                  </div>
                   <div className="mt-0.5 text-xs text-muted-foreground">{row.detail}</div>
                 </div>
                 <div className="md:col-span-2 md:text-right">
