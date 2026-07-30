@@ -424,3 +424,9 @@ function Th({ children }: { children: React.ReactNode }) {
 function Td({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <td className={`px-3 py-2 ${className}`}>{children}</td>;
 }
+
+function tri(v: boolean | null) {
+  if (v === true) return <span className="text-emerald-600 dark:text-emerald-400">sim</span>;
+  if (v === false) return <span className="text-destructive">não</span>;
+  return <span className="text-muted-foreground">—</span>;
+}
