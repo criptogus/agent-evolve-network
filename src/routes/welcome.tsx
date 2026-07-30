@@ -638,7 +638,29 @@ function WelcomePage() {
                   </span>
                 )}
               </div>
+
+              <div className="mt-5 rounded-xl border border-border bg-background/60 p-4 text-xs text-muted-foreground">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-primary">
+                  Getting a 403 from scripts?
+                </div>
+                <p className="mt-2">
+                  Native MCP clients work out of the box. If you call the endpoint from your own
+                  script, the edge firewall may reject generic agents like{" "}
+                  <code className="font-mono">Python-urllib</code> or{" "}
+                  <code className="font-mono">Go-http-client</code>. Send a real{" "}
+                  <code className="font-mono">User-Agent</code> header (or use{" "}
+                  <code className="font-mono">curl</code>) and the request goes through:
+                </p>
+                <pre className="mt-3 overflow-x-auto rounded-md border border-border bg-surface p-3 font-mono text-[11px] leading-relaxed text-foreground/80">
+{`curl -X POST https://superagentskill.com/api/public/mcp \\
+  -H "User-Agent: Mozilla/5.0" \\
+  -H "Content-Type: application/json" \\
+  -H "Accept: application/json, text/event-stream" \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'`}
+                </pre>
+              </div>
             </div>
+
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               <Link
