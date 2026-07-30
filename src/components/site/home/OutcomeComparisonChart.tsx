@@ -157,15 +157,15 @@ export function OutcomeComparisonChart() {
               ],
             },
           ] as const
-        ).map((col) => {
+        ).map((col, idx) => {
           const isSak = col.tone === "sak";
           return (
             <div
               key={col.key}
-              className={`rounded-2xl border p-4 ${
+              className={`rounded-2xl border p-4 chart-slide-up opacity-0 ${
                 isSak
-                  ? "border-primary/50 bg-primary/[0.04] shadow-elevated"
-                  : "border-border bg-surface-muted/30"
+                  ? "border-primary/50 bg-primary/[0.04] shadow-elevated chart-delay-200"
+                  : "border-border bg-surface-muted/30 chart-delay-100"
               }`}
             >
               <div className="flex items-center justify-between gap-2">
