@@ -127,6 +127,92 @@ export function OutcomeComparisonChart() {
         </div>
       </figcaption>
 
+      {/* Side-by-side columns — the three outcomes that matter most, read in
+          one glance before the full chart. */}
+      <div className="mt-5 grid gap-3 md:grid-cols-2">
+        {(
+          [
+            {
+              key: "ungraded",
+              label: "Random skill",
+              badge: "F · no proof",
+              tone: "baseline",
+              rows: [
+                { k: "Completion rate", v: "42%", s: "of runs finish the task" },
+                { k: "Human intervention", v: "49%", s: "of runs need a rescue" },
+                { k: "Latency saved", v: "0s", s: "vs. workspace baseline" },
+                { k: "Tokens saved", v: "0", s: "18,400 avg. per task" },
+              ],
+            },
+            {
+              key: "sak",
+              label: "SAK · A-grade",
+              badge: "A · certified",
+              tone: "sak",
+              rows: [
+                { k: "Completion rate", v: "94%", s: "of runs finish the task" },
+                { k: "Human intervention", v: "4%", s: "of runs need a rescue" },
+                { k: "Latency saved", v: "−35.2s", s: "p95 42s → 6.8s" },
+                { k: "Tokens saved", v: "−14,300", s: "4,100 avg. per task" },
+              ],
+            },
+          ] as const
+        ).map((col) => {
+          const isSak = col.tone === "sak";
+          return (
+            <div
+              key={col.key}
+              className={`rounded-2xl border p-4 ${
+                isSak
+                  ? "border-primary/50 bg-primary/[0.04] shadow-elevated"
+                  : "border-border bg-surface-muted/30"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span
+                  className={`inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest ${
+                    isSak ? "text-primary" : "text-muted-foreground"
+                  }`}
+                >
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ background: isSak ? SAK : BASELINE }}
+                    aria-hidden
+                  />
+                  {col.label}
+                </span>
+                <span
+                  className={`rounded-md border px-2 py-0.5 font-mono text-[11px] font-semibold ${
+                    isSak
+                      ? "border-primary/50 bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground"
+                  }`}
+                >
+                  {col.badge}
+                </span>
+              </div>
+              <dl className="mt-3 divide-y divide-border/70">
+                {col.rows.map((r) => (
+                  <div key={r.k} className="flex items-baseline justify-between gap-3 py-2.5">
+                    <div>
+                      <dt className="text-sm font-medium text-foreground">{r.k}</dt>
+                      <dd className="text-[11px] text-muted-foreground">{r.s}</dd>
+                    </div>
+                    <span
+                      className={`font-mono text-xl font-semibold tabular-nums md:text-2xl ${
+                        isSak ? "text-primary" : "text-muted-foreground"
+                      }`}
+                    >
+                      {r.v}
+                    </span>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          );
+        })}
+      </div>
+
       <div className="mt-4 h-72 md:h-80">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
