@@ -10,30 +10,16 @@ import {
   sha256Hex,
   unwrapDek,
 } from "./envelope.server";
+import { getActiveTenantKey, logKeyEvent } from "./keys.server";
 
 type Ctx = { userId: string; supabase: any };
-
-async function logEvent(db: any, userId: string, keyId: string | null, event: string, detail: Record<string, unknown> = {}) {
-  await db.from("tenant_key_events").insert({ user_id: userId, key_id: keyId, event, detail });
-}
-
-async function activeKey(db: any, userId: string) {
-  const { data, error } = await db
-    .from("tenant_encryption_keys")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .maybeSingle();
-  if (error) throw new Error("Could not load tenant key");
-  return data;
-}
 
 /** Public status: never returns key material. */
 export const getEncryptionStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { userId, supabase: db } = context as Ctx;
-    const key = await activeKey(db, userId);
+    const key = await getActiveTenantKey(db, userId);
     const { count } = await db
       .from("tenant_encrypted_objects")
       .select("id", { count: "exact", head: true })
@@ -69,7 +55,7 @@ export const enableTenantEncryption = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { userId, supabase: db } = context as Ctx;
-    if (await activeKey(db, userId)) throw new Error("ALREADY_ENABLED: rotate the key instead");
+    if (await getActiveTenantKey(db, userId)) throw new Error("ALREADY_ENABLED: rotate the key instead");
     const rootKey = parseRootKey(data.rootKey);
     const material = provisionKeyMaterial(rootKey);
     const { data: row, error } = await db
@@ -85,7 +71,7 @@ export const enableTenantEncryption = createServerFn({ method: "POST" })
       .select("id, fingerprint, created_at")
       .single();
     if (error) throw new Error("Could not store tenant key");
-    await logEvent(db, userId, row.id, "key.enabled", { fingerprint: material.fingerprint.slice(0, 16) });
+    await logKeyEvent(db, userId, row.id, "key.enabled", { fingerprint: material.fingerprint.slice(0, 16) });
     return { id: row.id as string, fingerprint: (row.fingerprint as string).slice(0, 16) };
   });
 
@@ -97,7 +83,7 @@ export const rotateTenantKey = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { userId, supabase: db } = context as Ctx;
-    const key = await activeKey(db, userId);
+    const key = await getActiveTenantKey(db, userId);
     if (!key) throw new Error("NOT_ENABLED");
     const current = parseRootKey(data.currentRootKey);
     const next = parseRootKey(data.newRootKey);
@@ -116,7 +102,7 @@ export const rotateTenantKey = createServerFn({ method: "POST" })
       .eq("id", key.id)
       .eq("user_id", userId);
     if (error) throw new Error("Rotation failed");
-    await logEvent(db, userId, key.id, "key.rotated", { fingerprint: material.fingerprint.slice(0, 16) });
+    await logKeyEvent(db, userId, key.id, "key.rotated", { fingerprint: material.fingerprint.slice(0, 16) });
     return { fingerprint: material.fingerprint.slice(0, 16) };
   });
 
@@ -129,7 +115,7 @@ export const revokeTenantKey = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { userId, supabase: db } = context as Ctx;
-    const key = await activeKey(db, userId);
+    const key = await getActiveTenantKey(db, userId);
     if (!key) throw new Error("NOT_ENABLED");
     if (data.purgeObjects) {
       await db.from("tenant_encrypted_objects").delete().eq("user_id", userId).eq("key_id", key.id);
@@ -140,7 +126,7 @@ export const revokeTenantKey = createServerFn({ method: "POST" })
       .eq("id", key.id)
       .eq("user_id", userId);
     if (error) throw new Error("Revocation failed");
-    await logEvent(db, userId, key.id, "key.revoked", { purged: data.purgeObjects });
+    await logKeyEvent(db, userId, key.id, "key.revoked", { purged: data.purgeObjects });
     return { ok: true };
   });
 
@@ -177,7 +163,7 @@ export const putEncryptedObject = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { userId, supabase: db } = context as Ctx;
-    const key = await activeKey(db, userId);
+    const key = await getActiveTenantKey(db, userId);
     if (!key) throw new Error("NOT_ENABLED");
     const dek = unwrapDek(parseRootKey(data.rootKey), key);
     const ciphertext = encryptWithDek(dek, data.content);
@@ -199,7 +185,7 @@ export const putEncryptedObject = createServerFn({ method: "POST" })
       .select("id, plaintext_sha256, byte_size")
       .single();
     if (error) throw new Error("Could not store encrypted object");
-    await logEvent(db, userId, key.id, "object.encrypted", { kind: data.kind, ref: data.ref });
+    await logKeyEvent(db, userId, key.id, "object.encrypted", { kind: data.kind, ref: data.ref });
     return { id: row.id as string, sha256: row.plaintext_sha256 as string, byteSize: row.byte_size as number };
   });
 
@@ -212,7 +198,7 @@ export const readEncryptedObject = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { userId, supabase: db } = context as Ctx;
-    const key = await activeKey(db, userId);
+    const key = await getActiveTenantKey(db, userId);
     if (!key) throw new Error("NOT_ENABLED");
     const { data: row, error } = await db
       .from("tenant_encrypted_objects")
@@ -224,7 +210,7 @@ export const readEncryptedObject = createServerFn({ method: "POST" })
     const dek = unwrapDek(parseRootKey(data.rootKey), key);
     const content = decryptWithDek(dek, row.ciphertext as string);
     const integrityOk = sha256Hex(content) === row.plaintext_sha256;
-    await logEvent(db, userId, key.id, "object.decrypted", { ref: row.ref, integrityOk });
+    await logKeyEvent(db, userId, key.id, "object.decrypted", { ref: row.ref, integrityOk });
     return { kind: row.kind as string, ref: row.ref as string, content, integrityOk };
   });
 
@@ -238,6 +224,6 @@ export const deleteEncryptedObject = createServerFn({ method: "POST" })
     const { userId, supabase: db } = context as Ctx;
     const { error } = await db.from("tenant_encrypted_objects").delete().eq("id", data.id).eq("user_id", userId);
     if (error) throw new Error("Delete failed");
-    await logEvent(db, userId, null, "object.deleted", { id: data.id });
+    await logKeyEvent(db, userId, null, "object.deleted", { id: data.id });
     return { ok: true };
   });
