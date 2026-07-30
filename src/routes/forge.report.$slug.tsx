@@ -7,6 +7,8 @@ import { useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { runForgeLoop } from "@/lib/skills/forge-loop.functions";
+import { ImpactProjectionReport } from "@/components/skills/ImpactProjectionReport";
+import { projectImpact } from "@/lib/skills/impact-projection";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
 
