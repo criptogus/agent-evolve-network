@@ -18,7 +18,7 @@ export const Route = createFileRoute("/status")({
       {
         name: "description",
         content:
-          "Live status of the Super Agent Skill MCP endpoint and database. Public health endpoint at /api/mcp/health.",
+          "Live status of the Super Agent Skill MCP endpoint and database. Public health endpoint at /api/public/mcp/health.",
       },
     ],
   }),
@@ -72,7 +72,7 @@ function StatusPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           Live health of the MCP endpoint at{" "}
           <code className="font-mono text-xs">/api/public/mcp</code>. The raw JSON probe is at{" "}
-          <code className="font-mono text-xs">/api/mcp/health</code> — wire it into your own
+          <code className="font-mono text-xs">/api/public/mcp/health</code> — wire it into your own
           status dashboard if you want to be notified before we are.
         </p>
 
@@ -95,7 +95,7 @@ function StatusPage() {
           </div>
           {error && (
             <p className="mt-3 text-xs text-destructive">
-              Could not reach /api/mcp/health: {error}
+              Could not reach /api/public/mcp/health: {error}
             </p>
           )}
         </div>
@@ -118,7 +118,7 @@ function StatusPage() {
         </dl>
 
         <p className="mt-8 text-xs text-muted-foreground">
-          This page polls /api/mcp/health every 15 seconds. Incidents are reported on the
+          This page polls /api/public/mcp/health every 15 seconds. Incidents are reported on the
           GitHub repo — subscribe to releases there for the canonical history.
         </p>
       </main>
