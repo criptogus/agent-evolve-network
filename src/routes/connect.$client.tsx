@@ -5,7 +5,7 @@ import { SitePage } from "@/components/site/SitePage";
 import { CodeBlock } from "@/components/site/CodeBlock";
 import { InstallButtons } from "@/components/site/InstallButtons";
 
-const ENDPOINT = "https://superagentskill.com/api/mcp";
+const ENDPOINT = "https://superagentskill.com/api/public/mcp";
 
 // A focused, single-client landing — shareable URLs like /connect/cursor
 // that a sales/onboarding flow can deep-link to. Mirrors the master

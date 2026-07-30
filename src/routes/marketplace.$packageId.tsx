@@ -78,7 +78,7 @@ export const Route = createFileRoute("/marketplace/$packageId")({
 
 type Tab = "overview" | "versions" | "compatibility" | "changelog";
 
-const MCP_GATEWAY_URL = "https://superagentskill.com/api/mcp";
+const MCP_GATEWAY_URL = "https://superagentskill.com/api/public/mcp";
 
 function PackageDetail() {
   const { pkg } = Route.useLoaderData();

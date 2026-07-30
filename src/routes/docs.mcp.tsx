@@ -124,7 +124,7 @@ function McpDocs() {
           {/* Endpoint */}
           <h2 id="endpoint" className="mt-12 text-2xl font-semibold tracking-tight">Endpoint</h2>
           <div className="mt-3 rounded-lg border border-border bg-surface p-4 text-sm">
-            <div className="font-mono text-foreground">POST/GET/DELETE  https://superagentskill.com/api/mcp</div>
+            <div className="font-mono text-foreground">POST/GET/DELETE  https://superagentskill.com/api/public/mcp</div>
             <div className="mt-1 text-muted-foreground">Single endpoint, JSON-RPC 2.0 framed by the MCP Streamable HTTP spec.</div>
           </div>
 
@@ -139,7 +139,7 @@ function McpDocs() {
             <CodeBlock
               filename="curl"
               lang="bash"
-              code={`curl -X POST https://superagentskill.com/api/mcp \\
+              code={`curl -X POST https://superagentskill.com/api/public/mcp \\
   -H "Content-Type: application/json" \\
   -H "Accept: application/json, text/event-stream" \\
   -d '{
@@ -167,15 +167,15 @@ function McpDocs() {
           <CodeBlock
             filename="discovery (served with CORS, path-aware)"
             lang="text"
-            code={`GET /.well-known/oauth-protected-resource/api/mcp     → RFC 9728
+            code={`GET /.well-known/oauth-protected-resource/api/public/mcp → RFC 9728
 GET /.well-known/oauth-protected-resource             → RFC 9728 (root)
 GET /.well-known/oauth-authorization-server           → RFC 8414
 POST /api/public/oauth/register                       → RFC 7591 (DCR)
 POST /api/public/oauth/token                          → code + refresh grants
 POST /api/public/oauth/revoke                         → RFC 7009
 
-# A 401 from /api/mcp returns:
-WWW-Authenticate: Bearer resource_metadata="https://superagentskill.com/.well-known/oauth-protected-resource/api/mcp"`}
+# A 401 from /api/public/mcp returns:
+WWW-Authenticate: Bearer resource_metadata="https://superagentskill.com/.well-known/oauth-protected-resource/api/public/mcp"`}
           />
           <p className="mt-3 text-muted-foreground">
             Compliant clients run the browser consent flow automatically. After you click
@@ -293,7 +293,7 @@ npx -y super-agent setup cursor   # (re)write a client config from saved creds`}
             code={`{
   "mcpServers": {
     "super-agent-skill": {
-      "url": "https://superagentskill.com/api/mcp"
+      "url": "https://superagentskill.com/api/public/mcp"
     }
   }
 }`}
@@ -305,7 +305,7 @@ npx -y super-agent setup cursor   # (re)write a client config from saved creds`}
             lang="json"
             code={`{
   "mcpServers": {
-    "super-agent-skill": { "url": "https://superagentskill.com/api/mcp" }
+    "super-agent-skill": { "url": "https://superagentskill.com/api/public/mcp" }
   }
 }`}
           />
@@ -318,7 +318,7 @@ npx -y super-agent setup cursor   # (re)write a client config from saved creds`}
   "tools": [
     {
       "type": "mcp",
-      "server_url": "https://superagentskill.com/api/mcp",
+      "server_url": "https://superagentskill.com/api/public/mcp",
       "headers": { "Accept": "application/json, text/event-stream" }
     }
   ]

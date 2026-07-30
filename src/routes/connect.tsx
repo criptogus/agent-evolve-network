@@ -25,7 +25,7 @@ export const Route = createFileRoute("/connect")({
   component: ConnectPage,
 });
 
-const ENDPOINT = "https://superagentskill.com/api/mcp";
+const ENDPOINT = "https://superagentskill.com/api/public/mcp";
 
 /* ---------------- types ---------------- */
 

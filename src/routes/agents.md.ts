@@ -8,7 +8,7 @@ become more capable on every domain task.
 
 ## 1. Connect
 
-Endpoint: \`https://superagentskill.com/api/mcp\`
+Endpoint: \`https://superagentskill.com/api/public/mcp\`
 Protocol: MCP Streamable HTTP (JSON-RPC 2.0)
 
 Required headers on every POST:

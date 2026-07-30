@@ -35,7 +35,7 @@ fail()  { printf "\${RED}\xE2\x9C\x97\${NC} %s\\n" "$*" >&2; exit 1; }
 
 CONFIG_DIR="\${HERMES_HOME:-$HOME/.hermes}"
 CONFIG_FILE="$CONFIG_DIR/config.yaml"
-ENDPOINT="https://superagentskill.com/api/mcp"
+ENDPOINT="https://superagentskill.com/api/public/mcp"
 
 info "SuperAgentSkill \xC3\x97 Hermes installer"
 info "Config: $CONFIG_FILE"

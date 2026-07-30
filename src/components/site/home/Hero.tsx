@@ -9,7 +9,7 @@ const McpInstallAnimation = lazy(() =>
   import("@/components/site/McpInstallAnimation").then((m) => ({ default: m.McpInstallAnimation })),
 );
 
-const MCP_URL = "https://superagentskill.com/api/mcp";
+const MCP_URL = "https://superagentskill.com/api/public/mcp";
 
 /**
  * Conversion-first hero: one static headline (no rotating text — it caused

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { SITE_STATS } from "@/lib/site-stats";
 
-const MCP_URL = "https://superagentskill.com/api/mcp";
+const MCP_URL = "https://superagentskill.com/api/public/mcp";
 
 const CLIENTS = [
   { name: "Claude", glyph: "✦" },
