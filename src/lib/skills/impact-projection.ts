@@ -242,6 +242,7 @@ export function projectImpact(input: ImpactInput): ImpactProjection {
       rescuedRunsPerMonth: Math.round(rescuedRunsPerMonth),
       tokensSavedPerMonth: Math.round(tokensSavedPerMonth),
     },
+    confidence,
     headline:
       target - current < 2
         ? `Already at grade ${gradeLetter(current)} (${Math.round(current)}/100) — projected gains are marginal.`
