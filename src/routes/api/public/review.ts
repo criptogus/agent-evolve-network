@@ -47,6 +47,12 @@ export const Route = createFileRoute("/api/public/review")({
           method: "POST",
           content_type: "application/json",
           note: "Same scoring engine as the `review_skill` MCP tool, but plain JSON in / plain JSON out — no JSON-RPC, no SSE, no auth.",
+          axes: {
+            format_score: "0-100, deterministic structure detectors (alias of structural_score). Format only.",
+            substance_score: "0-100, LLM-judged content quality with format explicitly ignored. Null when the judge did not run.",
+            substance:
+              "{ judged, score, grade, judged_by, rationale, pillars[{ pillar, score, rationale, evidence[{ line, quote, verified }] }] } — the written justification plus the verbatim file excerpts that sustain each pillar score. `verified: false` means the quote was not found verbatim in the submitted file.",
+          },
           body_schema: {
             name: "string (1-200) — file or skill name, report header only",
             type: "skill | playbook | soul | guardrail (default: skill)",
