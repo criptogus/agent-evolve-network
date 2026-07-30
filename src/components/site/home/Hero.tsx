@@ -36,7 +36,7 @@ export function Hero() {
               </span>
             </div>
             <h1 className="mt-5 text-balance text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
-              Turn Claude, Cursor or ChatGPT into{" "}
+              Turn Claude, Hermes or ChatGPT into{" "}
               <span className="text-primary">an expert in your field</span> — in 30 seconds.
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground lg:mx-0 lg:text-lg">
