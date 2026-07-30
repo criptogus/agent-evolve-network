@@ -258,7 +258,11 @@ export function Nav() {
                       <MobileLink to="/account/tokens" onNavigate={() => setOpen(false)}>
                         API tokens
                       </MobileLink>
+                      <MobileLink to="/account/encryption" onNavigate={() => setOpen(false)}>
+                        Encryption (BYOK)
+                      </MobileLink>
                       {isAdmin && (
+
                         <MobileLink to="/admin" onNavigate={() => setOpen(false)}>
                           Admin
                         </MobileLink>
