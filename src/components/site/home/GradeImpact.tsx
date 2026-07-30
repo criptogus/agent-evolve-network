@@ -243,7 +243,35 @@ export function GradeImpact() {
           </Link>
         </div>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
+        {/* Contextual lead CTA — converts visitors convinced by the A-grade delta. */}
+        <div className="mx-auto mt-12 max-w-2xl rounded-2xl border border-primary/30 bg-primary/[0.03] p-6 text-center shadow-elevated md:p-8">
+          <h3 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">
+            Quer ver o mesmo delta no seu agente?
+          </h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Acompanhe pass rate, intervenção humana, latência e ROI por skill no painel SAK. Entre na
+            fila de acesso ou veja seus números agora.
+          </p>
+          <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link
+              to="/admin/roi"
+              className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Ver meu ROI no admin <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+            <Link
+              to="/signup"
+              className="inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-5 font-medium text-foreground transition-colors hover:bg-accent"
+            >
+              Solicitar acesso
+            </Link>
+          </div>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            Acesso ao ROI requer conta SAK. Novos usuários começam no plano Free.
+          </p>
+        </div>
+
+        <p className="mt-8 text-center text-xs text-muted-foreground">
           Numbers reflect the median gap between the bottom-quartile ungraded skill and the median
           A-grade skill on SAK over the last 90 days. Your mileage will vary — every skill page
           shows its live numbers.
