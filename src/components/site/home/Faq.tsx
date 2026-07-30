@@ -122,6 +122,21 @@ export function Faq() {
         </>
       ),
     },
+    {
+      q: "If I upload a proprietary skill, can Super Agent Skill copy it?",
+      a: (
+        <>
+          No. You keep full ownership and copyright. Uploaded skills are not used to train shared
+          models, are stored encrypted at rest, and are only readable by you or callers you
+          authorize. Public releases are signed with Ed25519 so you can verify integrity offline.
+          You can inspect the public evidence at{" "}
+          <Link to="/security" className="text-primary hover:underline">
+            /security
+          </Link>
+          .
+        </>
+      ),
+    },
   ];
 
   return (
