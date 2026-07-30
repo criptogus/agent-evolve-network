@@ -34,7 +34,7 @@ async function handle(): Promise<Response> {
     version: VERSION,
     uptime_seconds: Math.floor((Date.now() - STARTED_AT) / 1000),
     db: { ok: db.ok, ping_ms: db.ping_ms },
-    endpoint: "https://superagentskill.com/api/mcp",
+    endpoint: "https://superagentskill.com/api/public/mcp",
     docs: "https://superagentskill.com/docs/mcp",
     status_page: "https://superagentskill.com/status",
     checked_at: new Date().toISOString(),

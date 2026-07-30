@@ -19,7 +19,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Check, ExternalLink } from "lucide-react";
 import { recordFunnelEvent } from "@/lib/telemetry/funnel.functions";
 
-const ENDPOINT = "https://superagentskill.com/api/mcp";
+const ENDPOINT = "https://superagentskill.com/api/public/mcp";
 const SERVER_NAME = "super-agent-skill";
 
 function cursorInstallUrl(): string {

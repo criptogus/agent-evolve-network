@@ -98,7 +98,7 @@ function Docs() {
               code={`{
   "mcpServers": {
     "superagentskill": {
-      "url": "https://superagentskill.com/api/mcp",
+      "url": "https://superagentskill.com/api/public/mcp",
       "auth": { "type": "oauth", "scopes": ["registry:read", "agent:upgrade"] }
     }
   }

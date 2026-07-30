@@ -76,7 +76,7 @@ function ConnectionsPage() {
               No OAuth connections yet. Open your MCP client (Claude, Cursor, Codex, Lovable…) and
               paste{" "}
               <code className="rounded bg-background px-1 py-0.5 font-mono text-xs">
-                https://superagentskill.com/api/mcp
+                https://superagentskill.com/api/public/mcp
               </code>
               . The client will open a browser window to authorize you.
             </div>

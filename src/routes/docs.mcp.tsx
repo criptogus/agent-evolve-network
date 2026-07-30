@@ -124,7 +124,7 @@ function McpDocs() {
           {/* Endpoint */}
           <h2 id="endpoint" className="mt-12 text-2xl font-semibold tracking-tight">Endpoint</h2>
           <div className="mt-3 rounded-lg border border-border bg-surface p-4 text-sm">
-            <div className="font-mono text-foreground">POST/GET/DELETE  https://superagentskill.com/api/mcp</div>
+            <div className="font-mono text-foreground">POST/GET/DELETE  https://superagentskill.com/api/public/mcp</div>
             <div className="mt-1 text-muted-foreground">Single endpoint, JSON-RPC 2.0 framed by the MCP Streamable HTTP spec.</div>
           </div>
 
@@ -139,7 +139,7 @@ function McpDocs() {
             <CodeBlock
               filename="curl"
               lang="bash"
-              code={`curl -X POST https://superagentskill.com/api/mcp \\
+              code={`curl -X POST https://superagentskill.com/api/public/mcp \\
   -H "Content-Type: application/json" \\
   -H "Accept: application/json, text/event-stream" \\
   -d '{
@@ -293,7 +293,7 @@ npx -y super-agent setup cursor   # (re)write a client config from saved creds`}
             code={`{
   "mcpServers": {
     "super-agent-skill": {
-      "url": "https://superagentskill.com/api/mcp"
+      "url": "https://superagentskill.com/api/public/mcp"
     }
   }
 }`}
@@ -305,7 +305,7 @@ npx -y super-agent setup cursor   # (re)write a client config from saved creds`}
             lang="json"
             code={`{
   "mcpServers": {
-    "super-agent-skill": { "url": "https://superagentskill.com/api/mcp" }
+    "super-agent-skill": { "url": "https://superagentskill.com/api/public/mcp" }
   }
 }`}
           />
@@ -318,7 +318,7 @@ npx -y super-agent setup cursor   # (re)write a client config from saved creds`}
   "tools": [
     {
       "type": "mcp",
-      "server_url": "https://superagentskill.com/api/mcp",
+      "server_url": "https://superagentskill.com/api/public/mcp",
       "headers": { "Accept": "application/json, text/event-stream" }
     }
   ]

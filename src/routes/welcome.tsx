@@ -7,7 +7,7 @@ import { CodeBlock } from "@/components/site/CodeBlock";
 import { Logo } from "@/components/site/Logo";
 import { PACKAGES_LABEL } from "@/lib/site-stats";
 
-const ENDPOINT = "https://superagentskill.com/api/mcp";
+const ENDPOINT = "https://superagentskill.com/api/public/mcp";
 
 const searchSchema = z.object({
   session_id: z.string().optional(),
@@ -314,7 +314,7 @@ Type: MCP (HTTP)`,
   },
 ];
 
-const MAGIC_PROMPT = `I just connected the "Super Agent Skill" MCP server (https://superagentskill.com/api/mcp). 
+const MAGIC_PROMPT = `I just connected the "Super Agent Skill" MCP server (https://superagentskill.com/api/public/mcp). 
 
 Please do the following:
 1. Call the discover tool to list the most relevant skills, playbooks, souls and guardrails for what I'm working on.

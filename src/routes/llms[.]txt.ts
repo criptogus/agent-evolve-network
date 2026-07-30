@@ -7,7 +7,7 @@ const BODY = `# Super Agent Skill
 > The MCP infrastructure layer for AI agents. Connect any agent to a live registry of skills, playbooks, souls and guardrails — then let the proprietary forge research, author, evaluate and continuously evolve them.
 
 Site: https://superagentskill.com
-MCP endpoint: https://superagentskill.com/api/mcp
+MCP endpoint: https://superagentskill.com/api/public/mcp
 MCP endpoint (firewall-safe mirror, use if /api/mcp returns 403 from your runtime): https://superagentskill.com/api/public/mcp
 Transport: MCP Streamable HTTP (JSON-RPC 2.0). Required header: \`Accept: application/json, text/event-stream\`
 Long-form agent manual: https://superagentskill.com/agents.md
@@ -27,7 +27,7 @@ No retraining. No SDK. No DevOps. One MCP URL → one sentence → a specialist.
 ## Quickstart (30 seconds)
 1. Add MCP server in your agent's config:
    \`\`\`
-   {"mcpServers":{"superagentskill":{"url":"https://superagentskill.com/api/mcp"}}}
+   {"mcpServers":{"superagentskill":{"url":"https://superagentskill.com/api/public/mcp"}}}
    \`\`\`
 2. Authorize via OAuth 2.1 + PKCE (browser opens automatically).
 3. Ask the agent: "make me a cardiologist" — it discovers, installs and evolves.

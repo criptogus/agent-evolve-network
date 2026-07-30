@@ -17,7 +17,7 @@ export function CtaSection() {
           SkillForge ship better versions for you — week after week.
         </p>
         <div className="mx-auto mt-7 max-w-md">
-          <CodeBlockCopy code="https://superagentskill.com/api/mcp" label="copy MCP url" />
+          <CodeBlockCopy code="https://superagentskill.com/api/public/mcp" label="copy MCP url" />
         </div>
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
