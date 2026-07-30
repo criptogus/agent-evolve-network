@@ -96,7 +96,7 @@ export async function processBulkUpload(
   const overflow = files.slice(INLINE_BUDGET);
   const results: UploadResult[] = [];
   for (const f of inline) {
-    const out: UploadResult = { name: f.name, ok: false };
+    const out: UploadResult = { name: f.name, ok: false, status: "failed" };
     try {
       const inferred = f.type ?? inferType(f.name, f.content);
 
