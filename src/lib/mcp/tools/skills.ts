@@ -1466,24 +1466,68 @@ Return one verdict per pillar, plus a document-level summary.
 - If covered=false, set evidence_line=null and evidence_quote=null.
 - summary: 2-3 sentences on the document's substantive strengths and biggest content gap.`;
 
-  // Deliberately bound-free: array/string/number constraints in the schema make
-  // the gateway reject an otherwise-good generation post-hoc with
-  // "response did not match schema". All clamping happens in code below.
-  const verdictSchema = z.object({
-    pillar: z.enum(["identity", "scope", "procedure", "examples", "guardrails", "trust", "portability"]),
-    covered: z.boolean(),
-    confidence: z.number(),
-    substance_score: z.number(),
-    rationale: z.string(),
-    excerpts: z.array(z.object({ line: z.number().nullable(), quote: z.string() })),
-    evidence_line: z.number().nullable(),
-    evidence_quote: z.string().nullable(),
-  });
-  const schema = z.object({
-    summary: z.string(),
-    verdicts: z.array(verdictSchema),
-  });
-  type Parsed = z.infer<typeof schema>;
+  // No `Output.object` schema here: the gateway serves these Gemini ids in
+  // json_object mode (no strict structuredOutputs), so a schema is validated
+  // post-hoc and one stray field type throws away the entire judgement with
+  // "response did not match schema". We ask for JSON in the prompt and parse
+  // tolerantly — a partially valid verdict list beats losing the whole axis.
+  type RawVerdict = {
+    pillar: PillarId;
+    covered: boolean;
+    confidence: number;
+    substance_score: number;
+    rationale: string;
+    excerpts: Array<{ line: number | null; quote: string }>;
+    evidence_line: number | null;
+    evidence_quote: string | null;
+  };
+  type Parsed = { summary: string; verdicts: RawVerdict[] };
+
+  const PILLARS = new Set(Object.keys(PILLAR_BRIEF));
+  const num = (v: unknown, fallback: number): number => {
+    const n = typeof v === "number" ? v : typeof v === "string" ? Number.parseFloat(v) : NaN;
+    return Number.isFinite(n) ? n : fallback;
+  };
+  const optLine = (v: unknown): number | null => {
+    const n = typeof v === "number" ? v : typeof v === "string" ? Number.parseInt(v, 10) : NaN;
+    return Number.isFinite(n) && n >= 1 ? Math.round(n) : null;
+  };
+  const str = (v: unknown): string => (typeof v === "string" ? v : "");
+
+  function parseJudgement(raw: string): Parsed | null {
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    if (start < 0 || end <= start) return null;
+    let obj: any;
+    try {
+      obj = JSON.parse(raw.slice(start, end + 1));
+    } catch {
+      return null;
+    }
+    const list = Array.isArray(obj?.verdicts) ? obj.verdicts : [];
+    const verdicts: RawVerdict[] = [];
+    for (const v of list) {
+      const pillar = str(v?.pillar).trim();
+      if (!PILLARS.has(pillar)) continue;
+      const score = num(v?.substance_score, NaN);
+      if (!Number.isFinite(score)) continue;
+      const excerpts = (Array.isArray(v?.excerpts) ? v.excerpts : [])
+        .map((e: any) => ({ line: optLine(e?.line), quote: str(e?.quote) }))
+        .filter((e: { quote: string }) => e.quote.trim().length > 0);
+      verdicts.push({
+        pillar: pillar as PillarId,
+        covered: v?.covered === true || (v?.covered !== false && score >= 46),
+        confidence: num(v?.confidence, Math.min(1, score / 100)),
+        substance_score: score,
+        rationale: str(v?.rationale),
+        excerpts,
+        evidence_line: optLine(v?.evidence_line),
+        evidence_quote: str(v?.evidence_quote) || null,
+      });
+    }
+    if (verdicts.length === 0) return null;
+    return { summary: str(obj?.summary), verdicts };
+  }
 
   // The judge is the highest-value feature for niche-jargon skills and for
   // non-English content, so a single transient gateway blip should not
@@ -1501,37 +1545,20 @@ Return one verdict per pillar, plus a document-level summary.
         model: getGatewayModel(modelId),
         system: sys,
         prompt: user,
-        output: Output.object({ schema }),
-        abortSignal: AbortSignal.timeout(20_000),
+        abortSignal: AbortSignal.timeout(25_000),
       });
-      output = res.output;
-      break;
-    } catch (e: any) {
-      // Salvage path: a schema-validation failure still carries the raw model
-      // text. A partially valid verdict list beats losing the whole axis.
-      const raw: string | undefined = e?.text ?? e?.cause?.text;
-      if (raw) {
-        try {
-          const start = raw.indexOf("{");
-          const end = raw.lastIndexOf("}");
-          const obj = JSON.parse(start >= 0 ? raw.slice(start, end + 1) : raw);
-          const verdicts = Array.isArray(obj?.verdicts)
-            ? obj.verdicts
-                .map((v: unknown) => verdictSchema.safeParse(v))
-                .filter((p: any) => p.success)
-                .map((p: any) => p.data)
-            : [];
-          if (verdicts.length > 0) {
-            output = { summary: typeof obj?.summary === "string" ? obj.summary : "", verdicts };
-            break;
-          }
-        } catch { /* fall through to retry */ }
+      const parsed = parseJudgement(res.text ?? "");
+      if (parsed) {
+        output = parsed;
+        break;
       }
+      attempts.push({ model: modelId, ms: Date.now() - t0, error: "unparseable_json" });
+    } catch (e: any) {
       attempts.push({ model: modelId, ms: Date.now() - t0, error: e?.message ?? String(e) });
-      if (attempt < 2) await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
     }
+    if (attempt < 2) await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
   }
-  if (!output || output.verdicts.length === 0) {
+  if (!output) {
     console.warn(`[review.semantic] all ${attempts.length} attempts failed:`, attempts);
     return null;
   }
