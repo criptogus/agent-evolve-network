@@ -140,13 +140,17 @@ export function GradeImpact() {
         </div>
 
         {/* Headline outcome chart — the fastest read of the A-grade delta. */}
-        <OutcomeComparisonChart />
+        <div className="chart-slide-up chart-delay-300 opacity-0">
+          <OutcomeComparisonChart />
+        </div>
 
         {/* Comparative charts — the value curve and the security gap */}
-        <SakValueCharts />
+        <div className="chart-slide-up chart-delay-400 opacity-0">
+          <SakValueCharts />
+        </div>
 
         {/* Comparison table */}
-        <div className="mt-10 overflow-hidden rounded-2xl border border-border bg-background">
+        <div className="mt-10 overflow-hidden rounded-2xl border border-border bg-background chart-slide-up chart-delay-500 opacity-0">
           <div className="hidden grid-cols-12 border-b border-border bg-surface-muted/60 px-5 py-3 text-[11px] font-mono uppercase tracking-wider text-muted-foreground md:grid">
             <div className="col-span-5">Metric</div>
             <div className="col-span-2 text-right">Ungraded</div>
@@ -154,10 +158,11 @@ export function GradeImpact() {
             <div className="col-span-3 text-right">Difference</div>
           </div>
           <ul className="divide-y divide-border">
-            {ROWS.map((row) => (
+            {ROWS.map((row, idx) => (
               <li
                 key={row.metric}
-                className="grid grid-cols-2 gap-2 px-5 py-4 md:grid-cols-12 md:items-center md:gap-4"
+                className="grid grid-cols-2 gap-2 px-5 py-4 md:grid-cols-12 md:items-center md:gap-4 chart-fade"
+                style={{ animationDelay: `${600 + idx * 60}ms` }}
               >
                 <div className="col-span-2 md:col-span-5">
                   <div className="text-sm font-semibold text-foreground">{row.metric}</div>
