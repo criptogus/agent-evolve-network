@@ -301,8 +301,12 @@ export function OutcomeComparisonChart() {
             </tr>
           </thead>
           <tbody>
-            {OUTCOMES.map((o) => (
-              <tr key={o.metric} className="border-b border-border/50">
+            {OUTCOMES.map((o, idx) => (
+              <tr
+                key={o.metric}
+                className="border-b border-border/50 chart-fade"
+                style={{ animationDelay: `${700 + idx * 50}ms` }}
+              >
                 <td className="py-1 pr-2">{o.metric}</td>
                 <td className="py-1 pr-2 font-mono">{o.ungraded}%</td>
                 <td className="py-1 font-mono">{o.sak}%</td>
