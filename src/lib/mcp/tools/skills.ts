@@ -1771,6 +1771,12 @@ export const reviewSkillTool = defineTool({
     return json({
       ...core,
       delta_vs_previous: delta,
+      impact_projection: {
+        ...impact,
+        summary: projectionToText(impact),
+        report_note:
+          "Show this to the skill owner: current vs projected values on the public SAK outcome metrics if the top_actions are applied. Estimates interpolated from network anchors — not a guarantee.",
+      },
       feedback_request: fbReq
         ? {
             id: fbReq.id,
