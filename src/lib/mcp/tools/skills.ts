@@ -1,4 +1,5 @@
 import { defineTool } from "mcp-tanstack-start";
+import { detectLanguage, type Lang } from "@/lib/mcp/lang-detect";
 import { z } from "zod";
 import { generateText, Output } from "ai";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -20,7 +21,10 @@ async function resolveUserFromToken(token: string): Promise<string | null> {
     .maybeSingle();
   if (!data) return null;
   // best-effort touch last_used_at
-  await supabaseAdmin.from("mcp_tokens").update({ last_used_at: new Date().toISOString() }).eq("id", data.id);
+  await supabaseAdmin
+    .from("mcp_tokens")
+    .update({ last_used_at: new Date().toISOString() })
+    .eq("id", data.id);
   return data.user_id;
 }
 
@@ -46,7 +50,13 @@ export const overviewTool = defineTool({
             "4. search_registry  — (optional) borrow patterns from high-trust primitives.",
             "(get_methodology is orientation only — the rubric/signals are server-side and not disclosed.)",
           ],
-          tools: ["get_methodology", "review_skill", "review_skills_batch", "search_registry", "get_package"],
+          tools: [
+            "get_methodology",
+            "review_skill",
+            "review_skills_batch",
+            "search_registry",
+            "get_package",
+          ],
         },
         discover_registry: {
           description:
@@ -57,7 +67,13 @@ export const overviewTool = defineTool({
             "3. get_skill_trust   — success rate, latency, per-model heatmap, robustness findings, trust_score. Call BEFORE recommending.",
             "4. report_execution  — (after the user runs it) feed the trust system. Best-effort.",
           ],
-          tools: ["search_registry", "list_packages", "get_package", "get_skill_trust", "report_execution"],
+          tools: [
+            "search_registry",
+            "list_packages",
+            "get_package",
+            "get_skill_trust",
+            "report_execution",
+          ],
         },
         publish_back: {
           description:
@@ -79,21 +95,52 @@ export const overviewTool = defineTool({
             "5. cloud_skills_import — import a SKILL.md file into your cloud library.",
             "6. cloud_skills_delete — remove a skill from your library.",
           ],
-          tools: ["cloud_skills_list", "cloud_skills_get", "cloud_skills_save", "cloud_skills_delete", "cloud_skills_export", "cloud_skills_import"],
+          tools: [
+            "cloud_skills_list",
+            "cloud_skills_get",
+            "cloud_skills_save",
+            "cloud_skills_delete",
+            "cloud_skills_export",
+            "cloud_skills_import",
+          ],
         },
       },
       primitive_types: {
-        skill: "A focused capability the agent can invoke (e.g. 'write-cold-outreach', 'audit-rls-policies').",
+        skill:
+          "A focused capability the agent can invoke (e.g. 'write-cold-outreach', 'audit-rls-policies').",
         playbook: "A multi-step procedure / runbook the agent follows end-to-end.",
         soul: "Persona + values + voice + refusals (the 'who', not the 'what').",
-        guardrail: "A safety / quality constraint enforced before, during or after another primitive runs.",
+        guardrail:
+          "A safety / quality constraint enforced before, during or after another primitive runs.",
       },
       auth: {
-        anonymous_ok: ["overview", "get_methodology", "review_skill", "review_skills_batch", "search_registry", "list_packages", "get_package", "get_skill_trust"],
-        oauth_required: ["upload_packages", "request_primitive", "report_execution", "cloud_skills_*"],
-        paid_subscription_required: ["cloud_skills_list", "cloud_skills_get", "cloud_skills_save", "cloud_skills_delete", "cloud_skills_export", "cloud_skills_import"],
+        anonymous_ok: [
+          "overview",
+          "get_methodology",
+          "review_skill",
+          "review_skills_batch",
+          "search_registry",
+          "list_packages",
+          "get_package",
+          "get_skill_trust",
+        ],
+        oauth_required: [
+          "upload_packages",
+          "request_primitive",
+          "report_execution",
+          "cloud_skills_*",
+        ],
+        paid_subscription_required: [
+          "cloud_skills_list",
+          "cloud_skills_get",
+          "cloud_skills_save",
+          "cloud_skills_delete",
+          "cloud_skills_export",
+          "cloud_skills_import",
+        ],
         anonymous_dry_run: ["upload_packages", "request_primitive"],
-        anonymous_dry_run_note: "Pass dry_run:true to upload_packages / request_primitive to validate the flow anonymously — no persistence, no model budget, no OAuth.",
+        anonymous_dry_run_note:
+          "Pass dry_run:true to upload_packages / request_primitive to validate the flow anonymously — no persistence, no model budget, no OAuth.",
         oauth_endpoint: "https://superagentskill.com/oauth/authorize",
       },
       docs: "https://superagentskill.com/connect",
@@ -207,18 +254,26 @@ export const requestPrimitiveTool = defineTool({
     "[PUBLISH] Submit a request for a primitive that does not yet exist. SuperAgentSkill researches and auto-creates it via the proprietary forge pipeline. Requires OAuth. Pass an `idempotency_key` (any opaque string you generate once per request) and retries return the original `request_id` instead of creating duplicates.",
   parameters: z.object({
     type: z.enum(["skill", "playbook", "soul", "guardrail"]),
-    brief: z.string().min(20).max(2000).describe("What the primitive should do, with industry/context"),
+    brief: z
+      .string()
+      .min(20)
+      .max(2000)
+      .describe("What the primitive should do, with industry/context"),
     industry: z.string().max(80).optional(),
     idempotency_key: z
       .string()
       .min(8)
       .max(200)
       .optional()
-      .describe("Opaque string generated once per logical request. Repeats within 24h return the original response."),
+      .describe(
+        "Opaque string generated once per logical request. Repeats within 24h return the original response.",
+      ),
     dry_run: z
       .boolean()
       .default(false)
-      .describe("Preview the request WITHOUT authenticating or persisting: validates the brief and echoes the would-be queued payload so an agent can test the flow before connecting OAuth. Nothing is enqueued."),
+      .describe(
+        "Preview the request WITHOUT authenticating or persisting: validates the brief and echoes the would-be queued payload so an agent can test the flow before connecting OAuth. Nothing is enqueued.",
+      ),
   }),
   execute: async ({ type, brief, industry, idempotency_key, dry_run }, ctx) => {
     if (dry_run) {
@@ -261,21 +316,63 @@ export const reportExecutionTool = defineTool({
     success: z.boolean(),
     model: z.string().max(80).optional().describe("e.g. claude-sonnet-4-5, gpt-5, gemini-2.5-pro"),
     version: z.string().max(40).optional(),
-    latency_ms: z.number().int().min(0).max(10 * 60 * 1000).optional(),
+    latency_ms: z
+      .number()
+      .int()
+      .min(0)
+      .max(10 * 60 * 1000)
+      .optional(),
     tokens_in: z.number().int().min(0).max(2_000_000).optional(),
     tokens_out: z.number().int().min(0).max(2_000_000).optional(),
-    error_kind: z.string().max(80).optional().describe("Short tag like timeout, refusal, hallucination, tool_error"),
-    agent_fp: z.string().max(128).optional().describe("Opaque per-agent fingerprint hash for rate limiting"),
+    error_kind: z
+      .string()
+      .max(80)
+      .optional()
+      .describe("Short tag like timeout, refusal, hallucination, tool_error"),
+    agent_fp: z
+      .string()
+      .max(128)
+      .optional()
+      .describe("Opaque per-agent fingerprint hash for rate limiting"),
     // ---- Outcome instrumentation (proves customer value, not just execution)
     task_completed: z.boolean().optional().describe("Did the user's task actually get done?"),
-    human_intervention: z.boolean().optional().describe("Did a human have to step in to finish/fix it?"),
-    user_rating: z.union([z.literal(-1), z.literal(0), z.literal(1)]).optional().describe("End-user signal: 1 up, -1 down"),
-    baseline_latency_ms: z.number().int().min(0).max(10 * 60 * 1000).optional().describe("Latency without the skill (or previous version)"),
-    baseline_tokens: z.number().int().min(0).max(2_000_000).optional().describe("Tokens without the skill (or previous version)"),
+    human_intervention: z
+      .boolean()
+      .optional()
+      .describe("Did a human have to step in to finish/fix it?"),
+    user_rating: z
+      .union([z.literal(-1), z.literal(0), z.literal(1)])
+      .optional()
+      .describe("End-user signal: 1 up, -1 down"),
+    baseline_latency_ms: z
+      .number()
+      .int()
+      .min(0)
+      .max(10 * 60 * 1000)
+      .optional()
+      .describe("Latency without the skill (or previous version)"),
+    baseline_tokens: z
+      .number()
+      .int()
+      .min(0)
+      .max(2_000_000)
+      .optional()
+      .describe("Tokens without the skill (or previous version)"),
     // ---- Counterfactual A/B attribution
-    arm: z.enum(["control", "treatment"]).optional().describe("control = skill off / previous version"),
-    experiment_key: z.string().max(96).optional().describe("Experiment id, e.g. code-reviewer:on-vs-off"),
-    workspace_hash: z.string().max(64).optional().describe("Opaque workspace id for per-customer ROI"),
+    arm: z
+      .enum(["control", "treatment"])
+      .optional()
+      .describe("control = skill off / previous version"),
+    experiment_key: z
+      .string()
+      .max(96)
+      .optional()
+      .describe("Experiment id, e.g. code-reviewer:on-vs-off"),
+    workspace_hash: z
+      .string()
+      .max(64)
+      .optional()
+      .describe("Opaque workspace id for per-customer ROI"),
   }),
   execute: async (input) => {
     const { data, error } = await supabaseAdmin.rpc("report_skill_execution", {
@@ -311,7 +408,11 @@ export const reportOutcomeTool = defineTool({
     task_completed: z.boolean().optional(),
     human_intervention: z.boolean().optional(),
     user_rating: z.union([z.literal(-1), z.literal(0), z.literal(1)]).optional(),
-    agent_fp: z.string().max(128).optional().describe("Same fingerprint used when reporting the execution"),
+    agent_fp: z
+      .string()
+      .max(128)
+      .optional()
+      .describe("Same fingerprint used when reporting the execution"),
   }),
   execute: async (input) => {
     const { data, error } = await supabaseAdmin.rpc("attach_execution_outcome", {
@@ -351,7 +452,6 @@ export const getUpliftTool = defineTool({
   },
 });
 
-
 export const getTrustTool = defineTool({
   name: "get_skill_trust",
   description:
@@ -383,7 +483,7 @@ export const uploadPackagesTool = defineTool({
           name: z.string().min(1).max(200),
           content: z.string().min(20).max(120_000),
           type: z.enum(["skill", "playbook", "soul", "guardrail"]).optional(),
-        })
+        }),
       )
       .min(1)
       .max(10),
@@ -391,17 +491,23 @@ export const uploadPackagesTool = defineTool({
       .string()
       .min(8)
       .optional()
-      .describe("Deprecated. Ignored when the request already carries an OAuth bearer; only used as a fallback for legacy personal MCP tokens."),
+      .describe(
+        "Deprecated. Ignored when the request already carries an OAuth bearer; only used as a fallback for legacy personal MCP tokens.",
+      ),
     idempotency_key: z
       .string()
       .min(8)
       .max(200)
       .optional()
-      .describe("Opaque string generated once per logical upload. Repeats within 24h return the original response and DO NOT re-process the files."),
+      .describe(
+        "Opaque string generated once per logical upload. Repeats within 24h return the original response and DO NOT re-process the files.",
+      ),
     dry_run: z
       .boolean()
       .default(false)
-      .describe("Validate the files WITHOUT authenticating or persisting anything: returns per-file inferred type + prompt-injection guard verdict so an agent can confirm a file would be accepted before connecting OAuth. No drafts are created, no model budget spent."),
+      .describe(
+        "Validate the files WITHOUT authenticating or persisting anything: returns per-file inferred type + prompt-injection guard verdict so an agent can confirm a file would be accepted before connecting OAuth. No drafts are created, no model budget spent.",
+      ),
   }),
   execute: async ({ auth_token, files, idempotency_key, dry_run }, ctx) => {
     // Dry-run preview is anonymous, side-effect-free, and zero-cost — it never
@@ -439,7 +545,10 @@ export const uploadPackagesTool = defineTool({
       const { results, queued } = await Promise.race([
         processBulkUpload(supabaseAdmin as any, userId, files),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("accept_timeout: upload queue did not respond in 20s")), TOOL_BUDGET_MS),
+          setTimeout(
+            () => reject(new Error("accept_timeout: upload queue did not respond in 20s")),
+            TOOL_BUDGET_MS,
+          ),
         ),
       ]);
       const done = results.filter((r) => r.status === "done").length;
@@ -469,7 +578,11 @@ export const uploadPackagesTool = defineTool({
           forge_report_url: r.forge_report_url ?? null,
           error: r.error ?? null,
         })),
-        queued: queued.map((j) => ({ id: j.id, filename: j.filename, inferred_type: j.inferred_type })),
+        queued: queued.map((j) => ({
+          id: j.id,
+          filename: j.filename,
+          inferred_type: j.inferred_type,
+        })),
         error_summary: errorMessages.length > 0 ? errorMessages.slice(0, 3).join(" · ") : null,
         next_step:
           queuedCount > 0
@@ -508,7 +621,8 @@ export const uploadPackagesTool = defineTool({
         })),
         queued: [],
         error_summary: msg,
-        next_step: "Upload failed before anything was persisted. Retry with the same idempotency_key.",
+        next_step:
+          "Upload failed before anything was persisted. Retry with the same idempotency_key.",
       });
     }
   },
@@ -556,10 +670,42 @@ const PILLAR_TITLE: Record<PillarId, string> = {
 };
 
 const TYPE_WEIGHTS: Record<string, Partial<Record<PillarId, number>>> = {
-  skill: { identity: 1, scope: 1.2, procedure: 1.3, examples: 1.3, guardrails: 1.1, trust: 1, portability: 0.9 },
-  playbook: { identity: 0.8, scope: 1.1, procedure: 1.8, examples: 1.2, guardrails: 1.1, trust: 1, portability: 0.8 },
-  soul: { identity: 2, scope: 0.8, procedure: 0.6, examples: 0.9, guardrails: 1.2, trust: 0.9, portability: 0.9 },
-  guardrail: { identity: 0.7, scope: 1, procedure: 1, examples: 1, guardrails: 2, trust: 1.1, portability: 0.9 },
+  skill: {
+    identity: 1,
+    scope: 1.2,
+    procedure: 1.3,
+    examples: 1.3,
+    guardrails: 1.1,
+    trust: 1,
+    portability: 0.9,
+  },
+  playbook: {
+    identity: 0.8,
+    scope: 1.1,
+    procedure: 1.8,
+    examples: 1.2,
+    guardrails: 1.1,
+    trust: 1,
+    portability: 0.8,
+  },
+  soul: {
+    identity: 2,
+    scope: 0.8,
+    procedure: 0.6,
+    examples: 0.9,
+    guardrails: 1.2,
+    trust: 0.9,
+    portability: 0.9,
+  },
+  guardrail: {
+    identity: 0.7,
+    scope: 1,
+    procedure: 1,
+    examples: 1,
+    guardrails: 2,
+    trust: 1.1,
+    portability: 0.9,
+  },
 };
 
 // ----------------------------------------------------------------------------
@@ -581,10 +727,14 @@ const DOC_CLASS_CEILING: Record<DocClass, number> = {
 };
 
 const DOC_CLASS_RATIONALE: Record<DocClass, string> = {
-  skill: "Calibrated for kebab-case SKILL.md with named sections and worked input/output. Grade A is realistically reachable.",
-  "playbook-ops": "Multi-step ops procedures. Heavier weight on the procedure axis; A reachable with explicit branches + stop condition.",
-  "guardrail-ops": "Policy/guardrail doc. A reachable when enforcement is described as deterministic (gate + exit code + tests), not just prose.",
-  governance: "Long-form governance/policy prose. Realistic ceiling is around B — the engine's structural signals are calibrated for skill files, so content quality matters more than format here. Actions targeting structural format above this ceiling are cosmetic.",
+  skill:
+    "Calibrated for kebab-case SKILL.md with named sections and worked input/output. Grade A is realistically reachable.",
+  "playbook-ops":
+    "Multi-step ops procedures. Heavier weight on the procedure axis; A reachable with explicit branches + stop condition.",
+  "guardrail-ops":
+    "Policy/guardrail doc. A reachable when enforcement is described as deterministic (gate + exit code + tests), not just prose.",
+  governance:
+    "Long-form governance/policy prose. Realistic ceiling is around B — the engine's structural signals are calibrated for skill files, so content quality matters more than format here. Actions targeting structural format above this ceiling are cosmetic.",
 };
 
 function inferDocClass(text: string, type: string): DocClass {
@@ -676,13 +826,10 @@ function inputWarning(text: string): "short_input" | "summary_markers" | "outlin
   // of ANY kind underneath them (true skeleton). This avoids the false
   // positive where a substantive, well-structured SKILL.md (lots of lists
   // under named sections) was misread as "headings without body".
-  const contentLines = lines.filter(
-    (l) => l.trim().length > 0 && !/^#{1,6}\s/.test(l)
-  ).length;
+  const contentLines = lines.filter((l) => l.trim().length > 0 && !/^#{1,6}\s/.test(l)).length;
   if (headings >= 6 && contentLines < headings) return "outline_only";
   return null;
 }
-
 
 // Each signal is bilingual (EN + PT-BR alternates) so non-English docs are not
 // silently zeroed. `kind`: "positive" = presence improves score; "negative" =
@@ -698,52 +845,240 @@ type Signal = {
 // docs are not silently zeroed. Add new languages by appending alternates here.
 const SIGNALS: Record<PillarId, Signal[]> = {
   identity: [
-    { w: 1, kind: "positive", primary: /\b(you are|role:|persona:|act as|você é|papel:|atue como|eres|tú eres|actúa como|rol:|tu es|agis comme|rôle:|du bist|handle als|rolle:|sei un|agisci come|ruolo:)\b/i, secondary: /\b(assistant|agent that|assistente|agente que|asistente|agente que|assistant|agent qui|assistent|agent der|assistente|agente che)\b/i },
-    { w: 1, kind: "positive", primary: /\b(values?:|principles?:|cares? about|believe|valores?:|princípios?:|acredita|valores:|principios:|cree|valeurs:|principes:|croit|werte:|prinzipien:|glaubt|valori:|principi:|crede)\b/i, secondary: /\b(prioriti[sz]e|stands? for|prioriza|prioriza|prioritiser|priorisier|prioritizz)/i },
-    { w: 0.8, kind: "positive", primary: /\b(voice|tone|writing style|voz|tom|estilo de escrita|voz|tono|estilo|voix|ton|style|stimme|tonfall|stil|voce|tono|stile)\b/i, secondary: /\b(concise|formal|friendly|conciso|amigável|conciso|amistoso|concis|amical|prägnant|freundlich|conciso|amichevole)/i },
-    { w: 1, kind: "positive", primary: /\b(non-goals?|will not|won't|out of scope|não-objetivos?|não fará|fora de escopo|no-objetivos|fuera de alcance|hors[- ]périmètre|nicht[- ]ziele|außerhalb|fuori ambito|non[- ]obiettivi)\b/i, secondary: /\b(never|avoid|nunca|evita|nunca|evitar|jamais|éviter|niemals|vermeiden|mai|evitare)/i },
-    { w: 1, kind: "positive", primary: /\b(refus|decline|cannot help|won't assist|recus|negar|não pode ajudar|rechaz|negar|no puede ayudar|refus|décline|ne peut aider|verweiger|ablehn|kann nicht helfen|rifiut|declin|non può aiutare)/i, secondary: /\b(escalate|hand off|escala|encaminha|escalar|derivar|escalader|transmettre|eskalier|weiterleiten|inoltr|trasferi)/i },
+    {
+      w: 1,
+      kind: "positive",
+      primary:
+        /\b(you are|role:|persona:|act as|você é|papel:|atue como|eres|tú eres|actúa como|rol:|tu es|agis comme|rôle:|du bist|handle als|rolle:|sei un|agisci come|ruolo:)\b/i,
+      secondary:
+        /\b(assistant|agent that|assistente|agente que|asistente|agente que|assistant|agent qui|assistent|agent der|assistente|agente che)\b/i,
+    },
+    {
+      w: 1,
+      kind: "positive",
+      primary:
+        /\b(values?:|principles?:|cares? about|believe|valores?:|princípios?:|acredita|valores:|principios:|cree|valeurs:|principes:|croit|werte:|prinzipien:|glaubt|valori:|principi:|crede)\b/i,
+      secondary:
+        /\b(prioriti[sz]e|stands? for|prioriza|prioriza|prioritiser|priorisier|prioritizz)/i,
+    },
+    {
+      w: 0.8,
+      kind: "positive",
+      primary:
+        /\b(voice|tone|writing style|voz|tom|estilo de escrita|voz|tono|estilo|voix|ton|style|stimme|tonfall|stil|voce|tono|stile)\b/i,
+      secondary:
+        /\b(concise|formal|friendly|conciso|amigável|conciso|amistoso|concis|amical|prägnant|freundlich|conciso|amichevole)/i,
+    },
+    {
+      w: 1,
+      kind: "positive",
+      primary:
+        /\b(non-goals?|will not|won't|out of scope|não-objetivos?|não fará|fora de escopo|no-objetivos|fuera de alcance|hors[- ]périmètre|nicht[- ]ziele|außerhalb|fuori ambito|non[- ]obiettivi)\b/i,
+      secondary:
+        /\b(never|avoid|nunca|evita|nunca|evitar|jamais|éviter|niemals|vermeiden|mai|evitare)/i,
+    },
+    {
+      w: 1,
+      kind: "positive",
+      primary:
+        /\b(refus|decline|cannot help|won't assist|recus|negar|não pode ajudar|rechaz|negar|no puede ayudar|refus|décline|ne peut aider|verweiger|ablehn|kann nicht helfen|rifiut|declin|non può aiutare)/i,
+      secondary:
+        /\b(escalate|hand off|escala|encaminha|escalar|derivar|escalader|transmettre|eskalier|weiterleiten|inoltr|trasferi)/i,
+    },
   ],
   scope: [
-    { w: 1.2, kind: "positive", primary: /\b(use when|use this when|job:|purpose:|when to use|use quando|propósito:|quando usar|usar cuando|propósito:|cuándo usar|utiliser quand|but:|quand utiliser|verwenden wenn|zweck:|wann verwenden|usare quando|scopo:|quando usare)\b/i, secondary: /\b(applies to|aplica-se a|aplica a|s'applique à|gilt für|si applica a)/i },
-    { w: 1, kind: "positive", primary: /\b(trigger|invoke|activate when|gatilho|acionar|ativar quando|disparar quando|quando disparar|quando invocar|quando chamar|disparador|activar cuando|déclencheur|activer quand|auslöser|aktivieren wenn|trigger|attivare quando)\b/i, secondary: /\b(when the user|quando o usuário|quando o agente|cuando el usuario|quand l'utilisateur|wenn der nutzer|quando l'utente)/i },
-    { w: 1, kind: "positive", primary: /\b(anti-trigger|do not use|skip when|not for|anti-gatilho|não usar|quando não usar|não use quando|não se aplica|pular quando|não para|no usar|saltar cuando|ne pas utiliser|sauter quand|nicht verwenden|überspringen wenn|non usare|saltare quando)\b/i, secondary: /\b(unless|except when|a menos que|exceto quando|salvo|a menos que|excepto cuando|sauf si|à moins que|es sei denn|außer wenn|a meno che|tranne quando)/i },
-    { w: 0.8, kind: "positive", primary: /\b(target user|audience|intended for|público-alvo|audiência|destinado a|usuario objetivo|audiencia|destinado a|utilisateur cible|public|destiné à|zielgruppe|nutzer|bestimmt für|utente target|pubblico|destinato a)/i, secondary: /\b(role of the user|papel do usuário|rol del usuario|rôle de l'utilisateur|rolle des nutzers|ruolo dell'utente)/i },
+    {
+      w: 1.2,
+      kind: "positive",
+      primary:
+        /\b(use when|use this when|job:|purpose:|when to use|use quando|propósito:|quando usar|usar cuando|propósito:|cuándo usar|utiliser quand|but:|quand utiliser|verwenden wenn|zweck:|wann verwenden|usare quando|scopo:|quando usare)\b/i,
+      secondary: /\b(applies to|aplica-se a|aplica a|s'applique à|gilt für|si applica a)/i,
+    },
+    {
+      w: 1,
+      kind: "positive",
+      primary:
+        /\b(trigger|invoke|activate when|gatilho|acionar|ativar quando|disparar quando|quando disparar|quando invocar|quando chamar|disparador|activar cuando|déclencheur|activer quand|auslöser|aktivieren wenn|trigger|attivare quando)\b/i,
+      secondary:
+        /\b(when the user|quando o usuário|quando o agente|cuando el usuario|quand l'utilisateur|wenn der nutzer|quando l'utente)/i,
+    },
+    {
+      w: 1,
+      kind: "positive",
+      primary:
+        /\b(anti-trigger|do not use|skip when|not for|anti-gatilho|não usar|quando não usar|não use quando|não se aplica|pular quando|não para|no usar|saltar cuando|ne pas utiliser|sauter quand|nicht verwenden|überspringen wenn|non usare|saltare quando)\b/i,
+      secondary:
+        /\b(unless|except when|a menos que|exceto quando|salvo|a menos que|excepto cuando|sauf si|à moins que|es sei denn|außer wenn|a meno che|tranne quando)/i,
+    },
+    {
+      w: 0.8,
+      kind: "positive",
+      primary:
+        /\b(target user|audience|intended for|público-alvo|audiência|destinado a|usuario objetivo|audiencia|destinado a|utilisateur cible|public|destiné à|zielgruppe|nutzer|bestimmt für|utente target|pubblico|destinato a)/i,
+      secondary:
+        /\b(role of the user|papel do usuário|rol del usuario|rôle de l'utilisateur|rolle des nutzers|ruolo dell'utente)/i,
+    },
   ],
   procedure: [
     { w: 1.4, kind: "positive", primary: /^\s*\d+[.)]/m, secondary: /^\s*[-*] /m },
-    { w: 1.1, kind: "positive", primary: /\b(input:|output:|success:|done when|entrada:|saída:|recebe:|retorna:|devolve:|sucesso:|pronto quando|entrada:|salida:|éxito:|hecho cuando|entrée:|sortie:|succès:|terminé quand|eingabe:|ausgabe:|erfolg:|fertig wenn|ingresso:|uscita:|successo:|fatto quando)|✓/i, secondary: /\b(returns?:|produces?:|retorna:|produz:|devuelve:|retourne:|gibt zurück:|restituisce:)/i },
-    { w: 1, kind: "positive", primary: /\b(if .*(then|→)|otherwise|else if|branch|fork|se .*(então|→)|caso contrário|senão|si .*(entonces|→)|de lo contrario|si .*(alors|→)|sinon|wenn .*(dann|→)|sonst|se .*(allora|→)|altrimenti)/i, secondary: /\b(case|depending on|caso|dependendo|caso|dependiendo|cas|selon|fall|abhängig|caso|a seconda)/i },
-    { w: 1, kind: "positive", primary: /\b(stop when|definition of done|finish when|terminate|parar quando|definição de pronto|finalizar quando|parar cuando|definición de hecho|terminar cuando|arrêter quand|définition de terminé|finir quand|stoppen wenn|definition fertig|beenden wenn|fermare quando|definizione di fatto|finire quando)/i, secondary: /\b(until|até|hasta|jusqu'à|bis|finché)/i },
+    {
+      w: 1.1,
+      kind: "positive",
+      primary:
+        /\b(input:|output:|success:|done when|entrada:|saída:|recebe:|retorna:|devolve:|sucesso:|pronto quando|entrada:|salida:|éxito:|hecho cuando|entrée:|sortie:|succès:|terminé quand|eingabe:|ausgabe:|erfolg:|fertig wenn|ingresso:|uscita:|successo:|fatto quando)|✓/i,
+      secondary:
+        /\b(returns?:|produces?:|retorna:|produz:|devuelve:|retourne:|gibt zurück:|restituisce:)/i,
+    },
+    {
+      w: 1,
+      kind: "positive",
+      primary:
+        /\b(if .*(then|→)|otherwise|else if|branch|fork|se .*(então|→)|caso contrário|senão|si .*(entonces|→)|de lo contrario|si .*(alors|→)|sinon|wenn .*(dann|→)|sonst|se .*(allora|→)|altrimenti)/i,
+      secondary:
+        /\b(case|depending on|caso|dependendo|caso|dependiendo|cas|selon|fall|abhängig|caso|a seconda)/i,
+    },
+    {
+      w: 1,
+      kind: "positive",
+      primary:
+        /\b(stop when|definition of done|finish when|terminate|parar quando|definição de pronto|finalizar quando|parar cuando|definición de hecho|terminar cuando|arrêter quand|définition de terminé|finir quand|stoppen wenn|definition fertig|beenden wenn|fermare quando|definizione di fatto|finire quando)/i,
+      secondary: /\b(until|até|hasta|jusqu'à|bis|finché)/i,
+    },
   ],
   examples: [
-    { w: 1.3, kind: "positive", primary: /\b(example|sample|worked|walkthrough|exemplo|amostra|passo[- ]a[- ]passo|ejemplo|muestra|paso a paso|exemple|échantillon|pas à pas|beispiel|muster|schritt für schritt|esempio|campione|passo passo)/i, secondary: /\b(e\.g\.|for instance|por exemplo|tipo assim|como por exemplo|por ejemplo|par exemple|zum beispiel|z\.b\.|ad esempio)/i },
-    { w: 1.2, kind: "positive", primary: /\b(bad example|anti-example|wrong:|fails when|counter-?example|exemplo ruim|mau exemplo|exemplo negativo|não faça|errado:|não recomendado|falha quando|contra-?exemplo|mal ejemplo|incorrecto:|falla cuando|contra-?ejemplo|mauvais exemple|incorrect:|échoue quand|contre-?exemple|schlechtes beispiel|falsch:|scheitert wenn|gegenbeispiel|esempio sbagliato|errato:|fallisce quando|controesempio)|❌/i, secondary: /\b(pitfall|mistake|armadilha|erro comum|pegadinha|trampa|error común|piège|erreur|fallstrick|fehler|insidia|errore)/i },
-    { w: 1, kind: "positive", primary: /\b(messy|edge case|ambiguous|partial input|real-world|caso extremo|ambíguo|caso real|mundo real|caso límite|ambiguo|entrada parcial|caso real|cas limite|ambigu|entrée partielle|monde réel|grenzfall|mehrdeutig|teileingabe|reale welt|caso limite|ambiguo|input parziale|mondo reale)/i, secondary: /\b(unhappy path|corner case|caminho infeliz|caso de canto|caso de esquina|cas extrême|sonderfall|caso d'angolo)/i },
+    {
+      w: 1.3,
+      kind: "positive",
+      primary:
+        /\b(example|sample|worked|walkthrough|exemplo|amostra|passo[- ]a[- ]passo|ejemplo|muestra|paso a paso|exemple|échantillon|pas à pas|beispiel|muster|schritt für schritt|esempio|campione|passo passo)/i,
+      secondary:
+        /\b(e\.g\.|for instance|por exemplo|tipo assim|como por exemplo|por ejemplo|par exemple|zum beispiel|z\.b\.|ad esempio)/i,
+    },
+    {
+      w: 1.2,
+      kind: "positive",
+      primary:
+        /\b(bad example|anti-example|wrong:|fails when|counter-?example|exemplo ruim|mau exemplo|exemplo negativo|não faça|errado:|não recomendado|falha quando|contra-?exemplo|mal ejemplo|incorrecto:|falla cuando|contra-?ejemplo|mauvais exemple|incorrect:|échoue quand|contre-?exemple|schlechtes beispiel|falsch:|scheitert wenn|gegenbeispiel|esempio sbagliato|errato:|fallisce quando|controesempio)|❌/i,
+      secondary:
+        /\b(pitfall|mistake|armadilha|erro comum|pegadinha|trampa|error común|piège|erreur|fallstrick|fehler|insidia|errore)/i,
+    },
+    {
+      w: 1,
+      kind: "positive",
+      primary:
+        /\b(messy|edge case|ambiguous|partial input|real-world|caso extremo|ambíguo|caso real|mundo real|caso límite|ambiguo|entrada parcial|caso real|cas limite|ambigu|entrée partielle|monde réel|grenzfall|mehrdeutig|teileingabe|reale welt|caso limite|ambiguo|input parziale|mondo reale)/i,
+      secondary:
+        /\b(unhappy path|corner case|caminho infeliz|caso de canto|caso de esquina|cas extrême|sonderfall|caso d'angolo)/i,
+    },
   ],
   guardrails: [
-    { w: 1.2, kind: "positive", primary: /\b(failure mode|known issue|risk:|pitfall|threat model|modo de falha|falhas conhecidas|pontos? de falha|problema conhecido|risco:|riscos:|armadilha|modelo de ameaça|modo de fallo|problema conocido|riesgo:|modelo de amenaza|mode d'échec|problème connu|risque:|modèle de menace|fehlermodus|bekanntes problem|risiko:|bedrohungsmodell|modalità di guasto|problema noto|rischio:|modello di minaccia)/i, secondary: /\b(can go wrong|caveat|pode dar errado|pode falhar|ressalva|puede fallar|salvedad|peut échouer|mise en garde|kann schiefgehen|vorbehalt|può andare male|avvertenza)/i },
-    { w: 1.2, kind: "positive", primary: /\b(mitigat|prevent|guard against|defen[sc]e|countermeasure|mitiga|preven[ir]|proteger contra|defesa|contramedida|mitigar|prevenir|proteger contra|defensa|contramedida|atténu|prévenir|défense|contre[- ]mesure|abmilder|verhindern|verteidigung|gegenmaßnahme|mitigare|prevenire|difesa|contromisura)/i, secondary: /\b(to avoid|para evitar|para evitar|pour éviter|um zu vermeiden|per evitare)/i },
-    { w: 1.3, kind: "positive", primary: /\b(prompt injection|untrusted|treat .* as data|ignore instructions|injeção de prompt|não-confiável|tratar .* como dados|ignorar instruções|inyección de prompt|no confiable|tratar .* como datos|ignorar instrucciones|injection de prompt|non fiable|traiter .* comme des données|ignorer les instructions|prompt[- ]injektion|nicht vertrauenswürdig|als daten behandeln|anweisungen ignorieren|iniezione di prompt|non affidabile|trattare .* come dati|ignorare istruzioni)/i, secondary: /\b(sanitiz|do not follow instructions|sanitiza|não seguir instruções|saniti[zs]ar|no seguir instrucciones|assainir|ne pas suivre les instructions|bereinigen|anweisungen nicht befolgen|sanific|non seguire istruzioni)/i },
-    { w: 1, kind: "positive", primary: /\b(pii|secret|redact|do not log|citation|cite sources|lgpd|gdpr|dados pessoais|segredo|redigir|não registrar|citação|citar fontes|datos personales|secreto|redactar|no registrar|cita|citar fuentes|données personnelles|secret|caviarder|ne pas journaliser|citation|citer les sources|personenbezogene daten|geheim|schwärzen|nicht protokollieren|zitat|quellen zitieren|dati personali|segreto|oscurare|non registrare|citazione|citare fonti)\b/i, secondary: /\b(confidential|sensitive data|confidencial|dados sensíveis|confidencial|datos sensibles|confidentiel|données sensibles|vertraulich|sensible daten|confidenziale|dati sensibili)/i },
+    {
+      w: 1.2,
+      kind: "positive",
+      primary:
+        /\b(failure mode|known issue|risk:|pitfall|threat model|modo de falha|falhas conhecidas|pontos? de falha|problema conhecido|risco:|riscos:|armadilha|modelo de ameaça|modo de fallo|problema conocido|riesgo:|modelo de amenaza|mode d'échec|problème connu|risque:|modèle de menace|fehlermodus|bekanntes problem|risiko:|bedrohungsmodell|modalità di guasto|problema noto|rischio:|modello di minaccia)/i,
+      secondary:
+        /\b(can go wrong|caveat|pode dar errado|pode falhar|ressalva|puede fallar|salvedad|peut échouer|mise en garde|kann schiefgehen|vorbehalt|può andare male|avvertenza)/i,
+    },
+    {
+      w: 1.2,
+      kind: "positive",
+      primary:
+        /\b(mitigat|prevent|guard against|defen[sc]e|countermeasure|mitiga|preven[ir]|proteger contra|defesa|contramedida|mitigar|prevenir|proteger contra|defensa|contramedida|atténu|prévenir|défense|contre[- ]mesure|abmilder|verhindern|verteidigung|gegenmaßnahme|mitigare|prevenire|difesa|contromisura)/i,
+      secondary: /\b(to avoid|para evitar|para evitar|pour éviter|um zu vermeiden|per evitare)/i,
+    },
+    {
+      w: 1.3,
+      kind: "positive",
+      primary:
+        /\b(prompt injection|untrusted|treat .* as data|ignore instructions|injeção de prompt|não-confiável|tratar .* como dados|ignorar instruções|inyección de prompt|no confiable|tratar .* como datos|ignorar instrucciones|injection de prompt|non fiable|traiter .* comme des données|ignorer les instructions|prompt[- ]injektion|nicht vertrauenswürdig|als daten behandeln|anweisungen ignorieren|iniezione di prompt|non affidabile|trattare .* come dati|ignorare istruzioni)/i,
+      secondary:
+        /\b(sanitiz|do not follow instructions|sanitiza|não seguir instruções|saniti[zs]ar|no seguir instrucciones|assainir|ne pas suivre les instructions|bereinigen|anweisungen nicht befolgen|sanific|non seguire istruzioni)/i,
+    },
+    {
+      w: 1,
+      kind: "positive",
+      primary:
+        /\b(pii|secret|redact|do not log|citation|cite sources|lgpd|gdpr|dados pessoais|segredo|redigir|não registrar|citação|citar fontes|datos personales|secreto|redactar|no registrar|cita|citar fuentes|données personnelles|secret|caviarder|ne pas journaliser|citation|citer les sources|personenbezogene daten|geheim|schwärzen|nicht protokollieren|zitat|quellen zitieren|dati personali|segreto|oscurare|non registrare|citazione|citare fonti)\b/i,
+      secondary:
+        /\b(confidential|sensitive data|confidencial|dados sensíveis|confidencial|datos sensibles|confidentiel|données sensibles|vertraulich|sensible daten|confidenziale|dati sensibili)/i,
+    },
     // Enforcement strength: deterministic gates / regression suites / fail-closed
-    { w: 1.4, kind: "positive", primary: /\b(deterministic gate|exit code|regression suite|policy engine|opa\b|cedar\b|fail[- ]closed|automated test|external enforcement|gate determinístico|código de saída|suíte de regressão|motor de política|falha[- ]segura|teste automatizado|aplicación externa|puerta determinista|código de salida|suite de regresión|motor de políticas|fallo[- ]seguro|prueba automatizada|porte déterministe|code de sortie|suite de régression|moteur de politique|test automatisé|deterministisches gate|exit-code|regressionssuite|richtlinien-engine|fehlersicher|automatisierter test|gate deterministico|codice di uscita|suite di regressione|motore di policy|fail-safe|test automatizzato)/i, secondary: /\b(regex check|ast check|signed (release|bundle)|verificação por regex|verificação de ast|release assinado|verificación regex|verificación ast|release firmado|vérification regex|version signée|signierter release|controllo regex|release firmato)/i },
+    {
+      w: 1.4,
+      kind: "positive",
+      primary:
+        /\b(deterministic gate|exit code|regression suite|policy engine|opa\b|cedar\b|fail[- ]closed|automated test|external enforcement|gate determinístico|código de saída|suíte de regressão|motor de política|falha[- ]segura|teste automatizado|aplicación externa|puerta determinista|código de salida|suite de regresión|motor de políticas|fallo[- ]seguro|prueba automatizada|porte déterministe|code de sortie|suite de régression|moteur de politique|test automatisé|deterministisches gate|exit-code|regressionssuite|richtlinien-engine|fehlersicher|automatisierter test|gate deterministico|codice di uscita|suite di regressione|motore di policy|fail-safe|test automatizzato)/i,
+      secondary:
+        /\b(regex check|ast check|signed (release|bundle)|verificação por regex|verificação de ast|release assinado|verificación regex|verificación ast|release firmado|vérification regex|version signée|signierter release|controllo regex|release firmato)/i,
+    },
   ],
   trust: [
-    { w: 1, kind: "positive", primary: /\b(validated on|tested on|claude|gpt-|gemini|llama|validado em|testado em|avaliado em|verificado em|homologado em|validado en|probado en|validé sur|testé sur|validiert auf|getestet auf|validato su|testato su)/i, secondary: /\b(model:|benchmarked|modelo:|avaliado em|modelo:|evaluado|modèle:|évalué|modell:|bewertet|modello:|valutato)/i },
-    { w: 1.1, kind: "positive", primary: /\b(acceptance criteri|success criter|self-eval|self check|critério de aceitação|critérios de aceitação|critério de sucesso|auto-avaliação|autoavaliação|criterio de aceptación|criterio de éxito|autoevaluación|critère d'acceptation|critère de succès|auto-évaluation|akzeptanzkriteri|erfolgskriteri|selbstbewertung|criterio di accettazione|criterio di successo|auto-valutazione)/i, secondary: /\b(pass if|must satisfy|aprova se|passa se|deve satisfazer|precisa satisfazer|aprueba si|debe satisfacer|réussit si|doit satisfaire|besteht wenn|muss erfüllen|passa se|deve soddisfare)/i },
-    { w: 1.1, kind: "positive", primary: /\b(output schema|return json|structured (output|result)|esquema de saída|schema de saída|retornar json|devolver json|saída estruturada|output estruturado|resultado estruturado|esquema de salida|devolver json|salida estructurada|schéma de sortie|retourner json|sortie structurée|ausgabeschema|json zurückgeben|strukturierte ausgabe|schema di output|restituire json|output strutturato)/i, secondary: /\b(named sections|format:|seções nomeadas|formato:|secciones nombradas|formato:|sections nommées|format:|benannte abschnitte|format:|sezioni nominate|formato:)/i },
-    { w: 0.9, kind: "positive", primary: /\b(report_execution|telemetry|emit metrics|telemetria|emitir métricas|telemetría|emitir métricas|télémétrie|émettre des métriques|telemetrie|metriken senden|telemetria|emettere metriche)/i, secondary: /\b(track success|rastrear sucesso|rastrear éxito|suivre le succès|erfolg verfolgen|tracciare successo)/i },
+    {
+      w: 1,
+      kind: "positive",
+      primary:
+        /\b(validated on|tested on|claude|gpt-|gemini|llama|validado em|testado em|avaliado em|verificado em|homologado em|validado en|probado en|validé sur|testé sur|validiert auf|getestet auf|validato su|testato su)/i,
+      secondary:
+        /\b(model:|benchmarked|modelo:|avaliado em|modelo:|evaluado|modèle:|évalué|modell:|bewertet|modello:|valutato)/i,
+    },
+    {
+      w: 1.1,
+      kind: "positive",
+      primary:
+        /\b(acceptance criteri|success criter|self-eval|self check|critério de aceitação|critérios de aceitação|critério de sucesso|auto-avaliação|autoavaliação|criterio de aceptación|criterio de éxito|autoevaluación|critère d'acceptation|critère de succès|auto-évaluation|akzeptanzkriteri|erfolgskriteri|selbstbewertung|criterio di accettazione|criterio di successo|auto-valutazione)/i,
+      secondary:
+        /\b(pass if|must satisfy|aprova se|passa se|deve satisfazer|precisa satisfazer|aprueba si|debe satisfacer|réussit si|doit satisfaire|besteht wenn|muss erfüllen|passa se|deve soddisfare)/i,
+    },
+    {
+      w: 1.1,
+      kind: "positive",
+      primary:
+        /\b(output schema|return json|structured (output|result)|esquema de saída|schema de saída|retornar json|devolver json|saída estruturada|output estruturado|resultado estruturado|esquema de salida|devolver json|salida estructurada|schéma de sortie|retourner json|sortie structurée|ausgabeschema|json zurückgeben|strukturierte ausgabe|schema di output|restituire json|output strutturato)/i,
+      secondary:
+        /\b(named sections|format:|seções nomeadas|formato:|secciones nombradas|formato:|sections nommées|format:|benannte abschnitte|format:|sezioni nominate|formato:)/i,
+    },
+    {
+      w: 0.9,
+      kind: "positive",
+      primary:
+        /\b(report_execution|telemetry|emit metrics|telemetria|emitir métricas|telemetría|emitir métricas|télémétrie|émettre des métriques|telemetrie|metriken senden|telemetria|emettere metriche)/i,
+      secondary:
+        /\b(track success|rastrear sucesso|rastrear éxito|suivre le succès|erfolg verfolgen|tracciare successo)/i,
+    },
   ],
   portability: [
     // Vendor lock-in (negative)
-    { w: 1, kind: "negative", primary: /\b(only works on|requires claude|requires gpt|requires gemini|claude-only|funciona apenas em|requer claude|requer gpt|requer gemini|funciona solo en|requiere claude|requiere gpt|fonctionne uniquement sur|nécessite claude|nécessite gpt|funktioniert nur auf|benötigt claude|benötigt gpt|funziona solo su|richiede claude|richiede gpt)/i, secondary: /\bvendor-specific\b|específico de fornecedor|específico del proveedor|spécifique au fournisseur|anbieterspezifisch|specifico del fornitore/i },
-    { w: 1, kind: "negative", primary: /\b(anthropic sdk|openai sdk|google ai sdk|tool_use block)\b/i },
+    {
+      w: 1,
+      kind: "negative",
+      primary:
+        /\b(only works on|requires claude|requires gpt|requires gemini|claude-only|funciona apenas em|requer claude|requer gpt|requer gemini|funciona solo en|requiere claude|requiere gpt|fonctionne uniquement sur|nécessite claude|nécessite gpt|funktioniert nur auf|benötigt claude|benötigt gpt|funziona solo su|richiede claude|richiede gpt)/i,
+      secondary:
+        /\bvendor-specific\b|específico de fornecedor|específico del proveedor|spécifique au fournisseur|anbieterspezifisch|specifico del fornitore/i,
+    },
+    {
+      w: 1,
+      kind: "negative",
+      primary: /\b(anthropic sdk|openai sdk|google ai sdk|tool_use block)\b/i,
+    },
     { w: 0.6, kind: "negative", primary: /.{32001,}/s },
     { w: 0.6, kind: "negative", primary: /^---[\s\S]*?(lovable:|proprietary:|internal:)/m },
     // Cross-runtime evidence (positive)
-    { w: 1.1, kind: "positive", primary: /\b(model[- ]agnostic|runtime[- ]independent|works on (claude|gpt|gemini).*and.*(claude|gpt|gemini)|cross[- ]runtime|agnóstico (de|a) modelo|independente de runtime|agnóstico de modelo|independiente de runtime|agnostique au modèle|indépendant du runtime|modellunabhängig|laufzeitunabhängig|agnostico al modello|indipendente dal runtime)/i, secondary: /\b(portable across|portátil entre|portable entre|portable entre|portabel zwischen|portabile tra)/i },
-    { w: 0.9, kind: "positive", primary: /\b(plain markdown|standard skill\.md|skill\.md format|markdown puro|formato skill\.md padrão|markdown plano|formato skill\.md estándar|markdown simple|format skill\.md standard|einfaches markdown|standard skill\.md format|markdown semplice|formato skill\.md standard)/i },
+    {
+      w: 1.1,
+      kind: "positive",
+      primary:
+        /\b(model[- ]agnostic|runtime[- ]independent|works on (claude|gpt|gemini).*and.*(claude|gpt|gemini)|cross[- ]runtime|agnóstico (de|a) modelo|independente de runtime|agnóstico de modelo|independiente de runtime|agnostique au modèle|indépendant du runtime|modellunabhängig|laufzeitunabhängig|agnostico al modello|indipendente dal runtime)/i,
+      secondary:
+        /\b(portable across|portátil entre|portable entre|portable entre|portabel zwischen|portabile tra)/i,
+    },
+    {
+      w: 0.9,
+      kind: "positive",
+      primary:
+        /\b(plain markdown|standard skill\.md|skill\.md format|markdown puro|formato skill\.md padrão|markdown plano|formato skill\.md estándar|markdown simple|format skill\.md standard|einfaches markdown|standard skill\.md format|markdown semplice|formato skill\.md standard)/i,
+    },
   ],
 };
 
@@ -859,10 +1194,12 @@ function scorePillar(id: PillarId, text: string, lang: Lang = "en"): PillarDetai
   let score = total > 0 ? Math.round((earned / total) * 100) : 0;
   const positiveSignals = signals.filter((s) => s.kind === "positive").length;
   const positiveHits = signals.filter(
-    (s) => s.kind === "positive" && (s.primary.test(text) || (s.secondary && s.secondary.test(text)))
+    (s) =>
+      s.kind === "positive" && (s.primary.test(text) || (s.secondary && s.secondary.test(text))),
   ).length;
   const negativeHits = signals.filter(
-    (s) => s.kind === "negative" && (s.primary.test(text) || (s.secondary && s.secondary.test(text)))
+    (s) =>
+      s.kind === "negative" && (s.primary.test(text) || (s.secondary && s.secondary.test(text))),
   ).length;
   // Portability is mostly penalty-driven (vendor lock-in). When there are no
   // positive declarations AND no lock-in detected, the artifact is "portable
@@ -924,63 +1261,6 @@ function statusBand(n: number): "strong" | "adequate" | "weak" {
 // languages (`use`, `with`, `from`, `that`, `this`). We also lower the
 // confidence divisor so a well-signed PT/ES/FR doc doesn't get flagged
 // "low-confidence" and pushed toward the EN fallback.
-type Lang = "en" | "pt" | "es" | "fr" | "de" | "it" | "other";
-function detectLanguage(text: string): { lang: Lang; confidence: number } {
-  const sample = text.slice(0, 8000).toLowerCase();
-  const wordMatch = (re: RegExp) => (sample.match(re) ?? []).length;
-  const diaMatch = (re: RegExp) => (sample.match(re) ?? []).length;
-  const counts: Record<Exclude<Lang, "other">, number> = {
-    en: wordMatch(/\b(the|and|when|trigger|example|input|output|scope|values|user|must|should|never)\b/g),
-    pt: wordMatch(/\b(não|você|são|também|então|porque|usuário|exemplo|gatilho|fora|valores|critério|saída|entrada|para|está|isso|quando|deve|pode|será|seja|tem|têm)\b/g) + 2 * diaMatch(/[ãõçáéíóúâêô]/g),
-    es: wordMatch(/\b(no|usted|son|también|entonces|porque|usuario|ejemplo|disparador|fuera|valores|criterio|salida|entrada|para|está|esto|cuando|debe)\b/g) + 2 * diaMatch(/[ñáéíóúü¿¡]/g),
-    fr: wordMatch(/\b(le|la|les|et|ne|pas|vous|êtes|aussi|alors|parce|utilisateur|exemple|déclencheur|valeurs|critère|sortie|entrée|pour|avec|est|cela|quand|doit)\b/g) + 2 * diaMatch(/[àâçéèêëîïôûùüÿœ]/g),
-    de: wordMatch(/\b(der|die|das|und|nicht|sie|sind|auch|dann|weil|nutzer|beispiel|auslöser|werte|kriterium|ausgabe|eingabe|für|mit|ist|dies|wenn|muss)\b/g) + 2 * diaMatch(/[äöüß]/g),
-    it: wordMatch(/\b(il|la|le|non|lei|sei|sono|anche|allora|perché|utente|esempio|trigger|valori|criterio|uscita|ingresso|per|con|questo|quando|deve)\b/g) + 2 * diaMatch(/[àèéìíîòóù]/g),
-  };
-  // Language-exclusive orthography. These characters essentially never appear
-  // in the other candidates, so their presence is a hard tiebreaker: a PT doc
-  // full of English jargon still gets classified PT instead of falling into
-  // "other" (which used to skip the semantic pass and zero native pillars).
-  const EXCLUSIVE: Array<[Exclude<Lang, "other">, RegExp]> = [
-    ["pt", /(ção|ções|ãos?|õe|nh[aeiou]|ç[aou])/g],
-    ["es", /(ñ|¿|¡|ción\b)/g],
-    ["fr", /(œ|ç|qu'|d'un|l'utilisateur|ê)/g],
-    ["de", /(ß|ä|ö|ü)/g],
-    ["it", /(gli\b|zione\b|perché)/g],
-  ];
-  const exclusive = EXCLUSIVE.map(([l, re]) => [l, (sample.match(re) ?? []).length] as const)
-    .filter(([, n]) => n >= 3)
-    .sort((a, b) => b[1] - a[1]);
-
-  const entries = Object.entries(counts) as Array<[Exclude<Lang, "other">, number]>;
-  entries.sort((a, b) => b[1] - a[1]);
-  const [topLang, topHits] = entries[0];
-  const [secondLang, secondHits] = entries[1];
-
-  // Confidence divisor lowered from 40 → 22: 22 function-word hits in an 8k
-  // sample is already a decisive signal, and the old divisor kept legitimate
-  // PT/ES docs permanently under the 0.5 "low confidence" caveat.
-  const conf = (hits: number) => Math.min(1, Math.max(0.55, hits / 22));
-
-  if (exclusive.length) {
-    const [excLang, excHits] = exclusive[0];
-    // Orthography wins unless the function-word count for the same language is
-    // literally zero (i.e. a stray accent in an otherwise English doc).
-    if (counts[excLang] >= 2 || excHits >= 8) {
-      return { lang: excLang, confidence: conf(Math.max(counts[excLang], excHits)) };
-    }
-  }
-  if (topHits < 4) return { lang: "other", confidence: 0.3 };
-  // Near-tie: prefer the non-English candidate rather than bailing to "other".
-  // "other" is the worst outcome for the writer (no localized feedback, weaker
-  // semantic hint), so we only use it when nothing at all resembles a language.
-  if (topHits < secondHits * 1.15) {
-    const pick = topLang === "en" ? secondLang : topLang;
-    return { lang: pick, confidence: 0.55 };
-  }
-  return { lang: topLang, confidence: conf(topHits) };
-}
-
 
 // Localized message bundle. EN is the canonical fallback; other languages
 // override only what's needed. Keys cover everything user-visible from the
@@ -1006,21 +1286,36 @@ const MESSAGES: Record<Exclude<Lang, "other">, MsgBundle> = {
   en: {
     pillar_title: PILLAR_TITLE,
     directives: DIRECTIVES,
-    diag_zero: "Pillar scored 0 — the engine found no recognised pattern for this dimension. Rephrase using conventional vocabulary so detectors catch it.",
-    diag_no_positive: "No positive signals matched, but the pillar avoided 0 via penalty-absence. Add explicit content for this dimension.",
-    caveat_other: "The engine could not confidently detect a supported language. Detection covers EN/PT/ES/FR/DE/IT — translate or duplicate key cues into one of these for a fair score.",
-    caveat_low_conf: "Low-confidence language detection. Make sure conventional terms (trigger, example, failure mode, mitigation, acceptance criterion, output schema) appear verbatim.",
-    caveat_default: "The engine is calibrated for Markdown skill files with named sections + worked input/output examples. Pure governance prose may underscore even when content is strong — that's a format mismatch, not a quality verdict.",
+    diag_zero:
+      "Pillar scored 0 — the engine found no recognised pattern for this dimension. Rephrase using conventional vocabulary so detectors catch it.",
+    diag_no_positive:
+      "No positive signals matched, but the pillar avoided 0 via penalty-absence. Add explicit content for this dimension.",
+    caveat_other:
+      "The engine could not confidently detect a supported language. Detection covers EN/PT/ES/FR/DE/IT — translate or duplicate key cues into one of these for a fair score.",
+    caveat_low_conf:
+      "Low-confidence language detection. Make sure conventional terms (trigger, example, failure mode, mitigation, acceptance criterion, output schema) appear verbatim.",
+    caveat_default:
+      "The engine is calibrated for Markdown skill files with named sections + worked input/output examples. Pure governance prose may underscore even when content is strong — that's a format mismatch, not a quality verdict.",
     next_grade_a: "Grade A — no high-impact gaps detected. Re-run after any substantive edit.",
-    next_apply: "Apply the top_actions in the user's local file — each action carries a line number and an excerpt when the engine could anchor evidence.",
+    next_apply:
+      "Apply the top_actions in the user's local file — each action carries a line number and an excerpt when the engine could anchor evidence.",
     next_rerun: "Re-run review_skill with the updated content to confirm the score rose.",
-    next_diagnostic: "If a pillar shows `diagnostic`, address that first — those are blind spots, not quality misses.",
+    next_diagnostic:
+      "If a pillar shows `diagnostic`, address that first — those are blind spots, not quality misses.",
     no_signals_prefix: (t) => `No content recognised for "${t}" — `,
     near_line_prefix: (l, e) => `Near line ${l} ("${e}"): `,
     signals_summary: (h, t) => `${h}/${t} signals matched`,
   },
   pt: {
-    pillar_title: { identity: "Identidade", scope: "Escopo", procedure: "Procedimento", examples: "Exemplos", guardrails: "Salvaguardas", trust: "Pontos de confiança", portability: "Portabilidade" },
+    pillar_title: {
+      identity: "Identidade",
+      scope: "Escopo",
+      procedure: "Procedimento",
+      examples: "Exemplos",
+      guardrails: "Salvaguardas",
+      trust: "Pontos de confiança",
+      portability: "Portabilidade",
+    },
     directives: {
       identity: [
         "Dê a ele um senso de identidade mais nítido: quem é, o que recusa e o que NÃO faz.",
@@ -1060,21 +1355,38 @@ const MESSAGES: Record<Exclude<Lang, "other">, MsgBundle> = {
         "Declare suporte multi-runtime explicitamente (ex: 'validado em Claude, GPT e Gemini') — o motor não infere portabilidade pela ausência.",
       ],
     },
-    diag_zero: "Pilar zerou — o motor não encontrou padrão reconhecido para esta dimensão. Reescreva com vocabulário convencional para os detectores capturarem.",
-    diag_no_positive: "Nenhum sinal positivo bateu, mas o pilar evitou o zero por ausência de penalidade. Adicione conteúdo explícito para esta dimensão.",
-    caveat_other: "O motor não detectou um idioma suportado com confiança. A detecção cobre EN/PT/ES/FR/DE/IT — traduza ou duplique pistas-chave em um desses idiomas para uma pontuação justa.",
-    caveat_low_conf: "Detecção de idioma com baixa confiança. Garanta que termos convencionais (gatilho, exemplo, modo de falha, mitigação, critério de aceitação, esquema de saída) apareçam textualmente.",
-    caveat_default: "O motor é calibrado para arquivos Markdown com seções nomeadas e exemplos resolvidos de entrada/saída. Prosa de governança pura pode pontuar abaixo mesmo com conteúdo forte — é descompasso de formato, não veredicto de qualidade.",
-    next_grade_a: "Grau A — nenhuma lacuna de alto impacto detectada. Reexecute após qualquer edição substancial.",
-    next_apply: "Aplique as top_actions no arquivo local — cada ação carrega número de linha e trecho quando o motor conseguiu ancorar evidência.",
-    next_rerun: "Rode review_skill de novo com o conteúdo atualizado para confirmar que o score subiu.",
-    next_diagnostic: "Se um pilar mostrar `diagnostic`, atenda isso primeiro — são pontos cegos, não falhas de qualidade.",
+    diag_zero:
+      "Pilar zerou — o motor não encontrou padrão reconhecido para esta dimensão. Reescreva com vocabulário convencional para os detectores capturarem.",
+    diag_no_positive:
+      "Nenhum sinal positivo bateu, mas o pilar evitou o zero por ausência de penalidade. Adicione conteúdo explícito para esta dimensão.",
+    caveat_other:
+      "O motor não detectou um idioma suportado com confiança. A detecção cobre EN/PT/ES/FR/DE/IT — traduza ou duplique pistas-chave em um desses idiomas para uma pontuação justa.",
+    caveat_low_conf:
+      "Detecção de idioma com baixa confiança. Garanta que termos convencionais (gatilho, exemplo, modo de falha, mitigação, critério de aceitação, esquema de saída) apareçam textualmente.",
+    caveat_default:
+      "O motor é calibrado para arquivos Markdown com seções nomeadas e exemplos resolvidos de entrada/saída. Prosa de governança pura pode pontuar abaixo mesmo com conteúdo forte — é descompasso de formato, não veredicto de qualidade.",
+    next_grade_a:
+      "Grau A — nenhuma lacuna de alto impacto detectada. Reexecute após qualquer edição substancial.",
+    next_apply:
+      "Aplique as top_actions no arquivo local — cada ação carrega número de linha e trecho quando o motor conseguiu ancorar evidência.",
+    next_rerun:
+      "Rode review_skill de novo com o conteúdo atualizado para confirmar que o score subiu.",
+    next_diagnostic:
+      "Se um pilar mostrar `diagnostic`, atenda isso primeiro — são pontos cegos, não falhas de qualidade.",
     no_signals_prefix: (t) => `Nenhum conteúdo reconhecido para "${t}" — `,
     near_line_prefix: (l, e) => `Próximo à linha ${l} ("${e}"): `,
     signals_summary: (h, t) => `${h}/${t} sinais reconhecidos`,
   },
   es: {
-    pillar_title: { identity: "Identidad", scope: "Alcance", procedure: "Procedimiento", examples: "Ejemplos", guardrails: "Salvaguardas", trust: "Puntos de confianza", portability: "Portabilidad" },
+    pillar_title: {
+      identity: "Identidad",
+      scope: "Alcance",
+      procedure: "Procedimiento",
+      examples: "Ejemplos",
+      guardrails: "Salvaguardas",
+      trust: "Puntos de confianza",
+      portability: "Portabilidad",
+    },
     directives: {
       identity: [
         "Dale un sentido de sí más nítido: quién es, qué rechaza y qué NO hace.",
@@ -1114,21 +1426,38 @@ const MESSAGES: Record<Exclude<Lang, "other">, MsgBundle> = {
         "Declara soporte multi-runtime explícitamente (ej: 'validado en Claude, GPT y Gemini') — el motor no infiere portabilidad por ausencia.",
       ],
     },
-    diag_zero: "Pilar en 0 — el motor no encontró patrón reconocido para esta dimensión. Reescribe con vocabulario convencional para que los detectores lo capturen.",
-    diag_no_positive: "Ningún sinal positivo coincidió, pero el pilar evitó el 0 por ausencia de penalización. Añade contenido explícito.",
-    caveat_other: "El motor no detectó con confianza un idioma soportado. La detección cubre EN/PT/ES/FR/DE/IT — traduce o duplica las pistas clave en uno de estos idiomas para una puntuación justa.",
-    caveat_low_conf: "Detección de idioma con baja confianza. Asegúrate de que términos convencionales (disparador, ejemplo, modo de fallo, mitigación, criterio de aceptación, esquema de salida) aparezcan textualmente.",
-    caveat_default: "El motor está calibrado para archivos Markdown con secciones nombradas y ejemplos trabajados de entrada/salida. La prosa de gobernanza puede puntuar bajo aunque el contenido sea fuerte — es desajuste de formato, no veredicto de calidad.",
-    next_grade_a: "Grado A — sin brechas de alto impacto detectadas. Vuelve a ejecutar tras cualquier edición sustancial.",
-    next_apply: "Aplica las top_actions en el archivo local — cada acción lleva número de línea y extracto cuando el motor pudo anclar evidencia.",
-    next_rerun: "Vuelve a ejecutar review_skill con el contenido actualizado para confirmar que el score subió.",
-    next_diagnostic: "Si un pilar muestra `diagnostic`, atiéndelo primero — son puntos ciegos, no fallas de calidad.",
+    diag_zero:
+      "Pilar en 0 — el motor no encontró patrón reconocido para esta dimensión. Reescribe con vocabulario convencional para que los detectores lo capturen.",
+    diag_no_positive:
+      "Ningún sinal positivo coincidió, pero el pilar evitó el 0 por ausencia de penalización. Añade contenido explícito.",
+    caveat_other:
+      "El motor no detectó con confianza un idioma soportado. La detección cubre EN/PT/ES/FR/DE/IT — traduce o duplica las pistas clave en uno de estos idiomas para una puntuación justa.",
+    caveat_low_conf:
+      "Detección de idioma con baja confianza. Asegúrate de que términos convencionales (disparador, ejemplo, modo de fallo, mitigación, criterio de aceptación, esquema de salida) aparezcan textualmente.",
+    caveat_default:
+      "El motor está calibrado para archivos Markdown con secciones nombradas y ejemplos trabajados de entrada/salida. La prosa de gobernanza puede puntuar bajo aunque el contenido sea fuerte — es desajuste de formato, no veredicto de calidad.",
+    next_grade_a:
+      "Grado A — sin brechas de alto impacto detectadas. Vuelve a ejecutar tras cualquier edición sustancial.",
+    next_apply:
+      "Aplica las top_actions en el archivo local — cada acción lleva número de línea y extracto cuando el motor pudo anclar evidencia.",
+    next_rerun:
+      "Vuelve a ejecutar review_skill con el contenido actualizado para confirmar que el score subió.",
+    next_diagnostic:
+      "Si un pilar muestra `diagnostic`, atiéndelo primero — son puntos ciegos, no fallas de calidad.",
     no_signals_prefix: (t) => `Sin contenido reconocido para "${t}" — `,
     near_line_prefix: (l, e) => `Cerca de la línea ${l} ("${e}"): `,
     signals_summary: (h, t) => `${h}/${t} señales coincidieron`,
   },
   fr: {
-    pillar_title: { identity: "Identité", scope: "Périmètre", procedure: "Procédure", examples: "Exemples", guardrails: "Garde-fous", trust: "Points de confiance", portability: "Portabilité" },
+    pillar_title: {
+      identity: "Identité",
+      scope: "Périmètre",
+      procedure: "Procédure",
+      examples: "Exemples",
+      guardrails: "Garde-fous",
+      trust: "Points de confiance",
+      portability: "Portabilité",
+    },
     directives: {
       identity: [
         "Donne-lui un sens de soi plus net : qui il est, ce qu'il refuse, ce qu'il n'est PAS.",
@@ -1168,21 +1497,38 @@ const MESSAGES: Record<Exclude<Lang, "other">, MsgBundle> = {
         "Déclare le support multi-runtime explicitement (ex : 'validé sur Claude, GPT et Gemini') — le moteur n'infère pas la portabilité de l'absence.",
       ],
     },
-    diag_zero: "Pilier à 0 — le moteur n'a trouvé aucun motif reconnu pour cette dimension. Reformule avec du vocabulaire conventionnel pour que les détecteurs l'attrapent.",
-    diag_no_positive: "Aucun signal positif n'a matché, mais le pilier a évité 0 par absence de pénalité. Ajoute du contenu explicite.",
-    caveat_other: "Le moteur n'a pas détecté avec confiance une langue prise en charge. La détection couvre EN/PT/ES/FR/DE/IT — traduis ou duplique les indices clés dans une de ces langues pour un score juste.",
-    caveat_low_conf: "Détection de langue à faible confiance. Assure-toi que les termes conventionnels (déclencheur, exemple, mode d'échec, atténuation, critère d'acceptation, schéma de sortie) apparaissent textuellement.",
-    caveat_default: "Le moteur est calibré pour des fichiers Markdown avec sections nommées et exemples travaillés entrée/sortie. La prose de gouvernance pure peut sous-noter même avec un contenu fort — c'est un décalage de format, pas un verdict de qualité.",
-    next_grade_a: "Grade A — aucune lacune à fort impact détectée. Relance après toute édition substantielle.",
-    next_apply: "Applique les top_actions dans le fichier local — chaque action porte un numéro de ligne et un extrait quand le moteur a pu ancrer la preuve.",
-    next_rerun: "Relance review_skill avec le contenu mis à jour pour confirmer que le score a monté.",
-    next_diagnostic: "Si un pilier montre `diagnostic`, traite-le d'abord — ce sont des angles morts, pas des manques de qualité.",
+    diag_zero:
+      "Pilier à 0 — le moteur n'a trouvé aucun motif reconnu pour cette dimension. Reformule avec du vocabulaire conventionnel pour que les détecteurs l'attrapent.",
+    diag_no_positive:
+      "Aucun signal positif n'a matché, mais le pilier a évité 0 par absence de pénalité. Ajoute du contenu explicite.",
+    caveat_other:
+      "Le moteur n'a pas détecté avec confiance une langue prise en charge. La détection couvre EN/PT/ES/FR/DE/IT — traduis ou duplique les indices clés dans une de ces langues pour un score juste.",
+    caveat_low_conf:
+      "Détection de langue à faible confiance. Assure-toi que les termes conventionnels (déclencheur, exemple, mode d'échec, atténuation, critère d'acceptation, schéma de sortie) apparaissent textuellement.",
+    caveat_default:
+      "Le moteur est calibré pour des fichiers Markdown avec sections nommées et exemples travaillés entrée/sortie. La prose de gouvernance pure peut sous-noter même avec un contenu fort — c'est un décalage de format, pas un verdict de qualité.",
+    next_grade_a:
+      "Grade A — aucune lacune à fort impact détectée. Relance après toute édition substantielle.",
+    next_apply:
+      "Applique les top_actions dans le fichier local — chaque action porte un numéro de ligne et un extrait quand le moteur a pu ancrer la preuve.",
+    next_rerun:
+      "Relance review_skill avec le contenu mis à jour pour confirmer que le score a monté.",
+    next_diagnostic:
+      "Si un pilier montre `diagnostic`, traite-le d'abord — ce sont des angles morts, pas des manques de qualité.",
     no_signals_prefix: (t) => `Aucun contenu reconnu pour « ${t} » — `,
     near_line_prefix: (l, e) => `Près de la ligne ${l} (« ${e} ») : `,
     signals_summary: (h, t) => `${h}/${t} signaux reconnus`,
   },
   de: {
-    pillar_title: { identity: "Identität", scope: "Geltungsbereich", procedure: "Verfahren", examples: "Beispiele", guardrails: "Schutzmechanismen", trust: "Vertrauenshaken", portability: "Portabilität" },
+    pillar_title: {
+      identity: "Identität",
+      scope: "Geltungsbereich",
+      procedure: "Verfahren",
+      examples: "Beispiele",
+      guardrails: "Schutzmechanismen",
+      trust: "Vertrauenshaken",
+      portability: "Portabilität",
+    },
     directives: {
       identity: [
         "Gib ihm ein schärferes Selbstverständnis: wer er ist, was er ablehnt und was er ausdrücklich NICHT tut.",
@@ -1222,21 +1568,38 @@ const MESSAGES: Record<Exclude<Lang, "other">, MsgBundle> = {
         "Erkläre Multi-Runtime-Unterstützung explizit (z.B. 'validiert auf Claude, GPT und Gemini') — die Engine kann Portabilität nicht aus Abwesenheit ableiten.",
       ],
     },
-    diag_zero: "Pillar bei 0 — die Engine fand kein erkanntes Muster für diese Dimension. Formuliere mit konventionellem Vokabular um.",
-    diag_no_positive: "Kein positives Signal traf, aber der Pillar vermied 0 durch Strafabwesenheit. Füge expliziten Inhalt hinzu.",
-    caveat_other: "Die Engine konnte keine unterstützte Sprache mit Konfidenz erkennen. Erkennung deckt EN/PT/ES/FR/DE/IT ab — übersetze oder dupliziere Schlüsselhinweise in eine davon für eine faire Bewertung.",
-    caveat_low_conf: "Spracherkennung mit niedriger Konfidenz. Stelle sicher, dass konventionelle Begriffe (Auslöser, Beispiel, Fehlermodus, Abmilderung, Akzeptanzkriterium, Ausgabeschema) wörtlich vorkommen.",
-    caveat_default: "Die Engine ist auf Markdown-Skill-Dateien mit benannten Abschnitten und ausgearbeiteten Eingabe/Ausgabe-Beispielen kalibriert. Reine Governance-Prosa kann unterscoren, auch wenn der Inhalt stark ist — das ist ein Format-Mismatch, kein Qualitätsurteil.",
-    next_grade_a: "Note A — keine kritischen Lücken erkannt. Nach jeder substantiellen Bearbeitung erneut ausführen.",
-    next_apply: "Wende die top_actions in der lokalen Datei an — jede Aktion trägt eine Zeilennummer und einen Auszug, wenn die Engine Belege verankern konnte.",
-    next_rerun: "Führe review_skill mit dem aktualisierten Inhalt erneut aus, um zu bestätigen, dass der Score gestiegen ist.",
-    next_diagnostic: "Wenn ein Pillar `diagnostic` zeigt, behandle das zuerst — das sind blinde Flecken, keine Qualitätsmängel.",
+    diag_zero:
+      "Pillar bei 0 — die Engine fand kein erkanntes Muster für diese Dimension. Formuliere mit konventionellem Vokabular um.",
+    diag_no_positive:
+      "Kein positives Signal traf, aber der Pillar vermied 0 durch Strafabwesenheit. Füge expliziten Inhalt hinzu.",
+    caveat_other:
+      "Die Engine konnte keine unterstützte Sprache mit Konfidenz erkennen. Erkennung deckt EN/PT/ES/FR/DE/IT ab — übersetze oder dupliziere Schlüsselhinweise in eine davon für eine faire Bewertung.",
+    caveat_low_conf:
+      "Spracherkennung mit niedriger Konfidenz. Stelle sicher, dass konventionelle Begriffe (Auslöser, Beispiel, Fehlermodus, Abmilderung, Akzeptanzkriterium, Ausgabeschema) wörtlich vorkommen.",
+    caveat_default:
+      "Die Engine ist auf Markdown-Skill-Dateien mit benannten Abschnitten und ausgearbeiteten Eingabe/Ausgabe-Beispielen kalibriert. Reine Governance-Prosa kann unterscoren, auch wenn der Inhalt stark ist — das ist ein Format-Mismatch, kein Qualitätsurteil.",
+    next_grade_a:
+      "Note A — keine kritischen Lücken erkannt. Nach jeder substantiellen Bearbeitung erneut ausführen.",
+    next_apply:
+      "Wende die top_actions in der lokalen Datei an — jede Aktion trägt eine Zeilennummer und einen Auszug, wenn die Engine Belege verankern konnte.",
+    next_rerun:
+      "Führe review_skill mit dem aktualisierten Inhalt erneut aus, um zu bestätigen, dass der Score gestiegen ist.",
+    next_diagnostic:
+      "Wenn ein Pillar `diagnostic` zeigt, behandle das zuerst — das sind blinde Flecken, keine Qualitätsmängel.",
     no_signals_prefix: (t) => `Kein Inhalt erkannt für „${t}" — `,
     near_line_prefix: (l, e) => `Nahe Zeile ${l} („${e}"): `,
     signals_summary: (h, t) => `${h}/${t} Signale erkannt`,
   },
   it: {
-    pillar_title: { identity: "Identità", scope: "Ambito", procedure: "Procedura", examples: "Esempi", guardrails: "Salvaguardie", trust: "Punti di fiducia", portability: "Portabilità" },
+    pillar_title: {
+      identity: "Identità",
+      scope: "Ambito",
+      procedure: "Procedura",
+      examples: "Esempi",
+      guardrails: "Salvaguardie",
+      trust: "Punti di fiducia",
+      portability: "Portabilità",
+    },
     directives: {
       identity: [
         "Dagli un senso di sé più nitido: chi è, cosa rifiuta e cosa NON è.",
@@ -1276,15 +1639,24 @@ const MESSAGES: Record<Exclude<Lang, "other">, MsgBundle> = {
         "Dichiara supporto multi-runtime esplicitamente (es: 'validato su Claude, GPT e Gemini') — il motore non inferisce portabilità dall'assenza.",
       ],
     },
-    diag_zero: "Pilastro a 0 — il motore non ha trovato pattern riconosciuti per questa dimensione. Riformula con vocabolario convenzionale.",
-    diag_no_positive: "Nessun segnale positivo combaciato, ma il pilastro ha evitato lo 0 per assenza di penalità. Aggiungi contenuto esplicito.",
-    caveat_other: "Il motore non ha rilevato con sicurezza una lingua supportata. Il rilevamento copre EN/PT/ES/FR/DE/IT — traduci o duplica gli indizi chiave in una di queste lingue per un punteggio equo.",
-    caveat_low_conf: "Rilevamento lingua a bassa confidenza. Assicurati che termini convenzionali (trigger, esempio, modalità di guasto, mitigazione, criterio di accettazione, schema di output) appaiano testualmente.",
-    caveat_default: "Il motore è calibrato per file Markdown con sezioni nominate ed esempi lavorati input/output. La prosa di governance pura può sottoscoreare anche con contenuto forte — è disallineamento di formato, non verdetto di qualità.",
-    next_grade_a: "Voto A — nessuna lacuna ad alto impatto rilevata. Riesegui dopo ogni modifica sostanziale.",
-    next_apply: "Applica le top_actions nel file locale — ogni azione porta numero di riga ed estratto quando il motore ha potuto ancorare evidenza.",
-    next_rerun: "Riesegui review_skill con il contenuto aggiornato per confermare che lo score è salito.",
-    next_diagnostic: "Se un pilastro mostra `diagnostic`, affrontalo per primo — sono punti ciechi, non mancanze di qualità.",
+    diag_zero:
+      "Pilastro a 0 — il motore non ha trovato pattern riconosciuti per questa dimensione. Riformula con vocabolario convenzionale.",
+    diag_no_positive:
+      "Nessun segnale positivo combaciato, ma il pilastro ha evitato lo 0 per assenza di penalità. Aggiungi contenuto esplicito.",
+    caveat_other:
+      "Il motore non ha rilevato con sicurezza una lingua supportata. Il rilevamento copre EN/PT/ES/FR/DE/IT — traduci o duplica gli indizi chiave in una di queste lingue per un punteggio equo.",
+    caveat_low_conf:
+      "Rilevamento lingua a bassa confidenza. Assicurati che termini convenzionali (trigger, esempio, modalità di guasto, mitigazione, criterio di accettazione, schema di output) appaiano testualmente.",
+    caveat_default:
+      "Il motore è calibrato per file Markdown con sezioni nominate ed esempi lavorati input/output. La prosa di governance pura può sottoscoreare anche con contenuto forte — è disallineamento di formato, non verdetto di qualità.",
+    next_grade_a:
+      "Voto A — nessuna lacuna ad alto impatto rilevata. Riesegui dopo ogni modifica sostanziale.",
+    next_apply:
+      "Applica le top_actions nel file locale — ogni azione porta numero di riga ed estratto quando il motore ha potuto ancorare evidenza.",
+    next_rerun:
+      "Riesegui review_skill con il contenuto aggiornato per confermare che lo score è salito.",
+    next_diagnostic:
+      "Se un pilastro mostra `diagnostic`, affrontalo per primo — sono punti ciechi, non mancanze di qualità.",
     no_signals_prefix: (t) => `Nessun contenuto riconosciuto per "${t}" — `,
     near_line_prefix: (l, e) => `Vicino alla riga ${l} ("${e}"): `,
     signals_summary: (h, t) => `${h}/${t} segnali combaciati`,
@@ -1306,7 +1678,12 @@ function pickDirective(id: PillarId, content: string, salt: number, bundle: MsgB
 // Anchor a directive to concrete file evidence when we have it. All
 // user-visible strings come from the localized bundle so non-English authors
 // get feedback in their own language.
-function buildAction(detail: PillarDetail, content: string, priority: number, bundle: MsgBundle): {
+function buildAction(
+  detail: PillarDetail,
+  content: string,
+  priority: number,
+  bundle: MsgBundle,
+): {
   area: string;
   priority: number;
   action: string;
@@ -1354,18 +1731,26 @@ const EXTRAS: Partial<Record<Exclude<Lang, "other">, Extras>> = {
   en: {
     ceiling_note: (c, cls, r) =>
       `Realistic ceiling for doc_class="${cls}" is ~${c}/100. Actions targeting structural format above this point are cosmetic — focus on content_quality_score instead. ${r}`,
-    warn_short: "Input is very short (<400 chars). Score is unreliable — pass the full file content, not a summary.",
-    warn_summary: "Input contains summary/truncation markers (`...`, `[truncated]`, `condensed`, etc.). The engine cannot score what it can't see — pass verbatim content for a real score.",
-    warn_outline: "Input looks like an outline (headings without body). Pass the full content; the engine scores prose, not structure alone.",
-    axis_caveat: "Grade uses content_quality_score as the primary axis; structural_score is reported separately so format mismatch doesn't dominate the verdict.",
+    warn_short:
+      "Input is very short (<400 chars). Score is unreliable — pass the full file content, not a summary.",
+    warn_summary:
+      "Input contains summary/truncation markers (`...`, `[truncated]`, `condensed`, etc.). The engine cannot score what it can't see — pass verbatim content for a real score.",
+    warn_outline:
+      "Input looks like an outline (headings without body). Pass the full content; the engine scores prose, not structure alone.",
+    axis_caveat:
+      "Grade uses content_quality_score as the primary axis; structural_score is reported separately so format mismatch doesn't dominate the verdict.",
   },
   pt: {
     ceiling_note: (c, cls, r) =>
       `Teto realista para doc_class="${cls}" é ~${c}/100. Ações que perseguem formato estrutural acima desse ponto são cosméticas — foque em content_quality_score. ${r}`,
-    warn_short: "Entrada muito curta (<400 caracteres). O score não é confiável — envie o conteúdo completo, não um resumo.",
-    warn_summary: "A entrada contém marcadores de resumo/truncamento (`...`, `[truncado]`, `condensado`, etc.). O motor não pontua o que não vê — envie o conteúdo textual para uma medição real.",
-    warn_outline: "A entrada parece um esqueleto (cabeçalhos sem corpo). Envie o conteúdo completo; o motor avalia prosa, não só estrutura.",
-    axis_caveat: "O grade usa content_quality_score como eixo principal; structural_score é reportado separado para que desencontro de formato não domine o veredicto.",
+    warn_short:
+      "Entrada muito curta (<400 caracteres). O score não é confiável — envie o conteúdo completo, não um resumo.",
+    warn_summary:
+      "A entrada contém marcadores de resumo/truncamento (`...`, `[truncado]`, `condensado`, etc.). O motor não pontua o que não vê — envie o conteúdo textual para uma medição real.",
+    warn_outline:
+      "A entrada parece um esqueleto (cabeçalhos sem corpo). Envie o conteúdo completo; o motor avalia prosa, não só estrutura.",
+    axis_caveat:
+      "O grade usa content_quality_score como eixo principal; structural_score é reportado separado para que desencontro de formato não domine o veredicto.",
   },
 };
 
@@ -1412,11 +1797,15 @@ const SEMANTIC_MODEL = "google/gemini-3-flash-preview";
 const PILLAR_BRIEF: Record<PillarId, string> = {
   identity: "Identity — who the agent is, voice/tone, values, refusal posture, non-goals.",
   scope: "Scope & Triggers — when to use, target user, applies-to conditions, edge cases.",
-  procedure: "Procedure — step-by-step deterministic process, branches, stop condition, inputs/outputs.",
+  procedure:
+    "Procedure — step-by-step deterministic process, branches, stop condition, inputs/outputs.",
   examples: "Examples — worked input → reasoning → output samples, including failure cases.",
-  guardrails: "Guardrails — failure modes named with mitigations, PII/data rules, prompt-injection defense, deterministic enforcement.",
-  trust: "Trust hooks — measurable acceptance criteria, output schemas, validation suite, runtime telemetry hooks.",
-  portability: "Portability — multi-runtime declaration (Claude/GPT/Gemini), vendor-neutral tool contracts, portable Markdown.",
+  guardrails:
+    "Guardrails — failure modes named with mitigations, PII/data rules, prompt-injection defense, deterministic enforcement.",
+  trust:
+    "Trust hooks — measurable acceptance criteria, output schemas, validation suite, runtime telemetry hooks.",
+  portability:
+    "Portability — multi-runtime declaration (Claude/GPT/Gemini), vendor-neutral tool contracts, portable Markdown.",
 };
 
 // Rationales must be written in the reader's language, so the judge prompt
@@ -1431,10 +1820,7 @@ const LANG_NAME: Record<Lang, string> = {
   other: "the same language as the document",
 };
 
-async function semanticCheck(
-  content: string,
-  langHint: Lang,
-): Promise<SubstancePass | null> {
+async function semanticCheck(content: string, langHint: Lang): Promise<SubstancePass | null> {
   if (!process.env.LOVABLE_API_KEY) return null;
   // Numbered lines so the model can return a usable evidence_line.
   const lines = content.split("\n");
@@ -1574,7 +1960,7 @@ One verdict object per pillar (all 7), plus the document-level summary.
     const quote = rawQuote.trim().slice(0, 140);
     if (!quote) return null;
     const needle = quote.slice(0, 40);
-    let line = rawLine !== null && Number.isFinite(rawLine) ? Math.round(rawLine) : null;
+    const line = rawLine !== null && Number.isFinite(rawLine) ? Math.round(rawLine) : null;
     if (line !== null) {
       const idx = line - 1;
       if (idx >= 0 && idx < lines.length && lines[idx].includes(quote.slice(0, 24))) {
@@ -1615,7 +2001,6 @@ One verdict object per pillar (all 7), plus the document-level summary.
   }
 }
 
-
 export const getMethodologyTool = defineTool({
   name: "get_methodology",
   description:
@@ -1626,8 +2011,7 @@ export const getMethodologyTool = defineTool({
       engine: ENGINE,
       name: "Super Agent Skill evaluation",
       proprietary: true,
-      note:
-        "Scoring is performed server-side. Engine v5 runs two INDEPENDENT axes and never averages them: (1) `format_score` — deterministic multilingual structure detectors; (2) `substance_score` — an LLM judge that is explicitly told to ignore headings, keywords and length and to score only whether the content is operationally useful, returning a written rationale per pillar plus the verbatim file excerpts that sustain it (each flagged `verified` against the real file). An expected_ceiling per doc_class tells the operator the realistic top before chasing diminishing returns. Feedback localised to EN, PT-BR, ES, FR, DE, IT.",
+      note: "Scoring is performed server-side. Engine v5 runs two INDEPENDENT axes and never averages them: (1) `format_score` — deterministic multilingual structure detectors; (2) `substance_score` — an LLM judge that is explicitly told to ignore headings, keywords and length and to score only whether the content is operationally useful, returning a written rationale per pillar plus the verbatim file excerpts that sustain it (each flagged `verified` against the real file). An expected_ceiling per doc_class tells the operator the realistic top before chasing diminishing returns. Feedback localised to EN, PT-BR, ES, FR, DE, IT.",
       dimensions: (Object.keys(PILLAR_TITLE) as PillarId[]).map((id) => ({
         id,
         title: PILLAR_TITLE[id],
@@ -1668,7 +2052,13 @@ const REVIEW_CACHE_MAX = 200;
 const REVIEW_CACHE_TTL_MS = 10 * 60 * 1000;
 
 function reviewCacheKey(a: ReviewArgs): string {
-  return [a.type, a.doc_class, a.semantic_check ? "sem" : "nosem", a.language ?? "auto", fnv1aHex(a.content)].join("|");
+  return [
+    a.type,
+    a.doc_class,
+    a.semantic_check ? "sem" : "nosem",
+    a.language ?? "auto",
+    fnv1aHex(a.content),
+  ].join("|");
 }
 
 // Exported so the public certification API (/api/public/certify) runs the
@@ -1688,13 +2078,10 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
   // the regex detector's naturally narrower coverage outside English).
   // Caller override wins (confidence 1.0); otherwise fall back to detection.
   const detected = detectLanguage(content);
-  const language = languageOverride
-    ? { lang: languageOverride as Lang, confidence: 1 }
-    : detected;
+  const language = languageOverride ? { lang: languageOverride as Lang, confidence: 1 } : detected;
   const bundle = bundleFor(language.lang);
   const extras = extrasFor(language.lang);
   const details = ids.map((id) => scorePillar(id, content, language.lang));
-
 
   // Doc class — declared or inferred. Drives ceiling + grade axis.
   const docClass: DocClass = doc_class === "auto" ? inferDocClass(content, type) : doc_class;
@@ -1749,7 +2136,8 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
         semanticUplifts[r.id] = { from, to: r.score, confidence: v.confidence };
       }
       if (v.evidence_line !== null && v.evidence_quote) {
-        const quote = v.evidence_quote.length > 140 ? v.evidence_quote.slice(0, 137) + "…" : v.evidence_quote;
+        const quote =
+          v.evidence_quote.length > 140 ? v.evidence_quote.slice(0, 137) + "…" : v.evidence_quote;
         r.evidence.unshift({ line: v.evidence_line, excerpt: quote });
         if (r.signals_hit === 0) r.signals_hit = 1;
       }
@@ -1767,7 +2155,10 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
   const overall = Math.round(wSum / wTotal);
 
   // Axis split, weighted by TYPE_WEIGHTS so axes share the overall scale.
-  let sEarned = 0, sTotal = 0, cEarned = 0, cTotal = 0;
+  let sEarned = 0,
+    sTotal = 0,
+    cEarned = 0,
+    cTotal = 0;
   for (const r of details) {
     const w = weights[r.id] ?? 1;
     sEarned += r.structural_earned * w;
@@ -1829,9 +2220,7 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
     // scorePillar: "portable by construction"). Expose that reasoning so the
     // score isn't perceived as arbitrary. Same for language-fairness caps.
     const baseline: string | null =
-      r.id === "portability" && r.signals_hit === 0
-        ? "portable_by_construction"
-        : null;
+      r.id === "portability" && r.signals_hit === 0 ? "portable_by_construction" : null;
     return {
       pillar: r.id,
       title: bundle.pillar_title[r.id],
@@ -1845,15 +2234,14 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
         r.score === 0
           ? bundle.diag_zero
           : r.id === "portability" && r.signals_hit === 0
-            ? (language.lang === "pt"
-                ? "Portável por construção: nenhum lock-in de fornecedor detectado (baseline ~68). Para chegar a 'forte', declare suporte multi-runtime explicitamente (ex: 'validado em Claude, GPT e Gemini')."
-                : "Portable by construction: no vendor lock-in detected (baseline ~68). To reach 'strong', declare multi-runtime support explicitly (e.g. 'validated on Claude, GPT and Gemini').")
+            ? language.lang === "pt"
+              ? "Portável por construção: nenhum lock-in de fornecedor detectado (baseline ~68). Para chegar a 'forte', declare suporte multi-runtime explicitamente (ex: 'validado em Claude, GPT e Gemini')."
+              : "Portable by construction: no vendor lock-in detected (baseline ~68). To reach 'strong', declare multi-runtime support explicitly (e.g. 'validated on Claude, GPT and Gemini')."
             : r.signals_hit === 0
               ? bundle.diag_no_positive
               : null,
     };
   });
-
 
   const ranked = [...details]
     .map((r) => ({ ...r, impact: r.deficit * (weights[r.id] ?? 1) }))
@@ -1933,6 +2321,18 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
     verdict_score: verdictScore,
     grade: gradeBand(verdictScore),
     axis_note: extras.axis_caveat,
+    // How signals become scores — published so the pillar numbers are not a
+    // black box (client feedback: "signals→score é caixa-preta"). Approximate
+    // ranges, not the full proprietary signal list.
+    scoring_method: {
+      pillar_formula:
+        "pillar score = round(matched signal weight ÷ total signal weight × 100). Signals are weighted (not all count equally); negative signals subtract.",
+      signal_ranges:
+        "Approximate mapping: 0 signals ≈ 0-40 (a floor applies when no penalties fired), 1-2 signals ≈ 40-65, 3-4 ≈ 65-85, all ≈ 100.",
+      semantic_uplift:
+        "The LLM semantic pass can raise (never lower) a pillar it judges substantively covered: cap 82 for EN docs, 90 for non-EN (where deterministic detectors are naturally sparser).",
+      axes: "structural/format = deterministic detectors; substance = LLM-judged content quality with rationale + line-anchored evidence. The two are independent and never averaged into each other.",
+    },
     // A gateway failure must never masquerade as a definitive verdict: the
     // deterministic-only score can sit ±20 below a semantically-judged one,
     // which reads as "the score is random" to the operator. `partial: true`
@@ -1942,9 +2342,16 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
     semantic_pass: {
       ran: semantic !== null,
       model: semantic !== null ? SEMANTIC_MODEL : null,
-      skipped_reason: semantic === null
-        ? (!semantic_check ? "disabled_by_caller" : blocksSemantic ? "input_warning" : content.length < 400 ? "content_too_short" : "gateway_unavailable_or_errored")
-        : null,
+      skipped_reason:
+        semantic === null
+          ? !semantic_check
+            ? "disabled_by_caller"
+            : blocksSemantic
+              ? "input_warning"
+              : content.length < 400
+                ? "content_too_short"
+                : "gateway_unavailable_or_errored"
+          : null,
       warning: semanticFailed
         ? "PARTIAL RESULT: the semantic pass errored, so this score reflects deterministic detectors only and is a LOWER BOUND — treat it as provisional and re-run in 30-60s. It was not cached."
         : null,
@@ -1975,7 +2382,6 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
     content_hash: contentHash,
   };
 
-
   // Never cache a partial (semantic-degraded) result: a retry moments later
   // deserves a fresh semantic attempt, not a 10-minute-cached lower bound.
   if (!semanticFailed) REVIEW_CACHE.set(cacheKey, { core, at: Date.now() });
@@ -1993,24 +2399,54 @@ export const reviewSkillTool = defineTool({
   parameters: z.object({
     name: z.string().min(1).max(200).describe("File or skill name (for the report header only)"),
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).default("skill"),
-    content: z.string().min(20).max(120_000).describe("Raw markdown / prompt text of the local file — pass verbatim, not summarised"),
+    content: z
+      .string()
+      .min(20)
+      .max(120_000)
+      .describe("Raw markdown / prompt text of the local file — pass verbatim, not summarised"),
     doc_class: z
       .enum(["skill", "governance", "playbook-ops", "guardrail-ops", "auto"])
       .default("auto")
-      .describe("Declare the document class to set the realistic ceiling and weight the structural vs content axes. `auto` infers from `type` + content shape."),
+      .describe(
+        "Declare the document class to set the realistic ceiling and weight the structural vs content axes. `auto` infers from `type` + content shape.",
+      ),
     semantic_check: z
       .boolean()
       .default(true)
-      .describe("Run the LLM-backed semantic pass to catch pillars covered with non-conventional vocabulary and to improve evidence anchors. Set false for offline/zero-cost runs."),
+      .describe(
+        "Run the LLM-backed semantic pass to catch pillars covered with non-conventional vocabulary and to improve evidence anchors. Set false for offline/zero-cost runs.",
+      ),
     language: z
       .enum(["en", "pt", "es", "fr", "de", "it"])
       .optional()
-      .describe("Override the document language for localized feedback + semantic hint. Use this when the content mixes a base language with heavy English technical jargon (e.g. PT-BR fintech docs with `valuation`, `preferred stock`), where auto-detection can be low-confidence."),
-    previous_hash: z.string().max(32).optional().describe("fnv1a hash from a previous run — enables delta_vs_previous in the response"),
+      .describe(
+        "Override the document language for localized feedback + semantic hint. Use this when the content mixes a base language with heavy English technical jargon (e.g. PT-BR fintech docs with `valuation`, `preferred stock`), where auto-detection can be low-confidence.",
+      ),
+    previous_hash: z
+      .string()
+      .max(32)
+      .optional()
+      .describe("fnv1a hash from a previous run — enables delta_vs_previous in the response"),
     previous_overall_score: z.number().int().min(0).max(100).optional(),
   }),
-  execute: async ({ name, type, content, doc_class, semantic_check, language: languageOverride, previous_hash, previous_overall_score }) => {
-    const core = await computeReview({ name, type, content, doc_class, semantic_check, language: languageOverride });
+  execute: async ({
+    name,
+    type,
+    content,
+    doc_class,
+    semantic_check,
+    language: languageOverride,
+    previous_hash,
+    previous_overall_score,
+  }) => {
+    const core = await computeReview({
+      name,
+      type,
+      content,
+      doc_class,
+      semantic_check,
+      language: languageOverride,
+    });
     const overall = core.overall_score as number;
     const verdictScore = core.verdict_score as number;
     const docClassVal = (core.doc_class as { value: DocClass }).value;
@@ -2065,9 +2501,15 @@ export const reviewSkillTool = defineTool({
         ? {
             id: fbReq.id,
             expires_at: fbReq.expires_at,
-            prompt: "After applying top_actions, please rate this review (1-5) via the `submit_feedback` tool so the engine learns which signals helped.",
+            prompt:
+              "After applying top_actions, please rate this review (1-5) via the `submit_feedback` tool so the engine learns which signals helped.",
             tool: "submit_feedback",
-            example: { request_id: fbReq.id, rating: 4, sentiment: "positive", comments: "Top actions were spot-on." },
+            example: {
+              request_id: fbReq.id,
+              rating: 4,
+              sentiment: "positive",
+              comments: "Top actions were spot-on.",
+            },
           }
         : null,
       next_steps:
@@ -2080,7 +2522,9 @@ export const reviewSkillTool = defineTool({
               "Pass `previous_hash` + `previous_overall_score` from this response into the next call to get a `delta_vs_previous`.",
               "Honour `doc_class.expected_ceiling` — actions beyond that point are cosmetic, not quality wins.",
               "Read `substance.rationale` and `substance.pillars[].rationale` + `.evidence[]` — that is the LLM-judged content verdict, independent from `format_score`. A high format_score with a low substance_score means the file looks right and says little; fix substance first.",
-              fbReq ? `When done iterating, call \`submit_feedback\` with request_id="${fbReq.id}" and a 1-5 rating.` : "",
+              fbReq
+                ? `When done iterating, call \`submit_feedback\` with request_id="${fbReq.id}" and a 1-5 rating.`
+                : "",
             ].filter(Boolean),
     });
   },
@@ -2100,18 +2544,22 @@ export const reviewSkillsBatchTool = defineTool({
           doc_class: z
             .enum(["skill", "governance", "playbook-ops", "guardrail-ops", "auto"])
             .default("auto"),
-        })
+        }),
       )
       .min(1)
       .max(10),
     semantic_check: z
       .boolean()
       .default(true)
-      .describe("Run the LLM-backed semantic pass per file. Set false for a fast, zero-cost deterministic-only batch."),
+      .describe(
+        "Run the LLM-backed semantic pass per file. Set false for a fast, zero-cost deterministic-only batch.",
+      ),
     language: z
       .enum(["en", "pt", "es", "fr", "de", "it"])
       .optional()
-      .describe("Override the document language for ALL files in the batch (localized feedback + semantic hint)."),
+      .describe(
+        "Override the document language for ALL files in the batch (localized feedback + semantic hint).",
+      ),
   }),
   execute: async ({ files, semantic_check, language }) => {
     const results = await Promise.all(
@@ -2123,8 +2571,8 @@ export const reviewSkillsBatchTool = defineTool({
           doc_class: f.doc_class,
           semantic_check,
           language,
-        }).catch((e: any) => ({ file: f.name, error: e?.message ?? "review_failed" }))
-      )
+        }).catch((e: any) => ({ file: f.name, error: e?.message ?? "review_failed" })),
+      ),
     );
 
     // One shared feedback request for the whole batch (cheaper than N inserts).
@@ -2139,10 +2587,15 @@ export const reviewSkillsBatchTool = defineTool({
       .select("id, expires_at")
       .single();
 
-    const scored = results.filter((r) => typeof (r as { overall_score?: number }).overall_score === "number");
+    const scored = results.filter(
+      (r) => typeof (r as { overall_score?: number }).overall_score === "number",
+    );
     const avg =
       scored.length > 0
-        ? Math.round(scored.reduce((s, r) => s + ((r as { verdict_score: number }).verdict_score ?? 0), 0) / scored.length)
+        ? Math.round(
+            scored.reduce((s, r) => s + ((r as { verdict_score: number }).verdict_score ?? 0), 0) /
+              scored.length,
+          )
         : null;
 
     return json({
@@ -2155,7 +2608,8 @@ export const reviewSkillsBatchTool = defineTool({
         ? {
             id: fbReq.id,
             expires_at: fbReq.expires_at,
-            prompt: "After applying the actions, rate this batch review (1-5) via `submit_feedback`.",
+            prompt:
+              "After applying the actions, rate this batch review (1-5) via `submit_feedback`.",
             tool: "submit_feedback",
           }
         : null,
@@ -2182,7 +2636,11 @@ export const submitFeedbackTool = defineTool({
     rating: z.number().int().min(1).max(5).describe("1 = bad, 5 = excellent"),
     sentiment: z.enum(["positive", "neutral", "negative"]).optional(),
     comments: z.string().max(4000).optional(),
-    agent_model: z.string().max(120).optional().describe("e.g. claude-sonnet-4-5, gpt-5, gemini-3-pro"),
+    agent_model: z
+      .string()
+      .max(120)
+      .optional()
+      .describe("e.g. claude-sonnet-4-5, gpt-5, gemini-3-pro"),
   }),
   execute: async ({ request_id, rating, sentiment, comments, agent_model }) => {
     const inferred = sentiment ?? (rating >= 4 ? "positive" : rating <= 2 ? "negative" : "neutral");
