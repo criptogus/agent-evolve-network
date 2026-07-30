@@ -53,9 +53,15 @@ function EnterprisePage() {
             hosted endpoints, even in air-gapped environments.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              to="/enterprise/request"
+              className="inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
+            >
+              Start a request under NDA
+            </Link>
             <a
               href={mailto}
-              className="inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
+              className="inline-flex h-11 items-center rounded-md border border-border bg-surface px-5 text-sm font-medium transition-colors hover:border-primary/40"
             >
               Book a Trust Score walkthrough
             </a>
@@ -244,12 +250,12 @@ npm run trust:verify -- \\
             harness and a live attestation verification — on a package relevant to your vertical.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <a
-              href={mailto}
+            <Link
+              to="/enterprise/request"
               className="inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
             >
-              Book a Trust Score walkthrough
-            </a>
+              Start a request under NDA
+            </Link>
             <Link
               to="/whitepaper"
               className="inline-flex h-11 items-center rounded-md border border-border bg-surface px-5 text-sm font-medium transition-colors hover:border-primary/40"

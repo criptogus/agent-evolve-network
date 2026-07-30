@@ -62,6 +62,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
 import { Route as AdminCalibrationRouteImport } from './routes/admin.calibration'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
+import { Route as AdminEnterpriseRouteImport } from './routes/admin.enterprise'
 import { Route as AdminFunnelRouteImport } from './routes/admin.funnel'
 import { Route as AdminMetaAdsPackRouteImport } from './routes/admin.meta-ads-pack'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
@@ -82,6 +83,7 @@ import { Route as ComparePairRouteImport } from './routes/compare.$pair'
 import { Route as ConnectClientRouteImport } from './routes/connect.$client'
 import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as EnterpriseRequestRouteImport } from './routes/enterprise_.request'
 import { Route as LegalDisclaimersRouteImport } from './routes/legal.disclaimers'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace.index'
 import { Route as MarketplacePackageIdRouteImport } from './routes/marketplace.$packageId'
@@ -406,6 +408,11 @@ const AdminCustomersRoute = AdminCustomersRouteImport.update({
   path: '/customers',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminEnterpriseRoute = AdminEnterpriseRouteImport.update({
+  id: '/enterprise',
+  path: '/enterprise',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminFunnelRoute = AdminFunnelRouteImport.update({
   id: '/funnel',
   path: '/funnel',
@@ -504,6 +511,11 @@ const DocsMcpRoute = DocsMcpRouteImport.update({
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnterpriseRequestRoute = EnterpriseRequestRouteImport.update({
+  id: '/enterprise_/request',
+  path: '/enterprise/request',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LegalDisclaimersRoute = LegalDisclaimersRouteImport.update({
@@ -855,6 +867,7 @@ export interface FileRoutesByFullPath {
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/enterprise': typeof AdminEnterpriseRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
@@ -874,6 +887,7 @@ export interface FileRoutesByFullPath {
   '/connect/$client': typeof ConnectClientRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/enterprise/request': typeof EnterpriseRequestRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
@@ -985,6 +999,7 @@ export interface FileRoutesByTo {
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/enterprise': typeof AdminEnterpriseRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
@@ -1004,6 +1019,7 @@ export interface FileRoutesByTo {
   '/connect/$client': typeof ConnectClientRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/enterprise/request': typeof EnterpriseRequestRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
@@ -1117,6 +1133,7 @@ export interface FileRoutesById {
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/enterprise': typeof AdminEnterpriseRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
@@ -1136,6 +1153,7 @@ export interface FileRoutesById {
   '/connect/$client': typeof ConnectClientRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/enterprise_/request': typeof EnterpriseRequestRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
   '/marketplace/$packageId': typeof MarketplacePackageIdRoute
   '/marketplace/categories': typeof MarketplaceCategoriesRoute
@@ -1250,6 +1268,7 @@ export interface FileRouteTypes {
     | '/admin/accounts'
     | '/admin/calibration'
     | '/admin/customers'
+    | '/admin/enterprise'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
@@ -1269,6 +1288,7 @@ export interface FileRouteTypes {
     | '/connect/$client'
     | '/docs/mcp'
     | '/email/unsubscribe'
+    | '/enterprise/request'
     | '/legal/disclaimers'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
@@ -1380,6 +1400,7 @@ export interface FileRouteTypes {
     | '/admin/accounts'
     | '/admin/calibration'
     | '/admin/customers'
+    | '/admin/enterprise'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
@@ -1399,6 +1420,7 @@ export interface FileRouteTypes {
     | '/connect/$client'
     | '/docs/mcp'
     | '/email/unsubscribe'
+    | '/enterprise/request'
     | '/legal/disclaimers'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
@@ -1511,6 +1533,7 @@ export interface FileRouteTypes {
     | '/admin/accounts'
     | '/admin/calibration'
     | '/admin/customers'
+    | '/admin/enterprise'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
@@ -1530,6 +1553,7 @@ export interface FileRouteTypes {
     | '/connect/$client'
     | '/docs/mcp'
     | '/email/unsubscribe'
+    | '/enterprise_/request'
     | '/legal/disclaimers'
     | '/marketplace/$packageId'
     | '/marketplace/categories'
@@ -1646,6 +1670,7 @@ export interface RootRouteChildren {
   CollectionsSlugRoute: typeof CollectionsSlugRoute
   ComparePairRoute: typeof ComparePairRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  EnterpriseRequestRoute: typeof EnterpriseRequestRoute
   LegalDisclaimersRoute: typeof LegalDisclaimersRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
   MarketplaceCategoriesRoute: typeof MarketplaceCategoriesRoute
@@ -2069,6 +2094,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCustomersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/enterprise': {
+      id: '/admin/enterprise'
+      path: '/enterprise'
+      fullPath: '/admin/enterprise'
+      preLoaderRoute: typeof AdminEnterpriseRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/funnel': {
       id: '/admin/funnel'
       path: '/funnel'
@@ -2207,6 +2239,13 @@ declare module '@tanstack/react-router' {
       path: '/email/unsubscribe'
       fullPath: '/email/unsubscribe'
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/enterprise_/request': {
+      id: '/enterprise_/request'
+      path: '/enterprise/request'
+      fullPath: '/enterprise/request'
+      preLoaderRoute: typeof EnterpriseRequestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal/disclaimers': {
@@ -2620,6 +2659,7 @@ interface AdminRouteChildren {
   AdminAccountsRoute: typeof AdminAccountsRoute
   AdminCalibrationRoute: typeof AdminCalibrationRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
+  AdminEnterpriseRoute: typeof AdminEnterpriseRoute
   AdminFunnelRoute: typeof AdminFunnelRoute
   AdminMetaAdsPackRoute: typeof AdminMetaAdsPackRoute
   AdminPackagesRoute: typeof AdminPackagesRouteWithChildren
@@ -2638,6 +2678,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAccountsRoute: AdminAccountsRoute,
   AdminCalibrationRoute: AdminCalibrationRoute,
   AdminCustomersRoute: AdminCustomersRoute,
+  AdminEnterpriseRoute: AdminEnterpriseRoute,
   AdminFunnelRoute: AdminFunnelRoute,
   AdminMetaAdsPackRoute: AdminMetaAdsPackRoute,
   AdminPackagesRoute: AdminPackagesRouteWithChildren,
@@ -2821,6 +2862,7 @@ const rootRouteChildren: RootRouteChildren = {
   CollectionsSlugRoute: CollectionsSlugRoute,
   ComparePairRoute: ComparePairRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  EnterpriseRequestRoute: EnterpriseRequestRoute,
   LegalDisclaimersRoute: LegalDisclaimersRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
   MarketplaceCategoriesRoute: MarketplaceCategoriesRoute,

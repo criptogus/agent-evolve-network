@@ -29,6 +29,7 @@ const NAV = [
   { to: "/admin/import/github", label: "Import · GitHub" },
   { to: "/admin/import/markdown", label: "Import · Markdown" },
   { to: "/admin/requests", label: "Requests" },
+  { to: "/admin/enterprise", label: "Enterprise (NDA)" },
   { to: "/admin/review", label: "Review queue" },
   { to: "/admin/review-reports", label: "Reports" },
   { to: "/admin/review-audit", label: "Audit" },
