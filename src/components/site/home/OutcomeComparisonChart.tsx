@@ -104,8 +104,8 @@ const AXIS_TICK = { fill: "var(--muted-foreground)", fontSize: 11 } as const;
  */
 export function OutcomeComparisonChart() {
   return (
-    <figure className="mt-8 rounded-2xl border border-primary/30 bg-background p-5 shadow-elevated md:p-6">
-      <figcaption className="flex flex-wrap items-start justify-between gap-3">
+    <figure className="mt-8 rounded-2xl border border-primary/30 bg-background p-5 shadow-elevated md:p-6 chart-slide-up opacity-0">
+      <figcaption className="flex flex-wrap items-start justify-between gap-3 chart-fade">
         <div>
           <div className="text-sm font-semibold text-foreground md:text-base">
             Outcome per execution — last 90 days
