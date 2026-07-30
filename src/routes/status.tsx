@@ -42,7 +42,7 @@ function StatusPage() {
     let cancelled = false;
     async function tick() {
       try {
-        const r = await fetch("/api/mcp/health", { cache: "no-store" });
+        const r = await fetch("/api/public/mcp/health", { cache: "no-store" });
         const j = (await r.json()) as Health;
         if (!cancelled) {
           setHealth(j);
@@ -71,7 +71,7 @@ function StatusPage() {
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Live health of the MCP endpoint at{" "}
-          <code className="font-mono text-xs">/api/mcp</code>. The raw JSON probe is at{" "}
+          <code className="font-mono text-xs">/api/public/mcp</code>. The raw JSON probe is at{" "}
           <code className="font-mono text-xs">/api/mcp/health</code> — wire it into your own
           status dashboard if you want to be notified before we are.
         </p>

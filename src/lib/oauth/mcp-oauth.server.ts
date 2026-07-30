@@ -1,7 +1,7 @@
 import { createHash, randomBytes, timingSafeEqual } from "crypto";
 
 export const ORIGIN = "https://superagentskill.com";
-export const MCP_RESOURCE = `${ORIGIN}/api/mcp`;
+export const MCP_RESOURCE = `${ORIGIN}/api/public/mcp`;
 // Hosts (Claude/Hermes/Cursor) keep the access token in memory and only refresh
 // when it 401s. With 7d access + 90d refresh, hosts effectively never reauthorize:
 // access bearer survives a week of restarts; refresh covers a quarter.
@@ -64,7 +64,7 @@ export const CORS_HEADERS = {
 /**
  * RFC 8414 authorization-server metadata. Served at both the bare
  * `/.well-known/oauth-authorization-server` and the path-aware
- * `/.well-known/oauth-authorization-server/api/mcp` location so every
+ * `/.well-known/oauth-authorization-server/api/public/mcp` location so every
  * client generation (Claude, Codex, Cursor, VS Code, …) finds it.
  */
 export function authorizationServerMetadata() {

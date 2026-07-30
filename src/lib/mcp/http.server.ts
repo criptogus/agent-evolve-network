@@ -114,7 +114,7 @@ const mcp = createMcpServer({
 
 // Canonical RFC 9728 location at the origin root. Clients (Claude, Codex, …)
 // read this URL from the WWW-Authenticate header to start the OAuth dance.
-const RESOURCE_METADATA_URL = `${ORIGIN}/.well-known/oauth-protected-resource/api/mcp`;
+const RESOURCE_METADATA_URL = `${ORIGIN}/.well-known/oauth-protected-resource/api/public/mcp`;
 
 /** Attach CORS headers to any Response without dropping its existing headers. */
 function withCors(res: Response): Response {
@@ -360,7 +360,7 @@ async function handle(request: Request): Promise<Response> {
   return withAuthStatus(withRateLimitHeaders(withCors(handled), lastQuota), authStatus);
 }
 /**
- * Public entry point shared by BOTH `/api/mcp` and the WAF-bypass mirror
+ * Public entry point shared by BOTH the canonical `/api/public/mcp` and the legacy
  * `/api/public/mcp`. Some customer runtimes (Vercel, Replit, HuggingFace
  * Spaces, corporate egress ranges) get their IP/UA blocked by the edge WAF on
  * the default path; `/api/public/*` is left open by the platform gate, so the
@@ -379,7 +379,7 @@ export function mcpInfoResponse(endpoint: string): Response {
       transport: "streamable-http",
       endpoint,
       usage: "POST JSON-RPC 2.0 payloads to this URL. Set Accept: application/json, text/event-stream.",
-      mirror: endpoint === "/api/mcp" ? `${ORIGIN}/api/public/mcp` : `${ORIGIN}/api/mcp`,
+      mirror: endpoint === "/api/public/mcp" ? `${ORIGIN}/api/mcp` : `${ORIGIN}/api/public/mcp`,
       mirror_hint:
         "If this URL is blocked by an edge firewall from your runtime (403 / connection reset), retry the identical JSON-RPC calls against the `mirror` URL.",
       // Plain-JSON door for clients that don't want to parse SSE frames.

@@ -167,15 +167,15 @@ function McpDocs() {
           <CodeBlock
             filename="discovery (served with CORS, path-aware)"
             lang="text"
-            code={`GET /.well-known/oauth-protected-resource/api/mcp     → RFC 9728
+            code={`GET /.well-known/oauth-protected-resource/api/public/mcp → RFC 9728
 GET /.well-known/oauth-protected-resource             → RFC 9728 (root)
 GET /.well-known/oauth-authorization-server           → RFC 8414
 POST /api/public/oauth/register                       → RFC 7591 (DCR)
 POST /api/public/oauth/token                          → code + refresh grants
 POST /api/public/oauth/revoke                         → RFC 7009
 
-# A 401 from /api/mcp returns:
-WWW-Authenticate: Bearer resource_metadata="https://superagentskill.com/.well-known/oauth-protected-resource/api/mcp"`}
+# A 401 from /api/public/mcp returns:
+WWW-Authenticate: Bearer resource_metadata="https://superagentskill.com/.well-known/oauth-protected-resource/api/public/mcp"`}
           />
           <p className="mt-3 text-muted-foreground">
             Compliant clients run the browser consent flow automatically. After you click

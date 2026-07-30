@@ -24,7 +24,7 @@ export const Route = createFileRoute("/api/public/mcp/health")({
             name: "super-agent-skill",
             version: "1.1.0",
             transport: "streamable-http",
-            endpoint: "/api/mcp",
+            endpoint: "/api/public/mcp",
             tools: TOOLS,
             ts: new Date().toISOString(),
           }),

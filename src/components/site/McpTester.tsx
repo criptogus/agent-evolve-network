@@ -17,7 +17,7 @@ type Result = {
   error?: string;
 };
 
-const ENDPOINT = "/api/mcp";
+const ENDPOINT = "/api/public/mcp";
 const TOKEN_LS_KEY = "sas_mcp_test_token";
 
 const TOOL_DEFAULTS: Record<ToolKey, Record<string, any>> = {

@@ -49,7 +49,7 @@ function PlaygroundPage() {
         </h1>
         <p className="mt-4 max-w-2xl text-base text-muted-foreground">
           Pick a tool, fill the args, hit run. Read tools work anonymously; write tools need a
-          token. Same endpoint your agents hit (<code className="font-mono text-xs">/api/mcp</code>
+          token. Same endpoint your agents hit (<code className="font-mono text-xs">/api/public/mcp</code>
           ), same shape, same rate limits — nothing to install.
         </p>
 
@@ -57,7 +57,7 @@ function PlaygroundPage() {
           <Highlight
             icon={Zap}
             title="Zero install"
-            body="No JSON config, no CLI. Browser talks directly to /api/mcp."
+            body="No JSON config, no CLI. Browser talks directly to /api/public/mcp."
           />
           <Highlight
             icon={Sparkles}
