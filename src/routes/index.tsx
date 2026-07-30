@@ -119,10 +119,10 @@ const FAQ_LD = {
 };
 
 /**
- * One narrative, seven sections, ordered as a conversion funnel:
- * hook (Hero) → ease (HowItWorks) → show-don't-tell (IndustryDemo, the
- * most persuasive section, before any technical deep-dive) →
- * differentiation/trust (Proof) → vocabulary (CoreConcepts) →
+ * One narrative, ordered as a conversion funnel:
+ * hook (Hero) → primary sales argument (GradeImpact) → ease (HowItWorks) →
+ * show-don't-tell (IndustryDemo) → differentiation/trust (Proof) →
+ * security & IP objection (SecurityPromise) → vocabulary (CoreConcepts) →
  * monetization (PlansTeaser) → objections + close (Faq, CtaSection).
  */
 function Home() {
@@ -138,6 +138,7 @@ function Home() {
       <HowItWorks />
       <IndustryDemo />
       <Proof />
+      <SecurityPromise />
       <CoreConcepts />
       <PlansTeaser />
       <Faq />
