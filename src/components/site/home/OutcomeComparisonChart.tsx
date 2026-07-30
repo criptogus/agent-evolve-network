@@ -105,7 +105,7 @@ function OutcomeTooltip({
 
 const AXIS_TICK = { fill: "var(--muted-foreground)", fontSize: 11 } as const;
 
-function MetricTip({ label, tip }: { label: React.ReactNode; tip: string }) {
+export function MetricTip({ label, tip }: { label: React.ReactNode; tip: string }) {
   return (
     <TooltipProvider delayDuration={150}>
       <UiTooltip>
