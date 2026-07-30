@@ -23,11 +23,15 @@ const AUTHOR_MODEL_FALLBACKS = [
 ] as const;
 
 // Per-attempt timeout. The minimal schema generates ~1KB of JSON — flash
-// closes in 3-6s. Give each attempt a comfortable 25s budget so a slow but
-// eventually-successful gateway response beats a hard-timeout that skips
-// straight to the next (more expensive) model. Two attempts × 25s ≈ under
-// the 60s worker budget with headroom for the text fallback.
-const PER_ATTEMPT_TIMEOUT_MS = 25_000;
+// closes in 3-6s, so 12s already covers the slow tail. The previous 25s ×
+// 4 models + text fallback could reach ~125s, which blew every serverless
+// budget and left upload jobs orphaned in `processing`.
+const PER_ATTEMPT_TIMEOUT_MS = 12_000;
+// Hard wall-clock ceiling for one generateDraft() call, across every model
+// in the fallback chain plus the text fallback. Once exceeded we stop trying
+// and fail fast so the caller (queue worker / MCP tool) always returns
+// inside its own request budget instead of being killed mid-flight.
+const TOTAL_BUDGET_MS = 34_000;
 
 /**
  * Hydrate a minimal draft into the full PackageDraft shape with sensible
