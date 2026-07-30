@@ -171,6 +171,10 @@ export function Nav() {
                   <DropdownMenuItem asChild>
                     <Link to="/account/tokens">API tokens</Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/account/encryption">Encryption (BYOK)</Link>
+                  </DropdownMenuItem>
+
                   <DropdownMenuSeparator />
                   {isAdmin && (
                     <DropdownMenuItem asChild>
@@ -254,7 +258,11 @@ export function Nav() {
                       <MobileLink to="/account/tokens" onNavigate={() => setOpen(false)}>
                         API tokens
                       </MobileLink>
+                      <MobileLink to="/account/encryption" onNavigate={() => setOpen(false)}>
+                        Encryption (BYOK)
+                      </MobileLink>
                       {isAdmin && (
+
                         <MobileLink to="/admin" onNavigate={() => setOpen(false)}>
                           Admin
                         </MobileLink>
