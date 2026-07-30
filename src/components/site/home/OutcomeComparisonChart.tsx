@@ -105,6 +105,24 @@ function OutcomeTooltip({
 
 const AXIS_TICK = { fill: "var(--muted-foreground)", fontSize: 11 } as const;
 
+function MetricTip({ label, tip }: { label: React.ReactNode; tip: string }) {
+  return (
+    <TooltipProvider delayDuration={150}>
+      <UiTooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex cursor-help items-center gap-1">
+            {label}
+            <Info className="h-3 w-3 text-muted-foreground/70" aria-hidden />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs text-balance bg-popover text-popover-foreground border-border shadow-elevated">
+          {tip}
+        </TooltipContent>
+      </UiTooltip>
+    </TooltipProvider>
+  );
+}
+
 /**
  * Headline chart for the A-grade hero section: outcome metrics per execution
  * over the last 90 days, random skill vs. certified A-grade skill.
