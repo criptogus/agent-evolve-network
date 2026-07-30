@@ -235,12 +235,26 @@ export function OutcomeComparisonChart() {
               content={<OutcomeTooltip />}
               cursor={{ fill: "var(--grid-line)", opacity: 0.4 }}
             />
-            <Bar dataKey="ungraded" fill={BASELINE} radius={[4, 4, 0, 0]} isAnimationActive={false}>
+            <Bar
+              dataKey="ungraded"
+              fill={BASELINE}
+              radius={[4, 4, 0, 0]}
+              isAnimationActive
+              animationDuration={900}
+              animationBegin={200}
+            >
               {OUTCOMES.map((o) => (
                 <Cell key={o.metric} fill={BASELINE} />
               ))}
             </Bar>
-            <Bar dataKey="sak" fill={SAK} radius={[4, 4, 0, 0]} isAnimationActive={false}>
+            <Bar
+              dataKey="sak"
+              fill={SAK}
+              radius={[4, 4, 0, 0]}
+              isAnimationActive
+              animationDuration={1100}
+              animationBegin={400}
+            >
               <LabelList
                 dataKey="sak"
                 position="top"
@@ -259,8 +273,12 @@ export function OutcomeComparisonChart() {
           { k: "+52 p.p.", v: "more tasks completed" },
           { k: "−92%", v: "human rescues needed" },
           { k: "2.4×", v: "more positive ratings" },
-        ].map((s) => (
-          <div key={s.k} className="rounded-xl border border-border bg-surface-muted/40 p-3">
+        ].map((s, idx) => (
+          <div
+            key={s.k}
+            className="rounded-xl border border-border bg-surface-muted/40 p-3 chart-slide-up opacity-0"
+            style={{ animationDelay: `${500 + idx * 100}ms` }}
+          >
             <div className="font-mono text-lg font-semibold text-primary">{s.k}</div>
             <div className="text-xs text-muted-foreground">{s.v}</div>
           </div>
