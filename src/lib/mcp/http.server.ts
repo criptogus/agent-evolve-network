@@ -382,8 +382,13 @@ export function mcpInfoResponse(endpoint: string): Response {
       mirror: endpoint === "/api/mcp" ? `${ORIGIN}/api/public/mcp` : `${ORIGIN}/api/mcp`,
       mirror_hint:
         "If this URL is blocked by an edge firewall from your runtime (403 / connection reset), retry the identical JSON-RPC calls against the `mirror` URL.",
+      // Plain-JSON door for clients that don't want to parse SSE frames.
+      json_review_endpoint: `${ORIGIN}/api/public/review`,
+      json_review_hint:
+        "No MCP client? POST {name, content, type?} as plain JSON to `json_review_endpoint` and get the same score payload back as plain JSON — no JSON-RPC, no SSE, no auth.",
       docs: `${ORIGIN}/docs/mcp`,
       probe: `${ORIGIN}/api/public/mcp/probe`,
+
       ts: new Date().toISOString(),
     }),
     {
