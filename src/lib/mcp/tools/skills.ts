@@ -7,6 +7,7 @@ import { hashToken } from "@/lib/account/tokens.server";
 import { processBulkUpload, previewUpload } from "@/lib/uploads/uploads.server";
 import { getGatewayModel } from "@/lib/ai-gateway";
 import { getIdempotent, putIdempotent } from "@/lib/mcp/idempotency";
+import { twoProportionUplift } from "@/lib/experiments/uplift";
 
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 
