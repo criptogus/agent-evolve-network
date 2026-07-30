@@ -1842,7 +1842,43 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
     },
     overall_score: overall,
     structural_score: structuralScore,
+    format_score: formatScore,
     content_quality_score: contentQualityScore,
+    substance_score: substanceScore,
+    // Two independent axes, never averaged: `format` is deterministic
+    // structure, `substance` is LLM-judged content with a written rationale
+    // and file-anchored excerpts per pillar.
+    substance: substancePass
+      ? {
+          judged: true,
+          score: substanceScore,
+          grade: substanceScore !== null ? gradeBand(substanceScore) : null,
+          judged_by: SEMANTIC_MODEL,
+          axis: "content_only_format_ignored",
+          rationale: substancePass.summary || null,
+          pillars: substancePillars,
+          evidence_unverified: substancePillars.reduce(
+            (n, p) => n + p.evidence.filter((e) => !e.verified).length,
+            0,
+          ),
+        }
+      : {
+          judged: false,
+          score: null,
+          grade: null,
+          judged_by: null,
+          axis: "content_only_format_ignored",
+          rationale: null,
+          pillars: [],
+          evidence_unverified: 0,
+          skipped_reason: !semantic_check
+            ? "disabled_by_caller"
+            : blocksSemantic
+              ? "input_warning"
+              : content.length < 400
+                ? "content_too_short"
+                : "gateway_unavailable_or_errored",
+        },
     verdict_score: verdictScore,
     grade: gradeBand(verdictScore),
     axis_note: extras.axis_caveat,
