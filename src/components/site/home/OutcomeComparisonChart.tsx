@@ -220,7 +220,9 @@ export function OutcomeComparisonChart() {
                 {col.rows.map((r) => (
                   <div key={r.k} className="flex items-baseline justify-between gap-3 py-2.5">
                     <div>
-                      <dt className="text-sm font-medium text-foreground">{r.k}</dt>
+                      <dt className="text-sm font-medium text-foreground">
+                        <MetricTip label={r.k} tip={r.tip} />
+                      </dt>
                       <dd className="text-[11px] text-muted-foreground">{r.s}</dd>
                     </div>
                     <span
