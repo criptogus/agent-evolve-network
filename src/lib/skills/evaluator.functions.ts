@@ -43,11 +43,12 @@ export const evaluatePackage = createServerFn({ method: "POST" })
       .limit(20);
 
     const result = await evaluatorPipeline({
-      pkg: { name: pkg.name, type: pkg.type, description: pkg.description },
+      pkg: { name: pkg.name, type: pkg.type, description: pkg.description, tags: pkg.tags ?? [] },
       version: {
         system_prompt: ver.system_prompt,
         rules: ver.rules,
         examples: (ver.examples as Array<{ title: string; input: string; expected_output: string }>) || [],
+        format: (ver as { format?: string }).format ?? (ver.rules as { format?: string })?.format,
       },
       extraCases: data.extra_cases,
       goldenCases: (goldenRows as Array<{ title: string; input: string; expected_output: string; label_pass: boolean; label_source: string }>) || [],

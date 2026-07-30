@@ -979,7 +979,6 @@ function detectLanguage(text: string): { lang: Lang; confidence: number } {
     return { lang: pick, confidence: 0.55 };
   }
   return { lang: topLang, confidence: conf(topHits) };
-
 }
 
 
@@ -1716,11 +1715,11 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
   // truncation warnings (short_input / summary_markers) block it; an
   // `outline_only` hint is soft and is exactly where the pass adds most value.
   const blocksSemantic = warnKind === "short_input" || warnKind === "summary_markers";
-  const substancePass =
-    semantic_check && !blocksSemantic && content.length >= 400
-      ? await semanticCheck(content, language.lang)
-      : null;
+  const semanticEligible = semantic_check && !blocksSemantic && content.length >= 400;
+  const substancePass = semanticEligible ? await semanticCheck(content, language.lang) : null;
   const semantic = substancePass?.verdicts ?? null;
+  // Eligible but null ⇒ the gateway errored after retries — a degraded run.
+  const semanticFailed = semanticEligible && substancePass === null;
 
   // Apply semantic uplift to pillar scores (never lowers a score).
   const semanticUplifts: Record<string, { from: number; to: number; confidence: number }> = {};
@@ -1934,11 +1933,20 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
     verdict_score: verdictScore,
     grade: gradeBand(verdictScore),
     axis_note: extras.axis_caveat,
+    // A gateway failure must never masquerade as a definitive verdict: the
+    // deterministic-only score can sit ±20 below a semantically-judged one,
+    // which reads as "the score is random" to the operator. `partial: true`
+    // says loudly that this run is a lower bound, and partial results are
+    // never cached so an immediate retry gets a fresh semantic attempt.
+    partial: semanticFailed,
     semantic_pass: {
       ran: semantic !== null,
       model: semantic !== null ? SEMANTIC_MODEL : null,
       skipped_reason: semantic === null
         ? (!semantic_check ? "disabled_by_caller" : blocksSemantic ? "input_warning" : content.length < 400 ? "content_too_short" : "gateway_unavailable_or_errored")
+        : null,
+      warning: semanticFailed
+        ? "PARTIAL RESULT: the semantic pass errored, so this score reflects deterministic detectors only and is a LOWER BOUND — treat it as provisional and re-run in 30-60s. It was not cached."
         : null,
       uplifts: Object.entries(semanticUplifts).map(([pillar, u]) => ({ pillar, ...u })),
     },
@@ -1968,7 +1976,9 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
   };
 
 
-  REVIEW_CACHE.set(cacheKey, { core, at: Date.now() });
+  // Never cache a partial (semantic-degraded) result: a retry moments later
+  // deserves a fresh semantic attempt, not a 10-minute-cached lower bound.
+  if (!semanticFailed) REVIEW_CACHE.set(cacheKey, { core, at: Date.now() });
   if (REVIEW_CACHE.size > REVIEW_CACHE_MAX) {
     const oldest = REVIEW_CACHE.keys().next().value;
     if (oldest !== undefined) REVIEW_CACHE.delete(oldest);
