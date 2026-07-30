@@ -170,8 +170,8 @@ export function SakValueCharts() {
       </figure>
 
       {/* Chart 2 — adversarial attempts blocked, by attack class */}
-      <figure className="rounded-2xl border border-border bg-background p-5">
-        <figcaption>
+      <figure className="rounded-2xl border border-border bg-background p-5 chart-slide-up opacity-0 chart-delay-200">
+        <figcaption className="chart-fade">
           <div className="text-sm font-semibold text-foreground">
             Adversarial attempts blocked, by attack class
           </div>
@@ -216,14 +216,18 @@ export function SakValueCharts() {
                 fill={BASELINE}
                 barSize={9}
                 radius={[0, 4, 4, 0]}
-                isAnimationActive={false}
+                isAnimationActive
+                animationDuration={900}
+                animationBegin={400}
               />
               <Bar
                 dataKey="sak"
                 fill={SAK}
                 barSize={9}
                 radius={[0, 4, 4, 0]}
-                isAnimationActive={false}
+                isAnimationActive
+                animationDuration={1100}
+                animationBegin={700}
               />
             </BarChart>
           </ResponsiveContainer>
