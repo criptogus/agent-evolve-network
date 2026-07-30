@@ -605,18 +605,30 @@ function inputWarning(text: string): "short_input" | "summary_markers" | "outlin
   // example — NOT a signal that the document was truncated. Scanning the raw
   // text was producing false-positive `summary_markers` warnings that killed
   // the semantic pass on otherwise valid skills.
+  // Also strip YAML frontmatter: `description: "algo — condensado"` is normal
+  // metadata prose, not evidence that the body was cut. Em dashes and inline
+  // ellipses are never markers on their own.
   const prose = t
+    .replace(/^---\n[\s\S]*?\n---/, " ")
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/`[^`\n]*`/g, " ");
-  if (/(\[truncated\]|\[\.\.\.\]|truncated for brevity|condensed|abbreviated|resumido|truncado|condensado|abrégé|tronqué|gekürzt|abgekürzt|troncato|abbreviato)/i.test(prose)) {
+  // Only bracketed / explicit elision phrases count. Bare words like
+  // "condensed", "resumido" or "abbreviated" appear constantly in legitimate
+  // prose ("a condensed deal memo"), so they no longer trip the warning.
+  if (
+    /(\[truncated\]|\[\.\.\.\]|\[…\]|\[snip\]|\[omitted\]|\[resumido\]|\[truncado\]|truncated for brevity|omitted for brevity|rest omitted|remainder omitted|resto omitido|omitido por brevidade|abgeschnitten für kürze|tronqué par souci de brièveté)/i.test(
+      prose,
+    )
+  ) {
     return "summary_markers";
   }
   // A bare `...` only counts as a truncation marker when it stands alone on
   // its own line (or line-end) — that's the classic "…rest omitted…" pattern.
   // Prose ellipses in the middle of a sentence don't qualify.
-  if (/(^|\n)\s*\.{3,}\s*($|\n)/.test(prose)) {
+  if (/(^|\n)\s*(\.{3,}|…)\s*($|\n)/.test(prose)) {
     return "summary_markers";
   }
+
   const lines = t.split("\n");
   const headings = lines.filter((l) => /^#{1,6}\s/.test(l)).length;
   // Content lines include bullets and numbered list items — skills are
@@ -886,13 +898,49 @@ function detectLanguage(text: string): { lang: Lang; confidence: number } {
     de: wordMatch(/\b(der|die|das|und|nicht|sie|sind|auch|dann|weil|nutzer|beispiel|auslöser|werte|kriterium|ausgabe|eingabe|für|mit|ist|dies|wenn|muss)\b/g) + 2 * diaMatch(/[äöüß]/g),
     it: wordMatch(/\b(il|la|le|non|lei|sei|sono|anche|allora|perché|utente|esempio|trigger|valori|criterio|uscita|ingresso|per|con|questo|quando|deve)\b/g) + 2 * diaMatch(/[àèéìíîòóù]/g),
   };
+  // Language-exclusive orthography. These characters essentially never appear
+  // in the other candidates, so their presence is a hard tiebreaker: a PT doc
+  // full of English jargon still gets classified PT instead of falling into
+  // "other" (which used to skip the semantic pass and zero native pillars).
+  const EXCLUSIVE: Array<[Exclude<Lang, "other">, RegExp]> = [
+    ["pt", /(ção|ções|ãos?|õe|nh[aeiou]|ç[aou])/g],
+    ["es", /(ñ|¿|¡|ción\b)/g],
+    ["fr", /(œ|ç|qu'|d'un|l'utilisateur|ê)/g],
+    ["de", /(ß|ä|ö|ü)/g],
+    ["it", /(gli\b|zione\b|perché)/g],
+  ];
+  const exclusive = EXCLUSIVE.map(([l, re]) => [l, (sample.match(re) ?? []).length] as const)
+    .filter(([, n]) => n >= 3)
+    .sort((a, b) => b[1] - a[1]);
+
   const entries = Object.entries(counts) as Array<[Exclude<Lang, "other">, number]>;
   entries.sort((a, b) => b[1] - a[1]);
   const [topLang, topHits] = entries[0];
-  const [, secondHits] = entries[1];
-  if (topHits < 6) return { lang: "other", confidence: 0.3 };
-  if (topHits < secondHits * 1.15) return { lang: "other", confidence: 0.4 };
-  return { lang: topLang, confidence: Math.min(1, topHits / 40) };
+  const [secondLang, secondHits] = entries[1];
+
+  // Confidence divisor lowered from 40 → 22: 22 function-word hits in an 8k
+  // sample is already a decisive signal, and the old divisor kept legitimate
+  // PT/ES docs permanently under the 0.5 "low confidence" caveat.
+  const conf = (hits: number) => Math.min(1, Math.max(0.55, hits / 22));
+
+  if (exclusive.length) {
+    const [excLang, excHits] = exclusive[0];
+    // Orthography wins unless the function-word count for the same language is
+    // literally zero (i.e. a stray accent in an otherwise English doc).
+    if (counts[excLang] >= 2 || excHits >= 8) {
+      return { lang: excLang, confidence: conf(Math.max(counts[excLang], excHits)) };
+    }
+  }
+  if (topHits < 4) return { lang: "other", confidence: 0.3 };
+  // Near-tie: prefer the non-English candidate rather than bailing to "other".
+  // "other" is the worst outcome for the writer (no localized feedback, weaker
+  // semantic hint), so we only use it when nothing at all resembles a language.
+  if (topHits < secondHits * 1.15) {
+    const pick = topLang === "en" ? secondLang : topLang;
+    return { lang: pick, confidence: 0.55 };
+  }
+  return { lang: topLang, confidence: conf(topHits) };
+
 }
 
 
