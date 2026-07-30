@@ -140,6 +140,7 @@ function McpDocs() {
               filename="curl"
               lang="bash"
               code={`curl -X POST https://superagentskill.com/api/public/mcp \\
+  -H "User-Agent: Mozilla/5.0" \\
   -H "Content-Type: application/json" \\
   -H "Accept: application/json, text/event-stream" \\
   -d '{
@@ -148,6 +149,15 @@ function McpDocs() {
   }'`}
             />
           </div>
+          <div className="mt-4 rounded-lg border border-border bg-surface p-4 text-sm text-muted-foreground">
+            <strong className="text-foreground">Custom scripts: send a real User-Agent.</strong>{" "}
+            Native MCP clients are fine. Raw HTTP clients that default to a generic agent —{" "}
+            <code>Python-urllib</code>, <code>Go-http-client</code>, <code>node-fetch</code> — can be
+            rejected with <code>403</code> by the edge firewall before reaching us. Set{" "}
+            <code>User-Agent: Mozilla/5.0</code> (or shell out to <code>curl</code>) and the call
+            goes through normally.
+          </div>
+
 
           {/* Auth */}
           <h2 id="auth" className="mt-12 text-2xl font-semibold tracking-tight">Authentication</h2>
