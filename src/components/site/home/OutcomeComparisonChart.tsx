@@ -129,8 +129,8 @@ export function MetricTip({ label, tip }: { label: React.ReactNode; tip: string 
  */
 export function OutcomeComparisonChart() {
   return (
-    <figure className="mt-8 rounded-2xl border border-primary/30 bg-background p-5 shadow-elevated md:p-6">
-      <figcaption className="flex flex-wrap items-start justify-between gap-3">
+    <figure className="mt-8 rounded-2xl border border-primary/30 bg-background p-5 shadow-elevated md:p-6 chart-slide-up opacity-0">
+      <figcaption className="flex flex-wrap items-start justify-between gap-3 chart-fade">
         <div>
           <div className="text-sm font-semibold text-foreground md:text-base">
             Outcome per execution — last 90 days
@@ -182,15 +182,15 @@ export function OutcomeComparisonChart() {
               ],
             },
           ] as const
-        ).map((col) => {
+        ).map((col, idx) => {
           const isSak = col.tone === "sak";
           return (
             <div
               key={col.key}
-              className={`rounded-2xl border p-4 ${
+              className={`rounded-2xl border p-4 chart-slide-up opacity-0 ${
                 isSak
-                  ? "border-primary/50 bg-primary/[0.04] shadow-elevated"
-                  : "border-border bg-surface-muted/30"
+                  ? "border-primary/50 bg-primary/[0.04] shadow-elevated chart-delay-200"
+                  : "border-border bg-surface-muted/30 chart-delay-100"
               }`}
             >
               <div className="flex items-center justify-between gap-2">
@@ -262,12 +262,26 @@ export function OutcomeComparisonChart() {
               content={<OutcomeTooltip />}
               cursor={{ fill: "var(--grid-line)", opacity: 0.4 }}
             />
-            <Bar dataKey="ungraded" fill={BASELINE} radius={[4, 4, 0, 0]} isAnimationActive={false}>
+            <Bar
+              dataKey="ungraded"
+              fill={BASELINE}
+              radius={[4, 4, 0, 0]}
+              isAnimationActive
+              animationDuration={900}
+              animationBegin={200}
+            >
               {OUTCOMES.map((o) => (
                 <Cell key={o.metric} fill={BASELINE} />
               ))}
             </Bar>
-            <Bar dataKey="sak" fill={SAK} radius={[4, 4, 0, 0]} isAnimationActive={false}>
+            <Bar
+              dataKey="sak"
+              fill={SAK}
+              radius={[4, 4, 0, 0]}
+              isAnimationActive
+              animationDuration={1100}
+              animationBegin={400}
+            >
               <LabelList
                 dataKey="sak"
                 position="top"
@@ -322,8 +336,12 @@ export function OutcomeComparisonChart() {
           { k: "+52 p.p.", v: "more tasks completed" },
           { k: "−92%", v: "human rescues needed" },
           { k: "2.4×", v: "more positive ratings" },
-        ].map((s) => (
-          <div key={s.k} className="rounded-xl border border-border bg-surface-muted/40 p-3">
+        ].map((s, idx) => (
+          <div
+            key={s.k}
+            className="rounded-xl border border-border bg-surface-muted/40 p-3 chart-slide-up opacity-0"
+            style={{ animationDelay: `${500 + idx * 100}ms` }}
+          >
             <div className="font-mono text-lg font-semibold text-primary">{s.k}</div>
             <div className="text-xs text-muted-foreground">{s.v}</div>
           </div>
@@ -346,8 +364,12 @@ export function OutcomeComparisonChart() {
             </tr>
           </thead>
           <tbody>
-            {OUTCOMES.map((o) => (
-              <tr key={o.metric} className="border-b border-border/50">
+            {OUTCOMES.map((o, idx) => (
+              <tr
+                key={o.metric}
+                className="border-b border-border/50 chart-fade"
+                style={{ animationDelay: `${700 + idx * 50}ms` }}
+              >
                 <td className="py-1 pr-2">{o.metric}</td>
                 <td className="py-1 pr-2 font-mono">{o.ungraded}%</td>
                 <td className="py-1 font-mono">{o.sak}%</td>
