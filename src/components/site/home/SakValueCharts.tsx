@@ -105,8 +105,8 @@ export function SakValueCharts() {
   return (
     <div className="mt-10 grid gap-4 lg:grid-cols-2">
       {/* Chart 1 — success rate over 12 weeks */}
-      <figure className="rounded-2xl border border-border bg-background p-5">
-        <figcaption>
+      <figure className="rounded-2xl border border-border bg-background p-5 chart-slide-up opacity-0 chart-delay-100">
+        <figcaption className="chart-fade">
           <div className="text-sm font-semibold text-foreground">
             Task success rate after install
           </div>
@@ -145,7 +145,9 @@ export function SakValueCharts() {
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4, stroke: "var(--background)", strokeWidth: 2 }}
-                isAnimationActive={false}
+                isAnimationActive
+                animationDuration={1200}
+                animationBegin={300}
               />
               <Line
                 type="monotone"
@@ -154,7 +156,9 @@ export function SakValueCharts() {
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4, stroke: "var(--background)", strokeWidth: 2 }}
-                isAnimationActive={false}
+                isAnimationActive
+                animationDuration={1400}
+                animationBegin={600}
               />
             </LineChart>
           </ResponsiveContainer>
