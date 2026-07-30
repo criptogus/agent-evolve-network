@@ -47,6 +47,10 @@ export const Route = createFileRoute("/api/public/review")({
           method: "POST",
           content_type: "application/json",
           note: "Same scoring engine as the `review_skill` MCP tool, but plain JSON in / plain JSON out — no JSON-RPC, no SSE, no auth.",
+          batch: {
+            endpoint: "/api/public/review/batch",
+            note: "Several documents in one request, same per-item payload plus a batch summary. Requires `Authorization: Bearer <token>` and an Agent Pass / Enterprise subscription. GET that URL for its contract.",
+          },
           axes: {
             format_score: "0-100, deterministic structure detectors (alias of structural_score). Format only.",
             substance_score: "0-100, LLM-judged content quality with format explicitly ignored. Null when the judge did not run.",
