@@ -386,6 +386,9 @@ export function mcpInfoResponse(endpoint: string): Response {
       json_review_endpoint: `${ORIGIN}/api/public/review`,
       json_review_hint:
         "No MCP client? POST {name, content, type?} as plain JSON to `json_review_endpoint` and get the same score payload back as plain JSON — no JSON-RPC, no SSE, no auth.",
+      json_batch_review_endpoint: `${ORIGIN}/api/public/review/batch`,
+      json_batch_review_hint:
+        "Many files at once: POST {items:[{name, content}, …]} as plain JSON to `json_batch_review_endpoint` with `Authorization: Bearer <token>`. Same per-item payload plus a batch summary. Requires an Agent Pass / Enterprise subscription; GET the URL for the full contract.",
       docs: `${ORIGIN}/docs/mcp`,
       probe: `${ORIGIN}/api/public/mcp/probe`,
 
