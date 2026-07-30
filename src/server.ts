@@ -87,17 +87,47 @@ function canonicalRedirect(request: Request): Response | null {
   });
 }
 
+// Cloudflare kills a Worker whose handler never resolves ("code had hung and
+// would never generate a response"). A stuck downstream await (e.g. a
+// PostgREST query killed by the statement timeout manager, leaving the fetch
+// pending) is enough to trigger it. Bound every request so we always answer.
+const REQUEST_TIMEOUT_MS = 20_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | "__timeout__"> {
+  return Promise.race([
+    promise,
+    new Promise<"__timeout__">((resolve) => setTimeout(() => resolve("__timeout__"), ms)),
+  ]);
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const redirect = canonicalRedirect(request);
       if (redirect) return redirect;
       const handler = await getServerEntry();
-      const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      const result = await withTimeout(
+        Promise.resolve(handler.fetch(request, env, ctx)),
+        REQUEST_TIMEOUT_MS,
+      );
+      if (result === "__timeout__") {
+        console.error(
+          new Error(`SSR request timed out after ${REQUEST_TIMEOUT_MS}ms: ${request.url}`),
+        );
+        return new Response(renderErrorPage(), {
+          status: 503,
+          headers: {
+            "content-type": "text/html; charset=utf-8",
+            "retry-after": "5",
+            "cache-control": "no-store",
+          },
+        });
+      }
+      return await normalizeCatastrophicSsrResponse(result);
     } catch (error) {
       console.error(error);
       return brandedErrorResponse();
     }
   },
 };
+

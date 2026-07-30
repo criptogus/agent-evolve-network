@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { SitePage } from "@/components/site/SitePage";
 import {
   getWorkspaceRoi,
   getSkillUplift,
@@ -71,8 +70,7 @@ function AdminRoiPage() {
 
 
   return (
-    <SitePage>
-      <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-10">
+    <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-10">
         <header className="space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight">ROI &amp; uplift por cliente</h1>
           <p className="max-w-2xl text-sm text-muted-foreground">
@@ -402,8 +400,7 @@ function AdminRoiPage() {
             </p>
           ) : null}
         </section>
-      </div>
-    </SitePage>
+    </div>
   );
 }
 
