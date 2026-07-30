@@ -105,6 +105,7 @@ import { Route as ApiMcpHealthRouteImport } from './routes/api/mcp/health'
 import { Route as ApiPackagesUploadRouteImport } from './routes/api/packages.upload'
 import { Route as ApiPublicCertifyRouteImport } from './routes/api/public/certify'
 import { Route as ApiPublicInstallDothermesDotshRouteImport } from './routes/api/public/install[.]hermes[.]sh'
+import { Route as ApiPublicMcpRouteImport } from './routes/api/public/mcp'
 import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packages'
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
@@ -623,6 +624,11 @@ const ApiPublicInstallDothermesDotshRoute =
     path: '/api/public/install.hermes.sh',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicMcpRoute = ApiPublicMcpRouteImport.update({
+  id: '/api/public/mcp',
+  path: '/api/public/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPackagesRoute = ApiPublicPackagesRouteImport.update({
   id: '/api/public/packages',
   path: '/api/public/packages',
@@ -722,14 +728,14 @@ const ApiPublicHooksPrewarmSharePromosRoute =
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicMcpHealthRoute = ApiPublicMcpHealthRouteImport.update({
-  id: '/api/public/mcp/health',
-  path: '/api/public/mcp/health',
-  getParentRoute: () => rootRouteImport,
+  id: '/health',
+  path: '/health',
+  getParentRoute: () => ApiPublicMcpRoute,
 } as any)
 const ApiPublicMcpProbeRoute = ApiPublicMcpProbeRouteImport.update({
-  id: '/api/public/mcp/probe',
-  path: '/api/public/mcp/probe',
-  getParentRoute: () => rootRouteImport,
+  id: '/probe',
+  path: '/probe',
+  getParentRoute: () => ApiPublicMcpRoute,
 } as any)
 const ApiPublicOauthRegisterRoute = ApiPublicOauthRegisterRouteImport.update({
   id: '/api/public/oauth/register',
@@ -905,6 +911,7 @@ export interface FileRoutesByFullPath {
   '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/certify': typeof ApiPublicCertifyRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
+  '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -1036,6 +1043,7 @@ export interface FileRoutesByTo {
   '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/certify': typeof ApiPublicCertifyRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
+  '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -1169,6 +1177,7 @@ export interface FileRoutesById {
   '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/certify': typeof ApiPublicCertifyRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
+  '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -1303,6 +1312,7 @@ export interface FileRouteTypes {
     | '/api/packages/upload'
     | '/api/public/certify'
     | '/api/public/install.hermes.sh'
+    | '/api/public/mcp'
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1434,6 +1444,7 @@ export interface FileRouteTypes {
     | '/api/packages/upload'
     | '/api/public/certify'
     | '/api/public/install.hermes.sh'
+    | '/api/public/mcp'
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1566,6 +1577,7 @@ export interface FileRouteTypes {
     | '/api/packages/upload'
     | '/api/public/certify'
     | '/api/public/install.hermes.sh'
+    | '/api/public/mcp'
     | '/api/public/packages'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1678,6 +1690,7 @@ export interface RootRouteChildren {
   ApiPackagesUploadRoute: typeof ApiPackagesUploadRoute
   ApiPublicCertifyRoute: typeof ApiPublicCertifyRoute
   ApiPublicInstallDothermesDotshRoute: typeof ApiPublicInstallDothermesDotshRoute
+  ApiPublicMcpRoute: typeof ApiPublicMcpRouteWithChildren
   ApiPublicPackagesRoute: typeof ApiPublicPackagesRouteWithChildren
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
@@ -1692,8 +1705,6 @@ export interface RootRouteChildren {
   ApiPublicDotwellKnownOauthProtectedResourceRoute: typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   ApiPublicCertificationsIdRoute: typeof ApiPublicCertificationsIdRoute
   ApiPublicHooksPrewarmSharePromosRoute: typeof ApiPublicHooksPrewarmSharePromosRoute
-  ApiPublicMcpHealthRoute: typeof ApiPublicMcpHealthRoute
-  ApiPublicMcpProbeRoute: typeof ApiPublicMcpProbeRoute
   ApiPublicOauthRegisterRoute: typeof ApiPublicOauthRegisterRoute
   ApiPublicOauthRevokeRoute: typeof ApiPublicOauthRevokeRoute
   ApiPublicOauthTokenRoute: typeof ApiPublicOauthTokenRoute
@@ -2383,6 +2394,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicInstallDothermesDotshRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/mcp': {
+      id: '/api/public/mcp'
+      path: '/api/public/mcp'
+      fullPath: '/api/public/mcp'
+      preLoaderRoute: typeof ApiPublicMcpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/packages': {
       id: '/api/public/packages'
       path: '/api/public/packages'
@@ -2511,17 +2529,17 @@ declare module '@tanstack/react-router' {
     }
     '/api/public/mcp/health': {
       id: '/api/public/mcp/health'
-      path: '/api/public/mcp/health'
+      path: '/health'
       fullPath: '/api/public/mcp/health'
       preLoaderRoute: typeof ApiPublicMcpHealthRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiPublicMcpRoute
     }
     '/api/public/mcp/probe': {
       id: '/api/public/mcp/probe'
-      path: '/api/public/mcp/probe'
+      path: '/probe'
       fullPath: '/api/public/mcp/probe'
       preLoaderRoute: typeof ApiPublicMcpProbeRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiPublicMcpRoute
     }
     '/api/public/oauth/register': {
       id: '/api/public/oauth/register'
@@ -2772,6 +2790,20 @@ const PacksSlugRouteWithChildren = PacksSlugRoute._addFileChildren(
   PacksSlugRouteChildren,
 )
 
+interface ApiPublicMcpRouteChildren {
+  ApiPublicMcpHealthRoute: typeof ApiPublicMcpHealthRoute
+  ApiPublicMcpProbeRoute: typeof ApiPublicMcpProbeRoute
+}
+
+const ApiPublicMcpRouteChildren: ApiPublicMcpRouteChildren = {
+  ApiPublicMcpHealthRoute: ApiPublicMcpHealthRoute,
+  ApiPublicMcpProbeRoute: ApiPublicMcpProbeRoute,
+}
+
+const ApiPublicMcpRouteWithChildren = ApiPublicMcpRoute._addFileChildren(
+  ApiPublicMcpRouteChildren,
+)
+
 interface ApiPublicPackagesRouteChildren {
   ApiPublicPackagesSlugRoute: typeof ApiPublicPackagesSlugRoute
 }
@@ -2861,6 +2893,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPackagesUploadRoute: ApiPackagesUploadRoute,
   ApiPublicCertifyRoute: ApiPublicCertifyRoute,
   ApiPublicInstallDothermesDotshRoute: ApiPublicInstallDothermesDotshRoute,
+  ApiPublicMcpRoute: ApiPublicMcpRouteWithChildren,
   ApiPublicPackagesRoute: ApiPublicPackagesRouteWithChildren,
   ApiPublicSearchRoute: ApiPublicSearchRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
@@ -2878,8 +2911,6 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicDotwellKnownOauthProtectedResourceRoute,
   ApiPublicCertificationsIdRoute: ApiPublicCertificationsIdRoute,
   ApiPublicHooksPrewarmSharePromosRoute: ApiPublicHooksPrewarmSharePromosRoute,
-  ApiPublicMcpHealthRoute: ApiPublicMcpHealthRoute,
-  ApiPublicMcpProbeRoute: ApiPublicMcpProbeRoute,
   ApiPublicOauthRegisterRoute: ApiPublicOauthRegisterRoute,
   ApiPublicOauthRevokeRoute: ApiPublicOauthRevokeRoute,
   ApiPublicOauthTokenRoute: ApiPublicOauthTokenRoute,
