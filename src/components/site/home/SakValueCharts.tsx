@@ -256,8 +256,12 @@ export function SakValueCharts() {
               </tr>
             </thead>
             <tbody>
-              {SUCCESS_OVER_TIME.map((r) => (
-                <tr key={r.week} className="border-b border-border/50">
+              {SUCCESS_OVER_TIME.map((r, idx) => (
+                <tr
+                  key={r.week}
+                  className="border-b border-border/50 chart-fade"
+                  style={{ animationDelay: `${800 + idx * 40}ms` }}
+                >
                   <td className="py-1 pr-2 font-mono">{r.week}</td>
                   <td className="py-1 pr-2 font-mono">{r.ungraded}%</td>
                   <td className="py-1 font-mono">{r.sak}%</td>
@@ -277,8 +281,12 @@ export function SakValueCharts() {
               </tr>
             </thead>
             <tbody>
-              {BLOCKED_BY_ATTACK.map((r) => (
-                <tr key={r.attack} className="border-b border-border/50">
+              {BLOCKED_BY_ATTACK.map((r, idx) => (
+                <tr
+                  key={r.attack}
+                  className="border-b border-border/50 chart-fade"
+                  style={{ animationDelay: `${1000 + idx * 80}ms` }}
+                >
                   <td className="py-1 pr-2">{r.attack}</td>
                   <td className="py-1 pr-2 font-mono">{r.ungraded}%</td>
                   <td className="py-1 font-mono">{r.sak}%</td>
