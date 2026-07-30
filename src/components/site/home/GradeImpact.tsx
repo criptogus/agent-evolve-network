@@ -6,6 +6,7 @@ import { OutcomeComparisonChart, MetricTip } from "./OutcomeComparisonChart";
 type Row = {
   metric: string;
   detail: string;
+  tip: string;
   bad: string;
   good: string;
   delta: string;
