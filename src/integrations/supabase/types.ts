@@ -3002,6 +3002,125 @@ export type Database = {
         }
         Relationships: []
       }
+      tenant_encrypted_objects: {
+        Row: {
+          byte_size: number
+          ciphertext: string
+          created_at: string
+          id: string
+          key_id: string
+          kind: string
+          plaintext_sha256: string
+          ref: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          byte_size?: number
+          ciphertext: string
+          created_at?: string
+          id?: string
+          key_id: string
+          kind?: string
+          plaintext_sha256: string
+          ref: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          byte_size?: number
+          ciphertext?: string
+          created_at?: string
+          id?: string
+          key_id?: string
+          kind?: string
+          plaintext_sha256?: string
+          ref?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_encrypted_objects_key_id_fkey"
+            columns: ["key_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_encryption_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_encryption_keys: {
+        Row: {
+          alias: string
+          created_at: string
+          fingerprint: string
+          id: string
+          kdf_salt: string
+          revoked_at: string | null
+          rotated_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          verifier: string
+          wrapped_dek: string | null
+        }
+        Insert: {
+          alias?: string
+          created_at?: string
+          fingerprint: string
+          id?: string
+          kdf_salt: string
+          revoked_at?: string | null
+          rotated_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          verifier: string
+          wrapped_dek?: string | null
+        }
+        Update: {
+          alias?: string
+          created_at?: string
+          fingerprint?: string
+          id?: string
+          kdf_salt?: string
+          revoked_at?: string | null
+          rotated_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          verifier?: string
+          wrapped_dek?: string | null
+        }
+        Relationships: []
+      }
+      tenant_key_events: {
+        Row: {
+          created_at: string
+          detail: Json
+          event: string
+          id: string
+          key_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: Json
+          event: string
+          id?: string
+          key_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          detail?: Json
+          event?: string
+          id?: string
+          key_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       upload_injection_audit: {
         Row: {
           content_sample: string | null
