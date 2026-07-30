@@ -158,6 +158,7 @@ export async function generateDraft(
   // the fastest model, parse ourselves, validate with the MINIMAL schema,
   // then hydrate.
   try {
+    if (remaining() < 4_000) throw new Error("skipped: total budget exhausted");
     const fallbackModel = getGatewayModel("google/gemini-2.5-flash");
     const { text } = await generateText({
       model: fallbackModel,
@@ -165,7 +166,7 @@ export async function generateDraft(
         META_SYSTEM +
         `\n\nReturn ONLY a single JSON object with these keys: slug, name, type, description, long_description, system_prompt, examples. examples is an array of >=1 items each with {title, input, expected_output}. No markdown, no prose, no code fences.`,
       prompt,
-      abortSignal: AbortSignal.timeout(PER_ATTEMPT_TIMEOUT_MS),
+      abortSignal: AbortSignal.timeout(attemptBudget()),
     });
     const json = extractJsonObject(text);
     const parsed = PackageDraftMinimalSchema.safeParse(json);
