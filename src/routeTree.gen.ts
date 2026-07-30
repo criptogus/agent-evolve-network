@@ -72,6 +72,7 @@ import { Route as AdminReviewRouteImport } from './routes/admin.review'
 import { Route as AdminReviewAuditRouteImport } from './routes/admin.review-audit'
 import { Route as AdminReviewReportsRouteImport } from './routes/admin.review-reports'
 import { Route as AdminRoiRouteImport } from './routes/admin.roi'
+import { Route as AgentsIndexRouteImport } from './routes/agents.index'
 import { Route as AgentsMdRouteImport } from './routes/agents.md'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as ApiReviewRouteImport } from './routes/api/review'
@@ -463,6 +464,11 @@ const AdminRoiRoute = AdminRoiRouteImport.update({
   id: '/roi',
   path: '/roi',
   getParentRoute: () => AdminRoute,
+} as any)
+const AgentsIndexRoute = AgentsIndexRouteImport.update({
+  id: '/agents/',
+  path: '/agents/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AgentsMdRoute = AgentsMdRouteImport.update({
   id: '/agents/md',
@@ -939,6 +945,7 @@ export interface FileRoutesByFullPath {
   '/souls/$slug': typeof SoulsSlugRoute
   '/u/$handle': typeof UHandleRoute
   '/admin/': typeof AdminIndexRoute
+  '/agents/': typeof AgentsIndexRoute
   '/compare/': typeof CompareIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/packs/': typeof PacksIndexRoute
@@ -1077,6 +1084,7 @@ export interface FileRoutesByTo {
   '/souls/$slug': typeof SoulsSlugRoute
   '/u/$handle': typeof UHandleRoute
   '/admin': typeof AdminIndexRoute
+  '/agents': typeof AgentsIndexRoute
   '/compare': typeof CompareIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
   '/packs': typeof PacksIndexRoute
@@ -1217,6 +1225,7 @@ export interface FileRoutesById {
   '/souls/$slug': typeof SoulsSlugRoute
   '/u/$handle': typeof UHandleRoute
   '/admin/': typeof AdminIndexRoute
+  '/agents/': typeof AgentsIndexRoute
   '/compare/': typeof CompareIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/packs/': typeof PacksIndexRoute
@@ -1358,6 +1367,7 @@ export interface FileRouteTypes {
     | '/souls/$slug'
     | '/u/$handle'
     | '/admin/'
+    | '/agents/'
     | '/compare/'
     | '/marketplace/'
     | '/packs/'
@@ -1496,6 +1506,7 @@ export interface FileRouteTypes {
     | '/souls/$slug'
     | '/u/$handle'
     | '/admin'
+    | '/agents'
     | '/compare'
     | '/marketplace'
     | '/packs'
@@ -1635,6 +1646,7 @@ export interface FileRouteTypes {
     | '/souls/$slug'
     | '/u/$handle'
     | '/admin/'
+    | '/agents/'
     | '/compare/'
     | '/marketplace/'
     | '/packs/'
@@ -1758,6 +1770,7 @@ export interface RootRouteChildren {
   RunSlugRoute: typeof RunSlugRoute
   SoulsSlugRoute: typeof SoulsSlugRoute
   UHandleRoute: typeof UHandleRoute
+  AgentsIndexRoute: typeof AgentsIndexRoute
   CompareIndexRoute: typeof CompareIndexRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   PacksIndexRoute: typeof PacksIndexRoute
@@ -2240,6 +2253,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/roi'
       preLoaderRoute: typeof AdminRoiRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/agents/': {
+      id: '/agents/'
+      path: '/agents'
+      fullPath: '/agents/'
+      preLoaderRoute: typeof AgentsIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/agents/md': {
       id: '/agents/md'
@@ -3024,6 +3044,7 @@ const rootRouteChildren: RootRouteChildren = {
   RunSlugRoute: RunSlugRoute,
   SoulsSlugRoute: SoulsSlugRoute,
   UHandleRoute: UHandleRoute,
+  AgentsIndexRoute: AgentsIndexRoute,
   CompareIndexRoute: CompareIndexRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   PacksIndexRoute: PacksIndexRoute,
