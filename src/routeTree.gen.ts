@@ -52,6 +52,7 @@ import { Route as AccountCloudSkillsRouteImport } from './routes/account.cloud-s
 import { Route as AccountConnectionsRouteImport } from './routes/account.connections'
 import { Route as AccountCreditsRouteImport } from './routes/account.credits'
 import { Route as AccountEarningsRouteImport } from './routes/account.earnings'
+import { Route as AccountEncryptionRouteImport } from './routes/account.encryption'
 import { Route as AccountLibraryRouteImport } from './routes/account.library'
 import { Route as AccountPackagesRouteImport } from './routes/account.packages'
 import { Route as AccountReferralsRouteImport } from './routes/account.referrals'
@@ -353,6 +354,11 @@ const AccountCreditsRoute = AccountCreditsRouteImport.update({
 const AccountEarningsRoute = AccountEarningsRouteImport.update({
   id: '/account/earnings',
   path: '/account/earnings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountEncryptionRoute = AccountEncryptionRouteImport.update({
+  id: '/account/encryption',
+  path: '/account/encryption',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountLibraryRoute = AccountLibraryRouteImport.update({
@@ -840,6 +846,7 @@ export interface FileRoutesByFullPath {
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
   '/account/earnings': typeof AccountEarningsRoute
+  '/account/encryption': typeof AccountEncryptionRoute
   '/account/library': typeof AccountLibraryRoute
   '/account/packages': typeof AccountPackagesRoute
   '/account/referrals': typeof AccountReferralsRoute
@@ -969,6 +976,7 @@ export interface FileRoutesByTo {
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
   '/account/earnings': typeof AccountEarningsRoute
+  '/account/encryption': typeof AccountEncryptionRoute
   '/account/library': typeof AccountLibraryRoute
   '/account/packages': typeof AccountPackagesRoute
   '/account/referrals': typeof AccountReferralsRoute
@@ -1100,6 +1108,7 @@ export interface FileRoutesById {
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
   '/account/earnings': typeof AccountEarningsRoute
+  '/account/encryption': typeof AccountEncryptionRoute
   '/account/library': typeof AccountLibraryRoute
   '/account/packages': typeof AccountPackagesRoute
   '/account/referrals': typeof AccountReferralsRoute
@@ -1232,6 +1241,7 @@ export interface FileRouteTypes {
     | '/account/connections'
     | '/account/credits'
     | '/account/earnings'
+    | '/account/encryption'
     | '/account/library'
     | '/account/packages'
     | '/account/referrals'
@@ -1361,6 +1371,7 @@ export interface FileRouteTypes {
     | '/account/connections'
     | '/account/credits'
     | '/account/earnings'
+    | '/account/encryption'
     | '/account/library'
     | '/account/packages'
     | '/account/referrals'
@@ -1491,6 +1502,7 @@ export interface FileRouteTypes {
     | '/account/connections'
     | '/account/credits'
     | '/account/earnings'
+    | '/account/encryption'
     | '/account/library'
     | '/account/packages'
     | '/account/referrals'
@@ -1622,6 +1634,7 @@ export interface RootRouteChildren {
   AccountConnectionsRoute: typeof AccountConnectionsRoute
   AccountCreditsRoute: typeof AccountCreditsRoute
   AccountEarningsRoute: typeof AccountEarningsRoute
+  AccountEncryptionRoute: typeof AccountEncryptionRoute
   AccountLibraryRoute: typeof AccountLibraryRoute
   AccountPackagesRoute: typeof AccountPackagesRoute
   AccountReferralsRoute: typeof AccountReferralsRoute
@@ -1984,6 +1997,13 @@ declare module '@tanstack/react-router' {
       path: '/account/earnings'
       fullPath: '/account/earnings'
       preLoaderRoute: typeof AccountEarningsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/encryption': {
+      id: '/account/encryption'
+      path: '/account/encryption'
+      fullPath: '/account/encryption'
+      preLoaderRoute: typeof AccountEncryptionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account/library': {
@@ -2789,6 +2809,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountConnectionsRoute: AccountConnectionsRoute,
   AccountCreditsRoute: AccountCreditsRoute,
   AccountEarningsRoute: AccountEarningsRoute,
+  AccountEncryptionRoute: AccountEncryptionRoute,
   AccountLibraryRoute: AccountLibraryRoute,
   AccountPackagesRoute: AccountPackagesRoute,
   AccountReferralsRoute: AccountReferralsRoute,
