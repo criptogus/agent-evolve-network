@@ -1458,12 +1458,16 @@ ${pillarList}
 DOCUMENT (line-numbered, may be truncated):
 ${numbered}
 
-Return one verdict per pillar, plus a document-level summary.
+Return RAW JSON ONLY — no prose, no markdown fences — with exactly this shape:
+{"summary":"...","verdicts":[{"pillar":"identity","covered":true,"confidence":0.8,"substance_score":72,"rationale":"...","excerpts":[{"line":12,"quote":"..."}],"evidence_line":12,"evidence_quote":"..."}]}
+
+One verdict object per pillar (all 7), plus the document-level summary.
 - covered=true only if a reader would say the pillar is substantively addressed.
 - confidence in [0,1].
 - substance_score in [0,100]: 0-20 absent, 21-45 vague/generic mention, 46-70 useful but incomplete, 71-85 specific and actionable, 86-100 exemplary with concrete detail an agent can execute verbatim.
 - excerpts: up to 2 passages that sustain your score. Use passages that show the GAP when the score is low. Empty array only when the document truly says nothing about the pillar.
 - If covered=false, set evidence_line=null and evidence_quote=null.
+- rationale and summary must be written in ${langName}.
 - summary: 2-3 sentences on the document's substantive strengths and biggest content gap.`;
 
   // No `Output.object` schema here: the gateway serves these Gemini ids in
