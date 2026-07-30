@@ -102,6 +102,10 @@ export async function generateDraft(
     grounding ? `\n\nGrounding research (use as ground truth):\n${grounding.slice(0, 8000)}` : ""
   }\n\nDesign a production-ready ${type} package. Return ONLY the JSON — minimal, tight, complete.`;
 
+  const startedAt = Date.now();
+  const remaining = () => TOTAL_BUDGET_MS - (Date.now() - startedAt);
+  const attemptBudget = () => Math.min(PER_ATTEMPT_TIMEOUT_MS, remaining());
+
   const attempts: Array<{ model: string; error: string }> = [];
   const cfg = describeGatewayConfig();
   if (!cfg.configured) {
@@ -120,6 +124,12 @@ export async function generateDraft(
     ordered.push(m);
   }
   for (const modelId of ordered) {
+    // Leave at least 6s of budget for the text fallback below; if we can't
+    // fit another structured attempt, stop burning the clock.
+    if (remaining() < 8_000) {
+      attempts.push({ model: modelId, error: "skipped: total budget exhausted" });
+      break;
+    }
     try {
       const model = getGatewayModel(modelId);
       const { experimental_output } = await generateText({
@@ -127,7 +137,7 @@ export async function generateDraft(
         system: META_SYSTEM,
         prompt,
         experimental_output: Output.object({ schema: PackageDraftMinimalSchema }),
-        abortSignal: AbortSignal.timeout(PER_ATTEMPT_TIMEOUT_MS),
+        abortSignal: AbortSignal.timeout(attemptBudget()),
       });
       const draft = hydrateDraftFromMinimal(experimental_output as PackageDraftMinimal, type);
       if (attempts.length > 0) {
