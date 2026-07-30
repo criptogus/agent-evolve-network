@@ -3,6 +3,10 @@ name: My Skill
 type: skill
 version: 0.1.0
 description: One-sentence summary, 20–280 chars. What it does and for whom.
+# Optional. 'procedural' (default): step-by-step task with input→output examples.
+# 'reference': a framework/knowledge document the agent consults — graded on
+# groundedness and coverage instead of procedural shape. 'hybrid': both.
+# format: procedural
 long_description: |
   Two or three paragraphs describing scope, when to use it, and when NOT to use it.
   Mention the kind of input it expects and the kind of output it produces.

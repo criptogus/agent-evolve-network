@@ -30,7 +30,7 @@
     "trust:verify": "node scripts/verify-trust-attestation.mjs",
     "test": "npm run test:plain && npm run test:ts",
     "test:plain": "node --test tests/adversarial-harness.test.mjs tests/trust.test.mjs tests/release-signing.test.mjs tests/cli-install.test.mjs tests/trust-attestation.test.mjs",
-    "test:ts": "node --experimental-strip-types --test tests/site-stats.test.mjs tests/certify.test.mjs tests/prompt-injection-guard.test.mjs tests/audit-skills.test.mjs tests/runtime.test.mjs tests/integrations.test.mjs tests/growth-revenue-split.test.mjs tests/trust-badge.test.mjs tests/bounties.test.mjs tests/trust-scoring.test.mjs tests/adversarial-holdout.test.mjs tests/adversarial-judge.test.mjs tests/paired-benchmark.test.mjs"
+    "test:ts": "node --experimental-strip-types --test tests/site-stats.test.mjs tests/certify.test.mjs tests/prompt-injection-guard.test.mjs tests/audit-skills.test.mjs tests/runtime.test.mjs tests/integrations.test.mjs tests/growth-revenue-split.test.mjs tests/trust-badge.test.mjs tests/bounties.test.mjs tests/trust-scoring.test.mjs tests/adversarial-holdout.test.mjs tests/adversarial-judge.test.mjs tests/paired-benchmark.test.mjs tests/format-rubric.test.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",

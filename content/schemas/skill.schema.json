@@ -10,6 +10,10 @@
     "type": { "const": "skill" },
     "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
     "description": { "type": "string", "minLength": 20, "maxLength": 280 },
+    "format": {
+      "enum": ["procedural", "reference", "hybrid"],
+      "description": "How the skill is written: 'procedural' (numbered steps, input→output contract — the default), 'reference' (a framework/knowledge document the agent consults), or 'hybrid'. The evaluator grades each format with its own rubric: reference skills are scored on groundedness and coverage, not on procedural shape."
+    },
     "long_description": { "type": "string", "minLength": 80, "maxLength": 4000 },
     "system_prompt": { "type": "string", "minLength": 120 },
     "rules": {
