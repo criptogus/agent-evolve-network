@@ -120,17 +120,17 @@ const FAQ_LD = {
       name: "If I upload a proprietary skill, can Super Agent Skill copy it?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "No. You retain full ownership and control. Your source code is evaluated in an isolated sandbox, never used to train shared models, and never exposed to other users. Public listings only show metadata, Trust Score and signed release artifacts that you choose to publish. Private packages stay scoped to your workspace.",
+        text: "No. You keep full ownership and copyright. Uploaded skills are not used to train shared models, are stored encrypted at rest, and are only readable by you or callers you authorize. Public releases are signed with Ed25519 so you can verify integrity offline. See /security for the evidence.",
       },
     },
   ],
 };
 
 /**
- * One narrative, seven sections, ordered as a conversion funnel:
- * hook (Hero) → ease (HowItWorks) → show-don't-tell (IndustryDemo, the
- * most persuasive section, before any technical deep-dive) →
- * differentiation/trust (Proof) → vocabulary (CoreConcepts) →
+ * One narrative, ordered as a conversion funnel:
+ * hook (Hero) → primary sales argument (GradeImpact) → ease (HowItWorks) →
+ * show-don't-tell (IndustryDemo) → differentiation/trust (Proof) →
+ * security & IP objection (SecurityPromise) → vocabulary (CoreConcepts) →
  * monetization (PlansTeaser) → objections + close (Faq, CtaSection).
  */
 function Home() {
@@ -146,8 +146,6 @@ function Home() {
       <HowItWorks />
       <IndustryDemo />
       <Proof />
-      {/* IP / security objection — address the fear of uploading proprietary
-          skills before the visitor reaches pricing or the FAQ. */}
       <SecurityPromise />
       <CoreConcepts />
       <PlansTeaser />

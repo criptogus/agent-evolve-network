@@ -126,10 +126,14 @@ export function Faq() {
       q: "If I upload a proprietary skill, can Super Agent Skill copy it?",
       a: (
         <>
-          No. You retain full ownership and control. Your source code is evaluated in an isolated
-          sandbox, never used to train shared models, and never exposed to other users. Public
-          listings only show metadata, Trust Score and signed release artifacts that you choose to
-          publish. Private packages stay scoped to your workspace.
+          No. You keep full ownership and copyright. Uploaded skills are not used to train shared
+          models, are stored encrypted at rest, and are only readable by you or callers you
+          authorize. Public releases are signed with Ed25519 so you can verify integrity offline.
+          You can inspect the public evidence at{" "}
+          <Link to="/security" className="text-primary hover:underline">
+            /security
+          </Link>
+          .
         </>
       ),
     },

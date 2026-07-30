@@ -104,7 +104,7 @@ export function GradeImpact() {
         className="pointer-events-none absolute left-1/2 top-[-12rem] h-[26rem] w-[46rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
       />
       <div className="relative mx-auto max-w-6xl px-6">
-        <div className="mx-auto max-w-3xl text-center chart-fade">
+        <div className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
             The A-grade difference
           </span>
@@ -120,7 +120,7 @@ export function GradeImpact() {
 
         {/* Header cards */}
         <div className="mx-auto mt-10 grid max-w-3xl gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-border bg-background p-5 chart-slide-up chart-delay-100 opacity-0">
+          <div className="rounded-2xl border border-border bg-background p-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
                 Ungraded skill
@@ -133,7 +133,7 @@ export function GradeImpact() {
               Copy-pasted prompt, no adversarial testing, unsigned release.
             </p>
           </div>
-          <div className="rounded-2xl border border-primary/40 bg-background p-5 shadow-elevated chart-slide-up chart-delay-200 opacity-0">
+          <div className="rounded-2xl border border-primary/40 bg-background p-5 shadow-elevated">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono uppercase tracking-widest text-primary">
                 SAK A-grade skill
@@ -149,17 +149,13 @@ export function GradeImpact() {
         </div>
 
         {/* Headline outcome chart — the fastest read of the A-grade delta. */}
-        <div className="chart-slide-up chart-delay-300 opacity-0">
-          <OutcomeComparisonChart />
-        </div>
+        <OutcomeComparisonChart />
 
         {/* Comparative charts — the value curve and the security gap */}
-        <div className="chart-slide-up chart-delay-400 opacity-0">
-          <SakValueCharts />
-        </div>
+        <SakValueCharts />
 
         {/* Comparison table */}
-        <div className="mt-10 overflow-hidden rounded-2xl border border-border bg-background chart-slide-up chart-delay-500 opacity-0">
+        <div className="mt-10 overflow-hidden rounded-2xl border border-border bg-background">
           <div className="hidden grid-cols-12 border-b border-border bg-surface-muted/60 px-5 py-3 text-[11px] font-mono uppercase tracking-wider text-muted-foreground md:grid">
             <div className="col-span-5">Metric</div>
             <div className="col-span-2 text-right">Ungraded</div>
@@ -167,11 +163,10 @@ export function GradeImpact() {
             <div className="col-span-3 text-right">Difference</div>
           </div>
           <ul className="divide-y divide-border">
-            {ROWS.map((row, idx) => (
+            {ROWS.map((row) => (
               <li
                 key={row.metric}
-                className="grid grid-cols-2 gap-2 px-5 py-4 md:grid-cols-12 md:items-center md:gap-4 chart-fade"
-                style={{ animationDelay: `${600 + idx * 60}ms` }}
+                className="grid grid-cols-2 gap-2 px-5 py-4 md:grid-cols-12 md:items-center md:gap-4"
               >
                 <div className="col-span-2 md:col-span-5">
                   <div className="text-sm font-semibold text-foreground">
@@ -222,11 +217,10 @@ export function GradeImpact() {
             { k: "2.2×", v: "more tasks completed per agent per day" },
             { k: "$33/1k runs", v: "saved on LLM spend at the same volume" },
             { k: "300× fewer", v: "leaks & jailbreaks reaching production" },
-          ].map((s, idx) => (
+          ].map((s) => (
             <div
               key={s.k}
-              className="rounded-2xl border border-border bg-background p-5 text-center chart-slide-up chart-fade opacity-0"
-              style={{ animationDelay: `${800 + idx * 100}ms` }}
+              className="rounded-2xl border border-border bg-background p-5 text-center"
             >
               <div className="font-mono text-2xl font-semibold text-primary">{s.k}</div>
               <div className="mt-1 text-sm text-muted-foreground">{s.v}</div>
@@ -249,35 +243,7 @@ export function GradeImpact() {
           </Link>
         </div>
 
-        {/* Contextual lead CTA — converts visitors convinced by the A-grade delta. */}
-        <div className="mx-auto mt-12 max-w-2xl rounded-2xl border border-primary/30 bg-primary/[0.03] p-6 text-center shadow-elevated md:p-8">
-          <h3 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">
-            Quer ver o mesmo delta no seu agente?
-          </h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Acompanhe pass rate, intervenção humana, latência e ROI por skill no painel SAK. Entre na
-            fila de acesso ou veja seus números agora.
-          </p>
-          <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              to="/admin/roi"
-              className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              Ver meu ROI no admin <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
-            <Link
-              to="/signup"
-              className="inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-5 font-medium text-foreground transition-colors hover:bg-accent"
-            >
-              Solicitar acesso
-            </Link>
-          </div>
-          <p className="mt-3 text-[11px] text-muted-foreground">
-            Acesso ao ROI requer conta SAK. Novos usuários começam no plano Free.
-          </p>
-        </div>
-
-        <p className="mt-8 text-center text-xs text-muted-foreground">
+        <p className="mt-6 text-center text-xs text-muted-foreground">
           Numbers reflect the median gap between the bottom-quartile ungraded skill and the median
           A-grade skill on SAK over the last 90 days. Your mileage will vary — every skill page
           shows its live numbers.

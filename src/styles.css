@@ -57,13 +57,6 @@
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
-  /* Cinematic chart reveal keyframes */
-  --animate-chart-fade: chart-fade 0.8s ease-out both;
-  --animate-chart-slide-up: chart-slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-chart-slide-right: chart-slide-right 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-chart-grow-up: chart-grow-up 1s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-chart-scale-in: chart-scale-in 0.6s ease-out both;
-
   @keyframes fade-in {
     from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -95,27 +88,6 @@
   @keyframes accordion-up {
     from { height: var(--radix-accordion-content-height); opacity: 1; }
     to   { height: 0; opacity: 0; }
-  }
-
-  @keyframes chart-fade {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-  @keyframes chart-slide-up {
-    from { opacity: 0; transform: translateY(40px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes chart-slide-right {
-    from { opacity: 0; transform: translateX(30px); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
-  @keyframes chart-grow-up {
-    from { transform: scaleY(0); transform-origin: bottom; }
-    to   { transform: scaleY(1); transform-origin: bottom; }
-  }
-  @keyframes chart-scale-in {
-    from { opacity: 0; transform: scale(0.97); }
-    to   { opacity: 1; transform: scale(1); }
   }
 }
 
@@ -248,23 +220,6 @@
     to { opacity: 1; transform: translateY(0); }
   }
   .fade-up { animation: fade-up 0.6s ease-out both; }
-
-  /* Cinematic chart reveal utilities */
-  .chart-fade { animation: chart-fade 0.8s ease-out both; }
-  .chart-slide-up { animation: chart-slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
-  .chart-slide-right { animation: chart-slide-right 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
-  .chart-grow-up { animation: chart-grow-up 1s cubic-bezier(0.16, 1, 0.3, 1) both; }
-  .chart-scale-in { animation: chart-scale-in 0.6s ease-out both; }
-
-  .chart-delay-100 { animation-delay: 100ms; }
-  .chart-delay-200 { animation-delay: 200ms; }
-  .chart-delay-300 { animation-delay: 300ms; }
-  .chart-delay-400 { animation-delay: 400ms; }
-  .chart-delay-500 { animation-delay: 500ms; }
-  .chart-delay-600 { animation-delay: 600ms; }
-  .chart-delay-700 { animation-delay: 700ms; }
-  .chart-delay-800 { animation-delay: 800ms; }
-  .chart-delay-900 { animation-delay: 900ms; }
 
   /* Skip link for keyboard users */
   .skip-link {

@@ -105,8 +105,8 @@ export function SakValueCharts() {
   return (
     <div className="mt-10 grid gap-4 lg:grid-cols-2">
       {/* Chart 1 — success rate over 12 weeks */}
-      <figure className="rounded-2xl border border-border bg-background p-5 chart-slide-up opacity-0 chart-delay-100">
-        <figcaption className="chart-fade">
+      <figure className="rounded-2xl border border-border bg-background p-5">
+        <figcaption>
           <div className="text-sm font-semibold text-foreground">
             Task success rate after install
           </div>
@@ -145,9 +145,7 @@ export function SakValueCharts() {
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4, stroke: "var(--background)", strokeWidth: 2 }}
-                isAnimationActive
-                animationDuration={1200}
-                animationBegin={300}
+                isAnimationActive={false}
               />
               <Line
                 type="monotone"
@@ -156,9 +154,7 @@ export function SakValueCharts() {
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4, stroke: "var(--background)", strokeWidth: 2 }}
-                isAnimationActive
-                animationDuration={1400}
-                animationBegin={600}
+                isAnimationActive={false}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -170,8 +166,8 @@ export function SakValueCharts() {
       </figure>
 
       {/* Chart 2 — adversarial attempts blocked, by attack class */}
-      <figure className="rounded-2xl border border-border bg-background p-5 chart-slide-up opacity-0 chart-delay-200">
-        <figcaption className="chart-fade">
+      <figure className="rounded-2xl border border-border bg-background p-5">
+        <figcaption>
           <div className="text-sm font-semibold text-foreground">
             Adversarial attempts blocked, by attack class
           </div>
@@ -216,18 +212,14 @@ export function SakValueCharts() {
                 fill={BASELINE}
                 barSize={9}
                 radius={[0, 4, 4, 0]}
-                isAnimationActive
-                animationDuration={900}
-                animationBegin={400}
+                isAnimationActive={false}
               />
               <Bar
                 dataKey="sak"
                 fill={SAK}
                 barSize={9}
                 radius={[0, 4, 4, 0]}
-                isAnimationActive
-                animationDuration={1100}
-                animationBegin={700}
+                isAnimationActive={false}
               />
             </BarChart>
           </ResponsiveContainer>
@@ -256,12 +248,8 @@ export function SakValueCharts() {
               </tr>
             </thead>
             <tbody>
-              {SUCCESS_OVER_TIME.map((r, idx) => (
-                <tr
-                  key={r.week}
-                  className="border-b border-border/50 chart-fade"
-                  style={{ animationDelay: `${800 + idx * 40}ms` }}
-                >
+              {SUCCESS_OVER_TIME.map((r) => (
+                <tr key={r.week} className="border-b border-border/50">
                   <td className="py-1 pr-2 font-mono">{r.week}</td>
                   <td className="py-1 pr-2 font-mono">{r.ungraded}%</td>
                   <td className="py-1 font-mono">{r.sak}%</td>
@@ -281,12 +269,8 @@ export function SakValueCharts() {
               </tr>
             </thead>
             <tbody>
-              {BLOCKED_BY_ATTACK.map((r, idx) => (
-                <tr
-                  key={r.attack}
-                  className="border-b border-border/50 chart-fade"
-                  style={{ animationDelay: `${1000 + idx * 80}ms` }}
-                >
+              {BLOCKED_BY_ATTACK.map((r) => (
+                <tr key={r.attack} className="border-b border-border/50">
                   <td className="py-1 pr-2">{r.attack}</td>
                   <td className="py-1 pr-2 font-mono">{r.ungraded}%</td>
                   <td className="py-1 font-mono">{r.sak}%</td>
