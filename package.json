@@ -1,6 +1,6 @@
 {
   "name": "tanstack_start_ts",
-  "version": "0.1.38",
+  "version": "0.1.39",
   "private": true,
   "sideEffects": false,
   "type": "module",
