@@ -292,19 +292,22 @@ export const listExecutionOutcomes = createServerFn({ method: "POST" })
     };
   });
 
-/** Active experiments, for the admin dashboard and public transparency. */
+/**
+ * Active experiments, for the admin dashboard. Experiment hypotheses and
+ * control-share ratios are internal configuration: reads go through the
+ * caller's authenticated client so RLS limits rows to admins and the
+ * package author.
+ */
+export const listExperiments = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async ({ context }) => {
+    const supabase = (context as { supabase: any }).supabase;
+    const { data, error } = await supabase
+      .from("skill_experiments" as any)
+      .select("package_slug, key, hypothesis, control_share, status, started_at, ended_at")
+      .order("started_at", { ascending: false })
+      .limit(100);
+    if (error) return { experiments: [] as any[], error: "unavailable" };
+    return { experiments: (data ?? []) as any[], error: null as string | null };
+  });
 
-export const listExperiments = createServerFn({ method: "GET" }).handler(async () => {
-  const supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
-  );
-  const { data, error } = await supabase
-    .from("skill_experiments" as any)
-    .select("package_slug, key, hypothesis, control_share, status, started_at, ended_at")
-    .order("started_at", { ascending: false })
-    .limit(100);
-  if (error) return { experiments: [] as any[], error: "unavailable" };
-  return { experiments: (data ?? []) as any[], error: null as string | null };
-});
