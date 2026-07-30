@@ -111,7 +111,7 @@ export function GradeImpact() {
 
         {/* Header cards */}
         <div className="mx-auto mt-10 grid max-w-3xl gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-border bg-background p-5">
+          <div className="rounded-2xl border border-border bg-background p-5 chart-slide-up chart-delay-100 opacity-0">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
                 Ungraded skill
@@ -124,7 +124,7 @@ export function GradeImpact() {
               Copy-pasted prompt, no adversarial testing, unsigned release.
             </p>
           </div>
-          <div className="rounded-2xl border border-primary/40 bg-background p-5 shadow-elevated">
+          <div className="rounded-2xl border border-primary/40 bg-background p-5 shadow-elevated chart-slide-up chart-delay-200 opacity-0">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono uppercase tracking-widest text-primary">
                 SAK A-grade skill
