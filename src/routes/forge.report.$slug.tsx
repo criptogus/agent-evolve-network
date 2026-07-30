@@ -146,6 +146,14 @@ function ReportPage() {
           />
         </div>
 
+        {projection && (
+          <div className="mt-8">
+            <ImpactProjectionReport projection={projection} />
+          </div>
+        )}
+
+
+
         {!improved && (
           <div className="mt-6 rounded-xl border border-border bg-surface p-5 text-sm text-muted-foreground">
             Click <span className="font-semibold text-foreground">Run forge loop now</span> to evaluate this skill,
