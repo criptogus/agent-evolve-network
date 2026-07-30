@@ -125,6 +125,7 @@ export type Database = {
           pass_rate: number
           passed: number
           severity_weighted_score: number
+          subject_arm: string
           total: number
           trigger_kind: string
           triggered_by: string | null
@@ -149,6 +150,7 @@ export type Database = {
           pass_rate: number
           passed: number
           severity_weighted_score: number
+          subject_arm?: string
           total: number
           trigger_kind?: string
           triggered_by?: string | null
@@ -173,6 +175,7 @@ export type Database = {
           pass_rate?: number
           passed?: number
           severity_weighted_score?: number
+          subject_arm?: string
           total?: number
           trigger_kind?: string
           triggered_by?: string | null
@@ -1837,6 +1840,78 @@ export type Database = {
           },
         ]
       }
+      package_weekly_metrics: {
+        Row: {
+          adversarial_pass_rate: number | null
+          adversarial_weighted: number | null
+          avg_tokens: number | null
+          created_at: string
+          id: number
+          p95_latency_ms: number | null
+          package_id: string
+          package_slug: string
+          runs: number
+          success_rate: number | null
+          success_rate_wilson_lb: number | null
+          successes: number
+          task_completed_rate: number | null
+          track: string
+          trust_score: number | null
+          week_start: string
+        }
+        Insert: {
+          adversarial_pass_rate?: number | null
+          adversarial_weighted?: number | null
+          avg_tokens?: number | null
+          created_at?: string
+          id?: number
+          p95_latency_ms?: number | null
+          package_id: string
+          package_slug: string
+          runs?: number
+          success_rate?: number | null
+          success_rate_wilson_lb?: number | null
+          successes?: number
+          task_completed_rate?: number | null
+          track?: string
+          trust_score?: number | null
+          week_start: string
+        }
+        Update: {
+          adversarial_pass_rate?: number | null
+          adversarial_weighted?: number | null
+          avg_tokens?: number | null
+          created_at?: string
+          id?: number
+          p95_latency_ms?: number | null
+          package_id?: string
+          package_slug?: string
+          runs?: number
+          success_rate?: number | null
+          success_rate_wilson_lb?: number | null
+          successes?: number
+          task_completed_rate?: number | null
+          track?: string
+          trust_score?: number | null
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_weekly_metrics_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_weekly_metrics_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       packages: {
         Row: {
           author_handle: string
@@ -3231,6 +3306,14 @@ export type Database = {
       }
     }
     Views: {
+      findings_mttr: {
+        Row: {
+          fixed_findings: number | null
+          mean_hours_to_patch: number | null
+          median_hours_to_patch: number | null
+        }
+        Relationships: []
+      }
       package_rankings: {
         Row: {
           author_handle: string | null
@@ -3397,6 +3480,17 @@ export type Database = {
         Returns: number
       }
       gen_referral_code: { Args: never; Returns: string }
+      get_attack_class_benchmark: {
+        Args: { _days?: number }
+        Returns: {
+          attack_class: string
+          pass_rate: number
+          passed: number
+          subject_arm: string
+          total: number
+          wilson_lb: number
+        }[]
+      }
       get_credit_balance: { Args: { _user_id: string }; Returns: number }
       get_my_referral_stats: { Args: never; Returns: Json }
       get_pack_with_items: { Args: { _slug: string }; Returns: Json }
@@ -3671,6 +3765,7 @@ export type Database = {
         Args: { _package_id: string }
         Returns: number
       }
+      snapshot_package_weekly_metrics: { Args: never; Returns: number }
       submit_package_feedback: {
         Args: {
           _agent_model?: string
@@ -3693,10 +3788,12 @@ export type Database = {
         Returns: string
       }
       trust_saturate: { Args: { k: number; n: number }; Returns: number }
-      wilson_lower_bound: {
-        Args: { successes: number; total: number; z?: number }
-        Returns: number
-      }
+      wilson_lower_bound:
+        | { Args: { successes: number; total: number }; Returns: number }
+        | {
+            Args: { successes: number; total: number; z?: number }
+            Returns: number
+          }
     }
     Enums: {
       app_role: "admin" | "publisher" | "user"
