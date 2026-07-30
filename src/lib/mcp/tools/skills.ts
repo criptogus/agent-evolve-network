@@ -1420,6 +1420,18 @@ const PILLAR_BRIEF: Record<PillarId, string> = {
   portability: "Portability — multi-runtime declaration (Claude/GPT/Gemini), vendor-neutral tool contracts, portable Markdown.",
 };
 
+// Rationales must be written in the reader's language, so the judge prompt
+// names it explicitly instead of relying on the two-letter hint.
+const LANG_NAME: Record<Lang, string> = {
+  en: "English",
+  pt: "Brazilian Portuguese",
+  es: "Spanish",
+  fr: "French",
+  de: "German",
+  it: "Italian",
+  other: "the same language as the document",
+};
+
 async function semanticCheck(
   content: string,
   langHint: Lang,
