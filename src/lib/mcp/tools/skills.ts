@@ -1727,6 +1727,49 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
   const structuralScore = sTotal > 0 ? Math.round((sEarned / sTotal) * 100) : null;
   const contentQualityScore = cTotal > 0 ? Math.round((cEarned / cTotal) * 100) : null;
 
+  // ---- Substance axis (LLM-judged) -----------------------------------------
+  // Deliberately independent from the deterministic axes: the judge never sees
+  // the keyword hits and is instructed to ignore format entirely, so a
+  // beautifully structured but hollow file and a plain-prose but deeply
+  // operational file separate here instead of averaging out. `format_score` is
+  // the deterministic structural axis under its operator-facing name.
+  const formatScore = structuralScore;
+  let substanceScore: number | null = null;
+  const substancePillars = substancePass
+    ? details.map((r) => {
+        const v = substancePass.verdicts.get(r.id);
+        return {
+          pillar: r.id,
+          title: bundle.pillar_title[r.id],
+          score: v?.substance_score ?? null,
+          status: v ? statusBand(v.substance_score) : null,
+          covered: v?.covered ?? null,
+          confidence: v ? Math.round(v.confidence * 100) / 100 : null,
+          rationale: v?.rationale ?? null,
+          // The passages the judgement is anchored to. `verified: false` means
+          // the quote could not be found verbatim in the file — show it, but
+          // never treat it as proof.
+          evidence: (v?.excerpts ?? []).map((e) => ({
+            line: e.line,
+            quote: e.quote,
+            verified: e.verified,
+          })),
+        };
+      })
+    : [];
+  if (substancePass) {
+    let subW = 0;
+    let subT = 0;
+    for (const r of details) {
+      const v = substancePass.verdicts.get(r.id);
+      if (!v) continue;
+      const w = weights[r.id] ?? 1;
+      subW += v.substance_score * w;
+      subT += w;
+    }
+    if (subT > 0) substanceScore = Math.round(subW / subT);
+  }
+
   const verdictScore =
     docClass === "governance" && contentQualityScore !== null ? contentQualityScore : overall;
 
