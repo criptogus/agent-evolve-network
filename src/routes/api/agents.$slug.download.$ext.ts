@@ -68,7 +68,7 @@ export const Route = createFileRoute("/api/agents/$slug/download/$ext")({
           const zip = new JSZip();
           const root = zip.folder(`${agent.slug}-agent`)!;
           for (const [path, content] of Object.entries(agentFiles(agent))) root.file(path, content);
-          const buf = await zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
+          const buf = await zip.generateAsync({ type: "arraybuffer", compression: "DEFLATE" });
           return new Response(buf, {
             headers: {
               "content-type": "application/zip",
