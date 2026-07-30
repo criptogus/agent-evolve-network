@@ -281,6 +281,42 @@ export function OutcomeComparisonChart() {
         </ResponsiveContainer>
       </div>
 
+      <div className="mt-5 rounded-xl border border-border bg-surface-muted/40 p-4">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+          How these numbers are measured
+        </h4>
+        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+          Every execution on the SAK network reports the same outcome fields: task completion, human
+          intervention, end-user rating, retry count, latency vs. baseline, and tokens consumed. We
+          pair the same task across two skills — one ungraded skill found in the wild, one SAK
+          A-grade certified skill — then aggregate the last 90 days of production runs. The chart
+          shows medians; the column cards show the headline deltas visitors feel first.
+        </p>
+        <ul className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
+          <li className="flex gap-2">
+            <span className="font-mono text-primary">01</span>
+            <span>
+              <strong className="text-foreground">Same task.</strong> Identical prompt, toolset
+              and success criteria for both skills.
+            </span>
+          </li>
+          <li className="flex gap-2">
+            <span className="font-mono text-primary">02</span>
+            <span>
+              <strong className="text-foreground">Per-execution.</strong> Outcomes are recorded
+              on every run, not sampled or inferred.
+            </span>
+          </li>
+          <li className="flex gap-2">
+            <span className="font-mono text-primary">03</span>
+            <span>
+              <strong className="text-foreground">90-day median.</strong> Rolling window removes
+              outliers and single-day spikes.
+            </span>
+          </li>
+        </ul>
+      </div>
+
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         {[
           { k: "+52 p.p.", v: "more tasks completed" },
