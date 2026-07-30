@@ -29,6 +29,8 @@ function body() {
     ok: true,
     service: "superagentskill-mcp",
     endpoint: "/api/mcp",
+    mirror: "/api/public/mcp",
+    mirror_hint: "If /api/mcp returns 403 or resets from your runtime (datacenter IP blocked by the edge firewall), point your MCP client at https://superagentskill.com/api/public/mcp instead — identical tools, auth and quotas.",
     transport: "streamable-http",
     hint: "POST JSON-RPC 2.0 to /api/mcp with Accept: application/json, text/event-stream. Read-only tools (review_skill, list/search/get) are anonymous.",
     docs: "https://superagentskill.com/docs/mcp",

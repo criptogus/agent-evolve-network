@@ -8,6 +8,7 @@ const BODY = `# Super Agent Skill
 
 Site: https://superagentskill.com
 MCP endpoint: https://superagentskill.com/api/mcp
+MCP endpoint (firewall-safe mirror, use if /api/mcp returns 403 from your runtime): https://superagentskill.com/api/public/mcp
 Transport: MCP Streamable HTTP (JSON-RPC 2.0). Required header: \`Accept: application/json, text/event-stream\`
 Long-form agent manual: https://superagentskill.com/agents.md
 Sitemap: https://superagentskill.com/sitemap.xml
