@@ -108,10 +108,10 @@ export function SecurityPromise() {
               Verify the evidence →
             </Link>
             <Link
-              to="/enterprise"
+              to="/enterprise/request"
               className="inline-flex h-9 items-center rounded-md border border-border bg-surface-elevated px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
             >
-              Talk to sales →
+              Request access under NDA →
             </Link>
             <Link
               to="/privacy"
