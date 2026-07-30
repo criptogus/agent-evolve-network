@@ -130,11 +130,13 @@ function Home() {
       <JsonLd data={[ORG_LD, SOFTWARE_LD, FAQ_LD]} />
       <Nav />
       <Hero />
+      {/* Primary sales argument — the tangible A-grade delta sits directly
+          under the hook, before anything else. */}
+      <GradeImpact />
       <CompatibleAgents />
       <HowItWorks />
       <IndustryDemo />
       <Proof />
-      <GradeImpact />
       <CoreConcepts />
       <PlansTeaser />
       <Faq />

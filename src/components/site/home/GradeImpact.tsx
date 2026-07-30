@@ -80,20 +80,33 @@ const ROWS: Row[] = [
 
 export function GradeImpact() {
   return (
-    <section className="border-b border-border bg-surface-muted/30 py-20">
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="mx-auto max-w-2xl text-center">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
+    <section
+      id="a-grade-difference"
+      className="relative overflow-hidden border-b border-border bg-surface-muted/30 py-20 md:py-28"
+    >
+      {/* Spotlight treatment — this is the main sales argument. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-[-12rem] h-[26rem] w-[46rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
+      />
+      <div className="relative mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-3xl text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
             The A-grade difference
           </span>
-          <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-4xl">
+          <h2 className="mt-4 text-balance text-4xl font-semibold tracking-tight md:text-5xl lg:text-6xl">
             A random skill vs. a SAK <span className="text-primary">A-grade</span> skill
           </h2>
-          <p className="mt-4 text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
+          <p className="mt-5 text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
             Tangible numbers, measured across the last 90 days of production runs on the SAK network
             — the same task, one ungraded skill from the wild, one certified A on SuperAgent Skill.
           </p>
         </div>
+
 
         {/* Header cards */}
         <div className="mx-auto mt-10 grid max-w-3xl gap-4 md:grid-cols-2">
