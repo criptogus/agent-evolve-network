@@ -92,6 +92,8 @@ export async function drainUploadQueue(limit = 3): Promise<{
   }
 
   for (let i = 0; i < limit; i++) {
+    // Don't claim a job we can't finish inside this invocation.
+    if (Date.now() - drainStart > DRAIN_BUDGET_MS - 36_000) break;
     // Claim one job atomically: flip queued → processing if still queued.
     const { data: claimed } = await supabaseAdmin
       .from("package_upload_jobs")
