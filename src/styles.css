@@ -57,6 +57,13 @@
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
+  /* Cinematic chart reveal keyframes */
+  --animate-chart-fade: chart-fade 0.8s ease-out both;
+  --animate-chart-slide-up: chart-slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-chart-slide-right: chart-slide-right 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-chart-grow-up: chart-grow-up 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-chart-scale-in: chart-scale-in 0.6s ease-out both;
+
   @keyframes fade-in {
     from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -88,6 +95,27 @@
   @keyframes accordion-up {
     from { height: var(--radix-accordion-content-height); opacity: 1; }
     to   { height: 0; opacity: 0; }
+  }
+
+  @keyframes chart-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes chart-slide-up {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes chart-slide-right {
+    from { opacity: 0; transform: translateX(30px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes chart-grow-up {
+    from { transform: scaleY(0); transform-origin: bottom; }
+    to   { transform: scaleY(1); transform-origin: bottom; }
+  }
+  @keyframes chart-scale-in {
+    from { opacity: 0; transform: scale(0.97); }
+    to   { opacity: 1; transform: scale(1); }
   }
 }
 
