@@ -141,6 +141,7 @@ import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/em
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
+import { Route as DotwellKnownOauthProtectedResourceApiPublicMcpRouteImport } from './routes/[.]well-known.oauth-protected-resource.api.public.mcp'
 import { Route as ApiBadgesTrustSlugSvgRouteImport } from './routes/api/badges.trust.$slug.svg'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
@@ -820,6 +821,12 @@ const LovableEmailTransactionalSendRoute =
     path: '/lovable/email/transactional/send',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DotwellKnownOauthProtectedResourceApiPublicMcpRoute =
+  DotwellKnownOauthProtectedResourceApiPublicMcpRouteImport.update({
+    id: '/api/public/mcp',
+    path: '/api/public/mcp',
+    getParentRoute: () => DotwellKnownOauthProtectedResourceRoute,
+  } as any)
 const ApiBadgesTrustSlugSvgRoute = ApiBadgesTrustSlugSvgRouteImport.update({
   id: '/api/badges/trust/$slug/svg',
   path: '/api/badges/trust/$slug/svg',
@@ -965,6 +972,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/.well-known/oauth-protected-resource/api/public/mcp': typeof DotwellKnownOauthProtectedResourceApiPublicMcpRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1100,6 +1108,7 @@ export interface FileRoutesByTo {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/.well-known/oauth-protected-resource/api/public/mcp': typeof DotwellKnownOauthProtectedResourceApiPublicMcpRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1237,6 +1246,7 @@ export interface FileRoutesById {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/.well-known/oauth-protected-resource/api/public/mcp': typeof DotwellKnownOauthProtectedResourceApiPublicMcpRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1375,6 +1385,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/.well-known/oauth-protected-resource/api/public/mcp'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
@@ -1510,6 +1521,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/.well-known/oauth-protected-resource/api/public/mcp'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   id:
@@ -1646,6 +1658,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/.well-known/oauth-protected-resource/api/public/mcp'
     | '/api/badges/trust/$slug/svg'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
@@ -2684,6 +2697,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/oauth-protected-resource/api/public/mcp': {
+      id: '/.well-known/oauth-protected-resource/api/public/mcp'
+      path: '/api/public/mcp'
+      fullPath: '/.well-known/oauth-protected-resource/api/public/mcp'
+      preLoaderRoute: typeof DotwellKnownOauthProtectedResourceApiPublicMcpRouteImport
+      parentRoute: typeof DotwellKnownOauthProtectedResourceRoute
+    }
     '/api/badges/trust/$slug/svg': {
       id: '/api/badges/trust/$slug/svg'
       path: '/api/badges/trust/$slug/svg'
@@ -2813,12 +2833,15 @@ const DotwellKnownOauthAuthorizationServerRouteWithChildren =
 
 interface DotwellKnownOauthProtectedResourceRouteChildren {
   DotwellKnownOauthProtectedResourceApiMcpRoute: typeof DotwellKnownOauthProtectedResourceApiMcpRoute
+  DotwellKnownOauthProtectedResourceApiPublicMcpRoute: typeof DotwellKnownOauthProtectedResourceApiPublicMcpRoute
 }
 
 const DotwellKnownOauthProtectedResourceRouteChildren: DotwellKnownOauthProtectedResourceRouteChildren =
   {
     DotwellKnownOauthProtectedResourceApiMcpRoute:
       DotwellKnownOauthProtectedResourceApiMcpRoute,
+    DotwellKnownOauthProtectedResourceApiPublicMcpRoute:
+      DotwellKnownOauthProtectedResourceApiPublicMcpRoute,
   }
 
 const DotwellKnownOauthProtectedResourceRouteWithChildren =
