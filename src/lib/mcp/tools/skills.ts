@@ -1652,10 +1652,11 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
   // truncation warnings (short_input / summary_markers) block it; an
   // `outline_only` hint is soft and is exactly where the pass adds most value.
   const blocksSemantic = warnKind === "short_input" || warnKind === "summary_markers";
-  const semantic =
+  const substancePass =
     semantic_check && !blocksSemantic && content.length >= 400
       ? await semanticCheck(content, language.lang)
       : null;
+  const semantic = substancePass?.verdicts ?? null;
 
   // Apply semantic uplift to pillar scores (never lowers a score).
   const semanticUplifts: Record<string, { from: number; to: number; confidence: number }> = {};
