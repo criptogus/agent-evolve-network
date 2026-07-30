@@ -262,7 +262,14 @@ npm run trust:verify -- \\
             >
               Browse live evaluation data
             </Link>
+            <Link
+              to="/nda"
+              className="inline-flex h-11 items-center rounded-md border border-border bg-surface px-5 text-sm font-medium transition-colors hover:border-primary/40"
+            >
+              Accept the online NDA
+            </Link>
           </div>
+
         </section>
       </main>
       <Footer />
