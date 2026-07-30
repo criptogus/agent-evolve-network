@@ -1,7 +1,7 @@
 import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { SakValueCharts } from "./SakValueCharts";
-import { OutcomeComparisonChart } from "./OutcomeComparisonChart";
+import { OutcomeComparisonChart, MetricTip } from "./OutcomeComparisonChart";
 
 type Row = {
   metric: string;
