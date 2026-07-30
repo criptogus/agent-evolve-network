@@ -433,6 +433,72 @@ export type Database = {
         }
         Relationships: []
       }
+      enterprise_requests: {
+        Row: {
+          admin_notes: string | null
+          checklist: Json
+          company: string
+          contact_name: string
+          created_at: string
+          id: string
+          ip_concerns: string | null
+          nda_accepted: boolean
+          nda_accepted_at: string | null
+          nda_ip: string | null
+          nda_required: boolean
+          nda_signer_name: string | null
+          role: string | null
+          status: string
+          team_size: string | null
+          updated_at: string
+          use_case: string
+          user_id: string | null
+          work_email: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          checklist?: Json
+          company: string
+          contact_name: string
+          created_at?: string
+          id?: string
+          ip_concerns?: string | null
+          nda_accepted?: boolean
+          nda_accepted_at?: string | null
+          nda_ip?: string | null
+          nda_required?: boolean
+          nda_signer_name?: string | null
+          role?: string | null
+          status?: string
+          team_size?: string | null
+          updated_at?: string
+          use_case: string
+          user_id?: string | null
+          work_email: string
+        }
+        Update: {
+          admin_notes?: string | null
+          checklist?: Json
+          company?: string
+          contact_name?: string
+          created_at?: string
+          id?: string
+          ip_concerns?: string | null
+          nda_accepted?: boolean
+          nda_accepted_at?: string | null
+          nda_ip?: string | null
+          nda_required?: boolean
+          nda_signer_name?: string | null
+          role?: string | null
+          status?: string
+          team_size?: string | null
+          updated_at?: string
+          use_case?: string
+          user_id?: string | null
+          work_email?: string
+        }
+        Relationships: []
+      }
       external_certifications: {
         Row: {
           content_sha256: string
