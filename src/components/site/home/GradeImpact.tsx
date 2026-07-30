@@ -1,6 +1,7 @@
 import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { SakValueCharts } from "./SakValueCharts";
+import { OutcomeComparisonChart } from "./OutcomeComparisonChart";
 
 type Row = {
   metric: string;
@@ -137,6 +138,9 @@ export function GradeImpact() {
             </p>
           </div>
         </div>
+
+        {/* Headline outcome chart — the fastest read of the A-grade delta. */}
+        <OutcomeComparisonChart />
 
         {/* Comparative charts — the value curve and the security gap */}
         <SakValueCharts />
