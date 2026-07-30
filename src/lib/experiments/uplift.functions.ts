@@ -172,7 +172,128 @@ export const getWorkspaceRoi = createServerFn({ method: "POST" })
     };
   });
 
+export type ExecutionOutcomeRow = {
+  id: string;
+  package_slug: string;
+  version: string | null;
+  model: string | null;
+  arm: string | null;
+  experiment_key: string | null;
+  success: boolean;
+  task_completed: boolean | null;
+  human_intervention: boolean | null;
+  user_rating: number | null;
+  latency_ms: number | null;
+  baseline_latency_ms: number | null;
+  latency_saved_ms: number | null;
+  tokens_in: number | null;
+  tokens_out: number | null;
+  baseline_tokens: number | null;
+  tokens_saved: number | null;
+  workspace_hash: string | null;
+  error_kind: string | null;
+  created_at: string;
+};
+
+/** Per-execution outcome feed + coverage aggregates (admin only). */
+export const listExecutionOutcomes = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        days: z.number().int().min(1).max(365).optional(),
+        limit: z.number().int().min(1).max(200).optional(),
+        slug: z.string().max(128).optional(),
+        onlyWithOutcome: z.boolean().optional(),
+      })
+      .parse(d ?? {}),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin as any;
+    const days = data.days ?? 30;
+    const limit = data.limit ?? 50;
+    const since = new Date(Date.now() - days * 86_400_000).toISOString();
+
+    let q = db
+      .from("skill_executions")
+      .select(
+        "id, package_slug, version, model, arm, experiment_key, success, task_completed, human_intervention, user_rating, latency_ms, baseline_latency_ms, tokens_in, tokens_out, baseline_tokens, workspace_hash, error_kind, created_at",
+      )
+      .gte("created_at", since)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (data.slug) q = q.eq("package_slug", data.slug);
+    if (data.onlyWithOutcome) q = q.not("task_completed", "is", null);
+
+    const { data: rows, error } = await q;
+    if (error) throw new Response("outcome feed unavailable", { status: 500 });
+
+    const executions: ExecutionOutcomeRow[] = ((rows ?? []) as any[]).map((r) => {
+      const lat = r.latency_ms == null ? null : Number(r.latency_ms);
+      const baseLat = r.baseline_latency_ms == null ? null : Number(r.baseline_latency_ms);
+      const tok =
+        r.tokens_in == null && r.tokens_out == null
+          ? null
+          : Number(r.tokens_in ?? 0) + Number(r.tokens_out ?? 0);
+      const baseTok = r.baseline_tokens == null ? null : Number(r.baseline_tokens);
+      return {
+        id: String(r.id),
+        package_slug: String(r.package_slug ?? ""),
+        version: r.version ?? null,
+        model: r.model ?? null,
+        arm: r.arm ?? null,
+        experiment_key: r.experiment_key ?? null,
+        success: Boolean(r.success),
+        task_completed: r.task_completed ?? null,
+        human_intervention: r.human_intervention ?? null,
+        user_rating: r.user_rating == null ? null : Number(r.user_rating),
+        latency_ms: lat,
+        baseline_latency_ms: baseLat,
+        latency_saved_ms: lat != null && baseLat != null ? baseLat - lat : null,
+        tokens_in: r.tokens_in == null ? null : Number(r.tokens_in),
+        tokens_out: r.tokens_out == null ? null : Number(r.tokens_out),
+        baseline_tokens: baseTok,
+        tokens_saved: tok != null && baseTok != null ? baseTok - tok : null,
+        workspace_hash: r.workspace_hash ?? null,
+        error_kind: r.error_kind ?? null,
+        created_at: String(r.created_at),
+      };
+    });
+
+    const withOutcome = executions.filter((e) => e.task_completed != null);
+    const completed = withOutcome.filter((e) => e.task_completed === true).length;
+    const interventions = executions.filter((e) => e.human_intervention === true).length;
+    const savedRows = executions.filter((e) => e.latency_saved_ms != null);
+    const latencySaved = savedRows.reduce((a, e) => a + (e.latency_saved_ms ?? 0), 0);
+
+    return {
+      days,
+      executions,
+      summary: {
+        rows: executions.length,
+        with_outcome: withOutcome.length,
+        outcome_coverage:
+          executions.length > 0
+            ? Math.round((withOutcome.length / executions.length) * 10000) / 10000
+            : 0,
+        completion_rate:
+          withOutcome.length > 0 ? Math.round((completed / withOutcome.length) * 10000) / 10000 : 0,
+        intervention_rate:
+          executions.length > 0
+            ? Math.round((interventions / executions.length) * 10000) / 10000
+            : 0,
+        latency_saved_ms: latencySaved,
+        avg_latency_saved_ms:
+          savedRows.length > 0 ? Math.round(latencySaved / savedRows.length) : 0,
+        thumbs_up: executions.filter((e) => e.user_rating === 1).length,
+        thumbs_down: executions.filter((e) => e.user_rating === -1).length,
+      },
+    };
+  });
+
 /** Active experiments, for the admin dashboard and public transparency. */
+
 export const listExperiments = createServerFn({ method: "GET" }).handler(async () => {
   const supabase = createClient(
     process.env.SUPABASE_URL!,
