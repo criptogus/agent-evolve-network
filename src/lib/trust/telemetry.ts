@@ -54,7 +54,15 @@ export async function ingestExecution(event: ExecutionEvent, sink: TelemetrySink
     success: event.success,
     error_class: event.error_class ?? null,
     guardrail_triggered: event.guardrail_triggered,
+    task_completed: event.task_completed ?? null,
+    human_intervention: event.human_intervention ?? null,
+    user_rating: event.user_rating ?? null,
+    baseline_latency_ms: event.baseline_latency_ms ?? null,
+    baseline_tokens: event.baseline_tokens ?? null,
+    arm: event.arm ?? null,
+    experiment_key: event.experiment_key ?? null,
   };
+
   const { error } = await sink.insert([row]);
   if (error) throw new Error(`telemetry ingest failed: ${error.message}`);
   return row;
