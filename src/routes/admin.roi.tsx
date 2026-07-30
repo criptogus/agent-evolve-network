@@ -36,10 +36,12 @@ function AdminRoiPage() {
   const [days, setDays] = useState<number>(30);
   const [slug, setSlug] = useState("");
   const [querySlug, setQuerySlug] = useState("");
+  const [onlyWithOutcome, setOnlyWithOutcome] = useState(false);
 
   const fetchRoi = useServerFn(getWorkspaceRoi);
   const fetchUplift = useServerFn(getSkillUplift);
   const fetchExperiments = useServerFn(listExperiments);
+  const fetchOutcomes = useServerFn(listExecutionOutcomes);
 
   const roi = useQuery({
     queryKey: ["admin-roi", days],
@@ -54,6 +56,19 @@ function AdminRoiPage() {
     queryFn: () => fetchUplift({ data: { slug: querySlug, days } }),
     enabled: querySlug.length > 0,
   });
+  const outcomes = useQuery({
+    queryKey: ["admin-outcomes", days, querySlug, onlyWithOutcome],
+    queryFn: () =>
+      fetchOutcomes({
+        data: {
+          days,
+          limit: 50,
+          slug: querySlug || undefined,
+          onlyWithOutcome,
+        },
+      }),
+  });
+
 
   return (
     <SitePage>
