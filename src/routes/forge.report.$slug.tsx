@@ -94,6 +94,17 @@ function ReportPage() {
   const after = q.data?.evaluations[q.data.evaluations.length - 1];
   const improved = before && after && before.id !== after.id;
 
+  // Latest evaluation → projected impact on the metrics we publish publicly.
+  const latest = after ?? before;
+  const actionsCount = ((latest?.improvement_actions as string[]) ?? []).length;
+  const projection = latest?.overall_score != null
+    ? projectImpact({
+        score: Number(latest.overall_score) <= 10 ? Number(latest.overall_score) * 10 : Number(latest.overall_score),
+        actionsCount,
+        semanticPass: true,
+      })
+    : null;
+
   return (
     <div className="min-h-screen bg-background">
       <Nav />
