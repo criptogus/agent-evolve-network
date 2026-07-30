@@ -114,6 +114,10 @@
   --signal: oklch(0.86 0.24 130);
   --signal-foreground: oklch(0.18 0.05 140);
 
+  /* Chart baseline series (the "ungraded" comparator) — CVD-validated
+     against --primary on the light surface. */
+  --chart-baseline: #4a63b8;
+
   --secondary: oklch(0.97 0.003 270);
   --secondary-foreground: oklch(0.22 0.01 270);
   --muted: oklch(0.965 0.003 270);
@@ -139,6 +143,8 @@
   --popover-foreground: oklch(0.98 0 0);
   --primary: oklch(0.62 0.22 25);
   --primary-foreground: oklch(0.99 0 0);
+  /* CVD-validated against dark --primary on the dark surface. */
+  --chart-baseline: #6d84d6;
   --secondary: oklch(0.24 0.012 270);
   --secondary-foreground: oklch(0.98 0 0);
   --muted: oklch(0.24 0.012 270);

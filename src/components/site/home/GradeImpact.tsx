@@ -1,5 +1,6 @@
 import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { SakValueCharts } from "./SakValueCharts";
 
 type Row = {
   metric: string;
@@ -89,9 +90,8 @@ export function GradeImpact() {
             A random skill vs. a SAK <span className="text-primary">A-grade</span> skill
           </h2>
           <p className="mt-4 text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
-            Tangible numbers, measured across the last 90 days of production runs on the SAK
-            network — the same task, one ungraded skill from the wild, one certified A on
-            SuperAgent Skill.
+            Tangible numbers, measured across the last 90 days of production runs on the SAK network
+            — the same task, one ungraded skill from the wild, one certified A on SuperAgent Skill.
           </p>
         </div>
 
@@ -124,6 +124,9 @@ export function GradeImpact() {
             </p>
           </div>
         </div>
+
+        {/* Comparative charts — the value curve and the security gap */}
+        <SakValueCharts />
 
         {/* Comparison table */}
         <div className="mt-10 overflow-hidden rounded-2xl border border-border bg-background">
