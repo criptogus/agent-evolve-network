@@ -1466,31 +1466,32 @@ Return one verdict per pillar, plus a document-level summary.
 - If covered=false, set evidence_line=null and evidence_quote=null.
 - summary: 2-3 sentences on the document's substantive strengths and biggest content gap.`;
 
+  // Deliberately bound-free: array/string/number constraints in the schema make
+  // the gateway reject an otherwise-good generation post-hoc with
+  // "response did not match schema". All clamping happens in code below.
+  const verdictSchema = z.object({
+    pillar: z.enum(["identity", "scope", "procedure", "examples", "guardrails", "trust", "portability"]),
+    covered: z.boolean(),
+    confidence: z.number(),
+    substance_score: z.number(),
+    rationale: z.string(),
+    excerpts: z.array(z.object({ line: z.number().nullable(), quote: z.string() })),
+    evidence_line: z.number().nullable(),
+    evidence_quote: z.string().nullable(),
+  });
   const schema = z.object({
     summary: z.string(),
-    verdicts: z
-      .array(
-        z.object({
-          pillar: z.enum(["identity", "scope", "procedure", "examples", "guardrails", "trust", "portability"]),
-          covered: z.boolean(),
-          confidence: z.number(),
-          substance_score: z.number(),
-          rationale: z.string(),
-          excerpts: z.array(z.object({ line: z.number().nullable(), quote: z.string() })),
-          evidence_line: z.number().nullable(),
-          evidence_quote: z.string().nullable(),
-        }),
-      )
-      .length(7),
+    verdicts: z.array(verdictSchema),
   });
+  type Parsed = z.infer<typeof schema>;
 
-  // The semantic pass is the highest-value feature for niche-jargon skills
-  // and for non-English content, so a single transient gateway blip should
-  // not silently drop it. Three attempts: primary model twice (short backoff),
+  // The judge is the highest-value feature for niche-jargon skills and for
+  // non-English content, so a single transient gateway blip should not
+  // silently drop it. Three attempts: primary model twice (short backoff),
   // then one final try on the flash fallback. Each attempt has its own
   // timeout so a slow upstream doesn't burn the whole budget.
   const SEMANTIC_FALLBACK_MODEL = "google/gemini-2.5-flash";
-  let output: z.infer<typeof schema> | null = null;
+  let output: Parsed | null = null;
   const attempts: Array<{ model: string; ms: number; error: string }> = [];
   for (let attempt = 0; attempt < 3; attempt++) {
     const modelId = attempt < 2 ? SEMANTIC_MODEL : SEMANTIC_FALLBACK_MODEL;
@@ -1506,11 +1507,31 @@ Return one verdict per pillar, plus a document-level summary.
       output = res.output;
       break;
     } catch (e: any) {
+      // Salvage path: a schema-validation failure still carries the raw model
+      // text. A partially valid verdict list beats losing the whole axis.
+      const raw: string | undefined = e?.text ?? e?.cause?.text;
+      if (raw) {
+        try {
+          const start = raw.indexOf("{");
+          const end = raw.lastIndexOf("}");
+          const obj = JSON.parse(start >= 0 ? raw.slice(start, end + 1) : raw);
+          const verdicts = Array.isArray(obj?.verdicts)
+            ? obj.verdicts
+                .map((v: unknown) => verdictSchema.safeParse(v))
+                .filter((p: any) => p.success)
+                .map((p: any) => p.data)
+            : [];
+          if (verdicts.length > 0) {
+            output = { summary: typeof obj?.summary === "string" ? obj.summary : "", verdicts };
+            break;
+          }
+        } catch { /* fall through to retry */ }
+      }
       attempts.push({ model: modelId, ms: Date.now() - t0, error: e?.message ?? String(e) });
       if (attempt < 2) await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
     }
   }
-  if (!output) {
+  if (!output || output.verdicts.length === 0) {
     console.warn(`[review.semantic] all ${attempts.length} attempts failed:`, attempts);
     return null;
   }
