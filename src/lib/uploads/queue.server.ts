@@ -41,6 +41,11 @@ export async function enqueueUploadJobs(
 // don't become permanent zombies in the user's /account/packages list.
 const STALE_PROCESSING_MS = 2 * 60 * 1000;
 const MAX_ATTEMPTS = 3;
+// Wall-clock ceiling for one drain pass. generateDraft() is itself capped at
+// ~34s, so we stop claiming new jobs once there isn't room for another one
+// inside the serverless budget. Prevents a claimed job from being killed
+// mid-flight and re-appearing as a stale `processing` zombie.
+const DRAIN_BUDGET_MS = 45_000;
 
 export async function drainUploadQueue(limit = 3): Promise<{
   processed: number;
@@ -48,6 +53,7 @@ export async function drainUploadQueue(limit = 3): Promise<{
   requeued: number;
   remaining: number;
 }> {
+  const drainStart = Date.now();
   let processed = 0;
   let failed = 0;
   let requeued = 0;
@@ -86,6 +92,8 @@ export async function drainUploadQueue(limit = 3): Promise<{
   }
 
   for (let i = 0; i < limit; i++) {
+    // Don't claim a job we can't finish inside this invocation.
+    if (Date.now() - drainStart > DRAIN_BUDGET_MS - 36_000) break;
     // Claim one job atomically: flip queued → processing if still queued.
     const { data: claimed } = await supabaseAdmin
       .from("package_upload_jobs")

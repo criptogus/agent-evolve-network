@@ -23,6 +23,13 @@ export type UploadFileInput = {
 export type UploadResult = {
   name: string;
   ok: boolean;
+  /**
+   * Explicit lifecycle state so the caller never has to infer it from
+   * `ok`+absence of fields. `queued` means the file was accepted and a
+   * background job owns it (poll /account/packages).
+   */
+  status: "done" | "failed" | "queued";
+  job_id?: string;
   package_id?: string;
   slug?: string;
   type?: string;
@@ -89,7 +96,7 @@ export async function processBulkUpload(
   const overflow = files.slice(INLINE_BUDGET);
   const results: UploadResult[] = [];
   for (const f of inline) {
-    const out: UploadResult = { name: f.name, ok: false };
+    const out: UploadResult = { name: f.name, ok: false, status: "failed" };
     try {
       const inferred = f.type ?? inferType(f.name, f.content);
 
@@ -136,6 +143,7 @@ export async function processBulkUpload(
         source_ref: `upload:${f.name}`,
       });
       out.ok = true;
+      out.status = "done";
       out.package_id = pkg.id;
       out.slug = pkg.slug;
       out.type = inferred;
@@ -143,6 +151,7 @@ export async function processBulkUpload(
     } catch (e: any) {
       const msg = e?.message ?? "failed";
       out.error = msg;
+      out.status = "failed";
       // Server-side visibility — without this the MCP caller sees a
       // generic "failed" while the real cause (model rejection, schema
       // mismatch, DB error) is invisible. Keep the user/filename so we
@@ -154,45 +163,56 @@ export async function processBulkUpload(
     }
     results.push(out);
   }
-  // Validate BEFORE enqueueing: run the deterministic, zero-cost checks (type
-  // inference + prompt-injection guard) synchronously so the caller learns in
-  // this response whether each file was accepted — instead of watching a
-  // queued job die minutes later. Rejected files never enter the queue; the
-  // heavy LLM normalisation stays async in the worker.
-  const accepted: typeof overflow = [];
-  for (const f of overflow) {
-    const guard = inspectContent(f.content, { rejectAtOrAbove: "high", fence: true });
-    if (guard.rejected) {
-      try {
-        await (supabaseAdmin as any).from("upload_injection_audit").insert({
-          user_id: userId,
-          filename: f.name,
-          inferred_type: f.type ?? inferType(f.name, f.content),
-          severity: guard.severity,
-          rejected: true,
-          findings: guard.findings,
-          content_sample: f.content.slice(0, 1024),
-        });
-      } catch {
-        /* audit is best-effort */
-      }
-      results.push({ name: f.name, ok: false, error: guard.reason });
-      continue;
-    }
-    accepted.push(f);
-  }
-
   let queued: QueuedJob[] = [];
-  if (accepted.length > 0) {
-    try {
-      queued = await enqueueUploadJobs(userId, accepted);
-    } catch (e: any) {
-      // If the queue itself is unavailable, fall back to per-file failure
-      // records so the caller knows the overflow didn't silently disappear.
-      const msg = e?.message ?? "enqueue failed";
-      console.error(`[uploads.processBulkUpload] enqueue failed user=${userId}: ${msg}`);
-      for (const f of accepted) {
-        results.push({ name: f.name, ok: false, error: `queue unavailable: ${msg}` });
+  if (overflow.length > 0) {
+    // Cheap deterministic pre-flight BEFORE queueing: a file that the
+    // injection guard will reject anyway must fail synchronously, so the
+    // caller gets a definitive verdict in the same response instead of a
+    // job that dies a minute later.
+    const enqueueable: UploadFileInput[] = [];
+    for (const f of overflow) {
+      const inferred = f.type ?? inferType(f.name, f.content);
+      const guard = inspectContent(f.content, { rejectAtOrAbove: "high", fence: true });
+      if (guard.rejected) {
+        results.push({
+          name: f.name,
+          ok: false,
+          status: "failed",
+          type: inferred,
+          error: guard.reason,
+          injection: {
+            severity: guard.severity,
+            findings: guard.findings.map((g) => ({
+              pattern: g.pattern, category: g.category, severity: g.severity,
+            })),
+          },
+        });
+        continue;
+      }
+      enqueueable.push(f);
+    }
+    if (enqueueable.length > 0) {
+      try {
+        queued = await enqueueUploadJobs(userId, enqueueable);
+        const byName = new Map(queued.map((j) => [j.filename, j]));
+        for (const f of enqueueable) {
+          const job = byName.get(f.name);
+          results.push({
+            name: f.name,
+            ok: true,
+            status: "queued",
+            job_id: job?.id,
+            type: job?.inferred_type ?? f.type ?? inferType(f.name, f.content),
+          });
+        }
+      } catch (e: any) {
+        // If the queue itself is unavailable, fall back to per-file failure
+        // records so the caller knows the overflow didn't silently disappear.
+        const msg = e?.message ?? "enqueue failed";
+        console.error(`[uploads.processBulkUpload] enqueue failed user=${userId}: ${msg}`);
+        for (const f of enqueueable) {
+          results.push({ name: f.name, ok: false, status: "failed", error: `queue unavailable: ${msg}` });
+        }
       }
     }
   }

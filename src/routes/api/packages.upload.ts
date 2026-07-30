@@ -79,22 +79,38 @@ async function handle(request: Request): Promise<Response> {
   const { files, publish } = parsed.data;
   try {
     const { results, queued } = await processBulkUpload(supabaseAdmin, auth.user_id, files);
-    const ok = results.filter((r) => r.ok).length;
-    const failed = results.length - ok;
+    const done = results.filter((r) => r.status === "done").length;
+    const queuedCount = results.filter((r) => r.status === "queued").length;
+    const failed = results.filter((r) => r.status === "failed").length;
+    const errorMessages = results
+      .filter((r) => r.status === "failed")
+      .map((r) => `${r.name}: ${r.error ?? "unknown"}`);
     return json({
-      uploaded: ok,
+      accepted: done + queuedCount,
+      uploaded: done,
+      queued_count: queuedCount,
       failed,
-      queued_count: queued.length,
       visibility: "private_draft",
-      publish_ignored: publish === true ? "Public listing requires admin review — submit from /account/packages." : undefined,
-      next_step:
-        queued.length > 0
-          ? `Processed ${ok} inline; ${queued.length} more queued. Background worker drains within ~1 minute — see /account/packages.`
-          : ok > 0
-            ? "Open /account/packages to submit a draft for admin review."
-            : "All files failed to normalise. See `results[].error` for the cause.",
-      results,
+      publish_ignored: publish === true ? "Public listing requires admin review — submit from /account/packages." : null,
+      results: results.map((r) => ({
+        name: r.name,
+        status: r.status,
+        ok: r.ok,
+        type: r.type ?? null,
+        slug: r.slug ?? null,
+        package_id: r.package_id ?? null,
+        job_id: r.job_id ?? null,
+        forge_report_url: r.forge_report_url ?? null,
+        error: r.error ?? null,
+      })),
       queued,
+      error_summary: errorMessages.length > 0 ? errorMessages.slice(0, 3).join(" · ") : null,
+      next_step:
+        queuedCount > 0
+          ? `${queuedCount} file(s) accepted and queued. Background worker drains within ~1 minute — see /account/packages.`
+          : done > 0
+            ? "Open /account/packages to submit a draft for admin review."
+            : "No file was accepted. See `error_summary` for the cause.",
     });
   } catch (e: any) {
     console.error("[api/packages/upload] fatal:", e);

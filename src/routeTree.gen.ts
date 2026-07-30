@@ -108,6 +108,7 @@ import { Route as ApiPublicCertifyRouteImport } from './routes/api/public/certif
 import { Route as ApiPublicInstallDothermesDotshRouteImport } from './routes/api/public/install[.]hermes[.]sh'
 import { Route as ApiPublicMcpRouteImport } from './routes/api/public/mcp'
 import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packages'
+import { Route as ApiPublicReviewRouteImport } from './routes/api/public/review'
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
@@ -132,6 +133,7 @@ import { Route as ApiPublicOauthRevokeRouteImport } from './routes/api/public/oa
 import { Route as ApiPublicOauthTokenRouteImport } from './routes/api/public/oauth/token'
 import { Route as ApiPublicPackagesSlugRouteImport } from './routes/api/public/packages.$slug'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicReviewBatchRouteImport } from './routes/api/public/review.batch'
 import { Route as ApiSkillsSlugExportRouteImport } from './routes/api/skills.$slug.export'
 import { Route as ApiSkillsSlugExportDotmdRouteImport } from './routes/api/skills.$slug.export[.]md'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -640,6 +642,11 @@ const ApiPublicPackagesRoute = ApiPublicPackagesRouteImport.update({
   path: '/api/public/packages',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicReviewRoute = ApiPublicReviewRouteImport.update({
+  id: '/api/public/review',
+  path: '/api/public/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSearchRoute = ApiPublicSearchRouteImport.update({
   id: '/api/public/search',
   path: '/api/public/search',
@@ -769,6 +776,11 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicReviewBatchRoute = ApiPublicReviewBatchRouteImport.update({
+  id: '/batch',
+  path: '/batch',
+  getParentRoute: () => ApiPublicReviewRoute,
+} as any)
 const ApiSkillsSlugExportRoute = ApiSkillsSlugExportRouteImport.update({
   id: '/api/skills/$slug/export',
   path: '/api/skills/$slug/export',
@@ -920,6 +932,7 @@ export interface FileRoutesByFullPath {
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -944,6 +957,7 @@ export interface FileRoutesByFullPath {
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/review/batch': typeof ApiPublicReviewBatchRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -1053,6 +1067,7 @@ export interface FileRoutesByTo {
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -1077,6 +1092,7 @@ export interface FileRoutesByTo {
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/review/batch': typeof ApiPublicReviewBatchRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -1188,6 +1204,7 @@ export interface FileRoutesById {
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -1212,6 +1229,7 @@ export interface FileRoutesById {
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/review/batch': typeof ApiPublicReviewBatchRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -1324,6 +1342,7 @@ export interface FileRouteTypes {
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
     | '/api/public/packages'
+    | '/api/public/review'
     | '/api/public/search'
     | '/api/public/telemetry'
     | '/api/public/version'
@@ -1348,6 +1367,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/token'
     | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
+    | '/api/public/review/batch'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
     | '/lovable/email/auth/preview'
@@ -1457,6 +1477,7 @@ export interface FileRouteTypes {
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
     | '/api/public/packages'
+    | '/api/public/review'
     | '/api/public/search'
     | '/api/public/telemetry'
     | '/api/public/version'
@@ -1481,6 +1502,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/token'
     | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
+    | '/api/public/review/batch'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
     | '/lovable/email/auth/preview'
@@ -1591,6 +1613,7 @@ export interface FileRouteTypes {
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
     | '/api/public/packages'
+    | '/api/public/review'
     | '/api/public/search'
     | '/api/public/telemetry'
     | '/api/public/version'
@@ -1615,6 +1638,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/token'
     | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
+    | '/api/public/review/batch'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
     | '/lovable/email/auth/preview'
@@ -1705,6 +1729,7 @@ export interface RootRouteChildren {
   ApiPublicInstallDothermesDotshRoute: typeof ApiPublicInstallDothermesDotshRoute
   ApiPublicMcpRoute: typeof ApiPublicMcpRouteWithChildren
   ApiPublicPackagesRoute: typeof ApiPublicPackagesRouteWithChildren
+  ApiPublicReviewRoute: typeof ApiPublicReviewRouteWithChildren
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
@@ -2428,6 +2453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPackagesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/review': {
+      id: '/api/public/review'
+      path: '/api/public/review'
+      fullPath: '/api/public/review'
+      preLoaderRoute: typeof ApiPublicReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/search': {
       id: '/api/public/search'
       path: '/api/public/search'
@@ -2595,6 +2627,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/payments/webhook'
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/public/review/batch': {
+      id: '/api/public/review/batch'
+      path: '/batch'
+      fullPath: '/api/public/review/batch'
+      preLoaderRoute: typeof ApiPublicReviewBatchRouteImport
+      parentRoute: typeof ApiPublicReviewRoute
     }
     '/api/skills/$slug/export': {
       id: '/api/skills/$slug/export'
@@ -2835,6 +2874,18 @@ const ApiPublicPackagesRouteChildren: ApiPublicPackagesRouteChildren = {
 const ApiPublicPackagesRouteWithChildren =
   ApiPublicPackagesRoute._addFileChildren(ApiPublicPackagesRouteChildren)
 
+interface ApiPublicReviewRouteChildren {
+  ApiPublicReviewBatchRoute: typeof ApiPublicReviewBatchRoute
+}
+
+const ApiPublicReviewRouteChildren: ApiPublicReviewRouteChildren = {
+  ApiPublicReviewBatchRoute: ApiPublicReviewBatchRoute,
+}
+
+const ApiPublicReviewRouteWithChildren = ApiPublicReviewRoute._addFileChildren(
+  ApiPublicReviewRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -2916,6 +2967,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicInstallDothermesDotshRoute: ApiPublicInstallDothermesDotshRoute,
   ApiPublicMcpRoute: ApiPublicMcpRouteWithChildren,
   ApiPublicPackagesRoute: ApiPublicPackagesRouteWithChildren,
+  ApiPublicReviewRoute: ApiPublicReviewRouteWithChildren,
   ApiPublicSearchRoute: ApiPublicSearchRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,

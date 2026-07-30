@@ -1,0 +1,1 @@
+delete from public.mcp_tokens where token_hash = '71fea397e09bdef521aa3976cfc79c1d93c506a1a023abcba90d6988745b3322';

@@ -432,45 +432,84 @@ export const uploadPackagesTool = defineTool({
     }
     try {
       // Always private. Marketplace listing requires an explicit user action in the UI.
-      const { results, queued } = await processBulkUpload(supabaseAdmin as any, userId, files);
-      const ok = results.filter((r) => r.ok).length;
-      const failed = results.length - ok;
-      // Surface the per-file errors at the top of the payload too. MCP
-      // clients (and the LLMs reading their output) often render only
-      // the first ~200 chars of a tool response and miss the buried
-      // `results[].error`, leaving users with a generic "failed: N"
-      // and no way to act. The summary line is short enough to survive
-      // truncation and points at the actual root cause.
+      // Hard wall-clock cap: the accept path is queue-only (no model calls),
+      // so anything slower than this is a stuck dependency, not real work.
+      // Returning a schema-valid payload beats letting the host time out at 35s.
+      const TOOL_BUDGET_MS = 20_000;
+      const { results, queued } = await Promise.race([
+        processBulkUpload(supabaseAdmin as any, userId, files),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("accept_timeout: upload queue did not respond in 20s")), TOOL_BUDGET_MS),
+        ),
+      ]);
+      const done = results.filter((r) => r.status === "done").length;
+      const queuedCount = results.filter((r) => r.status === "queued").length;
+      const failed = results.filter((r) => r.status === "failed").length;
       const errorMessages = results
-        .filter((r) => !r.ok)
+        .filter((r) => r.status === "failed")
         .map((r) => `${r.name}: ${r.error ?? "unknown"}`);
-      const response: Record<string, unknown> = {
-        uploaded: ok,
+      // STRICT response shape — every key below is always present, and
+      // `results` always carries exactly one row per input file with an
+      // explicit `status`. Clients (and our SDK types) can validate this
+      // without conditionals.
+      const response = {
+        accepted: done + queuedCount,
+        uploaded: done,
+        queued_count: queuedCount,
         failed,
-        queued_count: queued.length,
-        visibility: "private_draft",
+        visibility: "private_draft" as const,
+        results: results.map((r) => ({
+          name: r.name,
+          status: r.status,
+          ok: r.ok,
+          type: r.type ?? null,
+          slug: r.slug ?? null,
+          package_id: r.package_id ?? null,
+          job_id: r.job_id ?? null,
+          forge_report_url: r.forge_report_url ?? null,
+          error: r.error ?? null,
+        })),
+        queued: queued.map((j) => ({ id: j.id, filename: j.filename, inferred_type: j.inferred_type })),
+        error_summary: errorMessages.length > 0 ? errorMessages.slice(0, 3).join(" · ") : null,
         next_step:
-          queued.length > 0
-            ? `Processed ${ok} inline; ${queued.length} more queued. The background worker normalises queued files within ~1 minute — open /account/packages on superagentskill.com to watch them appear.`
-            : ok > 0
-              ? "Open /account/packages on superagentskill.com to submit a draft for admin review."
-              : "All files failed to normalise. See `error_summary` for the cause and retry.",
-        results,
-        queued,
+          queuedCount > 0
+            ? `${queuedCount} file(s) accepted and queued. The background worker normalises them within ~1 minute — open https://superagentskill.com/account/packages to watch them appear.`
+            : done > 0
+              ? "Open https://superagentskill.com/account/packages to submit a draft for admin review."
+              : "No file was accepted. See `error_summary` for the cause and retry.",
       };
-      if (failed > 0) {
-        response.error_summary = errorMessages.slice(0, 3).join(" · ");
-      }
-      if (idempotency_key && ok > 0) {
-        // Only cache successful runs so a transient model failure doesn't
-        // poison the idempotency key for 24h.
+      if (idempotency_key && response.accepted > 0) {
+        // Only cache runs that accepted at least one file so a transient
+        // failure doesn't poison the idempotency key for 24h.
         await putIdempotent(userId, "upload_packages", idempotency_key, response);
       }
       return json(response);
     } catch (e: any) {
       const msg = e?.message ?? "upload_failed";
       console.error(`[mcp.upload_packages] user=${userId} unexpected:`, e);
-      return json({ error: msg });
+      // Keep the failure inside the same shape so hosts that validate the
+      // tool output don't report "response did not match schema".
+      return json({
+        accepted: 0,
+        uploaded: 0,
+        queued_count: 0,
+        failed: files.length,
+        visibility: "private_draft" as const,
+        results: files.map((f) => ({
+          name: f.name,
+          status: "failed" as const,
+          ok: false,
+          type: f.type ?? null,
+          slug: null,
+          package_id: null,
+          job_id: null,
+          forge_report_url: null,
+          error: msg,
+        })),
+        queued: [],
+        error_summary: msg,
+        next_step: "Upload failed before anything was persisted. Retry with the same idempotency_key.",
+      });
     }
   },
 });
@@ -605,18 +644,30 @@ function inputWarning(text: string): "short_input" | "summary_markers" | "outlin
   // example — NOT a signal that the document was truncated. Scanning the raw
   // text was producing false-positive `summary_markers` warnings that killed
   // the semantic pass on otherwise valid skills.
+  // Also strip YAML frontmatter: `description: "algo — condensado"` is normal
+  // metadata prose, not evidence that the body was cut. Em dashes and inline
+  // ellipses are never markers on their own.
   const prose = t
+    .replace(/^---\n[\s\S]*?\n---/, " ")
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/`[^`\n]*`/g, " ");
-  if (/(\[truncated\]|\[\.\.\.\]|truncated for brevity|condensed|abbreviated|resumido|truncado|condensado|abrégé|tronqué|gekürzt|abgekürzt|troncato|abbreviato)/i.test(prose)) {
+  // Only bracketed / explicit elision phrases count. Bare words like
+  // "condensed", "resumido" or "abbreviated" appear constantly in legitimate
+  // prose ("a condensed deal memo"), so they no longer trip the warning.
+  if (
+    /(\[truncated\]|\[\.\.\.\]|\[…\]|\[snip\]|\[omitted\]|\[resumido\]|\[truncado\]|truncated for brevity|omitted for brevity|rest omitted|remainder omitted|resto omitido|omitido por brevidade|abgeschnitten für kürze|tronqué par souci de brièveté)/i.test(
+      prose,
+    )
+  ) {
     return "summary_markers";
   }
   // A bare `...` only counts as a truncation marker when it stands alone on
   // its own line (or line-end) — that's the classic "…rest omitted…" pattern.
   // Prose ellipses in the middle of a sentence don't qualify.
-  if (/(^|\n)\s*\.{3,}\s*($|\n)/.test(prose)) {
+  if (/(^|\n)\s*(\.{3,}|…)\s*($|\n)/.test(prose)) {
     return "summary_markers";
   }
+
   const lines = t.split("\n");
   const headings = lines.filter((l) => /^#{1,6}\s/.test(l)).length;
   // Content lines include bullets and numbered list items — skills are
@@ -886,43 +937,48 @@ function detectLanguage(text: string): { lang: Lang; confidence: number } {
     de: wordMatch(/\b(der|die|das|und|nicht|sie|sind|auch|dann|weil|nutzer|beispiel|auslöser|werte|kriterium|ausgabe|eingabe|für|mit|ist|dies|wenn|muss)\b/g) + 2 * diaMatch(/[äöüß]/g),
     it: wordMatch(/\b(il|la|le|non|lei|sei|sono|anche|allora|perché|utente|esempio|trigger|valori|criterio|uscita|ingresso|per|con|questo|quando|deve)\b/g) + 2 * diaMatch(/[àèéìíîòóù]/g),
   };
-  // Diacritic hits per language, kept separate from the blended counts.
-  // Technical docs in PT/ES/FR/DE/IT are saturated with English jargon
-  // ("input", "output", "trigger", code identifiers), which used to push EN
-  // into a near-tie and drop the doc into "other" (confidence 0.4) — the
-  // exact failure a client reported for an 841-line Portuguese skill.
-  // Diacritics cannot be faked by jargon, so they are the tie-breaker.
-  const dia: Record<Exclude<Lang, "other" | "en">, number> = {
-    pt: diaMatch(/[ãõçáéíóúâêô]/g),
-    es: diaMatch(/[ñáéíóúü¿¡]/g),
-    fr: diaMatch(/[àâçéèêëîïôûùüÿœ]/g),
-    de: diaMatch(/[äöüß]/g),
-    it: diaMatch(/[àèéìíîòóù]/g),
-  };
+  // Language-exclusive orthography. These characters essentially never appear
+  // in the other candidates, so their presence is a hard tiebreaker: a PT doc
+  // full of English jargon still gets classified PT instead of falling into
+  // "other" (which used to skip the semantic pass and zero native pillars).
+  const EXCLUSIVE: Array<[Exclude<Lang, "other">, RegExp]> = [
+    ["pt", /(ção|ções|ãos?|õe|nh[aeiou]|ç[aou])/g],
+    ["es", /(ñ|¿|¡|ción\b)/g],
+    ["fr", /(œ|ç|qu'|d'un|l'utilisateur|ê)/g],
+    ["de", /(ß|ä|ö|ü)/g],
+    ["it", /(gli\b|zione\b|perché)/g],
+  ];
+  const exclusive = EXCLUSIVE.map(([l, re]) => [l, (sample.match(re) ?? []).length] as const)
+    .filter(([, n]) => n >= 3)
+    .sort((a, b) => b[1] - a[1]);
+
   const entries = Object.entries(counts) as Array<[Exclude<Lang, "other">, number]>;
   entries.sort((a, b) => b[1] - a[1]);
   const [topLang, topHits] = entries[0];
   const [secondLang, secondHits] = entries[1];
-  const bestDia = (Object.entries(dia) as Array<[Exclude<Lang, "other" | "en">, number]>).sort(
-    (a, b) => b[1] - a[1],
-  )[0];
-  if (topHits < 6) {
-    // Too few function-word hits to call it — unless diacritics alone are
-    // decisive (short but clearly accented docs).
-    if (bestDia && bestDia[1] >= 8) return { lang: bestDia[0], confidence: 0.6 };
-    return { lang: "other", confidence: 0.3 };
-  }
-  if (topHits < secondHits * 1.15) {
-    // Near-tie. If one side has real diacritic evidence, it wins — an EN doc
-    // has essentially zero diacritics, so a tie between EN and an accented
-    // language is not ambiguity, it's jargon noise.
-    const contender = topLang === "en" ? secondLang : topLang;
-    if (contender !== "en" && (dia[contender as keyof typeof dia] ?? 0) >= 4) {
-      return { lang: contender, confidence: Math.min(1, counts[contender] / 30) };
+
+  // Confidence divisor lowered from 40 → 22: 22 function-word hits in an 8k
+  // sample is already a decisive signal, and the old divisor kept legitimate
+  // PT/ES docs permanently under the 0.5 "low confidence" caveat.
+  const conf = (hits: number) => Math.min(1, Math.max(0.55, hits / 22));
+
+  if (exclusive.length) {
+    const [excLang, excHits] = exclusive[0];
+    // Orthography wins unless the function-word count for the same language is
+    // literally zero (i.e. a stray accent in an otherwise English doc).
+    if (counts[excLang] >= 2 || excHits >= 8) {
+      return { lang: excLang, confidence: conf(Math.max(counts[excLang], excHits)) };
     }
-    return { lang: "other", confidence: 0.4 };
   }
-  return { lang: topLang, confidence: Math.min(1, topHits / 40) };
+  if (topHits < 4) return { lang: "other", confidence: 0.3 };
+  // Near-tie: prefer the non-English candidate rather than bailing to "other".
+  // "other" is the worst outcome for the writer (no localized feedback, weaker
+  // semantic hint), so we only use it when nothing at all resembles a language.
+  if (topHits < secondHits * 1.15) {
+    const pick = topLang === "en" ? secondLang : topLang;
+    return { lang: pick, confidence: 0.55 };
+  }
+  return { lang: topLang, confidence: conf(topHits) };
 }
 
 
@@ -1329,12 +1385,26 @@ function extrasFor(lang: Lang): Extras {
 // the pure keyword score if the gateway is unavailable, the call errors, or
 // the response shape is malformed — the engine never degrades on outage.
 // ----------------------------------------------------------------------------
+type SubstanceExcerpt = { line: number | null; quote: string; verified: boolean };
+
 type SemanticPillarVerdict = {
   pillar: PillarId;
   covered: boolean;
   confidence: number;
   evidence_line: number | null;
   evidence_quote: string | null;
+  /** LLM-judged substance, 0-100, independent from the deterministic format signals. */
+  substance_score: number;
+  /** Plain-text justification, written in the document's language. */
+  rationale: string;
+  /** Passages from the file that sustain the judgement. */
+  excerpts: SubstanceExcerpt[];
+};
+
+type SubstancePass = {
+  verdicts: Map<PillarId, SemanticPillarVerdict>;
+  /** Document-level justification, written in the document's language. */
+  summary: string;
 };
 
 const SEMANTIC_MODEL = "google/gemini-3-flash-preview";
@@ -1349,10 +1419,22 @@ const PILLAR_BRIEF: Record<PillarId, string> = {
   portability: "Portability — multi-runtime declaration (Claude/GPT/Gemini), vendor-neutral tool contracts, portable Markdown.",
 };
 
+// Rationales must be written in the reader's language, so the judge prompt
+// names it explicitly instead of relying on the two-letter hint.
+const LANG_NAME: Record<Lang, string> = {
+  en: "English",
+  pt: "Brazilian Portuguese",
+  es: "Spanish",
+  fr: "French",
+  de: "German",
+  it: "Italian",
+  other: "the same language as the document",
+};
+
 async function semanticCheck(
   content: string,
   langHint: Lang,
-): Promise<Map<PillarId, SemanticPillarVerdict> | null> {
+): Promise<SubstancePass | null> {
   if (!process.env.LOVABLE_API_KEY) return null;
   // Numbered lines so the model can return a usable evidence_line.
   const lines = content.split("\n");
@@ -1365,7 +1447,8 @@ async function semanticCheck(
   const pillarList = (Object.keys(PILLAR_BRIEF) as PillarId[])
     .map((id) => `- ${id}: ${PILLAR_BRIEF[id]}`)
     .join("\n");
-  const sys = `You are a semantic-coverage probe for a skill/playbook/soul/guardrail evaluator. For each pillar, judge whether the document substantively covers that dimension — IGNORE missing keywords, headings, or formatting. Reward content even when the vocabulary is unconventional or in a non-English language. Quote at most 140 chars verbatim from the document; the line number must match the leading number on that line.`;
+  const langName = LANG_NAME[langHint] ?? "the document's language";
+  const sys = `You are the SUBSTANCE judge of a skill/playbook/soul/guardrail evaluator. You score CONTENT QUALITY only — never format. IGNORE headings, section names, markdown structure, keyword presence and document length; another deterministic engine already scores format. Judge whether the document actually tells an agent something operationally useful and specific for each pillar. Reward unconventional vocabulary and non-English writing equally. Every judgement must be grounded: cite verbatim passages copied character-for-character from the document (max 140 chars each), and the line number must be the leading number printed on that line. Write every rationale in ${langName}, in 1-2 concrete sentences that name what the document does or fails to do — never generic filler.`;
   const user = `DOCUMENT LANGUAGE (hint): ${langHint}
 
 PILLARS:
@@ -1374,29 +1457,88 @@ ${pillarList}
 DOCUMENT (line-numbered, may be truncated):
 ${numbered}
 
-Return one verdict per pillar. covered=true only if a reader would say the pillar is substantively addressed. confidence in [0,1]. If covered=false, set evidence_line=null and evidence_quote=null.`;
+Return RAW JSON ONLY — no prose, no markdown fences — with exactly this shape:
+{"summary":"...","verdicts":[{"pillar":"identity","covered":true,"confidence":0.8,"substance_score":72,"rationale":"...","excerpts":[{"line":12,"quote":"..."}],"evidence_line":12,"evidence_quote":"..."}]}
 
-  const schema = z.object({
-    verdicts: z
-      .array(
-        z.object({
-          pillar: z.enum(["identity", "scope", "procedure", "examples", "guardrails", "trust", "portability"]),
-          covered: z.boolean(),
-          confidence: z.number().min(0).max(1),
-          evidence_line: z.number().int().min(1).nullable(),
-          evidence_quote: z.string().max(200).nullable(),
-        }),
-      )
-      .length(7),
-  });
+One verdict object per pillar (all 7), plus the document-level summary.
+- covered=true only if a reader would say the pillar is substantively addressed.
+- confidence in [0,1].
+- substance_score in [0,100]: 0-20 absent, 21-45 vague/generic mention, 46-70 useful but incomplete, 71-85 specific and actionable, 86-100 exemplary with concrete detail an agent can execute verbatim.
+- excerpts: up to 2 passages that sustain your score. Use passages that show the GAP when the score is low. Empty array only when the document truly says nothing about the pillar.
+- If covered=false, set evidence_line=null and evidence_quote=null.
+- rationale and summary must be written in ${langName}.
+- summary: 2-3 sentences on the document's substantive strengths and biggest content gap.`;
 
-  // The semantic pass is the highest-value feature for niche-jargon skills
-  // and for non-English content, so a single transient gateway blip should
-  // not silently drop it. Three attempts: primary model twice (short backoff),
+  // No `Output.object` schema here: the gateway serves these Gemini ids in
+  // json_object mode (no strict structuredOutputs), so a schema is validated
+  // post-hoc and one stray field type throws away the entire judgement with
+  // "response did not match schema". We ask for JSON in the prompt and parse
+  // tolerantly — a partially valid verdict list beats losing the whole axis.
+  type RawVerdict = {
+    pillar: PillarId;
+    covered: boolean;
+    confidence: number;
+    substance_score: number;
+    rationale: string;
+    excerpts: Array<{ line: number | null; quote: string }>;
+    evidence_line: number | null;
+    evidence_quote: string | null;
+  };
+  type Parsed = { summary: string; verdicts: RawVerdict[] };
+
+  const PILLARS = new Set(Object.keys(PILLAR_BRIEF));
+  const num = (v: unknown, fallback: number): number => {
+    const n = typeof v === "number" ? v : typeof v === "string" ? Number.parseFloat(v) : NaN;
+    return Number.isFinite(n) ? n : fallback;
+  };
+  const optLine = (v: unknown): number | null => {
+    const n = typeof v === "number" ? v : typeof v === "string" ? Number.parseInt(v, 10) : NaN;
+    return Number.isFinite(n) && n >= 1 ? Math.round(n) : null;
+  };
+  const str = (v: unknown): string => (typeof v === "string" ? v : "");
+
+  function parseJudgement(raw: string): Parsed | null {
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    if (start < 0 || end <= start) return null;
+    let obj: any;
+    try {
+      obj = JSON.parse(raw.slice(start, end + 1));
+    } catch {
+      return null;
+    }
+    const list = Array.isArray(obj?.verdicts) ? obj.verdicts : [];
+    const verdicts: RawVerdict[] = [];
+    for (const v of list) {
+      const pillar = str(v?.pillar).trim();
+      if (!PILLARS.has(pillar)) continue;
+      const score = num(v?.substance_score, NaN);
+      if (!Number.isFinite(score)) continue;
+      const excerpts = (Array.isArray(v?.excerpts) ? v.excerpts : [])
+        .map((e: any) => ({ line: optLine(e?.line), quote: str(e?.quote) }))
+        .filter((e: { quote: string }) => e.quote.trim().length > 0);
+      verdicts.push({
+        pillar: pillar as PillarId,
+        covered: v?.covered === true || (v?.covered !== false && score >= 46),
+        confidence: num(v?.confidence, Math.min(1, score / 100)),
+        substance_score: score,
+        rationale: str(v?.rationale),
+        excerpts,
+        evidence_line: optLine(v?.evidence_line),
+        evidence_quote: str(v?.evidence_quote) || null,
+      });
+    }
+    if (verdicts.length === 0) return null;
+    return { summary: str(obj?.summary), verdicts };
+  }
+
+  // The judge is the highest-value feature for niche-jargon skills and for
+  // non-English content, so a single transient gateway blip should not
+  // silently drop it. Three attempts: primary model twice (short backoff),
   // then one final try on the flash fallback. Each attempt has its own
   // timeout so a slow upstream doesn't burn the whole budget.
   const SEMANTIC_FALLBACK_MODEL = "google/gemini-2.5-flash";
-  let output: { verdicts: z.infer<typeof schema>["verdicts"] } | null = null;
+  let output: Parsed | null = null;
   const attempts: Array<{ model: string; ms: number; error: string }> = [];
   for (let attempt = 0; attempt < 3; attempt++) {
     const modelId = attempt < 2 ? SEMANTIC_MODEL : SEMANTIC_FALLBACK_MODEL;
@@ -1406,47 +1548,68 @@ Return one verdict per pillar. covered=true only if a reader would say the pilla
         model: getGatewayModel(modelId),
         system: sys,
         prompt: user,
-        output: Output.object({ schema }),
-        abortSignal: AbortSignal.timeout(15_000),
+        abortSignal: AbortSignal.timeout(25_000),
       });
-      output = res.output;
-      break;
+      const parsed = parseJudgement(res.text ?? "");
+      if (parsed) {
+        output = parsed;
+        break;
+      }
+      attempts.push({ model: modelId, ms: Date.now() - t0, error: "unparseable_json" });
     } catch (e: any) {
       attempts.push({ model: modelId, ms: Date.now() - t0, error: e?.message ?? String(e) });
-      if (attempt < 2) await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
     }
+    if (attempt < 2) await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
   }
   if (!output) {
     console.warn(`[review.semantic] all ${attempts.length} attempts failed:`, attempts);
     return null;
   }
 
+  // Anchor a model-supplied quote to a real line in the file. Returns the
+  // resolved 1-based line (or null) and whether the quote exists verbatim —
+  // an unverified quote is still shown, but flagged, so the operator never
+  // takes a hallucinated passage as proof.
+  const anchor = (rawLine: number | null, rawQuote: string): SubstanceExcerpt | null => {
+    const quote = rawQuote.trim().slice(0, 140);
+    if (!quote) return null;
+    const needle = quote.slice(0, 40);
+    let line = rawLine !== null && Number.isFinite(rawLine) ? Math.round(rawLine) : null;
+    if (line !== null) {
+      const idx = line - 1;
+      if (idx >= 0 && idx < lines.length && lines[idx].includes(quote.slice(0, 24))) {
+        return { line, quote, verified: true };
+      }
+    }
+    const found = lines.findIndex((l) => l.includes(needle));
+    if (found >= 0) return { line: found + 1, quote, verified: true };
+    return { line: null, quote, verified: false };
+  };
+
   try {
     const map = new Map<PillarId, SemanticPillarVerdict>();
     for (const v of output.verdicts) {
-      // Validate the line/quote pair against the actual file. If the model
-      // hallucinated a line number, drop the anchor (keep the coverage bit).
-      let line = v.evidence_line;
-      let quote = v.evidence_quote;
-      if (line !== null && quote) {
-        const idx = line - 1;
-        if (idx < 0 || idx >= lines.length || !lines[idx].includes(quote.slice(0, 24))) {
-          // Try a fuzzy lookup for the quote elsewhere in the file.
-          const needle = quote.slice(0, 40).trim();
-          const found = needle ? lines.findIndex((l) => l.includes(needle)) : -1;
-          if (found >= 0) line = found + 1;
-          else { line = null; quote = null; }
-        }
+      const primary = v.evidence_quote ? anchor(v.evidence_line, v.evidence_quote) : null;
+      const excerpts: SubstanceExcerpt[] = [];
+      for (const e of (v.excerpts ?? []).slice(0, 2)) {
+        const a = anchor(e.line, e.quote ?? "");
+        if (a && !excerpts.some((x) => x.quote === a.quote)) excerpts.push(a);
       }
+      if (primary && !excerpts.some((x) => x.quote === primary.quote)) excerpts.unshift(primary);
       map.set(v.pillar as PillarId, {
         pillar: v.pillar as PillarId,
         covered: v.covered,
-        confidence: v.confidence,
-        evidence_line: line,
-        evidence_quote: quote,
+        confidence: Math.max(0, Math.min(1, v.confidence)),
+        // Only verified anchors feed the legacy evidence fields — those drive
+        // top_actions, which must never quote a line that isn't in the file.
+        evidence_line: primary?.verified ? primary.line : null,
+        evidence_quote: primary?.verified ? primary.quote : null,
+        substance_score: Math.max(0, Math.min(100, Math.round(v.substance_score))),
+        rationale: (v.rationale ?? "").trim().slice(0, 400),
+        excerpts: excerpts.slice(0, 2),
       });
     }
-    return map;
+    return { verdicts: map, summary: (output.summary ?? "").trim().slice(0, 700) };
   } catch {
     return null;
   }
@@ -1464,7 +1627,7 @@ export const getMethodologyTool = defineTool({
       name: "Super Agent Skill evaluation",
       proprietary: true,
       note:
-        "Scoring is performed server-side. Engine v5 combines deterministic multilingual detectors with a fast LLM-backed semantic pass that catches pillars covered with non-conventional vocabulary and improves evidence anchors. The verdict is split into structural_score (format) and content_quality_score (substance) and an expected_ceiling per doc_class tells the operator the realistic top before chasing diminishing returns. Feedback localised to EN, PT-BR, ES, FR, DE, IT.",
+        "Scoring is performed server-side. Engine v5 runs two INDEPENDENT axes and never averages them: (1) `format_score` — deterministic multilingual structure detectors; (2) `substance_score` — an LLM judge that is explicitly told to ignore headings, keywords and length and to score only whether the content is operationally useful, returning a written rationale per pillar plus the verbatim file excerpts that sustain it (each flagged `verified` against the real file). An expected_ceiling per doc_class tells the operator the realistic top before chasing diminishing returns. Feedback localised to EN, PT-BR, ES, FR, DE, IT.",
       dimensions: (Object.keys(PILLAR_TITLE) as PillarId[]).map((id) => ({
         id,
         title: PILLAR_TITLE[id],
@@ -1553,9 +1716,10 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
   // `outline_only` hint is soft and is exactly where the pass adds most value.
   const blocksSemantic = warnKind === "short_input" || warnKind === "summary_markers";
   const semanticEligible = semantic_check && !blocksSemantic && content.length >= 400;
-  const semantic = semanticEligible ? await semanticCheck(content, language.lang) : null;
+  const substancePass = semanticEligible ? await semanticCheck(content, language.lang) : null;
+  const semantic = substancePass?.verdicts ?? null;
   // Eligible but null ⇒ the gateway errored after retries — a degraded run.
-  const semanticFailed = semanticEligible && semantic === null;
+  const semanticFailed = semanticEligible && substancePass === null;
 
   // Apply semantic uplift to pillar scores (never lowers a score).
   const semanticUplifts: Record<string, { from: number; to: number; confidence: number }> = {};
@@ -1613,6 +1777,49 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
   }
   const structuralScore = sTotal > 0 ? Math.round((sEarned / sTotal) * 100) : null;
   const contentQualityScore = cTotal > 0 ? Math.round((cEarned / cTotal) * 100) : null;
+
+  // ---- Substance axis (LLM-judged) -----------------------------------------
+  // Deliberately independent from the deterministic axes: the judge never sees
+  // the keyword hits and is instructed to ignore format entirely, so a
+  // beautifully structured but hollow file and a plain-prose but deeply
+  // operational file separate here instead of averaging out. `format_score` is
+  // the deterministic structural axis under its operator-facing name.
+  const formatScore = structuralScore;
+  let substanceScore: number | null = null;
+  const substancePillars = substancePass
+    ? details.map((r) => {
+        const v = substancePass.verdicts.get(r.id);
+        return {
+          pillar: r.id,
+          title: bundle.pillar_title[r.id],
+          score: v?.substance_score ?? null,
+          status: v ? statusBand(v.substance_score) : null,
+          covered: v?.covered ?? null,
+          confidence: v ? Math.round(v.confidence * 100) / 100 : null,
+          rationale: v?.rationale ?? null,
+          // The passages the judgement is anchored to. `verified: false` means
+          // the quote could not be found verbatim in the file — show it, but
+          // never treat it as proof.
+          evidence: (v?.excerpts ?? []).map((e) => ({
+            line: e.line,
+            quote: e.quote,
+            verified: e.verified,
+          })),
+        };
+      })
+    : [];
+  if (substancePass) {
+    let subW = 0;
+    let subT = 0;
+    for (const r of details) {
+      const v = substancePass.verdicts.get(r.id);
+      if (!v) continue;
+      const w = weights[r.id] ?? 1;
+      subW += v.substance_score * w;
+      subT += w;
+    }
+    if (subT > 0) substanceScore = Math.round(subW / subT);
+  }
 
   const verdictScore =
     docClass === "governance" && contentQualityScore !== null ? contentQualityScore : overall;
@@ -1686,7 +1893,43 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
     },
     overall_score: overall,
     structural_score: structuralScore,
+    format_score: formatScore,
     content_quality_score: contentQualityScore,
+    substance_score: substanceScore,
+    // Two independent axes, never averaged: `format` is deterministic
+    // structure, `substance` is LLM-judged content with a written rationale
+    // and file-anchored excerpts per pillar.
+    substance: substancePass
+      ? {
+          judged: true,
+          score: substanceScore,
+          grade: substanceScore !== null ? gradeBand(substanceScore) : null,
+          judged_by: SEMANTIC_MODEL,
+          axis: "content_only_format_ignored",
+          rationale: substancePass.summary || null,
+          pillars: substancePillars,
+          evidence_unverified: substancePillars.reduce(
+            (n, p) => n + p.evidence.filter((e) => !e.verified).length,
+            0,
+          ),
+        }
+      : {
+          judged: false,
+          score: null,
+          grade: null,
+          judged_by: null,
+          axis: "content_only_format_ignored",
+          rationale: null,
+          pillars: [],
+          evidence_unverified: 0,
+          skipped_reason: !semantic_check
+            ? "disabled_by_caller"
+            : blocksSemantic
+              ? "input_warning"
+              : content.length < 400
+                ? "content_too_short"
+                : "gateway_unavailable_or_errored",
+        },
     verdict_score: verdictScore,
     grade: gradeBand(verdictScore),
     axis_note: extras.axis_caveat,
@@ -1746,7 +1989,7 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
 export const reviewSkillTool = defineTool({
   name: "review_skill",
   description:
-    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. Returns `overall_score` plus a split `structural_score` vs `content_quality_score` so format mismatch doesn't dominate the verdict; `expected_ceiling` per `doc_class` so the operator knows the realistic top before chasing diminishing returns; per-pillar scores (`signals_hit`/`signals_total`) and `top_actions` anchored to file evidence with an `evidence_anchored` honesty flag. A fast LLM-backed semantic pass runs alongside the deterministic detectors to fix false-zero pillars (content covered with unconventional vocabulary) and to relocate evidence anchors when the keyword match is misleading; set `semantic_check: false` to skip. Optional `doc_class` (skill | governance | playbook-ops | guardrail-ops | auto) and optional `previous_hash` + `previous_overall_score` produce a `delta` between runs. An `input_warning` is emitted BEFORE the score if the content looks truncated/summarised. Multilingual signal detection AND feedback (EN, PT-BR, ES, FR, DE, IT) — pass `language` to override auto-detection when the content mixes a base language with heavy English jargon. Read-only, no auth.",
+    "[UPGRADE] Score a local skill / playbook / soul / guardrail with the proprietary SuperAgentSkill engine. TWO INDEPENDENT AXES: `format_score` (deterministic structure detectors, alias of `structural_score`) and `substance_score` (LLM-judged content quality, format explicitly ignored). The `substance` object carries `rationale` (document-level justification, written in the document's language), and `pillars[]` with a per-pillar `score`, `rationale` and `evidence[]` — verbatim excerpts with `line` + `verified` flags showing exactly which passages sustain the judgement. A high format_score next to a low substance_score means the file looks right and says little. Also returns `overall_score`, `verdict_score`, `expected_ceiling` per `doc_class`, per-pillar `signals_hit`/`signals_total`, and `top_actions` anchored to file evidence with an `evidence_anchored` honesty flag. Set `semantic_check: false` to skip the LLM judge (then `substance.judged` is false with a `skipped_reason`). Optional `doc_class` (skill | governance | playbook-ops | guardrail-ops | auto) and optional `previous_hash` + `previous_overall_score` produce a `delta` between runs. An `input_warning` is emitted BEFORE the score if the content looks truncated/summarised. Multilingual signal detection AND feedback (EN, PT-BR, ES, FR, DE, IT) — pass `language` to override auto-detection when the content mixes a base language with heavy English jargon. Read-only, no auth.",
   parameters: z.object({
     name: z.string().min(1).max(200).describe("File or skill name (for the report header only)"),
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).default("skill"),
@@ -1836,6 +2079,7 @@ export const reviewSkillTool = defineTool({
               MESSAGES.en.next_diagnostic,
               "Pass `previous_hash` + `previous_overall_score` from this response into the next call to get a `delta_vs_previous`.",
               "Honour `doc_class.expected_ceiling` — actions beyond that point are cosmetic, not quality wins.",
+              "Read `substance.rationale` and `substance.pillars[].rationale` + `.evidence[]` — that is the LLM-judged content verdict, independent from `format_score`. A high format_score with a low substance_score means the file looks right and says little; fix substance first.",
               fbReq ? `When done iterating, call \`submit_feedback\` with request_id="${fbReq.id}" and a 1-5 rating.` : "",
             ].filter(Boolean),
     });
