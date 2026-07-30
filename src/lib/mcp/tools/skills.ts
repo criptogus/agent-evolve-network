@@ -1423,7 +1423,7 @@ const PILLAR_BRIEF: Record<PillarId, string> = {
 async function semanticCheck(
   content: string,
   langHint: Lang,
-): Promise<Map<PillarId, SemanticPillarVerdict> | null> {
+): Promise<SubstancePass | null> {
   if (!process.env.LOVABLE_API_KEY) return null;
   // Numbered lines so the model can return a usable evidence_line.
   const lines = content.split("\n");
@@ -1436,7 +1436,8 @@ async function semanticCheck(
   const pillarList = (Object.keys(PILLAR_BRIEF) as PillarId[])
     .map((id) => `- ${id}: ${PILLAR_BRIEF[id]}`)
     .join("\n");
-  const sys = `You are a semantic-coverage probe for a skill/playbook/soul/guardrail evaluator. For each pillar, judge whether the document substantively covers that dimension — IGNORE missing keywords, headings, or formatting. Reward content even when the vocabulary is unconventional or in a non-English language. Quote at most 140 chars verbatim from the document; the line number must match the leading number on that line.`;
+  const langName = LANG_NAME[langHint] ?? "the document's language";
+  const sys = `You are the SUBSTANCE judge of a skill/playbook/soul/guardrail evaluator. You score CONTENT QUALITY only — never format. IGNORE headings, section names, markdown structure, keyword presence and document length; another deterministic engine already scores format. Judge whether the document actually tells an agent something operationally useful and specific for each pillar. Reward unconventional vocabulary and non-English writing equally. Every judgement must be grounded: cite verbatim passages copied character-for-character from the document (max 140 chars each), and the line number must be the leading number printed on that line. Write every rationale in ${langName}, in 1-2 concrete sentences that name what the document does or fails to do — never generic filler.`;
   const user = `DOCUMENT LANGUAGE (hint): ${langHint}
 
 PILLARS:
@@ -1445,17 +1446,27 @@ ${pillarList}
 DOCUMENT (line-numbered, may be truncated):
 ${numbered}
 
-Return one verdict per pillar. covered=true only if a reader would say the pillar is substantively addressed. confidence in [0,1]. If covered=false, set evidence_line=null and evidence_quote=null.`;
+Return one verdict per pillar, plus a document-level summary.
+- covered=true only if a reader would say the pillar is substantively addressed.
+- confidence in [0,1].
+- substance_score in [0,100]: 0-20 absent, 21-45 vague/generic mention, 46-70 useful but incomplete, 71-85 specific and actionable, 86-100 exemplary with concrete detail an agent can execute verbatim.
+- excerpts: up to 2 passages that sustain your score. Use passages that show the GAP when the score is low. Empty array only when the document truly says nothing about the pillar.
+- If covered=false, set evidence_line=null and evidence_quote=null.
+- summary: 2-3 sentences on the document's substantive strengths and biggest content gap.`;
 
   const schema = z.object({
+    summary: z.string(),
     verdicts: z
       .array(
         z.object({
           pillar: z.enum(["identity", "scope", "procedure", "examples", "guardrails", "trust", "portability"]),
           covered: z.boolean(),
-          confidence: z.number().min(0).max(1),
-          evidence_line: z.number().int().min(1).nullable(),
-          evidence_quote: z.string().max(200).nullable(),
+          confidence: z.number(),
+          substance_score: z.number(),
+          rationale: z.string(),
+          excerpts: z.array(z.object({ line: z.number().nullable(), quote: z.string() })),
+          evidence_line: z.number().nullable(),
+          evidence_quote: z.string().nullable(),
         }),
       )
       .length(7),
@@ -1467,7 +1478,7 @@ Return one verdict per pillar. covered=true only if a reader would say the pilla
   // then one final try on the flash fallback. Each attempt has its own
   // timeout so a slow upstream doesn't burn the whole budget.
   const SEMANTIC_FALLBACK_MODEL = "google/gemini-2.5-flash";
-  let output: { verdicts: z.infer<typeof schema>["verdicts"] } | null = null;
+  let output: z.infer<typeof schema> | null = null;
   const attempts: Array<{ model: string; ms: number; error: string }> = [];
   for (let attempt = 0; attempt < 3; attempt++) {
     const modelId = attempt < 2 ? SEMANTIC_MODEL : SEMANTIC_FALLBACK_MODEL;
@@ -1478,7 +1489,7 @@ Return one verdict per pillar. covered=true only if a reader would say the pilla
         system: sys,
         prompt: user,
         output: Output.object({ schema }),
-        abortSignal: AbortSignal.timeout(15_000),
+        abortSignal: AbortSignal.timeout(20_000),
       });
       output = res.output;
       break;
@@ -1492,32 +1503,50 @@ Return one verdict per pillar. covered=true only if a reader would say the pilla
     return null;
   }
 
+  // Anchor a model-supplied quote to a real line in the file. Returns the
+  // resolved 1-based line (or null) and whether the quote exists verbatim —
+  // an unverified quote is still shown, but flagged, so the operator never
+  // takes a hallucinated passage as proof.
+  const anchor = (rawLine: number | null, rawQuote: string): SubstanceExcerpt | null => {
+    const quote = rawQuote.trim().slice(0, 140);
+    if (!quote) return null;
+    const needle = quote.slice(0, 40);
+    let line = rawLine !== null && Number.isFinite(rawLine) ? Math.round(rawLine) : null;
+    if (line !== null) {
+      const idx = line - 1;
+      if (idx >= 0 && idx < lines.length && lines[idx].includes(quote.slice(0, 24))) {
+        return { line, quote, verified: true };
+      }
+    }
+    const found = lines.findIndex((l) => l.includes(needle));
+    if (found >= 0) return { line: found + 1, quote, verified: true };
+    return { line: null, quote, verified: false };
+  };
+
   try {
     const map = new Map<PillarId, SemanticPillarVerdict>();
     for (const v of output.verdicts) {
-      // Validate the line/quote pair against the actual file. If the model
-      // hallucinated a line number, drop the anchor (keep the coverage bit).
-      let line = v.evidence_line;
-      let quote = v.evidence_quote;
-      if (line !== null && quote) {
-        const idx = line - 1;
-        if (idx < 0 || idx >= lines.length || !lines[idx].includes(quote.slice(0, 24))) {
-          // Try a fuzzy lookup for the quote elsewhere in the file.
-          const needle = quote.slice(0, 40).trim();
-          const found = needle ? lines.findIndex((l) => l.includes(needle)) : -1;
-          if (found >= 0) line = found + 1;
-          else { line = null; quote = null; }
-        }
+      const primary = v.evidence_quote ? anchor(v.evidence_line, v.evidence_quote) : null;
+      const excerpts: SubstanceExcerpt[] = [];
+      for (const e of (v.excerpts ?? []).slice(0, 2)) {
+        const a = anchor(e.line, e.quote ?? "");
+        if (a && !excerpts.some((x) => x.quote === a.quote)) excerpts.push(a);
       }
+      if (primary && !excerpts.some((x) => x.quote === primary.quote)) excerpts.unshift(primary);
       map.set(v.pillar as PillarId, {
         pillar: v.pillar as PillarId,
         covered: v.covered,
-        confidence: v.confidence,
-        evidence_line: line,
-        evidence_quote: quote,
+        confidence: Math.max(0, Math.min(1, v.confidence)),
+        // Only verified anchors feed the legacy evidence fields — those drive
+        // top_actions, which must never quote a line that isn't in the file.
+        evidence_line: primary?.verified ? primary.line : null,
+        evidence_quote: primary?.verified ? primary.quote : null,
+        substance_score: Math.max(0, Math.min(100, Math.round(v.substance_score))),
+        rationale: (v.rationale ?? "").trim().slice(0, 400),
+        excerpts: excerpts.slice(0, 2),
       });
     }
-    return map;
+    return { verdicts: map, summary: (output.summary ?? "").trim().slice(0, 700) };
   } catch {
     return null;
   }
