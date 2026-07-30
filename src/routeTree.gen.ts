@@ -27,6 +27,7 @@ import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MatchRouteImport } from './routes/match'
+import { Route as NdaRouteImport } from './routes/nda'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -227,6 +228,11 @@ const LoginRoute = LoginRouteImport.update({
 const MatchRoute = MatchRouteImport.update({
   id: '/match',
   path: '/match',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NdaRoute = NdaRouteImport.update({
+  id: '/nda',
+  path: '/nda',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -821,6 +827,7 @@ export interface FileRoutesByFullPath {
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
+  '/nda': typeof NdaRoute
   '/onboarding': typeof OnboardingRoute
   '/play': typeof PlayRoute
   '/pricing': typeof PricingRoute
@@ -951,6 +958,7 @@ export interface FileRoutesByTo {
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
+  '/nda': typeof NdaRoute
   '/onboarding': typeof OnboardingRoute
   '/play': typeof PlayRoute
   '/pricing': typeof PricingRoute
@@ -1083,6 +1091,7 @@ export interface FileRoutesById {
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/match': typeof MatchRoute
+  '/nda': typeof NdaRoute
   '/onboarding': typeof OnboardingRoute
   '/play': typeof PlayRoute
   '/pricing': typeof PricingRoute
@@ -1216,6 +1225,7 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/login'
     | '/match'
+    | '/nda'
     | '/onboarding'
     | '/play'
     | '/pricing'
@@ -1346,6 +1356,7 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/login'
     | '/match'
+    | '/nda'
     | '/onboarding'
     | '/play'
     | '/pricing'
@@ -1477,6 +1488,7 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/login'
     | '/match'
+    | '/nda'
     | '/onboarding'
     | '/play'
     | '/pricing'
@@ -1609,6 +1621,7 @@ export interface RootRouteChildren {
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   LoginRoute: typeof LoginRoute
   MatchRoute: typeof MatchRoute
+  NdaRoute: typeof NdaRoute
   OnboardingRoute: typeof OnboardingRoute
   PlayRoute: typeof PlayRoute
   PricingRoute: typeof PricingRoute
@@ -1822,6 +1835,13 @@ declare module '@tanstack/react-router' {
       path: '/match'
       fullPath: '/match'
       preLoaderRoute: typeof MatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nda': {
+      id: '/nda'
+      path: '/nda'
+      fullPath: '/nda'
+      preLoaderRoute: typeof NdaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -2782,6 +2802,7 @@ const rootRouteChildren: RootRouteChildren = {
   LlmsDottxtRoute: LlmsDottxtRoute,
   LoginRoute: LoginRoute,
   MatchRoute: MatchRoute,
+  NdaRoute: NdaRoute,
   OnboardingRoute: OnboardingRoute,
   PlayRoute: PlayRoute,
   PricingRoute: PricingRoute,
