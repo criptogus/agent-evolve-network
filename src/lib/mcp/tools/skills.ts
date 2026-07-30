@@ -1732,6 +1732,16 @@ export const reviewSkillTool = defineTool({
     const contentHash = core.content_hash as string;
     const topActions = core.top_actions as unknown[];
 
+    // Business-facing projection: what closing the gap to the realistic
+    // ceiling is worth on the metrics we publish on the landing page.
+    const ceiling = (core.doc_class as { expected_ceiling?: number }).expected_ceiling;
+    const impact = projectImpact({
+      score: verdictScore,
+      targetScore: typeof ceiling === "number" ? ceiling : undefined,
+      actionsCount: topActions.length,
+      semanticPass: Boolean((core.semantic_pass as { ran?: boolean } | undefined)?.ran),
+    });
+
     // Delta vs the caller's last run. Hash is non-crypto; client sends back
     // whatever we emitted previously and we compare overall + content hash.
     const delta =
