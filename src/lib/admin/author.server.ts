@@ -1,6 +1,7 @@
 import { generateText, Output } from "ai";
 import { getGatewayModel, describeGatewayConfig } from "@/lib/ai-gateway";
 import { PackageDraftSchema, PackageDraftMinimalSchema, type PackageDraft, type PackageDraftMinimal } from "@/lib/skills/schemas";
+import { PackageDraftLooseSchema, repairMinimalDraft, draftFromDocument } from "@/lib/skills/draft-repair";
 
 const META_SYSTEM = `You are SkillForge Author, a proprietary meta-agent that designs production-grade agent packages.
 Return STRICT JSON matching the requested schema. Keep it minimal but substantive:
