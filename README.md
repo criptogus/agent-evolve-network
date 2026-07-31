@@ -21,8 +21,9 @@ Think of it as a **library of verifiable expertise** for AI: pick a skill, beam 
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/content-CC_BY--SA_4.0-000?style=flat-square)](LICENSES/CONTENT-CC-BY-SA-4.0.txt)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-ff4f8b?style=flat-square)](CONTRIBUTING.md)
 [![Discord](https://img.shields.io/badge/Discord-join-5865F2?style=flat-square)](https://superagentskill.com/community)
+[![X / Twitter](https://img.shields.io/badge/X-@gustavocaetano-000000?style=flat-square)](https://x.com/gustavocaetano)
 
-[**🌐 Website**](https://superagentskill.com) · [**🛒 Marketplace**](https://superagentskill.com/marketplace) · [**📚 Docs**](https://superagentskill.com/docs) · [**🔌 MCP**](https://superagentskill.com/api/mcp) · [**💬 Discord**](https://superagentskill.com/community)
+[**🌐 Website**](https://superagentskill.com) · [**🛒 Marketplace**](https://superagentskill.com/marketplace) · [**📚 Docs**](https://superagentskill.com/docs) · [**🔌 MCP**](https://superagentskill.com/api/mcp) · [**💬 Discord**](https://superagentskill.com/community) · [**🐦 X / Twitter**](https://x.com/gustavocaetano)
 
 </div>
 
