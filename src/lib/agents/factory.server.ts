@@ -31,7 +31,16 @@ export type AgentResearch = {
 };
 
 export type GeneratedDoc = { slug: string; title: string; summary: string; body: string };
-export type GeneratedGuardrail = { slug: string; title: string; rule: string; why: string };
+export type GeneratedGuardrail = {
+  slug: string;
+  title: string;
+  rule: string;
+  why: string;
+  /** A realistic request that this guardrail blocks. */
+  blocked_example?: string;
+  /** What the agent does instead when it hits this rule. */
+  instead?: string;
+};
 
 export type AgentIdentity = { name: string; role: string; emoji: string; tagline: string };
 
