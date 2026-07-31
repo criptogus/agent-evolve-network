@@ -92,12 +92,31 @@ function hydrateDraftFromMinimal(
   return parsed.data;
 }
 
+export type DraftGenerationPath = "structured" | "text" | "deterministic";
+
 export async function generateDraft(
   brief: string,
   type: "skill" | "playbook" | "soul" | "guardrail",
   vertical?: string,
-  grounding?: string
+  grounding?: string,
+  source?: { filename?: string; content?: string },
 ): Promise<PackageDraft> {
+  return (await generateDraftWithMeta(brief, type, vertical, grounding, source)).draft;
+}
+
+/**
+ * Same pipeline as generateDraft but reports WHICH path produced the draft.
+ * `deterministic` means every model failed and the draft was built from the
+ * uploaded document itself — the upload still succeeds instead of returning
+ * "No object generated" to the caller.
+ */
+export async function generateDraftWithMeta(
+  brief: string,
+  type: "skill" | "playbook" | "soul" | "guardrail",
+  vertical?: string,
+  grounding?: string,
+  source?: { filename?: string; content?: string },
+): Promise<{ draft: PackageDraft; generation_path: DraftGenerationPath; attempts: string[] }> {
   const prompt = `Brief:\n${brief}\n\nType: ${type}${vertical ? `\nVertical: ${vertical}` : ""}${
     grounding ? `\n\nGrounding research (use as ground truth):\n${grounding.slice(0, 8000)}` : ""
   }\n\nDesign a production-ready ${type} package. Return ONLY the JSON — minimal, tight, complete.`;
@@ -105,6 +124,7 @@ export async function generateDraft(
   const startedAt = Date.now();
   const remaining = () => TOTAL_BUDGET_MS - (Date.now() - startedAt);
   const attemptBudget = () => Math.min(PER_ATTEMPT_TIMEOUT_MS, remaining());
+  const repairCtx = { type, filename: source?.filename, content: source?.content };
 
   const attempts: Array<{ model: string; error: string }> = [];
   const cfg = describeGatewayConfig();
@@ -136,17 +156,22 @@ export async function generateDraft(
         model,
         system: META_SYSTEM,
         prompt,
-        experimental_output: Output.object({ schema: PackageDraftMinimalSchema }),
+        // LOOSE schema at the provider boundary: fields + types only. Length
+        // limits and the slug regex are applied afterwards by
+        // repairMinimalDraft, so a slightly-off value no longer discards the
+        // entire response ("response did not match schema").
+        experimental_output: Output.object({ schema: PackageDraftLooseSchema }),
         abortSignal: AbortSignal.timeout(attemptBudget()),
       });
-      const draft = hydrateDraftFromMinimal(experimental_output as PackageDraftMinimal, type);
+      const minimal = repairMinimalDraft(experimental_output, repairCtx);
+      const draft = hydrateDraftFromMinimal(minimal, type);
       if (attempts.length > 0) {
         console.warn(
           `[skillforge.author] recovered on ${modelId} after ${attempts.length} failure(s):`,
           attempts,
         );
       }
-      return draft;
+      return { draft, generation_path: "structured", attempts: attempts.map(fmtAttempt) };
     } catch (e: any) {
       const msg = describeAttemptError(e);
       attempts.push({ model: modelId, error: msg });
@@ -155,8 +180,7 @@ export async function generateDraft(
   }
 
   // Structured-output path failed on every model. Fall back to plain text on
-  // the fastest model, parse ourselves, validate with the MINIMAL schema,
-  // then hydrate.
+  // the fastest model, parse ourselves, repair, then hydrate.
   try {
     if (remaining() < 4_000) throw new Error("skipped: total budget exhausted");
     const fallbackModel = getGatewayModel("google/gemini-2.5-flash");
@@ -169,28 +193,39 @@ export async function generateDraft(
       abortSignal: AbortSignal.timeout(attemptBudget()),
     });
     const json = extractJsonObject(text);
-    const parsed = PackageDraftMinimalSchema.safeParse(json);
-    if (!parsed.success) {
-      attempts.push({
-        model: "text-fallback",
-        error: `zod: ${parsed.error.issues.slice(0, 3).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}`,
-      });
-    } else {
-      const draft = hydrateDraftFromMinimal(parsed.data, type);
-      console.warn(
-        `[skillforge.author] recovered via text fallback after ${attempts.length} structured failure(s):`,
-        attempts,
-      );
-      return draft;
-    }
+    const minimal = repairMinimalDraft(json, repairCtx);
+    const draft = hydrateDraftFromMinimal(minimal, type);
+    console.warn(
+      `[skillforge.author] recovered via text fallback after ${attempts.length} structured failure(s):`,
+      attempts,
+    );
+    return { draft, generation_path: "text", attempts: attempts.map(fmtAttempt) };
   } catch (e: any) {
     attempts.push({ model: "text-fallback", error: describeAttemptError(e) });
     console.error(`[skillforge.author] text fallback failed:`, attempts[attempts.length - 1]?.error);
   }
 
-  const summary = attempts.map((a) => `${a.model}: ${a.error}`).join(" | ");
+  // Last resort: build the draft from the uploaded document itself. No model
+  // involved, so this cannot fail — the author gets a private draft they can
+  // refine instead of a hard "No object generated" error.
+  if (source?.content && source.content.trim().length >= 40) {
+    const minimal = draftFromDocument(source.filename ?? "upload.md", source.content, type);
+    const draft = hydrateDraftFromMinimal(minimal, type);
+    console.warn(
+      `[skillforge.author] deterministic fallback used (all models failed):`,
+      attempts.map(fmtAttempt),
+    );
+    return { draft, generation_path: "deterministic", attempts: attempts.map(fmtAttempt) };
+  }
+
+  const summary = attempts.map(fmtAttempt).join(" | ");
   throw new Error(`SkillForge author failed across all fallback models — ${summary}`);
 }
+
+function fmtAttempt(a: { model: string; error: string }): string {
+  return `${a.model}: ${a.error}`;
+}
+
 
 
 // AI SDK errors hide the upstream body inside `e.text` (NoObjectGeneratedError),
