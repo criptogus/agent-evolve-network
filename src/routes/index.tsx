@@ -17,9 +17,9 @@ import { canonicalLink } from "@/lib/seo/canonical";
 // Kept under 60 chars so Google renders the full title.
 const TITLE = "AI Agent Skills Marketplace — Super Agent Skill";
 
-// Same OG image the root layout ships; public/ has no raster og.png yet.
-const OG_IMAGE =
-  "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31e8f1c8-d61a-43e0-a6cf-bc7dc826978f/id-preview-a810735d--b00a8021-9d8d-4f49-a581-628727b71f68.lovable.app-1778445620031.png";
+// Static branded share card in public/ — bump ?v= when the artwork changes.
+const OG_IMAGE = "https://superagentskill.com/og.jpg?v=2026-07-31";
+
 
 // Kept between 50 and 160 chars.
 function buildDescription(skillsLabel: string) {
