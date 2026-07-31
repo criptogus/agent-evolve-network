@@ -108,6 +108,9 @@ export function GradeImpact() {
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
             The A-grade difference
           </span>
+          <span className="ml-2 inline-flex items-center rounded-full border border-border bg-background px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+            Illustrative targets
+          </span>
           <h2 className="mt-4 text-balance text-4xl font-semibold tracking-tight md:text-5xl lg:text-6xl">
             A random skill vs. a SAK <span className="text-primary">A-grade</span> skill
           </h2>
@@ -220,9 +223,9 @@ export function GradeImpact() {
         {/* Bottom summary */}
         <div className="mx-auto mt-10 grid max-w-4xl gap-4 md:grid-cols-3">
           {[
-            { k: "2.2×", v: "more tasks completed per agent per day" },
+            { k: "2.2×", v: "more tasks completed per agent per day (target)" },
             { k: "$33/1k runs", v: "saved on LLM spend at the same volume" },
-            { k: "300× fewer", v: "leaks & jailbreaks reaching production" },
+            { k: "300× fewer", v: "leaks & jailbreaks reaching production (target)" },
           ].map((s, idx) => (
             <div
               key={s.k}
