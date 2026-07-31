@@ -173,6 +173,15 @@ function BuildPage() {
             </Card>
 
             {b.status === "ready" && (
+              <PreDownloadChecklist
+                guardrails={b.guardrails}
+                soul={b.soul}
+                skills={b.skills}
+                playbooks={b.playbooks}
+              />
+            )}
+
+            {b.status === "ready" && (
               <Card className="mb-8">
                 <CardHeader>
                   <CardTitle>Install your agent</CardTitle>
