@@ -211,12 +211,13 @@ export function Nav() {
                 Sign in
               </Link>
               <Link
-                to="/signup"
+                to="/connect"
                 className="inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
               >
-                <span className="hidden sm:inline">Get started</span>
-                <span className="sm:hidden">Start</span>
+                <span className="hidden sm:inline">Try with my agent</span>
+                <span className="sm:hidden">Try it</span>
               </Link>
+
             </>
           )}
           <Sheet open={open} onOpenChange={setOpen}>
