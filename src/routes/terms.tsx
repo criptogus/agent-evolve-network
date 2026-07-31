@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { canonicalLink, SITE_URL } from "@/lib/seo/canonical";
 
 const SELLER = "Super Agent Skill, Inc.";
 const SUPPORT_EMAIL = "contact@zeroagency.ai";
