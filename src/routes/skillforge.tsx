@@ -12,6 +12,7 @@ import {
   type ForgeData,
 } from "@/lib/marketplace/telemetry.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { canonicalLink, SITE_URL } from "@/lib/seo/canonical";
 
 export const Route = createFileRoute("/skillforge")({
   beforeLoad: async () => {
@@ -30,7 +31,15 @@ export const Route = createFileRoute("/skillforge")({
         content:
           "Your installed skills, real trust scores, and AI-recommended upgrades to lift your agent's Trust Score.",
       },
+      { property: "og:title", content: "SkillForge — track and upgrade your installed skills" },
+      {
+        property: "og:description",
+        content:
+          "See real trust scores for every skill your agent runs, plus AI-recommended upgrades to raise them.",
+      },
+      { property: "og:url", content: `${SITE_URL}/skillforge` },
     ],
+    links: [canonicalLink("/skillforge")],
   }),
 });
 

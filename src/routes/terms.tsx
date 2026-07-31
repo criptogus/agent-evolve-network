@@ -22,7 +22,9 @@ export const Route = createFileRoute("/terms")({
         content:
           "Seller identification, acceptable use, IP, payments, and AI-specific terms.",
       },
+      { property: "og:url", content: `${SITE_URL}/terms` },
     ],
+    links: [canonicalLink("/terms")],
   }),
   component: TermsPage,
 });
