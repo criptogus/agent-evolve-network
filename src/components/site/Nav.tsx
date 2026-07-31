@@ -236,14 +236,17 @@ export function Nav() {
                 </SheetTitle>
               </SheetHeader>
               <nav className="mt-6 flex flex-col gap-4">
-                <MobileSection title="Browse" items={BROWSE} onNavigate={() => setOpen(false)} />
-                <MobileSection title="Create" items={CREATE} onNavigate={() => setOpen(false)} />
-                <MobileSection
-                  title="Community"
-                  items={COMMUNITY}
-                  onNavigate={() => setOpen(false)}
-                />
+                <MobileSection title="Agents" items={AGENTS_MENU} onNavigate={() => setOpen(false)} />
+                <MobileSection title="Skills" items={SKILLS} onNavigate={() => setOpen(false)} />
+                {user ? (
+                  <MobileSection
+                    title="Publish"
+                    items={PUBLISH}
+                    onNavigate={() => setOpen(false)}
+                  />
+                ) : null}
                 <MobileSection title="More" items={SIMPLE} onNavigate={() => setOpen(false)} />
+
 
                 <div className="mt-2 border-t border-border pt-4">
                   {user ? (
