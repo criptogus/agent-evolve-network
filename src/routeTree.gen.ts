@@ -48,6 +48,7 @@ import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as WhitepaperRouteImport } from './routes/whitepaper'
 import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known.oauth-authorization-server'
 import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known.oauth-protected-resource'
+import { Route as AccountAgentsRouteImport } from './routes/account.agents'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as AccountCloudSkillsRouteImport } from './routes/account.cloud-skills'
 import { Route as AccountConnectionsRouteImport } from './routes/account.connections'
@@ -75,6 +76,7 @@ import { Route as AdminRoiRouteImport } from './routes/admin.roi'
 import { Route as AgentsIndexRouteImport } from './routes/agents.index'
 import { Route as AgentsSlugRouteImport } from './routes/agents.$slug'
 import { Route as AgentsMdRouteImport } from './routes/agents.md'
+import { Route as AgentsNewRouteImport } from './routes/agents.new'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as ApiReviewRouteImport } from './routes/api/review'
 import { Route as ApiTelemetryRouteImport } from './routes/api/telemetry'
@@ -102,6 +104,7 @@ import { Route as UHandleRouteImport } from './routes/u.$handle'
 import { Route as AdminImportGithubRouteImport } from './routes/admin.import.github'
 import { Route as AdminImportMarkdownRouteImport } from './routes/admin.import.markdown'
 import { Route as AdminPackagesNewRouteImport } from './routes/admin.packages.new'
+import { Route as AgentsBuildIdRouteImport } from './routes/agents.build.$id'
 import { Route as ApiAdminAiGatewayProbeRouteImport } from './routes/api/admin/ai-gateway-probe'
 import { Route as ApiJobsDrainUploadQueueRouteImport } from './routes/api/jobs/drain-upload-queue'
 import { Route as ApiMcpHealthRouteImport } from './routes/api/mcp/health'
@@ -147,6 +150,7 @@ import { Route as DotwellKnownOauthAuthorizationServerApiPublicMcpRouteImport } 
 import { Route as DotwellKnownOauthProtectedResourceApiPublicMcpRouteImport } from './routes/[.]well-known.oauth-protected-resource.api.public.mcp'
 import { Route as ApiAgentsSlugDownloadExtRouteImport } from './routes/api/agents.$slug.download.$ext'
 import { Route as ApiBadgesTrustSlugSvgRouteImport } from './routes/api/badges.trust.$slug.svg'
+import { Route as ApiAgentsBuildIdDownloadExtRouteImport } from './routes/api/agents.build.$id.download.$ext'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
 const IndexRoute = IndexRouteImport.update({
@@ -346,6 +350,11 @@ const DotwellKnownOauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AccountAgentsRoute = AccountAgentsRouteImport.update({
+  id: '/account/agents',
+  path: '/account/agents',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountBillingRoute = AccountBillingRouteImport.update({
   id: '/account/billing',
   path: '/account/billing',
@@ -479,6 +488,11 @@ const AgentsSlugRoute = AgentsSlugRouteImport.update({
 const AgentsMdRoute = AgentsMdRouteImport.update({
   id: '/agents/md',
   path: '/agents/md',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsNewRoute = AgentsNewRouteImport.update({
+  id: '/agents/new',
+  path: '/agents/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMcpRoute = ApiMcpRouteImport.update({
@@ -615,6 +629,11 @@ const AdminPackagesNewRoute = AdminPackagesNewRouteImport.update({
   id: '/new',
   path: '/new',
   getParentRoute: () => AdminPackagesRoute,
+} as any)
+const AgentsBuildIdRoute = AgentsBuildIdRouteImport.update({
+  id: '/agents/build/$id',
+  path: '/agents/build/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminAiGatewayProbeRoute = ApiAdminAiGatewayProbeRouteImport.update({
   id: '/api/admin/ai-gateway-probe',
@@ -858,6 +877,12 @@ const ApiBadgesTrustSlugSvgRoute = ApiBadgesTrustSlugSvgRouteImport.update({
   path: '/api/badges/trust/$slug/svg',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAgentsBuildIdDownloadExtRoute =
+  ApiAgentsBuildIdDownloadExtRouteImport.update({
+    id: '/api/agents/build/$id/download/$ext',
+    path: '/api/agents/build/$id/download/$ext',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPacksCustomizationIdDownloadExtRoute =
   ApiPacksCustomizationIdDownloadExtRouteImport.update({
     id: '/api/packs/customization/$id/download/$ext',
@@ -905,6 +930,7 @@ export interface FileRoutesByFullPath {
   '/whitepaper': typeof WhitepaperRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
+  '/account/agents': typeof AccountAgentsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
   '/account/connections': typeof AccountConnectionsRoute
@@ -930,6 +956,7 @@ export interface FileRoutesByFullPath {
   '/admin/roi': typeof AdminRoiRoute
   '/agents/$slug': typeof AgentsSlugRoute
   '/agents/md': typeof AgentsMdRoute
+  '/agents/new': typeof AgentsNewRoute
   '/api/mcp': typeof ApiMcpRouteWithChildren
   '/api/review': typeof ApiReviewRoute
   '/api/telemetry': typeof ApiTelemetryRoute
@@ -959,6 +986,7 @@ export interface FileRoutesByFullPath {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/agents/build/$id': typeof AgentsBuildIdRoute
   '/api/admin/ai-gateway-probe': typeof ApiAdminAiGatewayProbeRoute
   '/api/jobs/drain-upload-queue': typeof ApiJobsDrainUploadQueueRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
@@ -1004,6 +1032,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource/api/public/mcp': typeof DotwellKnownOauthProtectedResourceApiPublicMcpRoute
   '/api/agents/$slug/download/$ext': typeof ApiAgentsSlugDownloadExtRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
+  '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRoutesByTo {
@@ -1045,6 +1074,7 @@ export interface FileRoutesByTo {
   '/whitepaper': typeof WhitepaperRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
+  '/account/agents': typeof AccountAgentsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
   '/account/connections': typeof AccountConnectionsRoute
@@ -1070,6 +1100,7 @@ export interface FileRoutesByTo {
   '/admin/roi': typeof AdminRoiRoute
   '/agents/$slug': typeof AgentsSlugRoute
   '/agents/md': typeof AgentsMdRoute
+  '/agents/new': typeof AgentsNewRoute
   '/api/mcp': typeof ApiMcpRouteWithChildren
   '/api/review': typeof ApiReviewRoute
   '/api/telemetry': typeof ApiTelemetryRoute
@@ -1099,6 +1130,7 @@ export interface FileRoutesByTo {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/agents/build/$id': typeof AgentsBuildIdRoute
   '/api/admin/ai-gateway-probe': typeof ApiAdminAiGatewayProbeRoute
   '/api/jobs/drain-upload-queue': typeof ApiJobsDrainUploadQueueRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
@@ -1144,6 +1176,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource/api/public/mcp': typeof DotwellKnownOauthProtectedResourceApiPublicMcpRoute
   '/api/agents/$slug/download/$ext': typeof ApiAgentsSlugDownloadExtRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
+  '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRoutesById {
@@ -1187,6 +1220,7 @@ export interface FileRoutesById {
   '/whitepaper': typeof WhitepaperRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
+  '/account/agents': typeof AccountAgentsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
   '/account/connections': typeof AccountConnectionsRoute
@@ -1212,6 +1246,7 @@ export interface FileRoutesById {
   '/admin/roi': typeof AdminRoiRoute
   '/agents/$slug': typeof AgentsSlugRoute
   '/agents/md': typeof AgentsMdRoute
+  '/agents/new': typeof AgentsNewRoute
   '/api/mcp': typeof ApiMcpRouteWithChildren
   '/api/review': typeof ApiReviewRoute
   '/api/telemetry': typeof ApiTelemetryRoute
@@ -1241,6 +1276,7 @@ export interface FileRoutesById {
   '/admin/import/github': typeof AdminImportGithubRoute
   '/admin/import/markdown': typeof AdminImportMarkdownRoute
   '/admin/packages/new': typeof AdminPackagesNewRoute
+  '/agents/build/$id': typeof AgentsBuildIdRoute
   '/api/admin/ai-gateway-probe': typeof ApiAdminAiGatewayProbeRoute
   '/api/jobs/drain-upload-queue': typeof ApiJobsDrainUploadQueueRoute
   '/api/mcp/health': typeof ApiMcpHealthRoute
@@ -1286,6 +1322,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource/api/public/mcp': typeof DotwellKnownOauthProtectedResourceApiPublicMcpRoute
   '/api/agents/$slug/download/$ext': typeof ApiAgentsSlugDownloadExtRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
+  '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 export interface FileRouteTypes {
@@ -1330,6 +1367,7 @@ export interface FileRouteTypes {
     | '/whitepaper'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
+    | '/account/agents'
     | '/account/billing'
     | '/account/cloud-skills'
     | '/account/connections'
@@ -1355,6 +1393,7 @@ export interface FileRouteTypes {
     | '/admin/roi'
     | '/agents/$slug'
     | '/agents/md'
+    | '/agents/new'
     | '/api/mcp'
     | '/api/review'
     | '/api/telemetry'
@@ -1384,6 +1423,7 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/agents/build/$id'
     | '/api/admin/ai-gateway-probe'
     | '/api/jobs/drain-upload-queue'
     | '/api/mcp/health'
@@ -1429,6 +1469,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource/api/public/mcp'
     | '/api/agents/$slug/download/$ext'
     | '/api/badges/trust/$slug/svg'
+    | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1470,6 +1511,7 @@ export interface FileRouteTypes {
     | '/whitepaper'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
+    | '/account/agents'
     | '/account/billing'
     | '/account/cloud-skills'
     | '/account/connections'
@@ -1495,6 +1537,7 @@ export interface FileRouteTypes {
     | '/admin/roi'
     | '/agents/$slug'
     | '/agents/md'
+    | '/agents/new'
     | '/api/mcp'
     | '/api/review'
     | '/api/telemetry'
@@ -1524,6 +1567,7 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/agents/build/$id'
     | '/api/admin/ai-gateway-probe'
     | '/api/jobs/drain-upload-queue'
     | '/api/mcp/health'
@@ -1569,6 +1613,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource/api/public/mcp'
     | '/api/agents/$slug/download/$ext'
     | '/api/badges/trust/$slug/svg'
+    | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   id:
     | '__root__'
@@ -1611,6 +1656,7 @@ export interface FileRouteTypes {
     | '/whitepaper'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
+    | '/account/agents'
     | '/account/billing'
     | '/account/cloud-skills'
     | '/account/connections'
@@ -1636,6 +1682,7 @@ export interface FileRouteTypes {
     | '/admin/roi'
     | '/agents/$slug'
     | '/agents/md'
+    | '/agents/new'
     | '/api/mcp'
     | '/api/review'
     | '/api/telemetry'
@@ -1665,6 +1712,7 @@ export interface FileRouteTypes {
     | '/admin/import/github'
     | '/admin/import/markdown'
     | '/admin/packages/new'
+    | '/agents/build/$id'
     | '/api/admin/ai-gateway-probe'
     | '/api/jobs/drain-upload-queue'
     | '/api/mcp/health'
@@ -1710,6 +1758,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource/api/public/mcp'
     | '/api/agents/$slug/download/$ext'
     | '/api/badges/trust/$slug/svg'
+    | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
 }
@@ -1753,6 +1802,7 @@ export interface RootRouteChildren {
   WhitepaperRoute: typeof WhitepaperRoute
   DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRouteWithChildren
+  AccountAgentsRoute: typeof AccountAgentsRoute
   AccountBillingRoute: typeof AccountBillingRoute
   AccountCloudSkillsRoute: typeof AccountCloudSkillsRoute
   AccountConnectionsRoute: typeof AccountConnectionsRoute
@@ -1766,6 +1816,7 @@ export interface RootRouteChildren {
   AccountUsageRoute: typeof AccountUsageRoute
   AgentsSlugRoute: typeof AgentsSlugRoute
   AgentsMdRoute: typeof AgentsMdRoute
+  AgentsNewRoute: typeof AgentsNewRoute
   ApiMcpRoute: typeof ApiMcpRouteWithChildren
   ApiReviewRoute: typeof ApiReviewRoute
   ApiTelemetryRoute: typeof ApiTelemetryRoute
@@ -1787,6 +1838,7 @@ export interface RootRouteChildren {
   CompareIndexRoute: typeof CompareIndexRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   PacksIndexRoute: typeof PacksIndexRoute
+  AgentsBuildIdRoute: typeof AgentsBuildIdRoute
   ApiAdminAiGatewayProbeRoute: typeof ApiAdminAiGatewayProbeRoute
   ApiJobsDrainUploadQueueRoute: typeof ApiJobsDrainUploadQueueRoute
   ApiPackagesUploadRoute: typeof ApiPackagesUploadRoute
@@ -1821,6 +1873,7 @@ export interface RootRouteChildren {
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
   ApiAgentsSlugDownloadExtRoute: typeof ApiAgentsSlugDownloadExtRoute
   ApiBadgesTrustSlugSvgRoute: typeof ApiBadgesTrustSlugSvgRoute
+  ApiAgentsBuildIdDownloadExtRoute: typeof ApiAgentsBuildIdDownloadExtRoute
   ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
 }
 
@@ -2099,6 +2152,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotwellKnownOauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/agents': {
+      id: '/account/agents'
+      path: '/account/agents'
+      fullPath: '/account/agents'
+      preLoaderRoute: typeof AccountAgentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/billing': {
       id: '/account/billing'
       path: '/account/billing'
@@ -2286,6 +2346,13 @@ declare module '@tanstack/react-router' {
       path: '/agents/md'
       fullPath: '/agents/md'
       preLoaderRoute: typeof AgentsMdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents/new': {
+      id: '/agents/new'
+      path: '/agents/new'
+      fullPath: '/agents/new'
+      preLoaderRoute: typeof AgentsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/mcp': {
@@ -2476,6 +2543,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/packages/new'
       preLoaderRoute: typeof AdminPackagesNewRouteImport
       parentRoute: typeof AdminPackagesRoute
+    }
+    '/agents/build/$id': {
+      id: '/agents/build/$id'
+      path: '/agents/build/$id'
+      fullPath: '/agents/build/$id'
+      preLoaderRoute: typeof AgentsBuildIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/admin/ai-gateway-probe': {
       id: '/api/admin/ai-gateway-probe'
@@ -2792,6 +2866,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBadgesTrustSlugSvgRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/agents/build/$id/download/$ext': {
+      id: '/api/agents/build/$id/download/$ext'
+      path: '/api/agents/build/$id/download/$ext'
+      fullPath: '/api/agents/build/$id/download/$ext'
+      preLoaderRoute: typeof ApiAgentsBuildIdDownloadExtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/packs/customization/$id/download/$ext': {
       id: '/api/packs/customization/$id/download/$ext'
       path: '/api/packs/customization/$id/download/$ext'
@@ -3035,6 +3116,7 @@ const rootRouteChildren: RootRouteChildren = {
     DotwellKnownOauthAuthorizationServerRouteWithChildren,
   DotwellKnownOauthProtectedResourceRoute:
     DotwellKnownOauthProtectedResourceRouteWithChildren,
+  AccountAgentsRoute: AccountAgentsRoute,
   AccountBillingRoute: AccountBillingRoute,
   AccountCloudSkillsRoute: AccountCloudSkillsRoute,
   AccountConnectionsRoute: AccountConnectionsRoute,
@@ -3048,6 +3130,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountUsageRoute: AccountUsageRoute,
   AgentsSlugRoute: AgentsSlugRoute,
   AgentsMdRoute: AgentsMdRoute,
+  AgentsNewRoute: AgentsNewRoute,
   ApiMcpRoute: ApiMcpRouteWithChildren,
   ApiReviewRoute: ApiReviewRoute,
   ApiTelemetryRoute: ApiTelemetryRoute,
@@ -3069,6 +3152,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompareIndexRoute: CompareIndexRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   PacksIndexRoute: PacksIndexRoute,
+  AgentsBuildIdRoute: AgentsBuildIdRoute,
   ApiAdminAiGatewayProbeRoute: ApiAdminAiGatewayProbeRoute,
   ApiJobsDrainUploadQueueRoute: ApiJobsDrainUploadQueueRoute,
   ApiPackagesUploadRoute: ApiPackagesUploadRoute,
@@ -3106,19 +3190,10 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
   ApiAgentsSlugDownloadExtRoute: ApiAgentsSlugDownloadExtRoute,
   ApiBadgesTrustSlugSvgRoute: ApiBadgesTrustSlugSvgRoute,
+  ApiAgentsBuildIdDownloadExtRoute: ApiAgentsBuildIdDownloadExtRoute,
   ApiPacksCustomizationIdDownloadExtRoute:
     ApiPacksCustomizationIdDownloadExtRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
