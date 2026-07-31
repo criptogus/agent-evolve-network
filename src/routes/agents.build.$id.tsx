@@ -174,6 +174,27 @@ function BuildPage() {
             </Card>
 
             {b.status === "ready" && (
+              <div className="mb-8 flex flex-wrap items-center gap-3 rounded-lg border bg-muted/40 p-4">
+                <p className="text-sm">
+                  Want to adjust the guardrail rules or the soul before publishing?
+                </p>
+                <Button variant={editing ? "secondary" : "outline"} size="sm" onClick={() => setEditing((v) => !v)}>
+                  {editing ? "Close editor" : "Open guided editor"}
+                </Button>
+              </div>
+            )}
+
+            {b.status === "ready" && editing && (
+              <GuidedAgentEditor
+                buildId={id}
+                initialSoul={b.soul ?? ""}
+                initialTagline={b.tagline}
+                initialGuardrails={Array.isArray(b.guardrails) ? b.guardrails : []}
+                onDone={() => setEditing(false)}
+              />
+            )}
+
+            {b.status === "ready" && (
               <PreDownloadChecklist
                 guardrails={b.guardrails}
                 soul={b.soul}
@@ -181,6 +202,7 @@ function BuildPage() {
                 playbooks={b.playbooks}
               />
             )}
+
 
             {b.status === "ready" && (
               <Card className="mb-8">
