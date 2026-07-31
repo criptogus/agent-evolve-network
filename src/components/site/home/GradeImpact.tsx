@@ -126,10 +126,10 @@ export function GradeImpact() {
         <div className="mx-auto mt-10 grid max-w-3xl gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-border bg-background p-5 chart-slide-up chart-delay-100 opacity-0">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+              <span className="text-xs font-mono uppercase tracking-widest text-foreground">
                 Ungraded skill
               </span>
-              <span className="rounded-md border border-border px-2 py-0.5 text-xs font-mono font-semibold text-muted-foreground">
+              <span className="rounded-md border border-border px-2 py-0.5 text-xs font-mono font-semibold text-foreground">
                 F · no proof
               </span>
             </div>

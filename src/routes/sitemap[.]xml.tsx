@@ -11,6 +11,13 @@ const SITE = "https://superagentskill.com";
 // /account/*) are intentionally excluded from the sitemap.
 const STATIC_ROUTES: Array<{ path: string; priority: number; changefreq: string }> = [
   { path: "/", priority: 1.0, changefreq: "weekly" },
+  { path: "/about", priority: 0.5, changefreq: "weekly" },
+  { path: "/how-it-works", priority: 0.85, changefreq: "monthly" },
+  { path: "/agents", priority: 0.85, changefreq: "weekly" },
+  { path: "/bounties", priority: 0.6, changefreq: "daily" },
+  { path: "/leaderboard", priority: 0.6, changefreq: "daily" },
+  { path: "/play", priority: 0.55, changefreq: "weekly" },
+  { path: "/nda", priority: 0.3, changefreq: "yearly" },
   { path: "/connect", priority: 0.95, changefreq: "weekly" },
   { path: "/pricing", priority: 0.9, changefreq: "weekly" },
   { path: "/docs", priority: 0.9, changefreq: "weekly" },

@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SitePage } from "@/components/site/SitePage";
+import { canonicalLink, SITE_URL } from "@/lib/seo/canonical";
 import {
   PLATFORM_VERSION,
   PLATFORM_CODENAME,
@@ -24,7 +25,9 @@ export const Route = createFileRoute("/about")({
         content:
           "How the platform evolves — versioning policy, current stage, and recent updates.",
       },
+      { property: "og:url", content: `${SITE_URL}/about` },
     ],
+    links: [canonicalLink("/about")],
   }),
   component: AboutPage,
 });

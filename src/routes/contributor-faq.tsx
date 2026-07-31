@@ -1,17 +1,82 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { canonicalLink, SITE_URL } from "@/lib/seo/canonical";
+
+const FAQ_TITLE = "Contributor FAQ — improved skills, updates & redistribution";
+const FAQ_DESCRIPTION =
+  "How Super Agent Skill handles contributor submissions: IP assignment, AI-improved versions, attribution, updates and marketplace redistribution.";
+
+/** Plain-text mirror of the visible Q&A pairs, used for FAQPage JSON-LD. */
+const FAQ_PLAIN: Array<{ q: string; a: string }> = [
+  {
+    q: "What exactly happens when I submit a skill, playbook, soul or guardrail?",
+    a: "Your submission enters our Forge Loop — Drafter, Judge, Critic, Red Team. We may keep it as-is, rewrite it for clarity, merge it with related work, split it, or use it as training signal. Per Terms §6.1 the resulting artefact is owned by Super Agent Skill, Inc.",
+  },
+  {
+    q: 'What does "improved version" mean in practice?',
+    a: "The assignment covers both the literal text you submitted and any derivative: translations, refactors, prompt rewrites, evaluation suites, automated merges and AI-generated upgrades. Derivatives ship under the same registry rules as the original.",
+  },
+  {
+    q: "Will my name still appear on the skill after it's improved?",
+    a: "By default we keep you listed as original contributor on the skill page and in the version changelog for incremental edits. Attribution is courtesy, not contractual, and may be removed if the skill is rewritten, merged or deprecated.",
+  },
+  {
+    q: "Can I keep using the skill I submitted on my own projects?",
+    a: "Yes. Section 6.1 grants you a perpetual, worldwide, royalty-free license to use the original text of your own contribution outside the platform. You cannot republish improved versions we produce.",
+  },
+  {
+    q: "How do updates and redistribution work?",
+    a: "Every accepted change ships as a new semver version and older versions stay installable. Updates are opt-in for installed users. We can redistribute any version through MCP, the marketplace, partner registries, bundles or paid tiers, and may deprecate or remove skills for safety, quality or legal reasons.",
+  },
+  {
+    q: "What if my submission is rejected?",
+    a: "Rejected submissions are not published, but the §6.1 assignment still applies to whatever you uploaded. We may retain it for moderation logs and review-model training, and will not publish rejected work under your name without consent.",
+  },
+  {
+    q: "Can I delete my contributions later?",
+    a: "You can delete your account, which removes your profile and personal data. Contributed skills remain in the registry under platform ownership because other users may depend on them; on request we drop your name from public attribution.",
+  },
+  {
+    q: "What about skills that mix my work with other contributors' work?",
+    a: "Merged skills are platform-owned compositions. Each contributor's assignment covers their portion. There is no joint copyright, no veto rights and no royalty pool.",
+  },
+  {
+    q: "Why this model?",
+    a: "Agent skills evolve fast. A clean assignment lets us ship safety fixes, evaluation upgrades and quality improvements without chasing per-contributor approvals, and protects everyone from disputes when an improved version no longer resembles the original.",
+  },
+  {
+    q: "Where is this written in the legal terms?",
+    a: "The binding text lives in Terms of Service §6.1 — Contributor IP Assignment. If anything on this FAQ conflicts with the Terms, the Terms win.",
+  },
+];
 
 export const Route = createFileRoute("/contributor-faq")({
   head: () => ({
     meta: [
-      { title: "Contributor FAQ — Improved skills, updates & redistribution | Super Agent Skill" },
-      {
-        name: "description",
-        content:
-          "How Super Agent Skill handles contributor submissions: IP assignment, AI-improved versions, attribution, updates and marketplace redistribution.",
-      },
+      { title: "Contributor FAQ — improved skills & updates | Super Agent Skill" },
+      { name: "description", content: FAQ_DESCRIPTION },
       { name: "robots", content: "index,follow" },
+      { property: "og:title", content: FAQ_TITLE },
+      { property: "og:description", content: FAQ_DESCRIPTION },
+      { property: "og:url", content: `${SITE_URL}/contributor-faq` },
+      { property: "og:type", content: "article" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [canonicalLink("/contributor-faq")],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: FAQ_PLAIN.map((item) => ({
+            "@type": "Question",
+            name: item.q,
+            acceptedAnswer: { "@type": "Answer", text: item.a },
+          })),
+        }),
+      },
     ],
   }),
   component: ContributorFaqPage,
