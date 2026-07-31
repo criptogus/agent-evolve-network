@@ -157,6 +157,22 @@ function McpDocs() {
             <code>User-Agent: Mozilla/5.0</code> (or shell out to <code>curl</code>) and the call
             goes through normally.
           </div>
+          <div className="mt-4 rounded-lg border border-border bg-surface p-4 text-sm text-muted-foreground">
+            <strong className="text-foreground">Blocked? Run the diagnostic.</strong>{" "}
+            <code>GET /api/public/diag</code> is anonymous and echoes back exactly what our origin
+            saw — your IP, your User-Agent and whether that UA is bot-shaped. If it returns{" "}
+            <code>200</code> while another path returns <code>403</code>, the block is at the edge,
+            not with us.
+            <div className="mt-3">
+              <CodeBlock
+                filename="diagnose a 403"
+                lang="bash"
+                code={`curl -s https://superagentskill.com/api/public/diag -H "User-Agent: Mozilla/5.0"`}
+              />
+            </div>
+          </div>
+
+
 
 
           {/* Auth */}

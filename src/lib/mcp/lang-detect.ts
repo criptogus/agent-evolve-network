@@ -4,8 +4,26 @@
 // tests/lang-detect.test.mjs — in particular the PT-vs-FR exclusivity fix.
 
 export type Lang = "en" | "pt" | "es" | "fr" | "de" | "it" | "other";
+
+/**
+ * Normalize "smart" typography to ASCII equivalents. Portuguese authors write
+ * with em-dashes and ellipsis characters as a matter of course, and those
+ * characters used to (a) perturb detection samples and (b) trip the truncation
+ * heuristic in the review engine. Normalizing once, up front, kills both.
+ */
+export function normalizeTypography(text: string): string {
+  return text
+    .normalize("NFC")
+    .replace(/[\u2014\u2013\u2012\u2015]/g, "-") // em/en/figure/horizontal dash
+    .replace(/\u2026/g, "...") // ellipsis
+    .replace(/[\u2018\u2019\u201B\u2032]/g, "'")
+    .replace(/[\u201C\u201D\u201F\u2033]/g, '"')
+    .replace(/\u00A0/g, " ");
+}
+
 export function detectLanguage(text: string): { lang: Lang; confidence: number } {
-  const sample = text.slice(0, 8000).toLowerCase();
+  const sample = normalizeTypography(text.slice(0, 8000)).toLowerCase();
+
   const wordMatch = (re: RegExp) => (sample.match(re) ?? []).length;
   const diaMatch = (re: RegExp) => (sample.match(re) ?? []).length;
   const counts: Record<Exclude<Lang, "other">, number> = {
@@ -58,8 +76,9 @@ export function detectLanguage(text: string): { lang: Lang; confidence: number }
     ["it", /(\bgli\b|zione\b|perché|\bdegli\b|\bnell)/g],
   ];
   const exclusive = EXCLUSIVE.map(([l, re]) => [l, (sample.match(re) ?? []).length] as const)
-    .filter(([, n]) => n >= 3)
+    .filter(([, n]) => n >= 2)
     .sort((a, b) => b[1] - a[1]);
+
   // Stability guard: if TWO languages both clear the exclusive threshold, the
   // winner must dominate (≥2× the runner-up); otherwise fall through to the
   // function-word counts instead of flip-flopping between near-tied claims.
@@ -84,8 +103,13 @@ export function detectLanguage(text: string): { lang: Lang; confidence: number }
     if (counts[excLang] >= 2 || excHits >= 8) {
       return { lang: excLang, confidence: conf(Math.max(counts[excLang], excHits)) };
     }
+    // Weak but real orthographic evidence: still better than "other", which
+    // strips localized feedback and the non-EN scoring path from the author
+    // (client-reported: dense PT docs landed on other/conf 0.4).
+    if (excHits >= 2) return { lang: excLang, confidence: 0.55 };
   }
   if (topHits < 4) return { lang: "other", confidence: 0.3 };
+
   // Near-tie: prefer the non-English candidate rather than bailing to "other".
   // "other" is the worst outcome for the writer (no localized feedback, weaker
   // semantic hint), so we only use it when nothing at all resembles a language.

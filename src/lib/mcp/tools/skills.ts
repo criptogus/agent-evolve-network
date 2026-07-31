@@ -1,5 +1,5 @@
 import { defineTool } from "mcp-tanstack-start";
-import { detectLanguage, type Lang } from "@/lib/mcp/lang-detect";
+import { detectLanguage, normalizeTypography, type Lang } from "@/lib/mcp/lang-detect";
 import { z } from "zod";
 import { generateText, Output } from "ai";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -10,6 +10,7 @@ import { getGatewayModel } from "@/lib/ai-gateway";
 import { getIdempotent, putIdempotent } from "@/lib/mcp/idempotency";
 import { twoProportionUplift } from "@/lib/experiments/uplift";
 import { projectImpact, projectionToText } from "@/lib/skills/impact-projection";
+import { docKey, loadReviewHistory, recordReviewRun } from "@/lib/skills/review-history.server";
 
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 
@@ -786,21 +787,24 @@ function fnv1aHex(s: string): string {
 // score what it can't see), but the operator deserves to know BEFORE the score
 // arrives that the input looks truncated, not after reading a misleading "F".
 function inputWarning(text: string): "short_input" | "summary_markers" | "outline_only" | null {
-  const t = text.trim();
+  // Normalize smart typography FIRST: em-dash/en-dash/ellipsis characters are
+  // standard Portuguese (and French) punctuation. Scanning them raw produced
+  // false-positive `summary_markers` on perfectly complete PT documents
+  // (client-reported). After normalization `…` is plain `...`, which only
+  // counts when it stands alone on a line — see below.
+  const t = normalizeTypography(text).trim();
   if (t.length < 400) return "short_input";
   // Strip fenced code blocks and inline code BEFORE scanning for truncation
   // markers. A `...` inside a code fence or inline backticks is almost always
   // a Python spread, an ellipsis in a template, or a placeholder in an
-  // example — NOT a signal that the document was truncated. Scanning the raw
-  // text was producing false-positive `summary_markers` warnings that killed
-  // the semantic pass on otherwise valid skills.
-  // Also strip YAML frontmatter: `description: "algo — condensado"` is normal
-  // metadata prose, not evidence that the body was cut. Em dashes and inline
-  // ellipses are never markers on their own.
+  // example — NOT a signal that the document was truncated.
+  // Also strip YAML frontmatter: `description: "algo - condensado"` is normal
+  // metadata prose, not evidence that the body was cut.
   const prose = t
     .replace(/^---\n[\s\S]*?\n---/, " ")
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/`[^`\n]*`/g, " ");
+
   // Only bracketed / explicit elision phrases count. Bare words like
   // "condensed", "resumido" or "abbreviated" appear constantly in legitimate
   // prose ("a condensed deal memo"), so they no longer trip the warning.
@@ -2123,7 +2127,10 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
         // the semantic pass is the primary way a well-written PT/ES/FR/DE/IT
         // skill demonstrates coverage the (naturally sparser) native-language
         // regexes miss, so it must be able to reach A on merit.
-        const uplistCap = language.lang !== "en" && language.lang !== "other" ? 90 : 82;
+        // "other" (low-confidence latin script) gets the non-EN ceiling too:
+        // the deterministic detectors are only rich in EN, so anything that is
+        // not confidently English must be able to reach A on semantic merit.
+        const uplistCap = language.lang !== "en" ? 90 : 82;
         r.score = Math.min(uplistCap, target);
 
         r.deficit = 100 - r.score;
@@ -2272,6 +2279,10 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
     engine: ENGINE,
     cached: false,
     input_warning: inputWarn,
+    input_warning_kind: warnKind,
+    // Explicit: an advisory warning must never leave the caller guessing
+    // whether the LLM judge ran. Typography (em-dash / ellipsis) never blocks.
+    input_warning_blocked_semantic: blocksSemantic,
     doc_class: {
       value: docClass,
       inferred: doc_class === "auto",
@@ -2438,7 +2449,8 @@ export const reviewSkillTool = defineTool({
     language: languageOverride,
     previous_hash,
     previous_overall_score,
-  }) => {
+  }, ctx?: any) => {
+    const callerId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
     const core = await computeReview({
       name,
       type,
@@ -2465,15 +2477,39 @@ export const reviewSkillTool = defineTool({
 
     // Delta vs the caller's last run. Hash is non-crypto; client sends back
     // whatever we emitted previously and we compare overall + content hash.
+    // Server-side history first: authenticated callers get the delta without
+    // having to echo previous_hash/previous_overall_score themselves.
+    const key = docKey(name, type);
+    const history = callerId ? await loadReviewHistory(callerId, key) : null;
+    const lastRun = history?.runs[0] ?? null;
+    const prevScore =
+      typeof previous_overall_score === "number" ? previous_overall_score : lastRun?.overall_score ?? null;
+    const prevHash = previous_hash ?? lastRun?.doc_hash ?? null;
     const delta =
-      typeof previous_overall_score === "number"
+      typeof prevScore === "number"
         ? {
-            previous_overall_score,
+            previous_overall_score: prevScore,
             current_overall_score: overall,
-            change: overall - previous_overall_score,
-            same_content: previous_hash === contentHash,
+            change: overall - prevScore,
+            same_content: prevHash === contentHash,
+            source: typeof previous_overall_score === "number" ? "caller" : "server_history",
           }
         : null;
+    if (callerId) {
+      await recordReviewRun({
+        userId: callerId,
+        docKey: key,
+        docHash: contentHash,
+        docType: type,
+        docClass: docClassVal,
+        language: (core.language as { detected?: string } | undefined)?.detected ?? null,
+        overall,
+        verdict: verdictScore,
+        format: (core.format_score as number | undefined) ?? null,
+        substance: (core.substance_score as number | undefined) ?? null,
+        grade: (core.grade as string | undefined) ?? null,
+      });
+    }
 
     // Create a feedback request so the host LLM can rate this review via the
     // `submit_feedback` MCP tool. Single-use, 30-day TTL, validated server-side.
@@ -2491,6 +2527,19 @@ export const reviewSkillTool = defineTool({
     return json({
       ...core,
       delta_vs_previous: delta,
+      review_history: history
+        ? {
+            doc_key: history.doc_key,
+            runs: history.runs.length,
+            first_overall_score: history.first_overall_score,
+            best_overall_score: history.best_overall_score,
+            total_change: history.total_change,
+            timeline: history.runs
+              .slice()
+              .reverse()
+              .map((r) => ({ at: r.created_at, overall: r.overall_score, grade: r.grade })),
+          }
+        : null,
       impact_projection: {
         ...impact,
         summary: projectionToText(impact),

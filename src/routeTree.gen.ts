@@ -111,6 +111,7 @@ import { Route as ApiJobsDrainUploadQueueRouteImport } from './routes/api/jobs/d
 import { Route as ApiMcpHealthRouteImport } from './routes/api/mcp/health'
 import { Route as ApiPackagesUploadRouteImport } from './routes/api/packages.upload'
 import { Route as ApiPublicCertifyRouteImport } from './routes/api/public/certify'
+import { Route as ApiPublicDiagRouteImport } from './routes/api/public/diag'
 import { Route as ApiPublicInstallDothermesDotshRouteImport } from './routes/api/public/install[.]hermes[.]sh'
 import { Route as ApiPublicMcpRouteImport } from './routes/api/public/mcp'
 import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packages'
@@ -666,6 +667,11 @@ const ApiPublicCertifyRoute = ApiPublicCertifyRouteImport.update({
   path: '/api/public/certify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDiagRoute = ApiPublicDiagRouteImport.update({
+  id: '/api/public/diag',
+  path: '/api/public/diag',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicInstallDothermesDotshRoute =
   ApiPublicInstallDothermesDotshRouteImport.update({
     id: '/api/public/install.hermes.sh',
@@ -999,6 +1005,7 @@ export interface FileRoutesByFullPath {
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/certify': typeof ApiPublicCertifyRoute
+  '/api/public/diag': typeof ApiPublicDiagRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
@@ -1144,6 +1151,7 @@ export interface FileRoutesByTo {
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/certify': typeof ApiPublicCertifyRoute
+  '/api/public/diag': typeof ApiPublicDiagRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
@@ -1291,6 +1299,7 @@ export interface FileRoutesById {
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/certify': typeof ApiPublicCertifyRoute
+  '/api/public/diag': typeof ApiPublicDiagRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
@@ -1439,6 +1448,7 @@ export interface FileRouteTypes {
     | '/api/mcp/health'
     | '/api/packages/upload'
     | '/api/public/certify'
+    | '/api/public/diag'
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
     | '/api/public/packages'
@@ -1584,6 +1594,7 @@ export interface FileRouteTypes {
     | '/api/mcp/health'
     | '/api/packages/upload'
     | '/api/public/certify'
+    | '/api/public/diag'
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
     | '/api/public/packages'
@@ -1730,6 +1741,7 @@ export interface FileRouteTypes {
     | '/api/mcp/health'
     | '/api/packages/upload'
     | '/api/public/certify'
+    | '/api/public/diag'
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
     | '/api/public/packages'
@@ -1856,6 +1868,7 @@ export interface RootRouteChildren {
   ApiJobsDrainUploadQueueRoute: typeof ApiJobsDrainUploadQueueRoute
   ApiPackagesUploadRoute: typeof ApiPackagesUploadRoute
   ApiPublicCertifyRoute: typeof ApiPublicCertifyRoute
+  ApiPublicDiagRoute: typeof ApiPublicDiagRoute
   ApiPublicInstallDothermesDotshRoute: typeof ApiPublicInstallDothermesDotshRoute
   ApiPublicMcpRoute: typeof ApiPublicMcpRouteWithChildren
   ApiPublicPackagesRoute: typeof ApiPublicPackagesRouteWithChildren
@@ -2606,6 +2619,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCertifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/diag': {
+      id: '/api/public/diag'
+      path: '/api/public/diag'
+      fullPath: '/api/public/diag'
+      preLoaderRoute: typeof ApiPublicDiagRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/install.hermes.sh': {
       id: '/api/public/install.hermes.sh'
       path: '/api/public/install.hermes.sh'
@@ -3178,6 +3198,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiJobsDrainUploadQueueRoute: ApiJobsDrainUploadQueueRoute,
   ApiPackagesUploadRoute: ApiPackagesUploadRoute,
   ApiPublicCertifyRoute: ApiPublicCertifyRoute,
+  ApiPublicDiagRoute: ApiPublicDiagRoute,
   ApiPublicInstallDothermesDotshRoute: ApiPublicInstallDothermesDotshRoute,
   ApiPublicMcpRoute: ApiPublicMcpRouteWithChildren,
   ApiPublicPackagesRoute: ApiPublicPackagesRouteWithChildren,
@@ -3218,13 +3239,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
