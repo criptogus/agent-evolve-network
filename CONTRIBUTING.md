@@ -113,6 +113,28 @@ uv tool install --python 3.12 .
 Pass `--block` to fail on any package scoring at/above the risk threshold
 (default 50; override with `SKILLSPECTOR_THRESHOLD`).
 
+### Vendor skills — welcome, with disclosure
+
+Skills that operate a **commercial service you own or represent** (an API, an
+Apify actor, a SaaS product) are accepted — real operators often write the
+best skills for their own tools. The bar:
+
+- ✅ **Disclose the affiliation.** Name the vendor in `authors`/`created_by`
+  and state the relationship in `long_description`. Undisclosed vendor skills
+  are removed when discovered.
+- ✅ **Cost safety is mandatory for paid services:** an explicit run
+  confirmation gate, a user-set spend ceiling applied to every execution, and
+  no hardcoded prices ("check live pricing" beats a stale number).
+- ✅ **Token hygiene:** credentials only in auth headers — never in URLs,
+  prompts, logs or outputs.
+- ✅ Returned service data is **untrusted input**: the skill must instruct the
+  agent to never follow instructions embedded in it.
+- ❌ No marketing copy in the system prompt, no steering the agent to sign up
+  for the service, and no links beyond the operational ones the skill needs.
+
+Same quality bar and adversarial gauntlet as every other skill — being the
+vendor earns no exemptions, only the credibility of first-party knowledge.
+
 ### Step 5 — Open a pull request
 
 Use the **Package submission** PR template. Include:
