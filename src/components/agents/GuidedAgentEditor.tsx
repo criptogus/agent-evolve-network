@@ -2,8 +2,13 @@ import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { AlertTriangle, Check, ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, Check, ChevronLeft, ChevronRight, Library, Plus, Trash2 } from "lucide-react";
 import { updateAgentBuildDraft } from "@/lib/agents/factory.functions";
+import {
+  GUARDRAIL_CATEGORIES,
+  guardrailsByCategory,
+  type GuardrailCategory,
+} from "@/lib/agents/guardrail-library";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+
 
 type Guardrail = {
   slug?: string;
