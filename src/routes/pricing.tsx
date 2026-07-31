@@ -130,7 +130,7 @@ function Pricing() {
         <div className="mt-14 rounded-2xl border border-border bg-surface p-8 md:flex md:items-center md:justify-between">
           <div>
             <div className="font-mono text-xs uppercase tracking-wider text-primary">For creators</div>
-            <h3 className="mt-2 text-2xl font-semibold tracking-tight">Monetize your operational expertise.</h3>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight">Monetize your operational expertise.</h2>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
               Doctors, lawyers, engineers, copywriters, consultants — package your know-how as
               installable skills, playbooks or souls (drop-in expert personas). Creators keep
