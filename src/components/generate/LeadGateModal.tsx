@@ -43,7 +43,7 @@ export function LeadGateModal({
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h3 className="text-lg font-semibold tracking-tight">Unlock the Health Score report</h3>
+            <h3 className="text-lg font-semibold tracking-tight">Unlock the Trust Score report</h3>
             <p className="mt-1 text-sm text-muted-foreground">
               Single-skill reports are free. For multi-skill stacks, share your work email —
               we&apos;ll unlock the full PDF-grade report.

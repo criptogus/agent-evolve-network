@@ -89,9 +89,10 @@ export function Faq() {
       q: "Do I need to retrain my agent or change my code?",
       a: (
         <>
-          No. Packages install through MCP at runtime — zero retraining, zero downtime, zero code
-          changes in your agent. If a package underperforms, Super Agent Skill hot-swaps it back.
-          Every install is reversible and audited.
+          No retraining and no code changes in your agent. Packages install through MCP at runtime;
+          depending on the client you may need to add the endpoint to a config file and restart it
+          once. After that, installs and swaps happen live and every one of them is reversible and
+          audited.
         </>
       ),
     },

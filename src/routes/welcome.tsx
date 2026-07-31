@@ -688,7 +688,7 @@ function WelcomePage() {
                 <div className="font-mono text-[10px] uppercase tracking-wider text-primary">Step 6</div>
                 <div className="mt-2 text-base font-semibold">Read the docs</div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Health Score, SkillForge, write your own skill.
+                  Trust Score, SkillForge, write your own skill.
                 </p>
               </Link>
             </div>

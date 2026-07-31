@@ -28,7 +28,7 @@ export const Route = createFileRoute("/skillforge")({
       {
         name: "description",
         content:
-          "Your installed skills, real trust scores, and AI-recommended upgrades to lift your agent's Health Score.",
+          "Your installed skills, real trust scores, and AI-recommended upgrades to lift your agent's Trust Score.",
       },
     ],
   }),
@@ -94,7 +94,7 @@ function SkillForgePage() {
             </div>
             <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">Your stack</h1>
             <p className="mt-2 max-w-xl text-muted-foreground">
-              Your real Health Score is the average trust score across the packages you have installed.
+              Your real Trust Score is the average trust score across the packages you have installed.
               Install more battle-tested packages — or remove drifting ones — to raise it.
             </p>
           </div>

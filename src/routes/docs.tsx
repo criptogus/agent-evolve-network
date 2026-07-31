@@ -120,7 +120,7 @@ function Docs() {
 → Identified gaps.................. 3
 → Recommended packages............. 5
 → Installing...................... ✓
-→ New health score................. 96.1 / 100`}
+→ New trust score................. 96.1 / 100`}
             />
           </div>
 

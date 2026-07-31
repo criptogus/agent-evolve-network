@@ -34,7 +34,7 @@ export function CompatibleAgents() {
             Works with every agent you already use.
           </h2>
           <p className="mt-4 text-pretty text-base text-muted-foreground md:text-lg">
-            One MCP endpoint. No SDK. No config files. Paste the URL and your agent is upgraded.
+            One MCP endpoint, no SDK. Most clients take the URL from settings; a few (Claude Desktop, Cursor) still need a small JSON/TOML entry and a restart — the per-client steps are in the docs.
           </p>
         </div>
 

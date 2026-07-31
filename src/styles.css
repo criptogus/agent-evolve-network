@@ -152,7 +152,9 @@
   --muted-foreground: oklch(0.5 0.012 270);
   --accent: oklch(0.96 0.005 270);
   --accent-foreground: oklch(0.2 0.01 270);
-  --destructive: oklch(0.54 0.24 28);
+  /* Errors must not read as CTAs: destructive is a deeper crimson (hue 8)
+     while --primary is the orange-leaning action red (hue 28). */
+  --destructive: oklch(0.45 0.2 8);
   --destructive-foreground: oklch(0.99 0 0);
   --border: oklch(0.92 0.004 270);
   --input: oklch(0.93 0.004 270);
@@ -179,6 +181,8 @@
   --muted-foreground: oklch(0.72 0.01 270);
   --accent: oklch(0.26 0.012 270);
   --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.6 0.19 8);
+  --destructive-foreground: oklch(0.99 0 0);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 12%);
   --ring: oklch(0.62 0.22 25);

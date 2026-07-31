@@ -31,33 +31,38 @@ function XIcon({ className }: { className?: string }) {
 
 type NavItem = { to: string; label: string; hint?: string };
 
-const BROWSE: NavItem[] = [
-  { to: "/discover", label: "Discover", hint: "Find skills" },
-  { to: "/marketplace", label: "Marketplace", hint: "Top skills" },
-  { to: "/agents", label: "Agents", hint: "Ready-to-use agents" },
-  { to: "/agents/new", label: "Build an agent", hint: "Agent Factory (Pro)" },
+/**
+ * Public navigation is deliberately five entries — Agents, Skills, How it
+ * works, Pricing, Docs — so a first-time visitor never has to understand the
+ * internal architecture. Creator/publishing tools live under "Publish" and
+ * only appear once someone is signed in.
+ */
+const SKILLS: NavItem[] = [
+  { to: "/marketplace", label: "Marketplace", hint: "Top skills, ranked by Trust Score" },
+  { to: "/discover", label: "Discover", hint: "Search everything" },
   { to: "/packs", label: "Packs", hint: "Curated bundles" },
   { to: "/match", label: "Match", hint: "Pair skills to a goal" },
 ];
 
-const CREATE: NavItem[] = [
+const AGENTS_MENU: NavItem[] = [
+  { to: "/agents", label: "Agent Store", hint: "Ready-to-use corporate agents" },
+  { to: "/agents/new", label: "Build an agent", hint: "Agent Factory (Agent Pass)" },
+];
+
+const PUBLISH: NavItem[] = [
   { to: "/generate", label: "Create a skill", hint: "From a one-line idea" },
   { to: "/upload", label: "Upload a skill", hint: "Bring your own file" },
   { to: "/forge", label: "Skill Studio", hint: "Advanced editor & evaluation" },
-  { to: "/skillforge", label: "My SkillForge", hint: "Your installed stack & health" },
-];
-
-const COMMUNITY: NavItem[] = [
-  { to: "/skill-of-the-week", label: "Skill of the Week", hint: "Top skill, weekly" },
-  { to: "/use-cases", label: "Use cases", hint: "By vertical & task" },
+  { to: "/skillforge", label: "My SkillForge", hint: "Your installed stack & Trust Score" },
   { to: "/bounties", label: "Bounties", hint: "Get paid to publish skills" },
-  { to: "/leaderboard", label: "Affiliate leaderboard", hint: "Top referrers (30d)" },
+  { to: "/community", label: "Community", hint: "Creators, leaderboards, use cases" },
 ];
 
 const SIMPLE: NavItem[] = [
-  { to: "/connect", label: "Connect" },
+  { to: "/how-it-works", label: "How it works" },
   { to: "/pricing", label: "Pricing" },
   { to: "/docs", label: "Docs" },
+
 ];
 
 function NavDropdown({ label, items }: { label: string; items: NavItem[] }) {
@@ -109,9 +114,10 @@ export function Nav() {
             </span>
           </Link>
           <nav className="hidden min-w-0 items-center gap-5 lg:flex">
-            <NavDropdown label="Browse" items={BROWSE} />
-            <NavDropdown label="Create" items={CREATE} />
-            <NavDropdown label="Community" items={COMMUNITY} />
+            <NavDropdown label="Agents" items={AGENTS_MENU} />
+            <NavDropdown label="Skills" items={SKILLS} />
+            {user ? <NavDropdown label="Publish" items={PUBLISH} /> : null}
+
             {SIMPLE.map((l) => (
               <Link
                 key={l.to}
@@ -205,12 +211,13 @@ export function Nav() {
                 Sign in
               </Link>
               <Link
-                to="/signup"
+                to="/connect"
                 className="inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
               >
-                <span className="hidden sm:inline">Get started</span>
-                <span className="sm:hidden">Start</span>
+                <span className="hidden sm:inline">Try with my agent</span>
+                <span className="sm:hidden">Try it</span>
               </Link>
+
             </>
           )}
           <Sheet open={open} onOpenChange={setOpen}>
@@ -230,14 +237,17 @@ export function Nav() {
                 </SheetTitle>
               </SheetHeader>
               <nav className="mt-6 flex flex-col gap-4">
-                <MobileSection title="Browse" items={BROWSE} onNavigate={() => setOpen(false)} />
-                <MobileSection title="Create" items={CREATE} onNavigate={() => setOpen(false)} />
-                <MobileSection
-                  title="Community"
-                  items={COMMUNITY}
-                  onNavigate={() => setOpen(false)}
-                />
+                <MobileSection title="Agents" items={AGENTS_MENU} onNavigate={() => setOpen(false)} />
+                <MobileSection title="Skills" items={SKILLS} onNavigate={() => setOpen(false)} />
+                {user ? (
+                  <MobileSection
+                    title="Publish"
+                    items={PUBLISH}
+                    onNavigate={() => setOpen(false)}
+                  />
+                ) : null}
                 <MobileSection title="More" items={SIMPLE} onNavigate={() => setOpen(false)} />
+
 
                 <div className="mt-2 border-t border-border pt-4">
                   {user ? (

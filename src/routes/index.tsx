@@ -4,13 +4,9 @@ import { Footer } from "@/components/site/Footer";
 import { JsonLd } from "@/components/site/JsonLd";
 import { Hero } from "@/components/site/home/Hero";
 import { AgentFactory } from "@/components/site/home/AgentFactory";
-import { CompatibleAgents } from "@/components/site/home/CompatibleAgents";
-import { HowItWorks } from "@/components/site/home/HowItWorks";
-import { Proof } from "@/components/site/home/Proof";
 import { SecurityPromise } from "@/components/site/home/SecurityPromise";
 import { GradeImpact } from "@/components/site/home/GradeImpact";
 import { IndustryDemo } from "@/components/site/home/IndustryDemo";
-import { CoreConcepts } from "@/components/site/home/CoreConcepts";
 import { PlansTeaser } from "@/components/site/home/PlansTeaser";
 import { Faq } from "@/components/site/home/Faq";
 import { CtaSection } from "@/components/site/home/CtaSection";
@@ -89,7 +85,7 @@ const FAQ_LD = {
       name: "How does the MCP connection actually work?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "MCP (Model Context Protocol) lets your agent talk to external tools. You point your agent at Super Agent Skill once and it shows up as a connected tool. Every command flows through it — installs, generations and hot-swaps happen at runtime, no restart.",
+        text: "MCP (Model Context Protocol) lets your agent talk to external tools. You point your agent at Super Agent Skill once and it shows up as a connected tool. Every command flows through it — installs, generations and swaps happen at runtime. Some clients (Claude Desktop, Cursor) need the endpoint added to a config file and one restart; after that nothing else changes.",
       },
     },
     {
@@ -97,7 +93,7 @@ const FAQ_LD = {
       name: "Do I need to retrain my agent or change my code?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "No. Packages install through MCP at runtime — zero retraining, zero downtime, zero code changes. Every install is reversible and audited.",
+        text: "No retraining and no code changes in your agent. Packages install through MCP at runtime; some clients need the endpoint added to a config file and one restart the first time. Every install is reversible and audited.",
       },
     },
     {
@@ -128,11 +124,11 @@ const FAQ_LD = {
 };
 
 /**
- * One narrative, seven sections, ordered as a conversion funnel:
- * hook (Hero) → ease (HowItWorks) → show-don't-tell (IndustryDemo, the
- * most persuasive section, before any technical deep-dive) →
- * differentiation/trust (Proof) → vocabulary (CoreConcepts) →
- * monetization (PlansTeaser) → objections + close (Faq, CtaSection).
+ * Short conversion narrative: hook (Hero) → what you get (AgentFactory) →
+ * tangible A-grade delta (GradeImpact) → show-don't-tell (IndustryDemo) →
+ * IP/security objection (SecurityPromise) → price → objections → close.
+ * The technical depth (pipeline, compatibility, vocabulary, trust proof)
+ * lives on /how-it-works so the landing page stays scannable.
  */
 function Home() {
   return (
@@ -140,19 +136,10 @@ function Home() {
       <JsonLd data={[ORG_LD, SOFTWARE_LD, FAQ_LD]} />
       <Nav />
       <Hero />
-      {/* Corporate agent factory — the primary product story. */}
       <AgentFactory />
-      {/* Primary sales argument — the tangible A-grade delta sits directly
-          under the hook, before anything else. */}
       <GradeImpact />
-      <CompatibleAgents />
-      <HowItWorks />
       <IndustryDemo />
-      <Proof />
-      {/* IP / security objection — address the fear of uploading proprietary
-          skills before the visitor reaches pricing or the FAQ. */}
       <SecurityPromise />
-      <CoreConcepts />
       <PlansTeaser />
       <Faq />
       <CtaSection />
@@ -160,3 +147,4 @@ function Home() {
     </div>
   );
 }
+

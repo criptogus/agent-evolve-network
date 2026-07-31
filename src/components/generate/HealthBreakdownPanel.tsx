@@ -92,7 +92,7 @@ export function HealthBreakdownPanel({
             {open ? "−" : "+"}
           </button>
           <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-            Health Score breakdown
+            Trust Score breakdown
           </span>
           <span className="rounded-full bg-surface px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
             why this score
