@@ -13,7 +13,7 @@
 // PackageDraftLooseSchema), then coerce the values into the strict shape here.
 // Pure module — no server imports — so it can be unit-tested under plain node.
 import { z } from "zod";
-import { PackageDraftMinimalSchema, type PackageDraftMinimal } from "./schemas";
+import { PackageDraftMinimalSchema, type PackageDraftMinimal } from "./schemas.ts";
 
 export type DraftType = "skill" | "playbook" | "soul" | "guardrail";
 
