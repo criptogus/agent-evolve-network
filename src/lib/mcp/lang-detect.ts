@@ -76,8 +76,9 @@ export function detectLanguage(text: string): { lang: Lang; confidence: number }
     ["it", /(\bgli\b|zione\b|perché|\bdegli\b|\bnell)/g],
   ];
   const exclusive = EXCLUSIVE.map(([l, re]) => [l, (sample.match(re) ?? []).length] as const)
-    .filter(([, n]) => n >= 3)
+    .filter(([, n]) => n >= 2)
     .sort((a, b) => b[1] - a[1]);
+
   // Stability guard: if TWO languages both clear the exclusive threshold, the
   // winner must dominate (≥2× the runner-up); otherwise fall through to the
   // function-word counts instead of flip-flopping between near-tied claims.
