@@ -31,33 +31,38 @@ function XIcon({ className }: { className?: string }) {
 
 type NavItem = { to: string; label: string; hint?: string };
 
-const BROWSE: NavItem[] = [
-  { to: "/discover", label: "Discover", hint: "Find skills" },
-  { to: "/marketplace", label: "Marketplace", hint: "Top skills" },
-  { to: "/agents", label: "Agents", hint: "Ready-to-use agents" },
-  { to: "/agents/new", label: "Build an agent", hint: "Agent Factory (Pro)" },
+/**
+ * Public navigation is deliberately five entries — Agents, Skills, How it
+ * works, Pricing, Docs — so a first-time visitor never has to understand the
+ * internal architecture. Creator/publishing tools live under "Publish" and
+ * only appear once someone is signed in.
+ */
+const SKILLS: NavItem[] = [
+  { to: "/marketplace", label: "Marketplace", hint: "Top skills, ranked by Trust Score" },
+  { to: "/discover", label: "Discover", hint: "Search everything" },
   { to: "/packs", label: "Packs", hint: "Curated bundles" },
   { to: "/match", label: "Match", hint: "Pair skills to a goal" },
 ];
 
-const CREATE: NavItem[] = [
+const AGENTS_MENU: NavItem[] = [
+  { to: "/agents", label: "Agent Store", hint: "Ready-to-use corporate agents" },
+  { to: "/agents/new", label: "Build an agent", hint: "Agent Factory (Agent Pass)" },
+];
+
+const PUBLISH: NavItem[] = [
   { to: "/generate", label: "Create a skill", hint: "From a one-line idea" },
   { to: "/upload", label: "Upload a skill", hint: "Bring your own file" },
   { to: "/forge", label: "Skill Studio", hint: "Advanced editor & evaluation" },
-  { to: "/skillforge", label: "My SkillForge", hint: "Your installed stack & health" },
-];
-
-const COMMUNITY: NavItem[] = [
-  { to: "/skill-of-the-week", label: "Skill of the Week", hint: "Top skill, weekly" },
-  { to: "/use-cases", label: "Use cases", hint: "By vertical & task" },
+  { to: "/skillforge", label: "My SkillForge", hint: "Your installed stack & Trust Score" },
   { to: "/bounties", label: "Bounties", hint: "Get paid to publish skills" },
-  { to: "/leaderboard", label: "Affiliate leaderboard", hint: "Top referrers (30d)" },
+  { to: "/community", label: "Community", hint: "Creators, leaderboards, use cases" },
 ];
 
 const SIMPLE: NavItem[] = [
-  { to: "/connect", label: "Connect" },
+  { to: "/how-it-works", label: "How it works" },
   { to: "/pricing", label: "Pricing" },
   { to: "/docs", label: "Docs" },
+
 ];
 
 function NavDropdown({ label, items }: { label: string; items: NavItem[] }) {
