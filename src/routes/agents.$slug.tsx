@@ -12,6 +12,7 @@ import { Footer } from "@/components/site/Footer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AgentIcon } from "@/components/agents/AgentIcon";
 
 export const Route = createFileRoute("/agents/$slug")({
   component: AgentDetail,
@@ -98,7 +99,7 @@ function AgentDetail() {
               <Link to="/agents" className="text-sm text-muted-foreground hover:text-foreground">
                 ← Agent Store
               </Link>
-              <div className="mt-4 text-5xl">{data.summary.emoji}</div>
+              <AgentIcon slug={data.summary.slug} size="lg" className="mt-4" />
               <h1 className="mt-3 text-4xl font-bold tracking-tight">{data.summary.name}</h1>
               <p className="mt-1 text-muted-foreground">{data.summary.role}</p>
               <p className="mt-4 text-lg">{data.summary.description}</p>

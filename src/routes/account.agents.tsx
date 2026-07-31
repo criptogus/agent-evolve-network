@@ -8,6 +8,7 @@ import { Footer } from "@/components/site/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AgentIcon } from "@/components/agents/AgentIcon";
 
 export const Route = createFileRoute("/account/agents")({
   component: MyAgents,
@@ -79,7 +80,7 @@ function MyAgents() {
               <CardHeader>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-3xl">{b.emoji || "🤖"}</div>
+                    <AgentIcon slug={b.slug} size="md" />
                     <CardTitle className="mt-2 text-lg">{b.name}</CardTitle>
                     <CardDescription>{b.role}</CardDescription>
                   </div>

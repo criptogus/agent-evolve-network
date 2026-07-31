@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listAgents } from "@/lib/agents/agents.functions";
 import { useTrack } from "@/lib/telemetry/use-track";
+import { AgentIcon } from "@/components/agents/AgentIcon";
 
 const PIPELINE = [
   {
@@ -67,7 +68,7 @@ export function AgentFactory() {
                   onClick={() => track("cta_clicked", { cta: "home_agent_card", slug: a.slug })}
                   className="group rounded-xl border border-border bg-background p-3 transition-colors hover:border-primary/50 hover:bg-accent"
                 >
-                  <div className="text-2xl">{a.emoji}</div>
+                  <AgentIcon slug={a.slug} size="sm" />
                   <p className="mt-2 truncate text-sm font-medium group-hover:text-primary">{a.name}</p>
                   <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">
                     1 soul · {a.skill_count} skills · {a.playbook_count} playbooks

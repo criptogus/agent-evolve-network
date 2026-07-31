@@ -6,6 +6,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AgentIcon } from "@/components/agents/AgentIcon";
 
 export const Route = createFileRoute("/agents/")({
   component: AgentsIndex,
@@ -53,7 +54,7 @@ function AgentsIndex() {
             <Link key={a.slug} to="/agents/$slug" params={{ slug: a.slug }} className="group">
               <Card className="h-full transition-shadow group-hover:shadow-lg">
                 <CardHeader>
-                  <div className="text-4xl">{a.emoji}</div>
+                  <AgentIcon slug={a.slug} size="md" />
                   <CardTitle className="mt-2 group-hover:text-primary">{a.name}</CardTitle>
                   <CardDescription>{a.tagline}</CardDescription>
                 </CardHeader>

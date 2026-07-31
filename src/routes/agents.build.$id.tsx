@@ -11,6 +11,7 @@ import { Footer } from "@/components/site/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AgentIcon } from "@/components/agents/AgentIcon";
 
 export const Route = createFileRoute("/agents/build/$id")({
   component: BuildPage,
@@ -123,7 +124,7 @@ function BuildPage() {
         {b && (
           <>
             <header className="mt-4 mb-8">
-              <div className="text-5xl">{b.emoji || "🤖"}</div>
+              <AgentIcon slug={b.slug} size="lg" />
               <h1 className="mt-3 text-4xl font-bold tracking-tight">{b.name}</h1>
               <p className="mt-1 text-muted-foreground">{b.role}</p>
               {b.tagline && <p className="mt-3 text-lg">{b.tagline}</p>}
