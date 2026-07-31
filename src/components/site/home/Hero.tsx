@@ -36,40 +36,40 @@ export function Hero() {
               </span>
             </div>
             <h1 className="mt-5 text-balance text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
-              Ready-to-use <span className="text-primary">corporate AI agents</span> — or build
-              your own in 5 minutes.
+              Install tested capabilities in your{" "}
+              <span className="text-primary">AI agent</span> — and keep them safe and up to date.
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground lg:mx-0 lg:text-lg">
-              Every agent ships with an operating <span className="text-foreground">soul</span>,
-              real <span className="text-foreground">skills</span>,{" "}
-              <span className="text-foreground">playbooks</span> and enforceable{" "}
-              <span className="text-foreground">guardrails</span> — scored to grade A before you
-              install it. Download a curated CEO, CMO or CTO agent, or describe your role and the
-              Agent Factory builds one on the state of the art. No code. No fine-tuning.
+              Connect Claude, Hermes or ChatGPT once, then give it a ready-made corporate agent — or
+              describe the role you need and we build one for you. Everything is tested against
+              jailbreaks, scored in public and kept patched. No code, no fine-tuning.
             </p>
 
-            {/* One primary action, one visually subordinate alternative */}
+            {/* One canonical action; everything else is visually subordinate */}
             <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
               <Link
-                to="/agents"
-                onClick={() => track("cta_clicked", { cta: "hero_primary_agents", to: "/agents" })}
+                to="/connect"
+                onClick={() => track("cta_clicked", { cta: "hero_primary_try", to: "/connect" })}
                 className="inline-flex h-12 w-full items-center justify-center rounded-md bg-primary px-7 text-[15px] font-semibold text-primary-foreground shadow-elevated transition-all hover:scale-[1.02] hover:opacity-95 sm:w-auto"
               >
-                Get a ready-made agent →
+                Try with my agent →
               </Link>
               <Link
-                to="/agents/new"
-                onClick={() => track("cta_clicked", { cta: "hero_secondary_factory", to: "/agents/new" })}
+                to="/agents"
+                onClick={() => track("cta_clicked", { cta: "hero_secondary_agents", to: "/agents" })}
                 className="inline-flex h-12 w-full items-center justify-center rounded-md border border-border bg-surface-elevated px-6 text-[15px] font-medium text-foreground transition-colors hover:bg-accent sm:w-auto"
               >
-                Build your own agent
+                Browse ready-made agents
               </Link>
 
             </div>
             <p className="mx-auto mt-3 max-w-[22rem] text-xs leading-relaxed text-muted-foreground sm:max-w-none lg:mx-0">
-              13 curated agents · Custom agents on Agent Pass · Free forever tier for public
-              skills via the MCP gateway · No signup to browse
+              Free tier for public skills · No signup to browse ·{" "}
+              <Link to="/agents/new" className="underline decoration-dotted hover:text-foreground">
+                or build a custom agent
+              </Link>
             </p>
+
 
             {/* Proof strip */}
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
