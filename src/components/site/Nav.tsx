@@ -35,6 +35,7 @@ const BROWSE: NavItem[] = [
   { to: "/discover", label: "Discover", hint: "Find skills" },
   { to: "/marketplace", label: "Marketplace", hint: "Top skills" },
   { to: "/agents", label: "Agents", hint: "Ready-to-use agents" },
+  { to: "/agents/new", label: "Build an agent", hint: "Agent Factory (Pro)" },
   { to: "/packs", label: "Packs", hint: "Curated bundles" },
   { to: "/match", label: "Match", hint: "Pair skills to a goal" },
 ];
@@ -152,6 +153,9 @@ export function Nav() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem asChild>
+                    <Link to="/account/agents">My agents</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/account/packages">My packages</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -238,6 +242,9 @@ export function Nav() {
                 <div className="mt-2 border-t border-border pt-4">
                   {user ? (
                     <div className="flex flex-col gap-1">
+                      <MobileLink to="/account/agents" onNavigate={() => setOpen(false)}>
+                        My agents
+                      </MobileLink>
                       <MobileLink to="/account/packages" onNavigate={() => setOpen(false)}>
                         My packages
                       </MobileLink>

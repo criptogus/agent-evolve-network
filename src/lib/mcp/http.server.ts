@@ -23,7 +23,14 @@ import {
   cloudSkillsExportTool,
   cloudSkillsImportTool,
 } from "@/lib/mcp/tools/cloud-skills";
-import { listAgentsTool, installAgentTool } from "@/lib/mcp/tools/agents";
+import {
+  listAgentsTool,
+  installAgentTool,
+  createAgentTool,
+  listMyAgentsTool,
+  getMyAgentTool,
+  installMyAgentTool,
+} from "@/lib/mcp/tools/agents";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
 import { ORIGIN, sha256, CORS_HEADERS } from "@/lib/oauth/mcp-oauth.server";
@@ -117,6 +124,10 @@ const mcp = createMcpServer({
     cloudSkillsImportTool,
     listAgentsTool,
     installAgentTool,
+    createAgentTool,
+    listMyAgentsTool,
+    getMyAgentTool,
+    installMyAgentTool,
   ],
 });
 

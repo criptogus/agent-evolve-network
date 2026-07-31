@@ -32,40 +32,43 @@ export function Hero() {
             <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-surface-elevated px-3 py-1 text-xs text-muted-foreground shadow-sm">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-signal pulse-dot" />
               <span className="min-w-0 truncate sm:whitespace-normal">
-                {SKILLS_LABEL} signed skills · Free to start
+                Corporate agent factory · {SKILLS_LABEL} signed skills
               </span>
             </div>
             <h1 className="mt-5 text-balance text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
-              Turn Claude, Hermes or ChatGPT into{" "}
-              <span className="text-primary">an expert in your field</span> — in 30 seconds.
+              Ready-to-use <span className="text-primary">corporate AI agents</span> — or build
+              your own in 5 minutes.
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground lg:mx-0 lg:text-lg">
-              Paste one link and your agent gains{" "}
-              <span className="text-foreground">{SKILLS_LABEL} expert skills</span> — every one
-              signed, tested against jailbreaks and scored in public. No code. No fine-tuning.
+              Every agent ships with an operating <span className="text-foreground">soul</span>,
+              real <span className="text-foreground">skills</span>,{" "}
+              <span className="text-foreground">playbooks</span> and enforceable{" "}
+              <span className="text-foreground">guardrails</span> — scored to grade A before you
+              install it. Download a curated CEO, CMO or CTO agent, or describe your role and the
+              Agent Factory builds one on the state of the art. No code. No fine-tuning.
             </p>
 
             {/* One primary action, one visually subordinate alternative */}
             <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
               <Link
-                to="/connect"
-                onClick={() => track("cta_clicked", { cta: "hero_primary_connect", to: "/connect" })}
+                to="/agents"
+                onClick={() => track("cta_clicked", { cta: "hero_primary_agents", to: "/agents" })}
                 className="inline-flex h-12 w-full items-center justify-center rounded-md bg-primary px-7 text-[15px] font-semibold text-primary-foreground shadow-elevated transition-all hover:scale-[1.02] hover:opacity-95 sm:w-auto"
               >
-                Connect your agent — free →
+                Get a ready-made agent →
               </Link>
               <Link
-                to="/marketplace"
-                onClick={() => track("cta_clicked", { cta: "hero_secondary_marketplace", to: "/marketplace" })}
+                to="/agents/new"
+                onClick={() => track("cta_clicked", { cta: "hero_secondary_factory", to: "/agents/new" })}
                 className="inline-flex h-12 w-full items-center justify-center rounded-md border border-border bg-surface-elevated px-6 text-[15px] font-medium text-foreground transition-colors hover:bg-accent sm:w-auto"
               >
-                Browse the skills
+                Build your own agent
               </Link>
 
             </div>
             <p className="mx-auto mt-3 max-w-[22rem] text-xs leading-relaxed text-muted-foreground sm:max-w-none lg:mx-0">
-              Free forever: unlimited public skills via the MCP gateway · No credit card · No
-              signup to browse · Open source (Apache 2.0)
+              13 curated agents · Custom agents on Agent Pass · Free forever tier for public
+              skills via the MCP gateway · No signup to browse
             </p>
 
             {/* Proof strip */}

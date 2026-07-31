@@ -213,6 +213,81 @@ export type Database = {
           },
         ]
       }
+      agent_builds: {
+        Row: {
+          brief: Json
+          created_at: string
+          emoji: string
+          error: string | null
+          grade: string | null
+          guardrails: Json
+          id: string
+          name: string
+          playbooks: Json
+          report: Json | null
+          research_sources: Json
+          research_summary: string | null
+          role: string
+          score: number | null
+          skills: Json
+          slug: string
+          soul: string | null
+          status: string
+          step: string | null
+          tagline: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brief?: Json
+          created_at?: string
+          emoji?: string
+          error?: string | null
+          grade?: string | null
+          guardrails?: Json
+          id?: string
+          name: string
+          playbooks?: Json
+          report?: Json | null
+          research_sources?: Json
+          research_summary?: string | null
+          role: string
+          score?: number | null
+          skills?: Json
+          slug: string
+          soul?: string | null
+          status?: string
+          step?: string | null
+          tagline?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brief?: Json
+          created_at?: string
+          emoji?: string
+          error?: string | null
+          grade?: string | null
+          guardrails?: Json
+          id?: string
+          name?: string
+          playbooks?: Json
+          report?: Json | null
+          research_sources?: Json
+          research_summary?: string | null
+          role?: string
+          score?: number | null
+          skills?: Json
+          slug?: string
+          soul?: string | null
+          status?: string
+          step?: string | null
+          tagline?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cloud_skill_versions: {
         Row: {
           changelog: string | null
