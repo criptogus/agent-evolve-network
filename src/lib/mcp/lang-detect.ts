@@ -103,8 +103,13 @@ export function detectLanguage(text: string): { lang: Lang; confidence: number }
     if (counts[excLang] >= 2 || excHits >= 8) {
       return { lang: excLang, confidence: conf(Math.max(counts[excLang], excHits)) };
     }
+    // Weak but real orthographic evidence: still better than "other", which
+    // strips localized feedback and the non-EN scoring path from the author
+    // (client-reported: dense PT docs landed on other/conf 0.4).
+    if (excHits >= 2) return { lang: excLang, confidence: 0.55 };
   }
   if (topHits < 4) return { lang: "other", confidence: 0.3 };
+
   // Near-tie: prefer the non-English candidate rather than bailing to "other".
   // "other" is the worst outcome for the writer (no localized feedback, weaker
   // semantic hint), so we only use it when nothing at all resembles a language.
