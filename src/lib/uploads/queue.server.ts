@@ -2,7 +2,7 @@
 // See migration 20260525000000_package_upload_jobs.sql for context.
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { inferType } from "@/lib/admin/author.server";
-import { generateDraft, insertDraftPackage } from "@/lib/admin/author.server";
+import { generateDraftWithMeta, insertDraftPackage } from "@/lib/admin/author.server";
 import { inspectContent } from "@/lib/security/prompt-injection-guard";
 
 const supabaseAdmin = _supabaseAdmin as any;
