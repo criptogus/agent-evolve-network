@@ -2,7 +2,7 @@ import type { AgentDef } from "../types";
 
 export const leadershipAgents: AgentDef[] = [
   {
-    slug: "cmo",
+    slug: "chief-marketing-officer",
     name: "CMO Agent",
     role: "Chief Marketing Officer",
     emoji: "📢",
