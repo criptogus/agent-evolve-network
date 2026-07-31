@@ -1,5 +1,5 @@
 import { defineTool } from "mcp-tanstack-start";
-import { detectLanguage, type Lang } from "@/lib/mcp/lang-detect";
+import { detectLanguage, normalizeTypography, type Lang } from "@/lib/mcp/lang-detect";
 import { z } from "zod";
 import { generateText, Output } from "ai";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
