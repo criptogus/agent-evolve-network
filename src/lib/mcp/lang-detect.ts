@@ -4,8 +4,26 @@
 // tests/lang-detect.test.mjs — in particular the PT-vs-FR exclusivity fix.
 
 export type Lang = "en" | "pt" | "es" | "fr" | "de" | "it" | "other";
+
+/**
+ * Normalize "smart" typography to ASCII equivalents. Portuguese authors write
+ * with em-dashes and ellipsis characters as a matter of course, and those
+ * characters used to (a) perturb detection samples and (b) trip the truncation
+ * heuristic in the review engine. Normalizing once, up front, kills both.
+ */
+export function normalizeTypography(text: string): string {
+  return text
+    .normalize("NFC")
+    .replace(/[\u2014\u2013\u2012\u2015]/g, "-") // em/en/figure/horizontal dash
+    .replace(/\u2026/g, "...") // ellipsis
+    .replace(/[\u2018\u2019\u201B\u2032]/g, "'")
+    .replace(/[\u201C\u201D\u201F\u2033]/g, '"')
+    .replace(/\u00A0/g, " ");
+}
+
 export function detectLanguage(text: string): { lang: Lang; confidence: number } {
-  const sample = text.slice(0, 8000).toLowerCase();
+  const sample = normalizeTypography(text.slice(0, 8000)).toLowerCase();
+
   const wordMatch = (re: RegExp) => (sample.match(re) ?? []).length;
   const diaMatch = (re: RegExp) => (sample.match(re) ?? []).length;
   const counts: Record<Exclude<Lang, "other">, number> = {
