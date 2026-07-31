@@ -2987,6 +2987,54 @@ export type Database = {
           },
         ]
       }
+      skill_review_runs: {
+        Row: {
+          created_at: string
+          doc_class: string | null
+          doc_hash: string
+          doc_key: string
+          doc_type: string
+          format_score: number | null
+          grade: string | null
+          id: string
+          language: string | null
+          overall_score: number
+          substance_score: number | null
+          user_id: string
+          verdict_score: number | null
+        }
+        Insert: {
+          created_at?: string
+          doc_class?: string | null
+          doc_hash: string
+          doc_key: string
+          doc_type?: string
+          format_score?: number | null
+          grade?: string | null
+          id?: string
+          language?: string | null
+          overall_score: number
+          substance_score?: number | null
+          user_id: string
+          verdict_score?: number | null
+        }
+        Update: {
+          created_at?: string
+          doc_class?: string | null
+          doc_hash?: string
+          doc_key?: string
+          doc_type?: string
+          format_score?: number | null
+          grade?: string | null
+          id?: string
+          language?: string | null
+          overall_score?: number
+          substance_score?: number | null
+          user_id?: string
+          verdict_score?: number | null
+        }
+        Relationships: []
+      }
       skill_robustness_findings: {
         Row: {
           affected_version: string | null
