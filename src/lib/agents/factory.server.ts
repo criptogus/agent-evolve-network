@@ -202,7 +202,7 @@ ${research.principles.join("\n")}
 Produce 6 to 9 guardrails. Cover, at minimum: (1) the user's stated hard constraints, (2) confidential/PII data handling, (3) regulated or legal claims relevant to this industry, (4) financial or contractual commitments the agent must not make alone, (5) fabrication — no invented numbers, sources or customer facts, (6) escalation to a human.
 
 Return STRICT JSON array:
-[{"slug":"kebab-case","title":"Short name","rule":"the enforceable sentence","why":"one line on the risk it prevents"}]`,
+[{"slug":"kebab-case","title":"Short name","rule":"the enforceable sentence","why":"one line on the risk it prevents","blocked_example":"a realistic user request, in quotes-free plain text, that this rule blocks","instead":"what the agent does instead when it hits this rule (one line)"}]`,
   });
   const arr = parseJsonLoose(text);
   return (Array.isArray(arr) ? arr : []).slice(0, 10).map((g: any, i: number) => ({
@@ -213,6 +213,8 @@ Return STRICT JSON array:
     title: String(g.title || `Guardrail ${i + 1}`).slice(0, 120),
     rule: String(g.rule || "").slice(0, 600),
     why: String(g.why || "").slice(0, 400),
+    blocked_example: g.blocked_example ? String(g.blocked_example).slice(0, 300) : undefined,
+    instead: g.instead ? String(g.instead).slice(0, 300) : undefined,
   }));
 }
 
