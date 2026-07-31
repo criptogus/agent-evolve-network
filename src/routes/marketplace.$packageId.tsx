@@ -969,7 +969,7 @@ function InstallModal({
                 {pkg.name}@{version} {isUpgrade ? "upgraded" : "installed"}
               </div>
               <div className="mt-1 text-sm text-muted-foreground">
-                Your agent's health score has been updated.
+                Your agent's Trust Score has been updated.
               </div>
             </div>
             <div className="flex justify-center gap-2 pt-2">
