@@ -310,3 +310,81 @@ export const getAgentBuildPrompt = createServerFn({ method: "POST" })
     const { buildSystemPrompt } = await import("./factory-adapt");
     return { system_prompt: buildSystemPrompt(row as any) };
   });
+
+/**
+ * Guided editor: lets the owner refine the soul, tagline and guardrail rules
+ * before publishing/downloading the agent. Server-side validation mirrors the
+ * generator contract so a hand-edited agent can never ship weaker guardrails
+ * than a generated one (every rule needs a rule + why).
+ */
+const GuardrailEdit = z.object({
+  slug: z.string().min(1).max(80).optional(),
+  title: z.string().min(3).max(120),
+  rule: z.string().min(12).max(600),
+  why: z.string().max(600).default(""),
+  blocked_example: z.string().max(600).optional(),
+  instead: z.string().max(600).optional(),
+});
+
+const DraftEdit = z.object({
+  build_id: z.string().uuid(),
+  soul: z.string().min(200).max(20000),
+  tagline: z.string().max(200).optional(),
+  guardrails: z.array(GuardrailEdit).min(1).max(20),
+  rescore: z.boolean().default(true),
+});
+
+export const updateAgentBuildDraft = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => DraftEdit.parse(d))
+  .handler(async ({ context, data }) => {
+    const { supabase, userId } = context as any;
+    await assertPaid(supabase, userId);
+
+    const { data: row, error } = await supabase
+      .from("agent_builds")
+      .select("*")
+      .eq("id", data.build_id)
+      .eq("user_id", userId)
+      .single();
+    if (error || !row) throw new Response("Build not found", { status: 404 });
+    if (row.status !== "ready") throw new Response("Finish the build before editing it.", { status: 409 });
+
+    const guardrails = data.guardrails.map((g, i) => ({
+      ...g,
+      why: g.why || "Protects the company from an unacceptable outcome.",
+      slug: g.slug || `guardrail-${i + 1}`,
+    }));
+
+    const patch: Record<string, unknown> = {
+      soul: data.soul,
+      guardrails,
+      step: "Edited by you",
+      ...(data.tagline ? { tagline: data.tagline } : {}),
+    };
+
+    let score: number | null = row.score ?? null;
+    let grade: string | null = row.grade ?? null;
+    let report = row.report ?? {};
+
+    if (data.rescore) {
+      const factory = await import("./factory.server");
+      const { gradeLetter } = await import("@/lib/skills/impact-projection");
+      const scored = await factory.scoreAgent({
+        brief: row.brief as AgentBrief,
+        soul: data.soul,
+        skills: row.skills ?? [],
+        playbooks: row.playbooks ?? [],
+        guardrails,
+      });
+      score = scored.score;
+      grade = gradeLetter(scored.score);
+      report = { ...report, final_pass: scored, edited_pass: scored };
+      Object.assign(patch, { score, grade, report });
+    }
+
+    const { error: uErr } = await supabase.from("agent_builds").update(patch).eq("id", row.id);
+    if (uErr) throw new Response(uErr.message, { status: 500 });
+
+    return { ok: true, score, grade };
+  });
