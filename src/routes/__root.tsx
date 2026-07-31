@@ -92,8 +92,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@superagentskill" },
       { name: "twitter:title", content: "Super Agent Skill" },
       { name: "twitter:description", content: "Super Agent Skill turns AI agents into continuously evolving specialists via MCP." },
-      { property: "og:image", content: "https://superagentskill.com/og.jpg?v=2026-07-31" },
-      { name: "twitter:image", content: "https://superagentskill.com/og.jpg?v=2026-07-31" },
+      // LinkedIn/Facebook only re-scrape when the image URL itself changes,
+      // and some scrapers drop query strings — so version the filename.
+      { property: "og:image", content: "https://superagentskill.com/og-2026-07-31.jpg" },
+      { property: "og:image:secure_url", content: "https://superagentskill.com/og-2026-07-31.jpg" },
+      { property: "og:image:type", content: "image/jpeg" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "640" },
+      { property: "og:image:alt", content: "Super Agent Skill — signed, tested skills for AI agents" },
+      { name: "twitter:image", content: "https://superagentskill.com/og-2026-07-31.jpg" },
+      { name: "twitter:image:alt", content: "Super Agent Skill — signed, tested skills for AI agents" },
 
     ],
     links: [
