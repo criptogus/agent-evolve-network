@@ -1,6 +1,10 @@
+/**
+ * Agent Store server functions. Runtime helpers and schemas live in
+ * ./agents.shared because server-fn splitting strips module-scope siblings.
+ */
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { SlugInput, assertPaid } from "./agents.shared";
 import { findAgent, listAgentSummaries, AGENT_CATALOG_VERSION } from "./catalog";
 import { agentSystemPrompt, agentMarkdownBundle } from "./bundle";
 import type { AgentSummary } from "./types";
@@ -19,8 +23,6 @@ export const listAgents = createServerFn({ method: "GET" }).handler(
     catalog_version: AGENT_CATALOG_VERSION,
   }),
 );
-
-const SlugInput = z.object({ slug: z.string().min(1).max(80) });
 
 /** Public: detail page preview — metadata plus a soul excerpt, never the full bundle. */
 export const getAgentPreview = createServerFn({ method: "GET" })
@@ -46,21 +48,6 @@ export const getAgentPreview = createServerFn({ method: "GET" })
       playbooks: a.playbooks.map((p) => ({ slug: p.slug, title: p.title, summary: p.summary })),
     };
   });
-
-async function assertPaid(supabase: any, userId: string) {
-  const { data: sub } = await supabase
-    .from("subscriptions")
-    .select("status,current_period_end")
-    .eq("user_id", userId)
-    .in("status", ["active", "trialing", "past_due"])
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  const active = !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
-  if (!active) {
-    throw new Response("A paid plan is required to download agents. Upgrade at /pricing.", { status: 402 });
-  }
-}
 
 /** Pro-only: full copy/paste system prompt + single-file markdown bundle. */
 export const getAgentBundle = createServerFn({ method: "POST" })
