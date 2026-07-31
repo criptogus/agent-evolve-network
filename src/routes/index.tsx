@@ -128,11 +128,11 @@ const FAQ_LD = {
 };
 
 /**
- * One narrative, seven sections, ordered as a conversion funnel:
- * hook (Hero) → ease (HowItWorks) → show-don't-tell (IndustryDemo, the
- * most persuasive section, before any technical deep-dive) →
- * differentiation/trust (Proof) → vocabulary (CoreConcepts) →
- * monetization (PlansTeaser) → objections + close (Faq, CtaSection).
+ * Short conversion narrative: hook (Hero) → what you get (AgentFactory) →
+ * tangible A-grade delta (GradeImpact) → show-don't-tell (IndustryDemo) →
+ * IP/security objection (SecurityPromise) → price → objections → close.
+ * The technical depth (pipeline, compatibility, vocabulary, trust proof)
+ * lives on /how-it-works so the landing page stays scannable.
  */
 function Home() {
   return (
@@ -140,19 +140,10 @@ function Home() {
       <JsonLd data={[ORG_LD, SOFTWARE_LD, FAQ_LD]} />
       <Nav />
       <Hero />
-      {/* Corporate agent factory — the primary product story. */}
       <AgentFactory />
-      {/* Primary sales argument — the tangible A-grade delta sits directly
-          under the hook, before anything else. */}
       <GradeImpact />
-      <CompatibleAgents />
-      <HowItWorks />
       <IndustryDemo />
-      <Proof />
-      {/* IP / security objection — address the fear of uploading proprietary
-          skills before the visitor reaches pricing or the FAQ. */}
       <SecurityPromise />
-      <CoreConcepts />
       <PlansTeaser />
       <Faq />
       <CtaSection />
@@ -160,3 +151,4 @@ function Home() {
     </div>
   );
 }
+

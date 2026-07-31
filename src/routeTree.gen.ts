@@ -23,6 +23,7 @@ import { Route as EnterpriseRouteImport } from './routes/enterprise'
 import { Route as EvaluationRouteImport } from './routes/evaluation'
 import { Route as ForgeRouteImport } from './routes/forge'
 import { Route as GenerateRouteImport } from './routes/generate'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as LoginRouteImport } from './routes/login'
@@ -221,6 +222,11 @@ const ForgeRoute = ForgeRouteImport.update({
 const GenerateRoute = GenerateRouteImport.update({
   id: '/generate',
   path: '/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeaderboardRoute = LeaderboardRouteImport.update({
@@ -905,6 +911,7 @@ export interface FileRoutesByFullPath {
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/leaderboard': typeof LeaderboardRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
@@ -1049,6 +1056,7 @@ export interface FileRoutesByTo {
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/leaderboard': typeof LeaderboardRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
@@ -1195,6 +1203,7 @@ export interface FileRoutesById {
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/leaderboard': typeof LeaderboardRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
@@ -1342,6 +1351,7 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/forge'
     | '/generate'
+    | '/how-it-works'
     | '/leaderboard'
     | '/llms.txt'
     | '/login'
@@ -1486,6 +1496,7 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/forge'
     | '/generate'
+    | '/how-it-works'
     | '/leaderboard'
     | '/llms.txt'
     | '/login'
@@ -1631,6 +1642,7 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/forge'
     | '/generate'
+    | '/how-it-works'
     | '/leaderboard'
     | '/llms.txt'
     | '/login'
@@ -1777,6 +1789,7 @@ export interface RootRouteChildren {
   EvaluationRoute: typeof EvaluationRoute
   ForgeRoute: typeof ForgeRouteWithChildren
   GenerateRoute: typeof GenerateRoute
+  HowItWorksRoute: typeof HowItWorksRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   LoginRoute: typeof LoginRoute
@@ -1975,6 +1988,13 @@ declare module '@tanstack/react-router' {
       path: '/generate'
       fullPath: '/generate'
       preLoaderRoute: typeof GenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/leaderboard': {
@@ -3089,6 +3109,7 @@ const rootRouteChildren: RootRouteChildren = {
   EvaluationRoute: EvaluationRoute,
   ForgeRoute: ForgeRouteWithChildren,
   GenerateRoute: GenerateRoute,
+  HowItWorksRoute: HowItWorksRoute,
   LeaderboardRoute: LeaderboardRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   LoginRoute: LoginRoute,
