@@ -10,6 +10,7 @@ import { getGatewayModel } from "@/lib/ai-gateway";
 import { getIdempotent, putIdempotent } from "@/lib/mcp/idempotency";
 import { twoProportionUplift } from "@/lib/experiments/uplift";
 import { projectImpact, projectionToText } from "@/lib/skills/impact-projection";
+import { docKey, loadReviewHistory, recordReviewRun } from "@/lib/skills/review-history.server";
 
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 
@@ -2448,7 +2449,8 @@ export const reviewSkillTool = defineTool({
     language: languageOverride,
     previous_hash,
     previous_overall_score,
-  }) => {
+  }, ctx?: any) => {
+    const callerId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
     const core = await computeReview({
       name,
       type,
@@ -2475,15 +2477,39 @@ export const reviewSkillTool = defineTool({
 
     // Delta vs the caller's last run. Hash is non-crypto; client sends back
     // whatever we emitted previously and we compare overall + content hash.
+    // Server-side history first: authenticated callers get the delta without
+    // having to echo previous_hash/previous_overall_score themselves.
+    const key = docKey(name, type);
+    const history = callerId ? await loadReviewHistory(callerId, key) : null;
+    const lastRun = history?.runs[0] ?? null;
+    const prevScore =
+      typeof previous_overall_score === "number" ? previous_overall_score : lastRun?.overall_score ?? null;
+    const prevHash = previous_hash ?? lastRun?.doc_hash ?? null;
     const delta =
-      typeof previous_overall_score === "number"
+      typeof prevScore === "number"
         ? {
-            previous_overall_score,
+            previous_overall_score: prevScore,
             current_overall_score: overall,
-            change: overall - previous_overall_score,
-            same_content: previous_hash === contentHash,
+            change: overall - prevScore,
+            same_content: prevHash === contentHash,
+            source: typeof previous_overall_score === "number" ? "caller" : "server_history",
           }
         : null;
+    if (callerId) {
+      await recordReviewRun({
+        userId: callerId,
+        docKey: key,
+        docHash: contentHash,
+        docType: type,
+        docClass: docClassVal,
+        language: (core.language as { detected?: string } | undefined)?.detected ?? null,
+        overall,
+        verdict: verdictScore,
+        format: (core.format_score as number | undefined) ?? null,
+        substance: (core.substance_score as number | undefined) ?? null,
+        grade: (core.grade as string | undefined) ?? null,
+      });
+    }
 
     // Create a feedback request so the host LLM can rate this review via the
     // `submit_feedback` MCP tool. Single-use, 30-day TTL, validated server-side.
@@ -2501,6 +2527,19 @@ export const reviewSkillTool = defineTool({
     return json({
       ...core,
       delta_vs_previous: delta,
+      review_history: history
+        ? {
+            doc_key: history.doc_key,
+            runs: history.runs.length,
+            first_overall_score: history.first_overall_score,
+            best_overall_score: history.best_overall_score,
+            total_change: history.total_change,
+            timeline: history.runs
+              .slice()
+              .reverse()
+              .map((r) => ({ at: r.created_at, overall: r.overall_score, grade: r.grade })),
+          }
+        : null,
       impact_projection: {
         ...impact,
         summary: projectionToText(impact),
