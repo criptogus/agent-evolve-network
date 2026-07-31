@@ -1046,7 +1046,7 @@ function Customizer({ item, onClose }: { item: Item; onClose: () => void }) {
           </div>
           <div className="mt-3 flex items-center justify-between">
             <div className="text-xs text-muted-foreground">
-              Health Score impact:{" "}
+              Trust Score impact:{" "}
               <span className="font-mono text-signal-foreground">
                 +{(1 + priorities.length * 0.4).toFixed(1)}
               </span>

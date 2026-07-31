@@ -27,7 +27,7 @@ export function buildHealthReportMarkdown(r: ReportInput): string {
   ) as Record<Kind, number>;
 
   const lines: string[] = [];
-  lines.push(`# Super Agent Skill — Health Score Report`);
+  lines.push(`# Super Agent Skill — Trust Score Report`);
   lines.push(``);
   lines.push(`Generated: ${ts.toISOString()}`);
   lines.push(
@@ -144,7 +144,7 @@ export async function downloadHealthReportPDF(r: ReportInput) {
   const dL = r.score.latency - r.baseline.latency;
 
   // Header
-  writeText("Super Agent Skill — Health Score Report", { size: 20, bold: true, gap: 6 });
+  writeText("Super Agent Skill — Trust Score Report", { size: 20, bold: true, gap: 6 });
   writeText(`Generated: ${new Date().toLocaleString()}`, {
     size: 9,
     color: [120, 120, 120],
@@ -245,7 +245,7 @@ export async function downloadHealthReportPDF(r: ReportInput) {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(160, 160, 160);
-    doc.text(`Super Agent Skill · Health Score Report · Page ${i} / ${total}`, margin, pageH - 24);
+    doc.text(`Super Agent Skill · Trust Score Report · Page ${i} / ${total}`, margin, pageH - 24);
   }
 
   const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);

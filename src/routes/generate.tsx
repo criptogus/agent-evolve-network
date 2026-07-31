@@ -37,7 +37,7 @@ export const Route = createFileRoute("/generate")({
       {
         name: "description",
         content:
-          "Type a command in plain English and watch Super Agent Skill generate skills, playbooks and souls in real time, with a live Health Score summary.",
+          "Type a command in plain English and watch Super Agent Skill generate skills, playbooks and souls in real time, with a live Trust Score summary.",
       },
     ],
   }),
@@ -274,7 +274,7 @@ function GeneratePage() {
           <p className="mt-2 max-w-2xl text-muted-foreground">
             Type what you want your agent to be. Watch Super Agent Skill enrich it with
             state-of-the-art packages and generate custom skills, playbooks and souls — with the
-            Health Score moving in real time.
+            Trust Score moving in real time.
           </p>
         </div>
 
@@ -423,11 +423,11 @@ function GeneratePage() {
             </div>
           </div>
 
-          {/* Health Score panel */}
+          {/* Trust Score panel */}
           <div className="rounded-2xl border border-border bg-surface/60 p-5">
             <div className="flex items-center justify-between">
               <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                Health Score
+                Trust Score
               </span>
               <span
                 className={
@@ -845,7 +845,7 @@ function GeneratePage() {
               <div>
                 <h2 className="text-xl font-semibold tracking-tight">Agent forged.</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Health Score moved{" "}
+                  Trust Score moved{" "}
                   <strong className="text-foreground">
                     {baseline.health.toFixed(1)} → {score.health.toFixed(1)}
                   </strong>{" "}
@@ -894,7 +894,7 @@ function GeneratePage() {
                         onClick={handleClickPDF}
                         title={
                           isFree
-                            ? "Free PDF download — command + Health Score"
+                            ? "Free PDF download — command + Trust Score"
                             : "Free for qualified leads"
                         }
                         className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
