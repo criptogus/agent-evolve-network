@@ -114,9 +114,10 @@ export function Nav() {
             </span>
           </Link>
           <nav className="hidden min-w-0 items-center gap-5 lg:flex">
-            <NavDropdown label="Browse" items={BROWSE} />
-            <NavDropdown label="Create" items={CREATE} />
-            <NavDropdown label="Community" items={COMMUNITY} />
+            <NavDropdown label="Agents" items={AGENTS_MENU} />
+            <NavDropdown label="Skills" items={SKILLS} />
+            {user ? <NavDropdown label="Publish" items={PUBLISH} /> : null}
+
             {SIMPLE.map((l) => (
               <Link
                 key={l.to}
