@@ -2,8 +2,13 @@ import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { AlertTriangle, Check, ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, Check, ChevronLeft, ChevronRight, Library, Plus, Trash2 } from "lucide-react";
 import { updateAgentBuildDraft } from "@/lib/agents/factory.functions";
+import {
+  GUARDRAIL_CATEGORIES,
+  guardrailsByCategory,
+  type GuardrailCategory,
+} from "@/lib/agents/guardrail-library";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+
 
 type Guardrail = {
   slug?: string;
@@ -79,6 +85,34 @@ export function GuidedAgentEditor({ buildId, initialSoul, initialTagline, initia
   );
   const [rescore, setRescore] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [libCategory, setLibCategory] = useState<GuardrailCategory>("compliance");
+
+  const libraryItems = useMemo(() => guardrailsByCategory(libCategory), [libCategory]);
+  const usedSlugs = useMemo(
+    () => new Set(guardrails.map((g) => g.slug).filter(Boolean) as string[]),
+    [guardrails],
+  );
+
+  function addFromLibrary(slug: string) {
+    const item = libraryItems.find((g) => g.slug === slug);
+    if (!item) return;
+    setGuardrails((prev) => {
+      const base = prev.filter((g) => g.title.trim() || g.rule.trim());
+      if (base.some((g) => g.slug === item.slug)) return base;
+      return [
+        ...base,
+        {
+          slug: item.slug,
+          title: item.title,
+          rule: item.rule,
+          why: item.why,
+          blocked_example: item.blocked_example,
+          instead: item.instead,
+        },
+      ];
+    });
+  }
+
 
   const soulChecks = useMemo(() => SOUL_CHECKS.map((c) => ({ ...c, ok: c.test(soul) })), [soul]);
   const soulReady = soul.trim().length >= 200;
@@ -194,6 +228,57 @@ export function GuidedAgentEditor({ buildId, initialSoul, initialTagline, initia
 
         {step === 1 && (
           <div className="space-y-4">
+            <div className="rounded-lg border bg-muted/40 p-4">
+              <div className="flex items-center gap-2">
+                <Library className="h-4 w-4 text-primary" />
+                <p className="text-sm font-medium">Biblioteca de guardrails</p>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Escolha uma categoria, adicione a regra pronta e ajuste o texto para o seu contexto.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {GUARDRAIL_CATEGORIES.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setLibCategory(c.id)}
+                    title={c.description}
+                    className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                      libCategory === c.id
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+              <ul className="mt-3 space-y-2">
+                {libraryItems.map((item) => {
+                  const added = usedSlugs.has(item.slug);
+                  return (
+                    <li
+                      key={item.slug}
+                      className="flex items-start justify-between gap-3 rounded-md border bg-background p-3"
+                    >
+                      <div>
+                        <p className="text-sm font-medium">{item.title}</p>
+                        <p className="text-xs text-muted-foreground">{item.rule}</p>
+                      </div>
+                      <Button
+                        variant={added ? "ghost" : "outline"}
+                        size="sm"
+                        disabled={added || guardrails.length >= 20}
+                        onClick={() => addFromLibrary(item.slug)}
+                      >
+                        {added ? "Adicionado" : "Adicionar"}
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
             {guardrails.map((g, i) => {
               const issues = guardrailIssues(g);
               return (
