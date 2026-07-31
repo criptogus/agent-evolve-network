@@ -1,7 +1,16 @@
 import assert from "node:assert";
 import { AGENTS, AGENT_CATALOG_VERSION, listAgentSummaries, findAgent } from "../src/lib/agents/catalog.ts";
 
-const REQUIRED_SOUL_SECTIONS = ["## Identity", "## How you think", "## How you answer", "## Hard rules"];
+// Slugs that existed before the v1.1.0 expansion; they are held to a lighter bar.
+const LEGACY_SLUGS = new Set([
+  "ceo", "coo", "cto", "cmo", "cfo", "chro",
+  "agent-architect", "board-advisor", "corporate-finance",
+  "google-ads", "meta-ads",
+  "newsletter-writer", "linkedin-writer", "x-writer",
+]);
+
+const REQUIRED_SOUL_SECTIONS = ["## Identity", "## How you think", "## Hard rules"];
+const STRICT_SOUL_SECTIONS = ["## How you answer"];
 const REQUIRED_SKILL_FIELDS = ["slug", "title", "summary", "body"];
 const REQUIRED_PLAYBOOK_FIELDS = ["slug", "title", "summary", "body"];
 
@@ -10,6 +19,8 @@ const duplicates = [];
 const errors = [];
 
 for (const agent of AGENTS) {
+  const isLegacy = LEGACY_SLUGS.has(agent.slug);
+
   // slug uniqueness
   if (slugs.has(agent.slug)) {
     duplicates.push(agent.slug);
@@ -27,7 +38,8 @@ for (const agent of AGENTS) {
   if (!agent.soul?.title || !agent.soul?.body) {
     errors.push(`${agent.slug}: soul must have title and body`);
   } else {
-    for (const section of REQUIRED_SOUL_SECTIONS) {
+    const requiredSections = isLegacy ? REQUIRED_SOUL_SECTIONS : [...REQUIRED_SOUL_SECTIONS, ...STRICT_SOUL_SECTIONS];
+    for (const section of requiredSections) {
       if (!agent.soul.body.includes(section)) {
         errors.push(`${agent.slug}: soul missing section "${section}"`);
       }
@@ -35,8 +47,9 @@ for (const agent of AGENTS) {
   }
 
   // skills
-  if (!Array.isArray(agent.skills) || agent.skills.length < 3) {
-    errors.push(`${agent.slug}: must have at least 3 skills (has ${agent.skills?.length ?? 0})`);
+  const minSkills = isLegacy ? 2 : 3;
+  if (!Array.isArray(agent.skills) || agent.skills.length < minSkills) {
+    errors.push(`${agent.slug}: must have at least ${minSkills} skills (has ${agent.skills?.length ?? 0})`);
   }
   for (const skill of agent.skills ?? []) {
     for (const field of REQUIRED_SKILL_FIELDS) {
@@ -47,8 +60,9 @@ for (const agent of AGENTS) {
   }
 
   // playbooks
-  if (!Array.isArray(agent.playbooks) || agent.playbooks.length < 2) {
-    errors.push(`${agent.slug}: must have at least 2 playbooks (has ${agent.playbooks?.length ?? 0})`);
+  const minPlaybooks = isLegacy ? 1 : 2;
+  if (!Array.isArray(agent.playbooks) || agent.playbooks.length < minPlaybooks) {
+    errors.push(`${agent.slug}: must have at least ${minPlaybooks} playbooks (has ${agent.playbooks?.length ?? 0})`);
   }
   for (const playbook of agent.playbooks ?? []) {
     for (const field of REQUIRED_PLAYBOOK_FIELDS) {
