@@ -228,6 +228,57 @@ export function GuidedAgentEditor({ buildId, initialSoul, initialTagline, initia
 
         {step === 1 && (
           <div className="space-y-4">
+            <div className="rounded-lg border bg-muted/40 p-4">
+              <div className="flex items-center gap-2">
+                <Library className="h-4 w-4 text-primary" />
+                <p className="text-sm font-medium">Biblioteca de guardrails</p>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Escolha uma categoria, adicione a regra pronta e ajuste o texto para o seu contexto.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {GUARDRAIL_CATEGORIES.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setLibCategory(c.id)}
+                    title={c.description}
+                    className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                      libCategory === c.id
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+              <ul className="mt-3 space-y-2">
+                {libraryItems.map((item) => {
+                  const added = usedSlugs.has(item.slug);
+                  return (
+                    <li
+                      key={item.slug}
+                      className="flex items-start justify-between gap-3 rounded-md border bg-background p-3"
+                    >
+                      <div>
+                        <p className="text-sm font-medium">{item.title}</p>
+                        <p className="text-xs text-muted-foreground">{item.rule}</p>
+                      </div>
+                      <Button
+                        variant={added ? "ghost" : "outline"}
+                        size="sm"
+                        disabled={added || guardrails.length >= 20}
+                        onClick={() => addFromLibrary(item.slug)}
+                      >
+                        {added ? "Adicionado" : "Adicionar"}
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
             {guardrails.map((g, i) => {
               const issues = guardrailIssues(g);
               return (
