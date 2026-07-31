@@ -2126,7 +2126,10 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
         // the semantic pass is the primary way a well-written PT/ES/FR/DE/IT
         // skill demonstrates coverage the (naturally sparser) native-language
         // regexes miss, so it must be able to reach A on merit.
-        const uplistCap = language.lang !== "en" && language.lang !== "other" ? 90 : 82;
+        // "other" (low-confidence latin script) gets the non-EN ceiling too:
+        // the deterministic detectors are only rich in EN, so anything that is
+        // not confidently English must be able to reach A on semantic merit.
+        const uplistCap = language.lang !== "en" ? 90 : 82;
         r.score = Math.min(uplistCap, target);
 
         r.deficit = 100 - r.score;
@@ -2275,6 +2278,10 @@ export async function computeReview(a: ReviewArgs): Promise<Record<string, unkno
     engine: ENGINE,
     cached: false,
     input_warning: inputWarn,
+    input_warning_kind: warnKind,
+    // Explicit: an advisory warning must never leave the caller guessing
+    // whether the LLM judge ran. Typography (em-dash / ellipsis) never blocks.
+    input_warning_blocked_semantic: blocksSemantic,
     doc_class: {
       value: docClass,
       inferred: doc_class === "auto",
