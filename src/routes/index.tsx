@@ -17,8 +17,8 @@ import { canonicalLink } from "@/lib/seo/canonical";
 // Kept under 60 chars so Google renders the full title.
 const TITLE = "AI Agent Skills Marketplace — Super Agent Skill";
 
-// Static branded share card in public/ — bump ?v= when the artwork changes.
-const OG_IMAGE = "https://superagentskill.com/og.jpg?v=2026-07-31";
+// Static branded share card in public/ — bump the filename when artwork changes.
+const OG_IMAGE = "https://superagentskill.com/og-2026-07-31.jpg";
 
 
 // Kept between 50 and 160 chars.
@@ -43,6 +43,11 @@ export const Route = createFileRoute("/")({
         { property: "og:description", content: description },
         { property: "og:url", content: "https://superagentskill.com/" },
         { property: "og:image", content: OG_IMAGE },
+        { property: "og:image:secure_url", content: OG_IMAGE },
+        { property: "og:image:type", content: "image/jpeg" },
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "640" },
+        { name: "twitter:image", content: OG_IMAGE },
         {
           name: "twitter:title",
           content: "Claude & AI agent skills — signed, tested, installed in 30s",
