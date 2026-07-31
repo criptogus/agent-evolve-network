@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AgentIcon } from "@/components/agents/AgentIcon";
+import { PreDownloadChecklist } from "@/components/agents/PreDownloadChecklist";
 
 export const Route = createFileRoute("/agents/build/$id")({
   component: BuildPage,
