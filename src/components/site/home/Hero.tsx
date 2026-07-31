@@ -95,7 +95,7 @@ export function Hero() {
             <div className="mx-auto mt-8 max-w-xl rounded-xl border border-border bg-background/80 p-3 text-left shadow-sm backdrop-blur lg:mx-0">
               <p className="px-1 text-[11px] text-muted-foreground">
                 <span className="font-medium text-foreground">Already use MCP?</span> Paste this URL
-                into your client — it works instantly, no restart.
+                into your client. Some clients need it in a config file plus one restart.
               </p>
               <div className="mt-2 flex min-w-0 items-center justify-between gap-2">
                 <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden px-1">

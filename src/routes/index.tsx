@@ -89,7 +89,7 @@ const FAQ_LD = {
       name: "How does the MCP connection actually work?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "MCP (Model Context Protocol) lets your agent talk to external tools. You point your agent at Super Agent Skill once and it shows up as a connected tool. Every command flows through it — installs, generations and hot-swaps happen at runtime, no restart.",
+        text: "MCP (Model Context Protocol) lets your agent talk to external tools. You point your agent at Super Agent Skill once and it shows up as a connected tool. Every command flows through it — installs, generations and swaps happen at runtime. Some clients (Claude Desktop, Cursor) need the endpoint added to a config file and one restart; after that nothing else changes.",
       },
     },
     {
@@ -97,7 +97,7 @@ const FAQ_LD = {
       name: "Do I need to retrain my agent or change my code?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "No. Packages install through MCP at runtime — zero retraining, zero downtime, zero code changes. Every install is reversible and audited.",
+        text: "No retraining and no code changes in your agent. Packages install through MCP at runtime; some clients need the endpoint added to a config file and one restart the first time. Every install is reversible and audited.",
       },
     },
     {
