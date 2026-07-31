@@ -92,8 +92,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@superagentskill" },
       { name: "twitter:title", content: "Super Agent Skill" },
       { name: "twitter:description", content: "Super Agent Skill turns AI agents into continuously evolving specialists via MCP." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31e8f1c8-d61a-43e0-a6cf-bc7dc826978f/id-preview-a810735d--b00a8021-9d8d-4f49-a581-628727b71f68.lovable.app-1778445620031.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31e8f1c8-d61a-43e0-a6cf-bc7dc826978f/id-preview-a810735d--b00a8021-9d8d-4f49-a581-628727b71f68.lovable.app-1778445620031.png" },
+      { property: "og:image", content: "https://superagentskill.com/og.jpg?v=2026-07-31" },
+      { name: "twitter:image", content: "https://superagentskill.com/og.jpg?v=2026-07-31" },
+
     ],
     links: [
       {
