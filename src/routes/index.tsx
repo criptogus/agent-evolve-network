@@ -43,6 +43,11 @@ export const Route = createFileRoute("/")({
         { property: "og:description", content: description },
         { property: "og:url", content: "https://superagentskill.com/" },
         { property: "og:image", content: OG_IMAGE },
+        { property: "og:image:secure_url", content: OG_IMAGE },
+        { property: "og:image:type", content: "image/jpeg" },
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "640" },
+        { name: "twitter:image", content: OG_IMAGE },
         {
           name: "twitter:title",
           content: "Claude & AI agent skills — signed, tested, installed in 30s",
