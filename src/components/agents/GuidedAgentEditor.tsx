@@ -85,6 +85,34 @@ export function GuidedAgentEditor({ buildId, initialSoul, initialTagline, initia
   );
   const [rescore, setRescore] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [libCategory, setLibCategory] = useState<GuardrailCategory>("compliance");
+
+  const libraryItems = useMemo(() => guardrailsByCategory(libCategory), [libCategory]);
+  const usedSlugs = useMemo(
+    () => new Set(guardrails.map((g) => g.slug).filter(Boolean) as string[]),
+    [guardrails],
+  );
+
+  function addFromLibrary(slug: string) {
+    const item = libraryItems.find((g) => g.slug === slug);
+    if (!item) return;
+    setGuardrails((prev) => {
+      const base = prev.filter((g) => g.title.trim() || g.rule.trim());
+      if (base.some((g) => g.slug === item.slug)) return base;
+      return [
+        ...base,
+        {
+          slug: item.slug,
+          title: item.title,
+          rule: item.rule,
+          why: item.why,
+          blocked_example: item.blocked_example,
+          instead: item.instead,
+        },
+      ];
+    });
+  }
+
 
   const soulChecks = useMemo(() => SOUL_CHECKS.map((c) => ({ ...c, ok: c.test(soul) })), [soul]);
   const soulReady = soul.trim().length >= 200;
