@@ -786,21 +786,24 @@ function fnv1aHex(s: string): string {
 // score what it can't see), but the operator deserves to know BEFORE the score
 // arrives that the input looks truncated, not after reading a misleading "F".
 function inputWarning(text: string): "short_input" | "summary_markers" | "outline_only" | null {
-  const t = text.trim();
+  // Normalize smart typography FIRST: em-dash/en-dash/ellipsis characters are
+  // standard Portuguese (and French) punctuation. Scanning them raw produced
+  // false-positive `summary_markers` on perfectly complete PT documents
+  // (client-reported). After normalization `…` is plain `...`, which only
+  // counts when it stands alone on a line — see below.
+  const t = normalizeTypography(text).trim();
   if (t.length < 400) return "short_input";
   // Strip fenced code blocks and inline code BEFORE scanning for truncation
   // markers. A `...` inside a code fence or inline backticks is almost always
   // a Python spread, an ellipsis in a template, or a placeholder in an
-  // example — NOT a signal that the document was truncated. Scanning the raw
-  // text was producing false-positive `summary_markers` warnings that killed
-  // the semantic pass on otherwise valid skills.
-  // Also strip YAML frontmatter: `description: "algo — condensado"` is normal
-  // metadata prose, not evidence that the body was cut. Em dashes and inline
-  // ellipses are never markers on their own.
+  // example — NOT a signal that the document was truncated.
+  // Also strip YAML frontmatter: `description: "algo - condensado"` is normal
+  // metadata prose, not evidence that the body was cut.
   const prose = t
     .replace(/^---\n[\s\S]*?\n---/, " ")
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/`[^`\n]*`/g, " ");
+
   // Only bracketed / explicit elision phrases count. Bare words like
   // "condensed", "resumido" or "abbreviated" appear constantly in legitimate
   // prose ("a condensed deal memo"), so they no longer trip the warning.
