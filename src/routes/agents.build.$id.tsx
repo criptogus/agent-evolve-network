@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AgentIcon } from "@/components/agents/AgentIcon";
 import { PreDownloadChecklist } from "@/components/agents/PreDownloadChecklist";
+import { GuidedAgentEditor } from "@/components/agents/GuidedAgentEditor";
 
 export const Route = createFileRoute("/agents/build/$id")({
   component: BuildPage,
@@ -38,6 +39,7 @@ function BuildPage() {
   const qc = useQueryClient();
   const running = useRef(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
 
   const { data: build } = useQuery({
     queryKey: ["agent-build", id],
