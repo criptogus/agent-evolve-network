@@ -10,9 +10,9 @@
  * Tudo aqui é determinístico: nenhuma chamada de LLM, mesmo input = mesmo
  * resultado. Isso é o que torna a credencial auditável.
  */
-import { casesForDomain, findCase } from "./cases";
-import { prescribeFor } from "./curriculum";
-import { scoreCase } from "./diagnose";
+import { casesForDomain, findCase } from "./cases.ts";
+import { prescribeFor } from "./curriculum.ts";
+import { scoreCase } from "./diagnose.ts";
 import {
   ERROR_CLASSES,
   ERROR_CLASS_HINT,
