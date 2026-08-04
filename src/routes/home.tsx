@@ -26,6 +26,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useConnectionStatus } from "@/hooks/use-connection-status";
 import { getCreditSummary } from "@/lib/credits/credits.functions";
 import { listMarketplace } from "@/lib/marketplace/list.functions";
+import { rankRecommended } from "@/lib/marketplace/recommend";
 
 const TITLE = "Your command center — Super Agent Skill";
 const DESCRIPTION =
@@ -128,16 +129,11 @@ function HomeDashboard() {
     throwOnError: false,
   });
 
-  const trending = useMemo(() => {
-    const items = market.data?.items ?? [];
-    return [...items]
-      .sort(
-        (a, b) =>
-          (b.trust_score ?? 0) - (a.trust_score ?? 0) ||
-          b.install_count - a.install_count,
-      )
-      .slice(0, 6);
-  }, [market.data]);
+  const trending = useMemo(
+    () => rankRecommended(market.data?.items ?? [], 6),
+    [market.data],
+  );
+
 
   // Signed-out visitors belong on the landing page, which sells the product.
   useEffect(() => {
@@ -329,7 +325,9 @@ function HomeDashboard() {
               Ready to install
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Highest Trust Score in the registry right now.
+              Most-installed, broadly useful packages — all above the Trust
+              Score bar.
+
             </p>
           </div>
           <Link to="/marketplace" className="shrink-0 text-sm font-medium text-primary hover:underline">
