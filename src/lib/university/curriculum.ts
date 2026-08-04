@@ -449,7 +449,6 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "supplier-risk-gate",
     title: "Supplier risk gate",
-    title: "Supplier risk gate",
     summary: "Bloqueia fornecedores que violam compliance e exige confirmação para mudanças.",
     provides: ["policy_violation", "tool_misuse"],
     requires: ["no-pii-in-output", "destructive-action-gate"],
