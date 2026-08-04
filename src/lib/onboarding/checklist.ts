@@ -94,7 +94,7 @@ export function nextStep(completed: readonly string[]): OnboardingStep | null {
 }
 
 export type EvidenceCheck =
-  | { ok: true; needsDb?: { kind: "package"; slug: string } | { kind: "credential"; code: string } }
+  | { ok: true; needsDb?: { kind: "package"; slug: string } }
   | { ok: false; reason: string };
 
 function num(value: unknown): number | null {
@@ -161,6 +161,8 @@ export function checkEvidence(id: StepId, evidence: unknown): EvidenceCheck {
       if (!next) return { ok: false, reason: "evidence.next_capability must be the capability curriculum_next prescribed" };
       return { ok: true };
     }
+    default:
+      return { ok: false, reason: "unknown step" };
   }
 }
 
