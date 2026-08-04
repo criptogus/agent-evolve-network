@@ -168,12 +168,19 @@ function PackageDetail() {
       <section className="border-b border-border bg-surface/40">
         <div className="mx-auto max-w-7xl px-6 py-10">
           <TermsStatusBanner className="mb-5" />
-          <Link
-            to="/marketplace"
-            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            ← Marketplace
-          </Link>
+          <nav aria-label="Breadcrumb" className="text-xs text-muted-foreground">
+            <Link to="/marketplace" className="transition-colors hover:text-foreground">
+              Marketplace
+            </Link>
+            <span aria-hidden className="px-1.5">
+              /
+            </span>
+            <span className="capitalize">{pkg.type}</span>
+            <span aria-hidden className="px-1.5">
+              /
+            </span>
+            <span className="text-foreground">{pkg.name}</span>
+          </nav>
           <div className="mt-4 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
@@ -199,6 +206,7 @@ function PackageDetail() {
                   {pkg.author}
                   {pkg.authorVerified && <VerifiedBadge />}
                 </span>
+
                 <span>
                   ★ {pkg.rating}{" "}
                   <span className="text-muted-foreground/60">({pkg.reviews.toLocaleString()})</span>
