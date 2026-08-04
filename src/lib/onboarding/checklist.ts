@@ -152,12 +152,14 @@ export function checkEvidence(id: StepId, evidence: unknown): EvidenceCheck {
       if (after <= before) return { ok: false, reason: "score_after must beat score_before — this step proves the skill got better" };
       return { ok: true, needsDb: { kind: "package", slug } };
     }
-    case "certify": {
-      const code = str(e.credential_code, 40);
-      if (!code || !/^SAK-[A-Z0-9]{6}-[A-Z0-9]{6}$/i.test(code)) {
-        return { ok: false, reason: "evidence.credential_code must look like SAK-XXXXXX-XXXXXX" };
-      }
-      return { ok: true, needsDb: { kind: "credential", code: code.toUpperCase() } };
+    case "diagnose": {
+      const domain = str(e.domain, 80);
+      const score = num(e.score);
+      const next = str(e.next_capability, 120);
+      if (!domain) return { ok: false, reason: "evidence.domain must be the domain you diagnosed" };
+      if (score === null || score < 0 || score > 100) return { ok: false, reason: "evidence.score must be the 0-100 diagnosis score" };
+      if (!next) return { ok: false, reason: "evidence.next_capability must be the capability curriculum_next prescribed" };
+      return { ok: true };
     }
   }
 }
