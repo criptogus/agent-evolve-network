@@ -61,14 +61,44 @@ const TYPES = ["all", "skill", "playbook", "soul", "guardrail"] as const;
 type TypeFilter = (typeof TYPES)[number];
 
 const SORTS = [
-  { value: "installs_desc", label: "Most installed" },
-  { value: "installs_asc", label: "Least installed" },
-  { value: "rating_desc", label: "Top rated" },
-  { value: "trust_desc", label: "Trust score" },
-  { value: "recent", label: "Newest" },
-  { value: "name_asc", label: "Name A→Z" },
+  { value: "trust_desc", label: "Highest Trust Score", group: "Trust" },
+  { value: "trust_asc", label: "Lowest Trust Score", group: "Trust" },
+  { value: "rating_desc", label: "Highest rated", group: "Rating" },
+  { value: "rating_count_desc", label: "Most reviewed", group: "Rating" },
+  { value: "installs_desc", label: "Most installed", group: "Installs" },
+  { value: "installs_asc", label: "Least installed", group: "Installs" },
+  { value: "version_desc", label: "Highest version", group: "Version" },
+  { value: "version_asc", label: "Lowest version", group: "Version" },
+  { value: "recent", label: "Newest added", group: "Other" },
+  { value: "name_asc", label: "Name A→Z", group: "Other" },
 ] as const;
 type SortKey = (typeof SORTS)[number]["value"];
+const SORT_GROUPS = Array.from(new Set(SORTS.map((s) => s.group)));
+
+/** Semver-ish comparison; missing/odd segments sort low. */
+function compareVersions(a: string, b: string): number {
+  const pa = (a ?? "").split(/[.\-+]/);
+  const pb = (b ?? "").split(/[.\-+]/);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const na = Number.parseInt(pa[i] ?? "", 10);
+    const nb = Number.parseInt(pb[i] ?? "", 10);
+    const va = Number.isNaN(na) ? -1 : na;
+    const vb = Number.isNaN(nb) ? -1 : nb;
+    if (va !== vb) return va - vb;
+  }
+  return 0;
+}
+
+/** Debounce so typing doesn't re-filter/re-render the grid on every keystroke. */
+function useDebounced<T>(value: T, delay = 250): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
+}
+
 
 const INSTALL_BUCKETS = [
   { value: "any", label: "Any installs", min: 0, max: Infinity },
