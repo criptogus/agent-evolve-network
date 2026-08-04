@@ -26,6 +26,7 @@ import { Route as EnterpriseRouteImport } from './routes/enterprise'
 import { Route as EvaluationRouteImport } from './routes/evaluation'
 import { Route as ForgeRouteImport } from './routes/forge'
 import { Route as GenerateRouteImport } from './routes/generate'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
@@ -247,6 +248,11 @@ const ForgeRoute = ForgeRouteImport.update({
 const GenerateRoute = GenerateRouteImport.update({
   id: '/generate',
   path: '/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HowItWorksRoute = HowItWorksRouteImport.update({
@@ -974,6 +980,7 @@ export interface FileRoutesByFullPath {
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/home': typeof HomeRoute
   '/how-it-works': typeof HowItWorksRoute
   '/leaderboard': typeof LeaderboardRoute
   '/llms.txt': typeof LlmsDottxtRoute
@@ -1129,6 +1136,7 @@ export interface FileRoutesByTo {
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/home': typeof HomeRoute
   '/how-it-works': typeof HowItWorksRoute
   '/leaderboard': typeof LeaderboardRoute
   '/llms.txt': typeof LlmsDottxtRoute
@@ -1286,6 +1294,7 @@ export interface FileRoutesById {
   '/evaluation': typeof EvaluationRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
+  '/home': typeof HomeRoute
   '/how-it-works': typeof HowItWorksRoute
   '/leaderboard': typeof LeaderboardRoute
   '/llms.txt': typeof LlmsDottxtRoute
@@ -1444,6 +1453,7 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/forge'
     | '/generate'
+    | '/home'
     | '/how-it-works'
     | '/leaderboard'
     | '/llms.txt'
@@ -1599,6 +1609,7 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/forge'
     | '/generate'
+    | '/home'
     | '/how-it-works'
     | '/leaderboard'
     | '/llms.txt'
@@ -1755,6 +1766,7 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/forge'
     | '/generate'
+    | '/home'
     | '/how-it-works'
     | '/leaderboard'
     | '/llms.txt'
@@ -1912,6 +1924,7 @@ export interface RootRouteChildren {
   EvaluationRoute: typeof EvaluationRoute
   ForgeRoute: typeof ForgeRouteWithChildren
   GenerateRoute: typeof GenerateRoute
+  HomeRoute: typeof HomeRoute
   HowItWorksRoute: typeof HowItWorksRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
@@ -2137,6 +2150,13 @@ declare module '@tanstack/react-router' {
       path: '/generate'
       fullPath: '/generate'
       preLoaderRoute: typeof GenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/how-it-works': {
@@ -3314,6 +3334,7 @@ const rootRouteChildren: RootRouteChildren = {
   EvaluationRoute: EvaluationRoute,
   ForgeRoute: ForgeRouteWithChildren,
   GenerateRoute: GenerateRoute,
+  HomeRoute: HomeRoute,
   HowItWorksRoute: HowItWorksRoute,
   LeaderboardRoute: LeaderboardRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
@@ -3428,3 +3449,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
