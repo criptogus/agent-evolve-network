@@ -116,6 +116,7 @@ import { Route as ApiPublicCertifyRouteImport } from './routes/api/public/certif
 import { Route as ApiPublicDiagRouteImport } from './routes/api/public/diag'
 import { Route as ApiPublicInstallDothermesDotshRouteImport } from './routes/api/public/install[.]hermes[.]sh'
 import { Route as ApiPublicMcpRouteImport } from './routes/api/public/mcp'
+import { Route as ApiPublicOnboardingRouteImport } from './routes/api/public/onboarding'
 import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packages'
 import { Route as ApiPublicReviewRouteImport } from './routes/api/public/review'
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
@@ -698,6 +699,11 @@ const ApiPublicMcpRoute = ApiPublicMcpRouteImport.update({
   path: '/api/public/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicOnboardingRoute = ApiPublicOnboardingRouteImport.update({
+  id: '/api/public/onboarding',
+  path: '/api/public/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPackagesRoute = ApiPublicPackagesRouteImport.update({
   id: '/api/public/packages',
   path: '/api/public/packages',
@@ -1040,6 +1046,7 @@ export interface FileRoutesByFullPath {
   '/api/public/diag': typeof ApiPublicDiagRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
+  '/api/public/onboarding': typeof ApiPublicOnboardingRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
@@ -1191,6 +1198,7 @@ export interface FileRoutesByTo {
   '/api/public/diag': typeof ApiPublicDiagRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
+  '/api/public/onboarding': typeof ApiPublicOnboardingRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
@@ -1344,6 +1352,7 @@ export interface FileRoutesById {
   '/api/public/diag': typeof ApiPublicDiagRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
+  '/api/public/onboarding': typeof ApiPublicOnboardingRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
@@ -1498,6 +1507,7 @@ export interface FileRouteTypes {
     | '/api/public/diag'
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
+    | '/api/public/onboarding'
     | '/api/public/packages'
     | '/api/public/review'
     | '/api/public/search'
@@ -1649,6 +1659,7 @@ export interface FileRouteTypes {
     | '/api/public/diag'
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
+    | '/api/public/onboarding'
     | '/api/public/packages'
     | '/api/public/review'
     | '/api/public/search'
@@ -1801,6 +1812,7 @@ export interface FileRouteTypes {
     | '/api/public/diag'
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
+    | '/api/public/onboarding'
     | '/api/public/packages'
     | '/api/public/review'
     | '/api/public/search'
@@ -1933,6 +1945,7 @@ export interface RootRouteChildren {
   ApiPublicDiagRoute: typeof ApiPublicDiagRoute
   ApiPublicInstallDothermesDotshRoute: typeof ApiPublicInstallDothermesDotshRoute
   ApiPublicMcpRoute: typeof ApiPublicMcpRouteWithChildren
+  ApiPublicOnboardingRoute: typeof ApiPublicOnboardingRoute
   ApiPublicPackagesRoute: typeof ApiPublicPackagesRouteWithChildren
   ApiPublicReviewRoute: typeof ApiPublicReviewRouteWithChildren
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
@@ -2719,6 +2732,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMcpRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/onboarding': {
+      id: '/api/public/onboarding'
+      path: '/api/public/onboarding'
+      fullPath: '/api/public/onboarding'
+      preLoaderRoute: typeof ApiPublicOnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/packages': {
       id: '/api/public/packages'
       path: '/api/public/packages'
@@ -3303,6 +3323,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDiagRoute: ApiPublicDiagRoute,
   ApiPublicInstallDothermesDotshRoute: ApiPublicInstallDothermesDotshRoute,
   ApiPublicMcpRoute: ApiPublicMcpRouteWithChildren,
+  ApiPublicOnboardingRoute: ApiPublicOnboardingRoute,
   ApiPublicPackagesRoute: ApiPublicPackagesRouteWithChildren,
   ApiPublicReviewRoute: ApiPublicReviewRouteWithChildren,
   ApiPublicSearchRoute: ApiPublicSearchRoute,
