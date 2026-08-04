@@ -141,9 +141,12 @@ function Marketplace() {
   });
 
   const [type, setType] = useState<TypeFilter>("all");
-  const [vertical, setVertical] = useState<string>("all");
+  /** Multi-select category tags — empty means "all categories". */
+  const [tags, setTags] = useState<string[]>([]);
   const [verticalGroup, setVerticalGroup] = useState<string>("all");
-  const [q, setQ] = useState("");
+  const [qInput, setQInput] = useState("");
+  const q = useDebounced(qInput, 250);
+  const searching = qInput.trim() !== q.trim();
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [installBucket, setInstallBucket] = useState<InstallBucket>("any");
   const [sort, setSort] = useState<SortKey>("installs_desc");
@@ -152,12 +155,17 @@ function Marketplace() {
   const items = data?.items ?? [];
   const verticals = data?.verticals ?? [];
 
+  function toggleTag(v: string) {
+    setVerticalGroup("all");
+    setTags((prev) => (prev.includes(v) ? prev.filter((t) => t !== v) : [...prev, v]));
+  }
+
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const bucket = INSTALL_BUCKETS.find((b) => b.value === installBucket)!;
     const result = items.filter((p) => {
       if (type !== "all" && p.type !== type) return false;
-      if (vertical !== "all" && p.vertical !== vertical) return false;
+      if (tags.length && (!p.vertical || !tags.includes(p.vertical))) return false;
       if (verticalGroup !== "all") {
         const grp = VERTICAL_GROUPS.find((g) => g.value === verticalGroup);
         if (grp && (!p.vertical || !(grp.verticals as readonly string[]).includes(p.vertical))) return false;
@@ -192,10 +200,24 @@ function Marketplace() {
             return TRUST_TIER_RANK[tierA] - TRUST_TIER_RANK[tierB];
           return (b.trust_score ?? -1) - (a.trust_score ?? -1) || b.install_count - a.install_count;
         }
+        case "trust_asc":
+          return (a.trust_score ?? -1) - (b.trust_score ?? -1) || a.install_count - b.install_count;
         case "installs_asc":
           return a.install_count - b.install_count;
         case "rating_desc":
           return (b.rating_avg || 0) - (a.rating_avg || 0) || b.rating_count - a.rating_count;
+        case "rating_count_desc":
+          return b.rating_count - a.rating_count || (b.rating_avg || 0) - (a.rating_avg || 0);
+        case "version_desc":
+          return (
+            compareVersions(b.latest_version, a.latest_version) ||
+            b.install_count - a.install_count
+          );
+        case "version_asc":
+          return (
+            compareVersions(a.latest_version, b.latest_version) ||
+            a.install_count - b.install_count
+          );
         case "recent":
           return (b.created_at ?? "").localeCompare(a.created_at ?? "");
         case "name_asc":
@@ -205,7 +227,7 @@ function Marketplace() {
       }
     });
     return sorted;
-  }, [items, type, vertical, verticalGroup, q, verifiedOnly, installBucket, sort]);
+  }, [items, type, tags, verticalGroup, q, verifiedOnly, installBucket, sort]);
 
   const typeCounts = useMemo(() => {
     const base: Record<TypeFilter, number> = {
@@ -239,23 +261,51 @@ function Marketplace() {
 
   const totalInstalls = useMemo(() => items.reduce((s, it) => s + it.install_count, 0), [items]);
   const dirty =
-    !!q ||
+    !!qInput ||
     type !== "all" ||
-    vertical !== "all" ||
+    tags.length > 0 ||
     verticalGroup !== "all" ||
     verifiedOnly ||
     installBucket !== "any" ||
     sort !== "installs_desc";
 
+  const activeChips: { key: string; label: string; clear: () => void }[] = [
+    ...(q.trim() ? [{ key: "q", label: `“${q.trim()}”`, clear: () => setQInput("") }] : []),
+    ...(type !== "all" ? [{ key: "type", label: type, clear: () => setType("all") }] : []),
+    ...tags.map((t) => ({ key: `tag:${t}`, label: t, clear: () => toggleTag(t) })),
+    ...(verticalGroup !== "all"
+      ? [
+          {
+            key: "group",
+            label: VERTICAL_GROUPS.find((g) => g.value === verticalGroup)?.label ?? verticalGroup,
+            clear: () => setVerticalGroup("all"),
+          },
+        ]
+      : []),
+    ...(verifiedOnly
+      ? [{ key: "verified", label: "Verified authors", clear: () => setVerifiedOnly(false) }]
+      : []),
+    ...(installBucket !== "any"
+      ? [
+          {
+            key: "installs",
+            label: `${INSTALL_BUCKETS.find((b) => b.value === installBucket)?.label} installs`,
+            clear: () => setInstallBucket("any"),
+          },
+        ]
+      : []),
+  ];
+
   function reset() {
-    setQ("");
+    setQInput("");
     setType("all");
-    setVertical("all");
+    setTags([]);
     setVerticalGroup("all");
     setVerifiedOnly(false);
     setInstallBucket("any");
     setSort("installs_desc");
   }
+
 
   return (
     <div className="min-h-screen bg-background">
