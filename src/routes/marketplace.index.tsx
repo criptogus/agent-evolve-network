@@ -466,7 +466,7 @@ function Marketplace() {
                     icon={g.icon}
                     onClick={() => {
                       setVerticalGroup(g.value);
-                      setVertical("all");
+                      setTags([]);
                     }}
                   />
                 ))}
@@ -474,30 +474,32 @@ function Marketplace() {
             )}
 
             {verticals.length > 0 && (
-              <FilterGroup title="Category">
+              <FilterGroup
+                title={tags.length ? `Categories · ${tags.length} selected` : "Categories"}
+              >
+                <p className="mb-1 text-[11px] text-muted-foreground">Pick one or more</p>
                 <FilterRow
-                  active={vertical === "all"}
+                  active={tags.length === 0}
                   count={items.length}
                   label="All categories"
                   onClick={() => {
-                    setVertical("all");
+                    setTags([]);
                     setVerticalGroup("all");
                   }}
                 />
                 {verticals.map((v) => (
                   <FilterRow
                     key={v}
-                    active={vertical === v}
+                    active={tags.includes(v)}
+                    checkbox
                     count={verticalCounts.get(v) ?? 0}
                     label={v}
-                    onClick={() => {
-                      setVertical(v);
-                      setVerticalGroup("all");
-                    }}
+                    onClick={() => toggleTag(v)}
                   />
                 ))}
               </FilterGroup>
             )}
+
 
             <FilterGroup title="Refine">
               <label className="flex cursor-pointer items-center gap-2 py-1 text-sm">
