@@ -7,12 +7,12 @@ import { getAgentKpis } from "@/lib/admin/agent-kpis.functions";
 export const Route = createFileRoute("/admin/agent-kpis")({
   head: () => ({
     meta: [
-      { title: "KPIs agent-first — Admin" },
+      { title: "Agent-First KPIs — Admin" },
       { name: "robots", content: "noindex" },
       {
         name: "description",
         content:
-          "Painel administrativo com métricas de agente: tool calls via MCP, installs, execuções, onboarding verificado e diagnósticos.",
+          "Admin dashboard with agent metrics: MCP tool calls, installs, executions, verified onboarding, and diagnostics.",
       },
     ],
   }),
@@ -58,7 +58,7 @@ function AgentKpisPage() {
     <main className="mx-auto max-w-6xl px-6 py-10">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">KPIs agent-first</h1>
+          <h1 className="text-2xl font-semibold">Agent-First KPIs</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Agent metrics only. Pageviews are deliberately excluded.
           </p>
@@ -78,38 +78,38 @@ function AgentKpisPage() {
         </div>
       </header>
 
-      {kpis.isLoading ? <p className="mt-8 text-sm text-muted-foreground">Carregando…</p> : null}
+      {kpis.isLoading ? <p className="mt-8 text-sm text-muted-foreground">Loading…</p> : null}
 
       {t ? (
         <>
           <section className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
-            <Metric label="Tool calls (MCP)" value={t.tool_calls} hint={`${t.write_calls} de escrita`} />
+            <Metric label="Tool calls (MCP)" value={t.tool_calls} hint={`${t.write_calls} write`} />
             <Metric label="Distinct agents" value={t.distinct_identities} />
             <Metric label="Installs" value={t.installs} />
-            <Metric label="Execuções reportadas" value={t.executions} hint={`${t.executions_ok} ok`} />
-            <Metric label="Tarefas concluídas" value={t.tasks_completed} />
-            <Metric label="Diagnósticos" value={t.diagnoses} />
+            <Metric label="Executions reported" value={t.executions} hint={`${t.executions_ok} ok`} />
+            <Metric label="Tasks completed" value={t.tasks_completed} />
+            <Metric label="Diagnoses" value={t.diagnoses} />
             <Metric label="Agents built" value={t.agents_built} />
             <Metric
-              label="Onboarding completo"
+              label="Onboarding completed"
               value={`${t.onboarding_completed}/${t.onboarding_sessions}`}
-              hint="sessões que provaram todos os passos"
+              hint="sessions that proved every step"
             />
           </section>
 
           <section className="mt-10">
-            <h2 className="text-lg font-semibold">Onboarding verificado por passo</h2>
+            <h2 className="text-lg font-semibold">Onboarding Verified per Step</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Cada linha só conta quando o servidor validou a evidência do passo.
+              Each row only counts when the server validated the step evidence.
             </p>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="text-left text-xs uppercase tracking-wide text-muted-foreground">
                   <tr>
-                    <th className="py-2">Passo</th>
+                    <th className="py-2">Step</th>
                     <th className="py-2">Stage</th>
-                    <th className="py-2">Sessões</th>
-                    <th className="py-2">Retenção vs. 1º passo</th>
+                    <th className="py-2">Sessions</th>
+                    <th className="py-2">Retention vs. step 1</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -139,20 +139,20 @@ function AgentKpisPage() {
 
           <section className="mt-10 grid gap-8 md:grid-cols-2">
             <div>
-              <h2 className="text-lg font-semibold">Tools mais chamadas</h2>
+              <h2 className="text-lg font-semibold">Most-Called Tools</h2>
               <table className="mt-4 w-full text-sm">
                 <thead className="text-left text-xs uppercase tracking-wide text-muted-foreground">
                   <tr>
                     <th className="py-2">Tool</th>
                     <th className="py-2">Calls</th>
-                    <th className="py-2">Agentes</th>
+                    <th className="py-2">Agents</th>
                   </tr>
                 </thead>
                 <tbody>
                   {kpis.data!.top_tools.length === 0 ? (
                     <tr>
                       <td colSpan={3} className="py-3 text-muted-foreground">
-                        Nenhuma chamada no período.
+                        No calls in this period.
                       </td>
                     </tr>
                   ) : (
@@ -169,19 +169,19 @@ function AgentKpisPage() {
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold">Atividade diária</h2>
+              <h2 className="text-lg font-semibold">Daily Activity</h2>
               <div className="mt-4 flex h-40 items-end gap-1">
                 {kpis.data!.daily.map((d) => (
                   <div
                     key={d.day}
-                    title={`${d.day}: ${d.tool_calls} calls, ${d.executions} execuções`}
+                    title={`${d.day}: ${d.tool_calls} calls, ${d.executions} executions`}
                     className="flex-1 rounded-t bg-primary/70"
                     style={{ height: `${Math.max(2, (d.tool_calls / maxDaily) * 100)}%` }}
                   />
                 ))}
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                Altura = tool calls por dia (últimos {days} dias).
+                Height = tool calls per day (last {days} days).
               </p>
             </div>
           </section>
