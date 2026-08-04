@@ -130,17 +130,27 @@ function Pricing() {
               Pro · billed {cadence}
             </div>
             <div className="mt-4 flex items-end gap-2">
+              {cadence === "yearly" && (
+                <span className="pb-2 text-2xl font-medium text-muted-foreground line-through">
+                  $228
+                </span>
+              )}
               <span className="text-5xl font-semibold tracking-tight">
-                {cadence === "yearly" ? "$190" : "$19"}
+                {cadence === "yearly" ? "$140" : "$19"}
               </span>
               <span className="pb-2 text-sm text-muted-foreground">
                 / {cadence === "yearly" ? "year" : "month"}
               </span>
             </div>
+            {cadence === "yearly" && (
+              <div className="mt-3 inline-flex items-center rounded-full border border-signal/40 bg-signal/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.14em] text-signal">
+                Save $88 · 39% off
+              </div>
+            )}
             <p className="mt-2 text-sm text-muted-foreground">
               {cadence === "yearly"
-                ? "Two months free versus monthly. Cancel any time."
-                : "Full flexibility. Switch to yearly whenever you want and save two months."}
+                ? "$228 billed monthly, $140 billed yearly. Cancel any time."
+                : "Full flexibility. Switch to yearly whenever you want and pay $140 instead of $228."}
             </p>
             <button
               onClick={onGetPro}
