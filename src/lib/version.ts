@@ -36,7 +36,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Corrigiu telemetria e referral",
+      "Fixed telemetry and referral",
       "Work in progress",
     ],
   },
@@ -46,7 +46,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Corrigiu erro no checkout",
+      "Fixed a checkout error",
     ],
   },
   {
@@ -100,7 +100,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Mapeou diagnóstico e curricula",
+      "Mapped diagnostics and curricula",
       "Work in progress",
     ],
   },
@@ -129,7 +129,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Adicionou perfil X no repo",
+      "Added X profile to the repo",
       "Work in progress",
     ],
   },
@@ -139,7 +139,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Adicionou biblioteca de guardrails",
+      "Added a guardrails library",
     ],
   },
   {
@@ -148,7 +148,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Adicionou editor guiado",
+      "Added a guided editor",
     ],
   },
   {
@@ -157,7 +157,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Expandeio catálogo para 33 agentes",
+      "Expanded the catalog to 33 agents",
       "Work in progress",
     ],
   },
@@ -196,7 +196,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Atualizou card social com nova URL",
+      "Updated the social card with the new URL",
     ],
   },
   {
@@ -214,7 +214,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Atualizou og:image no X",
+      "Updated the og:image on X",
       "Work in progress",
     ],
   },
@@ -224,7 +224,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Melhorei SEO e meta do site",
+      "Improved site SEO and metadata",
       "Work in progress",
     ],
   },
@@ -234,7 +234,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Aplicou auditoria de copy/UI",
+      "Applied a copy/UI audit",
     ],
   },
   {
@@ -252,7 +252,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Criou wizard de 3 etapas",
+      "Created a 3-step wizard",
       "Work in progress",
     ],
   },
@@ -262,7 +262,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Simplificou UI e mostrou benchmark",
+      "Simplified the UI and surfaced the benchmark",
     ],
   },
   {
@@ -289,7 +289,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Adicionou Fábrica de Agentes",
+      "Added the Agent Factory",
       "Work in progress",
     ],
   },
@@ -308,7 +308,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Animou o passo a passo do MCP",
+      "Animated the MCP step-by-step guide",
     ],
   },
   {
@@ -363,7 +363,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Adicionou User-Agent nos docs",
+      "Added User-Agent to the docs",
     ],
   },
   {
@@ -381,7 +381,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Atualizou URL oficial para MCP",
+      "Updated the official MCP URL",
     ],
   },
   {
@@ -436,7 +436,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Corrigiu pipeline upload_packages",
+      "Fixed the upload_packages pipeline",
     ],
   },
   {
@@ -445,7 +445,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Corrigiu endpoint JSON e det. idioma",
+      "Fixed the JSON endpoint and language detection",
     ],
   },
   {
@@ -454,7 +454,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Criou endpoint MCP espelho",
+      "Created an MCP mirror endpoint",
     ],
   },
   {
@@ -481,7 +481,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Aplicou migrations no banco",
+      "Applied database migrations",
     ],
   },
   {
@@ -490,7 +490,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Criou NDA online para contas pagas",
+      "Created an online NDA for paid accounts",
     ],
   },
   {
@@ -499,7 +499,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Adicionou criptografia por tenant",
+      "Added per-tenant encryption",
     ],
   },
   {
@@ -553,9 +553,9 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Adicionou tooltips de métricas",
-      "Adicionou colunas lado a lado",
-      "Adicionou gráfico de outcome no hero",
+      "Added metric tooltips",
+      "Added side-by-side columns",
+      "Added an outcome chart to the hero",
       "Make README and CONTRIBUTING more compelling for new contributors",
     ],
   },
@@ -565,7 +565,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Destacou seção A-grade",
+      "Highlighted the A-grade section",
       "Work in progress",
     ],
   },
@@ -575,7 +575,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Adicionou métricas de outcome ao ROI",
+      "Added outcome metrics to ROI",
       "Work in progress",
     ],
   },
@@ -594,7 +594,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Adicionou telemetria e ROI",
+      "Added telemetry and ROI",
     ],
   },
   {
@@ -632,7 +632,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Priorizou bugs críticos de funil",
+      "Prioritized critical funnel bugs",
       "Added docs panel to clients",
     ],
   },
@@ -642,7 +642,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Adicionou QuickCopy no Welcome",
+      "Added QuickCopy to the Welcome screen",
     ],
   },
   {
@@ -714,7 +714,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Verificou status do domínio de email",
+      "Verified email domain status",
       "Work in progress",
     ],
   },
@@ -770,7 +770,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Adicionou detecção de bots",
+      "Added bot detection",
     ],
   },
   {
