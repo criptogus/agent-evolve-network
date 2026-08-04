@@ -1,5 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import {
+  PRICE_MONTHLY,
+  PRICE_YEARLY,
+  PRICE_YEARLY_LIST,
+  PRO_YEARLY_DISCOUNT_PCT,
+} from "@/lib/pricing-copy";
 
 // Keep these answers in sync with FAQ_LD in src/routes/index.tsx (schema.org markup).
 // Register: short, blunt, no hedging. Every answer says the true thing first.
