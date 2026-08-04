@@ -174,24 +174,59 @@ function Marketplace() {
     staleTime: 60_000,
   });
 
-  const [type, setType] = useState<TypeFilter>("all");
+  // URL is the source of truth for search/sort/filters (shareable + restored
+  // on refresh). Unknown values are coerced back to their defaults by the
+  // route schema, so casts below are safe.
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  function patchSearch(patch: Partial<z.infer<typeof SearchSchema>>) {
+    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+  }
+
+  const type = (TYPES as readonly string[]).includes(search.type)
+    ? (search.type as TypeFilter)
+    : "all";
+  const setType = (v: TypeFilter) => patchSearch({ type: v });
   /** Multi-select category tags — empty means "all categories". */
-  const [tags, setTags] = useState<string[]>([]);
-  const [verticalGroup, setVerticalGroup] = useState<string>("all");
-  const [qInput, setQInput] = useState("");
-  const q = useDebounced(qInput, 250);
+  const tags = search.tags;
+  const verticalGroup = VERTICAL_GROUPS.some((g) => g.value === search.group)
+    ? search.group
+    : "all";
+  const setVerticalGroup = (v: string) => patchSearch({ group: v, tags: [] });
+  const verifiedOnly = search.verified;
+  const setVerifiedOnly = (v: boolean) => patchSearch({ verified: v });
+  const installBucket = (
+    INSTALL_BUCKETS.some((b) => b.value === search.installs) ? search.installs : "any"
+  ) as InstallBucket;
+  const setInstallBucket = (v: InstallBucket) => patchSearch({ installs: v });
+  const sort = (SORTS.some((s) => s.value === search.sort) ? search.sort : "installs_desc") as SortKey;
+  const setSort = (v: SortKey) => patchSearch({ sort: v });
+
+  // The input stays local for responsiveness; the debounced value is what
+  // lands in the URL (and is read back on load / browser navigation).
+  const [qInput, setQInput] = useState(search.q);
+  const debouncedQ = useDebounced(qInput, 250);
+  useEffect(() => {
+    if (debouncedQ !== search.q) patchSearch({ q: debouncedQ });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQ]);
+  useEffect(() => {
+    // Back/forward or a shared link: pull the URL value into the input.
+    setQInput((cur) => (cur.trim() === search.q.trim() ? cur : search.q));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.q]);
+  const q = search.q;
   const searching = qInput.trim() !== q.trim();
-  const [verifiedOnly, setVerifiedOnly] = useState(false);
-  const [installBucket, setInstallBucket] = useState<InstallBucket>("any");
-  const [sort, setSort] = useState<SortKey>("installs_desc");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const items = data?.items ?? [];
   const verticals = data?.verticals ?? [];
 
   function toggleTag(v: string) {
-    setVerticalGroup("all");
-    setTags((prev) => (prev.includes(v) ? prev.filter((t) => t !== v) : [...prev, v]));
+    patchSearch({
+      group: "all",
+      tags: tags.includes(v) ? tags.filter((t) => t !== v) : [...tags, v],
+    });
   }
 
   const filtered = useMemo(() => {
