@@ -23,11 +23,8 @@ export const en = {
   oauth_success_no_pending_body:
     "This page completes an MCP client authorization. Start the flow from your client (Claude, Cursor, Codex, Lovable, OpenClaw, Hermes, …) or run the CLI.",
   oauth_success_read_docs: "Read the MCP docs",
-
-  // language switcher
-  lang_switch_to_pt: "Português",
-  lang_switch_to_en: "English",
 };
+
 
 export const ptBR: typeof en = en;
 
