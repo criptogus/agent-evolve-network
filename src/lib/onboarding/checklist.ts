@@ -67,12 +67,12 @@ export const STEPS: readonly OnboardingStep[] = [
     evidence: '{ "slug": "<slug>", "score_before": <number>, "score_after": <number> }',
   },
   {
-    id: "certify",
+    id: "diagnose",
     stage: "evolve",
-    title: "Earn a portable credential",
+    title: "Diagnose the agent itself and take the next lesson",
     action:
-      "diagnose_start → diagnose_submit → curriculum_next → residency_start → residency_submit → credential_issue.",
-    evidence: '{ "credential_code": "SAK-XXXXXX-XXXXXX" }',
+      "diagnose_start({ domain }) → diagnose_submit({ answers }) → curriculum_next() to get the prescribed next capability.",
+    evidence: '{ "domain": "<domain>", "score": <number 0-100>, "next_capability": "<id>" }',
   },
 ] as const;
 
