@@ -8,6 +8,10 @@ import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
 import { isTrustDemoted, TRUST_TIER_RANK, trustTier } from "@/lib/marketplace/trust-tiers";
 import { PackageCard } from "@/components/marketplace/PackageCard";
+import {
+  FilterSidebarSkeleton,
+  PackageGridSkeleton,
+} from "@/components/marketplace/PackageSkeletons";
 import { AuthorLink } from "@/components/marketplace/AuthorLink";
 import {
   BarChart3,
@@ -319,15 +323,15 @@ function Marketplace() {
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-[0.4] [background-image:linear-gradient(to_right,var(--color-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_at_top,black,transparent_75%)]"
         />
-        <div className="relative mx-auto max-w-5xl px-6 pb-14 pt-12 text-center md:pt-16">
+        <div className="relative mx-auto max-w-5xl px-4 pb-10 pt-10 text-center sm:px-6 sm:pb-14 sm:pt-12 md:pt-16">
           <TermsStatusBanner className="mb-6 text-left" />
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
             Live registry
           </span>
-          <h1 className="mx-auto mt-5 max-w-3xl text-balance text-4xl font-semibold tracking-tight md:text-5xl">
+          <h1 className="mx-auto mt-5 max-w-3xl text-balance text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
             Tested capabilities for your agents
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-balance text-muted-foreground">
+          <p className="mx-auto mt-4 max-w-2xl text-balance text-sm text-muted-foreground sm:text-base">
             Skills, playbooks, souls and guardrails — each with a Trust Score from adversarial
             testing. Search by name, person (e.g. <em>Musk</em>, <em>Buffett</em>) or category.
           </p>
@@ -356,7 +360,7 @@ function Marketplace() {
 
       {/* Sticky toolbar — search + filters + order by */}
       <div className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-6 py-3 sm:flex-row sm:items-center">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:px-6">
           <div className="relative flex-1">
             <Search
               className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -389,7 +393,7 @@ function Marketplace() {
             <button
               onClick={() => setFiltersOpen((v) => !v)}
               aria-expanded={filtersOpen}
-              className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium hover:border-primary/40 lg:hidden"
+              className="inline-flex h-11 shrink-0 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium hover:border-primary/40 lg:hidden"
             >
               <SlidersHorizontal className="h-4 w-4" aria-hidden />
               Filters
@@ -399,13 +403,13 @@ function Marketplace() {
                 </span>
               )}
             </button>
-            <label className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm">
-              <span className="text-muted-foreground">Sort by</span>
+            <label className="inline-flex h-11 min-w-0 flex-1 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm sm:flex-none">
+              <span className="shrink-0 text-muted-foreground">Sort by</span>
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortKey)}
                 aria-label="Sort by"
-                className="bg-transparent text-sm font-medium outline-none"
+                className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none"
               >
                 {SORT_GROUPS.map((g) => (
                   <optgroup key={g} label={g}>
@@ -421,7 +425,7 @@ function Marketplace() {
           </div>
         </div>
         {activeChips.length > 0 && (
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-6 pb-3">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 pb-3 sm:px-6">
             {activeChips.map((c) => (
               <button
                 key={c.key}
@@ -442,9 +446,13 @@ function Marketplace() {
       </div>
 
       {/* Sidebar + grid */}
-      <section className="mx-auto max-w-7xl gap-10 px-6 py-10 lg:grid lg:grid-cols-[224px_1fr]">
+      <section className="mx-auto max-w-7xl gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:grid lg:grid-cols-[210px_minmax(0,1fr)] lg:gap-10 xl:grid-cols-[224px_minmax(0,1fr)]">
         <aside className={`${filtersOpen ? "block" : "hidden"} mb-8 lg:mb-0 lg:block`}>
-          <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2">
+          <div className="rounded-xl border border-border bg-card p-4 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:pr-2">
+            {isLoading ? (
+              <FilterSidebarSkeleton />
+            ) : (
+              <>
             <FilterGroup title="Type">
               {TYPES.map((t) => (
                 <FilterRow
@@ -540,6 +548,8 @@ function Marketplace() {
                 Reset all filters
               </button>
             )}
+              </>
+            )}
           </div>
         </aside>
 
@@ -547,7 +557,7 @@ function Marketplace() {
           <div className="mb-4 flex items-baseline justify-between gap-3">
             <p className="text-sm text-muted-foreground">
               {isLoading ? (
-                "Loading registry…"
+                <span className="inline-block h-4 w-32 animate-pulse rounded bg-primary/10 align-middle" />
               ) : (
                 <>
                   <strong className="text-foreground">{filtered.length.toLocaleString("en-US")}</strong>{" "}
@@ -558,7 +568,7 @@ function Marketplace() {
             </p>
           </div>
 
-          {isLoading && <SkeletonGrid />}
+          {isLoading && <PackageGridSkeleton count={6} />}
           {isError && (
             <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
               Couldn't load the registry. Please refresh.
@@ -576,7 +586,7 @@ function Marketplace() {
               </p>
             </div>
           )}
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
             {filtered.map((p: MarketplaceItem) => (
               <PackageCard key={p.id} p={p} />
             ))}
@@ -649,16 +659,6 @@ function FilterRow({
       <span className="truncate capitalize">{label}</span>
       <span className="ml-auto font-mono text-[11px] opacity-70">{count}</span>
     </button>
-  );
-}
-
-function SkeletonGrid() {
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="h-64 animate-pulse rounded-xl border border-border bg-muted/20" />
-      ))}
-    </div>
   );
 }
 

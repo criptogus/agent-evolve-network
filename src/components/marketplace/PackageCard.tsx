@@ -62,13 +62,13 @@ export function PackageCard({ p }: { p: MarketplaceItem }) {
       : ({ to: "/marketplace/$packageId", params: { packageId: p.slug } } as const);
 
   return (
-    <div className="group relative flex flex-col rounded-xl border border-border bg-card p-5 transition-colors focus-within:border-primary/40 hover:border-primary/40 hover:shadow-elevated">
+    <div className="group relative flex flex-col rounded-xl border border-border bg-card p-4 transition-colors sm:p-5 focus-within:border-primary/40 hover:border-primary/40 hover:shadow-elevated">
       {/* Title row: icon tile + name + type */}
       <div className="flex items-start gap-3">
         <span
-          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${TYPE_TONE[p.type]}`}
+          className={`inline-flex h-9 w-9 shrink-0 sm:h-10 sm:w-10 items-center justify-center rounded-lg border ${TYPE_TONE[p.type]}`}
         >
-          <Icon className="h-5 w-5" aria-hidden />
+          <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="line-clamp-2 text-base font-semibold leading-tight tracking-tight">

@@ -20,11 +20,12 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/lib/require-auth";
 import { toggleStar, isStarred, type StarState } from "@/lib/favorites/favorites.functions";
-import { BookOpen, Bot, Gauge, KeyRound, PackageIcon, ShieldCheck, Star, Tag } from "lucide-react";
+import { BookOpen, Bot, Gauge, KeyRound, Package as PackageIcon, ShieldCheck, Star, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 import { PackageGallery } from "@/components/marketplace/PackageGallery";
 import { StatLine } from "@/components/marketplace/StatLine";
+import { PackageDetailSkeleton } from "@/components/marketplace/PackageSkeletons";
 
 export const Route = createFileRoute("/marketplace/$packageId")({
   loader: async ({ params }) => {
@@ -73,6 +74,12 @@ export const Route = createFileRoute("/marketplace/$packageId")({
           Back to marketplace
         </Link>
       </div>
+    </div>
+  ),
+  pendingComponent: () => (
+    <div className="min-h-screen bg-background">
+      <Nav />
+      <PackageDetailSkeleton />
     </div>
   ),
   component: PackageDetail,
@@ -176,24 +183,24 @@ function PackageDetail() {
 
       {/* Header */}
       <section className="border-b border-border bg-surface/40">
-        <div className="mx-auto max-w-7xl px-6 py-10">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
           <TermsStatusBanner className="mb-5" />
-          <nav aria-label="Breadcrumb" className="text-xs text-muted-foreground">
-            <Link to="/marketplace" className="transition-colors hover:text-foreground">
+          <nav aria-label="Breadcrumb" className="flex min-w-0 items-center text-xs text-muted-foreground">
+            <Link to="/marketplace" className="shrink-0 transition-colors hover:text-foreground">
               Marketplace
             </Link>
-            <span aria-hidden className="px-1.5">
+            <span aria-hidden className="shrink-0 px-1.5">
               /
             </span>
-            <span className="capitalize">{pkg.type}</span>
-            <span aria-hidden className="px-1.5">
+            <span className="shrink-0 capitalize">{pkg.type}</span>
+            <span aria-hidden className="shrink-0 px-1.5">
               /
             </span>
-            <span className="text-foreground">{pkg.name}</span>
+            <span className="truncate text-foreground">{pkg.name}</span>
           </nav>
-          <div className="mt-4 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          <div className="mt-4">
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <TypeBadge type={pkg.type} />
                 <span className="font-mono text-[11px] text-muted-foreground">
                   {[`v${pkg.latest}`, pkg.size, pkg.license]
@@ -201,10 +208,10 @@ function PackageDetail() {
                     .join(" · ")}
                 </span>
               </div>
-              <h1 className="mt-3 truncate font-mono text-3xl font-semibold tracking-tight md:text-4xl">
+              <h1 className="mt-3 break-words font-mono text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">
                 {pkg.name}
               </h1>
-              <p className="mt-2 text-base text-muted-foreground">{pkg.description}</p>
+              <p className="mt-2 text-sm text-muted-foreground sm:text-base">{pkg.description}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {pkg.vertical && (
                   <span className="rounded-md border border-border bg-muted/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -218,7 +225,6 @@ function PackageDetail() {
                   {pkg.author}
                   {pkg.authorVerified && <VerifiedBadge />}
                 </span>
-
                 <span>
                   ★ {pkg.rating}{" "}
                   <span className="text-muted-foreground/60">({pkg.reviews.toLocaleString()})</span>
@@ -260,10 +266,13 @@ function PackageDetail() {
         </div>
       </section>
 
-      {/* Section nav — in-page anchors, one scrolling detail page */}
+      {/* Section nav — one scrolling detail page with in-page anchors */}
       <div className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto max-w-7xl px-6">
-          <nav aria-label="Page sections" className="flex gap-1 overflow-x-auto">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <nav
+            aria-label="Page sections"
+            className="-mx-1 flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
             {SECTIONS.map((sec) => (
               <a
                 key={sec.id}
@@ -278,96 +287,10 @@ function PackageDetail() {
       </div>
 
       {/* Body — content column + sticky install/details sidebar */}
-      <section className="mx-auto grid max-w-7xl gap-10 px-6 py-10 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="min-w-0 space-y-14">
-          <Section
-            id="preview"
-            title="Preview"
-            description="What this package looks like once your agent has it."
-          >
-            <PackageGallery pkg={pkg} gatewayUrl={MCP_GATEWAY_URL} />
-          </Section>
-
-          <Section id="overview" title="Description">
-            <p className="leading-relaxed text-muted-foreground">{pkg.longDescription}</p>
-            {pkg.systemPrompt && (
-              <div className="mt-8">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-base font-semibold tracking-tight">System prompt</h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      The exact instructions this package installs into your agent.
-                    </p>
-                  </div>
-                  <CopyButton value={pkg.systemPrompt} label="Copy system prompt" />
-                </div>
-                <div className="mt-3">
-                  <CodeBlock
-                    filename={`${pkg.id}.system-prompt.md`}
-                    lang="md"
-                    code={pkg.systemPrompt}
-                  />
-                </div>
-              </div>
-            )}
-            {pkg.examples.length > 0 && (
-              <div className="mt-8">
-                <h3 className="text-base font-semibold tracking-tight">Real-world examples</h3>
-                <div className="mt-4 space-y-3">
-                  {pkg.examples.map((ex) => (
-                    <div key={ex.title} className="rounded-xl border border-border bg-surface p-5">
-                      <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
-                        {ex.title}
-                      </div>
-                      <pre className="mt-2 whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/90">
-                        {ex.body}
-                      </pre>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </Section>
-
-          <Section
-            id="stats"
-            title="Stats"
-            description="Adoption, reception and performance for this package."
-          >
-            <StatsSection pkg={pkg} />
-          </Section>
-
-          <Section
-            id="install"
-            title="Install instructions"
-            description="Three ways in — pick the one your client supports."
-          >
-            <InstallInstructions pkg={pkg} />
-          </Section>
-
-          <Section
-            id="changelog"
-            title="Changelog"
-            description="Every published release, newest first."
-          >
-            <ChangelogTab pkg={pkg} />
-          </Section>
-
-          <Section id="versions" title="Versions">
-            <VersionsTab pkg={pkg} selected={selectedVersion} onSelect={setSelectedVersion} />
-          </Section>
-
-          <Section id="compatibility" title="Compatibility">
-            <CompatibilityTab pkg={pkg} />
-          </Section>
-
-          <Section id="reviews" title="Reviews">
-            <ReviewsSection slug={pkg.id} />
-          </Section>
-        </div>
-
-        <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
-            <div className="rounded-xl border border-border bg-background p-5 shadow-elevated">
+      <section className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)] gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-10">
+        {/* Sidebar first on mobile so install stays above the fold */}
+        <aside className="order-first min-w-0 space-y-4 lg:order-last lg:sticky lg:top-16 lg:self-start">
+            <div className="min-w-0 rounded-xl border border-border bg-background p-4 shadow-elevated sm:p-5">
               {/* Primary: no-signup MCP path */}
               <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
                 Install via MCP — no account needed
@@ -485,6 +408,96 @@ function PackageDetail() {
           <DetailsPanel pkg={pkg} />
           <TrustPanel pkg={pkg} />
         </aside>
+
+        <div className="min-w-0 space-y-12 sm:space-y-14">
+          <Section
+            id="preview"
+            title="Preview"
+            description="What this package looks like once your agent has it."
+          >
+            <PackageGallery pkg={pkg} gatewayUrl={MCP_GATEWAY_URL} />
+          </Section>
+
+          <Section id="overview" title="Description">
+            <p className="leading-relaxed text-muted-foreground">{pkg.longDescription}</p>
+            {pkg.systemPrompt && (
+              <div className="mt-8">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <h3 className="text-base font-semibold tracking-tight">System prompt</h3>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      The exact instructions this package installs into your agent.
+                    </p>
+                  </div>
+                  <CopyButton value={pkg.systemPrompt} label="Copy system prompt" />
+                </div>
+                <div className="mt-3">
+                  <CodeBlock
+                    filename={`${pkg.id}.system-prompt.md`}
+                    lang="md"
+                    code={pkg.systemPrompt}
+                  />
+                </div>
+              </div>
+            )}
+            {pkg.examples.length > 0 && (
+              <div className="mt-8">
+                <h3 className="text-base font-semibold tracking-tight">Real-world examples</h3>
+                <div className="mt-4 space-y-3">
+                  {pkg.examples.map((ex) => (
+                    <div
+                      key={ex.title}
+                      className="rounded-xl border border-border bg-surface p-4 sm:p-5"
+                    >
+                      <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
+                        {ex.title}
+                      </div>
+                      <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-sm leading-relaxed text-foreground/90">
+                        {ex.body}
+                      </pre>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Section>
+
+          <Section
+            id="stats"
+            title="Stats"
+            description="Adoption, reception and performance for this package."
+          >
+            <StatsSection pkg={pkg} />
+          </Section>
+
+          <Section
+            id="install"
+            title="Install instructions"
+            description="Three ways in — pick the one your client supports."
+          >
+            <InstallInstructions pkg={pkg} />
+          </Section>
+
+          <Section
+            id="changelog"
+            title="Changelog"
+            description="Every published release, newest first."
+          >
+            <ChangelogTab pkg={pkg} />
+          </Section>
+
+          <Section id="versions" title="Versions">
+            <VersionsTab pkg={pkg} selected={selectedVersion} onSelect={setSelectedVersion} />
+          </Section>
+
+          <Section id="compatibility" title="Compatibility">
+            <CompatibilityTab pkg={pkg} />
+          </Section>
+
+          <Section id="reviews" title="Reviews">
+            <ReviewsSection slug={pkg.id} />
+          </Section>
+        </div>
       </section>
 
       <Footer />
@@ -566,10 +579,10 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-20">
-      <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+    <section id={id} className="scroll-mt-16">
+      <h2 className="text-lg font-semibold tracking-tight sm:text-xl">{title}</h2>
       {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
-      <div className="mt-5">{children}</div>
+      <div className="mt-4 sm:mt-5">{children}</div>
     </section>
   );
 }
@@ -577,8 +590,8 @@ function Section({
 /** Adoption + performance numbers, directory-style. */
 function StatsSection({ pkg }: { pkg: Package }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <div className="rounded-xl border border-border bg-card p-5">
+    <div className="grid gap-4 sm:grid-cols-2">
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <div className="font-mono text-[11px] uppercase tracking-wider text-primary">Adoption</div>
         <div className="mt-3 space-y-1.5">
           <StatLine icon={Bot} label="Installs">
@@ -595,12 +608,14 @@ function StatsSection({ pkg }: { pkg: Package }) {
           </StatLine>
         </div>
       </div>
-      <div className="rounded-xl border border-border bg-card p-5">
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
           Performance
         </div>
         {pkg.metrics.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">No published performance metrics yet.</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            No published performance metrics yet.
+          </p>
         ) : (
           <div className="mt-3 space-y-1.5">
             {pkg.metrics.map((m) => (
@@ -619,7 +634,7 @@ function StatsSection({ pkg }: { pkg: Package }) {
 /** Sidebar card: package facts with dotted leaders, plus deps and scopes. */
 function DetailsPanel({ pkg }: { pkg: Package }) {
   return (
-    <div className="rounded-xl border border-border bg-background p-5">
+    <div className="rounded-xl border border-border bg-background p-4 sm:p-5">
       <div className="font-mono text-[11px] uppercase tracking-wider text-primary">Details</div>
       <div className="mt-3 space-y-1.5">
         <StatLine icon={Tag} label="Type">
@@ -690,31 +705,31 @@ function DetailsPanel({ pkg }: { pkg: Package }) {
 function InstallInstructions({ pkg }: { pkg: Package }) {
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-border bg-card p-5">
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
             1
           </span>
           <h3 className="text-sm font-semibold">MCP gateway — no account needed</h3>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          Add this URL as an MCP server in Claude, Hermes, Cursor or ChatGPT. This package is
-          included automatically.
+          Add this URL as an MCP server in Claude, Hermes or ChatGPT. This package is included
+          automatically.
         </p>
         <div className="mt-3">
           <CodeBlockCopy code={MCP_GATEWAY_URL} label="MCP gateway URL" />
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-5">
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
             2
           </span>
           <h3 className="text-sm font-semibold">CLI</h3>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          Install a pinned version into the current project.
+          Install into the current project, latest or pinned.
         </p>
         <div className="mt-3 space-y-2">
           <CodeBlockCopy code={`npx super-agent install ${pkg.id}`} label="install latest" />
@@ -725,9 +740,9 @@ function InstallInstructions({ pkg }: { pkg: Package }) {
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-5">
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
             3
           </span>
           <h3 className="text-sm font-semibold">Copy / paste</h3>
@@ -739,7 +754,6 @@ function InstallInstructions({ pkg }: { pkg: Package }) {
         </p>
         <Link
           to="/play"
-          search={{ tool: "get_package", slug: pkg.id }}
           className="mt-3 inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
         >
           Open in playground →
@@ -759,27 +773,27 @@ function VersionsTab({
   onSelect: (v: string) => void;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto rounded-xl border border-border">
+      <table className="w-full min-w-[560px] text-sm">
         <thead className="bg-surface">
           <tr className="text-left font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-            <th className="px-5 py-3">Version</th>
-            <th className="px-5 py-3">Status</th>
-            <th className="px-5 py-3">Released</th>
-            <th className="px-5 py-3">Notes</th>
-            <th className="px-5 py-3 text-right"></th>
+            <th className="px-4 py-3 sm:px-5">Version</th>
+            <th className="px-4 py-3 sm:px-5">Status</th>
+            <th className="px-4 py-3 sm:px-5">Released</th>
+            <th className="px-4 py-3 sm:px-5">Notes</th>
+            <th className="px-4 py-3 text-right sm:px-5"></th>
           </tr>
         </thead>
         <tbody>
           {pkg.versions.map((v) => (
             <tr key={v.version} className="border-t border-border bg-background">
-              <td className="px-5 py-4 font-mono font-semibold">{v.version}</td>
-              <td className="px-5 py-4">
+              <td className="px-4 py-4 sm:px-5 font-mono font-semibold">{v.version}</td>
+              <td className="px-4 py-4 sm:px-5">
                 <StatusPill status={v.status} />
               </td>
-              <td className="px-5 py-4 text-muted-foreground">{v.date}</td>
-              <td className="px-5 py-4 text-muted-foreground">{v.notes}</td>
-              <td className="px-5 py-4 text-right">
+              <td className="px-4 py-4 sm:px-5 text-muted-foreground">{v.date}</td>
+              <td className="px-4 py-4 sm:px-5 text-muted-foreground">{v.notes}</td>
+              <td className="px-4 py-4 sm:px-5 text-right">
                 <button
                   onClick={() => onSelect(v.version)}
                   className={`rounded-md border px-3 py-1.5 font-mono text-[11px] uppercase transition-colors ${

@@ -21,13 +21,7 @@ type Frame = {
  * That keeps the visual weight of a screenshot gallery without inventing
  * marketing imagery.
  */
-export function PackageGallery({
-  pkg,
-  gatewayUrl,
-}: {
-  pkg: Package;
-  gatewayUrl: string;
-}) {
+export function PackageGallery({ pkg, gatewayUrl }: { pkg: Package; gatewayUrl: string }) {
   const frames: Frame[] = [
     {
       id: "install",
@@ -41,7 +35,6 @@ export function PackageGallery({
         `→ resolving ${pkg.id}@${pkg.latest}`,
         `→ runtimes ......... ${pkg.compatibility.map((c) => c.runtime).join(", ") || "any MCP client"}`,
         `→ scopes ........... ${pkg.scopes.join(", ") || "none"}`,
-        `→ size ............. ${pkg.size}`,
         "",
         `✓ ${pkg.name} is available to your agent`,
         "",
@@ -79,21 +72,21 @@ export function PackageGallery({
     <div>
       <div className="overflow-hidden rounded-xl border border-border bg-background">
         {/* Window chrome */}
-        <div className="flex items-center gap-2 border-b border-border bg-surface px-4 py-2.5">
-          <span className="flex gap-1.5" aria-hidden>
+        <div className="flex items-center gap-2 border-b border-border bg-surface px-3 py-2.5 sm:px-4">
+          <span className="flex shrink-0 gap-1.5" aria-hidden>
             <span className="h-2.5 w-2.5 rounded-full bg-border" />
             <span className="h-2.5 w-2.5 rounded-full bg-border" />
             <span className="h-2.5 w-2.5 rounded-full bg-border" />
           </span>
-          <span className="truncate font-mono text-[11px] text-muted-foreground">
+          <span className="min-w-0 truncate font-mono text-[11px] text-muted-foreground">
             {frame.filename}
           </span>
         </div>
         <pre
-          className={`max-h-[420px] overflow-auto px-5 py-4 text-[12.5px] leading-relaxed ${
+          className={`max-h-[320px] overflow-auto px-4 py-4 text-[11.5px] leading-relaxed sm:max-h-[420px] sm:px-5 sm:text-[12.5px] ${
             frame.tone === "terminal"
               ? "bg-[oklch(0.14_0.01_270)] font-mono text-white/90"
-              : "whitespace-pre-wrap font-mono text-foreground/90"
+              : "whitespace-pre-wrap break-words font-mono text-foreground/90"
           }`}
         >
           {frame.body}
@@ -109,7 +102,7 @@ export function PackageGallery({
                 key={f.id}
                 onClick={() => setActive(i)}
                 aria-pressed={i === active}
-                className={`inline-flex max-w-[220px] items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition-colors ${
+                className={`inline-flex max-w-[200px] items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition-colors sm:max-w-[220px] ${
                   i === active
                     ? "border-primary bg-primary/10 font-medium text-primary"
                     : "border-border bg-card text-muted-foreground hover:text-foreground"

@@ -21,7 +21,9 @@ export function StatLine({
       {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />}
       <span className="shrink-0 text-muted-foreground">{label}</span>
       <span aria-hidden className="mt-1 flex-1 border-b border-dashed border-border" />
-      <span className="shrink-0 font-mono text-[11px] text-foreground">{children}</span>
+      <span className="min-w-0 shrink-0 truncate font-mono text-[11px] text-foreground">
+        {children}
+      </span>
     </div>
   );
 }
