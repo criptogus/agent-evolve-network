@@ -1,6 +1,12 @@
 import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
 import { startExam, submitExam, getDiagnosisForCurriculum } from "@/lib/university/university.server";
+import {
+  startResidency,
+  submitResidencyRound,
+  issueCredential,
+  verifyCredential,
+} from "@/lib/university/residency.server";
 import { planCurriculum } from "@/lib/university/curriculum";
 import { DOMAINS, type DomainId, type ErrorClass } from "@/lib/university/types";
 
@@ -146,4 +152,70 @@ export const curriculumNextTool = defineTool({
       how_to_install: "Use `get_package { slug }` (ou `install_agent`) para os itens com in_registry: true.",
     });
   },
+});
+
+/* ------------------------------------------------------------------ *
+ * Pilar 3 — Residência (treino com feedback)
+ * ------------------------------------------------------------------ */
+
+export const residencyStartTool = defineTool({
+  name: "residency_start",
+  description:
+    "[UNIVERSITY] Residency, step 1. Diagnosis tells you WHAT is broken; residency TRAINS it. Returns round 1: a short set of cases drilling the error classes you pass in `focus` (default: the whole domain). YOU execute them on your host, then post the transcript to `residency_submit` for per-case feedback plus the capability that fixes each miss. Pass all 3 rounds to graduate and issue a portable credential.",
+  parameters: z.object({
+    domain: DomainEnum,
+    focus: z
+      .array(ErrorClassEnum)
+      .max(7)
+      .default([])
+      .describe("Error classes to drill — use `still_failing` / the diagnose_submit profile."),
+    installed_skills: z.array(z.string()).max(64).default([]),
+    agent_fp: z.string().max(120).optional(),
+  }),
+  execute: async (input, ctx) => {
+    const started = await startResidency({
+      domain: input.domain as DomainId,
+      focus: input.focus as ErrorClass[],
+      userId: userIdOf(ctx),
+      agentFp: input.agent_fp ?? null,
+      installedSkills: input.installed_skills,
+    });
+    return json(started);
+  },
+});
+
+export const residencySubmitTool = defineTool({
+  name: "residency_submit",
+  description:
+    "[UNIVERSITY] Residency, step 2. Grades the current round deterministically and returns feedback per case (what failed, why, and which capability corrects it), the round score against the pass threshold, and the NEXT round's tasks. Failing a round repeats it with the coach applied — no silent progression. When `graduated: true`, call `credential_issue`.",
+  parameters: z.object({
+    residency_id: z.string(),
+    answers: z
+      .array(z.object({ case_id: z.string(), answer: z.string().max(20000) }))
+      .min(1)
+      .max(24),
+  }),
+  execute: async (input) => {
+    const out = await submitResidencyRound({
+      residencyId: input.residency_id,
+      answers: input.answers,
+    });
+    return json(out);
+  },
+});
+
+export const credentialIssueTool = defineTool({
+  name: "credential_issue",
+  description:
+    "[UNIVERSITY] Pillar 4. Issues a PORTABLE credential for a graduated residency: HMAC-signed code, domain, residency score, rounds, validity window, a public verify URL and README badge markdown. Idempotent per residency. Anyone can verify it with `credential_verify` or GET /api/public/credential?code=… — no account needed.",
+  parameters: z.object({ residency_id: z.string() }),
+  execute: async (input) => json(await issueCredential(input.residency_id)),
+});
+
+export const credentialVerifyTool = defineTool({
+  name: "credential_verify",
+  description:
+    "[UNIVERSITY] Public verification of a SAK credential code: checks the signature (tamper detection), revocation and expiry, and returns the domain, score and rounds behind it. Free and anonymous — use it before trusting a credential someone pasted into a README or proposal.",
+  parameters: z.object({ code: z.string().max(32) }),
+  execute: async (input) => json(await verifyCredential(input.code)),
 });

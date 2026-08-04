@@ -35,6 +35,10 @@ import {
   diagnoseStartTool,
   diagnoseSubmitTool,
   curriculumNextTool,
+  residencyStartTool,
+  residencySubmitTool,
+  credentialIssueTool,
+  credentialVerifyTool,
 } from "@/lib/mcp/tools/university";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
@@ -102,6 +106,8 @@ const mcp = createMcpServer({
     "Installing skills by name is guessing. Measure the agent, then prescribe:",
     "  - `diagnose_start { domain }` → a fixed bank of up to 168 domain tasks across 21 corporate domains. YOU execute them on your host, no extra context.",
     "  - `diagnose_submit { diagnosis_id, answers }` → deterministic score per ERROR CLASS (ambiguity, hallucination, format, abandonment, policy, tool misuse, instruction drift), the dominant bottleneck in plain language, observed cost and a 1-3 item prescription.",
+    "  - `residency_start { domain, focus }` → training rounds that DRILL the failing error classes; `residency_submit` grades each round with per-case coaching and repeats a failed round instead of advancing.",
+    "  - `credential_issue { residency_id }` → portable, HMAC-signed credential after graduating; `credential_verify { code }` checks signature, revocation and expiry publicly.",
     "  - `curriculum_next { diagnosis_id }` → the next capability with the highest MARGINAL gain for this agent, respecting prerequisites, conflicts and a context budget. Past the budget it tells you what to REMOVE — an agent carrying 40 skills is worse, not better.",
     "",
     "## Auth",
@@ -142,6 +148,10 @@ const mcp = createMcpServer({
     diagnoseStartTool,
     diagnoseSubmitTool,
     curriculumNextTool,
+    residencyStartTool,
+    residencySubmitTool,
+    credentialIssueTool,
+    credentialVerifyTool,
   ],
 });
 

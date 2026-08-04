@@ -288,6 +288,62 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_credentials: {
+        Row: {
+          code: string
+          created_at: string
+          domain: string
+          expires_at: string
+          focus: Json
+          id: string
+          issued_at: string
+          residency_id: string | null
+          revoked: boolean
+          rounds: number
+          score: number
+          signature: string
+          user_id: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          domain: string
+          expires_at: string
+          focus?: Json
+          id?: string
+          issued_at?: string
+          residency_id?: string | null
+          revoked?: boolean
+          rounds?: number
+          score: number
+          signature: string
+          user_id?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          domain?: string
+          expires_at?: string
+          focus?: Json
+          id?: string
+          issued_at?: string
+          residency_id?: string | null
+          revoked?: boolean
+          rounds?: number
+          score?: number
+          signature?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_credentials_residency_id_fkey"
+            columns: ["residency_id"]
+            isOneToOne: false
+            referencedRelation: "agent_residencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_diagnoses: {
         Row: {
           agent_fp: string | null
@@ -379,6 +435,95 @@ export type Database = {
             columns: ["diagnosis_id"]
             isOneToOne: false
             referencedRelation: "agent_diagnoses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_residencies: {
+        Row: {
+          agent_fp: string | null
+          created_at: string
+          current_case_ids: Json
+          domain: string
+          focus: Json
+          id: string
+          installed_skills: Json
+          pass_threshold: number
+          round: number
+          round_scores: Json
+          status: string
+          total_rounds: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          agent_fp?: string | null
+          created_at?: string
+          current_case_ids?: Json
+          domain: string
+          focus?: Json
+          id?: string
+          installed_skills?: Json
+          pass_threshold?: number
+          round?: number
+          round_scores?: Json
+          status?: string
+          total_rounds?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          agent_fp?: string | null
+          created_at?: string
+          current_case_ids?: Json
+          domain?: string
+          focus?: Json
+          id?: string
+          installed_skills?: Json
+          pass_threshold?: number
+          round?: number
+          round_scores?: Json
+          status?: string
+          total_rounds?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      agent_residency_rounds: {
+        Row: {
+          created_at: string
+          feedback: Json
+          id: string
+          passed: boolean
+          residency_id: string
+          round: number
+          score: number
+        }
+        Insert: {
+          created_at?: string
+          feedback?: Json
+          id?: string
+          passed?: boolean
+          residency_id: string
+          round: number
+          score: number
+        }
+        Update: {
+          created_at?: string
+          feedback?: Json
+          id?: string
+          passed?: boolean
+          residency_id?: string
+          round?: number
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_residency_rounds_residency_id_fkey"
+            columns: ["residency_id"]
+            isOneToOne: false
+            referencedRelation: "agent_residencies"
             referencedColumns: ["id"]
           },
         ]

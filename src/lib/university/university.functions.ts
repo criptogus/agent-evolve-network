@@ -8,9 +8,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { startExam, submitExam, listDiagnoses, getDiagnosisForCurriculum } from "./university.server";
 import { planCurriculum } from "./curriculum";
-import type { DomainId, ErrorClass } from "./types.ts";
+import { DOMAINS, type DomainId, type ErrorClass } from "./types.ts";
 
-const DomainEnum = z.enum(["gtm", "engineering", "support", "finance", "data"]);
+const DomainEnum = z.enum(DOMAINS.map((d) => d.id) as [DomainId, ...DomainId[]]);
 
 export const startDiagnosis = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
