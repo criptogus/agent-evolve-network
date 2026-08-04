@@ -131,14 +131,16 @@ function CreditsPage() {
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function Stat({ label, value, accent, hint }: { label: string; value: string; accent?: boolean; hint?: string }) {
   return (
     <div className={`rounded-xl border p-5 ${accent ? "border-primary/30 bg-primary/5" : "border-border bg-background"}`}>
       <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className={`mt-1.5 font-mono text-3xl font-semibold ${accent ? "text-primary" : ""}`}>{value}</div>
+      {hint && <div className="mt-2 text-xs leading-relaxed text-muted-foreground">{hint}</div>}
     </div>
   );
 }
+
 
 function InfoCard({ title, items }: { title: string; items: string[] }) {
   return (
