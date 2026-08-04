@@ -773,15 +773,15 @@ function VersionsTab({
   onSelect: (v: string) => void;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto rounded-xl border border-border">
+      <table className="w-full min-w-[560px] text-sm">
         <thead className="bg-surface">
           <tr className="text-left font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-            <th className="px-5 py-3">Version</th>
-            <th className="px-5 py-3">Status</th>
-            <th className="px-5 py-3">Released</th>
-            <th className="px-5 py-3">Notes</th>
-            <th className="px-5 py-3 text-right"></th>
+            <th className="px-4 py-3 sm:px-5">Version</th>
+            <th className="px-4 py-3 sm:px-5">Status</th>
+            <th className="px-4 py-3 sm:px-5">Released</th>
+            <th className="px-4 py-3 sm:px-5">Notes</th>
+            <th className="px-4 py-3 text-right sm:px-5"></th>
           </tr>
         </thead>
         <tbody>
