@@ -325,7 +325,9 @@ function HomeDashboard() {
               Ready to install
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Highest Trust Score in the registry right now.
+              Most-installed, broadly useful packages — all above the Trust
+              Score bar.
+
             </p>
           </div>
           <Link to="/marketplace" className="shrink-0 text-sm font-medium text-primary hover:underline">
