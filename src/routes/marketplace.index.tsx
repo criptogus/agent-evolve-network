@@ -1,6 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, stripSearchParams } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { z } from "zod";
 import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
@@ -33,7 +34,34 @@ import {
 
 export { AuthorLink };
 
+/**
+ * Search / sort / filter state lives in the URL so a filtered view is
+ * shareable and survives a refresh. Every field falls back to its default
+ * instead of throwing, so a hand-edited URL never breaks the page.
+ */
+const SEARCH_DEFAULTS = {
+  q: "",
+  type: "all",
+  tags: [] as string[],
+  group: "all",
+  verified: false,
+  installs: "any",
+  sort: "installs_desc",
+};
+
+const SearchSchema = z.object({
+  q: z.string().catch("").default(""),
+  type: z.string().catch("all").default("all"),
+  tags: z.array(z.string()).catch([]).default([]),
+  group: z.string().catch("all").default("all"),
+  verified: z.boolean().catch(false).default(false),
+  installs: z.string().catch("any").default("any"),
+  sort: z.string().catch("installs_desc").default("installs_desc"),
+});
+
 export const Route = createFileRoute("/marketplace/")({
+  validateSearch: (s) => SearchSchema.parse(s),
+  search: { middlewares: [stripSearchParams(SEARCH_DEFAULTS) as never] },
   head: () => ({
     meta: [
       { title: "Marketplace — Super Agent Skill" },
@@ -146,24 +174,59 @@ function Marketplace() {
     staleTime: 60_000,
   });
 
-  const [type, setType] = useState<TypeFilter>("all");
+  // URL is the source of truth for search/sort/filters (shareable + restored
+  // on refresh). Unknown values are coerced back to their defaults by the
+  // route schema, so casts below are safe.
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  function patchSearch(patch: Partial<z.infer<typeof SearchSchema>>) {
+    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+  }
+
+  const type = (TYPES as readonly string[]).includes(search.type)
+    ? (search.type as TypeFilter)
+    : "all";
+  const setType = (v: TypeFilter) => patchSearch({ type: v });
   /** Multi-select category tags — empty means "all categories". */
-  const [tags, setTags] = useState<string[]>([]);
-  const [verticalGroup, setVerticalGroup] = useState<string>("all");
-  const [qInput, setQInput] = useState("");
-  const q = useDebounced(qInput, 250);
+  const tags = search.tags;
+  const verticalGroup = VERTICAL_GROUPS.some((g) => g.value === search.group)
+    ? search.group
+    : "all";
+  const setVerticalGroup = (v: string) => patchSearch({ group: v, tags: [] });
+  const verifiedOnly = search.verified;
+  const setVerifiedOnly = (v: boolean) => patchSearch({ verified: v });
+  const installBucket = (
+    INSTALL_BUCKETS.some((b) => b.value === search.installs) ? search.installs : "any"
+  ) as InstallBucket;
+  const setInstallBucket = (v: InstallBucket) => patchSearch({ installs: v });
+  const sort = (SORTS.some((s) => s.value === search.sort) ? search.sort : "installs_desc") as SortKey;
+  const setSort = (v: SortKey) => patchSearch({ sort: v });
+
+  // The input stays local for responsiveness; the debounced value is what
+  // lands in the URL (and is read back on load / browser navigation).
+  const [qInput, setQInput] = useState(search.q);
+  const debouncedQ = useDebounced(qInput, 250);
+  useEffect(() => {
+    if (debouncedQ !== search.q) patchSearch({ q: debouncedQ });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQ]);
+  useEffect(() => {
+    // Back/forward or a shared link: pull the URL value into the input.
+    setQInput((cur) => (cur.trim() === search.q.trim() ? cur : search.q));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.q]);
+  const q = search.q;
   const searching = qInput.trim() !== q.trim();
-  const [verifiedOnly, setVerifiedOnly] = useState(false);
-  const [installBucket, setInstallBucket] = useState<InstallBucket>("any");
-  const [sort, setSort] = useState<SortKey>("installs_desc");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const items = data?.items ?? [];
   const verticals = data?.verticals ?? [];
 
   function toggleTag(v: string) {
-    setVerticalGroup("all");
-    setTags((prev) => (prev.includes(v) ? prev.filter((t) => t !== v) : [...prev, v]));
+    patchSearch({
+      group: "all",
+      tags: tags.includes(v) ? tags.filter((t) => t !== v) : [...tags, v],
+    });
   }
 
   const filtered = useMemo(() => {
@@ -304,12 +367,7 @@ function Marketplace() {
 
   function reset() {
     setQInput("");
-    setType("all");
-    setTags([]);
-    setVerticalGroup("all");
-    setVerifiedOnly(false);
-    setInstallBucket("any");
-    setSort("installs_desc");
+    navigate({ search: { ...SEARCH_DEFAULTS }, replace: true });
   }
 
 
@@ -476,7 +534,6 @@ function Marketplace() {
                     icon={g.icon}
                     onClick={() => {
                       setVerticalGroup(g.value);
-                      setTags([]);
                     }}
                   />
                 ))}
@@ -493,8 +550,7 @@ function Marketplace() {
                   count={items.length}
                   label="All categories"
                   onClick={() => {
-                    setTags([]);
-                    setVerticalGroup("all");
+                    patchSearch({ tags: [], group: "all" });
                   }}
                 />
                 {verticals.map((v) => (
