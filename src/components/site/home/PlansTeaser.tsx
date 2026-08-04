@@ -55,12 +55,16 @@ export function PlansTeaser() {
               Pro · billed yearly
             </div>
             <div className="mt-4 flex items-end gap-2">
-              <span className="text-5xl font-semibold tracking-tight">$190</span>
+              <span className="pb-2 text-2xl font-medium text-muted-foreground line-through">$228</span>
+              <span className="text-5xl font-semibold tracking-tight">$140</span>
               <span className="pb-2 text-sm text-muted-foreground">/ year</span>
             </div>
+            <div className="mt-3 inline-flex items-center rounded-full border border-signal/40 bg-signal/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.14em] text-signal">
+              Save $88 · 39% off
+            </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Two months free versus <span className="text-foreground">$19 / month</span>, which
-              stays available if you prefer the flexibility.
+              Instead of <span className="text-foreground">$228 / year</span> billed monthly at $19,
+              which stays available if you prefer the flexibility.
             </p>
             <Link
               to="/pricing"
