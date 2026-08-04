@@ -196,7 +196,9 @@ function PackageDetail() {
               <div className="flex items-center gap-2">
                 <TypeBadge type={pkg.type} />
                 <span className="font-mono text-[11px] text-muted-foreground">
-                  v{pkg.latest} · {pkg.size} · {pkg.license}
+                  {[`v${pkg.latest}`, pkg.size, pkg.license]
+                    .filter((v) => v && v !== "—")
+                    .join(" · ")}
                 </span>
               </div>
               <h1 className="mt-3 truncate font-mono text-3xl font-semibold tracking-tight md:text-4xl">
