@@ -30,6 +30,9 @@ function buildDescription(skillsLabel: string) {
 }
 
 export const Route = createFileRoute("/")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    stay: s["stay"] === 1 || s["stay"] === "1" ? 1 : undefined,
+  }),
   loader: async () => {
     // Live registry counts with a static fallback — never throws.
     const stats = await getLiveSiteStats().catch(() => null);
