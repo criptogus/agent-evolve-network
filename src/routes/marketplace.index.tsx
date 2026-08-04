@@ -361,15 +361,21 @@ function Marketplace() {
               aria-hidden
             />
             <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search packages…"
+              value={qInput}
+              onChange={(e) => setQInput(e.target.value)}
+              placeholder="Search by name, person or category…"
               aria-label="Search packages"
               className="h-11 w-full rounded-lg border border-border bg-card pl-10 pr-10 text-sm outline-none focus:border-primary"
             />
-            {q && (
+            {searching && (
+              <Loader2
+                className="pointer-events-none absolute right-9 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground"
+                aria-hidden
+              />
+            )}
+            {qInput && (
               <button
-                onClick={() => setQ("")}
+                onClick={() => setQInput("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 aria-label="Clear search"
               >
@@ -385,24 +391,52 @@ function Marketplace() {
             >
               <SlidersHorizontal className="h-4 w-4" aria-hidden />
               Filters
+              {activeChips.length > 0 && (
+                <span className="rounded-full bg-primary/10 px-1.5 font-mono text-[10px] text-primary">
+                  {activeChips.length}
+                </span>
+              )}
             </button>
             <label className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm">
-              <span className="text-muted-foreground">Order by</span>
+              <span className="text-muted-foreground">Sort by</span>
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortKey)}
-                aria-label="Order by"
+                aria-label="Sort by"
                 className="bg-transparent text-sm font-medium outline-none"
               >
-                {SORTS.map((s) => (
-                  <option key={s.value} value={s.value}>
-                    {s.label}
-                  </option>
+                {SORT_GROUPS.map((g) => (
+                  <optgroup key={g} label={g}>
+                    {SORTS.filter((s) => s.group === g).map((s) => (
+                      <option key={s.value} value={s.value}>
+                        {s.label}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </label>
           </div>
         </div>
+        {activeChips.length > 0 && (
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-6 pb-3">
+            {activeChips.map((c) => (
+              <button
+                key={c.key}
+                onClick={c.clear}
+                className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium capitalize text-primary hover:bg-primary/20"
+                aria-label={`Remove filter ${c.label}`}
+              >
+                {c.label}
+                <X className="h-3 w-3" aria-hidden />
+              </button>
+            ))}
+            <button onClick={reset} className="text-xs text-muted-foreground hover:text-foreground">
+              Clear all
+            </button>
+          </div>
+        )}
+
       </div>
 
       {/* Sidebar + grid */}
