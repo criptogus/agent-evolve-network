@@ -2540,7 +2540,6 @@ export type Database = {
           display_name: string | null
           handle: string | null
           id: string
-          referral_code: string | null
           updated_at: string
         }
         Insert: {
@@ -2550,7 +2549,6 @@ export type Database = {
           display_name?: string | null
           handle?: string | null
           id: string
-          referral_code?: string | null
           updated_at?: string
         }
         Update: {
@@ -2560,7 +2558,6 @@ export type Database = {
           display_name?: string | null
           handle?: string | null
           id?: string
-          referral_code?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -3678,6 +3675,24 @@ export type Database = {
           transport?: string
           updated_at?: string
           url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
           user_id?: string
         }
         Relationships: []
