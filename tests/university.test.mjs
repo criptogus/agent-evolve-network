@@ -1,17 +1,35 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { scoreCase, buildReport, publicCases, sampleExam, looksLikeRefusal, asksClarification } from "../src/lib/university/diagnose.ts";
-import { ALL_CASES, findCase, casesForDomain } from "../src/lib/university/cases.ts";
-import { planCurriculum, CURRICULUM, findCapability } from "../src/lib/university/curriculum.ts";
+import { ALL_CASES, findCase, casesForDomain, CASE_BANK_VERSION } from "../src/lib/university/cases.ts";
+import { ERROR_CLASSES, DOMAINS } from "../src/lib/university/types.ts";
+import { planCurriculum, CURRICULUM, findCapability, CURRICULUM_VERSION } from "../src/lib/university/curriculum.ts";
+
+test("case bank version reflects phase 2 expansion", () => {
+  assert.equal(CASE_BANK_VERSION, "2.0.0");
+  assert.equal(CURRICULUM_VERSION, "2.0.0");
+});
 
 test("every case is bound to a known error class and has expectations", () => {
-  assert.ok(ALL_CASES.length >= 40);
+  assert.ok(ALL_CASES.length >= 168);
   for (const c of ALL_CASES) {
     assert.ok(c.prompt.length > 20, c.id);
+    assert.ok(ERROR_CLASSES.includes(c.error_class), c.id);
     assert.ok(Object.keys(c.expect).length > 0, c.id);
   }
   const ids = new Set(ALL_CASES.map((c) => c.id));
   assert.equal(ids.size, ALL_CASES.length, "case ids must be unique");
+});
+
+test("every domain has exactly 8 cases covering all 7 error classes", () => {
+  for (const d of DOMAINS) {
+    const cases = casesForDomain(d.id);
+    assert.equal(cases.length, 8, `${d.id} should have 8 cases`);
+    const classes = new Set(cases.map((c) => c.error_class));
+    for (const ec of ERROR_CLASSES) {
+      assert.ok(classes.has(ec), `${d.id} is missing ${ec}`);
+    }
+  }
 });
 
 test("refusal and clarification detectors work in pt and en", () => {
@@ -104,6 +122,17 @@ test("curriculum_next respects prerequisites", () => {
   assert.equal(after.next.slug, "gtm-discovery-call-coach");
 });
 
+test("phase 2 domains have domain-specific curriculum candidates", () => {
+  const revenue = planCurriculum({ failing: ["format_break"], domain: "marketing", installed: [] });
+  assert.ok(revenue.track.some((c) => c.slug === "marketing-funnel-analyst"));
+
+  const ops = planCurriculum({ failing: ["format_break"], domain: "data_engineering", installed: [] });
+  assert.ok(ops.track.some((c) => c.slug === "data-pipeline-spec" || c.slug === "data-quality-contract"));
+
+  const media = planCurriculum({ failing: ["policy_violation"], domain: "google_ads", installed: [] });
+  assert.ok(media.track.some((c) => c.slug === "ads-policy-gate"));
+});
+
 test("already-covered classes yield lower marginal gain", () => {
   const cold = planCurriculum({ failing: ["hallucination"], installed: [] });
   const warm = planCurriculum({ failing: ["hallucination"], installed: ["grounded-answers"] });
@@ -113,8 +142,13 @@ test("already-covered classes yield lower marginal gain", () => {
 });
 
 test("conflicts are penalised and flagged", () => {
-  const plan = planCurriculum({ failing: ["policy_violation"], installed: ["no-pii-in-output", "healthcare-hipaa"] });
+  const plan = planCurriculum({
+    failing: ["policy_violation"],
+    domain: "finance",
+    installed: ["no-pii-in-output", "healthcare-hipaa"],
+  });
   const fin = plan.track.find((c) => c.slug === "fintech-compliance");
+  assert.ok(fin, "fintech-compliance should appear in the finance track");
   assert.equal(fin.status, "conflict");
   assert.deepEqual(fin.conflicts_with, ["healthcare-hipaa"]);
 });

@@ -63,7 +63,7 @@ export const overviewTool = defineTool({
           description:
             "UNIVERSITY. Measure the agent BEFORE installing anything, then follow a curriculum instead of browsing a catalog. Free and anonymous.",
           workflow: [
-            "1. diagnose_start   — up to 40 fixed domain tasks; YOU execute them on your host with no extra context.",
+            "1. diagnose_start   — up to 168 fixed domain tasks across 21 corporate domains; YOU execute them on your host with no extra context.",
             "2. diagnose_submit  — deterministic score per ERROR CLASS + dominant bottleneck + 1-3 item prescription.",
             "3. curriculum_next  — next capability by MARGINAL gain, honouring prerequisites, conflicts and a context budget (past the budget it says what to REMOVE).",
           ],

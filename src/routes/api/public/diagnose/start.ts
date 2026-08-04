@@ -35,7 +35,7 @@ export const Route = createFileRoute("/api/public/diagnose/start")({
           method: "POST",
           domains: DOMAINS,
           body_schema: {
-            domain: "gtm | engineering | support | finance | data",
+            domain: "gtm | engineering | support | finance | data | marketing | b2b_sales | customer_success | pricing | strategy | project_management | people_ops | legal_compliance | corporate_finance | agentic_crm | supply_chain | data_engineering | social_media | google_ads | meta_ads | linkedin_ads | digital_product | complex_software | tools_mcp | cybersecurity",
             installed_skills: "string[] (optional) — slugs the agent already carries",
             agent_fp: "string (optional) — stable agent fingerprint for delta tracking",
             limit: "number (optional, max 40)",
