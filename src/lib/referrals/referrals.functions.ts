@@ -113,3 +113,35 @@ export async function awardPurchaseCommission(userId: string, creditsPaid: numbe
 }
 
 export { shaHex };
+
+const ClickInput = z.object({
+  code: z.string().trim().min(4).max(16),
+  target: z.string().max(500).optional().nullable(),
+});
+
+/**
+ * Public: record a click on a referral link (?ref=CODE). No auth required —
+ * this fires on the landing page before signup. IP/UA are hashed, never stored raw.
+ */
+export const recordReferralClick = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => ClickInput.parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const req = getRequest();
+      const ip =
+        req?.headers?.get("cf-connecting-ip") ??
+        req?.headers?.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+        "";
+      const ua = req?.headers?.get("user-agent") ?? "";
+      const { error } = await supabaseAdmin.from("referral_clicks").insert({
+        code: data.code.toUpperCase(),
+        target: data.target ?? null,
+        ip_hash: ip ? await shaHex(ip) : null,
+        ua_hash: ua ? await shaHex(ua) : null,
+      });
+      if (error) console.error("recordReferralClick failed", error);
+    } catch (e) {
+      console.error("recordReferralClick error", e);
+    }
+    return { ok: true };
+  });

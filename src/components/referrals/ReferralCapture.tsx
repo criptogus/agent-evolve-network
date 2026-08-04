@@ -2,20 +2,35 @@ import { useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/hooks/use-auth";
 import { captureRefFromUrl, getStoredRef, clearStoredRef } from "@/lib/referrals/capture";
-import { claimReferral } from "@/lib/referrals/referrals.functions";
+import { claimReferral, recordReferralClick } from "@/lib/referrals/referrals.functions";
 
 /**
  * Mounted at the root: captures ?ref= from URL into cookie/localStorage,
- * and after auth, claims the referral on the server (creates row + grants bonus).
+ * records the click for referral analytics, and after auth claims the
+ * referral on the server (creates row + grants bonus).
  */
 export function ReferralCapture() {
   const { user, loading } = useAuth();
   const claim = useServerFn(claimReferral);
+  const trackClick = useServerFn(recordReferralClick);
 
   // Capture as early as possible on every navigation/landing.
   useEffect(() => {
-    captureRefFromUrl();
-  }, []);
+    const code = captureRefFromUrl();
+    if (!code) return;
+    // Dedupe: one click per code per browser session.
+    try {
+      const key = `sas_ref_click_${code}`;
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+    } catch {
+      /* private mode — still record */
+    }
+    void trackClick({
+      data: { code, target: typeof window !== "undefined" ? window.location.pathname : null },
+    }).catch(() => {});
+  }, [trackClick]);
+
 
   // Once logged in, attempt to claim a stored ref. Server enforces idempotency.
   useEffect(() => {

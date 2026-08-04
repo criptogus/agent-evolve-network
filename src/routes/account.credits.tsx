@@ -54,7 +54,16 @@ function CreditsPage() {
         <div className="grid gap-4 md:grid-cols-3">
           <Stat label="Current balance" value={isLoading ? "…" : (data?.balance ?? 0).toLocaleString()} accent />
           <Stat label="Total earned" value={isLoading ? "…" : `+${(data?.total_earned ?? 0).toLocaleString()}`} />
-          <Stat label="Total spent" value={isLoading ? "…" : `−${(data?.total_spent ?? 0).toLocaleString()}`} />
+          <Stat
+            label="Total spent"
+            value={isLoading ? "…" : `−${(data?.total_spent ?? 0).toLocaleString()}`}
+            hint={
+              !isLoading && (data?.total_spent ?? 0) === 0
+                ? "No debits yet — MCP reviews, forge runs and installs are currently free (not metered against credits). Only marketplace purchases debit here."
+                : undefined
+            }
+          />
+
         </div>
 
         <div className="mt-6 rounded-xl border border-primary/30 bg-primary/5 p-5">
@@ -122,14 +131,16 @@ function CreditsPage() {
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function Stat({ label, value, accent, hint }: { label: string; value: string; accent?: boolean; hint?: string }) {
   return (
     <div className={`rounded-xl border p-5 ${accent ? "border-primary/30 bg-primary/5" : "border-border bg-background"}`}>
       <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className={`mt-1.5 font-mono text-3xl font-semibold ${accent ? "text-primary" : ""}`}>{value}</div>
+      {hint && <div className="mt-2 text-xs leading-relaxed text-muted-foreground">{hint}</div>}
     </div>
   );
 }
+
 
 function InfoCard({ title, items }: { title: string; items: string[] }) {
   return (
