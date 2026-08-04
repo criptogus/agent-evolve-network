@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
@@ -11,8 +11,10 @@ import { PackageCard } from "@/components/marketplace/PackageCard";
 import { AuthorLink } from "@/components/marketplace/AuthorLink";
 import {
   BarChart3,
+  Check,
   Bot,
   FolderOpen,
+  Loader2,
   Palette,
   Search,
   ShoppingBag,
@@ -61,14 +63,44 @@ const TYPES = ["all", "skill", "playbook", "soul", "guardrail"] as const;
 type TypeFilter = (typeof TYPES)[number];
 
 const SORTS = [
-  { value: "installs_desc", label: "Most installed" },
-  { value: "installs_asc", label: "Least installed" },
-  { value: "rating_desc", label: "Top rated" },
-  { value: "trust_desc", label: "Trust score" },
-  { value: "recent", label: "Newest" },
-  { value: "name_asc", label: "Name A→Z" },
+  { value: "trust_desc", label: "Highest Trust Score", group: "Trust" },
+  { value: "trust_asc", label: "Lowest Trust Score", group: "Trust" },
+  { value: "rating_desc", label: "Highest rated", group: "Rating" },
+  { value: "rating_count_desc", label: "Most reviewed", group: "Rating" },
+  { value: "installs_desc", label: "Most installed", group: "Installs" },
+  { value: "installs_asc", label: "Least installed", group: "Installs" },
+  { value: "version_desc", label: "Highest version", group: "Version" },
+  { value: "version_asc", label: "Lowest version", group: "Version" },
+  { value: "recent", label: "Newest added", group: "Other" },
+  { value: "name_asc", label: "Name A→Z", group: "Other" },
 ] as const;
 type SortKey = (typeof SORTS)[number]["value"];
+const SORT_GROUPS = Array.from(new Set(SORTS.map((s) => s.group)));
+
+/** Semver-ish comparison; missing/odd segments sort low. */
+function compareVersions(a: string, b: string): number {
+  const pa = (a ?? "").split(/[.\-+]/);
+  const pb = (b ?? "").split(/[.\-+]/);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const na = Number.parseInt(pa[i] ?? "", 10);
+    const nb = Number.parseInt(pb[i] ?? "", 10);
+    const va = Number.isNaN(na) ? -1 : na;
+    const vb = Number.isNaN(nb) ? -1 : nb;
+    if (va !== vb) return va - vb;
+  }
+  return 0;
+}
+
+/** Debounce so typing doesn't re-filter/re-render the grid on every keystroke. */
+function useDebounced<T>(value: T, delay = 250): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
+}
+
 
 const INSTALL_BUCKETS = [
   { value: "any", label: "Any installs", min: 0, max: Infinity },
@@ -111,9 +143,12 @@ function Marketplace() {
   });
 
   const [type, setType] = useState<TypeFilter>("all");
-  const [vertical, setVertical] = useState<string>("all");
+  /** Multi-select category tags — empty means "all categories". */
+  const [tags, setTags] = useState<string[]>([]);
   const [verticalGroup, setVerticalGroup] = useState<string>("all");
-  const [q, setQ] = useState("");
+  const [qInput, setQInput] = useState("");
+  const q = useDebounced(qInput, 250);
+  const searching = qInput.trim() !== q.trim();
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [installBucket, setInstallBucket] = useState<InstallBucket>("any");
   const [sort, setSort] = useState<SortKey>("installs_desc");
@@ -122,12 +157,17 @@ function Marketplace() {
   const items = data?.items ?? [];
   const verticals = data?.verticals ?? [];
 
+  function toggleTag(v: string) {
+    setVerticalGroup("all");
+    setTags((prev) => (prev.includes(v) ? prev.filter((t) => t !== v) : [...prev, v]));
+  }
+
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const bucket = INSTALL_BUCKETS.find((b) => b.value === installBucket)!;
     const result = items.filter((p) => {
       if (type !== "all" && p.type !== type) return false;
-      if (vertical !== "all" && p.vertical !== vertical) return false;
+      if (tags.length && (!p.vertical || !tags.includes(p.vertical))) return false;
       if (verticalGroup !== "all") {
         const grp = VERTICAL_GROUPS.find((g) => g.value === verticalGroup);
         if (grp && (!p.vertical || !(grp.verticals as readonly string[]).includes(p.vertical))) return false;
@@ -162,10 +202,24 @@ function Marketplace() {
             return TRUST_TIER_RANK[tierA] - TRUST_TIER_RANK[tierB];
           return (b.trust_score ?? -1) - (a.trust_score ?? -1) || b.install_count - a.install_count;
         }
+        case "trust_asc":
+          return (a.trust_score ?? -1) - (b.trust_score ?? -1) || a.install_count - b.install_count;
         case "installs_asc":
           return a.install_count - b.install_count;
         case "rating_desc":
           return (b.rating_avg || 0) - (a.rating_avg || 0) || b.rating_count - a.rating_count;
+        case "rating_count_desc":
+          return b.rating_count - a.rating_count || (b.rating_avg || 0) - (a.rating_avg || 0);
+        case "version_desc":
+          return (
+            compareVersions(b.latest_version, a.latest_version) ||
+            b.install_count - a.install_count
+          );
+        case "version_asc":
+          return (
+            compareVersions(a.latest_version, b.latest_version) ||
+            a.install_count - b.install_count
+          );
         case "recent":
           return (b.created_at ?? "").localeCompare(a.created_at ?? "");
         case "name_asc":
@@ -175,7 +229,7 @@ function Marketplace() {
       }
     });
     return sorted;
-  }, [items, type, vertical, verticalGroup, q, verifiedOnly, installBucket, sort]);
+  }, [items, type, tags, verticalGroup, q, verifiedOnly, installBucket, sort]);
 
   const typeCounts = useMemo(() => {
     const base: Record<TypeFilter, number> = {
@@ -209,23 +263,51 @@ function Marketplace() {
 
   const totalInstalls = useMemo(() => items.reduce((s, it) => s + it.install_count, 0), [items]);
   const dirty =
-    !!q ||
+    !!qInput ||
     type !== "all" ||
-    vertical !== "all" ||
+    tags.length > 0 ||
     verticalGroup !== "all" ||
     verifiedOnly ||
     installBucket !== "any" ||
     sort !== "installs_desc";
 
+  const activeChips: { key: string; label: string; clear: () => void }[] = [
+    ...(q.trim() ? [{ key: "q", label: `“${q.trim()}”`, clear: () => setQInput("") }] : []),
+    ...(type !== "all" ? [{ key: "type", label: type, clear: () => setType("all") }] : []),
+    ...tags.map((t) => ({ key: `tag:${t}`, label: t, clear: () => toggleTag(t) })),
+    ...(verticalGroup !== "all"
+      ? [
+          {
+            key: "group",
+            label: VERTICAL_GROUPS.find((g) => g.value === verticalGroup)?.label ?? verticalGroup,
+            clear: () => setVerticalGroup("all"),
+          },
+        ]
+      : []),
+    ...(verifiedOnly
+      ? [{ key: "verified", label: "Verified authors", clear: () => setVerifiedOnly(false) }]
+      : []),
+    ...(installBucket !== "any"
+      ? [
+          {
+            key: "installs",
+            label: `${INSTALL_BUCKETS.find((b) => b.value === installBucket)?.label} installs`,
+            clear: () => setInstallBucket("any"),
+          },
+        ]
+      : []),
+  ];
+
   function reset() {
-    setQ("");
+    setQInput("");
     setType("all");
-    setVertical("all");
+    setTags([]);
     setVerticalGroup("all");
     setVerifiedOnly(false);
     setInstallBucket("any");
     setSort("installs_desc");
   }
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -281,15 +363,21 @@ function Marketplace() {
               aria-hidden
             />
             <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search packages…"
+              value={qInput}
+              onChange={(e) => setQInput(e.target.value)}
+              placeholder="Search by name, person or category…"
               aria-label="Search packages"
               className="h-11 w-full rounded-lg border border-border bg-card pl-10 pr-10 text-sm outline-none focus:border-primary"
             />
-            {q && (
+            {searching && (
+              <Loader2
+                className="pointer-events-none absolute right-9 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground"
+                aria-hidden
+              />
+            )}
+            {qInput && (
               <button
-                onClick={() => setQ("")}
+                onClick={() => setQInput("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 aria-label="Clear search"
               >
@@ -305,24 +393,52 @@ function Marketplace() {
             >
               <SlidersHorizontal className="h-4 w-4" aria-hidden />
               Filters
+              {activeChips.length > 0 && (
+                <span className="rounded-full bg-primary/10 px-1.5 font-mono text-[10px] text-primary">
+                  {activeChips.length}
+                </span>
+              )}
             </button>
             <label className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm">
-              <span className="text-muted-foreground">Order by</span>
+              <span className="text-muted-foreground">Sort by</span>
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortKey)}
-                aria-label="Order by"
+                aria-label="Sort by"
                 className="bg-transparent text-sm font-medium outline-none"
               >
-                {SORTS.map((s) => (
-                  <option key={s.value} value={s.value}>
-                    {s.label}
-                  </option>
+                {SORT_GROUPS.map((g) => (
+                  <optgroup key={g} label={g}>
+                    {SORTS.filter((s) => s.group === g).map((s) => (
+                      <option key={s.value} value={s.value}>
+                        {s.label}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </label>
           </div>
         </div>
+        {activeChips.length > 0 && (
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-6 pb-3">
+            {activeChips.map((c) => (
+              <button
+                key={c.key}
+                onClick={c.clear}
+                className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium capitalize text-primary hover:bg-primary/20"
+                aria-label={`Remove filter ${c.label}`}
+              >
+                {c.label}
+                <X className="h-3 w-3" aria-hidden />
+              </button>
+            ))}
+            <button onClick={reset} className="text-xs text-muted-foreground hover:text-foreground">
+              Clear all
+            </button>
+          </div>
+        )}
+
       </div>
 
       {/* Sidebar + grid */}
@@ -352,7 +468,7 @@ function Marketplace() {
                     icon={g.icon}
                     onClick={() => {
                       setVerticalGroup(g.value);
-                      setVertical("all");
+                      setTags([]);
                     }}
                   />
                 ))}
@@ -360,30 +476,32 @@ function Marketplace() {
             )}
 
             {verticals.length > 0 && (
-              <FilterGroup title="Category">
+              <FilterGroup
+                title={tags.length ? `Categories · ${tags.length} selected` : "Categories"}
+              >
+                <p className="mb-1 text-[11px] text-muted-foreground">Pick one or more</p>
                 <FilterRow
-                  active={vertical === "all"}
+                  active={tags.length === 0}
                   count={items.length}
                   label="All categories"
                   onClick={() => {
-                    setVertical("all");
+                    setTags([]);
                     setVerticalGroup("all");
                   }}
                 />
                 {verticals.map((v) => (
                   <FilterRow
                     key={v}
-                    active={vertical === v}
+                    active={tags.includes(v)}
+                    checkbox
                     count={verticalCounts.get(v) ?? 0}
                     label={v}
-                    onClick={() => {
-                      setVertical(v);
-                      setVerticalGroup("all");
-                    }}
+                    onClick={() => toggleTag(v)}
                   />
                 ))}
               </FilterGroup>
             )}
+
 
             <FilterGroup title="Refine">
               <label className="flex cursor-pointer items-center gap-2 py-1 text-sm">
@@ -498,12 +616,15 @@ function FilterRow({
   count,
   label,
   icon: Icon,
+  checkbox,
   onClick,
 }: {
   active: boolean;
   count: number;
   label: string;
   icon?: LucideIcon;
+  /** Renders a checkbox affordance for multi-select filters. */
+  checkbox?: boolean;
   onClick: () => void;
 }) {
   return (
@@ -514,6 +635,16 @@ function FilterRow({
         active ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
       }`}
     >
+      {checkbox && (
+        <span
+          aria-hidden
+          className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border ${
+            active ? "border-primary bg-primary text-primary-foreground" : "border-border"
+          }`}
+        >
+          {active && <Check className="h-3 w-3" />}
+        </span>
+      )}
       {Icon && <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />}
       <span className="truncate capitalize">{label}</span>
       <span className="ml-auto font-mono text-[11px] opacity-70">{count}</span>
