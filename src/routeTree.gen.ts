@@ -132,6 +132,9 @@ import { Route as ApiOgSkillOfTheWeekSvgRouteImport } from './routes/api/og.skil
 import { Route as ApiPublicDotwellKnownOauthAuthorizationServerRouteImport } from './routes/api/public/[.]well-known.oauth-authorization-server'
 import { Route as ApiPublicDotwellKnownOauthProtectedResourceRouteImport } from './routes/api/public/[.]well-known.oauth-protected-resource'
 import { Route as ApiPublicCertificationsIdRouteImport } from './routes/api/public/certifications.$id'
+import { Route as ApiPublicCurriculumNextRouteImport } from './routes/api/public/curriculum/next'
+import { Route as ApiPublicDiagnoseStartRouteImport } from './routes/api/public/diagnose/start'
+import { Route as ApiPublicDiagnoseSubmitRouteImport } from './routes/api/public/diagnose/submit'
 import { Route as ApiPublicHooksPrewarmSharePromosRouteImport } from './routes/api/public/hooks/prewarm-share-promos'
 import { Route as ApiPublicMcpHealthRouteImport } from './routes/api/public/mcp.health'
 import { Route as ApiPublicMcpProbeRouteImport } from './routes/api/public/mcp.probe'
@@ -780,6 +783,21 @@ const ApiPublicCertificationsIdRoute =
     path: '/api/public/certifications/$id',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCurriculumNextRoute = ApiPublicCurriculumNextRouteImport.update({
+  id: '/api/public/curriculum/next',
+  path: '/api/public/curriculum/next',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicDiagnoseStartRoute = ApiPublicDiagnoseStartRouteImport.update({
+  id: '/api/public/diagnose/start',
+  path: '/api/public/diagnose/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicDiagnoseSubmitRoute = ApiPublicDiagnoseSubmitRouteImport.update({
+  id: '/api/public/diagnose/submit',
+  path: '/api/public/diagnose/submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksPrewarmSharePromosRoute =
   ApiPublicHooksPrewarmSharePromosRouteImport.update({
     id: '/api/public/hooks/prewarm-share-promos',
@@ -1026,6 +1044,9 @@ export interface FileRoutesByFullPath {
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
+  '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
+  '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
+  '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/mcp/probe': typeof ApiPublicMcpProbeRoute
@@ -1172,6 +1193,9 @@ export interface FileRoutesByTo {
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
+  '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
+  '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
+  '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/mcp/probe': typeof ApiPublicMcpProbeRoute
@@ -1320,6 +1344,9 @@ export interface FileRoutesById {
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
+  '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
+  '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
+  '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/mcp/probe': typeof ApiPublicMcpProbeRoute
@@ -1469,6 +1496,9 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
+    | '/api/public/curriculum/next'
+    | '/api/public/diagnose/start'
+    | '/api/public/diagnose/submit'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/mcp/probe'
@@ -1615,6 +1645,9 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
+    | '/api/public/curriculum/next'
+    | '/api/public/diagnose/start'
+    | '/api/public/diagnose/submit'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/mcp/probe'
@@ -1762,6 +1795,9 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
+    | '/api/public/curriculum/next'
+    | '/api/public/diagnose/start'
+    | '/api/public/diagnose/submit'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/mcp/probe'
@@ -1885,6 +1921,9 @@ export interface RootRouteChildren {
   ApiPublicDotwellKnownOauthAuthorizationServerRoute: typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   ApiPublicDotwellKnownOauthProtectedResourceRoute: typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   ApiPublicCertificationsIdRoute: typeof ApiPublicCertificationsIdRoute
+  ApiPublicCurriculumNextRoute: typeof ApiPublicCurriculumNextRoute
+  ApiPublicDiagnoseStartRoute: typeof ApiPublicDiagnoseStartRoute
+  ApiPublicDiagnoseSubmitRoute: typeof ApiPublicDiagnoseSubmitRoute
   ApiPublicHooksPrewarmSharePromosRoute: typeof ApiPublicHooksPrewarmSharePromosRoute
   ApiPublicOauthRegisterRoute: typeof ApiPublicOauthRegisterRoute
   ApiPublicOauthRevokeRoute: typeof ApiPublicOauthRevokeRoute
@@ -2766,6 +2805,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCertificationsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/curriculum/next': {
+      id: '/api/public/curriculum/next'
+      path: '/api/public/curriculum/next'
+      fullPath: '/api/public/curriculum/next'
+      preLoaderRoute: typeof ApiPublicCurriculumNextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/diagnose/start': {
+      id: '/api/public/diagnose/start'
+      path: '/api/public/diagnose/start'
+      fullPath: '/api/public/diagnose/start'
+      preLoaderRoute: typeof ApiPublicDiagnoseStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/diagnose/submit': {
+      id: '/api/public/diagnose/submit'
+      path: '/api/public/diagnose/submit'
+      fullPath: '/api/public/diagnose/submit'
+      preLoaderRoute: typeof ApiPublicDiagnoseSubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/prewarm-share-promos': {
       id: '/api/public/hooks/prewarm-share-promos'
       path: '/api/public/hooks/prewarm-share-promos'
@@ -3218,6 +3278,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDotwellKnownOauthProtectedResourceRoute:
     ApiPublicDotwellKnownOauthProtectedResourceRoute,
   ApiPublicCertificationsIdRoute: ApiPublicCertificationsIdRoute,
+  ApiPublicCurriculumNextRoute: ApiPublicCurriculumNextRoute,
+  ApiPublicDiagnoseStartRoute: ApiPublicDiagnoseStartRoute,
+  ApiPublicDiagnoseSubmitRoute: ApiPublicDiagnoseSubmitRoute,
   ApiPublicHooksPrewarmSharePromosRoute: ApiPublicHooksPrewarmSharePromosRoute,
   ApiPublicOauthRegisterRoute: ApiPublicOauthRegisterRoute,
   ApiPublicOauthRevokeRoute: ApiPublicOauthRevokeRoute,
@@ -3239,13 +3302,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
