@@ -3,6 +3,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { JsonLd } from "@/components/site/JsonLd";
 import { Hero } from "@/components/site/home/Hero";
+import { University } from "@/components/site/home/University";
 import { AgentFactory } from "@/components/site/home/AgentFactory";
 import { SecurityPromise } from "@/components/site/home/SecurityPromise";
 import { GradeImpact } from "@/components/site/home/GradeImpact";
@@ -142,6 +143,7 @@ function Home() {
       <JsonLd data={[ORG_LD, SOFTWARE_LD, FAQ_LD]} />
       <Nav />
       <Hero />
+      <University />
       <AgentFactory />
       <GradeImpact />
       <IndustryDemo />
