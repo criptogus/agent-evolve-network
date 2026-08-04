@@ -13,12 +13,12 @@ import {
 export const Route = createFileRoute("/admin/roi")({
   head: () => ({
     meta: [
-      { title: "ROI & uplift por cliente — Admin" },
+      { title: "ROI & Uplift by Customer — Admin" },
       { name: "robots", content: "noindex" },
       {
         name: "description",
         content:
-          "Painel administrativo de prova de valor: uplift contrafactual skill on/off e ROI agregado por workspace.",
+          "Admin dashboard proving value: counterfactual skill on/off uplift and aggregated ROI per workspace.",
       },
     ],
   }),
@@ -72,11 +72,11 @@ function AdminRoiPage() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-10">
         <header className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">ROI &amp; uplift por cliente</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">ROI &amp; Uplift by Customer</h1>
           <p className="max-w-2xl text-sm text-muted-foreground">
-            Prova de valor ao cliente: uplift contrafactual (skill ligado vs. desligado) e
-            resultado agregado por workspace anonimizado. Vazio até que execuções cheguem com
-            dados de outcome (<code>task_completed</code>, <code>arm</code>).
+            Customer proof of value: counterfactual uplift (skill on vs. off) and
+            aggregated results by anonymized workspace. Empty until executions arrive with
+            outcome data (<code>task_completed</code>, <code>arm</code>).
           </p>
           <div className="flex gap-2 pt-2">
             {RANGES.map((r) => (
@@ -89,7 +89,7 @@ function AdminRoiPage() {
                     : "border-border hover:bg-muted"
                 }`}
               >
-                {r} dias
+                {r} days
               </button>
             ))}
           </div>
@@ -99,15 +99,15 @@ function AdminRoiPage() {
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {roi.data
             ? [
-                { label: "Execuções", value: roi.data.totals.executions.toLocaleString("pt-BR") },
+                { label: "Executions", value: roi.data.totals.executions.toLocaleString("en-US") },
                 {
                   label: "Completion rate (network)",
                   value: pct(roi.data.totals.network_completion_rate),
                 },
-                { label: "Horas de agente economizadas", value: `${roi.data.totals.hours_saved}h` },
+                { label: "Agent hours saved", value: `${roi.data.totals.hours_saved}h` },
                 {
-                  label: "Blocos de guardrail",
-                  value: roi.data.totals.guardrail_blocks.toLocaleString("pt-BR"),
+                  label: "Guardrail blocks",
+                  value: roi.data.totals.guardrail_blocks.toLocaleString("en-US"),
                 },
               ].map((c) => (
                 <div key={c.label} className="rounded-lg border border-border bg-card p-4">
@@ -122,7 +122,7 @@ function AdminRoiPage() {
 
         {/* Uplift lookup */}
         <section className="space-y-3 rounded-lg border border-border bg-card p-4">
-          <h2 className="text-lg font-semibold">Uplift contrafactual por skill</h2>
+          <h2 className="text-lg font-semibold">Counterfactual Uplift by Skill</h2>
           <form
             className="flex flex-wrap gap-2"
             onSubmit={(e) => {
@@ -133,40 +133,40 @@ function AdminRoiPage() {
             <input
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
-              placeholder="slug do pacote, ex. code-reviewer"
+              placeholder="package slug, e.g. code-reviewer"
               className="min-w-[16rem] flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm"
             />
             <button
               type="submit"
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
             >
-              Medir
+              Measure
             </button>
           </form>
 
           {uplift.isLoading && querySlug ? (
-            <p className="text-sm text-muted-foreground">Calculando…</p>
+            <p className="text-sm text-muted-foreground">Calculating…</p>
           ) : null}
           {uplift.data ? (
             uplift.data.has_control_arm ? (
               <div className="space-y-3">
                 <div className="grid gap-3 sm:grid-cols-3">
                   <Stat
-                    label="Controle (skill off)"
+                    label="Control (skill off)"
                     value={pct(uplift.data.completion.control_rate)}
                     sub={`n=${uplift.data.completion.n_control}`}
                   />
                   <Stat
-                    label="Tratamento (skill on)"
+                    label="Treatment (skill on)"
                     value={pct(uplift.data.completion.treatment_rate)}
                     sub={`n=${uplift.data.completion.n_treatment}`}
                   />
                   <Stat
-                    label="Uplift absoluto"
+                    label="Absolute uplift"
                     value={`${uplift.data.completion.absolute_uplift >= 0 ? "+" : ""}${(
                       uplift.data.completion.absolute_uplift * 100
                     ).toFixed(1)} p.p.`}
-                    sub={`IC95% [${(uplift.data.completion.ci_low * 100).toFixed(1)}, ${(
+                    sub={`95% CI [${(uplift.data.completion.ci_low * 100).toFixed(1)}, ${(
                       uplift.data.completion.ci_high * 100
                     ).toFixed(1)}] · p=${uplift.data.completion.p_value}`}
                   />
@@ -174,21 +174,21 @@ function AdminRoiPage() {
                 <p className="text-sm">
                   {uplift.data.completion.significant ? (
                     <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                      Estatisticamente significativo
+                      Statistically significant
                     </span>
                   ) : (
                     <span className="text-muted-foreground">
-                      Ainda sem significância (precisa de mais execuções por braço)
+                      Not yet significant (needs more executions per arm)
                     </span>
                   )}{" "}
-                  · autonomia (sem intervenção humana):{" "}
+                  · autonomy (no human intervention):{" "}
                   {(uplift.data.autonomy.absolute_uplift * 100).toFixed(1)} p.p.
                 </p>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Sem braço de controle para <code>{uplift.data.slug}</code> nos últimos{" "}
-                {uplift.data.window_days} dias. Configure um experimento e reporte execuções com{" "}
+                No control arm for <code>{uplift.data.slug}</code> in the last{" "}
+                {uplift.data.window_days} days. Configure an experiment and report executions with{" "}
                 <code>arm</code>.
               </p>
             )
@@ -199,14 +199,14 @@ function AdminRoiPage() {
         <section className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold">Outcome por execução</h2>
+              <h2 className="text-lg font-semibold">Outcome per Execution</h2>
               <p className="text-sm text-muted-foreground">
-                Valor além do pass rate: tarefa concluída, intervenção humana e latência
-                economizada vs. baseline, execução por execução
+                Value beyond pass rate: task completed, human intervention, and latency
+                saved vs. baseline, execution by execution
                 {querySlug ? (
                   <>
                     {" "}
-                    (filtrado por <code>{querySlug}</code>)
+                    (filtered by <code>{querySlug}</code>)
                   </>
                 ) : null}
                 .
@@ -219,40 +219,40 @@ function AdminRoiPage() {
                 onChange={(e) => setOnlyWithOutcome(e.target.checked)}
                 className="size-4 rounded border-border"
               />
-              Só com outcome reportado
+              Only with reported outcome
             </label>
           </div>
 
           {outcomes.data ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Stat
-                label="Cobertura de outcome"
+                label="Outcome coverage"
                 value={pct(outcomes.data.summary.outcome_coverage)}
-                sub={`${outcomes.data.summary.with_outcome}/${outcomes.data.summary.rows} execuções`}
+                sub={`${outcomes.data.summary.with_outcome}/${outcomes.data.summary.rows} executions`}
               />
               <Stat
-                label="Tarefas concluídas"
+                label="Tasks completed"
                 value={pct(outcomes.data.summary.completion_rate)}
-                sub="entre execuções com outcome"
+                sub="among executions with outcome"
               />
               <Stat
-                label="Intervenção humana"
+                label="Human intervention"
                 value={pct(outcomes.data.summary.intervention_rate)}
                 sub={`👍 ${outcomes.data.summary.thumbs_up} · 👎 ${outcomes.data.summary.thumbs_down}`}
               />
               <Stat
-                label="Latência economizada"
+                label="Latency saved"
                 value={`${(outcomes.data.summary.latency_saved_ms / 1000).toFixed(1)}s`}
-                sub={`média ${outcomes.data.summary.avg_latency_saved_ms} ms/execução`}
+                sub={`average ${outcomes.data.summary.avg_latency_saved_ms} ms/execution`}
               />
             </div>
           ) : null}
 
           {outcomes.isLoading ? (
-            <p className="text-sm text-muted-foreground">Carregando execuções…</p>
+            <p className="text-sm text-muted-foreground">Loading executions…</p>
           ) : null}
           {outcomes.error ? (
-            <p className="text-sm text-destructive">Falha ao carregar (admin apenas).</p>
+            <p className="text-sm text-destructive">Failed to load (admin only).</p>
           ) : null}
 
           {outcomes.data?.executions.length ? (
@@ -260,30 +260,30 @@ function AdminRoiPage() {
               <table className="w-full text-sm">
                 <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
                   <tr>
-                    <Th>Quando</Th>
-                    <Th>Pacote</Th>
-                    <Th>Braço</Th>
+                    <Th>When</Th>
+                    <Th>Package</Th>
+                    <Th>Arm</Th>
                     <Th>Exec</Th>
-                    <Th>Tarefa concluída</Th>
-                    <Th>Intervenção</Th>
-                    <Th>Latência</Th>
-                    <Th>Latência salva</Th>
-                    <Th>Tokens salvos</Th>
-                    <Th>Nota</Th>
+                    <Th>Task completed</Th>
+                    <Th>Intervention</Th>
+                    <Th>Latency</Th>
+                    <Th>Latency saved</Th>
+                    <Th>Tokens saved</Th>
+                    <Th>Rating</Th>
                   </tr>
                 </thead>
                 <tbody>
                   {outcomes.data.executions.map((e) => (
                     <tr key={e.id} className="border-t border-border">
                       <Td className="whitespace-nowrap text-xs text-muted-foreground">
-                        {new Date(e.created_at).toLocaleString("pt-BR")}
+                        {new Date(e.created_at).toLocaleString("en-US")}
                       </Td>
                       <Td className="font-mono text-xs">
                         {e.package_slug}
                         {e.version ? `@${e.version}` : ""}
                       </Td>
                       <Td className="text-xs">{e.arm ?? "—"}</Td>
-                      <Td>{e.success ? "ok" : (e.error_kind ?? "erro")}</Td>
+                      <Td>{e.success ? "ok" : (e.error_kind ?? "error")}</Td>
                       <Td>{tri(e.task_completed)}</Td>
                       <Td>{tri(e.human_intervention)}</Td>
                       <Td>{e.latency_ms != null ? `${e.latency_ms} ms` : "—"}</Td>
@@ -300,7 +300,7 @@ function AdminRoiPage() {
                       </Td>
                       <Td>
                         {e.tokens_saved != null
-                          ? e.tokens_saved.toLocaleString("pt-BR")
+                          ? e.tokens_saved.toLocaleString("en-US")
                           : "—"}
                       </Td>
                       <Td>{e.user_rating === 1 ? "👍" : e.user_rating === -1 ? "👎" : "—"}</Td>
@@ -311,7 +311,7 @@ function AdminRoiPage() {
             </div>
           ) : !outcomes.isLoading ? (
             <p className="text-sm text-muted-foreground">
-              Nenhuma execução{onlyWithOutcome ? " com outcome reportado" : ""} nesse período.
+              No executions{onlyWithOutcome ? " with reported outcome" : ""} in this period.
             </p>
           ) : null}
         </section>
@@ -319,16 +319,16 @@ function AdminRoiPage() {
         {/* Experiments */}
 
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">Experimentos</h2>
+          <h2 className="text-lg font-semibold">Experiments</h2>
           {experiments.data?.experiments?.length ? (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-sm">
                 <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
                   <tr>
-                    <Th>Pacote</Th>
-                    <Th>Chave</Th>
-                    <Th>Hipótese</Th>
-                    <Th>Controle</Th>
+                    <Th>Package</Th>
+                    <Th>Key</Th>
+                    <Th>Hypothesis</Th>
+                    <Th>Control</Th>
                     <Th>Status</Th>
                   </tr>
                 </thead>
@@ -347,17 +347,17 @@ function AdminRoiPage() {
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Nenhum experimento cadastrado ainda.
+              No experiments registered yet.
             </p>
           )}
         </section>
 
         {/* Per-workspace ROI */}
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">ROI por workspace</h2>
-          {roi.isLoading ? <p className="text-sm text-muted-foreground">Carregando…</p> : null}
+          <h2 className="text-lg font-semibold">ROI by Workspace</h2>
+          {roi.isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
           {roi.error ? (
-            <p className="text-sm text-destructive">Falha ao carregar (admin apenas).</p>
+            <p className="text-sm text-destructive">Failed to load (admin only).</p>
           ) : null}
           {roi.data?.workspaces.length ? (
             <div className="overflow-x-auto rounded-lg border border-border">
@@ -365,25 +365,25 @@ function AdminRoiPage() {
                 <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
                   <tr>
                     <Th>Workspace</Th>
-                    <Th>Execuções</Th>
+                    <Th>Executions</Th>
                     <Th>Completion</Th>
-                    <Th>Intervenção humana</Th>
-                    <Th>Horas salvas</Th>
-                    <Th>Tokens salvos</Th>
+                    <Th>Human intervention</Th>
+                    <Th>Hours saved</Th>
+                    <Th>Tokens saved</Th>
                     <Th>Guardrails</Th>
                     <Th>👍/👎</Th>
-                    <Th>Pacotes</Th>
+                    <Th>Packages</Th>
                   </tr>
                 </thead>
                 <tbody>
                   {roi.data.workspaces.map((w) => (
                     <tr key={w.workspace_hash} className="border-t border-border">
                       <Td className="font-mono text-xs">{w.workspace_hash.slice(0, 12)}</Td>
-                      <Td>{w.executions.toLocaleString("pt-BR")}</Td>
+                      <Td>{w.executions.toLocaleString("en-US")}</Td>
                       <Td>{pct(w.completion_rate)}</Td>
                       <Td>{pct(w.intervention_rate)}</Td>
                       <Td>{w.hours_saved}h</Td>
-                      <Td>{w.tokens_saved.toLocaleString("pt-BR")}</Td>
+                      <Td>{w.tokens_saved.toLocaleString("en-US")}</Td>
                       <Td>{w.guardrail_blocks}</Td>
                       <Td>
                         {w.thumbs_up}/{w.thumbs_down}
@@ -396,7 +396,7 @@ function AdminRoiPage() {
             </div>
           ) : !roi.isLoading ? (
             <p className="text-sm text-muted-foreground">
-              Nenhuma execução com dados de outcome nesse período.
+              No executions with outcome data in this period.
             </p>
           ) : null}
         </section>
@@ -423,7 +423,7 @@ function Td({ children, className = "" }: { children: React.ReactNode; className
 }
 
 function tri(v: boolean | null) {
-  if (v === true) return <span className="text-emerald-600 dark:text-emerald-400">sim</span>;
+  if (v === true) return <span className="text-emerald-600 dark:text-emerald-400">yes</span>;
   if (v === false) return <span className="text-destructive">no</span>;
   return <span className="text-muted-foreground">—</span>;
 }
