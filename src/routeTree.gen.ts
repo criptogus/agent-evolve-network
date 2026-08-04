@@ -37,6 +37,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RefundsRouteImport } from './routes/refunds'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ResidencyRouteImport } from './routes/residency'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -89,6 +90,7 @@ import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as CompareIndexRouteImport } from './routes/compare.index'
 import { Route as ComparePairRouteImport } from './routes/compare.$pair'
 import { Route as ConnectClientRouteImport } from './routes/connect.$client'
+import { Route as CredentialCodeRouteImport } from './routes/credential.$code'
 import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as LegalDisclaimersRouteImport } from './routes/legal.disclaimers'
@@ -113,10 +115,12 @@ import { Route as ApiJobsDrainUploadQueueRouteImport } from './routes/api/jobs/d
 import { Route as ApiMcpHealthRouteImport } from './routes/api/mcp/health'
 import { Route as ApiPackagesUploadRouteImport } from './routes/api/packages.upload'
 import { Route as ApiPublicCertifyRouteImport } from './routes/api/public/certify'
+import { Route as ApiPublicCredentialRouteImport } from './routes/api/public/credential'
 import { Route as ApiPublicDiagRouteImport } from './routes/api/public/diag'
 import { Route as ApiPublicInstallDothermesDotshRouteImport } from './routes/api/public/install[.]hermes[.]sh'
 import { Route as ApiPublicMcpRouteImport } from './routes/api/public/mcp'
 import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packages'
+import { Route as ApiPublicResidencyRouteImport } from './routes/api/public/residency'
 import { Route as ApiPublicReviewRouteImport } from './routes/api/public/review'
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
@@ -157,6 +161,7 @@ import { Route as DotwellKnownOauthAuthorizationServerApiPublicMcpRouteImport } 
 import { Route as DotwellKnownOauthProtectedResourceApiPublicMcpRouteImport } from './routes/[.]well-known.oauth-protected-resource.api.public.mcp'
 import { Route as ApiAgentsSlugDownloadExtRouteImport } from './routes/api/agents.$slug.download.$ext'
 import { Route as ApiBadgesTrustSlugSvgRouteImport } from './routes/api/badges.trust.$slug.svg'
+import { Route as ApiPublicCredentialCodeBadgeRouteImport } from './routes/api/public/credential.$code.badge'
 import { Route as ApiAgentsBuildIdDownloadExtRouteImport } from './routes/api/agents.build.$id.download.$ext'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
@@ -298,6 +303,11 @@ const RefundsRoute = RefundsRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResidencyRoute = ResidencyRouteImport.update({
+  id: '/residency',
+  path: '/residency',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
@@ -562,6 +572,11 @@ const ConnectClientRoute = ConnectClientRouteImport.update({
   path: '/$client',
   getParentRoute: () => ConnectRoute,
 } as any)
+const CredentialCodeRoute = CredentialCodeRouteImport.update({
+  id: '/credential/$code',
+  path: '/credential/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DocsMcpRoute = DocsMcpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
@@ -682,6 +697,11 @@ const ApiPublicCertifyRoute = ApiPublicCertifyRouteImport.update({
   path: '/api/public/certify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCredentialRoute = ApiPublicCredentialRouteImport.update({
+  id: '/api/public/credential',
+  path: '/api/public/credential',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicDiagRoute = ApiPublicDiagRouteImport.update({
   id: '/api/public/diag',
   path: '/api/public/diag',
@@ -701,6 +721,11 @@ const ApiPublicMcpRoute = ApiPublicMcpRouteImport.update({
 const ApiPublicPackagesRoute = ApiPublicPackagesRouteImport.update({
   id: '/api/public/packages',
   path: '/api/public/packages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicResidencyRoute = ApiPublicResidencyRouteImport.update({
+  id: '/api/public/residency',
+  path: '/api/public/residency',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicReviewRoute = ApiPublicReviewRouteImport.update({
@@ -919,6 +944,12 @@ const ApiBadgesTrustSlugSvgRoute = ApiBadgesTrustSlugSvgRouteImport.update({
   path: '/api/badges/trust/$slug/svg',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCredentialCodeBadgeRoute =
+  ApiPublicCredentialCodeBadgeRouteImport.update({
+    id: '/$code/badge',
+    path: '/$code/badge',
+    getParentRoute: () => ApiPublicCredentialRoute,
+  } as any)
 const ApiAgentsBuildIdDownloadExtRoute =
   ApiAgentsBuildIdDownloadExtRouteImport.update({
     id: '/api/agents/build/$id/download/$ext',
@@ -961,6 +992,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/residency': typeof ResidencyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -1010,6 +1042,7 @@ export interface FileRoutesByFullPath {
   '/collections/$slug': typeof CollectionsSlugRoute
   '/compare/$pair': typeof ComparePairRoute
   '/connect/$client': typeof ConnectClientRoute
+  '/credential/$code': typeof CredentialCodeRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
@@ -1037,10 +1070,12 @@ export interface FileRoutesByFullPath {
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/certify': typeof ApiPublicCertifyRoute
+  '/api/public/credential': typeof ApiPublicCredentialRouteWithChildren
   '/api/public/diag': typeof ApiPublicDiagRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/residency': typeof ApiPublicResidencyRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -1081,6 +1116,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource/api/public/mcp': typeof DotwellKnownOauthProtectedResourceApiPublicMcpRoute
   '/api/agents/$slug/download/$ext': typeof ApiAgentsSlugDownloadExtRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
+  '/api/public/credential/$code/badge': typeof ApiPublicCredentialCodeBadgeRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1112,6 +1148,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/residency': typeof ResidencyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -1161,6 +1198,7 @@ export interface FileRoutesByTo {
   '/collections/$slug': typeof CollectionsSlugRoute
   '/compare/$pair': typeof ComparePairRoute
   '/connect/$client': typeof ConnectClientRoute
+  '/credential/$code': typeof CredentialCodeRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
@@ -1188,10 +1226,12 @@ export interface FileRoutesByTo {
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/certify': typeof ApiPublicCertifyRoute
+  '/api/public/credential': typeof ApiPublicCredentialRouteWithChildren
   '/api/public/diag': typeof ApiPublicDiagRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/residency': typeof ApiPublicResidencyRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -1232,6 +1272,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource/api/public/mcp': typeof DotwellKnownOauthProtectedResourceApiPublicMcpRoute
   '/api/agents/$slug/download/$ext': typeof ApiAgentsSlugDownloadExtRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
+  '/api/public/credential/$code/badge': typeof ApiPublicCredentialCodeBadgeRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1265,6 +1306,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/residency': typeof ResidencyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -1314,6 +1356,7 @@ export interface FileRoutesById {
   '/collections/$slug': typeof CollectionsSlugRoute
   '/compare/$pair': typeof ComparePairRoute
   '/connect/$client': typeof ConnectClientRoute
+  '/credential/$code': typeof CredentialCodeRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
@@ -1341,10 +1384,12 @@ export interface FileRoutesById {
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/certify': typeof ApiPublicCertifyRoute
+  '/api/public/credential': typeof ApiPublicCredentialRouteWithChildren
   '/api/public/diag': typeof ApiPublicDiagRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/residency': typeof ApiPublicResidencyRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -1385,6 +1430,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource/api/public/mcp': typeof DotwellKnownOauthProtectedResourceApiPublicMcpRoute
   '/api/agents/$slug/download/$ext': typeof ApiAgentsSlugDownloadExtRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
+  '/api/public/credential/$code/badge': typeof ApiPublicCredentialCodeBadgeRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1419,6 +1465,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/refunds'
     | '/reset-password'
+    | '/residency'
     | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
@@ -1468,6 +1515,7 @@ export interface FileRouteTypes {
     | '/collections/$slug'
     | '/compare/$pair'
     | '/connect/$client'
+    | '/credential/$code'
     | '/docs/mcp'
     | '/email/unsubscribe'
     | '/legal/disclaimers'
@@ -1495,10 +1543,12 @@ export interface FileRouteTypes {
     | '/api/mcp/health'
     | '/api/packages/upload'
     | '/api/public/certify'
+    | '/api/public/credential'
     | '/api/public/diag'
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
     | '/api/public/packages'
+    | '/api/public/residency'
     | '/api/public/review'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1539,6 +1589,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource/api/public/mcp'
     | '/api/agents/$slug/download/$ext'
     | '/api/badges/trust/$slug/svg'
+    | '/api/public/credential/$code/badge'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
@@ -1570,6 +1621,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/refunds'
     | '/reset-password'
+    | '/residency'
     | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
@@ -1619,6 +1671,7 @@ export interface FileRouteTypes {
     | '/collections/$slug'
     | '/compare/$pair'
     | '/connect/$client'
+    | '/credential/$code'
     | '/docs/mcp'
     | '/email/unsubscribe'
     | '/legal/disclaimers'
@@ -1646,10 +1699,12 @@ export interface FileRouteTypes {
     | '/api/mcp/health'
     | '/api/packages/upload'
     | '/api/public/certify'
+    | '/api/public/credential'
     | '/api/public/diag'
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
     | '/api/public/packages'
+    | '/api/public/residency'
     | '/api/public/review'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1690,6 +1745,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource/api/public/mcp'
     | '/api/agents/$slug/download/$ext'
     | '/api/badges/trust/$slug/svg'
+    | '/api/public/credential/$code/badge'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   id:
@@ -1722,6 +1778,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/refunds'
     | '/reset-password'
+    | '/residency'
     | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
@@ -1771,6 +1828,7 @@ export interface FileRouteTypes {
     | '/collections/$slug'
     | '/compare/$pair'
     | '/connect/$client'
+    | '/credential/$code'
     | '/docs/mcp'
     | '/email/unsubscribe'
     | '/legal/disclaimers'
@@ -1798,10 +1856,12 @@ export interface FileRouteTypes {
     | '/api/mcp/health'
     | '/api/packages/upload'
     | '/api/public/certify'
+    | '/api/public/credential'
     | '/api/public/diag'
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
     | '/api/public/packages'
+    | '/api/public/residency'
     | '/api/public/review'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1842,6 +1902,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource/api/public/mcp'
     | '/api/agents/$slug/download/$ext'
     | '/api/badges/trust/$slug/svg'
+    | '/api/public/credential/$code/badge'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
@@ -1875,6 +1936,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   RefundsRoute: typeof RefundsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ResidencyRoute: typeof ResidencyRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -1909,6 +1971,7 @@ export interface RootRouteChildren {
   ApiTelemetryRoute: typeof ApiTelemetryRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
   ComparePairRoute: typeof ComparePairRoute
+  CredentialCodeRoute: typeof CredentialCodeRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   LegalDisclaimersRoute: typeof LegalDisclaimersRoute
   MarketplacePackageIdRoute: typeof MarketplacePackageIdRoute
@@ -1930,10 +1993,12 @@ export interface RootRouteChildren {
   ApiJobsDrainUploadQueueRoute: typeof ApiJobsDrainUploadQueueRoute
   ApiPackagesUploadRoute: typeof ApiPackagesUploadRoute
   ApiPublicCertifyRoute: typeof ApiPublicCertifyRoute
+  ApiPublicCredentialRoute: typeof ApiPublicCredentialRouteWithChildren
   ApiPublicDiagRoute: typeof ApiPublicDiagRoute
   ApiPublicInstallDothermesDotshRoute: typeof ApiPublicInstallDothermesDotshRoute
   ApiPublicMcpRoute: typeof ApiPublicMcpRouteWithChildren
   ApiPublicPackagesRoute: typeof ApiPublicPackagesRouteWithChildren
+  ApiPublicResidencyRoute: typeof ApiPublicResidencyRoute
   ApiPublicReviewRoute: typeof ApiPublicReviewRouteWithChildren
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
@@ -2164,6 +2229,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/residency': {
+      id: '/residency'
+      path: '/residency'
+      fullPath: '/residency'
+      preLoaderRoute: typeof ResidencyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/robots.txt': {
@@ -2530,6 +2602,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConnectClientRouteImport
       parentRoute: typeof ConnectRoute
     }
+    '/credential/$code': {
+      id: '/credential/$code'
+      path: '/credential/$code'
+      fullPath: '/credential/$code'
+      preLoaderRoute: typeof CredentialCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/docs/mcp': {
       id: '/docs/mcp'
       path: '/mcp'
@@ -2698,6 +2777,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCertifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/credential': {
+      id: '/api/public/credential'
+      path: '/api/public/credential'
+      fullPath: '/api/public/credential'
+      preLoaderRoute: typeof ApiPublicCredentialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/diag': {
       id: '/api/public/diag'
       path: '/api/public/diag'
@@ -2724,6 +2810,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/packages'
       fullPath: '/api/public/packages'
       preLoaderRoute: typeof ApiPublicPackagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/residency': {
+      id: '/api/public/residency'
+      path: '/api/public/residency'
+      fullPath: '/api/public/residency'
+      preLoaderRoute: typeof ApiPublicResidencyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/review': {
@@ -3006,6 +3099,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBadgesTrustSlugSvgRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/credential/$code/badge': {
+      id: '/api/public/credential/$code/badge'
+      path: '/$code/badge'
+      fullPath: '/api/public/credential/$code/badge'
+      preLoaderRoute: typeof ApiPublicCredentialCodeBadgeRouteImport
+      parentRoute: typeof ApiPublicCredentialRoute
+    }
     '/api/agents/build/$id/download/$ext': {
       id: '/api/agents/build/$id/download/$ext'
       path: '/api/agents/build/$id/download/$ext'
@@ -3177,6 +3277,17 @@ const PacksSlugRouteWithChildren = PacksSlugRoute._addFileChildren(
   PacksSlugRouteChildren,
 )
 
+interface ApiPublicCredentialRouteChildren {
+  ApiPublicCredentialCodeBadgeRoute: typeof ApiPublicCredentialCodeBadgeRoute
+}
+
+const ApiPublicCredentialRouteChildren: ApiPublicCredentialRouteChildren = {
+  ApiPublicCredentialCodeBadgeRoute: ApiPublicCredentialCodeBadgeRoute,
+}
+
+const ApiPublicCredentialRouteWithChildren =
+  ApiPublicCredentialRoute._addFileChildren(ApiPublicCredentialRouteChildren)
+
 interface ApiPublicMcpRouteChildren {
   ApiPublicMcpHealthRoute: typeof ApiPublicMcpHealthRoute
   ApiPublicMcpProbeRoute: typeof ApiPublicMcpProbeRoute
@@ -3243,6 +3354,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   RefundsRoute: RefundsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ResidencyRoute: ResidencyRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -3279,6 +3391,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTelemetryRoute: ApiTelemetryRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
   ComparePairRoute: ComparePairRoute,
+  CredentialCodeRoute: CredentialCodeRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   LegalDisclaimersRoute: LegalDisclaimersRoute,
   MarketplacePackageIdRoute: MarketplacePackageIdRoute,
@@ -3300,10 +3413,12 @@ const rootRouteChildren: RootRouteChildren = {
   ApiJobsDrainUploadQueueRoute: ApiJobsDrainUploadQueueRoute,
   ApiPackagesUploadRoute: ApiPackagesUploadRoute,
   ApiPublicCertifyRoute: ApiPublicCertifyRoute,
+  ApiPublicCredentialRoute: ApiPublicCredentialRouteWithChildren,
   ApiPublicDiagRoute: ApiPublicDiagRoute,
   ApiPublicInstallDothermesDotshRoute: ApiPublicInstallDothermesDotshRoute,
   ApiPublicMcpRoute: ApiPublicMcpRouteWithChildren,
   ApiPublicPackagesRoute: ApiPublicPackagesRouteWithChildren,
+  ApiPublicResidencyRoute: ApiPublicResidencyRoute,
   ApiPublicReviewRoute: ApiPublicReviewRouteWithChildren,
   ApiPublicSearchRoute: ApiPublicSearchRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
