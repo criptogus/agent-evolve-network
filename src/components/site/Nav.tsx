@@ -17,6 +17,7 @@ import { CreditsPill } from "./CreditsPill";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getMyAdminStatus } from "@/lib/admin/accounts.functions";
+import { useConnectionStatus } from "@/hooks/use-connection-status";
 
 const GITHUB_URL = "https://github.com/criptogus/agent-evolve-network";
 const TWITTER_URL = "https://x.com/superagentskill";
@@ -102,6 +103,7 @@ export function Nav() {
     staleTime: 60_000,
   });
   const isAdmin = !!adminQuery.data?.isAdmin;
+  const { status: connection } = useConnectionStatus();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/80 backdrop-blur-md">
@@ -195,12 +197,31 @@ export function Nav() {
                   <DropdownMenuItem onClick={() => signOut()}>Sign out</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Link
-                to="/connect"
-                className="inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
-              >
-                Connect
-              </Link>
+              {connection.connected ? (
+                <Link
+                  to="/account/connections"
+                  title={
+                    connection.clientNames.length
+                      ? `Connected: ${connection.clientNames.join(", ")}`
+                      : "Your agent is connected"
+                  }
+                  className="inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-signal/50 bg-signal/15 px-3 text-sm font-medium text-foreground transition-colors hover:bg-signal/25"
+                >
+                  <span
+                    aria-hidden
+                    className="h-1.5 w-1.5 rounded-full bg-signal shadow-[0_0_6px_var(--signal)]"
+                  />
+                  Connected
+                </Link>
+              ) : (
+                <Link
+                  to="/connect"
+                  className="inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
+                >
+                  Connect
+                </Link>
+              )}
+
             </>
           ) : (
             <>
