@@ -113,7 +113,7 @@ function Pricing() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {c === "yearly" ? "Yearly · save $88" : "Monthly"}
+              {c === "yearly" ? `Yearly · ${SAVE_SHORT}` : "Monthly"}
             </button>
           ))}
         </div>
