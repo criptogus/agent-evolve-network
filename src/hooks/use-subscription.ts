@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getStripeEnvironment } from "@/lib/stripe";
+import { getStripeEnvironmentSafe } from "@/lib/stripe";
 import { useAuth } from "./use-auth";
 
 type Sub = {
@@ -19,10 +19,10 @@ export function useSubscription() {
   const [sub, setSub] = useState<Sub | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const env = getStripeEnvironment();
+  const env = getStripeEnvironmentSafe();
 
   const refetch = async () => {
-    if (!user) {
+    if (!user || !env) {
       setSub(null);
       setLoading(false);
       return;

@@ -60,13 +60,15 @@ function BillingPage() {
 
   const onManage = async () => {
     try {
-      const { url } = await createPortalSession({
+      if (!environment) throw new Error("Payments are not configured for this build.");
+      const result = await createPortalSession({
         data: {
           environment,
           returnUrl: `${window.location.origin}/account/billing`,
         },
       });
-      window.open(url, "_blank");
+      if ("error" in result) throw new Error(result.error);
+      window.open(result.url, "_blank");
     } catch (e: any) {
       toast.error(e?.message ?? "Could not open portal");
     }

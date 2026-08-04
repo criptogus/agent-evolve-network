@@ -1,6 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { type StripeEnv, createStripeClient } from "@/lib/stripe.server";
+import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
+
+export type CheckoutSessionResult = { clientSecret: string } | { error: string };
+export type PortalSessionResult = { url: string } | { error: string };
 
 async function resolveOrCreateCustomer(
   stripe: ReturnType<typeof createStripeClient>,
@@ -48,37 +51,53 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       return data;
     },
   )
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<CheckoutSessionResult> => {
     // Always derive identity from the verified session — never trust client input.
     const { userId, claims } = context as { userId: string; claims?: { email?: string } };
     const email = typeof claims?.email === "string" ? claims.email : undefined;
 
-    const stripe = createStripeClient(data.environment);
+    try {
+      const stripe = createStripeClient(data.environment);
 
-    const prices = await stripe.prices.list({ lookup_keys: [data.priceId] });
-    if (!prices.data.length) throw new Error("Price not found");
-    const stripePrice = prices.data[0];
-    const isRecurring = stripePrice.type === "recurring";
+      const prices = await stripe.prices.list({ lookup_keys: [data.priceId] });
+      if (!prices.data.length) throw new Error(`Price "${data.priceId}" not found in ${data.environment}`);
+      const stripePrice = prices.data[0];
+      const isRecurring = stripePrice.type === "recurring";
 
-    const customerId = await resolveOrCreateCustomer(stripe, { email, userId });
+      const customerId = await resolveOrCreateCustomer(stripe, { email, userId });
 
-    const session = await stripe.checkout.sessions.create({
-      line_items: [{ price: stripePrice.id, quantity: data.quantity || 1 }],
-      mode: isRecurring ? "subscription" : "payment",
-      ui_mode: "embedded" as any,
-      return_url: data.returnUrl,
-      customer: customerId,
-      metadata: { userId },
-      ...(isRecurring && { subscription_data: { metadata: { userId } } }),
-    });
+      let productDescription: string | undefined;
+      if (!isRecurring) {
+        const productId =
+          typeof stripePrice.product === "string" ? stripePrice.product : stripePrice.product.id;
+        const product = await stripe.products.retrieve(productId);
+        productDescription = product.name;
+      }
 
-    return session.client_secret;
+      const session = await stripe.checkout.sessions.create({
+        line_items: [{ price: stripePrice.id, quantity: data.quantity || 1 }],
+        mode: isRecurring ? "subscription" : "payment",
+        // `embedded` was removed by Stripe — sessions 400 with it.
+        ui_mode: "embedded_page",
+        return_url: data.returnUrl,
+        customer: customerId,
+        ...(!isRecurring && { payment_intent_data: { description: productDescription } }),
+        metadata: { userId },
+        ...(isRecurring && { subscription_data: { metadata: { userId } } }),
+      } as any);
+
+      if (!session.client_secret) return { error: "Stripe did not return a client secret" };
+      return { clientSecret: session.client_secret };
+    } catch (error) {
+      console.error("createCheckoutSession failed", error);
+      return { error: getStripeErrorMessage(error) };
+    }
   });
 
 export const createPortalSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { returnUrl?: string; environment: StripeEnv }) => data)
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<PortalSessionResult> => {
     const { supabase: _sbCtx, userId  } = context as any;
     const supabase = _sbCtx as any;
 
@@ -90,12 +109,19 @@ export const createPortalSession = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (error || !sub?.stripe_customer_id) throw new Error("No subscription found");
+    if (error || !sub?.stripe_customer_id) {
+      return { error: "No billing account found for this environment yet." };
+    }
 
-    const stripe = createStripeClient(data.environment);
-    const portal = await stripe.billingPortal.sessions.create({
-      customer: sub.stripe_customer_id as string,
-      ...(data.returnUrl && { return_url: data.returnUrl }),
-    });
-    return { url: portal.url };
+    try {
+      const stripe = createStripeClient(data.environment);
+      const portal = await stripe.billingPortal.sessions.create({
+        customer: sub.stripe_customer_id as string,
+        ...(data.returnUrl && { return_url: data.returnUrl }),
+      });
+      return { url: portal.url };
+    } catch (err) {
+      console.error("createPortalSession failed", err);
+      return { error: getStripeErrorMessage(err) };
+    }
   });

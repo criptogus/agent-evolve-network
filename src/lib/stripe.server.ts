@@ -78,3 +78,33 @@ export async function verifyWebhook(
 
   return JSON.parse(body);
 }
+
+/**
+ * Turn a Stripe SDK error into a message safe (and useful) to show a buyer.
+ * Without this, TanStack's request middleware collapses Stripe failures into
+ * a generic 500 and the checkout page looks simply "broken".
+ */
+export function getStripeErrorMessage(error: unknown): string {
+  if (error && typeof error === "object") {
+    const e = error as {
+      message?: string;
+      type?: string;
+      code?: string;
+      decline_code?: string;
+      param?: string;
+      requestId?: string;
+      raw?: { message?: string; type?: string; code?: string; decline_code?: string; param?: string };
+    };
+    const message = e.raw?.message ?? e.message;
+    if (message) {
+      const details = [
+        e.raw?.type ?? e.type,
+        e.raw?.code ?? e.code,
+        e.raw?.decline_code ?? e.decline_code,
+        e.raw?.param ?? e.param,
+      ].filter(Boolean);
+      return details.length ? `${message} (${details.join(", ")})` : message;
+    }
+  }
+  return "Stripe request failed";
+}
