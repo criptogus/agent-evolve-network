@@ -11,8 +11,10 @@ import { PackageCard } from "@/components/marketplace/PackageCard";
 import { AuthorLink } from "@/components/marketplace/AuthorLink";
 import {
   BarChart3,
+  Check,
   Bot,
   FolderOpen,
+  Loader2,
   Palette,
   Search,
   ShoppingBag,
@@ -614,12 +616,15 @@ function FilterRow({
   count,
   label,
   icon: Icon,
+  checkbox,
   onClick,
 }: {
   active: boolean;
   count: number;
   label: string;
   icon?: LucideIcon;
+  /** Renders a checkbox affordance for multi-select filters. */
+  checkbox?: boolean;
   onClick: () => void;
 }) {
   return (
@@ -630,6 +635,16 @@ function FilterRow({
         active ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
       }`}
     >
+      {checkbox && (
+        <span
+          aria-hidden
+          className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border ${
+            active ? "border-primary bg-primary text-primary-foreground" : "border-border"
+          }`}
+        >
+          {active && <Check className="h-3 w-3" />}
+        </span>
+      )}
       {Icon && <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />}
       <span className="truncate capitalize">{label}</span>
       <span className="ml-auto font-mono text-[11px] opacity-70">{count}</span>
