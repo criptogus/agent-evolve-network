@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { JsonLd } from "@/components/site/JsonLd";
+import { PRICING_SENTENCE } from "@/lib/pricing-copy";
 import { Hero } from "@/components/site/home/Hero";
 import { Problem } from "@/components/site/home/Problem";
 import { LabSteps } from "@/components/site/home/LabSteps";
