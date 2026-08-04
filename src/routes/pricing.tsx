@@ -7,10 +7,18 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import {
+  PRICE_MONTHLY,
+  PRICE_YEARLY,
+  PRICE_YEARLY_LIST,
+  PRO_YEARLY_DISCOUNT_PCT,
+  SAVE_BADGE,
+  SAVE_SHORT,
+} from "@/lib/pricing-copy";
 
 const TITLE = "Pricing — one plan, everything included | Super Agent Skill";
-const DESCRIPTION =
-  "Public capabilities are free forever. Pro is $140/year (39% off $228) or $19/month and includes the Agent Factory, Agent Store, University and unlimited tested reviews.";
+const DESCRIPTION = `Public capabilities are free forever. Pro is ${PRICE_YEARLY}/year (${PRO_YEARLY_DISCOUNT_PCT}% off ${PRICE_YEARLY_LIST}) or ${PRICE_MONTHLY}/month and includes the Agent Factory, Agent Store, University and unlimited tested reviews.`;
+
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
