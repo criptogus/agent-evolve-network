@@ -33,10 +33,10 @@ export const Route = createFileRoute("/api/public/curriculum/next")({
           method: "POST",
           body_schema: {
             diagnosis_id: "string (optional) — reads the error profile from the exam",
-            domain: "gtm | engineering | support | finance | data (optional)",
+            domain: "gtm | engineering | support | finance | data | marketing | b2b_sales | customer_success | pricing | strategy | project_management | people_ops | legal_compliance | corporate_finance | agentic_crm | supply_chain | data_engineering | social_media | google_ads | meta_ads | linkedin_ads | digital_product | complex_software | tools_mcp | cybersecurity (optional)",
             failing: `${ERROR_CLASSES.join(" | ")} (array, optional when diagnosis_id is set)`,
             installed_skills: "string[] — what the agent already carries",
-            budget: "number (optional, default 12) — max capabilities this agent should carry",
+            budget: "number (optional, default 14) — max capabilities this agent should carry",
           },
           domains: DOMAINS,
           note: "Above the context budget the response recommends removing a capability instead of adding one.",
