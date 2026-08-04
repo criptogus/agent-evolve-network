@@ -43,8 +43,8 @@ const ITEMS: { q: string; a: React.ReactNode }[] = [
         Yes. Upload it and you get a graded report with the exact failures and a repaired draft. Your
         source is evaluated in isolation, never used to train shared models, and never shown to other
         users.{" "}
-        <Link to="/security" className="text-primary hover:underline">
-          Read the trust center
+        <Link to="/nda" className="text-primary hover:underline">
+          See the mutual NDA
         </Link>
         .
       </>
