@@ -31,6 +31,11 @@ import {
   getMyAgentTool,
   installMyAgentTool,
 } from "@/lib/mcp/tools/agents";
+import {
+  diagnoseStartTool,
+  diagnoseSubmitTool,
+  curriculumNextTool,
+} from "@/lib/mcp/tools/university";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
 import { ORIGIN, sha256, CORS_HEADERS } from "@/lib/oauth/mcp-oauth.server";
@@ -54,7 +59,7 @@ type AuthStatus =
 
 const mcp = createMcpServer({
   name: "superagentskill",
-  version: "1.5.0",
+  version: "1.6.0",
   instructions: [
     "# SuperAgentSkill MCP",
     "Battle-tested toolkit for designing, auditing and shipping AI primitives (skills, playbooks, souls, guardrails). Use it for THREE distinct intents:",
@@ -93,6 +98,12 @@ const mcp = createMcpServer({
     "  - `list_agents` to browse the catalog (free, anonymous).",
     "  - `install_agent` to get the full bundle as files to write into the user's repo (default `.agents/<slug>/`), or as a single system prompt.",
     "",
+    "## 6. UNIVERSITY: diagnose first, then a curriculum (free, anonymous)",
+    "Installing skills by name is guessing. Measure the agent, then prescribe:",
+    "  - `diagnose_start { domain }` → a fixed bank of up to 40 domain tasks. YOU execute them on your host, no extra context.",
+    "  - `diagnose_submit { diagnosis_id, answers }` → deterministic score per ERROR CLASS (ambiguity, hallucination, format, abandonment, policy, tool misuse, instruction drift), the dominant bottleneck in plain language, observed cost and a 1-3 item prescription.",
+    "  - `curriculum_next { diagnosis_id }` → the next capability with the highest MARGINAL gain for this agent, respecting prerequisites, conflicts and a context budget. Past the budget it tells you what to REMOVE — an agent carrying 40 skills is worse, not better.",
+    "",
     "## Auth",
     "Read-only tools (overview, get_methodology, review_skill, review_skills_batch, list/search/get/trust) work anonymously. Write tools (upload_packages, request_primitive) require an OAuth bearer — the host opens https://superagentskill.com/oauth/authorize automatically. Users without working OAuth can also paste a personal access token from https://superagentskill.com/account/tokens. TIP: call upload_packages / request_primitive with dry_run:true to validate the flow anonymously (no persistence, no OAuth) before connecting.",
     "",
@@ -128,6 +139,9 @@ const mcp = createMcpServer({
     listMyAgentsTool,
     getMyAgentTool,
     installMyAgentTool,
+    diagnoseStartTool,
+    diagnoseSubmitTool,
+    curriculumNextTool,
   ],
 });
 
