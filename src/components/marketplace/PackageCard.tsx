@@ -71,7 +71,7 @@ export function PackageCard({ p }: { p: MarketplaceItem }) {
           <Icon className="h-5 w-5" aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-semibold leading-tight tracking-tight">
+          <h3 className="line-clamp-2 text-base font-semibold leading-tight tracking-tight">
             {/* Stretched link covers the card; interactive siblings sit above via z-10 */}
             <Link {...linkProps} className="after:absolute after:inset-0 after:content-['']">
               {p.name}
