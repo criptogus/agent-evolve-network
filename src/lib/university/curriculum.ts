@@ -41,7 +41,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "clarify-before-acting",
     title: "Clarify before acting",
-    summary: "Contrato de entrada: identifica o campo faltante e faz UMA pergunta que desbloqueia, em vez de assumir.",
+    summary: "Input contract: identifies the missing field and asks ONE unblocking question instead of assuming.",
     provides: ["ambiguity_abandon"],
     requires: [],
     conflicts_with: ["autonomous-no-questions"],
@@ -52,7 +52,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "gtm-discovery-call-coach",
     title: "Discovery call coach",
-    summary: "Perguntas de qualificação e mapeamento de decisor — resolve ambiguidade em contexto comercial.",
+    summary: "Qualification questions and decision-maker mapping — resolves ambiguity in a sales context.",
     provides: ["ambiguity_abandon"],
     requires: ["clarify-before-acting"],
     conflicts_with: [],
@@ -63,7 +63,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "grounded-answers",
     title: "Grounded answers",
-    summary: "Só afirma o que está no input; o desconhecido vira lacuna declarada, com o dado exato que falta.",
+    summary: "States only what is in the input; the unknown becomes a declared gap, with the exact missing data point.",
     provides: ["hallucination"],
     requires: [],
     conflicts_with: [],
@@ -74,7 +74,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "web-research",
     title: "Web research",
-    summary: "Busca e cita fonte antes de afirmar — reduz alucinação quando a resposta depende de fato externo.",
+    summary: "Searches and cites a source before stating a claim — reduces hallucination when the answer depends on an external fact.",
     provides: ["hallucination"],
     requires: ["grounded-answers"],
     conflicts_with: [],
@@ -85,7 +85,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "output-contract",
     title: "Output contract",
-    summary: "Formato como contrato: JSON/seções/limites validados antes de responder, com auto-correção.",
+    summary: "Format as contract: JSON/sections/limits validated before responding, with self-correction.",
     provides: ["format_break"],
     requires: [],
     conflicts_with: ["freeform-prose"],
@@ -96,7 +96,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "sql-translator",
     title: "SQL translator",
-    summary: "Traduz pedido de negócio em SQL com premissas explícitas e contrato de saída estável.",
+    summary: "Translates a business request into SQL with explicit assumptions and a stable output contract.",
     provides: ["format_break", "hallucination"],
     requires: ["output-contract"],
     conflicts_with: [],
@@ -107,7 +107,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "finish-the-task",
     title: "Finish the task",
-    summary: "Checklist de conclusão: conta os itens prometidos e não entrega parcial sem dizer o que falta.",
+    summary: "Completion checklist: counts the promised items and never delivers partially without saying what is missing.",
     provides: ["task_abandon"],
     requires: [],
     conflicts_with: [],
@@ -118,7 +118,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "gtm-mutual-action-plan-author",
     title: "Mutual action plan author",
-    summary: "Plano com marcos, donos e datas — fecha o buraco de entrega parcial em ciclos longos.",
+    summary: "Plan with milestones, owners, and dates — closes the partial-delivery gap in long cycles.",
     provides: ["task_abandon"],
     requires: ["finish-the-task"],
     conflicts_with: [],
@@ -129,7 +129,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "incident-response-triage",
     title: "Incident response triage",
-    summary: "Procedimento de incidente com critério de aborto por passo — evita abandono no meio da resposta.",
+    summary: "Incident procedure with a per-step abort criterion — avoids abandonment mid-response.",
     provides: ["task_abandon", "tool_misuse"],
     requires: ["finish-the-task"],
     conflicts_with: [],
@@ -140,7 +140,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "no-pii-in-output",
     title: "No PII in output",
-    summary: "Guardrail: bloqueia PII, segredo e dado de cartão na saída, com alternativa segura.",
+    summary: "Guardrail: blocks PII, secrets, and card data in the output, with a safe alternative.",
     provides: ["policy_violation"],
     requires: [],
     conflicts_with: [],
@@ -151,7 +151,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "fintech-compliance",
     title: "Fintech compliance soul",
-    summary: "Recusa e encaminha pedidos de recomendação de investimento e leitura de contrato sem base.",
+    summary: "Refuses and escalates requests for investment recommendations and unsubstantiated contract interpretation.",
     provides: ["policy_violation"],
     requires: ["no-pii-in-output"],
     conflicts_with: ["healthcare-hipaa"],
@@ -162,7 +162,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "destructive-action-gate",
     title: "Destructive action gate",
-    summary: "Toda ação irreversível passa por simulação/confirmação explícita antes de executar.",
+    summary: "Every irreversible action goes through simulation/explicit confirmation before executing.",
     provides: ["tool_misuse"],
     requires: [],
     conflicts_with: [],
@@ -173,7 +173,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "code-reviewer",
     title: "Code reviewer",
-    summary: "Revisão com severidade, achados e patch — e nenhuma ação destrutiva sem gate.",
+    summary: "Review with severity, findings, and patch — and no destructive action without a gate.",
     provides: ["tool_misuse", "format_break"],
     requires: ["destructive-action-gate"],
     conflicts_with: [],
@@ -184,7 +184,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "constraint-memory",
     title: "Constraint memory",
-    summary: "Repete e verifica as restrições da conversa antes de cada resposta — mata a deriva de instrução.",
+    summary: "Repeats and verifies the conversation constraints before every response — kills instruction drift.",
     provides: ["instruction_drift"],
     requires: [],
     conflicts_with: [],
@@ -195,7 +195,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "prompt-injection-tester",
     title: "Prompt injection tester",
-    summary: "Detecta tentativa de sobrescrever instrução — a variante adversarial da deriva.",
+    summary: "Detects attempts to override instructions — the adversarial variant of drift.",
     provides: ["instruction_drift", "policy_violation"],
     requires: ["constraint-memory"],
     conflicts_with: [],
@@ -210,7 +210,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "marketing-funnel-analyst",
     title: "Marketing funnel analyst",
-    summary: "Lê funil e devolve JSON com estágio, taxa, gargalo e ação — sem inventar números.",
+    summary: "Reads the funnel and returns JSON with stage, rate, bottleneck, and action — without inventing numbers.",
     provides: ["format_break", "hallucination"],
     requires: ["output-contract", "grounded-answers"],
     conflicts_with: [],
@@ -221,7 +221,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "growth-experiment-designer",
     title: "Growth experiment designer",
-    summary: "Formula hipóteses numeradas com métrica, escopo e critério de parada.",
+    summary: "Formulates numbered hypotheses with metric, scope, and stopping criterion.",
     provides: ["task_abandon", "instruction_drift"],
     requires: ["finish-the-task", "constraint-memory"],
     conflicts_with: [],
@@ -232,7 +232,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "b2b-qualification-framework",
     title: "B2B qualification framework",
-    summary: "Mapeia fit, dor, decisão e próximo passo sem inventar dados do prospect.",
+    summary: "Maps fit, pain, decision, and next step without inventing prospect data.",
     provides: ["ambiguity_abandon", "hallucination"],
     requires: ["clarify-before-acting", "grounded-answers"],
     conflicts_with: [],
@@ -243,7 +243,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "proposal-author",
     title: "Proposal author",
-    summary: "Gera proposta com contrato de saída JSON e próximos passos numerados.",
+    summary: "Generates a proposal with a JSON output contract and numbered next steps.",
     provides: ["format_break", "task_abandon"],
     requires: ["output-contract", "finish-the-task"],
     conflicts_with: [],
@@ -254,7 +254,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "churn-rescue-playbook",
     title: "Churn rescue playbook",
-    summary: "Classifica risco de churn e propõe playbook com dono, sem prometer resultado.",
+    summary: "Classifies churn risk and proposes a playbook with an owner, without promising a result.",
     provides: ["task_abandon", "policy_violation"],
     requires: ["finish-the-task", "no-pii-in-output"],
     conflicts_with: [],
@@ -265,7 +265,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "health-score-interpreter",
     title: "Health score interpreter",
-    summary: "Interpreta sinais de saúde da conta e responde em JSON sem inventar dados.",
+    summary: "Interprets account health signals and responds in JSON without inventing data.",
     provides: ["hallucination", "format_break"],
     requires: ["grounded-answers", "output-contract"],
     conflicts_with: [],
@@ -276,7 +276,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "pricing-model-builder",
     title: "Pricing model builder",
-    summary: "Monta cenário de preço com premissas e impacto na margem em JSON.",
+    summary: "Builds a pricing scenario with assumptions and margin impact in JSON.",
     provides: ["format_break", "hallucination"],
     requires: ["output-contract", "grounded-answers"],
     conflicts_with: [],
@@ -287,7 +287,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "discount-policy-gate",
     title: "Discount policy gate",
-    summary: "Bloqueia descontos predatórios e exige confirmação de financeiro.",
+    summary: "Blocks predatory discounts and requires finance confirmation.",
     provides: ["policy_violation", "instruction_drift"],
     requires: ["no-pii-in-output", "constraint-memory"],
     conflicts_with: [],
@@ -302,7 +302,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "strategy-option-analyzer",
     title: "Strategy option analyzer",
-    summary: "Compara opções estratégicas em JSON: objetivo, opções, recomendação e risco.",
+    summary: "Compares strategic options in JSON: objective, options, recommendation, and risk.",
     provides: ["ambiguity_abandon", "hallucination"],
     requires: ["clarify-before-acting", "grounded-answers"],
     conflicts_with: [],
@@ -313,7 +313,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "okr-decomposer",
     title: "OKR decomposer",
-    summary: "Decompõe objetivo em iniciativas numeradas com métrica de sucesso.",
+    summary: "Decomposes an objective into numbered initiatives with a success metric.",
     provides: ["task_abandon", "format_break"],
     requires: ["finish-the-task", "output-contract"],
     conflicts_with: [],
@@ -324,7 +324,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "sprint-prioritizer",
     title: "Sprint prioritizer",
-    summary: "Prioriza sprint declarando dependências e critérios antes de ordenar.",
+    summary: "Prioritizes the sprint by declaring dependencies and criteria before ordering.",
     provides: ["ambiguity_abandon", "instruction_drift"],
     requires: ["clarify-before-acting", "constraint-memory"],
     conflicts_with: [],
@@ -335,7 +335,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "status-report-author",
     title: "Status report author",
-    summary: "Gera status report JSON com tarefa, dono, data e bloqueio.",
+    summary: "Generates a status report JSON with task, owner, date, and blocker.",
     provides: ["format_break", "task_abandon"],
     requires: ["output-contract", "finish-the-task"],
     conflicts_with: [],
@@ -346,7 +346,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "hiring-rubric-writer",
     title: "Hiring rubric writer",
-    summary: "Cria rubrica de entrevista em JSON com fit, forças, gaps e recomendação.",
+    summary: "Creates an interview rubric in JSON with fit, strengths, gaps, and recommendation.",
     provides: ["format_break", "task_abandon"],
     requires: ["output-contract", "finish-the-task"],
     conflicts_with: [],
@@ -357,7 +357,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "feedback-framework",
     title: "Feedback framework",
-    summary: "Escreve feedback sem termos discriminatórios e sem promover vazamento de dados.",
+    summary: "Writes feedback without discriminatory terms and without promoting a data leak.",
     provides: ["policy_violation", "instruction_drift"],
     requires: ["no-pii-in-output", "constraint-memory"],
     conflicts_with: [],
@@ -368,7 +368,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "contract-risk-scanner",
     title: "Contract risk scanner",
-    summary: "Analisa cláusula e devolve JSON com risco, sugestão e flag de jurídico.",
+    summary: "Analyzes a clause and returns JSON with risk, suggestion, and a legal flag.",
     provides: ["format_break", "policy_violation"],
     requires: ["output-contract", "no-pii-in-output"],
     conflicts_with: [],
@@ -379,7 +379,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "lgpd-checklist",
     title: "LGPD checklist",
-    summary: "Bloqueia fluxos de dados sem base legal e exige 'não é orientação jurídica'.",
+    summary: "Blocks data flows without a legal basis and requires a 'this is not legal advice' disclaimer.",
     provides: ["policy_violation", "instruction_drift"],
     requires: ["no-pii-in-output", "constraint-memory"],
     conflicts_with: [],
@@ -394,7 +394,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "financial-model-template",
     title: "Financial model template",
-    summary: "Monta projeção financeira em JSON com métrica, valor, premissa e confiança.",
+    summary: "Builds a financial projection in JSON with metric, value, assumption, and confidence.",
     provides: ["format_break", "hallucination"],
     requires: ["output-contract", "grounded-answers"],
     conflicts_with: [],
@@ -405,7 +405,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "forecast-assumption-tracker",
     title: "Forecast assumption tracker",
-    summary: "Toda projeção inclui cenário base, otimista e pessimista declarados.",
+    summary: "Every projection includes declared base, optimistic, and pessimistic scenarios.",
     provides: ["instruction_drift", "ambiguity_abandon"],
     requires: ["constraint-memory", "clarify-before-acting"],
     conflicts_with: [],
@@ -416,7 +416,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "crm-automation-planner",
     title: "CRM automation planner",
-    summary: "Planeja automações de CRM com próximos passos numerados e gate destrutivo.",
+    summary: "Plans CRM automations with numbered next steps and a destructive-action gate.",
     provides: ["task_abandon", "tool_misuse"],
     requires: ["finish-the-task", "destructive-action-gate"],
     conflicts_with: [],
@@ -427,7 +427,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "lead-scoring-designer",
     title: "Lead scoring designer",
-    summary: "Define scoring de leads em JSON sem inventar dados do CRM.",
+    summary: "Defines lead scoring in JSON without inventing CRM data.",
     provides: ["format_break", "hallucination"],
     requires: ["output-contract", "grounded-answers"],
     conflicts_with: [],
@@ -438,7 +438,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "inventory-policy-engine",
     title: "Inventory policy engine",
-    summary: "Calcula ponto de pedido e estoque de segurança considerando sazonalidade.",
+    summary: "Calculates reorder point and safety stock accounting for seasonality.",
     provides: ["ambiguity_abandon", "instruction_drift"],
     requires: ["clarify-before-acting", "constraint-memory"],
     conflicts_with: [],
@@ -449,7 +449,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "supplier-risk-gate",
     title: "Supplier risk gate",
-    summary: "Bloqueia fornecedores que violam compliance e exige confirmação para mudanças.",
+    summary: "Blocks suppliers that violate compliance and requires confirmation for changes.",
     provides: ["policy_violation", "tool_misuse"],
     requires: ["no-pii-in-output", "destructive-action-gate"],
     conflicts_with: [],
@@ -460,7 +460,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "data-pipeline-spec",
     title: "Data pipeline spec",
-    summary: "Especifica pipeline em JSON com fonte, destino, frequência, testes e SLA.",
+    summary: "Specifies a pipeline in JSON with source, destination, frequency, tests, and SLA.",
     provides: ["format_break", "task_abandon"],
     requires: ["output-contract", "finish-the-task"],
     conflicts_with: [],
@@ -471,7 +471,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "data-quality-contract",
     title: "Data quality contract",
-    summary: "Define testes de qualidade de dados sem inventar volumes ou schemas.",
+    summary: "Defines data quality tests without inventing volumes or schemas.",
     provides: ["hallucination", "format_break"],
     requires: ["grounded-answers", "output-contract"],
     conflicts_with: [],
@@ -486,7 +486,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "content-calendar-planner",
     title: "Content calendar planner",
-    summary: "Monta calendário de posts com plataforma, copy, CTA, hashtags e melhor horário em JSON.",
+    summary: "Builds a posting calendar with platform, copy, CTA, hashtags, and best time in JSON.",
     provides: ["task_abandon", "format_break"],
     requires: ["finish-the-task", "output-contract"],
     conflicts_with: [],
@@ -497,7 +497,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "crisis-response-protocol",
     title: "Crisis response protocol",
-    summary: "Bloqueia respostas sarcásticas e propõe plano de crise numerado com responsáveis.",
+    summary: "Blocks sarcastic responses and proposes a numbered crisis plan with owners.",
     provides: ["policy_violation", "instruction_drift"],
     requires: ["no-pii-in-output", "constraint-memory"],
     conflicts_with: [],
@@ -508,7 +508,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "search-ads-structurer",
     title: "Search ads structurer",
-    summary: "Estrutura campanha de Search em JSON com campanha, grupo, keywords, match type e budget.",
+    summary: "Structures a Search campaign in JSON with campaign, group, keywords, match type, and budget.",
     provides: ["format_break", "task_abandon"],
     requires: ["output-contract", "finish-the-task"],
     conflicts_with: [],
@@ -519,7 +519,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "ads-policy-gate",
     title: "Ads policy gate",
-    summary: "Bloqueia claims proibidos em anúncios e exige comprovação para superlativos.",
+    summary: "Blocks prohibited claims in ads and requires proof for superlatives.",
     provides: ["policy_violation", "instruction_drift"],
     requires: ["no-pii-in-output", "constraint-memory"],
     conflicts_with: [],
@@ -530,7 +530,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "meta-creative-tester",
     title: "Meta creative tester",
-    summary: "Plano de teste A/B de criativos com 4 variações numeradas e hipótese.",
+    summary: "A/B creative test plan with 4 numbered variations and a hypothesis.",
     provides: ["task_abandon", "format_break"],
     requires: ["finish-the-task", "output-contract"],
     conflicts_with: [],
@@ -541,7 +541,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "linkedin-abm-orchestrator",
     title: "LinkedIn ABM orchestrator",
-    summary: "Orquestra fluxo de ABM no LinkedIn com etapas numeradas e gates destrutivos.",
+    summary: "Orchestrates a LinkedIn ABM flow with numbered steps and destructive-action gates.",
     provides: ["task_abandon", "tool_misuse"],
     requires: ["finish-the-task", "destructive-action-gate"],
     conflicts_with: [],
@@ -552,7 +552,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "prd-writer",
     title: "PRD writer",
-    summary: "Escreve PRD em JSON com problema, hipótese, métrica, escopo e dependências.",
+    summary: "Writes a PRD in JSON with problem, hypothesis, metric, scope, and dependencies.",
     provides: ["format_break", "task_abandon"],
     requires: ["output-contract", "finish-the-task"],
     conflicts_with: [],
@@ -563,7 +563,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "product-discovery-guide",
     title: "Product discovery guide",
-    summary: "Faz perguntas de discovery antes de propor solução e mantém restrições.",
+    summary: "Asks discovery questions before proposing a solution and keeps constraints.",
     provides: ["ambiguity_abandon", "instruction_drift"],
     requires: ["clarify-before-acting", "constraint-memory"],
     conflicts_with: [],
@@ -574,7 +574,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "architecture-decision-record",
     title: "Architecture decision record",
-    summary: "Compara opções arquiteturais em JSON com prós, contras, decisão e justificativa.",
+    summary: "Compares architectural options in JSON with pros, cons, decision, and rationale.",
     provides: ["format_break", "ambiguity_abandon"],
     requires: ["output-contract", "clarify-before-acting"],
     conflicts_with: [],
@@ -585,7 +585,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "production-deploy-gate",
     title: "Production deploy gate",
-    summary: "Exige rollback plan, canary e confirmação antes de deploy em produção.",
+    summary: "Requires a rollback plan, canary, and confirmation before deploying to production.",
     provides: ["tool_misuse", "instruction_drift"],
     requires: ["destructive-action-gate", "constraint-memory"],
     conflicts_with: [],
@@ -596,7 +596,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "tool-registry",
     title: "Tool registry",
-    summary: "Cataloga ferramentas em JSON com propósito, schema de entrada e fallback.",
+    summary: "Catalogs tools in JSON with purpose, input schema, and fallback.",
     provides: ["tool_misuse", "format_break"],
     requires: ["destructive-action-gate", "output-contract"],
     conflicts_with: [],
@@ -607,7 +607,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "mcp-auth-guard",
     title: "MCP auth guard",
-    summary: "Bloqueia uso de credenciais compartilhadas e exige rate limit declarado.",
+    summary: "Blocks the use of shared credentials and requires a declared rate limit.",
     provides: ["policy_violation", "tool_misuse"],
     requires: ["no-pii-in-output", "destructive-action-gate"],
     conflicts_with: [],
@@ -618,7 +618,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "threat-modeler",
     title: "Threat modeler",
-    summary: "Modela ameaça em JSON com threat, likelihood, impact, mitigation e owner.",
+    summary: "Models a threat in JSON with threat, likelihood, impact, mitigation, and owner.",
     provides: ["format_break", "ambiguity_abandon"],
     requires: ["output-contract", "clarify-before-acting"],
     conflicts_with: [],
@@ -629,7 +629,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "incident-runbook",
     title: "Incident runbook",
-    summary: "Runbook de incidente com controles numerados e gate destrutivo.",
+    summary: "Incident runbook with numbered controls and a destructive-action gate.",
     provides: ["task_abandon", "tool_misuse"],
     requires: ["finish-the-task", "destructive-action-gate"],
     conflicts_with: [],
@@ -734,10 +734,10 @@ export function planCurriculum(args: {
         : "now";
 
     const why = conflicts.length
-      ? `Conflita com ${conflicts.join(", ")} — instale só se substituir a capacidade atual.`
+      ? `Conflicts with ${conflicts.join(", ")} — install only if replacing the current capability.`
       : missing.length
-        ? `Depende de ${missing.join(", ")} — instale o pré-requisito primeiro.`
-        : `Ataca ${fixes.map((f) => f).join(", ")} onde o exame falhou, com custo de contexto ${node.context_cost}.`;
+        ? `Depends on ${missing.join(", ")} — install the prerequisite first.`
+        : `Targets ${fixes.map((f) => f).join(", ")} where the exam failed, at a context cost of ${node.context_cost}.`;
 
     candidates.push({
       slug: node.slug,
@@ -768,7 +768,7 @@ export function planCurriculum(args: {
         .slice(0, 3)
         .map((n) => ({
           slug: n.slug,
-          why: `Não cobre nenhuma classe de erro que este agente falhou e custa ${n.context_cost} de contexto.`,
+          why: `Does not cover any error class this agent failed and costs ${n.context_cost} of context.`,
         }))
     : [];
 
@@ -781,8 +781,8 @@ export function planCurriculum(args: {
     track: candidates.slice(0, 8),
     remove_suggestions: removeSuggestions,
     note: overBudget
-      ? `Este agente já carrega ${installed.length} capacidades (teto ${budget}). Acima do teto, adicionar piora o desempenho: remova ou troque antes de instalar.`
-      : "Ordenado por ganho marginal: cobertura da classe de erro que mais dói, descontando o que já está instalado e penalizando conflito e custo de contexto.",
+      ? `This agent already carries ${installed.length} capabilities (cap ${budget}). Above the cap, adding hurts performance: remove or swap before installing.`
+      : "Ranked by marginal gain: coverage of the error class that hurts the most, discounting what is already installed and penalizing conflicts and context cost.",
   };
 }
 
