@@ -1,129 +1,54 @@
-# Expansão da Universidade SAK — Áreas de Expertise Corporativas
+# SAK Agent-First: os 3 itens dos 30 dias
 
-## Objetivo
-Transformar o exame de admissão e a trilha adaptativa da SAK University em uma fábrica de agentes corporativos, cobrindo as principais funções de negócio, tecnologia e operações. Cada nova área vira um domínio independente com 8 casos de diagnóstico e capacidades específicas no curriculum graph.
+Três entregas em sequência, mais um painel de KPIs agent-first. Cada uma fecha uma lacuna verificada no código/banco hoje.
 
-## Domínios a adicionar
+## Estado atual verificado
 
-São 16 novos domínios, organizados em 4 categorias para a UI:
+- `/agents.md` retorna **404**. Causa confirmada: o arquivo é `src/routes/agents.md.ts`, e no TanStack o ponto no nome vira barra — a rota publicada é `/agents/md` (`src/routes/agents.md.ts:109`), enquanto o `llms.txt` promete `/agents.md` (`src/routes/llms[.]txt.ts:13,71`). `curl` local: `/agents.md` = 404, `/agents/md` = 200.
+- O manual atual tem ~4KB e descreve só 4 tools e 4 primitivas. O servidor MCP já expõe **33 tools** (incluindo Universidade, Agent Store, residency e credentials) — o manual está desatualizado, não só quebrado.
+- Examples: de **636** versões de pacote no banco, **428 (67%)** não têm nenhum exemplo, e **498 (78%)** não têm `compatibility` preenchido. Não existe nenhum campo de "nutrition label" (`when_to_use`, `when_not_to_use`, custo, orçamento de tokens) em `packages`/`package_versions`.
+- Tradução por runtime: existe export **Anthropic/Claude** (`src/lib/skills/anthropic-spec.ts`, `src/routes/api/skills.$slug.export.ts`). **Não existe** formato Hermes nem OpenClaw. O padrão de empacotamento em zip já está pronto e duplicado em dois lugares (`src/lib/agents/bundle.ts` + as duas rotas de download).
+- Não existe test-drive/sandbox: tudo que se chama `dry_run` hoje é só validação de escrita, não execução do skill.
 
-| Categoria | ID | Nome | Foco |
-|---|---|---|---|
-| **Revenue** | `marketing` | Marketing & Growth | Funnels, segmentação, copy, métricas de growth. |
-| | `b2b_sales` | Vendas B2B | Discovery, qualificação, propostas, negociação. |
-| | `customer_success` | Customer Success & Retenção | Onboarding, health score, churn, expansão. |
-| | `pricing` | Pricing & Monetização | Modelos de preço, elasticidade, pacotes. |
-| **Execução** | `strategy` | Estratégia & Planejamento | OKRs, priorização, análise competitiva. |
-| | `project_management` | Project Management & Agile | Sprints, dependências, risco, status reports. |
-| | `people_ops` | People Ops & RH | Recrutamento, 1:1s, feedback, políticas. |
-| | `legal_compliance` | Legal & Compliance | Contratos, LGPD/GDPR, análise de cláusulas. |
-| **Operações** | `corporate_finance` | Finanças Corporativas | FP&A, DRE, fluxo de caixa, forecast. |
-| | `agentic_crm` | Agentic CRM | Automação de CRM, follow-ups, scoring de leads. |
-| | `supply_chain` | Supply Chain & Ops | Estoque, compras, logística, SLAs. |
-| | `data_engineering` | Data Engineering & ML Ops | Pipelines, qualidade de dados, observabilidade. |
-| **Mídia & Produto** | `social_media` | Social Media & Community | Calendário, resposta a crises, engajamento. |
-| | `google_ads` | Google Ads | Campanhas, keywords, orçamento, Quality Score. |
-| | `meta_ads` | Meta Ads | Estrutura de campanhas, audiences, criativos. |
-| | `linkedin_ads` | LinkedIn Ads | ABM, lead gen, Sales Navigator, B2B targeting. |
-| | `digital_product` | Desenvolvimento de Produtos Digitais | Discovery, PRD, roadmap, priorização de features. |
-| | `complex_software` | Desenvolvimento de Software Complexo | Arquitetura, escalabilidade, resiliência, segurança. |
-| | `tools_mcp` | Mestre em Tools & MCPs | Escolha, orquestração, auth e rate limits de ferramentas. |
-| | `cybersecurity` | Cybersecurity & AppSec | Threat modeling, resposta a incidentes, hardening. |
+## Entrega 1 — `agents.md` real (primeiro)
 
-Total após a expansão: **21 domínios** (5 atuais + 16 novos) × 8 casos = **168 casos de diagnóstico**.
+1. Renomear a rota para `src/routes/agents[.]md.ts` com `createFileRoute("/agents.md")`, e manter `/agents/md` respondendo com redirect 301 para não quebrar quem já leu o link.
+2. Reescrever o manual (alvo <15KB) com onboarding em 3 estágios:
+   - **Conhecer** — o que a plataforma é, as primitivas, as 33 tools em tabela, quando usar cada uma.
+   - **Conectar** — endpoint, headers, handshake, erros e o que fazer em cada código.
+   - **Evoluir** — review_skill, upload, diagnóstico, currículo, residency, credencial.
+3. Checklist executável e **verificável**: cada passo tem uma chamada concreta e um `step_id`.
+4. Adicionar `/agents.md` ao `llms.txt`, `sitemap` e ao card em `docs.mcp`.
+5. Rodar o próprio `review_skill` sobre o manual e iterar até nota A.
 
-## 1. Case bank — 128 novos casos
+### Checklist verificável (endpoint)
 
-- 8 casos por novo domínio.
-- Distribuição obrigatória por classe de erro: cada domínio terá pelo menos 1 caso de cada uma das 7 classes de erro (`ambiguity_abandon`, `hallucination`, `format_break`, `task_abandon`, `policy_violation`, `tool_misuse`, `instruction_drift`).
-- Prompts em português, expectativas determinísticas (marcadores, JSON, recusa, pergunta, limites de tamanho).
-- Parte dos casos continua em holdout para evitar overfitting.
+Novo `POST /api/public/onboarding` com `{ session, step_id, evidence }`: valida a evidência do passo (ex.: o agente listou pacotes, avaliou um skill, publicou), grava o progresso e devolve o próximo passo pendente. Uma tabela nova `agent_onboarding_steps` (com RLS e grants) guarda sessão anônima por hash + passo + timestamp, o que dá o funil de onde o agente para.
 
-Exemplos de casos por domínio:
-- `google_ads`: recusa em otimizar sem acesso à conta; JSON de estrutura de campanha; pergunta sobre orçamento antes de escalar.
-- `agentic_crm`: confirmação antes de atualizar 10.000 registros; recusa em expor dados de leads; formato de follow-up com campos obrigatórios.
-- `complex_software`: pergunta sobre requisitos não-funcionais antes de arquitetar; recusa em expor segredos; JSON de decisão de trade-off.
+## Entrega 2 — Examples executáveis + nutrition label
 
-## 2. Curriculum graph — capacidades específicas por domínio
+1. Schema de exemplo executável: `{ title, input, expected_output, assertions[] }`, com validador em `src/lib/skills/examples-spec.ts` (formato, tamanho, exemplo negativo obrigatório).
+2. Nutrition label por versão: `when_to_use`, `when_not_to_use`, `cost_hint`, `token_budget`, `runtimes[]` — migração nova em `package_versions` com defaults seguros, expostos em `get_package` e na página do pacote.
+3. Gate de publicação: publicar exige ao menos 1 exemplo positivo + 1 negativo e o label preenchido; pacotes existentes entram em modo "incompleto" com aviso na UI em vez de bloquear retroativamente.
+4. Test-drive: `POST /api/public/test-drive` roda o skill contra os exemplos declarados e devolve pass/fail por assertion — o agente experimenta antes de instalar. Sem persistência de conteúdo do caller.
+5. Backfill assistido: tool MCP e ação no Forge que propõe exemplos a partir do `system_prompt` para o autor aprovar.
+6. Re-scoring dos pacotes tocados, com o histórico já existente em `skill_review_runs`.
 
-Adicionar ~30 novos nodes ao `CURRICULUM`, um por domínio novo + nodes transversais:
+## Entrega 3 — Tradução universal por runtime
 
-- `marketing-funnel-analyst` (fixa `hallucination` em métricas)
-- `b2b-discovery-call-script` (fixa `ambiguity_abandon`)
-- `customer-success-health-score` (fixa `format_break`)
-- `pricing-sensitivity-model` (fixa `hallucination`)
-- `okr-prioritizer` (fixa `task_abandon`)
-- `agile-dependency-mapper` (fixa `ambiguity_abandon`)
-- `people-ops-interview-rubric` (fixa `policy_violation`)
-- `legal-clause-risk-scanner` (fixa `policy_violation`)
-- `corporate-finance-forecast-gate` (fixa `hallucination`)
-- `agentic-crm-follow-up-author` (fixa `task_abandon`)
-- `supply-chain-sla-guardian` (fixa `instruction_drift`)
-- `data-pipeline-observability` (fixa `tool_misuse`)
-- `social-media-crisis-responder` (fixa `policy_violation`)
-- `google-ads-structure-auditor` (fixa `format_break`)
-- `meta-ads-audience-strategist` (fixa `ambiguity_abandon`)
-- `linkedin-ads-abm-targeter` (fixa `format_break`)
-- `product-discovery-prd-writer` (fixa `task_abandon`)
-- `software-architecture-trade-off` (fixa `ambiguity_abandon`)
-- `mcp-tool-selector` (fixa `tool_misuse`)
-- `appsec-threat-modeler` (fixa `policy_violation`)
+1. Extrair um `src/lib/skills/targets/` com um alvo por runtime: `claude` (reaproveita o `anthropic-spec` atual), `hermes` (SKILL.md + manifest), `openclaw` (plugin), `generic` (markdown puro).
+2. Unificar o empacotamento zip hoje duplicado num único helper compartilhado.
+3. `GET /api/skills/$slug/export?target=claude|hermes|openclaw|generic` e botões de download por runtime na página do pacote.
+4. Tool MCP `export_package` com o mesmo seletor de alvo, para o agente instalar sozinho no seu formato.
+5. Testes de round-trip por alvo (`tests/export-targets.test.mjs`): cada formato precisa validar contra seu próprio spec.
 
-Cada node terá `domains` apontando para o(s) domínio(s) correspondente(s), `requires`/`conflicts_with` realistas e `in_registry` vinculado a skills/agentes existentes ou futuros no marketplace.
+## Painel de KPIs agent-first
 
-## 3. Tipos e backend
+Rota `/admin/agent-kpis` (admin) medindo **só** métricas de agente, sem pageviews: installs via MCP, execuções reportadas, tool calls por tool, conclusão do onboarding por estágio, re-certificações e diplomas emitidos. Usa `package_installs`, `skill_executions`, `mcp_call_log`, `mcp_funnel_events`, `agent_credentials` e a nova tabela de onboarding, via funções SQL agregadas com filtro de bot já existente.
 
-Arquivos alterados:
-- `src/lib/university/types.ts`: expandir `DomainId` e `DOMAINS`; adicionar `DomainCategory` para agrupamento.
-- `src/lib/university/cases.ts`: adicionar os 128 novos casos em arrays por domínio; atualizar `ALL_CASES` e `casesForDomain`.
-- `src/lib/university/curriculum.ts`: adicionar os ~30 nodes ao `CURRICULUM`; incrementar `CURRICULUM_VERSION`.
-- `src/lib/university/diagnose.ts`: nenhuma mudança estrutural — o motor já é genérico.
-- `src/lib/university/university.server.ts`: nenhuma mudança estrutural — `domain` continua sendo `text` no banco.
-- `src/lib/mcp/tools/university.ts`: nenhuma mudança estrutural — as ferramentas já aceitam qualquer `DomainId`.
-- `src/routes/api/public/diagnose/*` e `src/routes/api/public/curriculum/next.ts`: nenhuma mudança estrutural.
+## Notas técnicas
 
-Não há mudança de schema do Supabase. A coluna `agent_diagnoses.domain` já é `text` e comporta os novos valores.
-
-## 4. UI/UX — escalar a seleção de domínios
-
-Atualizar `src/routes/diagnose.tsx` e `src/routes/curriculum.tsx`:
-
-- Substituir a grade simples de domínios por uma interface com:
-  - Tabs ou select de categoria (Revenue, Execução, Operações, Mídia & Produto).
-  - Busca por nome de domínio.
-  - Cards com ícone, nome, blurb e contagem de casos.
-  - Destaque para domínios com capacidades no marketplace (`in_registry` > 0).
-- Manter o fluxo de 3 passos (escolher domínio → gerar exame → colar transcript).
-- Na página `/curriculum`, permitir filtrar a trilha por categoria e domínio.
-
-## 5. Testes
-
-- Expandir `tests/university.test.mjs` para cobrir:
-  - Todos os novos domínios têm exatamente 8 casos.
-  - Cada domínio cobre as 7 classes de erro.
-  - `planCurriculum` retorna nodes específicos para cada novo domínio.
-  - `casesForDomain` funciona para todos os IDs novos.
-- Rodar `bun test tests/university.test.mjs` e `tsgo` antes de finalizar.
-
-## 6. Métricas e versionamento
-
-- Incrementar `CASE_BANK_VERSION` para `"2.0.0"` e `CURRICULUM_VERSION` para `"2.0.0"`.
-- Atualizar a landing page `src/components/site/home/University.tsx` para refletir "21 domínios corporativos" e "168 casos de admissão".
-- Adicionar entrada no `CHANGELOG.md` ou documento de versão da plataforma.
-
-## Riscos e mitigações
-
-| Risco | Mitigação |
-|---|---|
-| 128 novos casos aumentam muito o volume de texto no bundle | Casos são strings puras; o impacto é pequeno (~30-50 KB). Se necessário, split por domínio com lazy load. |
-| Curriculum graph fica denso e difícil de manter | Nodes são declarativos; testes cobrem conflitos e prerequisitos cíclicos. |
-| UI de seleção fica poluída com 21 domínios | Agrupamento por categoria + busca resolve a escala. |
-
-## Critérios de aceitação
-
-1. `bun test tests/university.test.mjs` passa com os novos casos.
-2. Typecheck (`tsgo`) limpo.
-3. `/diagnose` exibe 21 domínios agrupados em categorias e permite iniciar exame em qualquer um.
-4. `/curriculum` filtra trilhas pelos novos domínios e recomenda capacidades específicas.
-5. MCP `diagnose_start` aceita todos os novos `domain` values.
-6. Nenhuma migration de banco é necessária nem executada.
+- Rotas públicas ficam sob `src/routes/api/public/*` (fora do gate) com validação Zod e sem PII no retorno.
+- Toda tabela nova sai na mesma migração com `GRANT` + RLS + policies escopadas.
+- O manual e o checklist são servidos como markdown estático a partir do código, sem chamada de banco, para não sofrer timeout de Worker.
+- Ordem de execução: Entrega 1 → painel de KPIs (barato, mede o resto) → Entrega 2 → Entrega 3.
