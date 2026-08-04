@@ -289,8 +289,8 @@ function PackageDetail() {
       {/* Body — content column + sticky install/details sidebar */}
       <section className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-10">
         {/* Sidebar first on mobile so install stays above the fold */}
-        <aside className="order-first space-y-4 lg:order-last lg:sticky lg:top-16 lg:self-start">
-            <div className="rounded-xl border border-border bg-background p-5 shadow-elevated">
+        <aside className="order-first min-w-0 space-y-4 lg:order-last lg:sticky lg:top-16 lg:self-start">
+            <div className="min-w-0 rounded-xl border border-border bg-background p-4 shadow-elevated sm:p-5">
               {/* Primary: no-signup MCP path */}
               <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
                 Install via MCP — no account needed
