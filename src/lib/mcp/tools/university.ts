@@ -116,7 +116,7 @@ export const curriculumNextTool = defineTool({
     domain: DomainEnum.optional(),
     failing: z.array(ErrorClassEnum).default([]),
     installed_skills: z.array(z.string()).max(64).default([]),
-    budget: z.number().int().min(1).max(60).optional().describe("Max capabilities this agent should carry (default 12)."),
+    budget: z.number().int().min(1).max(60).optional().describe("Max capabilities this agent should carry (default 14)."),
   }),
   execute: async (input) => {
     let profile: any[] | undefined;
