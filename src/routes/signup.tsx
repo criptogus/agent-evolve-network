@@ -57,7 +57,7 @@ function SignupPage() {
     // First-touch referral capture from ?ref=CODE on landing.
     captureRefFromUrl();
 
-    const target = next || "/account/billing";
+    const target = next || "/home";
     const tryClaim = async () => {
       const code = getStoredRef();
       if (!code) return;

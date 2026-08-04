@@ -35,7 +35,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const goNext = (fallback = "/account/billing") => {
+  const goNext = (fallback = "/home") => {
     const target = next || fallback;
     // If `next` includes a query string (e.g. /oauth/authorize?...), TanStack
     // Router's typed navigate({ to }) treats it as a literal pathname and 404s.

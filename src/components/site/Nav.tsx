@@ -107,7 +107,7 @@ export function Nav() {
     <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-6 lg:gap-8">
-          <Link to="/" className="flex shrink-0 items-center gap-2">
+          <Link to={user ? "/home" : "/"} className="flex shrink-0 items-center gap-2">
             <Logo className="h-6 w-6 shrink-0" />
             <span className="whitespace-nowrap text-[15px] font-semibold tracking-tight">
               Super Agent Skill
