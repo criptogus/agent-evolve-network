@@ -248,40 +248,231 @@ function PackageDetail() {
         </div>
       </section>
 
-      {/* Tabs */}
-      <div className="border-b border-border bg-background">
+      {/* Section nav — in-page anchors, one scrolling detail page */}
+      <div className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="flex gap-1 overflow-x-auto">
-            {(["overview", "versions", "compatibility", "changelog"] as Tab[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`relative px-4 py-3 text-sm font-medium capitalize transition-colors ${
-                  tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
+          <nav aria-label="Page sections" className="flex gap-1 overflow-x-auto">
+            {SECTIONS.map((sec) => (
+              <a
+                key={sec.id}
+                href={`#${sec.id}`}
+                className="whitespace-nowrap px-3 py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
-                {t}
-                {tab === t && (
-                  <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-primary" />
-                )}
-              </button>
+                {sec.label}
+              </a>
             ))}
-          </div>
+          </nav>
         </div>
       </div>
 
-      {/* Body */}
-      <section className="mx-auto max-w-7xl px-6 py-10">
-        {tab === "overview" && <OverviewTab pkg={pkg} />}
-        {tab === "versions" && (
-          <VersionsTab pkg={pkg} selected={selectedVersion} onSelect={setSelectedVersion} />
-        )}
-        {tab === "compatibility" && <CompatibilityTab pkg={pkg} />}
-        {tab === "changelog" && <ChangelogTab pkg={pkg} />}
-      </section>
+      {/* Body — content column + sticky install/details sidebar */}
+      <section className="mx-auto grid max-w-7xl gap-10 px-6 py-10 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="min-w-0 space-y-14">
+          <Section
+            id="preview"
+            title="Preview"
+            description="What this package looks like once your agent has it."
+          >
+            <PackageGallery pkg={pkg} gatewayUrl={MCP_GATEWAY_URL} />
+          </Section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-12">
-        <ReviewsSection slug={pkg.id} />
+          <Section id="overview" title="Description">
+            <p className="leading-relaxed text-muted-foreground">{pkg.longDescription}</p>
+            {pkg.systemPrompt && (
+              <div className="mt-8">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-semibold tracking-tight">System prompt</h3>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      The exact instructions this package installs into your agent.
+                    </p>
+                  </div>
+                  <CopyButton value={pkg.systemPrompt} label="Copy system prompt" />
+                </div>
+                <div className="mt-3">
+                  <CodeBlock
+                    filename={`${pkg.id}.system-prompt.md`}
+                    lang="md"
+                    code={pkg.systemPrompt}
+                  />
+                </div>
+              </div>
+            )}
+            {pkg.examples.length > 0 && (
+              <div className="mt-8">
+                <h3 className="text-base font-semibold tracking-tight">Real-world examples</h3>
+                <div className="mt-4 space-y-3">
+                  {pkg.examples.map((ex) => (
+                    <div key={ex.title} className="rounded-xl border border-border bg-surface p-5">
+                      <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
+                        {ex.title}
+                      </div>
+                      <pre className="mt-2 whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/90">
+                        {ex.body}
+                      </pre>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Section>
+
+          <Section
+            id="stats"
+            title="Stats"
+            description="Adoption, reception and performance for this package."
+          >
+            <StatsSection pkg={pkg} />
+          </Section>
+
+          <Section
+            id="install"
+            title="Install instructions"
+            description="Three ways in — pick the one your client supports."
+          >
+            <InstallInstructions pkg={pkg} />
+          </Section>
+
+          <Section
+            id="changelog"
+            title="Changelog"
+            description="Every published release, newest first."
+          >
+            <ChangelogTab pkg={pkg} />
+          </Section>
+
+          <Section id="versions" title="Versions">
+            <VersionsTab pkg={pkg} selected={selectedVersion} onSelect={setSelectedVersion} />
+          </Section>
+
+          <Section id="compatibility" title="Compatibility">
+            <CompatibilityTab pkg={pkg} />
+          </Section>
+
+          <Section id="reviews" title="Reviews">
+            <ReviewsSection slug={pkg.id} />
+          </Section>
+        </div>
+
+        <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
+            <div className="rounded-xl border border-border bg-background p-5 shadow-elevated">
+              {/* Primary: no-signup MCP path */}
+              <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
+                Install via MCP — no account needed
+              </div>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Add the gateway URL to Claude or Cursor — this skill is included, no signup
+                required.
+              </p>
+              <div className="mt-3 space-y-2">
+                <CodeBlockCopy code={MCP_GATEWAY_URL} label="gateway URL" />
+                <CodeBlockCopy code={`npx super-agent install ${pkg.id}`} label="install command" />
+              </div>
+
+              <div className="mt-5 flex items-center gap-3">
+                <span className="h-px flex-1 bg-border" />
+                <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  or with an account
+                </span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+
+              <label className="mt-4 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                Version
+              </label>
+              <select
+                value={selectedVersion}
+                onChange={(e) => setSelectedVersion(e.target.value)}
+                className="mt-2 h-10 w-full rounded-md border border-border bg-background px-3 font-mono text-sm outline-none focus:border-primary"
+              >
+                {pkg.versions.map((v: Package["versions"][number]) => (
+                  <option key={v.version} value={v.version}>
+                    {v.version} · {v.status}
+                  </option>
+                ))}
+              </select>
+
+              {installed && (
+                <div className="mt-3 rounded-md border border-border bg-surface px-3 py-2 font-mono text-[11px]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">installed</span>
+                    <span className="text-foreground">v{installed}</span>
+                  </div>
+                  {isOutdated ? (
+                    <div className="mt-1 flex items-center justify-between text-amber-600 dark:text-amber-400">
+                      <span>update available</span>
+                      <span>v{pkg.latest}</span>
+                    </div>
+                  ) : (
+                    <div className="mt-1 flex items-center justify-between text-signal">
+                      <span>up to date</span>
+                      <span>✓</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {isOutdated && (
+                <button
+                  onClick={() => {
+                    if (requireAuth("update this package")) handleUpdateToLatest();
+                  }}
+                  disabled={updating}
+                  className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-95 disabled:opacity-60"
+                >
+                  {updating ? "Updating…" : `Update to v${pkg.latest}`}
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  if (requireAuth("install this package")) setInstallOpen(true);
+                }}
+                className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background text-sm font-semibold text-foreground transition-all hover:bg-accent"
+              >
+                {isUpgrade
+                  ? `Upgrade → v${selectedVersion}`
+                  : installed
+                    ? `Reinstall v${selectedVersion}`
+                    : `Install v${selectedVersion}`}
+              </button>
+
+              {installed && (
+                <button
+                  onClick={handleUninstall}
+                  disabled={uninstalling}
+                  className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-destructive/30 bg-background text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+                >
+                  {uninstalling ? "Uninstalling…" : "Uninstall"}
+                </button>
+              )}
+
+              <Link
+                to="/play"
+                search={{ tool: "get_package", slug: pkg.id }}
+                className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-border bg-background text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+              >
+                ▶ Test drive in the playground — no install
+              </Link>
+
+              <div className="mt-3 text-center text-[11px] text-muted-foreground">
+                {user ? (
+                  <>
+                    via MCP · scoped{" "}
+                    <span className="font-mono text-foreground">agent:upgrade</span>
+                  </>
+                ) : (
+                  <Link to="/login" className="text-primary underline-offset-2 hover:underline">
+                    Sign in to install
+                  </Link>
+                )}
+              </div>
+
+              <CompatibilitySummary checks={pkg.compatibility} />
+            </div>
+          <DetailsPanel pkg={pkg} />
+          <TrustPanel pkg={pkg} />
+        </aside>
       </section>
 
       <Footer />
