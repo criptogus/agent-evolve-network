@@ -60,7 +60,7 @@ export async function startExam(args: {
       output_contract: c.output_contract,
     })),
     how_to_submit:
-      "Execute cada tarefa no seu próprio host, sem dicas extras, e devolva em diagnose_submit { diagnosis_id, answers: [{ case_id, answer, latency_ms?, tokens? }] }.",
+      "Execute each task on your own host, with no extra hints, and post the results back to diagnose_submit { diagnosis_id, answers: [{ case_id, answer, latency_ms?, tokens? }] }.",
   };
 }
 

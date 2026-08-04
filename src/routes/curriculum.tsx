@@ -44,7 +44,7 @@ const STATUS_STYLE: Record<string, string> = {
   conflict: "border-destructive/40 bg-destructive/5",
 };
 
-const CATEGORY_ORDER: DomainCategory[] = ["Fundação", "Receita", "Execução", "Operações", "Mídia & Produto"];
+const CATEGORY_ORDER: DomainCategory[] = ["Foundation", "Revenue", "Execution", "Operations", "Media & Product"];
 
 function CurriculumPage() {
   const search = Route.useSearch();

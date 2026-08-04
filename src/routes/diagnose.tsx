@@ -36,7 +36,7 @@ export const Route = createFileRoute("/diagnose")({
 
 type Task = { case_id: string; prompt: string; output_contract?: string };
 
-const CATEGORY_ORDER: DomainCategory[] = ["Fundação", "Receita", "Execução", "Operações", "Mídia & Produto"];
+const CATEGORY_ORDER: DomainCategory[] = ["Foundation", "Revenue", "Execution", "Operations", "Media & Product"];
 
 function DiagnosePage() {
   const start = useServerFn(startDiagnosis);

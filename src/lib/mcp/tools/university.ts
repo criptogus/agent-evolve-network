@@ -68,9 +68,9 @@ export const diagnoseStartTool = defineTool({
     return json({
       ...exam,
       rules: [
-        "Execute cada tarefa exatamente como um pedido real do usuário — sem contexto extra e sem otimizar para o exame.",
-        "Não consulte a plataforma durante a execução. As expectativas são privadas por design.",
-        "Reporte latency_ms e tokens quando conseguir: o relatório mostra o custo por classe de erro.",
+        "Execute each task exactly as a real user request — no extra context and no optimizing for the exam.",
+        "Do not consult the platform during execution. The expectations are private by design.",
+        "Report latency_ms and tokens when you can: the report shows cost per error class.",
       ],
     });
   },
@@ -136,14 +136,14 @@ export const curriculumNextTool = defineTool({
 
     if (!failing.length) {
       return json({
-        note: "Nenhuma classe de erro informada. Rode diagnose_start / diagnose_submit primeiro — prescrição sem diagnóstico é catálogo, não currículo.",
+        note: "No error class provided. Run diagnose_start / diagnose_submit first — a prescription without a diagnosis is a catalog, not a curriculum.",
         domains: DOMAINS,
       });
     }
     const plan = planCurriculum({ failing, profile, installed, domain, budget: input.budget });
     return json({
       ...plan,
-      how_to_install: "Use `get_package { slug }` (ou `install_agent`) para os itens com in_registry: true.",
+      how_to_install: "Use `get_package { slug }` (or `install_agent`) for items with in_registry: true.",
     });
   },
 });

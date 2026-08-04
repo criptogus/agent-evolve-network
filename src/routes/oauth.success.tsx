@@ -136,7 +136,6 @@ function SuccessPage() {
       <div className="min-h-screen bg-background">
         <Nav />
         <main className="relative mx-auto flex min-h-[70vh] max-w-xl items-center px-6 py-16">
-          <LangSwitcher lang={lang} onChange={setLang} />
           <div className="w-full rounded-2xl border border-border bg-card p-8 shadow-elevated">
             <h1 className="text-2xl font-semibold tracking-tight">
               {t("oauth_success_no_pending_title")}
@@ -166,7 +165,6 @@ function SuccessPage() {
     <div className="min-h-screen bg-background">
       <Nav />
       <main className="relative mx-auto flex min-h-[80vh] max-w-xl items-center px-6 py-16">
-        <LangSwitcher lang={lang} onChange={setLang} />
         <div className="w-full rounded-2xl border border-border bg-card p-8 shadow-elevated">
           <div className="flex items-center gap-3">
             <span
