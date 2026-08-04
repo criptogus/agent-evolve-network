@@ -6,7 +6,33 @@ import { DOMAINS, type DomainId, type ErrorClass } from "@/lib/university/types"
 
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 
-const DomainEnum = z.enum(["gtm", "engineering", "support", "finance", "data"]);
+const DomainEnum = z.enum([
+  "gtm",
+  "engineering",
+  "support",
+  "finance",
+  "data",
+  "marketing",
+  "b2b_sales",
+  "customer_success",
+  "pricing",
+  "strategy",
+  "project_management",
+  "people_ops",
+  "legal_compliance",
+  "corporate_finance",
+  "agentic_crm",
+  "supply_chain",
+  "data_engineering",
+  "social_media",
+  "google_ads",
+  "meta_ads",
+  "linkedin_ads",
+  "digital_product",
+  "complex_software",
+  "tools_mcp",
+  "cybersecurity",
+]);
 const ErrorClassEnum = z.enum([
   "ambiguity_abandon",
   "hallucination",
