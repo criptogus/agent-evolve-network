@@ -146,7 +146,7 @@ const FAQ_LD = {
       name: "How much does it cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Browsing and installing public capabilities is free — no account needed. Pro is $140 per year (down from $228) (or $19 per month) and includes everything: the Agent Factory, the Agent Store, SAK University and unlimited tested reviews. Enterprise adds a private registry, SSO and audit logs.",
+        text: "Browsing and installing public capabilities is free — no account needed. Pro is $140 per year (down from $228) or $19 per month and includes everything: the Agent Factory, the Agent Store, SAK University and unlimited tested reviews. Enterprise adds a private registry, SSO and audit logs.",
       },
     },
     {
