@@ -1,5 +1,5 @@
 /**
- * SAK University — Phase 1 types.
+ * SAK University — Phase 2 types.
  *
  * The exam grades an agent by ERROR CLASS, not by topic. Knowing "you drop
  * ambiguity at step 3" is prescriptive; knowing "you scored 62 in sales" is
@@ -46,16 +46,80 @@ export const ERROR_CLASS_HINT: Record<ErrorClass, string> = {
     "O agente esquece uma restrição dada antes e volta ao comportamento padrão.",
 };
 
-export type DomainId = "gtm" | "engineering" | "support" | "finance" | "data";
+export type DomainId =
+  // Phase 1 — foundation domains
+  | "gtm"
+  | "engineering"
+  | "support"
+  | "finance"
+  | "data"
+  // Phase 2 — corporate expertise domains
+  | "marketing"
+  | "b2b_sales"
+  | "customer_success"
+  | "pricing"
+  | "strategy"
+  | "project_management"
+  | "people_ops"
+  | "legal_compliance"
+  | "corporate_finance"
+  | "agentic_crm"
+  | "supply_chain"
+  | "data_engineering"
+  | "social_media"
+  | "google_ads"
+  | "meta_ads"
+  | "linkedin_ads"
+  | "digital_product"
+  | "complex_software"
+  | "tools_mcp"
+  | "cybersecurity";
 
-export type DomainMeta = { id: DomainId; name: string; blurb: string };
+export type DomainCategory =
+  | "Fundação"
+  | "Receita"
+  | "Execução"
+  | "Operações"
+  | "Mídia & Produto";
+
+export type DomainMeta = {
+  id: DomainId;
+  name: string;
+  blurb: string;
+  category: DomainCategory;
+};
 
 export const DOMAINS: DomainMeta[] = [
-  { id: "gtm", name: "Vendas & GTM", blurb: "Discovery, pipeline, propostas, renovação." },
-  { id: "engineering", name: "Engenharia & Code Review", blurb: "Revisão, incidentes, migrações." },
-  { id: "support", name: "Suporte & Sucesso", blurb: "Atendimento, escalonamento, pós-venda." },
-  { id: "finance", name: "Financeiro & Compliance", blurb: "Números, políticas, risco regulatório." },
-  { id: "data", name: "Dados & Analytics", blurb: "SQL, métricas, leitura de resultado." },
+  // Fundação
+  { id: "gtm", name: "Vendas & GTM", blurb: "Discovery, pipeline, propostas, renovação.", category: "Fundação" },
+  { id: "engineering", name: "Engenharia & Code Review", blurb: "Revisão, incidentes, migrações.", category: "Fundação" },
+  { id: "support", name: "Suporte & Sucesso", blurb: "Atendimento, escalonamento, pós-venda.", category: "Fundação" },
+  { id: "finance", name: "Financeiro & Compliance", blurb: "Números, políticas, risco regulatório.", category: "Fundação" },
+  { id: "data", name: "Dados & Analytics", blurb: "SQL, métricas, leitura de resultado.", category: "Fundação" },
+  // Receita
+  { id: "marketing", name: "Marketing & Growth", blurb: "Funnels, segmentação, copy, métricas de growth.", category: "Receita" },
+  { id: "b2b_sales", name: "Vendas B2B", blurb: "Discovery, qualificação, propostas, negociação.", category: "Receita" },
+  { id: "customer_success", name: "Customer Success & Retenção", blurb: "Onboarding, health score, churn, expansão.", category: "Receita" },
+  { id: "pricing", name: "Pricing & Monetização", blurb: "Modelos de preço, elasticidade, pacotes.", category: "Receita" },
+  // Execução
+  { id: "strategy", name: "Estratégia & Planejamento", blurb: "OKRs, priorização, análise competitiva.", category: "Execução" },
+  { id: "project_management", name: "Project Management & Agile", blurb: "Sprints, dependências, risco, status reports.", category: "Execução" },
+  { id: "people_ops", name: "People Ops & RH", blurb: "Recrutamento, 1:1s, feedback, políticas.", category: "Execução" },
+  { id: "legal_compliance", name: "Legal & Compliance", blurb: "Contratos, LGPD/GDPR, análise de cláusulas.", category: "Execução" },
+  // Operações
+  { id: "corporate_finance", name: "Finanças Corporativas", blurb: "FP&A, DRE, fluxo de caixa, forecast.", category: "Operações" },
+  { id: "agentic_crm", name: "Agentic CRM", blurb: "Automação de CRM, follow-ups, scoring de leads.", category: "Operações" },
+  { id: "supply_chain", name: "Supply Chain & Ops", blurb: "Estoque, compras, logística, SLAs.", category: "Operações" },
+  { id: "data_engineering", name: "Data Engineering & ML Ops", blurb: "Pipelines, qualidade de dados, observabilidade.", category: "Operações" },
+  // Mídia & Produto
+  { id: "social_media", name: "Social Media & Community", blurb: "Calendário, resposta a crises, engajamento.", category: "Mídia & Produto" },
+  { id: "google_ads", name: "Google Ads", blurb: "Campanhas, keywords, orçamento, Quality Score.", category: "Mídia & Produto" },
+  { id: "meta_ads", name: "Meta Ads", blurb: "Estrutura de campanhas, audiences, criativos.", category: "Mídia & Produto" },
+  { id: "linkedin_ads", name: "LinkedIn Ads", blurb: "ABM, lead gen, Sales Navigator, B2B targeting.", category: "Mídia & Produto" },
+  { id: "digital_product", name: "Desenvolvimento de Produtos Digitais", blurb: "Discovery, PRD, roadmap, priorização de features.", category: "Mídia & Produto" },
+  { id: "complex_software", name: "Desenvolvimento de Software Complexo", blurb: "Arquitetura, escalabilidade, resiliência, segurança.", category: "Mídia & Produto" },
+  { id: "tools_mcp", name: "Mestre em Tools & MCPs", blurb: "Escolha, orquestração, auth e rate limits de ferramentas.", category: "Mídia & Produto" },
+  { id: "cybersecurity", name: "Cybersecurity & AppSec", blurb: "Threat modeling, resposta a incidentes, hardening.", category: "Mídia & Produto" },
 ];
 
 /** Deterministic expectations. Everything here is checkable without an LLM. */
