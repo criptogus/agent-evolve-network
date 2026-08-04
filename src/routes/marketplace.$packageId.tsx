@@ -20,9 +20,11 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/lib/require-auth";
 import { toggleStar, isStarred, type StarState } from "@/lib/favorites/favorites.functions";
-import { Star } from "lucide-react";
+import { BookOpen, Bot, Gauge, KeyRound, PackageIcon, ShieldCheck, Star, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ShareOnXButton } from "@/components/share/ShareOnXButton";
+import { PackageGallery } from "@/components/marketplace/PackageGallery";
+import { StatLine } from "@/components/marketplace/StatLine";
 
 export const Route = createFileRoute("/marketplace/$packageId")({
   loader: async ({ params }) => {
@@ -76,15 +78,23 @@ export const Route = createFileRoute("/marketplace/$packageId")({
   component: PackageDetail,
 });
 
-type Tab = "overview" | "versions" | "compatibility" | "changelog";
-
 const MCP_GATEWAY_URL = "https://superagentskill.com/api/public/mcp";
+
+const SECTIONS = [
+  { id: "preview", label: "Preview" },
+  { id: "overview", label: "Description" },
+  { id: "stats", label: "Stats" },
+  { id: "install", label: "Install" },
+  { id: "changelog", label: "Changelog" },
+  { id: "versions", label: "Versions" },
+  { id: "compatibility", label: "Compatibility" },
+  { id: "reviews", label: "Reviews" },
+] as const;
 
 function PackageDetail() {
   const { pkg } = Route.useLoaderData();
   const { user } = useAuth();
   const requireAuth = useRequireAuth();
-  const [tab, setTab] = useState<Tab>("overview");
   const [selectedVersion, setSelectedVersion] = useState(pkg.latest);
   const [installOpen, setInstallOpen] = useState(false);
   const [status, setStatus] = useState<InstallStatus | null>(null);
@@ -542,114 +552,197 @@ function TrustPanel({ pkg }: { pkg: Package }) {
 
 /* ---------------- Tabs ---------------- */
 
-function OverviewTab({ pkg }: { pkg: Package }) {
+function Section({
+  id,
+  title,
+  description,
+  children,
+}: {
+  id: string;
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
-      <div>
-        <h2 className="text-xl font-semibold tracking-tight">About this package</h2>
-        <p className="mt-3 leading-relaxed text-muted-foreground">{pkg.longDescription}</p>
+    <section id={id} className="scroll-mt-20">
+      <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+      {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
+      <div className="mt-5">{children}</div>
+    </section>
+  );
+}
 
-        {pkg.systemPrompt && (
-          <>
-            <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h3 className="text-base font-semibold tracking-tight">System prompt</h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  The exact instructions this skill installs into your agent.
-                </p>
-              </div>
-              <CopyButton value={pkg.systemPrompt} label="Copy system prompt" />
-            </div>
-            <div className="mt-3">
-              <CodeBlock
-                filename={`${pkg.id}.system-prompt.md`}
-                lang="md"
-                code={pkg.systemPrompt}
-              />
-            </div>
-          </>
-        )}
-
-        <h3 className="mt-10 text-base font-semibold tracking-tight">Real-world examples</h3>
-        <div className="mt-4 space-y-3">
-          {pkg.examples.map((ex) => (
-            <div key={ex.title} className="rounded-xl border border-border bg-surface p-5">
-              <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
-                {ex.title}
-              </div>
-              <pre className="mt-2 whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/90">
-                {ex.body}
-              </pre>
-            </div>
-          ))}
-        </div>
-
-        <h3 className="mt-10 text-base font-semibold tracking-tight">Install via MCP</h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Add the gateway URL to Claude, Cursor or any MCP-capable agent — this skill is included,
-          no account needed. Or use the CLI:
-        </p>
-        <div className="mt-4 space-y-2">
-          <CodeBlockCopy code={MCP_GATEWAY_URL} label="MCP gateway URL" />
-          <CodeBlockCopy code={`npx super-agent install ${pkg.id}`} label="CLI install" />
+/** Adoption + performance numbers, directory-style. */
+function StatsSection({ pkg }: { pkg: Package }) {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="font-mono text-[11px] uppercase tracking-wider text-primary">Adoption</div>
+        <div className="mt-3 space-y-1.5">
+          <StatLine icon={Bot} label="Installs">
+            {pkg.downloads}
+          </StatLine>
+          <StatLine icon={Star} label="Rating">
+            {pkg.reviews > 0 ? `${pkg.rating.toFixed(1)} (${pkg.reviews})` : "—"}
+          </StatLine>
+          <StatLine icon={BookOpen} label="Versions">
+            {pkg.versions.length}
+          </StatLine>
+          <StatLine icon={PackageIcon} label="Latest">
+            v{pkg.latest}
+          </StatLine>
         </div>
       </div>
-
-      {/* Side metrics */}
-      <aside className="space-y-4">
-        <div className="rounded-xl border border-border bg-background p-5">
-          <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
-            Performance
-          </div>
-          <div className="mt-3 space-y-3">
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
+          Performance
+        </div>
+        {pkg.metrics.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">No published performance metrics yet.</p>
+        ) : (
+          <div className="mt-3 space-y-1.5">
             {pkg.metrics.map((m) => (
-              <div key={m.label} className="flex items-end justify-between">
-                <div className="text-sm text-muted-foreground">{m.label}</div>
-                <div className="text-right">
-                  <div className="text-base font-semibold">{m.value}</div>
-                  {m.delta && <div className="text-[11px] text-signal">{m.delta}</div>}
-                </div>
-              </div>
+              <StatLine key={m.label} icon={Gauge} label={m.label}>
+                {m.value}
+                {m.delta && <span className="ml-1.5 text-signal">{m.delta}</span>}
+              </StatLine>
             ))}
           </div>
-        </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
-        <div className="rounded-xl border border-border bg-background p-5">
-          <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
-            Dependencies
-          </div>
-          {pkg.dependencies.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">
-              No dependencies. Standalone package.
-            </p>
-          ) : (
-            <ul className="mt-3 space-y-2">
-              {pkg.dependencies.map((d) => (
-                <li key={d.name} className="flex items-center justify-between font-mono text-xs">
-                  <span className="text-foreground">{d.name}</span>
-                  <span className="text-muted-foreground">{d.version}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+/** Sidebar card: package facts with dotted leaders, plus deps and scopes. */
+function DetailsPanel({ pkg }: { pkg: Package }) {
+  return (
+    <div className="rounded-xl border border-border bg-background p-5">
+      <div className="font-mono text-[11px] uppercase tracking-wider text-primary">Details</div>
+      <div className="mt-3 space-y-1.5">
+        <StatLine icon={Tag} label="Type">
+          {pkg.type}
+        </StatLine>
+        <StatLine icon={PackageIcon} label="Version">
+          v{pkg.latest}
+        </StatLine>
+        <StatLine icon={ShieldCheck} label="License">
+          {pkg.license}
+        </StatLine>
+        <StatLine icon={Bot} label="Installs">
+          {pkg.downloads}
+        </StatLine>
+        <StatLine icon={Star} label="Rating">
+          {pkg.reviews > 0 ? `${pkg.rating.toFixed(1)} (${pkg.reviews})` : "—"}
+        </StatLine>
+        <StatLine icon={BookOpen} label="Size">
+          {pkg.size}
+        </StatLine>
+        <StatLine icon={Gauge} label="Updated">
+          {pkg.versions[0]?.date ?? "—"}
+        </StatLine>
+      </div>
 
-        <div className="rounded-xl border border-border bg-background p-5">
-          <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
-            Required scopes
+      <div className="mt-5 border-t border-border pt-4">
+        <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+          Dependencies
+        </div>
+        {pkg.dependencies.length === 0 ? (
+          <p className="mt-2 text-xs text-muted-foreground">None — standalone package.</p>
+        ) : (
+          <div className="mt-2 space-y-1.5">
+            {pkg.dependencies.map((d) => (
+              <StatLine key={d.name} label={d.name}>
+                {d.version}
+              </StatLine>
+            ))}
           </div>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {pkg.scopes.map((s) => (
+        )}
+      </div>
+
+      <div className="mt-5 border-t border-border pt-4">
+        <div className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+          <KeyRound className="h-3.5 w-3.5" aria-hidden />
+          Required scopes
+        </div>
+        {pkg.scopes.length === 0 ? (
+          <p className="mt-2 text-xs text-muted-foreground">None requested.</p>
+        ) : (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {pkg.scopes.map((sc) => (
               <span
-                key={s}
+                key={sc}
                 className="rounded-md border border-border bg-surface px-2 py-1 font-mono text-[11px]"
               >
-                {s}
+                {sc}
               </span>
             ))}
           </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Three install paths: MCP gateway, CLI, manual copy. */
+function InstallInstructions({ pkg }: { pkg: Package }) {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+            1
+          </span>
+          <h3 className="text-sm font-semibold">MCP gateway — no account needed</h3>
         </div>
-      </aside>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Add this URL as an MCP server in Claude, Hermes, Cursor or ChatGPT. This package is
+          included automatically.
+        </p>
+        <div className="mt-3">
+          <CodeBlockCopy code={MCP_GATEWAY_URL} label="MCP gateway URL" />
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+            2
+          </span>
+          <h3 className="text-sm font-semibold">CLI</h3>
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Install a pinned version into the current project.
+        </p>
+        <div className="mt-3 space-y-2">
+          <CodeBlockCopy code={`npx super-agent install ${pkg.id}`} label="install latest" />
+          <CodeBlockCopy
+            code={`npx super-agent install ${pkg.id}@${pkg.latest}`}
+            label="install pinned version"
+          />
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+            3
+          </span>
+          <h3 className="text-sm font-semibold">Copy / paste</h3>
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {pkg.systemPrompt
+            ? "Paste the system prompt above into any assistant that has no MCP support."
+            : "Open the package in the playground and copy the generated prompt into any assistant without MCP support."}
+        </p>
+        <Link
+          to="/play"
+          search={{ tool: "get_package", slug: pkg.id }}
+          className="mt-3 inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+        >
+          Open in playground →
+        </Link>
+      </div>
     </div>
   );
 }
