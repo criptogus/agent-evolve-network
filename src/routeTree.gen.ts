@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AgentsDotmdRouteImport } from './routes/agents[.]md'
 import { Route as BountiesRouteImport } from './routes/bounties'
 import { Route as CertifyRouteImport } from './routes/certify'
 import { Route as CommunityRouteImport } from './routes/community'
@@ -174,6 +175,11 @@ const AboutRoute = AboutRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsDotmdRoute = AgentsDotmdRouteImport.update({
+  id: '/agents.md',
+  path: '/agents.md',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BountiesRoute = BountiesRouteImport.update({
@@ -942,6 +948,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/agents.md': typeof AgentsDotmdRoute
   '/bounties': typeof BountiesRouteWithChildren
   '/certify': typeof CertifyRoute
   '/community': typeof CommunityRoute
@@ -1094,6 +1101,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/agents.md': typeof AgentsDotmdRoute
   '/bounties': typeof BountiesRouteWithChildren
   '/certify': typeof CertifyRoute
   '/community': typeof CommunityRoute
@@ -1248,6 +1256,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/agents.md': typeof AgentsDotmdRoute
   '/bounties': typeof BountiesRouteWithChildren
   '/certify': typeof CertifyRoute
   '/community': typeof CommunityRoute
@@ -1403,6 +1412,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/agents.md'
     | '/bounties'
     | '/certify'
     | '/community'
@@ -1555,6 +1565,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/agents.md'
     | '/bounties'
     | '/certify'
     | '/community'
@@ -1708,6 +1719,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/agents.md'
     | '/bounties'
     | '/certify'
     | '/community'
@@ -1862,6 +1874,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
+  AgentsDotmdRoute: typeof AgentsDotmdRoute
   BountiesRoute: typeof BountiesRouteWithChildren
   CertifyRoute: typeof CertifyRoute
   CommunityRoute: typeof CommunityRoute
@@ -2002,6 +2015,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents.md': {
+      id: '/agents.md'
+      path: '/agents.md'
+      fullPath: '/agents.md'
+      preLoaderRoute: typeof AgentsDotmdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bounties': {
@@ -3238,6 +3258,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
+  AgentsDotmdRoute: AgentsDotmdRoute,
   BountiesRoute: BountiesRouteWithChildren,
   CertifyRoute: CertifyRoute,
   CommunityRoute: CommunityRoute,
