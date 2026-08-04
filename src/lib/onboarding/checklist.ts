@@ -1,6 +1,6 @@
 /**
  * Agent onboarding checklist — the executable, verifiable path an agent walks
- * on its own, from "never heard of SAK" to "holds a verifiable credential".
+ * on its own, from "never heard of SAK" to "diagnosed and improving".
  *
  * Pure module: no env reads, no I/O. Shared by the public onboarding endpoint
  * and by the /agents.md manual so the two can never drift.
@@ -12,7 +12,7 @@ export type StepId =
   | "inspect"
   | "evaluate"
   | "evolve"
-  | "certify";
+  | "diagnose";
 
 export type Stage = "know" | "connect" | "evolve";
 
