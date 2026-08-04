@@ -61,9 +61,7 @@ const SearchSchema = z.object({
 
 export const Route = createFileRoute("/marketplace/")({
   validateSearch: (s) => SearchSchema.parse(s),
-  search: {
-    middlewares: [stripSearchParams<z.infer<typeof SearchSchema>>(SEARCH_DEFAULTS)],
-  },
+  search: { middlewares: [stripSearchParams(SEARCH_DEFAULTS) as never] },
   head: () => ({
     meta: [
       { title: "Marketplace — Super Agent Skill" },
