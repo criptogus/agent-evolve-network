@@ -34,7 +34,34 @@ import {
 
 export { AuthorLink };
 
+/**
+ * Search / sort / filter state lives in the URL so a filtered view is
+ * shareable and survives a refresh. Every field falls back to its default
+ * instead of throwing, so a hand-edited URL never breaks the page.
+ */
+const SEARCH_DEFAULTS = {
+  q: "",
+  type: "all",
+  tags: [] as string[],
+  group: "all",
+  verified: false,
+  installs: "any",
+  sort: "installs_desc",
+};
+
+const SearchSchema = z.object({
+  q: z.string().catch("").default(""),
+  type: z.string().catch("all").default("all"),
+  tags: z.array(z.string()).catch([]).default([]),
+  group: z.string().catch("all").default("all"),
+  verified: z.boolean().catch(false).default(false),
+  installs: z.string().catch("any").default("any"),
+  sort: z.string().catch("installs_desc").default("installs_desc"),
+});
+
 export const Route = createFileRoute("/marketplace/")({
+  validateSearch: (s) => SearchSchema.parse(s),
+  search: { middlewares: [stripSearchParams(SEARCH_DEFAULTS)] },
   head: () => ({
     meta: [
       { title: "Marketplace — Super Agent Skill" },
