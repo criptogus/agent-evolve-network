@@ -787,13 +787,13 @@ function VersionsTab({
         <tbody>
           {pkg.versions.map((v) => (
             <tr key={v.version} className="border-t border-border bg-background">
-              <td className="px-5 py-4 font-mono font-semibold">{v.version}</td>
-              <td className="px-5 py-4">
+              <td className="px-4 py-4 sm:px-5 font-mono font-semibold">{v.version}</td>
+              <td className="px-4 py-4 sm:px-5">
                 <StatusPill status={v.status} />
               </td>
-              <td className="px-5 py-4 text-muted-foreground">{v.date}</td>
-              <td className="px-5 py-4 text-muted-foreground">{v.notes}</td>
-              <td className="px-5 py-4 text-right">
+              <td className="px-4 py-4 sm:px-5 text-muted-foreground">{v.date}</td>
+              <td className="px-4 py-4 sm:px-5 text-muted-foreground">{v.notes}</td>
+              <td className="px-4 py-4 sm:px-5 text-right">
                 <button
                   onClick={() => onSelect(v.version)}
                   className={`rounded-md border px-3 py-1.5 font-mono text-[11px] uppercase transition-colors ${
