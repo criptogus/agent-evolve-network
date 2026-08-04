@@ -101,7 +101,7 @@ function AdminRoiPage() {
             ? [
                 { label: "Execuções", value: roi.data.totals.executions.toLocaleString("pt-BR") },
                 {
-                  label: "Taxa de conclusão (rede)",
+                  label: "Completion rate (network)",
                   value: pct(roi.data.totals.network_completion_rate),
                 },
                 { label: "Horas de agente economizadas", value: `${roi.data.totals.hours_saved}h` },
@@ -366,7 +366,7 @@ function AdminRoiPage() {
                   <tr>
                     <Th>Workspace</Th>
                     <Th>Execuções</Th>
-                    <Th>Conclusão</Th>
+                    <Th>Completion</Th>
                     <Th>Intervenção humana</Th>
                     <Th>Horas salvas</Th>
                     <Th>Tokens salvos</Th>
@@ -424,6 +424,6 @@ function Td({ children, className = "" }: { children: React.ReactNode; className
 
 function tri(v: boolean | null) {
   if (v === true) return <span className="text-emerald-600 dark:text-emerald-400">sim</span>;
-  if (v === false) return <span className="text-destructive">não</span>;
+  if (v === false) return <span className="text-destructive">no</span>;
   return <span className="text-muted-foreground">—</span>;
 }

@@ -231,10 +231,10 @@ export function GuidedAgentEditor({ buildId, initialSoul, initialTagline, initia
             <div className="rounded-lg border bg-muted/40 p-4">
               <div className="flex items-center gap-2">
                 <Library className="h-4 w-4 text-primary" />
-                <p className="text-sm font-medium">Biblioteca de guardrails</p>
+                <p className="text-sm font-medium">Guardrail library</p>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                Escolha uma categoria, adicione a regra pronta e ajuste o texto para o seu contexto.
+                Choose a category, add the ready-made rule, and adjust the wording for your context.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {GUARDRAIL_CATEGORIES.map((c) => (
@@ -271,7 +271,7 @@ export function GuidedAgentEditor({ buildId, initialSoul, initialTagline, initia
                         disabled={added || guardrails.length >= 20}
                         onClick={() => addFromLibrary(item.slug)}
                       >
-                        {added ? "Adicionado" : "Adicionar"}
+                        {added ? "Added" : "Add"}
                       </Button>
                     </li>
                   );

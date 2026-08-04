@@ -129,7 +129,7 @@ export function formatUpliftClaim(r: UpliftResult): string {
   if (r.n_control === 0 || r.n_treatment === 0) return "sem braço de controle ainda";
   const pct = (r.absolute_uplift * 100).toFixed(1);
   const sign = r.absolute_uplift >= 0 ? "+" : "";
-  const sig = r.significant ? `p=${r.p_value.toFixed(4)}` : "ainda não significativo";
+  const sig = r.significant ? `p=${r.p_value.toFixed(4)}` : "not significant yet";
   return `${sign}${pct} p.p. de resolução (${sig})`;
 }
 

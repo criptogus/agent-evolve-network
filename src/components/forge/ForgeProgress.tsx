@@ -28,31 +28,31 @@ export type ForgeStage = {
 };
 
 export const AUTHOR_STAGES: ForgeStage[] = [
-  { key: "intake",   title: "Lendo o brief",                    detail: "Extraindo objetivos, restrições e critérios de sucesso", icon: BookOpen, weight: 2 },
-  { key: "research", title: "Pesquisando referências de mercado", detail: "Cruzando playbooks vencedores, papers e SOTA do vertical", icon: Search, weight: 4 },
-  { key: "method",   title: "Aplicando método SkillForge",       detail: "Estruturando system prompt, regras, exemplos e guardrails", icon: Sparkles, weight: 4 },
-  { key: "draft",    title: "Compondo o pacote v0.1.0",          detail: "Gerando rascunho executável (skill / playbook / soul)",   icon: Wand2, weight: 3 },
-  { key: "self_eval",title: "Auto-avaliação interna",            detail: "Rodando casos canônicos e adversariais",                  icon: Beaker, weight: 3 },
-  { key: "polish",   title: "Refinando até nota 9+/10",          detail: "Iterando precisão, anti-alucinação e segurança",          icon: Trophy, weight: 4 },
-  { key: "ship",     title: "Empacotando para publicação",       detail: "Versionando, gerando relatório e artefatos",              icon: CheckCircle2, weight: 1 },
+  { key: "intake",   title: "Reading the brief",                 detail: "Extracting goals, constraints and success criteria", icon: BookOpen, weight: 2 },
+  { key: "research", title: "Researching market references",     detail: "Cross-referencing winning playbooks, papers and vertical SOTA", icon: Search, weight: 4 },
+  { key: "method",   title: "Applying the SkillForge method",    detail: "Structuring system prompt, rules, examples and guardrails", icon: Sparkles, weight: 4 },
+  { key: "draft",    title: "Composing the v0.1.0 package",      detail: "Generating an executable draft (skill / playbook / soul)", icon: Wand2, weight: 3 },
+  { key: "self_eval",title: "Internal self-evaluation",          detail: "Running canonical and adversarial cases",                 icon: Beaker, weight: 3 },
+  { key: "polish",   title: "Refining to a 9+/10 score",         detail: "Iterating on precision, anti-hallucination and safety",   icon: Trophy, weight: 4 },
+  { key: "ship",     title: "Packaging for release",             detail: "Versioning, generating report and artifacts",             icon: CheckCircle2, weight: 1 },
 ];
 
 export const EVAL_STAGES: ForgeStage[] = [
-  { key: "load",     title: "Carregando o pacote",                detail: "Versão atual, regras, exemplos e histórico", icon: BookOpen, weight: 1 },
-  { key: "cases",    title: "Gerando casos de teste",             detail: "Canônicos + adversariais + edge cases",      icon: GitBranch, weight: 3 },
-  { key: "run",      title: "Executando avaliações",              detail: "Multi-modelo, multi-cenário, com judges independentes", icon: Brain, weight: 5 },
-  { key: "score",    title: "Pontuando dimensões",                detail: "Precisão · saúde · alucinação · segurança", icon: Gauge, weight: 3 },
-  { key: "safety",   title: "Auditoria de segurança",             detail: "Verificando guardrails e modos de falha",   icon: ShieldCheck, weight: 2 },
-  { key: "verdict",  title: "Consolidando veredicto",             detail: "Forças, fraquezas e ações de melhoria",     icon: Target, weight: 2 },
+  { key: "load",     title: "Loading the package",                detail: "Current version, rules, examples and history", icon: BookOpen, weight: 1 },
+  { key: "cases",    title: "Generating test cases",               detail: "Canonical + adversarial + edge cases",      icon: GitBranch, weight: 3 },
+  { key: "run",      title: "Running evaluations",                 detail: "Multi-model, multi-scenario, with independent judges", icon: Brain, weight: 5 },
+  { key: "score",    title: "Scoring dimensions",                  detail: "Precision · health · hallucination · safety", icon: Gauge, weight: 3 },
+  { key: "safety",   title: "Safety audit",                        detail: "Checking guardrails and failure modes",   icon: ShieldCheck, weight: 2 },
+  { key: "verdict",  title: "Consolidating verdict",               detail: "Strengths, weaknesses and improvement actions",     icon: Target, weight: 2 },
 ];
 
 export const EVOLVE_STAGES: ForgeStage[] = [
-  { key: "metrics",  title: "Lendo métricas e learnings",         detail: "Telemetria, falhas recorrentes, feedback do mercado", icon: Gauge, weight: 2 },
-  { key: "diag",     title: "Diagnóstico do skill",               detail: "Identificando gaps que mais afetam a nota",            icon: Search, weight: 3 },
-  { key: "research", title: "Buscando padrões campeões",          detail: "Comparando com top-performers do vertical",            icon: Trophy, weight: 3 },
-  { key: "patch",    title: "Desenhando o menor patch eficaz",    detail: "Reescrevendo prompt, regras e adicionando exemplos",   icon: Wand2, weight: 4 },
-  { key: "verify",   title: "Verificando ganho",                  detail: "Re-avaliando para garantir lift real (sem regressão)", icon: Beaker, weight: 3 },
-  { key: "ship",     title: "Promovendo para beta",               detail: "Versão incremental + changelog auditável",             icon: CheckCircle2, weight: 1 },
+  { key: "metrics",  title: "Reading metrics and learnings",       detail: "Telemetry, recurring failures, market feedback", icon: Gauge, weight: 2 },
+  { key: "diag",     title: "Skill diagnosis",                     detail: "Identifying the gaps that most affect the score",            icon: Search, weight: 3 },
+  { key: "research", title: "Looking for champion patterns",       detail: "Comparing against top performers in the vertical",            icon: Trophy, weight: 3 },
+  { key: "patch",    title: "Designing the smallest effective patch", detail: "Rewriting prompt, rules and adding examples",   icon: Wand2, weight: 4 },
+  { key: "verify",   title: "Verifying the gain",                  detail: "Re-evaluating to ensure a real lift (no regression)", icon: Beaker, weight: 3 },
+  { key: "ship",     title: "Promoting to beta",                   detail: "Incremental version + auditable changelog",             icon: CheckCircle2, weight: 1 },
 ];
 
 type Props = {
@@ -64,7 +64,7 @@ type Props = {
   verdict?: string | null;
 };
 
-export function ForgeProgress({ active, done, stages, title = "Trabalho em execução", finalScore, verdict }: Props) {
+export function ForgeProgress({ active, done, stages, title = "Job in progress", finalScore, verdict }: Props) {
   const [elapsed, setElapsed] = useState(0);
   const startedAt = useRef<number | null>(null);
 
@@ -121,12 +121,12 @@ export function ForgeProgress({ active, done, stages, title = "Trabalho em execu
             ) : (
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
             )}
-            {done ? "Trabalho concluído" : title}
+            {done ? "Job completed" : title}
           </CardTitle>
           <div className="flex items-center gap-2">
             {typeof finalScore === "number" && (
               <Badge variant="default" className="text-sm">
-                Nota {finalScore.toFixed(1)}/10
+                Score {finalScore.toFixed(1)}/10
               </Badge>
             )}
             {verdict && (
@@ -172,10 +172,10 @@ export function ForgeProgress({ active, done, stages, title = "Trabalho em execu
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-medium">{s.title}</p>
                   {isActive && (
-                    <span className="text-[10px] uppercase tracking-wide text-primary">em andamento</span>
+                    <span className="text-[10px] uppercase tracking-wide text-primary">in progress</span>
                   )}
                   {isDone && !isActive && (
-                    <span className="text-[10px] uppercase tracking-wide text-muted-foreground">concluído</span>
+                    <span className="text-[10px] uppercase tracking-wide text-muted-foreground">done</span>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">{s.detail}</p>
@@ -191,7 +191,7 @@ export function ForgeProgress({ active, done, stages, title = "Trabalho em execu
         })}
         {done && (
           <p className="pt-2 text-xs text-muted-foreground">
-            Pipeline executado pelo método SkillForge — pesquisa, autoria, auto-avaliação, refino até 9+/10 e empacotamento auditável.
+            Pipeline run using the SkillForge method — research, authoring, self-evaluation, refinement to 9+/10 and auditable packaging.
           </p>
         )}
       </CardContent>

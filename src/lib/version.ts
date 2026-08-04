@@ -669,7 +669,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Destacou agentes em /welcome",
+      "Highlighted agents on /welcome",
     ],
   },
   {

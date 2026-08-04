@@ -19,13 +19,13 @@ export const Route = createFileRoute("/admin/agent-kpis")({
   component: AgentKpisPage,
   errorComponent: ({ error }) => (
     <main className="mx-auto max-w-4xl px-6 py-16">
-      <h1 className="text-xl font-semibold">Não foi possível carregar os KPIs</h1>
+      <h1 className="text-xl font-semibold">Could not load the KPIs</h1>
       <p className="mt-2 text-sm text-muted-foreground">{String((error as Error)?.message ?? error)}</p>
     </main>
   ),
   notFoundComponent: () => (
     <main className="mx-auto max-w-4xl px-6 py-16">
-      <h1 className="text-xl font-semibold">Painel não encontrado</h1>
+      <h1 className="text-xl font-semibold">Panel not found</h1>
     </main>
   ),
 });
@@ -60,7 +60,7 @@ function AgentKpisPage() {
         <div>
           <h1 className="text-2xl font-semibold">KPIs agent-first</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Só métricas de agente. Pageview não entra aqui de propósito.
+            Agent metrics only. Pageviews are deliberately excluded.
           </p>
         </div>
         <div className="flex gap-2">
@@ -84,12 +84,12 @@ function AgentKpisPage() {
         <>
           <section className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
             <Metric label="Tool calls (MCP)" value={t.tool_calls} hint={`${t.write_calls} de escrita`} />
-            <Metric label="Agentes distintos" value={t.distinct_identities} />
+            <Metric label="Distinct agents" value={t.distinct_identities} />
             <Metric label="Installs" value={t.installs} />
             <Metric label="Execuções reportadas" value={t.executions} hint={`${t.executions_ok} ok`} />
             <Metric label="Tarefas concluídas" value={t.tasks_completed} />
             <Metric label="Diagnósticos" value={t.diagnoses} />
-            <Metric label="Agentes construídos" value={t.agents_built} />
+            <Metric label="Agents built" value={t.agents_built} />
             <Metric
               label="Onboarding completo"
               value={`${t.onboarding_completed}/${t.onboarding_sessions}`}
@@ -107,7 +107,7 @@ function AgentKpisPage() {
                 <thead className="text-left text-xs uppercase tracking-wide text-muted-foreground">
                   <tr>
                     <th className="py-2">Passo</th>
-                    <th className="py-2">Estágio</th>
+                    <th className="py-2">Stage</th>
                     <th className="py-2">Sessões</th>
                     <th className="py-2">Retenção vs. 1º passo</th>
                   </tr>
