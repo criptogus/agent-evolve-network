@@ -94,10 +94,42 @@ const FAQ_LD = {
   mainEntity: [
     {
       "@type": "Question",
-      name: "How does the MCP connection actually work?",
+      name: "What exactly is a skill?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "MCP (Model Context Protocol) lets your agent talk to external tools. You point your agent at Super Agent Skill once and it shows up as a connected tool. Every command flows through it — installs, generations and swaps happen at runtime. Some clients (Claude Desktop, Cursor) need the endpoint added to a config file and one restart; after that nothing else changes.",
+        text: "A file that teaches an agent to do one job well — instructions, examples, an output contract and guardrails. Not a prompt. Alongside skills we ship playbooks (multi-step workflows), souls (drop-in expert personas) and guardrails (what the agent must never do).",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How is a skill tested?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Format and substance are scored separately. Format is deterministic: structure, output contract, token budget, truncation. Substance is judged against the job the skill claims to do, with the exact excerpts that justify the score. Every skill also runs through a fixed adversarial harness — jailbreaks, role-play, data-exfiltration probes — and the block rate is recorded. The combined result is the Trust Score.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Do I have to write the evaluation cases myself?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No. The lab derives them from your description or from the skill you upload, then runs the same set on every version so scores are comparable. The cases and the rationale are included in your report.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Can I bring a skill I already use?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes. Upload it and you get a graded report with the exact failures and a repaired draft. Your source is evaluated in isolation, never used to train shared models, and never shown to other users.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Which agents and models does it work with?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Anything that speaks MCP: Claude, Hermes, ChatGPT, Codex, Cursor, Cline, Continue and custom agents. Paste one URL. Some clients need it in a config file plus one restart the first time; after that nothing changes.",
       },
     },
     {
@@ -105,15 +137,7 @@ const FAQ_LD = {
       name: "Do I need to retrain my agent or change my code?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "No retraining and no code changes in your agent. Packages install through MCP at runtime; some clients need the endpoint added to a config file and one restart the first time. Every install is reversible and audited.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Which agent runtimes are supported?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Any MCP-compatible runtime: Claude, Cursor, ChatGPT, Continue, Cline and custom agents.",
+        text: "No retraining and no code changes. Capabilities install at runtime through MCP, every install is reversible, and every install is logged.",
       },
     },
     {
@@ -121,7 +145,7 @@ const FAQ_LD = {
       name: "How much does it cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Hacker is free forever. Agent Pass is $19 per agent per month with unlimited upgrades. Enterprise is custom with private registry, SSO and audit logs.",
+        text: "Browsing and installing public capabilities is free — no account needed. Pro is $190 per year (or $19 per month) and includes everything: the Agent Factory, the Agent Store, SAK University and unlimited tested reviews. Enterprise adds a private registry, SSO and audit logs.",
       },
     },
     {
@@ -129,18 +153,19 @@ const FAQ_LD = {
       name: "If I upload a proprietary skill, can Super Agent Skill copy it?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "No. You retain full ownership and control. Your source code is evaluated in an isolated sandbox, never used to train shared models, and never exposed to other users. Public listings only show metadata, Trust Score and signed release artifacts that you choose to publish. Private packages stay scoped to your workspace.",
+        text: "No. You retain full ownership and control. Private packages stay scoped to your workspace, public listings only show what you choose to publish, and we sign a mutual NDA on request.",
       },
     },
   ],
 };
 
 /**
- * Short conversion narrative: hook (Hero) → what you get (AgentFactory) →
- * tangible A-grade delta (GradeImpact) → show-don't-tell (IndustryDemo) →
- * IP/security objection (SecurityPromise) → price → objections → close.
- * The technical depth (pipeline, compatibility, vocabulary, trust proof)
- * lives on /how-it-works so the landing page stays scannable.
+ * Narrative: hook (Hero) → the pain of untested capabilities (Problem) → the
+ * lab as evidence in five numbered steps, including the A-grade delta
+ * (LabSteps → GradeImpact) → what the lab produces at scale (AgentFactory,
+ * University) → thesis, signed (FounderLetter) → IP objection
+ * (SecurityPromise) → one price → objections → close. Technical depth lives
+ * on /how-it-works so this page stays scannable.
  */
 function Home() {
   const { user, loading } = useAuth();
@@ -159,10 +184,11 @@ function Home() {
       <JsonLd data={[ORG_LD, SOFTWARE_LD, FAQ_LD]} />
       <Nav />
       <Hero />
-      <University />
+      <Problem />
+      <LabSteps />
       <AgentFactory />
-      <GradeImpact />
-      <IndustryDemo />
+      <University />
+      <FounderLetter />
       <SecurityPromise />
       <PlansTeaser />
       <Faq />
