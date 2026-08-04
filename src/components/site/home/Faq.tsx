@@ -2,198 +2,159 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
 // Keep these answers in sync with FAQ_LD in src/routes/index.tsx (schema.org markup).
+// Register: short, blunt, no hedging. Every answer says the true thing first.
+const ITEMS: { q: string; a: React.ReactNode }[] = [
+  {
+    q: "What exactly is a skill?",
+    a: (
+      <>
+        A file that teaches an agent to do one job well — instructions, examples, an output contract
+        and guardrails. Not a prompt. Alongside skills we ship playbooks (multi-step workflows),
+        souls (drop-in expert personas) and guardrails (what the agent must never do).
+      </>
+    ),
+  },
+  {
+    q: "How is a skill tested?",
+    a: (
+      <>
+        We score format and substance separately. Format is deterministic: structure, output
+        contract, token budget, truncation. Substance is judged against the job the skill claims to
+        do, with the exact excerpts that justify the score. On top of that, every skill runs through
+        a fixed adversarial harness — jailbreaks, role-play, data-exfiltration probes — and the block
+        rate is recorded. The combined result is the Trust Score.
+      </>
+    ),
+  },
+  {
+    q: "Do I have to write the evaluation cases myself?",
+    a: (
+      <>
+        No. The lab derives them from your description or from the skill you upload, then runs the
+        same set on every version so the scores are comparable. You can read the cases and the
+        rationale in your report.
+      </>
+    ),
+  },
+  {
+    q: "Can I bring a skill I already use?",
+    a: (
+      <>
+        Yes. Upload it and you get a graded report with the exact failures and a repaired draft. Your
+        source is evaluated in isolation, never used to train shared models, and never shown to other
+        users.{" "}
+        <Link to="/security" className="text-primary hover:underline">
+          Read the trust center
+        </Link>
+        .
+      </>
+    ),
+  },
+  {
+    q: "Which agents and models does it work with?",
+    a: (
+      <>
+        Anything that speaks MCP: Claude, Hermes, ChatGPT, Codex, Cursor, Cline, Continue and custom
+        agents. Paste one URL. Some clients need it in a config file plus one restart the first time —
+        after that nothing changes.{" "}
+        <Link to="/connect" className="text-primary hover:underline">
+          Setup per client
+        </Link>
+        .
+      </>
+    ),
+  },
+  {
+    q: "Do I need to retrain or change my code?",
+    a: (
+      <>
+        No retraining and no code changes. Capabilities install at runtime through MCP, every install
+        is reversible, and every install is logged.
+      </>
+    ),
+  },
+  {
+    q: "What does it cost?",
+    a: (
+      <>
+        Browsing and installing public capabilities is free — no account needed. Pro is $190 per year
+        (or $19 per month) and includes everything: the Agent Factory, the University, unlimited
+        reviews and the full registry.{" "}
+        <Link to="/pricing" className="text-primary hover:underline">
+          See pricing
+        </Link>
+        .
+      </>
+    ),
+  },
+  {
+    q: "If I upload a proprietary skill, can you copy it?",
+    a: (
+      <>
+        No. You keep ownership. Private packages stay scoped to your workspace, public listings only
+        show what you choose to publish, and we sign a mutual NDA on request at{" "}
+        <Link to="/nda" className="text-primary hover:underline">
+          /nda
+        </Link>
+        .
+      </>
+    ),
+  },
+];
+
 export function Faq() {
-  const items: { q: string; a: React.ReactNode }[] = [
-    {
-      q: "How does the MCP connection actually work?",
-      a: (
-        <>
-          MCP (Model Context Protocol) is a standard way for an AI agent to talk to external tools.
-          You point your agent at Super Agent Skill once — it shows up as a connected tool. From
-          then on, every command you send (in plain English) flows through that connection: Super
-          Agent Skill installs, generates and hot-swaps packages without you touching code or
-          restarting the agent. If your agent already speaks MCP (Claude, Cursor, OpenAI agents,
-          custom), you're 60 seconds away.
-        </>
-      ),
-    },
-    {
-      q: "What gets created — skills, playbooks, souls, guardrails?",
-      a: (
-        <>
-          Four primitives, each installable on demand:
-          <ul className="mt-3 space-y-1.5 text-muted-foreground">
-            <li>
-              · <span className="text-foreground">Skills</span> — capabilities (cardiology
-              diagnostics, SEO writing, KYC analysis).
-            </li>
-            <li>
-              · <span className="text-foreground">Playbooks</span> — end-to-end workflows
-              (enterprise sales motion, chest-pain triage, ad experiments).
-            </li>
-            <li>
-              · <span className="text-foreground">Souls</span> — drop-in expert personas: personality and decision style
-              (Challenger rep, founder voice, calm clinician).
-            </li>
-            <li>
-              · <span className="text-foreground">Guardrails</span> — what your agent must never do
-              (no competitor mentions, no advice without citation).
-            </li>
-          </ul>
-        </>
-      ),
-    },
-    {
-      q: "Does Super Agent Skill only install, or does it also create custom packages?",
-      a: (
-        <>
-          Both. For your industry, Super Agent Skill installs the state-of-the-art packages from the
-          registry — already maintained, versioned and benchmarked. When you need something specific
-          (your tone, your protocols, your competitor list), SkillForge generates a custom skill,
-          playbook, soul or guardrail from your context and signs it as a private package only your
-          agent can use.
-        </>
-      ),
-    },
-    {
-      q: "How do I get started with my first command?",
-      a: (
-        <>
-          Three steps:
-          <ol className="mt-3 space-y-1.5 text-muted-foreground">
-            <li>1. Connect your agent via MCP (one click in the connect flow).</li>
-            <li>
-              2. Type a sentence:{" "}
-              <em>"Make my agent a hematology specialist that always cites sources."</em>
-            </li>
-            <li>3. Watch it forge live — you'll see the Trust Score move in real time.</li>
-          </ol>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Link
-              to="/generate"
-              className="inline-flex h-9 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-95"
-            >
-              Try the live demo →
-            </Link>
-            <Link
-              to="/connect"
-              className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
-            >
-              Connect my agent
-            </Link>
-          </div>
-        </>
-      ),
-    },
-    {
-      q: "Do I need to retrain my agent or change my code?",
-      a: (
-        <>
-          No retraining and no code changes in your agent. Packages install through MCP at runtime;
-          depending on the client you may need to add the endpoint to a config file and restart it
-          once. After that, installs and swaps happen live and every one of them is reversible and
-          audited.
-        </>
-      ),
-    },
-    {
-      q: "How much does it cost?",
-      a: (
-        <>
-          Hacker is free forever — every public skill via the MCP gateway, plus browsing, with no
-          account needed. A free account adds per-package installs, library sync and reviews. Agent
-          Pass is $19 per agent per month: SkillForge auto-patching, continuous jailbreak
-          re-testing, health scoring with weekly reports, and priority skills — your agent's skills
-          stay current and jailbreak-hardened automatically. Enterprise is custom, with private
-          registry, SSO and audit logs.{" "}
-          <Link to="/pricing" className="text-primary hover:underline">
-            See pricing →
-          </Link>
-        </>
-      ),
-    },
-    {
-      q: "Where do my data and prompts live?",
-      a: (
-        <>
-          Your context (transcripts, docs, brand voice) is used to generate private packages and
-          stays scoped to your workspace. Nothing you upload trains shared models. Generated
-          packages are signed, versioned and only your agent can install them unless you explicitly
-          publish to the registry.
-        </>
-      ),
-    },
-    {
-      q: "If I upload a proprietary skill, can Super Agent Skill copy it?",
-      a: (
-        <>
-          No. You retain full ownership and control. Your source code is evaluated in an isolated
-          sandbox, never used to train shared models, and never exposed to other users. Public
-          listings only show metadata, Trust Score and signed release artifacts that you choose to
-          publish. Private packages stay scoped to your workspace.
-        </>
-      ),
-    },
-  ];
+  const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section className="border-t border-border bg-surface/40 py-24">
-      <div className="mx-auto max-w-4xl px-6">
-        <div className="max-w-2xl">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">FAQ</span>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">
-            Plain answers to the obvious questions.
-          </h2>
-          <p className="mt-4 text-lg text-muted-foreground">
-            How the MCP connection works, what Super Agent Skill actually creates, and how you start
-            with a single sentence.
-          </p>
+    <section className="border-b border-border py-20 md:py-24">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6">
+        <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">FAQ</span>
+        <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-4xl">
+          Questions, answered straight.
+        </h2>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Everything people ask before connecting an agent.
+        </p>
+
+        <div className="mt-9 divide-y divide-border border-y border-border">
+          {ITEMS.map((item, i) => {
+            const isOpen = open === i;
+            return (
+              <div key={item.q}>
+                <button
+                  type="button"
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  aria-expanded={isOpen}
+                  className="flex w-full items-center gap-4 py-4 text-left"
+                >
+                  <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="flex-1 text-[15px] font-medium">{item.q}</span>
+                  <span
+                    aria-hidden
+                    className={`shrink-0 text-muted-foreground transition-transform ${isOpen ? "rotate-45" : ""}`}
+                  >
+                    +
+                  </span>
+                </button>
+                {isOpen && (
+                  <div className="pb-5 pl-10 pr-2 text-sm leading-relaxed text-muted-foreground">
+                    {item.a}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
-        <ul className="mt-12 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-background">
-          {items.map((it, i) => (
-            <FaqItem key={i} q={it.q} defaultOpen={i === 0}>
-              {it.a}
-            </FaqItem>
-          ))}
-        </ul>
+
+        <p className="mt-6 text-sm text-muted-foreground">
+          Something else?{" "}
+          <a href="mailto:hello@superagentskill.com" className="text-primary hover:underline">
+            hello@superagentskill.com
+          </a>
+        </p>
       </div>
     </section>
-  );
-}
-
-function FaqItem({
-  q,
-  children,
-  defaultOpen = false,
-}: {
-  q: string;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <li>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left transition-colors hover:bg-surface/60"
-      >
-        <span className="text-[15px] font-medium text-foreground md:text-base">{q}</span>
-        <span
-          className={
-            "inline-flex size-6 shrink-0 items-center justify-center rounded-full border border-border font-mono text-xs text-muted-foreground transition-transform " +
-            (open ? "rotate-45 bg-primary/10 text-primary" : "")
-          }
-          aria-hidden
-        >
-          +
-        </span>
-      </button>
-      {open && (
-        <div className="animate-fade-in px-5 pb-6 text-[14.5px] leading-relaxed text-muted-foreground">
-          {children}
-        </div>
-      )}
-    </li>
   );
 }
