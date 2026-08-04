@@ -1,5 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Check } from "lucide-react";
+import {
+  PRICE_MONTHLY,
+  PRICE_YEARLY,
+  PRICE_YEARLY_LIST,
+  SAVE_BADGE,
+} from "@/lib/pricing-copy";
 
 // Keep in sync with /pricing: Free, Pro, Enterprise.
 const INCLUDED = [
@@ -55,16 +61,19 @@ export function PlansTeaser() {
               Pro · billed yearly
             </div>
             <div className="mt-4 flex items-end gap-2">
-              <span className="pb-2 text-2xl font-medium text-muted-foreground line-through">$228</span>
-              <span className="text-5xl font-semibold tracking-tight">$140</span>
+              <span className="pb-2 text-2xl font-medium text-muted-foreground line-through">
+                {PRICE_YEARLY_LIST}
+              </span>
+              <span className="text-5xl font-semibold tracking-tight">{PRICE_YEARLY}</span>
               <span className="pb-2 text-sm text-muted-foreground">/ year</span>
             </div>
             <div className="mt-3 inline-flex items-center rounded-full border border-signal/40 bg-signal/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.14em] text-signal">
-              Save $88 · 39% off
+              {SAVE_BADGE}
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Instead of <span className="text-foreground">$228 / year</span> billed monthly at $19,
-              which stays available if you prefer the flexibility.
+              Instead of{" "}
+              <span className="text-foreground">{PRICE_YEARLY_LIST} / year</span> billed monthly at{" "}
+              {PRICE_MONTHLY}, which stays available if you prefer the flexibility.
             </p>
             <Link
               to="/pricing"

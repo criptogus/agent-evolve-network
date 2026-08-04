@@ -7,10 +7,18 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import {
+  PRICE_MONTHLY,
+  PRICE_YEARLY,
+  PRICE_YEARLY_LIST,
+  PRO_YEARLY_DISCOUNT_PCT,
+  SAVE_BADGE,
+  SAVE_SHORT,
+} from "@/lib/pricing-copy";
 
 const TITLE = "Pricing — one plan, everything included | Super Agent Skill";
-const DESCRIPTION =
-  "Public capabilities are free forever. Pro is $140/year (39% off $228) or $19/month and includes the Agent Factory, Agent Store, University and unlimited tested reviews.";
+const DESCRIPTION = `Public capabilities are free forever. Pro is ${PRICE_YEARLY}/year (${PRO_YEARLY_DISCOUNT_PCT}% off ${PRICE_YEARLY_LIST}) or ${PRICE_MONTHLY}/month and includes the Agent Factory, Agent Store, University and unlimited tested reviews.`;
+
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -105,7 +113,7 @@ function Pricing() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {c === "yearly" ? "Yearly · save $88" : "Monthly"}
+              {c === "yearly" ? `Yearly · ${SAVE_SHORT}` : "Monthly"}
             </button>
           ))}
         </div>
@@ -132,11 +140,11 @@ function Pricing() {
             <div className="mt-4 flex items-end gap-2">
               {cadence === "yearly" && (
                 <span className="pb-2 text-2xl font-medium text-muted-foreground line-through">
-                  $228
+                  {PRICE_YEARLY_LIST}
                 </span>
               )}
               <span className="text-5xl font-semibold tracking-tight">
-                {cadence === "yearly" ? "$140" : "$19"}
+                {cadence === "yearly" ? PRICE_YEARLY : PRICE_MONTHLY}
               </span>
               <span className="pb-2 text-sm text-muted-foreground">
                 / {cadence === "yearly" ? "year" : "month"}
@@ -144,13 +152,13 @@ function Pricing() {
             </div>
             {cadence === "yearly" && (
               <div className="mt-3 inline-flex items-center rounded-full border border-signal/40 bg-signal/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.14em] text-signal">
-                Save $88 · 39% off
+                {SAVE_BADGE}
               </div>
             )}
             <p className="mt-2 text-sm text-muted-foreground">
               {cadence === "yearly"
-                ? "$228 billed monthly, $140 billed yearly. Cancel any time."
-                : "Full flexibility. Switch to yearly whenever you want and pay $140 instead of $228."}
+                ? `${PRICE_YEARLY_LIST} billed monthly, ${PRICE_YEARLY} billed yearly. Cancel any time.`
+                : `Full flexibility. Switch to yearly whenever you want and pay ${PRICE_YEARLY} instead of ${PRICE_YEARLY_LIST}.`}
             </p>
             <button
               onClick={onGetPro}

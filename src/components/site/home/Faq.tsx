@@ -1,5 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import {
+  PRICE_MONTHLY,
+  PRICE_YEARLY,
+  PRICE_YEARLY_LIST,
+  PRO_YEARLY_DISCOUNT_PCT,
+} from "@/lib/pricing-copy";
 
 // Keep these answers in sync with FAQ_LD in src/routes/index.tsx (schema.org markup).
 // Register: short, blunt, no hedging. Every answer says the true thing first.
@@ -77,9 +83,11 @@ const ITEMS: { q: string; a: React.ReactNode }[] = [
     q: "What does it cost?",
     a: (
       <>
-        Browsing and installing public capabilities is free — no account needed. Pro is $140 per year
-        (down from $228) or $19 per month, and includes everything: the Agent Factory, the University, unlimited
-        reviews and the full registry.{" "}
+        Browsing and installing public capabilities is free — no account needed. Pro is{" "}
+        <span className="text-muted-foreground line-through">{PRICE_YEARLY_LIST}</span>{" "}
+        <span className="font-semibold text-foreground">{PRICE_YEARLY} per year</span> (
+        {PRO_YEARLY_DISCOUNT_PCT}% off) or {PRICE_MONTHLY} per month, and includes everything: the
+        Agent Factory, the University, unlimited reviews and the full registry.{" "}
         <Link to="/pricing" className="text-primary hover:underline">
           See pricing
         </Link>
