@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { recordFunnelEvent } from "@/lib/telemetry/funnel.functions";
 import { useLang } from "@/hooks/use-lang";
-import type { Lang } from "@/lib/i18n";
 
 // We stash the sensitive payload (redirect_to URL + raw auth code) in
 // sessionStorage rather than putting it in the URL bar, so the auth code
@@ -60,7 +59,7 @@ function SuccessPage() {
   const [copied, setCopied] = useState(false);
   const deliveredRef = useRef(false);
   const track = useServerFn(recordFunnelEvent);
-  const { lang, setLang, t, tf } = useLang();
+  const { t, tf } = useLang();
 
   useEffect(() => {
     const h = readHandoff();
