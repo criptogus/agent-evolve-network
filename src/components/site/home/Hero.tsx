@@ -116,18 +116,40 @@ export function Hero() {
             </div>
           </div>
 
-          {/* RIGHT — live install demo */}
+          {/* RIGHT — what the lab produces, in one glance */}
           <div id="connect" className="min-w-0 fade-up lg:pl-2">
-            <Suspense
-              fallback={
-                <div
-                  className="h-[420px] animate-pulse rounded-xl border border-border bg-surface"
-                  aria-hidden
-                />
-              }
-            >
-              <McpInstallAnimation />
-            </Suspense>
+            <div className="rounded-xl border border-border bg-card p-6 shadow-elevated">
+              <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                What you install
+              </div>
+              <ul className="mt-4 space-y-4">
+                {[
+                  {
+                    t: "Tested skills & playbooks",
+                    d: "Scored on format and substance, adversarially probed, published with the score attached.",
+                  },
+                  {
+                    t: "Ready-made corporate agents",
+                    d: "33 roles with soul, guardrails and skills — deploy one in minutes.",
+                  },
+                  {
+                    t: "Your own agent, built for you",
+                    d: "Describe the role; the factory assembles and tests it before you download.",
+                  },
+                ].map((row) => (
+                  <li key={row.t}>
+                    <div className="text-sm font-semibold">{row.t}</div>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{row.d}</p>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                to="/marketplace"
+                className="mt-6 inline-flex text-sm font-medium text-primary hover:underline"
+              >
+                See what is in the registry →
+              </Link>
+            </div>
           </div>
         </div>
 
