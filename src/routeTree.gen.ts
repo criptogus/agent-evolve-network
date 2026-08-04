@@ -66,6 +66,7 @@ import { Route as AccountTokensRouteImport } from './routes/account.tokens'
 import { Route as AccountUsageRouteImport } from './routes/account.usage'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
+import { Route as AdminAgentKpisRouteImport } from './routes/admin.agent-kpis'
 import { Route as AdminCalibrationRouteImport } from './routes/admin.calibration'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminFunnelRouteImport } from './routes/admin.funnel'
@@ -447,6 +448,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const AdminAccountsRoute = AdminAccountsRouteImport.update({
   id: '/accounts',
   path: '/accounts',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAgentKpisRoute = AdminAgentKpisRouteImport.update({
+  id: '/agent-kpis',
+  path: '/agent-kpis',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminCalibrationRoute = AdminCalibrationRouteImport.update({
@@ -1001,6 +1007,7 @@ export interface FileRoutesByFullPath {
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/agent-kpis': typeof AdminAgentKpisRoute
   '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
@@ -1154,6 +1161,7 @@ export interface FileRoutesByTo {
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/agent-kpis': typeof AdminAgentKpisRoute
   '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
@@ -1309,6 +1317,7 @@ export interface FileRoutesById {
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/agent-kpis': typeof AdminAgentKpisRoute
   '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
@@ -1465,6 +1474,7 @@ export interface FileRouteTypes {
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
+    | '/admin/agent-kpis'
     | '/admin/calibration'
     | '/admin/customers'
     | '/admin/funnel'
@@ -1618,6 +1628,7 @@ export interface FileRouteTypes {
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
+    | '/admin/agent-kpis'
     | '/admin/calibration'
     | '/admin/customers'
     | '/admin/funnel'
@@ -1772,6 +1783,7 @@ export interface FileRouteTypes {
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
+    | '/admin/agent-kpis'
     | '/admin/calibration'
     | '/admin/customers'
     | '/admin/funnel'
@@ -2393,6 +2405,13 @@ declare module '@tanstack/react-router' {
       path: '/accounts'
       fullPath: '/admin/accounts'
       preLoaderRoute: typeof AdminAccountsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/agent-kpis': {
+      id: '/admin/agent-kpis'
+      path: '/agent-kpis'
+      fullPath: '/admin/agent-kpis'
+      preLoaderRoute: typeof AdminAgentKpisRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/calibration': {
@@ -3077,6 +3096,7 @@ const AdminPackagesRouteWithChildren = AdminPackagesRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminAccountsRoute: typeof AdminAccountsRoute
+  AdminAgentKpisRoute: typeof AdminAgentKpisRoute
   AdminCalibrationRoute: typeof AdminCalibrationRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminFunnelRoute: typeof AdminFunnelRoute
@@ -3095,6 +3115,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAccountsRoute: AdminAccountsRoute,
+  AdminAgentKpisRoute: AdminAgentKpisRoute,
   AdminCalibrationRoute: AdminCalibrationRoute,
   AdminCustomersRoute: AdminCustomersRoute,
   AdminFunnelRoute: AdminFunnelRoute,
