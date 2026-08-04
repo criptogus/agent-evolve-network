@@ -1,5 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Check } from "lucide-react";
+import {
+  PRICE_MONTHLY,
+  PRICE_YEARLY,
+  PRICE_YEARLY_LIST,
+  SAVE_BADGE,
+} from "@/lib/pricing-copy";
 
 // Keep in sync with /pricing: Free, Pro, Enterprise.
 const INCLUDED = [
