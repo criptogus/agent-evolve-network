@@ -138,6 +138,17 @@ const FAQ_LD = {
  * lives on /how-it-works so the landing page stays scannable.
  */
 function Home() {
+  const { user, loading } = useAuth();
+  const { stay } = Route.useSearch();
+  const navigate = useNavigate();
+
+  // Signed-in users land on the command center instead of the sales page.
+  // Crawlers and signed-out visitors always get the full landing page, and
+  // `?stay=1` is the explicit escape hatch back to it.
+  useEffect(() => {
+    if (!loading && user && !stay) navigate({ to: "/home", replace: true });
+  }, [loading, user, stay, navigate]);
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-background">
       <JsonLd data={[ORG_LD, SOFTWARE_LD, FAQ_LD]} />
@@ -155,4 +166,5 @@ function Home() {
     </div>
   );
 }
+
 
