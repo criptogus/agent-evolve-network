@@ -1,6 +1,6 @@
-// Translation dictionaries. ALWAYS update `en` and `pt-BR` together —
-// the type system here is intentionally derived from `en`, so any
-// untranslated key in `pt-BR` is a compile error.
+// The product is English-only. The `pt-BR` locale is intentionally aliased to
+// `en` so any legacy stored preference still renders English copy.
+
 
 export const en = {
   // /oauth/success
