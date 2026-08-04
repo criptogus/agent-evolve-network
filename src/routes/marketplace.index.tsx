@@ -258,9 +258,11 @@ function Marketplace() {
               <strong className="text-foreground">{data ? totalInstalls.toLocaleString("en-US") : "—"}</strong>{" "}
               installs
             </span>
-            <span>
-              <strong className="text-foreground">{data ? verticals.length : "—"}</strong> categories
-            </span>
+            {verticals.length > 0 && (
+              <span>
+                <strong className="text-foreground">{verticals.length}</strong> categories
+              </span>
+            )}
           </div>
           <div className="mt-7 flex flex-wrap justify-center gap-2">
             <QuickLink to="/discover" icon={Trophy} label="Most installed" />
