@@ -126,7 +126,7 @@ test("phase 2 domains have domain-specific curriculum candidates", () => {
   const revenue = planCurriculum({ failing: ["format_break"], domain: "marketing", installed: [] });
   assert.ok(revenue.track.some((c) => c.slug === "marketing-funnel-analyst"));
 
-  const ops = planCurriculum({ failing: ["tool_misuse"], domain: "data_engineering", installed: [] });
+  const ops = planCurriculum({ failing: ["format_break"], domain: "data_engineering", installed: [] });
   assert.ok(ops.track.some((c) => c.slug === "data-pipeline-spec" || c.slug === "data-quality-contract"));
 
   const media = planCurriculum({ failing: ["policy_violation"], domain: "google_ads", installed: [] });
