@@ -82,7 +82,7 @@ export const diagnoseSubmitTool = defineTool({
     "[UNIVERSITY] Admission exam, step 2. Send the answers produced for `diagnose_start` and get a deterministic transcript: score per ERROR CLASS (ambiguity, hallucination, format, abandonment, policy, tool misuse, instruction drift), the dominant bottleneck in plain language, observed cost, and a 1-3 item prescription. Unanswered cases count as failures.",
   parameters: z.object({
     diagnosis_id: z.string().optional().describe("From diagnose_start. Omit for a stateless scoring run."),
-    domain: DomainEnum.optional(),
+    domain: DomainEnum.optional().describe("Required when diagnosis_id is omitted."),
     installed_skills: z.array(z.string()).max(64).default([]),
     answers: z
       .array(
