@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -6,25 +6,17 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
+import { isTrustDemoted, TRUST_TIER_RANK, trustTier } from "@/lib/marketplace/trust-tiers";
+import { PackageCard } from "@/components/marketplace/PackageCard";
+import { AuthorLink } from "@/components/marketplace/AuthorLink";
 import {
-  isTrustDemoted,
-  TRUST_TIER_LABELS,
-  TRUST_TIER_RANK,
-  trustTier,
-  type TrustTier,
-} from "@/lib/marketplace/trust-tiers";
-import { BuyButton, PriceBadge } from "@/components/marketplace/BuyButton";
-import { Stars } from "@/components/reviews/Stars";
-import { ShareOnXButton } from "@/components/share/ShareOnXButton";
-import { SoulDisclaimerBadge, SOUL_DISCLAIMER_SHORT } from "@/components/souls/SoulDisclaimer";
-import {
-  BadgeCheck,
   BarChart3,
   Bot,
   FolderOpen,
   Palette,
-  ShieldCheck,
+  Search,
   ShoppingBag,
+  SlidersHorizontal,
   Smartphone,
   Sparkles,
   Trophy,
@@ -32,6 +24,8 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+
+export { AuthorLink };
 
 export const Route = createFileRoute("/marketplace/")({
   head: () => ({
@@ -123,6 +117,7 @@ function Marketplace() {
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [installBucket, setInstallBucket] = useState<InstallBucket>("any");
   const [sort, setSort] = useState<SortKey>("installs_desc");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const items = data?.items ?? [];
   const verticals = data?.verticals ?? [];
@@ -182,7 +177,6 @@ function Marketplace() {
     return sorted;
   }, [items, type, vertical, verticalGroup, q, verifiedOnly, installBucket, sort]);
 
-  // Counts per type for chips
   const typeCounts = useMemo(() => {
     const base: Record<TypeFilter, number> = {
       all: items.length,
@@ -195,251 +189,280 @@ function Marketplace() {
     return base;
   }, [items]);
 
+  const groupChips = useMemo(
+    () =>
+      VERTICAL_GROUPS.map((g) => ({
+        ...g,
+        count:
+          g.value === "all"
+            ? items.length
+            : items.filter((it) => it.vertical && g.verticals.includes(it.vertical)).length,
+      })).filter((g) => g.count > 0),
+    [items],
+  );
+
+  const verticalCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const it of items) if (it.vertical) map.set(it.vertical, (map.get(it.vertical) ?? 0) + 1);
+    return map;
+  }, [items]);
+
+  const totalInstalls = useMemo(() => items.reduce((s, it) => s + it.install_count, 0), [items]);
+  const dirty =
+    !!q ||
+    type !== "all" ||
+    vertical !== "all" ||
+    verticalGroup !== "all" ||
+    verifiedOnly ||
+    installBucket !== "any" ||
+    sort !== "installs_desc";
+
+  function reset() {
+    setQ("");
+    setType("all");
+    setVertical("all");
+    setVerticalGroup("all");
+    setVerifiedOnly(false);
+    setInstallBucket("any");
+    setSort("installs_desc");
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Nav />
-      <section className="border-b border-border bg-surface/50">
-        <div className="mx-auto max-w-7xl px-6 py-12 md:py-14">
-          <TermsStatusBanner className="mb-6" />
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Registry</span>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">Marketplace</h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            {data ? `${items.length} live packages` : "Loading registry…"} across the agent stack.
-            Search by name, person (e.g. <em>Musk</em>, <em>Buffett</em>) or category.
+
+      {/* Hero — centered directory intro */}
+      <section className="relative overflow-hidden border-b border-border bg-surface/60">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.4] [background-image:linear-gradient(to_right,var(--color-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_at_top,black,transparent_75%)]"
+        />
+        <div className="relative mx-auto max-w-5xl px-6 pb-14 pt-12 text-center md:pt-16">
+          <TermsStatusBanner className="mb-6 text-left" />
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
+            Live registry
+          </span>
+          <h1 className="mx-auto mt-5 max-w-3xl text-balance text-4xl font-semibold tracking-tight md:text-5xl">
+            Tested capabilities for your agents
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-balance text-muted-foreground">
+            Skills, playbooks, souls and guardrails — each with a Trust Score from adversarial
+            testing. Search by name, person (e.g. <em>Musk</em>, <em>Buffett</em>) or category.
           </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Link
-              to="/discover"
-              search={{ type: "skill", category: null, q: null, sort: "popular", page: 1 }}
-              className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary hover:text-primary"
-            >
-              <Trophy className="h-3.5 w-3.5" aria-hidden />
-              Most installed
-            </Link>
-            <Link
-              to="/marketplace/categories"
-              className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary hover:text-primary"
-            >
-              <FolderOpen className="h-3.5 w-3.5" aria-hidden />
-              Browse by category
-            </Link>
-            <Link
-              to="/marketplace/rankings"
-              className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary hover:text-primary"
-            >
-              <User className="h-3.5 w-3.5" aria-hidden />
-              Humans vs
-              <Bot className="h-3.5 w-3.5" aria-hidden />
-              Agents
-            </Link>
-          </div>
-
-          {/* Search + type chips */}
-          <div className="mt-8 flex flex-col gap-3 lg:flex-row">
-            <div className="relative flex-1">
-              <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search by name, person, slug or category…"
-                className="h-11 w-full rounded-md border border-border bg-background pl-10 pr-10 text-sm shadow-sm outline-none focus:border-primary"
-              />
-              <SearchIcon />
-              {q && (
-                <button
-                  onClick={() => setQ("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
-                  aria-label="Clear search"
-                >
-                  <X className="h-3.5 w-3.5" aria-hidden />
-                </button>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-1.5 rounded-md border border-border bg-background p-1">
-              {TYPES.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setType(t)}
-                  className={`rounded px-3 py-1.5 text-xs font-medium uppercase tracking-wider transition-colors ${
-                    type === t
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {t}
-                  <span className="ml-1.5 text-[10px] opacity-70">{typeCounts[t]}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Quick filters: vertical groups (chips with 0 results are hidden) */}
-          {(() => {
-            const chips = VERTICAL_GROUPS.map((g) => ({
-              ...g,
-              count:
-                g.value === "all"
-                  ? items.length
-                  : items.filter((it) => it.vertical && g.verticals.includes(it.vertical)).length,
-            })).filter((g) => g.count > 0);
-            // Only worth showing when at least 2 non-"all" groups have items
-            if (chips.filter((g) => g.value !== "all").length < 2) return null;
-            return (
-              <div className="mt-4 flex flex-wrap items-center gap-1.5">
-                <span className="mr-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-                  Quick filters
-                </span>
-                {chips.map((g) => {
-                  const active = verticalGroup === g.value;
-                  const Icon = g.icon;
-                  return (
-                    <button
-                      key={g.value}
-                      onClick={() => {
-                        setVerticalGroup(g.value);
-                        setVertical("all");
-                      }}
-                      aria-pressed={active}
-                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                        active
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-background text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <Icon className="h-3.5 w-3.5" aria-hidden />
-                      <span>{g.label}</span>
-                      <span className={`text-[10px] ${active ? "opacity-80" : "opacity-60"}`}>
-                        {g.count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            );
-          })()}
-
-          {/* Category chips */}
-          {verticals.length > 0 && (
-            <div className="mt-4 flex flex-wrap items-center gap-1.5">
-              <span className="mr-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-                Category
-              </span>
-              <CategoryChip
-                active={vertical === "all"}
-                onClick={() => {
-                  setVertical("all");
-                  setVerticalGroup("all");
-                }}
-                label="All"
-              />
-              {verticals.map((v) => (
-                <CategoryChip
-                  key={v}
-                  active={vertical === v}
-                  onClick={() => {
-                    setVertical(v);
-                    setVerticalGroup("all");
-                  }}
-                  label={v}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Advanced filters: verified, install range, sort */}
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs">
-              <input
-                type="checkbox"
-                checked={verifiedOnly}
-                onChange={(e) => setVerifiedOnly(e.target.checked)}
-                className="h-3.5 w-3.5 accent-primary"
-              />
-              <span>Verified authors only</span>
-            </label>
-
-            <div className="inline-flex items-center gap-2">
-              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Installs</span>
-              <select
-                value={installBucket}
-                onChange={(e) => setInstallBucket(e.target.value as InstallBucket)}
-                className="h-8 rounded-md border border-border bg-background px-2 text-xs outline-none focus:border-primary"
-              >
-                {INSTALL_BUCKETS.map((b) => (
-                  <option key={b.value} value={b.value}>{b.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="inline-flex items-center gap-2">
-              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Sort</span>
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value as SortKey)}
-                className="h-8 rounded-md border border-border bg-background px-2 text-xs outline-none focus:border-primary"
-              >
-                {SORTS.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Active filter summary + reset */}
-          {(q || type !== "all" || vertical !== "all" || verticalGroup !== "all" || verifiedOnly || installBucket !== "any" || sort !== "installs_desc") && (
-            <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-xs text-muted-foreground">
+            <span>
+              <strong className="text-foreground">{data ? items.length.toLocaleString("en-US") : "—"}</strong>{" "}
+              packages
+            </span>
+            <span>
+              <strong className="text-foreground">{data ? totalInstalls.toLocaleString("en-US") : "—"}</strong>{" "}
+              installs
+            </span>
+            {verticals.length > 0 && (
               <span>
-                Showing <strong className="text-foreground">{filtered.length}</strong> of {items.length}
+                <strong className="text-foreground">{verticals.length}</strong> categories
               </span>
-              <button
-                onClick={() => {
-                  setQ("");
-                  setType("all");
-                  setVertical("all");
-                  setVerticalGroup("all");
-                  setVerifiedOnly(false);
-                  setInstallBucket("any");
-                  setSort("installs_desc");
-                }}
-                className="text-primary hover:underline"
-              >
-                Reset filters
-              </button>
-            </div>
-          )}
+            )}
+          </div>
+          <div className="mt-7 flex flex-wrap justify-center gap-2">
+            <QuickLink to="/discover" icon={Trophy} label="Most installed" />
+            <QuickLink to="/marketplace/categories" icon={FolderOpen} label="Browse by category" />
+            <QuickLink to="/marketplace/rankings" icon={Bot} label="Humans vs Agents" />
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-12">
-        {isLoading && <SkeletonGrid />}
-        {isError && (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
-            Couldn't load the registry. Please refresh.
-          </div>
-        )}
-        {!isLoading && filtered.length === 0 && (
-          <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center">
-            <p className="text-sm font-medium">No packages match your filters.</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Try a different search term, or{" "}
+      {/* Sticky toolbar — search + filters + order by */}
+      <div className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-6 py-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden
+            />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search packages…"
+              aria-label="Search packages"
+              className="h-11 w-full rounded-lg border border-border bg-card pl-10 pr-10 text-sm outline-none focus:border-primary"
+            />
+            {q && (
               <button
-                onClick={() => {
-                  setQ("");
-                  setType("all");
-                  setVertical("all");
-                  setVerticalGroup("all");
-                }}
-                className="text-primary hover:underline"
+                onClick={() => setQ("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label="Clear search"
               >
-                reset all filters
+                <X className="h-4 w-4" aria-hidden />
               </button>
-              .
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setFiltersOpen((v) => !v)}
+              aria-expanded={filtersOpen}
+              className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium hover:border-primary/40 lg:hidden"
+            >
+              <SlidersHorizontal className="h-4 w-4" aria-hidden />
+              Filters
+            </button>
+            <label className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm">
+              <span className="text-muted-foreground">Order by</span>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as SortKey)}
+                aria-label="Order by"
+                className="bg-transparent text-sm font-medium outline-none"
+              >
+                {SORTS.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Sidebar + grid */}
+      <section className="mx-auto max-w-7xl gap-10 px-6 py-10 lg:grid lg:grid-cols-[224px_1fr]">
+        <aside className={`${filtersOpen ? "block" : "hidden"} mb-8 lg:mb-0 lg:block`}>
+          <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2">
+            <FilterGroup title="Type">
+              {TYPES.map((t) => (
+                <FilterRow
+                  key={t}
+                  active={type === t}
+                  count={typeCounts[t]}
+                  label={t === "all" ? "All types" : t}
+                  onClick={() => setType(t)}
+                />
+              ))}
+            </FilterGroup>
+
+            {groupChips.filter((g) => g.value !== "all").length >= 2 && (
+              <FilterGroup title="Collection">
+                {groupChips.map((g) => (
+                  <FilterRow
+                    key={g.value}
+                    active={verticalGroup === g.value}
+                    count={g.count}
+                    label={g.label}
+                    icon={g.icon}
+                    onClick={() => {
+                      setVerticalGroup(g.value);
+                      setVertical("all");
+                    }}
+                  />
+                ))}
+              </FilterGroup>
+            )}
+
+            {verticals.length > 0 && (
+              <FilterGroup title="Category">
+                <FilterRow
+                  active={vertical === "all"}
+                  count={items.length}
+                  label="All categories"
+                  onClick={() => {
+                    setVertical("all");
+                    setVerticalGroup("all");
+                  }}
+                />
+                {verticals.map((v) => (
+                  <FilterRow
+                    key={v}
+                    active={vertical === v}
+                    count={verticalCounts.get(v) ?? 0}
+                    label={v}
+                    onClick={() => {
+                      setVertical(v);
+                      setVerticalGroup("all");
+                    }}
+                  />
+                ))}
+              </FilterGroup>
+            )}
+
+            <FilterGroup title="Refine">
+              <label className="flex cursor-pointer items-center gap-2 py-1 text-sm">
+                <input
+                  type="checkbox"
+                  checked={verifiedOnly}
+                  onChange={(e) => setVerifiedOnly(e.target.checked)}
+                  className="h-3.5 w-3.5 accent-primary"
+                />
+                <span className="inline-flex items-center gap-1">
+                  <User className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
+                  Verified authors
+                </span>
+              </label>
+              <label className="mt-2 block text-xs text-muted-foreground">
+                Installs
+                <select
+                  value={installBucket}
+                  onChange={(e) => setInstallBucket(e.target.value as InstallBucket)}
+                  className="mt-1 h-9 w-full rounded-md border border-border bg-card px-2 text-sm text-foreground outline-none focus:border-primary"
+                >
+                  {INSTALL_BUCKETS.map((b) => (
+                    <option key={b.value} value={b.value}>
+                      {b.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </FilterGroup>
+
+            {dirty && (
+              <button
+                onClick={reset}
+                className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-xs font-medium hover:border-primary/40 hover:text-primary"
+              >
+                Reset all filters
+              </button>
+            )}
+          </div>
+        </aside>
+
+        <div>
+          <div className="mb-4 flex items-baseline justify-between gap-3">
+            <p className="text-sm text-muted-foreground">
+              {isLoading ? (
+                "Loading registry…"
+              ) : (
+                <>
+                  <strong className="text-foreground">{filtered.length.toLocaleString("en-US")}</strong>{" "}
+                  {filtered.length === 1 ? "package" : "packages"}
+                  {dirty && <> of {items.length.toLocaleString("en-US")}</>}
+                </>
+              )}
             </p>
           </div>
-        )}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((p) => (
-            <Card key={p.id} p={p} />
-          ))}
+
+          {isLoading && <SkeletonGrid />}
+          {isError && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
+              Couldn't load the registry. Please refresh.
+            </div>
+          )}
+          {!isLoading && !isError && filtered.length === 0 && (
+            <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center">
+              <p className="text-sm font-medium">No packages match your filters.</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Try a different search term, or{" "}
+                <button onClick={reset} className="text-primary hover:underline">
+                  reset all filters
+                </button>
+                .
+              </p>
+            </div>
+          )}
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {filtered.map((p: MarketplaceItem) => (
+              <PackageCard key={p.id} p={p} />
+            ))}
+          </div>
         </div>
       </section>
       <Footer />
@@ -447,182 +470,64 @@ function Marketplace() {
   );
 }
 
-function Card({ p }: { p: MarketplaceItem }) {
-  const linkProps =
-    p.type === "soul"
-      ? ({ to: "/souls/$slug", params: { slug: p.slug } } as const)
-      : ({ to: "/marketplace/$packageId", params: { packageId: p.slug } } as const);
+function QuickLink({ to, icon: Icon, label }: { to: string; icon: LucideIcon; label: string }) {
   return (
-    <div
-      key={p.id}
-      className="group relative flex flex-col rounded-xl border border-border bg-background p-5 transition-all focus-within:border-primary/40 hover:border-primary/40 hover:shadow-elevated"
+    <Link
+      to={to}
+      className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3.5 py-1.5 text-xs font-medium transition-colors hover:border-primary hover:text-primary"
     >
-      <div className="relative z-10 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5">
-          <TypeBadge type={p.type} />
-          <TrustTierChip tier={trustTier(p.trust_score, p.trust_verified)} score={p.trust_score} />
-        </div>
-        <div className="flex items-center gap-2">
-          {p.type !== "soul" && <PriceBadge priceCredits={p.price_credits} />}
-          <span className="font-mono text-[10px] text-muted-foreground">v{p.latest_version}</span>
-          <ShareOnXButton
-            slug={p.slug}
-            type={p.type}
-            name={p.name}
-            description={p.description}
-            url={p.type === "soul" ? `/souls/${p.slug}` : `/marketplace/${p.slug}`}
-            variant="icon"
-          />
-        </div>
-      </div>
-      <div className="mt-3 font-mono text-[15px] font-semibold leading-tight">
-        {/* Stretched link: covers the whole card; interactive siblings sit above it via z-10 */}
-        <Link {...linkProps} className="after:absolute after:inset-0 after:content-['']">
-          {p.name}
-        </Link>
-      </div>
-      <div className="relative z-10 mt-1 self-start text-xs text-muted-foreground">
-        <AuthorLink handle={p.author_handle} verified={p.author_verified} />
-        {p.install_count > 0 && <> · {p.install_count.toLocaleString()} installs</>}
-      </div>
-      {p.type === "soul" && (
-        <div className="mt-2">
-          <SoulDisclaimerBadge name={p.name} />
-        </div>
-      )}
-      <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
-        {p.rating_count > 0 ? (
-          <>
-            <Stars value={p.rating_avg} size={11} />
-            <span className="font-mono text-foreground">{p.rating_avg.toFixed(1)}</span>
-            <span>({p.rating_count})</span>
-            {p.rating_human_count > 0 && (
-              <span className="inline-flex items-center gap-1">
-                · <User className="h-3 w-3" aria-hidden />
-                {p.rating_human_count}
-                <span className="sr-only">
-                  {p.rating_human_count === 1 ? "human review" : "human reviews"}
-                </span>
-              </span>
-            )}
-            {p.rating_agent_count > 0 && (
-              <span className="inline-flex items-center gap-1">
-                · <Bot className="h-3 w-3" aria-hidden />
-                {p.rating_agent_count}
-                <span className="sr-only">
-                  {p.rating_agent_count === 1 ? "agent review" : "agent reviews"}
-                </span>
-              </span>
-            )}
-          </>
-        ) : (
-          <span>No ratings yet</span>
-        )}
-      </div>
-      <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{p.description}</p>
-      {p.type === "soul" && (
-        <p className="mt-2 text-[10px] italic text-muted-foreground/80">{SOUL_DISCLAIMER_SHORT}</p>
-      )}
-      {p.vertical && (
-        <div className="mt-3">
-          <span className="rounded-md border border-border bg-muted/40 px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-            {p.vertical}
-          </span>
-        </div>
-      )}
-      <div className="mt-auto flex items-center gap-2 pt-5">
-        {/* Part of the stretched title link visually; not a separate interactive element */}
-        <div
-          aria-hidden
-          className="pointer-events-none inline-flex h-9 flex-1 items-center justify-center rounded-md bg-foreground text-sm font-medium text-background transition-opacity group-hover:opacity-90"
-        >
-          {p.type === "soul" ? "View soul →" : p.price_credits > 0 ? "View →" : "View package →"}
-        </div>
-        {p.type !== "soul" && p.price_credits > 0 && (
-          <div className="relative z-10">
-            <BuyButton packageId={p.id} priceCredits={p.price_credits} />
-          </div>
-        )}
-      </div>
+      <Icon className="h-3.5 w-3.5" aria-hidden />
+      {label}
+    </Link>
+  );
+}
+
+function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-6">
+      <h2 className="mb-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+        {title}
+      </h2>
+      <div className="space-y-0.5">{children}</div>
     </div>
   );
 }
 
-function TrustTierChip({ tier, score }: { tier: TrustTier; score: number | null }) {
-  const cls: Record<TrustTier, string> = {
-    verified: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-    high: "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400",
-    baseline: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400",
-    low: "border-border bg-muted/40 text-muted-foreground",
-    unscored: "border-border bg-muted/40 text-muted-foreground",
-  };
-  const title =
-    score != null
-      ? `Trust score ${(score * 100).toFixed(0)}/100${tier === "verified" ? " · adversarially verified" : ""}`
-      : "No trust score yet — not adversarially tested";
-  return (
-    <span
-      title={title}
-      className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider ${cls[tier]}`}
-    >
-      <ShieldCheck className="h-3 w-3" aria-hidden />
-      {TRUST_TIER_LABELS[tier]}
-      <span className="sr-only">
-        {score != null ? ` trust tier, score ${(score * 100).toFixed(0)} out of 100` : " trust tier"}
-      </span>
-    </span>
-  );
-}
-
-function CategoryChip({
+function FilterRow({
   active,
-  onClick,
+  count,
   label,
+  icon: Icon,
+  onClick,
 }: {
   active: boolean;
-  onClick: () => void;
+  count: number;
   label: string;
+  icon?: LucideIcon;
+  onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`rounded-full border px-2.5 py-0.5 text-xs transition-colors ${
-        active
-          ? "border-primary bg-primary/10 text-primary"
-          : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+      aria-pressed={active}
+      className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
+        active ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
       }`}
     >
-      {label}
+      {Icon && <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+      <span className="truncate capitalize">{label}</span>
+      <span className="ml-auto font-mono text-[11px] opacity-70">{count}</span>
     </button>
   );
 }
 
 function SkeletonGrid() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className="h-48 animate-pulse rounded-xl border border-border bg-muted/20"
-        />
+        <div key={i} className="h-64 animate-pulse rounded-xl border border-border bg-muted/20" />
       ))}
     </div>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg
-      aria-hidden
-      className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.5-3.5" strokeLinecap="round" />
-    </svg>
   );
 }
 
@@ -639,29 +544,5 @@ export function TypeBadge({ type }: { type: MarketplaceItem["type"] }) {
     <span className={`rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${cls}`}>
       {type}
     </span>
-  );
-}
-
-export function AuthorLink({ handle, verified }: { handle: string; verified?: boolean }) {
-  const navigate = useNavigate();
-  const slug = handle.replace(/^@/, "");
-  return (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        navigate({ to: "/u/$handle", params: { handle: slug } });
-      }}
-      className="font-medium text-muted-foreground hover:text-primary hover:underline"
-    >
-      {handle}
-      {verified && (
-        <span className="ml-1 inline-flex text-primary">
-          <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
-          <span className="sr-only">Verified author</span>
-        </span>
-      )}
-    </button>
   );
 }
