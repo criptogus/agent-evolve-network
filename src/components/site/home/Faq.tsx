@@ -77,7 +77,7 @@ const ITEMS: { q: string; a: React.ReactNode }[] = [
     q: "What does it cost?",
     a: (
       <>
-        Browsing and installing public capabilities is free — no account needed. Pro is $190 per year
+        Browsing and installing public capabilities is free — no account needed. Pro is $140 per year (down from $228)
         (or $19 per month) and includes everything: the Agent Factory, the University, unlimited
         reviews and the full registry.{" "}
         <Link to="/pricing" className="text-primary hover:underline">

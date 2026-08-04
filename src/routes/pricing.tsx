@@ -10,7 +10,7 @@ import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 
 const TITLE = "Pricing — one plan, everything included | Super Agent Skill";
 const DESCRIPTION =
-  "Public capabilities are free forever. Pro is $190/year (or $19/month) and includes the Agent Factory, Agent Store, University and unlimited tested reviews.";
+  "Public capabilities are free forever. Pro is $140/year (39% off $228) or $19/month and includes the Agent Factory, Agent Store, University and unlimited tested reviews.";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -105,7 +105,7 @@ function Pricing() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {c === "yearly" ? "Yearly · 2 months free" : "Monthly"}
+              {c === "yearly" ? "Yearly · save $88" : "Monthly"}
             </button>
           ))}
         </div>
