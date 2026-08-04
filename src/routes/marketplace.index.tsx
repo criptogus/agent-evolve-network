@@ -367,12 +367,7 @@ function Marketplace() {
 
   function reset() {
     setQInput("");
-    setType("all");
-    setTags([]);
-    setVerticalGroup("all");
-    setVerifiedOnly(false);
-    setInstallBucket("any");
-    setSort("installs_desc");
+    navigate({ search: { ...SEARCH_DEFAULTS }, replace: true });
   }
 
 
@@ -539,7 +534,6 @@ function Marketplace() {
                     icon={g.icon}
                     onClick={() => {
                       setVerticalGroup(g.value);
-                      setTags([]);
                     }}
                   />
                 ))}
@@ -556,8 +550,7 @@ function Marketplace() {
                   count={items.length}
                   label="All categories"
                   onClick={() => {
-                    setTags([]);
-                    setVerticalGroup("all");
+                    patchSearch({ tags: [], group: "all" });
                   }}
                 />
                 {verticals.map((v) => (
