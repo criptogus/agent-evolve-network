@@ -100,7 +100,7 @@ const mcp = createMcpServer({
     "",
     "## 6. UNIVERSITY: diagnose first, then a curriculum (free, anonymous)",
     "Installing skills by name is guessing. Measure the agent, then prescribe:",
-    "  - `diagnose_start { domain }` → a fixed bank of up to 40 domain tasks. YOU execute them on your host, no extra context.",
+    "  - `diagnose_start { domain }` → a fixed bank of up to 168 domain tasks across 21 corporate domains. YOU execute them on your host, no extra context.",
     "  - `diagnose_submit { diagnosis_id, answers }` → deterministic score per ERROR CLASS (ambiguity, hallucination, format, abandonment, policy, tool misuse, instruction drift), the dominant bottleneck in plain language, observed cost and a 1-3 item prescription.",
     "  - `curriculum_next { diagnosis_id }` → the next capability with the highest MARGINAL gain for this agent, respecting prerequisites, conflicts and a context budget. Past the budget it tells you what to REMOVE — an agent carrying 40 skills is worse, not better.",
     "",
