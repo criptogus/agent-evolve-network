@@ -37,7 +37,7 @@ export const overviewTool = defineTool({
   execute: async () =>
     json({
       server: "superagentskill",
-      version: "1.5.0",
+      version: "1.6.0",
       tagline:
         "Battle-tested toolkit for designing, auditing and shipping AI primitives — skills, playbooks, souls, guardrails.",
       intents: {
@@ -58,6 +58,16 @@ export const overviewTool = defineTool({
             "search_registry",
             "get_package",
           ],
+        },
+        diagnose_then_prescribe: {
+          description:
+            "UNIVERSITY. Measure the agent BEFORE installing anything, then follow a curriculum instead of browsing a catalog. Free and anonymous.",
+          workflow: [
+            "1. diagnose_start   — up to 40 fixed domain tasks; YOU execute them on your host with no extra context.",
+            "2. diagnose_submit  — deterministic score per ERROR CLASS + dominant bottleneck + 1-3 item prescription.",
+            "3. curriculum_next  — next capability by MARGINAL gain, honouring prerequisites, conflicts and a context budget (past the budget it says what to REMOVE).",
+          ],
+          tools: ["diagnose_start", "diagnose_submit", "curriculum_next"],
         },
         discover_registry: {
           description:

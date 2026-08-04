@@ -288,6 +288,101 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_diagnoses: {
+        Row: {
+          agent_fp: string | null
+          bottleneck: string | null
+          case_ids: string[]
+          created_at: string
+          domain: string
+          error_profile: Json
+          id: string
+          installed_skills: string[]
+          overall_score: number | null
+          prescription: Json
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          agent_fp?: string | null
+          bottleneck?: string | null
+          case_ids?: string[]
+          created_at?: string
+          domain: string
+          error_profile?: Json
+          id?: string
+          installed_skills?: string[]
+          overall_score?: number | null
+          prescription?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          agent_fp?: string | null
+          bottleneck?: string | null
+          case_ids?: string[]
+          created_at?: string
+          domain?: string
+          error_profile?: Json
+          id?: string
+          installed_skills?: string[]
+          overall_score?: number | null
+          prescription?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      agent_diagnosis_items: {
+        Row: {
+          answer: string | null
+          case_id: string
+          created_at: string
+          diagnosis_id: string
+          error_class: string
+          id: string
+          latency_ms: number | null
+          passed: boolean
+          reason: string | null
+          tokens: number | null
+        }
+        Insert: {
+          answer?: string | null
+          case_id: string
+          created_at?: string
+          diagnosis_id: string
+          error_class: string
+          id?: string
+          latency_ms?: number | null
+          passed?: boolean
+          reason?: string | null
+          tokens?: number | null
+        }
+        Update: {
+          answer?: string | null
+          case_id?: string
+          created_at?: string
+          diagnosis_id?: string
+          error_class?: string
+          id?: string
+          latency_ms?: number | null
+          passed?: boolean
+          reason?: string | null
+          tokens?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_diagnosis_items_diagnosis_id_fkey"
+            columns: ["diagnosis_id"]
+            isOneToOne: false
+            referencedRelation: "agent_diagnoses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cloud_skill_versions: {
         Row: {
           changelog: string | null

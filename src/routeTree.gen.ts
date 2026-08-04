@@ -17,6 +17,8 @@ import { Route as CertifyRouteImport } from './routes/certify'
 import { Route as CommunityRouteImport } from './routes/community'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as ContributorFaqRouteImport } from './routes/contributor-faq'
+import { Route as CurriculumRouteImport } from './routes/curriculum'
+import { Route as DiagnoseRouteImport } from './routes/diagnose'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as EnterpriseRouteImport } from './routes/enterprise'
@@ -132,6 +134,9 @@ import { Route as ApiOgSkillOfTheWeekSvgRouteImport } from './routes/api/og.skil
 import { Route as ApiPublicDotwellKnownOauthAuthorizationServerRouteImport } from './routes/api/public/[.]well-known.oauth-authorization-server'
 import { Route as ApiPublicDotwellKnownOauthProtectedResourceRouteImport } from './routes/api/public/[.]well-known.oauth-protected-resource'
 import { Route as ApiPublicCertificationsIdRouteImport } from './routes/api/public/certifications.$id'
+import { Route as ApiPublicCurriculumNextRouteImport } from './routes/api/public/curriculum/next'
+import { Route as ApiPublicDiagnoseStartRouteImport } from './routes/api/public/diagnose/start'
+import { Route as ApiPublicDiagnoseSubmitRouteImport } from './routes/api/public/diagnose/submit'
 import { Route as ApiPublicHooksPrewarmSharePromosRouteImport } from './routes/api/public/hooks/prewarm-share-promos'
 import { Route as ApiPublicMcpHealthRouteImport } from './routes/api/public/mcp.health'
 import { Route as ApiPublicMcpProbeRouteImport } from './routes/api/public/mcp.probe'
@@ -193,6 +198,16 @@ const ConnectRoute = ConnectRouteImport.update({
 const ContributorFaqRoute = ContributorFaqRouteImport.update({
   id: '/contributor-faq',
   path: '/contributor-faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CurriculumRoute = CurriculumRouteImport.update({
+  id: '/curriculum',
+  path: '/curriculum',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiagnoseRoute = DiagnoseRouteImport.update({
+  id: '/diagnose',
+  path: '/diagnose',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiscoverRoute = DiscoverRouteImport.update({
@@ -780,6 +795,21 @@ const ApiPublicCertificationsIdRoute =
     path: '/api/public/certifications/$id',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCurriculumNextRoute = ApiPublicCurriculumNextRouteImport.update({
+  id: '/api/public/curriculum/next',
+  path: '/api/public/curriculum/next',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicDiagnoseStartRoute = ApiPublicDiagnoseStartRouteImport.update({
+  id: '/api/public/diagnose/start',
+  path: '/api/public/diagnose/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicDiagnoseSubmitRoute = ApiPublicDiagnoseSubmitRouteImport.update({
+  id: '/api/public/diagnose/submit',
+  path: '/api/public/diagnose/submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksPrewarmSharePromosRoute =
   ApiPublicHooksPrewarmSharePromosRouteImport.update({
     id: '/api/public/hooks/prewarm-share-promos',
@@ -911,6 +941,8 @@ export interface FileRoutesByFullPath {
   '/community': typeof CommunityRoute
   '/connect': typeof ConnectRouteWithChildren
   '/contributor-faq': typeof ContributorFaqRoute
+  '/curriculum': typeof CurriculumRoute
+  '/diagnose': typeof DiagnoseRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
   '/enterprise': typeof EnterpriseRoute
@@ -1026,6 +1058,9 @@ export interface FileRoutesByFullPath {
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
+  '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
+  '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
+  '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/mcp/probe': typeof ApiPublicMcpProbeRoute
@@ -1057,6 +1092,8 @@ export interface FileRoutesByTo {
   '/community': typeof CommunityRoute
   '/connect': typeof ConnectRouteWithChildren
   '/contributor-faq': typeof ContributorFaqRoute
+  '/curriculum': typeof CurriculumRoute
+  '/diagnose': typeof DiagnoseRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
   '/enterprise': typeof EnterpriseRoute
@@ -1172,6 +1209,9 @@ export interface FileRoutesByTo {
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
+  '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
+  '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
+  '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/mcp/probe': typeof ApiPublicMcpProbeRoute
@@ -1205,6 +1245,8 @@ export interface FileRoutesById {
   '/community': typeof CommunityRoute
   '/connect': typeof ConnectRouteWithChildren
   '/contributor-faq': typeof ContributorFaqRoute
+  '/curriculum': typeof CurriculumRoute
+  '/diagnose': typeof DiagnoseRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
   '/enterprise': typeof EnterpriseRoute
@@ -1320,6 +1362,9 @@ export interface FileRoutesById {
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
+  '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
+  '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
+  '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
   '/api/public/hooks/prewarm-share-promos': typeof ApiPublicHooksPrewarmSharePromosRoute
   '/api/public/mcp/health': typeof ApiPublicMcpHealthRoute
   '/api/public/mcp/probe': typeof ApiPublicMcpProbeRoute
@@ -1354,6 +1399,8 @@ export interface FileRouteTypes {
     | '/community'
     | '/connect'
     | '/contributor-faq'
+    | '/curriculum'
+    | '/diagnose'
     | '/discover'
     | '/docs'
     | '/enterprise'
@@ -1469,6 +1516,9 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
+    | '/api/public/curriculum/next'
+    | '/api/public/diagnose/start'
+    | '/api/public/diagnose/submit'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/mcp/probe'
@@ -1500,6 +1550,8 @@ export interface FileRouteTypes {
     | '/community'
     | '/connect'
     | '/contributor-faq'
+    | '/curriculum'
+    | '/diagnose'
     | '/discover'
     | '/docs'
     | '/enterprise'
@@ -1615,6 +1667,9 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
+    | '/api/public/curriculum/next'
+    | '/api/public/diagnose/start'
+    | '/api/public/diagnose/submit'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/mcp/probe'
@@ -1647,6 +1702,8 @@ export interface FileRouteTypes {
     | '/community'
     | '/connect'
     | '/contributor-faq'
+    | '/curriculum'
+    | '/diagnose'
     | '/discover'
     | '/docs'
     | '/enterprise'
@@ -1762,6 +1819,9 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
+    | '/api/public/curriculum/next'
+    | '/api/public/diagnose/start'
+    | '/api/public/diagnose/submit'
     | '/api/public/hooks/prewarm-share-promos'
     | '/api/public/mcp/health'
     | '/api/public/mcp/probe'
@@ -1795,6 +1855,8 @@ export interface RootRouteChildren {
   CommunityRoute: typeof CommunityRoute
   ConnectRoute: typeof ConnectRouteWithChildren
   ContributorFaqRoute: typeof ContributorFaqRoute
+  CurriculumRoute: typeof CurriculumRoute
+  DiagnoseRoute: typeof DiagnoseRoute
   DiscoverRoute: typeof DiscoverRoute
   DocsRoute: typeof DocsRouteWithChildren
   EnterpriseRoute: typeof EnterpriseRoute
@@ -1885,6 +1947,9 @@ export interface RootRouteChildren {
   ApiPublicDotwellKnownOauthAuthorizationServerRoute: typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   ApiPublicDotwellKnownOauthProtectedResourceRoute: typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   ApiPublicCertificationsIdRoute: typeof ApiPublicCertificationsIdRoute
+  ApiPublicCurriculumNextRoute: typeof ApiPublicCurriculumNextRoute
+  ApiPublicDiagnoseStartRoute: typeof ApiPublicDiagnoseStartRoute
+  ApiPublicDiagnoseSubmitRoute: typeof ApiPublicDiagnoseSubmitRoute
   ApiPublicHooksPrewarmSharePromosRoute: typeof ApiPublicHooksPrewarmSharePromosRoute
   ApiPublicOauthRegisterRoute: typeof ApiPublicOauthRegisterRoute
   ApiPublicOauthRevokeRoute: typeof ApiPublicOauthRevokeRoute
@@ -1959,6 +2024,20 @@ declare module '@tanstack/react-router' {
       path: '/contributor-faq'
       fullPath: '/contributor-faq'
       preLoaderRoute: typeof ContributorFaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/curriculum': {
+      id: '/curriculum'
+      path: '/curriculum'
+      fullPath: '/curriculum'
+      preLoaderRoute: typeof CurriculumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diagnose': {
+      id: '/diagnose'
+      path: '/diagnose'
+      fullPath: '/diagnose'
+      preLoaderRoute: typeof DiagnoseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/discover': {
@@ -2766,6 +2845,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCertificationsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/curriculum/next': {
+      id: '/api/public/curriculum/next'
+      path: '/api/public/curriculum/next'
+      fullPath: '/api/public/curriculum/next'
+      preLoaderRoute: typeof ApiPublicCurriculumNextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/diagnose/start': {
+      id: '/api/public/diagnose/start'
+      path: '/api/public/diagnose/start'
+      fullPath: '/api/public/diagnose/start'
+      preLoaderRoute: typeof ApiPublicDiagnoseStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/diagnose/submit': {
+      id: '/api/public/diagnose/submit'
+      path: '/api/public/diagnose/submit'
+      fullPath: '/api/public/diagnose/submit'
+      preLoaderRoute: typeof ApiPublicDiagnoseSubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/prewarm-share-promos': {
       id: '/api/public/hooks/prewarm-share-promos'
       path: '/api/public/hooks/prewarm-share-promos'
@@ -3123,6 +3223,8 @@ const rootRouteChildren: RootRouteChildren = {
   CommunityRoute: CommunityRoute,
   ConnectRoute: ConnectRouteWithChildren,
   ContributorFaqRoute: ContributorFaqRoute,
+  CurriculumRoute: CurriculumRoute,
+  DiagnoseRoute: DiagnoseRoute,
   DiscoverRoute: DiscoverRoute,
   DocsRoute: DocsRouteWithChildren,
   EnterpriseRoute: EnterpriseRoute,
@@ -3218,6 +3320,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDotwellKnownOauthProtectedResourceRoute:
     ApiPublicDotwellKnownOauthProtectedResourceRoute,
   ApiPublicCertificationsIdRoute: ApiPublicCertificationsIdRoute,
+  ApiPublicCurriculumNextRoute: ApiPublicCurriculumNextRoute,
+  ApiPublicDiagnoseStartRoute: ApiPublicDiagnoseStartRoute,
+  ApiPublicDiagnoseSubmitRoute: ApiPublicDiagnoseSubmitRoute,
   ApiPublicHooksPrewarmSharePromosRoute: ApiPublicHooksPrewarmSharePromosRoute,
   ApiPublicOauthRegisterRoute: ApiPublicOauthRegisterRoute,
   ApiPublicOauthRevokeRoute: ApiPublicOauthRevokeRoute,
@@ -3239,13 +3344,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
