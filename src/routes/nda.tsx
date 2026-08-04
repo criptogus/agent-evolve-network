@@ -13,17 +13,17 @@ export const Route = createFileRoute("/nda")({
   component: NdaPage,
   head: () => ({
     meta: [
-      { title: "Acordo de Confidencialidade online · Super Agent Skill" },
+      { title: "Online Non-Disclosure Agreement · Super Agent Skill" },
       {
         name: "description",
         content:
-          "Acordo mútuo de confidencialidade aceito online, com um clique — sem assinatura, sem PDF. Disponível para contas pagas do Super Agent Skill.",
+          "Mutual non-disclosure agreement accepted online, with one click — no signature, no PDF. Available for paid Super Agent Skill accounts.",
       },
-      { property: "og:title", content: "Acordo de Confidencialidade online · Super Agent Skill" },
+      { property: "og:title", content: "Online Non-Disclosure Agreement · Super Agent Skill" },
       {
         property: "og:description",
         content:
-          "Aceite o acordo mútuo de confidencialidade com um clique. Sem assinatura, sem PDF. Exclusivo para contas pagas.",
+          "Accept the mutual non-disclosure agreement with one click. No signature, no PDF. Exclusive to paid accounts.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -34,38 +34,38 @@ export const Route = createFileRoute("/nda")({
 const CLAUSES: Array<{ n: string; title: string; body: string }> = [
   {
     n: "01",
-    title: "Informação confidencial",
-    body: "Todo conteúdo que você envia à plataforma — skills, souls, guardrails, prompts, datasets, telemetria e resultados de avaliação — é tratado como informação confidencial sua. O mesmo vale, na direção oposta, para relatórios, metodologia de scoring e material não público que compartilhamos com você.",
+    title: "Confidential information",
+    body: "All content you submit to the platform — skills, souls, guardrails, prompts, datasets, telemetry, and evaluation results — is treated as your confidential information. The same applies, in the opposite direction, to reports, scoring methodology, and non-public material we share with you.",
   },
   {
     n: "02",
-    title: "Uso restrito",
-    body: "Usamos seu conteúdo apenas para executar o serviço que você contratou: validar, avaliar, versionar, assinar e servir o pacote para os seus agentes. Nada de treinamento de modelos, republicação, revenda ou análise competitiva sobre o seu conteúdo.",
+    title: "Restricted use",
+    body: "We use your content only to run the service you contracted: validate, evaluate, version, sign, and serve the package to your agents. No model training, republication, resale, or competitive analysis of your content.",
   },
   {
     n: "03",
-    title: "Propriedade intelectual",
-    body: "A titularidade permanece integralmente sua. Não reivindicamos propriedade, coautoria, licença de exploração comercial nem direito derivado sobre o conteúdo que você mantém privado.",
+    title: "Intellectual property",
+    body: "Ownership remains fully yours. We do not claim ownership, co-authorship, commercial exploitation license, or derivative rights over content you keep private.",
   },
   {
     n: "04",
-    title: "Acesso mínimo",
-    body: "O acesso humano ao conteúdo privado é restrito à equipe estritamente necessária para suporte, e somente quando você solicita. Cada acesso fica registrado em trilha de auditoria consultável.",
+    title: "Minimal access",
+    body: "Human access to private content is restricted to the team strictly necessary for support, and only when you request it. Every access is logged in a searchable audit trail.",
   },
   {
     n: "05",
-    title: "Segurança",
-    body: "Isolamento por tenant via RLS, criptografia em trânsito e em repouso, e opção de chaves gerenciadas por você (BYOK/CMEK) com crypto-shredding.",
+    title: "Security",
+    body: "Per-tenant isolation via RLS, encryption in transit and at rest, and the option of customer-managed keys (BYOK/CMEK) with crypto-shredding.",
   },
   {
     n: "06",
-    title: "Vigência e término",
-    body: "As obrigações valem enquanto a conta estiver ativa e por 3 anos após o encerramento. A pedido, apagamos o conteúdo privado e as chaves em até 30 dias.",
+    title: "Term and termination",
+    body: "These obligations apply while the account is active and for 3 years after closure. On request, we delete private content and keys within 30 days.",
   },
   {
     n: "07",
-    title: "Exceções",
-    body: "Não é confidencial o que for público por sua escolha (pacotes publicados no marketplace), o que você já divulgou, ou o que a lei nos obrigue a revelar — nesse último caso, avisamos você antes, quando permitido.",
+    title: "Exceptions",
+    body: "What is public by your own choice (packages published on the marketplace), what you already disclosed, or what the law requires us to reveal is not confidential — in the latter case, we notify you beforehand, when permitted.",
   },
 ];
 
@@ -90,11 +90,11 @@ function NdaPage() {
     });
     setSaving(false);
     if (error) {
-      toast.error("Não conseguimos registrar o aceite. Tente novamente.");
+      toast.error("We couldn't record your acceptance. Please try again.");
       return;
     }
     setJustAccepted(true);
-    toast.success("Acordo de confidencialidade aceito e registrado.");
+    toast.success("Non-disclosure agreement accepted and recorded.");
   }
 
   return (
@@ -105,16 +105,16 @@ function NdaPage() {
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs">
             <span className="size-1.5 rounded-full bg-signal pulse-dot" />
             <span className="font-mono uppercase tracking-wider text-muted-foreground">
-              Aceite online · sem assinatura · contas pagas
+              Online acceptance · no signature · paid accounts
             </span>
           </div>
           <h1 className="text-4xl font-semibold tracking-tight">
-            Acordo mútuo de confidencialidade
+            Mutual non-disclosure agreement
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Não há NDA para assinar, nem PDF para circular no jurídico. O acordo vive aqui no site e
-            entra em vigor com um clique, vinculado à sua conta paga —{" "}
-            <span className="font-medium text-foreground">versão {NDA_VERSION}</span>.
+            There's no NDA to sign, and no PDF to circulate through legal. The agreement lives here
+            on the site and takes effect with one click, tied to your paid account —{" "}
+            <span className="font-medium text-foreground">version {NDA_VERSION}</span>.
           </p>
         </header>
 
@@ -130,25 +130,25 @@ function NdaPage() {
 
         <section className="mt-10 rounded-lg border border-primary/30 bg-primary/5 p-6 md:p-8">
           {loading ? (
-            <p className="text-sm text-muted-foreground">Carregando status da conta…</p>
+            <p className="text-sm text-muted-foreground">Loading account status…</p>
           ) : !user ? (
             <>
-              <h2 className="text-xl font-semibold tracking-tight">Entre para aceitar</h2>
+              <h2 className="text-xl font-semibold tracking-tight">Sign in to accept</h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                O aceite fica registrado na sua conta, com data e hora. Faça login para continuar.
+                Acceptance is recorded on your account, with date and time. Sign in to continue.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <Link
                   to="/login"
                   className="inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground"
                 >
-                  Entrar
+                  Sign in
                 </Link>
                 <Link
                   to="/pricing"
                   className="inline-flex h-11 items-center rounded-md border border-border bg-surface px-5 text-sm font-medium"
                 >
-                  Ver planos
+                  View plans
                 </Link>
               </div>
             </>
@@ -156,49 +156,50 @@ function NdaPage() {
             <>
               <div className="inline-flex items-center gap-2 text-sm text-signal">
                 <span className="size-1.5 rounded-full bg-signal" />
-                <span className="font-mono uppercase tracking-wider">Acordo em vigor</span>
+                <span className="font-mono uppercase tracking-wider">Agreement in effect</span>
               </div>
               <h2 className="mt-2 text-xl font-semibold tracking-tight">
-                Confidencialidade ativa na sua conta
+                Confidentiality active on your account
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Aceito em{" "}
+                Accepted on{" "}
                 <span className="font-mono text-foreground">
-                  {new Date(acceptedAt as string).toLocaleString("pt-BR")}
+                  {new Date(acceptedAt as string).toLocaleString("en-US")}
                 </span>{" "}
-                · versão {NDA_VERSION}. Nada mais é necessário — nenhum documento para assinar.
+                · version {NDA_VERSION}. Nothing else is required — no document to sign.
               </p>
             </>
           ) : !isActive ? (
             <>
               <h2 className="text-xl font-semibold tracking-tight">
-                Disponível para contas pagas
+                Available for paid accounts
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                A confidencialidade contratual acompanha os planos pagos. Faça upgrade e o aceite
-                fica disponível imediatamente nesta página.
+                Contractual confidentiality comes with paid plans. Upgrade and acceptance
+                becomes available immediately on this page.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <Link
                   to="/pricing"
                   className="inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground"
                 >
-                  Fazer upgrade
+                  Upgrade
                 </Link>
                 <Link
                   to="/security"
                   className="inline-flex h-11 items-center rounded-md border border-border bg-surface px-5 text-sm font-medium"
                 >
-                  Ver Trust Center
+                  View Trust Center
                 </Link>
               </div>
             </>
           ) : (
             <>
-              <h2 className="text-xl font-semibold tracking-tight">Aceitar com um clique</h2>
+              <h2 className="text-xl font-semibold tracking-tight">Accept with one click</h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Ao aceitar, registramos data, hora e versão do acordo na sua conta. Vale para todo o
-                conteúdo privado que você já enviou e para o que enviar depois.
+                By accepting, we record the date, time, and version of the agreement on your
+                account. It applies to all private content you've already submitted and to what
+                you submit later.
               </p>
               <button
                 type="button"
@@ -206,21 +207,21 @@ function NdaPage() {
                 disabled={saving}
                 className="mt-5 inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground disabled:opacity-50"
               >
-                {saving ? "Registrando…" : "Aceitar acordo de confidencialidade"}
+                {saving ? "Recording…" : "Accept non-disclosure agreement"}
               </button>
             </>
           )}
         </section>
 
         <p className="mt-6 text-xs text-muted-foreground">
-          Precisa de um documento próprio, assinado pelo seu jurídico? Escreva para{" "}
+          Need your own document, signed by your legal team? Write to{" "}
           <a
             href="mailto:enterprise@superagentskill.com?subject=NDA%20personalizado"
             className="underline underline-offset-2"
           >
             enterprise@superagentskill.com
           </a>{" "}
-          — atendemos casos enterprise sob demanda.
+          — we handle enterprise cases on request.
         </p>
       </main>
       <Footer />

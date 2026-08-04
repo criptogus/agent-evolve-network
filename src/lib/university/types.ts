@@ -20,30 +20,30 @@ export const ERROR_CLASSES = [
 export type ErrorClass = (typeof ERROR_CLASSES)[number];
 
 export const ERROR_CLASS_LABEL: Record<ErrorClass, string> = {
-  ambiguity_abandon: "Ambiguidade não resolvida",
-  hallucination: "Alucinação factual",
-  format_break: "Quebra de formato / contrato de saída",
-  task_abandon: "Abandono no meio da tarefa",
-  policy_violation: "Violação de política",
-  tool_misuse: "Uso indevido de ferramenta",
-  instruction_drift: "Deriva de instrução",
+  ambiguity_abandon: "Unresolved ambiguity",
+  hallucination: "Factual hallucination",
+  format_break: "Format break / output contract violation",
+  task_abandon: "Mid-task abandonment",
+  policy_violation: "Policy violation",
+  tool_misuse: "Tool misuse",
+  instruction_drift: "Instruction drift",
 };
 
 export const ERROR_CLASS_HINT: Record<ErrorClass, string> = {
   ambiguity_abandon:
-    "O agente assume um caminho em vez de fazer a pergunta que desbloqueia a tarefa.",
+    "The agent picks a path instead of asking the question that would unblock the task.",
   hallucination:
-    "O agente produz números, fontes ou fatos que não estão no input e não marca a incerteza.",
+    "The agent produces numbers, sources, or facts that are not in the input and does not flag the uncertainty.",
   format_break:
-    "A saída não respeita o contrato pedido (seções, campos, JSON, limites).",
+    "The output does not respect the requested contract (sections, fields, JSON, limits).",
   task_abandon:
-    "O agente entrega parcialmente: passos faltando, itens prometidos e não entregues.",
+    "The agent delivers partially: missing steps, items promised but not delivered.",
   policy_violation:
-    "O agente atende um pedido que deveria ser recusado ou encaminhado a um humano.",
+    "The agent complies with a request that should be refused or escalated to a human.",
   tool_misuse:
-    "O agente age direto onde deveria declarar a ferramenta, pedir permissão ou simular antes.",
+    "The agent acts directly where it should declare the tool, ask for permission, or simulate first.",
   instruction_drift:
-    "O agente esquece uma restrição dada antes e volta ao comportamento padrão.",
+    "The agent forgets a previously given constraint and reverts to default behavior.",
 };
 
 export type DomainId =
@@ -76,11 +76,11 @@ export type DomainId =
   | "cybersecurity";
 
 export type DomainCategory =
-  | "Fundação"
-  | "Receita"
-  | "Execução"
-  | "Operações"
-  | "Mídia & Produto";
+  | "Foundation"
+  | "Revenue"
+  | "Execution"
+  | "Operations"
+  | "Media & Product";
 
 export type DomainMeta = {
   id: DomainId;
@@ -90,36 +90,36 @@ export type DomainMeta = {
 };
 
 export const DOMAINS: DomainMeta[] = [
-  // Fundação
-  { id: "gtm", name: "Vendas & GTM", blurb: "Discovery, pipeline, propostas, renovação.", category: "Fundação" },
-  { id: "engineering", name: "Engenharia & Code Review", blurb: "Revisão, incidentes, migrações.", category: "Fundação" },
-  { id: "support", name: "Suporte & Sucesso", blurb: "Atendimento, escalonamento, pós-venda.", category: "Fundação" },
-  { id: "finance", name: "Financeiro & Compliance", blurb: "Números, políticas, risco regulatório.", category: "Fundação" },
-  { id: "data", name: "Dados & Analytics", blurb: "SQL, métricas, leitura de resultado.", category: "Fundação" },
-  // Receita
-  { id: "marketing", name: "Marketing & Growth", blurb: "Funnels, segmentação, copy, métricas de growth.", category: "Receita" },
-  { id: "b2b_sales", name: "Vendas B2B", blurb: "Discovery, qualificação, propostas, negociação.", category: "Receita" },
-  { id: "customer_success", name: "Customer Success & Retenção", blurb: "Onboarding, health score, churn, expansão.", category: "Receita" },
-  { id: "pricing", name: "Pricing & Monetização", blurb: "Modelos de preço, elasticidade, pacotes.", category: "Receita" },
-  // Execução
-  { id: "strategy", name: "Estratégia & Planejamento", blurb: "OKRs, priorização, análise competitiva.", category: "Execução" },
-  { id: "project_management", name: "Project Management & Agile", blurb: "Sprints, dependências, risco, status reports.", category: "Execução" },
-  { id: "people_ops", name: "People Ops & RH", blurb: "Recrutamento, 1:1s, feedback, políticas.", category: "Execução" },
-  { id: "legal_compliance", name: "Legal & Compliance", blurb: "Contratos, LGPD/GDPR, análise de cláusulas.", category: "Execução" },
-  // Operações
-  { id: "corporate_finance", name: "Finanças Corporativas", blurb: "FP&A, DRE, fluxo de caixa, forecast.", category: "Operações" },
-  { id: "agentic_crm", name: "Agentic CRM", blurb: "Automação de CRM, follow-ups, scoring de leads.", category: "Operações" },
-  { id: "supply_chain", name: "Supply Chain & Ops", blurb: "Estoque, compras, logística, SLAs.", category: "Operações" },
-  { id: "data_engineering", name: "Data Engineering & ML Ops", blurb: "Pipelines, qualidade de dados, observabilidade.", category: "Operações" },
-  // Mídia & Produto
-  { id: "social_media", name: "Social Media & Community", blurb: "Calendário, resposta a crises, engajamento.", category: "Mídia & Produto" },
-  { id: "google_ads", name: "Google Ads", blurb: "Campanhas, keywords, orçamento, Quality Score.", category: "Mídia & Produto" },
-  { id: "meta_ads", name: "Meta Ads", blurb: "Estrutura de campanhas, audiences, criativos.", category: "Mídia & Produto" },
-  { id: "linkedin_ads", name: "LinkedIn Ads", blurb: "ABM, lead gen, Sales Navigator, B2B targeting.", category: "Mídia & Produto" },
-  { id: "digital_product", name: "Desenvolvimento de Produtos Digitais", blurb: "Discovery, PRD, roadmap, priorização de features.", category: "Mídia & Produto" },
-  { id: "complex_software", name: "Desenvolvimento de Software Complexo", blurb: "Arquitetura, escalabilidade, resiliência, segurança.", category: "Mídia & Produto" },
-  { id: "tools_mcp", name: "Mestre em Tools & MCPs", blurb: "Escolha, orquestração, auth e rate limits de ferramentas.", category: "Mídia & Produto" },
-  { id: "cybersecurity", name: "Cybersecurity & AppSec", blurb: "Threat modeling, resposta a incidentes, hardening.", category: "Mídia & Produto" },
+  // Foundation
+  { id: "gtm", name: "Sales & GTM", blurb: "Discovery, pipeline, proposals, renewal.", category: "Foundation" },
+  { id: "engineering", name: "Engineering & Code Review", blurb: "Review, incidents, migrations.", category: "Foundation" },
+  { id: "support", name: "Support & Success", blurb: "Support, escalation, post-sale.", category: "Foundation" },
+  { id: "finance", name: "Finance & Compliance", blurb: "Numbers, policies, regulatory risk.", category: "Foundation" },
+  { id: "data", name: "Data & Analytics", blurb: "SQL, metrics, results interpretation.", category: "Foundation" },
+  // Revenue
+  { id: "marketing", name: "Marketing & Growth", blurb: "Funnels, segmentation, copy, growth metrics.", category: "Revenue" },
+  { id: "b2b_sales", name: "B2B Sales", blurb: "Discovery, qualification, proposals, negotiation.", category: "Revenue" },
+  { id: "customer_success", name: "Customer Success & Retention", blurb: "Onboarding, health score, churn, expansion.", category: "Revenue" },
+  { id: "pricing", name: "Pricing & Monetization", blurb: "Pricing models, elasticity, packaging.", category: "Revenue" },
+  // Execution
+  { id: "strategy", name: "Strategy & Planning", blurb: "OKRs, prioritization, competitive analysis.", category: "Execution" },
+  { id: "project_management", name: "Project Management & Agile", blurb: "Sprints, dependencies, risk, status reports.", category: "Execution" },
+  { id: "people_ops", name: "People Ops & HR", blurb: "Recruiting, 1:1s, feedback, policies.", category: "Execution" },
+  { id: "legal_compliance", name: "Legal & Compliance", blurb: "Contracts, LGPD/GDPR, clause analysis.", category: "Execution" },
+  // Operations
+  { id: "corporate_finance", name: "Corporate Finance", blurb: "FP&A, P&L, cash flow, forecast.", category: "Operations" },
+  { id: "agentic_crm", name: "Agentic CRM", blurb: "CRM automation, follow-ups, lead scoring.", category: "Operations" },
+  { id: "supply_chain", name: "Supply Chain & Ops", blurb: "Inventory, purchasing, logistics, SLAs.", category: "Operations" },
+  { id: "data_engineering", name: "Data Engineering & ML Ops", blurb: "Pipelines, data quality, observability.", category: "Operations" },
+  // Media & Product
+  { id: "social_media", name: "Social Media & Community", blurb: "Calendar, crisis response, engagement.", category: "Media & Product" },
+  { id: "google_ads", name: "Google Ads", blurb: "Campaigns, keywords, budget, Quality Score.", category: "Media & Product" },
+  { id: "meta_ads", name: "Meta Ads", blurb: "Campaign structure, audiences, creatives.", category: "Media & Product" },
+  { id: "linkedin_ads", name: "LinkedIn Ads", blurb: "ABM, lead gen, Sales Navigator, B2B targeting.", category: "Media & Product" },
+  { id: "digital_product", name: "Digital Product Development", blurb: "Discovery, PRD, roadmap, feature prioritization.", category: "Media & Product" },
+  { id: "complex_software", name: "Complex Software Development", blurb: "Architecture, scalability, resilience, security.", category: "Media & Product" },
+  { id: "tools_mcp", name: "Tools & MCPs Mastery", blurb: "Tool selection, orchestration, auth, and rate limits.", category: "Media & Product" },
+  { id: "cybersecurity", name: "Cybersecurity & AppSec", blurb: "Threat modeling, incident response, hardening.", category: "Media & Product" },
 ];
 
 /** Deterministic expectations. Everything here is checkable without an LLM. */

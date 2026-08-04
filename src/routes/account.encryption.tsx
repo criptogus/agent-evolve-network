@@ -22,17 +22,17 @@ import {
 export const Route = createFileRoute("/account/encryption")({
   head: () => ({
     meta: [
-      { title: "Criptografia por tenant (BYOK) — Super Agent Skill" },
+      { title: "Per-Tenant Encryption (BYOK) — Super Agent Skill" },
       {
         name: "description",
         content:
-          "Ative criptografia em repouso por tenant com chaves geridas por você (BYOK/CMEK): AES-256-GCM, envelope encryption, rotação e crypto-shredding auditável.",
+          "Enable per-tenant encryption at rest with customer-managed keys (BYOK/CMEK): AES-256-GCM, envelope encryption, rotation, and auditable crypto-shredding.",
       },
-      { property: "og:title", content: "Criptografia por tenant com chaves do cliente" },
+      { property: "og:title", content: "Per-tenant encryption with customer keys" },
       {
         property: "og:description",
         content:
-          "Gere sua chave-raiz, cifre skills proprietários com AES-256-GCM e mantenha a plataforma sem capacidade de leitura.",
+          "Generate your root key, encrypt proprietary skills with AES-256-GCM, and keep the platform unable to read them.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -77,12 +77,12 @@ function EncryptionPage() {
     qc.invalidateQueries({ queryKey: ["tenant-encryption"] });
     qc.invalidateQueries({ queryKey: ["tenant-encrypted-objects"] });
   };
-  const fail = (e: any) => toast.error(String(e?.message ?? "Falhou").replace(/^Error:\s*/, ""));
+  const fail = (e: any) => toast.error(String(e?.message ?? "Failed").replace(/^Error:\s*/, ""));
 
   const enableMut = useMutation({
     mutationFn: () => enable({ data: { rootKey: rootKey.trim() } }),
     onSuccess: (r) => {
-      toast.success(`Criptografia ativada · fingerprint ${r.fingerprint}…`);
+      toast.success(`Encryption enabled · fingerprint ${r.fingerprint}…`);
       refresh();
     },
     onError: fail,
@@ -90,7 +90,7 @@ function EncryptionPage() {
   const rotateMut = useMutation({
     mutationFn: () => rotate({ data: { currentRootKey: rootKey.trim(), newRootKey: newKey.trim() } }),
     onSuccess: (r) => {
-      toast.success(`Chave rotacionada · ${r.fingerprint}…`);
+      toast.success(`Key rotated · ${r.fingerprint}…`);
       setRootKey(newKey.trim());
       setNewKey("");
       refresh();
@@ -100,7 +100,7 @@ function EncryptionPage() {
   const revokeMut = useMutation({
     mutationFn: (purge: boolean) => revoke({ data: { confirm: "SHRED", purgeObjects: purge } }),
     onSuccess: () => {
-      toast.success("Chave destruída (crypto-shredding)");
+      toast.success("Key destroyed (crypto-shredding)");
       refresh();
     },
     onError: fail,
@@ -108,7 +108,7 @@ function EncryptionPage() {
   const putMut = useMutation({
     mutationFn: () => put({ data: { rootKey: rootKey.trim(), kind: "skill", ref: ref.trim(), content } }),
     onSuccess: (r) => {
-      toast.success(`Cifrado · sha256 ${r.sha256.slice(0, 12)}…`);
+      toast.success(`Encrypted · sha256 ${r.sha256.slice(0, 12)}…`);
       setContent("");
       refresh();
     },
@@ -122,7 +122,7 @@ function EncryptionPage() {
   const delMut = useMutation({
     mutationFn: (id: string) => del({ data: { id } }),
     onSuccess: () => {
-      toast.success("Objeto removido");
+      toast.success("Object removed");
       refresh();
     },
     onError: fail,
@@ -135,21 +135,21 @@ function EncryptionPage() {
     <div className="min-h-screen bg-background">
       <Nav />
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 md:py-12">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Segurança</span>
+        <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Security</span>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
-          Criptografia por tenant com chave do cliente
+          Per-tenant encryption with customer key
         </h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
-          Envelope encryption AES-256-GCM: você gera a chave-raiz (CMK), nós guardamos apenas a
-          impressão digital, o sal de derivação e a chave de dados <em>embrulhada</em>. Sem a sua
-          chave-raiz, nem a plataforma nem um operador com acesso ao banco consegue ler o conteúdo.
+          AES-256-GCM envelope encryption: you generate the root key (CMK), we store only the
+          fingerprint, the derivation salt, and the <em>wrapped</em> data key. Without your
+          root key, neither the platform nor an operator with database access can read the content.
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           {[
-            ["Zero-knowledge", "A chave-raiz nunca é persistida — só existe em memória durante a operação."],
-            ["Rotação sem reprocesso", "Rotacionar re-embrulha a chave de dados; o conteúdo cifrado não é tocado."],
-            ["Crypto-shredding", "Revogar apaga a chave de dados: o ciphertext torna-se irrecuperável."],
+            ["Zero-knowledge", "The root key is never persisted — it only exists in memory during the operation."],
+            ["Rotation without reprocessing", "Rotating re-wraps the data key; the encrypted content is not touched."],
+            ["Crypto-shredding", "Revoking deletes the data key: the ciphertext becomes unrecoverable."],
           ].map(([t, d]) => (
             <div key={t} className="rounded-xl border border-border/60 bg-card p-4">
               <div className="text-sm font-semibold">{t}</div>
@@ -159,22 +159,22 @@ function EncryptionPage() {
         </div>
 
         <section className="mt-10 rounded-xl border border-border/60 bg-card p-5">
-          <h2 className="text-lg font-semibold">1. Sua chave-raiz (32 bytes, base64)</h2>
+          <h2 className="text-lg font-semibold">1. Your root key (32 bytes, base64)</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Gerada no seu navegador. Guarde num gerenciador de senhas ou KMS próprio — se você
-            perder, o conteúdo cifrado é irrecuperável por design.
+            Generated in your browser. Store it in a password manager or your own KMS — if you
+            lose it, the encrypted content is unrecoverable by design.
           </p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
             <Input
               value={rootKey}
               onChange={(e) => setRootKey(e.target.value)}
-              placeholder="base64 de 32 bytes"
+              placeholder="32-byte base64"
               className="font-mono text-xs"
               autoComplete="off"
               spellCheck={false}
             />
             <Button type="button" variant="outline" onClick={() => setRootKey(generateRootKey())}>
-              Gerar
+              Generate
             </Button>
             <Button
               type="button"
@@ -183,21 +183,21 @@ function EncryptionPage() {
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(rootKey.trim());
-                  toast.success("Chave copiada");
+                  toast.success("Key copied");
                 } catch {
-                  toast.error("Cópia falhou");
+                  toast.error("Copy failed");
                 }
               }}
             >
-              Copiar
+              Copy
             </Button>
           </div>
         </section>
 
         <section className="mt-6 rounded-xl border border-border/60 bg-card p-5">
-          <h2 className="text-lg font-semibold">2. Estado do tenant</h2>
+          <h2 className="text-lg font-semibold">2. Tenant status</h2>
           {statusQ.isLoading ? (
-            <p className="mt-2 text-sm text-muted-foreground">Carregando…</p>
+            <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
           ) : enabled ? (
             <div className="mt-2 space-y-1 text-sm">
               <p>
@@ -205,27 +205,27 @@ function EncryptionPage() {
                 <span className="font-mono">{statusQ.data?.key?.fingerprint}…</span>
               </p>
               <p>
-                <span className="text-muted-foreground">Objetos cifrados:</span>{" "}
+                <span className="text-muted-foreground">Encrypted objects:</span>{" "}
                 {statusQ.data?.objectCount}
               </p>
               <p className="text-muted-foreground">
-                Ativa desde {new Date(statusQ.data!.key!.createdAt).toLocaleString()}
+                Active since {new Date(statusQ.data!.key!.createdAt).toLocaleString()}
                 {statusQ.data?.key?.rotatedAt
-                  ? ` · rotacionada em ${new Date(statusQ.data.key.rotatedAt).toLocaleString()}`
+                  ? ` · rotated on ${new Date(statusQ.data.key.rotatedAt).toLocaleString()}`
                   : ""}
               </p>
             </div>
           ) : (
             <div className="mt-3">
               <p className="text-sm text-muted-foreground">
-                Nenhuma chave ativa. Ative para começar a cifrar conteúdo proprietário.
+                No active key. Enable it to start encrypting proprietary content.
               </p>
               <Button
                 className="mt-3"
                 disabled={!keyReady || enableMut.isPending}
                 onClick={() => enableMut.mutate()}
               >
-                {enableMut.isPending ? "Ativando…" : "Ativar criptografia por tenant"}
+                {enableMut.isPending ? "Enabling…" : "Enable per-tenant encryption"}
               </Button>
             </div>
           )}
@@ -234,17 +234,17 @@ function EncryptionPage() {
         {enabled && (
           <>
             <section className="mt-6 rounded-xl border border-border/60 bg-card p-5">
-              <h2 className="text-lg font-semibold">3. Cifrar conteúdo</h2>
+              <h2 className="text-lg font-semibold">3. Encrypt content</h2>
               <Input
                 value={ref}
                 onChange={(e) => setRef(e.target.value)}
-                placeholder="referência (ex.: meu-skill-proprietario)"
+                placeholder="reference (e.g.: my-proprietary-skill)"
                 className="mt-3"
               />
               <Textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Cole aqui o SKILL.md, prompt ou payload proprietário"
+                placeholder="Paste your SKILL.md, prompt, or proprietary payload here"
                 className="mt-2 min-h-32 font-mono text-xs"
               />
               <Button
@@ -252,12 +252,12 @@ function EncryptionPage() {
                 disabled={!keyReady || !ref.trim() || !content.length || putMut.isPending}
                 onClick={() => putMut.mutate()}
               >
-                {putMut.isPending ? "Cifrando…" : "Cifrar e armazenar"}
+                {putMut.isPending ? "Encrypting…" : "Encrypt and store"}
               </Button>
             </section>
 
             <section className="mt-6 rounded-xl border border-border/60 bg-card p-5">
-              <h2 className="text-lg font-semibold">4. Objetos cifrados</h2>
+              <h2 className="text-lg font-semibold">4. Encrypted objects</h2>
               {objectsQ.data?.length ? (
                 <ul className="mt-3 divide-y divide-border/60">
                   {objectsQ.data.map((o) => (
@@ -275,22 +275,22 @@ function EncryptionPage() {
                           disabled={!keyReady || readMut.isPending}
                           onClick={() => readMut.mutate(o.id)}
                         >
-                          Decifrar
+                          Decrypt
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => delMut.mutate(o.id)}>
-                          Excluir
+                          Delete
                         </Button>
                       </div>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="mt-2 text-sm text-muted-foreground">Nada cifrado ainda.</p>
+                <p className="mt-2 text-sm text-muted-foreground">Nothing encrypted yet.</p>
               )}
               {decrypted && (
                 <div className="mt-4 rounded-lg border border-border/60 bg-muted/30 p-3">
                   <div className="text-xs text-muted-foreground">
-                    {decrypted.ref} · integridade {decrypted.integrityOk ? "OK" : "FALHOU"}
+                    {decrypted.ref} · integrity {decrypted.integrityOk ? "OK" : "FAILED"}
                   </div>
                   <pre className="mt-2 max-h-60 overflow-auto whitespace-pre-wrap font-mono text-xs">
                     {decrypted.content}
@@ -300,73 +300,73 @@ function EncryptionPage() {
             </section>
 
             <section className="mt-6 rounded-xl border border-border/60 bg-card p-5">
-              <h2 className="text-lg font-semibold">5. Rotação e revogação</h2>
+              <h2 className="text-lg font-semibold">5. Rotation and revocation</h2>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                 <Input
                   value={newKey}
                   onChange={(e) => setNewKey(e.target.value)}
-                  placeholder="nova chave-raiz (base64)"
+                  placeholder="new root key (base64)"
                   className="font-mono text-xs"
                   autoComplete="off"
                   spellCheck={false}
                 />
                 <Button type="button" variant="outline" onClick={() => setNewKey(generateRootKey())}>
-                  Gerar nova
+                  Generate new
                 </Button>
                 <Button
                   disabled={!keyReady || newKey.trim().length < 43 || rotateMut.isPending}
                   onClick={() => rotateMut.mutate()}
                 >
-                  Rotacionar
+                  Rotate
                 </Button>
               </div>
               <div className="mt-5 rounded-lg border border-destructive/40 p-3">
-                <div className="text-sm font-semibold text-destructive">Zona destrutiva</div>
+                <div className="text-sm font-semibold text-destructive">Destructive zone</div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Crypto-shredding descarta a chave de dados. Todo o conteúdo cifrado passa a ser
-                  matematicamente ilegível — inclusive para você.
+                  Crypto-shredding discards the data key. All encrypted content becomes
+                  mathematically unreadable — including for you.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => {
-                      if (confirm("Destruir a chave de dados deste tenant?")) revokeMut.mutate(false);
+                      if (confirm("Destroy this tenant's data key?")) revokeMut.mutate(false);
                     }}
                   >
-                    Destruir chave
+                    Destroy key
                   </Button>
                   <Button
                     size="sm"
                     variant="destructive"
                     onClick={() => {
-                      if (confirm("Destruir chave E apagar todos os objetos cifrados?")) revokeMut.mutate(true);
+                      if (confirm("Destroy key AND delete all encrypted objects?")) revokeMut.mutate(true);
                     }}
                   >
-                    Destruir chave + objetos
+                    Destroy key + objects
                   </Button>
                 </div>
               </div>
             </section>
 
             <section className="mt-6 rounded-xl border border-border/60 bg-card p-5">
-              <h2 className="text-lg font-semibold">Trilha de auditoria</h2>
+              <h2 className="text-lg font-semibold">Audit trail</h2>
               <ul className="mt-3 space-y-1 font-mono text-xs text-muted-foreground">
                 {(statusQ.data?.events ?? []).map((e) => (
                   <li key={e.id}>
                     {new Date(e.created_at).toLocaleString()} · {e.event}
                   </li>
                 ))}
-                {!statusQ.data?.events?.length && <li>Sem eventos.</li>}
+                {!statusQ.data?.events?.length && <li>No events.</li>}
               </ul>
             </section>
           </>
         )}
 
         <p className="mt-8 text-sm text-muted-foreground">
-          Precisa de KMS externo (AWS KMS / GCP KMS / HSM) e NDA assinado?{" "}
+          Need an external KMS (AWS KMS / GCP KMS / HSM) and a signed NDA?{" "}
           <Link to="/enterprise" className="text-primary hover:underline">
-            Fale com o time Enterprise
+            Talk to the Enterprise team
           </Link>
           .
         </p>
