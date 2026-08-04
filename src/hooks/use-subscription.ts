@@ -19,10 +19,10 @@ export function useSubscription() {
   const [sub, setSub] = useState<Sub | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const env = getStripeEnvironment();
+  const env = getStripeEnvironmentSafe();
 
   const refetch = async () => {
-    if (!user) {
+    if (!user || !env) {
       setSub(null);
       setLoading(false);
       return;
