@@ -54,7 +54,16 @@ function CreditsPage() {
         <div className="grid gap-4 md:grid-cols-3">
           <Stat label="Current balance" value={isLoading ? "…" : (data?.balance ?? 0).toLocaleString()} accent />
           <Stat label="Total earned" value={isLoading ? "…" : `+${(data?.total_earned ?? 0).toLocaleString()}`} />
-          <Stat label="Total spent" value={isLoading ? "…" : `−${(data?.total_spent ?? 0).toLocaleString()}`} />
+          <Stat
+            label="Total spent"
+            value={isLoading ? "…" : `−${(data?.total_spent ?? 0).toLocaleString()}`}
+            hint={
+              !isLoading && (data?.total_spent ?? 0) === 0
+                ? "No debits yet — MCP reviews, forge runs and installs are currently free (not metered against credits). Only marketplace purchases debit here."
+                : undefined
+            }
+          />
+
         </div>
 
         <div className="mt-6 rounded-xl border border-primary/30 bg-primary/5 p-5">
