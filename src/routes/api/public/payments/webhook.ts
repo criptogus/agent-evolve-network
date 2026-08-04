@@ -95,8 +95,33 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
     .eq("environment", env);
 }
 
+/**
+ * Persist every verified event so payments are auditable. The unique index on
+ * `event_id` makes replays (Stripe retries for up to 3 days) idempotent.
+ */
+async function logEvent(event: any, env: StripeEnv) {
+  const obj = event?.data?.object ?? {};
+  const userId: string | null =
+    obj?.metadata?.userId ?? obj?.subscription_details?.metadata?.userId ?? null;
+  const { error } = await getSupabase()
+    .from("payment_events")
+    .insert({
+      event_id: event.id ?? `${event.type}:${Date.now()}`,
+      event_type: event.type,
+      env,
+      payload: event as any,
+      user_id: /^[0-9a-f-]{36}$/i.test(userId ?? "") ? userId : null,
+    } as any);
+  // 23505 = duplicate event_id (Stripe retry) — expected, not an error.
+  if (error && (error as any).code !== "23505") {
+    console.error("payment_events insert failed", error);
+  }
+}
+
 async function handleWebhook(req: Request, env: StripeEnv) {
-  const event = await verifyWebhook(req, env);
+  const event: any = await verifyWebhook(req, env);
+  await logEvent(event, env);
+
   switch (event.type) {
     case "customer.subscription.created":
       await handleSubscriptionCreated(event.data.object, env);
@@ -106,6 +131,35 @@ async function handleWebhook(req: Request, env: StripeEnv) {
       break;
     case "customer.subscription.deleted":
       await handleSubscriptionDeleted(event.data.object, env);
+      break;
+    case "checkout.session.completed": {
+      // Delayed-notification methods (SEPA, boleto, ...) stay "unpaid" here and
+      // settle later via async_payment_succeeded.
+      const session = event.data.object;
+      console.log(
+        "checkout completed",
+        session.id,
+        session.mode,
+        session.payment_status,
+        session.metadata?.userId ?? "no-user",
+      );
+      break;
+    }
+    case "checkout.session.async_payment_succeeded":
+      console.log("async payment succeeded", event.data.object?.id);
+      break;
+    case "checkout.session.async_payment_failed":
+      console.warn("async payment failed", event.data.object?.id);
+      break;
+    case "invoice.paid":
+      console.log("invoice paid", event.data.object?.id, event.data.object?.subscription ?? null);
+      break;
+    case "invoice.payment_failed":
+      console.warn(
+        "invoice payment failed",
+        event.data.object?.id,
+        event.data.object?.subscription ?? null,
+      );
       break;
     default:
       console.log("Unhandled event:", event.type);
