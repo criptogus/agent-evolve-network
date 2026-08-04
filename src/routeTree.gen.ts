@@ -17,6 +17,7 @@ import { Route as CertifyRouteImport } from './routes/certify'
 import { Route as CommunityRouteImport } from './routes/community'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as ContributorFaqRouteImport } from './routes/contributor-faq'
+import { Route as DiagnoseRouteImport } from './routes/diagnose'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as EnterpriseRouteImport } from './routes/enterprise'
@@ -196,6 +197,11 @@ const ConnectRoute = ConnectRouteImport.update({
 const ContributorFaqRoute = ContributorFaqRouteImport.update({
   id: '/contributor-faq',
   path: '/contributor-faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiagnoseRoute = DiagnoseRouteImport.update({
+  id: '/diagnose',
+  path: '/diagnose',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiscoverRoute = DiscoverRouteImport.update({
@@ -929,6 +935,7 @@ export interface FileRoutesByFullPath {
   '/community': typeof CommunityRoute
   '/connect': typeof ConnectRouteWithChildren
   '/contributor-faq': typeof ContributorFaqRoute
+  '/diagnose': typeof DiagnoseRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
   '/enterprise': typeof EnterpriseRoute
@@ -1078,6 +1085,7 @@ export interface FileRoutesByTo {
   '/community': typeof CommunityRoute
   '/connect': typeof ConnectRouteWithChildren
   '/contributor-faq': typeof ContributorFaqRoute
+  '/diagnose': typeof DiagnoseRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
   '/enterprise': typeof EnterpriseRoute
@@ -1229,6 +1237,7 @@ export interface FileRoutesById {
   '/community': typeof CommunityRoute
   '/connect': typeof ConnectRouteWithChildren
   '/contributor-faq': typeof ContributorFaqRoute
+  '/diagnose': typeof DiagnoseRoute
   '/discover': typeof DiscoverRoute
   '/docs': typeof DocsRouteWithChildren
   '/enterprise': typeof EnterpriseRoute
@@ -1381,6 +1390,7 @@ export interface FileRouteTypes {
     | '/community'
     | '/connect'
     | '/contributor-faq'
+    | '/diagnose'
     | '/discover'
     | '/docs'
     | '/enterprise'
@@ -1530,6 +1540,7 @@ export interface FileRouteTypes {
     | '/community'
     | '/connect'
     | '/contributor-faq'
+    | '/diagnose'
     | '/discover'
     | '/docs'
     | '/enterprise'
@@ -1680,6 +1691,7 @@ export interface FileRouteTypes {
     | '/community'
     | '/connect'
     | '/contributor-faq'
+    | '/diagnose'
     | '/discover'
     | '/docs'
     | '/enterprise'
@@ -1831,6 +1843,7 @@ export interface RootRouteChildren {
   CommunityRoute: typeof CommunityRoute
   ConnectRoute: typeof ConnectRouteWithChildren
   ContributorFaqRoute: typeof ContributorFaqRoute
+  DiagnoseRoute: typeof DiagnoseRoute
   DiscoverRoute: typeof DiscoverRoute
   DocsRoute: typeof DocsRouteWithChildren
   EnterpriseRoute: typeof EnterpriseRoute
@@ -1998,6 +2011,13 @@ declare module '@tanstack/react-router' {
       path: '/contributor-faq'
       fullPath: '/contributor-faq'
       preLoaderRoute: typeof ContributorFaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diagnose': {
+      id: '/diagnose'
+      path: '/diagnose'
+      fullPath: '/diagnose'
+      preLoaderRoute: typeof DiagnoseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/discover': {
@@ -3183,6 +3203,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommunityRoute: CommunityRoute,
   ConnectRoute: ConnectRouteWithChildren,
   ContributorFaqRoute: ContributorFaqRoute,
+  DiagnoseRoute: DiagnoseRoute,
   DiscoverRoute: DiscoverRoute,
   DocsRoute: DocsRouteWithChildren,
   EnterpriseRoute: EnterpriseRoute,
