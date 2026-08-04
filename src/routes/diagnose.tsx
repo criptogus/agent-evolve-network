@@ -76,12 +76,12 @@ function DiagnosePage() {
   const agentBrief = useMemo(() => {
     if (!exam) return "";
     return [
-      "Execute cada tarefa abaixo como se fosse um pedido real do usuário. Não busque contexto extra e não otimize para o exame.",
-      "Devolva um único JSON: um array de { case_id, answer, latency_ms?, tokens? }.",
+      "Execute each task below as if it were a real user request. Do not seek extra context and do not optimize for the exam.",
+      "Return a single JSON: an array of { case_id, answer, latency_ms?, tokens? }.",
       "",
       ...exam.tasks.map(
         (t, i) =>
-          `### ${i + 1}. ${t.case_id}\n${t.prompt}${t.output_contract ? `\nContrato de saída: ${t.output_contract}` : ""}`,
+          `### ${i + 1}. ${t.case_id}\n${t.prompt}${t.output_contract ? `\nOutput contract: ${t.output_contract}` : ""}`,
       ),
     ].join("\n");
   }, [exam]);
