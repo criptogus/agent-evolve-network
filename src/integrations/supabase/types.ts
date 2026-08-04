@@ -439,6 +439,42 @@ export type Database = {
           },
         ]
       }
+      agent_onboarding_steps: {
+        Row: {
+          client_name: string | null
+          created_at: string
+          evidence: Json
+          id: string
+          is_bot: boolean
+          session_hash: string
+          stage: string
+          step_id: string
+          ua_family: string | null
+        }
+        Insert: {
+          client_name?: string | null
+          created_at?: string
+          evidence?: Json
+          id?: string
+          is_bot?: boolean
+          session_hash: string
+          stage: string
+          step_id: string
+          ua_family?: string | null
+        }
+        Update: {
+          client_name?: string | null
+          created_at?: string
+          evidence?: Json
+          id?: string
+          is_bot?: boolean
+          session_hash?: string
+          stage?: string
+          step_id?: string
+          ua_family?: string | null
+        }
+        Relationships: []
+      }
       agent_residencies: {
         Row: {
           agent_fp: string | null
@@ -3801,6 +3837,15 @@ export type Database = {
           _user_id: string
         }
         Returns: number
+      }
+      agent_onboarding_funnel: {
+        Args: { _days?: number }
+        Returns: {
+          completions: number
+          sessions: number
+          stage: string
+          step_id: string
+        }[]
       }
       attach_execution_outcome: {
         Args: {
