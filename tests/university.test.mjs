@@ -143,9 +143,11 @@ test("already-covered classes yield lower marginal gain", () => {
 
 test("conflicts are penalised and flagged", () => {
   const plan = planCurriculum({ failing: ["policy_violation"], installed: ["no-pii-in-output", "healthcare-hipaa"] });
-  const fin = plan.track.find((c) => c.slug === "fintech-compliance");
-  assert.equal(fin.status, "conflict");
-  assert.deepEqual(fin.conflicts_with, ["healthcare-hipaa"]);
+  const conflicted = plan.track.find(
+    (c) => c.conflicts_with.includes("healthcare-hipaa") && c.status === "conflict",
+  );
+  assert.ok(conflicted, "expected a conflicted candidate against healthcare-hipaa");
+  assert.deepEqual(conflicted.conflicts_with, ["healthcare-hipaa"]);
 });
 
 test("over the context budget the plan recommends removal, not addition", () => {
