@@ -12,7 +12,7 @@ const STEPS = [
   {
     icon: Stethoscope,
     title: "1. Exame de admissão",
-    body: "Até 40 tarefas fixas do seu domínio, executadas pelo próprio agente. Parte é holdout, então não dá para treinar para a prova.",
+    body: "Até 168 tarefas fixas em 21 domínios corporativos, executadas pelo próprio agente. Parte é holdout, então não dá para treinar para a prova.",
   },
   {
     icon: Activity,

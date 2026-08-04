@@ -1,13 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Activity, ArrowRight, ClipboardCheck, Loader2, Stethoscope } from "lucide-react";
+import { Activity, ArrowRight, ClipboardCheck, Loader2, Search, Stethoscope } from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
 import { CodeBlock } from "@/components/site/CodeBlock";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { startDiagnosis, submitDiagnosis } from "@/lib/university/university.functions";
-import { DOMAINS, type DomainId } from "@/lib/university/types";
+import { DOMAINS, type DomainId, type DomainCategory } from "@/lib/university/types";
 
 export const Route = createFileRoute("/diagnose")({
   head: () => ({
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/diagnose")({
       {
         name: "description",
         content:
-          "Antes de instalar skill, meça o agente: 40 tarefas fixas do domínio, score por classe de erro (ambiguidade, alucinação, formato, abandono, política) e prescrição do que instalar em seguida.",
+          "Antes de instalar skill, meça o agente: 168 tarefas fixas em 21 domínios corporativos, score por classe de erro (ambiguidade, alucinação, formato, abandono, política) e prescrição do que instalar em seguida.",
       },
       { property: "og:title", content: "Matrícula é diagnóstico, não download" },
       {
@@ -35,6 +36,8 @@ export const Route = createFileRoute("/diagnose")({
 
 type Task = { case_id: string; prompt: string; output_contract?: string };
 
+const CATEGORY_ORDER: DomainCategory[] = ["Fundação", "Receita", "Execução", "Operações", "Mídia & Produto"];
+
 function DiagnosePage() {
   const start = useServerFn(startDiagnosis);
   const submit = useServerFn(submitDiagnosis);
@@ -46,11 +49,29 @@ function DiagnosePage() {
   const [report, setReport] = useState<any | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
   const installedList = useMemo(
     () => installed.split(/[,\s]+/).map((s) => s.trim()).filter(Boolean).slice(0, 64),
     [installed],
   );
+
+  const groupedDomains = useMemo(() => {
+    const map = new Map<DomainCategory, typeof DOMAINS>();
+    for (const d of DOMAINS) {
+      if (
+        query &&
+        !d.name.toLowerCase().includes(query.toLowerCase()) &&
+        !d.blurb.toLowerCase().includes(query.toLowerCase()) &&
+        !d.id.toLowerCase().includes(query.toLowerCase())
+      ) {
+        continue;
+      }
+      if (!map.has(d.category)) map.set(d.category, []);
+      map.get(d.category)!.push(d);
+    }
+    return CATEGORY_ORDER.map((c) => ({ category: c, items: map.get(c) ?? [] })).filter((g) => g.items.length > 0);
+  }, [query]);
 
   const agentBrief = useMemo(() => {
     if (!exam) return "";
@@ -138,19 +159,39 @@ function DiagnosePage() {
           <div className="flex items-center gap-2 text-sm font-medium">
             <Stethoscope className="h-4 w-4 text-primary" /> 1. Escolha o domínio
           </div>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {DOMAINS.map((d) => (
-              <button
-                key={d.id}
-                type="button"
-                onClick={() => setDomain(d.id)}
-                className={`rounded-xl border p-3 text-left transition ${
-                  domain === d.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
-                }`}
-              >
-                <div className="text-sm font-medium">{d.name}</div>
-                <div className="mt-1 text-xs text-muted-foreground">{d.blurb}</div>
-              </button>
+
+          <div className="relative mt-4">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar domínio (ex: vendas, pricing, ads...)"
+              className="pl-9"
+            />
+          </div>
+
+          <div className="mt-4 space-y-5">
+            {groupedDomains.map((g) => (
+              <div key={g.category}>
+                <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {g.category}
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {g.items.map((d) => (
+                    <button
+                      key={d.id}
+                      type="button"
+                      onClick={() => setDomain(d.id)}
+                      className={`rounded-xl border p-3 text-left transition ${
+                        domain === d.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <div className="text-sm font-medium">{d.name}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{d.blurb}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
 

@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, ArrowRight, GraduationCap, Loader2, Lock, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowRight, GraduationCap, Loader2, Lock, Search, Trash2 } from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { getCurriculumPlan } from "@/lib/university/university.functions";
-import { DOMAINS, ERROR_CLASSES, ERROR_CLASS_LABEL, type DomainId, type ErrorClass } from "@/lib/university/types";
+import { DOMAINS, ERROR_CLASSES, ERROR_CLASS_LABEL, type DomainId, type ErrorClass, type DomainCategory } from "@/lib/university/types";
 
 export const Route = createFileRoute("/curriculum")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -43,6 +44,8 @@ const STATUS_STYLE: Record<string, string> = {
   conflict: "border-destructive/40 bg-destructive/5",
 };
 
+const CATEGORY_ORDER: DomainCategory[] = ["Fundação", "Receita", "Execução", "Operações", "Mídia & Produto"];
+
 function CurriculumPage() {
   const search = Route.useSearch();
   const plan = useServerFn(getCurriculumPlan);
@@ -53,11 +56,29 @@ function CurriculumPage() {
   const [result, setResult] = useState<any | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
   const installedList = useMemo(
     () => installed.split(/[,\s]+/).map((s) => s.trim()).filter(Boolean).slice(0, 64),
     [installed],
   );
+
+  const groupedDomains = useMemo(() => {
+    const map = new Map<DomainCategory, typeof DOMAINS>();
+    for (const d of DOMAINS) {
+      if (
+        query &&
+        !d.name.toLowerCase().includes(query.toLowerCase()) &&
+        !d.blurb.toLowerCase().includes(query.toLowerCase()) &&
+        !d.id.toLowerCase().includes(query.toLowerCase())
+      ) {
+        continue;
+      }
+      if (!map.has(d.category)) map.set(d.category, []);
+      map.get(d.category)!.push(d);
+    }
+    return CATEGORY_ORDER.map((c) => ({ category: c, items: map.get(c) ?? [] })).filter((g) => g.items.length > 0);
+  }, [query]);
 
   async function run() {
     setBusy(true);
@@ -114,7 +135,7 @@ function CurriculumPage() {
                 <Link to="/diagnose" className="text-primary underline">
                   exame de admissão
                 </Link>
-                . Sem ele, marque as classes de erro que você observa.
+                . Sem ele, marque as classes de erro que você observa e escolha o domínio.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {ERROR_CLASSES.map((ec) => {
@@ -136,18 +157,37 @@ function CurriculumPage() {
                 })}
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                {DOMAINS.map((d) => (
-                  <button
-                    key={d.id}
-                    type="button"
-                    onClick={() => setDomain(domain === d.id ? undefined : d.id)}
-                    className={`rounded-full border px-3 py-1.5 text-xs transition ${
-                      domain === d.id ? "border-primary bg-primary/10" : "border-border text-muted-foreground"
-                    }`}
-                  >
-                    {d.name}
-                  </button>
+              <div className="relative mt-4">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Buscar domínio (ex: pricing, ads, security...)"
+                  className="pl-9"
+                />
+              </div>
+
+              <div className="mt-4 space-y-4">
+                {groupedDomains.map((g) => (
+                  <div key={g.category}>
+                    <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {g.category}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {g.items.map((d) => (
+                        <button
+                          key={d.id}
+                          type="button"
+                          onClick={() => setDomain(domain === d.id ? undefined : d.id)}
+                          className={`rounded-full border px-3 py-1.5 text-xs transition ${
+                            domain === d.id ? "border-primary bg-primary/10" : "border-border text-muted-foreground"
+                          }`}
+                        >
+                          {d.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </>
