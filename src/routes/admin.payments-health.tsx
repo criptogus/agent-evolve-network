@@ -12,7 +12,7 @@ export const Route = createFileRoute("/admin/payments-health")({
       { name: "description", content: "Stripe checkout, webhook and subscription diagnostics." },
     ],
   }),
-  component: PaymentsHealthPage;
+  component: PaymentsHealthPage,
 });
 
 function Pill({ ok, children }: { ok: boolean; children: React.ReactNode }) {
