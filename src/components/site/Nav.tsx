@@ -17,6 +17,7 @@ import { CreditsPill } from "./CreditsPill";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getMyAdminStatus } from "@/lib/admin/accounts.functions";
+import { useConnectionStatus } from "@/hooks/use-connection-status";
 
 const GITHUB_URL = "https://github.com/criptogus/agent-evolve-network";
 const TWITTER_URL = "https://x.com/superagentskill";
@@ -102,6 +103,7 @@ export function Nav() {
     staleTime: 60_000,
   });
   const isAdmin = !!adminQuery.data?.isAdmin;
+  const { status: connection } = useConnectionStatus();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/80 backdrop-blur-md">
