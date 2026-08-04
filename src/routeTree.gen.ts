@@ -72,6 +72,7 @@ import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminFunnelRouteImport } from './routes/admin.funnel'
 import { Route as AdminMetaAdsPackRouteImport } from './routes/admin.meta-ads-pack'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
+import { Route as AdminPaymentsHealthRouteImport } from './routes/admin.payments-health'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminReviewRouteImport } from './routes/admin.review'
@@ -478,6 +479,11 @@ const AdminMetaAdsPackRoute = AdminMetaAdsPackRouteImport.update({
 const AdminPackagesRoute = AdminPackagesRouteImport.update({
   id: '/packages',
   path: '/packages',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsHealthRoute = AdminPaymentsHealthRouteImport.update({
+  id: '/payments-health',
+  path: '/payments-health',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminPlansRoute = AdminPlansRouteImport.update({
@@ -1013,6 +1019,7 @@ export interface FileRoutesByFullPath {
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
+  '/admin/payments-health': typeof AdminPaymentsHealthRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/review': typeof AdminReviewRoute
@@ -1167,6 +1174,7 @@ export interface FileRoutesByTo {
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
+  '/admin/payments-health': typeof AdminPaymentsHealthRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/review': typeof AdminReviewRoute
@@ -1323,6 +1331,7 @@ export interface FileRoutesById {
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
+  '/admin/payments-health': typeof AdminPaymentsHealthRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/review': typeof AdminReviewRoute
@@ -1480,6 +1489,7 @@ export interface FileRouteTypes {
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
+    | '/admin/payments-health'
     | '/admin/plans'
     | '/admin/requests'
     | '/admin/review'
@@ -1634,6 +1644,7 @@ export interface FileRouteTypes {
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
+    | '/admin/payments-health'
     | '/admin/plans'
     | '/admin/requests'
     | '/admin/review'
@@ -1789,6 +1800,7 @@ export interface FileRouteTypes {
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
+    | '/admin/payments-health'
     | '/admin/plans'
     | '/admin/requests'
     | '/admin/review'
@@ -2449,6 +2461,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPackagesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/payments-health': {
+      id: '/admin/payments-health'
+      path: '/payments-health'
+      fullPath: '/admin/payments-health'
+      preLoaderRoute: typeof AdminPaymentsHealthRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/plans': {
       id: '/admin/plans'
       path: '/plans'
@@ -3102,6 +3121,7 @@ interface AdminRouteChildren {
   AdminFunnelRoute: typeof AdminFunnelRoute
   AdminMetaAdsPackRoute: typeof AdminMetaAdsPackRoute
   AdminPackagesRoute: typeof AdminPackagesRouteWithChildren
+  AdminPaymentsHealthRoute: typeof AdminPaymentsHealthRoute
   AdminPlansRoute: typeof AdminPlansRoute
   AdminRequestsRoute: typeof AdminRequestsRoute
   AdminReviewRoute: typeof AdminReviewRoute
@@ -3121,6 +3141,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminFunnelRoute: AdminFunnelRoute,
   AdminMetaAdsPackRoute: AdminMetaAdsPackRoute,
   AdminPackagesRoute: AdminPackagesRouteWithChildren,
+  AdminPaymentsHealthRoute: AdminPaymentsHealthRoute,
   AdminPlansRoute: AdminPlansRoute,
   AdminRequestsRoute: AdminRequestsRoute,
   AdminReviewRoute: AdminReviewRoute,
