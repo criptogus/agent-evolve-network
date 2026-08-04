@@ -60,6 +60,7 @@ function BillingPage() {
 
   const onManage = async () => {
     try {
+      if (!environment) throw new Error("Payments are not configured for this build.");
       const result = await createPortalSession({
         data: {
           environment,
