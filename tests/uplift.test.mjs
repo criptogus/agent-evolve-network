@@ -46,7 +46,7 @@ test("no data ⇒ no claim, not significant", () => {
   const r = twoProportionUplift({ n: 0, completed: 0 }, { n: 0, completed: 0 });
   assert.equal(r.significant, false);
   assert.equal(r.absolute_uplift, 0);
-  assert.match(formatUpliftClaim(r), /sem braço de controle/);
+  assert.match(formatUpliftClaim(r), /no control arm yet/);
 });
 
 test("tiny samples never claim significance", () => {

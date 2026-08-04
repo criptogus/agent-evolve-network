@@ -78,7 +78,7 @@ export const Route = createFileRoute("/api/public/curriculum/next")({
               ok: false,
               error: "no_error_profile",
               message:
-                "Rode /api/public/diagnose/start e /submit primeiro, ou informe `failing`. Prescrição sem diagnóstico é catálogo, não currículo.",
+                "Run /api/public/diagnose/start and /submit first, or provide `failing`. A prescription without a diagnosis is a catalog, not a curriculum.",
             },
             400,
           );

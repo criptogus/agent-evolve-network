@@ -4,25 +4,25 @@ import { Button } from "@/components/ui/button";
 import { SectionReveal } from "@/components/site/SectionReveal";
 
 /**
- * SAK University teaser — the shift from "loja de skills" to
- * "diagnóstico + prescrição". Numbers here are illustrative of the method,
+ * SAK University teaser — the shift from "skill store" to
+ * "diagnosis + prescription". Numbers here are illustrative of the method,
  * not measured platform averages.
  */
 const STEPS = [
   {
     icon: Stethoscope,
-    title: "1. Exame de admissão",
-    body: "Até 168 tarefas fixas em 21 domínios corporativos, executadas pelo próprio agente. Parte é holdout, então não dá para treinar para a prova.",
+    title: "1. Admission exam",
+    body: "Up to 168 fixed tasks across 21 corporate domains, run by the agent itself. Part of it is holdout, so you can't train for the test.",
   },
   {
     icon: Activity,
-    title: "2. Diagnóstico por classe de erro",
-    body: "Não “nota 62 em vendas”, mas: abandona ambiguidade em 58% dos casos, quebra contrato de saída em 31%. Isso é acionável.",
+    title: "2. Diagnosis by error class",
+    body: "Not “62 out of 100 in sales,” but: abandons ambiguity in 58% of cases, breaks the output contract in 31%. That's actionable.",
   },
   {
     icon: ListChecks,
-    title: "3. Prescrição por ganho marginal",
-    body: "A próxima capacidade que mais move o ponteiro deste agente — respeitando pré-requisitos, conflitos e orçamento de contexto.",
+    title: "3. Prescription by marginal gain",
+    body: "The next capability that moves the needle the most for this agent — respecting prerequisites, conflicts, and context budget.",
   },
 ];
 
@@ -35,12 +35,12 @@ export function University() {
             SAK University
           </p>
           <h2 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight md:text-4xl">
-            Loja te vende skill. Universidade descobre qual skill você precisa.
+            A store sells you a skill. A university figures out which skill you need.
           </h2>
           <p className="mt-4 max-w-2xl text-base text-muted-foreground">
-            Instalar capacidade por nome é chute — e agente com 40 skills fica pior, não melhor. A
-            Universidade mede o agente primeiro, aponta a classe de erro que trava o resultado e prescreve o
-            próximo passo. Grátis e anônimo.
+            Installing a capability by name is a guess — and an agent with 40 skills gets worse, not better. The
+            University measures the agent first, points out the error class blocking the result, and prescribes the
+            next step. Free and anonymous.
           </p>
         </SectionReveal>
 
@@ -60,16 +60,16 @@ export function University() {
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Button asChild size="lg">
               <Link to="/diagnose">
-                Fazer o exame de admissão <ArrowRight className="ml-2 h-4 w-4" />
+                Take the admission exam <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg">
               <Link to="/curriculum">
-                <GraduationCap className="mr-2 h-4 w-4" /> Ver a trilha adaptativa
+                <GraduationCap className="mr-2 h-4 w-4" /> View the adaptive track
               </Link>
             </Button>
             <span className="text-xs text-muted-foreground">
-              Também disponível via MCP: <code className="font-mono">diagnose_start</code> →{" "}
+              Also available via MCP: <code className="font-mono">diagnose_start</code> →{" "}
               <code className="font-mono">curriculum_next</code>
             </span>
           </div>

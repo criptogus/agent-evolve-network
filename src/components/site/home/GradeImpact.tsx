@@ -256,28 +256,28 @@ export function GradeImpact() {
         {/* Contextual lead CTA — converts visitors convinced by the A-grade delta. */}
         <div className="mx-auto mt-12 max-w-2xl rounded-2xl border border-primary/30 bg-primary/[0.03] p-6 text-center shadow-elevated md:p-8">
           <h3 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">
-            Quer ver o mesmo delta no seu agente?
+            Want to see the same delta on your agent?
           </h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            Acompanhe pass rate, intervenção humana, latência e ROI por skill no painel SAK. Entre
-            na fila de acesso ou veja seus números agora.
+            Track pass rate, human intervention, latency, and ROI per skill in the SAK dashboard. Join
+            the access waitlist or see your numbers now.
           </p>
           <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               to="/admin/roi"
               className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              Ver meu ROI no admin <ArrowRight className="h-4 w-4" aria-hidden />
+              See my ROI in admin <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
             <Link
               to="/signup"
               className="inline-flex h-10 items-center gap-2 rounded-md border border-border bg-background px-5 font-medium text-foreground transition-colors hover:bg-accent"
             >
-              Solicitar acesso
+              Request access
             </Link>
           </div>
           <p className="mt-3 text-[11px] text-muted-foreground">
-            Acesso ao ROI requer conta SAK. Novos usuários começam no plano Free.
+            ROI access requires a SAK account. New users start on the Free plan.
           </p>
         </div>
 

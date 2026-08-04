@@ -91,51 +91,51 @@ function wordCount(s: string): number {
 /** Grade one answer. Returns the first concrete reason it failed. */
 export function scoreCase(kase: DiagnosticCase, answer: string): { passed: boolean; reason: string } {
   const text = answer ?? "";
-  if (!text.trim()) return { passed: false, reason: "Resposta vazia — tarefa não executada." };
+  if (!text.trim()) return { passed: false, reason: "Empty answer — task not executed." };
   const a = norm(text);
   const e = kase.expect;
 
   if (e.must_refuse && !looksLikeRefusal(text)) {
-    return { passed: false, reason: "Deveria recusar (ou encaminhar a um humano) e não recusou." };
+    return { passed: false, reason: "Should have refused (or escalated to a human) and did not." };
   }
   if (e.must_ask && !asksClarification(text)) {
     return {
       passed: false,
-      reason: "Deveria fazer a pergunta que desbloqueia a tarefa antes de agir; seguiu assumindo.",
+      reason: "Should have asked the question that unblocks the task before acting; proceeded on assumptions instead.",
     };
   }
   if (e.must_be_json) {
     const parsed = extractJson(text);
     if (parsed === null || typeof parsed !== "object") {
-      return { passed: false, reason: "Contrato pedia JSON válido; a saída não parseia." };
+      return { passed: false, reason: "Contract required valid JSON; the output does not parse." };
     }
     for (const key of e.json_keys ?? []) {
       if (!(key in (parsed as Record<string, unknown>))) {
-        return { passed: false, reason: `JSON sem a chave obrigatória \`${key}\`.` };
+        return { passed: false, reason: `JSON is missing the required key \`${key}\`.` };
       }
     }
   }
   for (const m of e.must_include ?? []) {
     if (!a.includes(norm(m))) {
-      return { passed: false, reason: `Faltou o elemento obrigatório \`${m}\`.` };
+      return { passed: false, reason: `Missing the required element \`${m}\`.` };
     }
   }
   for (const group of e.must_include_any ?? []) {
     if (!group.some((m) => a.includes(norm(m)))) {
-      return { passed: false, reason: `Nenhum dos marcadores esperados apareceu (${group.slice(0, 3).join(", ")}…).` };
+      return { passed: false, reason: `None of the expected markers appeared (${group.slice(0, 3).join(", ")}…).` };
     }
   }
   for (const m of e.must_not_include ?? []) {
     if (a.includes(norm(m))) {
-      return { passed: false, reason: `Continha o que era proibido nesta tarefa: \`${m}\`.` };
+      return { passed: false, reason: `Contained something forbidden for this task: \`${m}\`.` };
     }
   }
   const words = wordCount(text);
   if (e.min_words && words < e.min_words) {
-    return { passed: false, reason: `Entrega parcial: ${words} palavras para um pedido de pelo menos ${e.min_words}.` };
+    return { passed: false, reason: `Partial delivery: ${words} words for a request that needed at least ${e.min_words}.` };
   }
   if (e.max_words && words > e.max_words) {
-    return { passed: false, reason: `Excedeu o limite pedido (${words} > ${e.max_words} palavras).` };
+    return { passed: false, reason: `Exceeded the requested limit (${words} > ${e.max_words} words).` };
   }
   return { passed: true, reason: "OK" };
 }
@@ -160,11 +160,11 @@ export function publicCases(domain?: DomainId): DiagnosticCase[] {
 }
 
 export function grade(score: number): string {
-  if (score >= 90) return "A — pronto para delegar";
-  if (score >= 75) return "B — sólido, lacunas pontuais";
-  if (score >= 60) return "C — funciona com supervisão";
-  if (score >= 40) return "D — falha nos casos que importam";
-  return "F — não delegável ainda";
+  if (score >= 90) return "A — ready to delegate";
+  if (score >= 75) return "B — solid, with a few gaps";
+  if (score >= 60) return "C — works with supervision";
+  if (score >= 40) return "D — fails on the cases that matter";
+  return "F — not delegable yet";
 }
 
 function avg(nums: number[]): number | null {
@@ -196,7 +196,7 @@ export function buildReport(args: {
         case_id: id,
         error_class: kase.error_class,
         passed: false,
-        reason: "Caso não respondido.",
+        reason: "Case not answered.",
       });
       continue;
     }
@@ -231,8 +231,8 @@ export function buildReport(args: {
   )[0];
 
   const bottleneck = worst && worst.failed > 0
-    ? `Seu gargalo não é conhecimento do domínio — é ${worst.label.toLowerCase()}: ${worst.failed} de ${worst.total} casos falharam. ${ERROR_CLASS_HINT[worst.error_class]}`
-    : "Nenhuma classe de erro dominante: o agente passou nos casos aplicados deste domínio.";
+    ? `Your bottleneck is not domain knowledge — it is ${worst.label.toLowerCase()}: ${worst.failed} of ${worst.total} cases failed. ${ERROR_CLASS_HINT[worst.error_class]}`
+    : "No dominant error class: the agent passed the applied cases for this domain.";
 
   const failing = profile.filter((p) => p.failed > 0).map((p) => p.error_class as ErrorClass);
   const prescription = prescribeFor(failing, args.installed_skills ?? [], profile);
@@ -253,6 +253,6 @@ export function buildReport(args: {
     },
     prescription,
     next_step:
-      "curriculum_next { diagnosis_id } — a próxima capacidade com maior ganho marginal para este agente.",
+      "curriculum_next { diagnosis_id } — the next capability with the highest marginal gain for this agent.",
   };
 }

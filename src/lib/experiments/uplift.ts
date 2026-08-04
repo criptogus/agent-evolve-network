@@ -124,13 +124,13 @@ export function twoProportionUplift(
   };
 }
 
-/** Human-readable claim, e.g. "+23.0% de resolução (p=0.0120)". */
+/** Human-readable claim, e.g. "+23.0% resolution rate (p=0.0120)". */
 export function formatUpliftClaim(r: UpliftResult): string {
-  if (r.n_control === 0 || r.n_treatment === 0) return "sem braço de controle ainda";
+  if (r.n_control === 0 || r.n_treatment === 0) return "no control arm yet";
   const pct = (r.absolute_uplift * 100).toFixed(1);
   const sign = r.absolute_uplift >= 0 ? "+" : "";
-  const sig = r.significant ? `p=${r.p_value.toFixed(4)}` : "ainda não significativo";
-  return `${sign}${pct} p.p. de resolução (${sig})`;
+  const sig = r.significant ? `p=${r.p_value.toFixed(4)}` : "not significant yet";
+  return `${sign}${pct} p.p. resolution rate (${sig})`;
 }
 
 function round4(n: number): number {

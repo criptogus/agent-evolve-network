@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { recordFunnelEvent } from "@/lib/telemetry/funnel.functions";
 import { useLang } from "@/hooks/use-lang";
-import type { Lang } from "@/lib/i18n";
 
 // We stash the sensitive payload (redirect_to URL + raw auth code) in
 // sessionStorage rather than putting it in the URL bar, so the auth code
@@ -52,31 +51,15 @@ function classifyRedirect(uri: string): "loopback" | "private-scheme" | "https" 
   return "private-scheme";
 }
 
-function LangSwitcher({ lang, onChange }: { lang: Lang; onChange: (l: Lang) => void }) {
-  return (
-    <div className="absolute right-4 top-4 flex gap-1 text-xs">
-      <button
-        onClick={() => onChange("en")}
-        className={`rounded px-2 py-1 ${lang === "en" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-      >
-        EN
-      </button>
-      <button
-        onClick={() => onChange("pt-BR")}
-        className={`rounded px-2 py-1 ${lang === "pt-BR" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-      >
-        PT
-      </button>
-    </div>
-  );
-}
+// The product is English-only; the language switcher was removed on purpose.
+
 
 function SuccessPage() {
   const [handoff, setHandoff] = useState<Handoff | null>(null);
   const [copied, setCopied] = useState(false);
   const deliveredRef = useRef(false);
   const track = useServerFn(recordFunnelEvent);
-  const { lang, setLang, t, tf } = useLang();
+  const { t, tf } = useLang();
 
   useEffect(() => {
     const h = readHandoff();
@@ -152,7 +135,6 @@ function SuccessPage() {
       <div className="min-h-screen bg-background">
         <Nav />
         <main className="relative mx-auto flex min-h-[70vh] max-w-xl items-center px-6 py-16">
-          <LangSwitcher lang={lang} onChange={setLang} />
           <div className="w-full rounded-2xl border border-border bg-card p-8 shadow-elevated">
             <h1 className="text-2xl font-semibold tracking-tight">
               {t("oauth_success_no_pending_title")}
@@ -182,7 +164,6 @@ function SuccessPage() {
     <div className="min-h-screen bg-background">
       <Nav />
       <main className="relative mx-auto flex min-h-[80vh] max-w-xl items-center px-6 py-16">
-        <LangSwitcher lang={lang} onChange={setLang} />
         <div className="w-full rounded-2xl border border-border bg-card p-8 shadow-elevated">
           <div className="flex items-center gap-3">
             <span

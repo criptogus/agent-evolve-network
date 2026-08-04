@@ -16,17 +16,17 @@ export const Route = createFileRoute("/curriculum")({
   }),
   head: () => ({
     meta: [
-      { title: "Trilha adaptativa do agente — Super Agent Skill" },
+      { title: "Adaptive learning track for the agent — Super Agent Skill" },
       {
         name: "description",
         content:
-          "A próxima capacidade por ganho marginal: respeita pré-requisitos, conflitos e orçamento de contexto. Passado o orçamento, a trilha diz o que remover.",
+          "The next capability by marginal gain: respects prerequisites, conflicts, and context budget. Past the budget, the track tells you what to remove.",
       },
-      { property: "og:title", content: "Trilha adaptativa, não catálogo" },
+      { property: "og:title", content: "Adaptive track, not a catalog" },
       {
         property: "og:description",
         content:
-          "Currículo que ordena capacidades por ganho marginal para o seu agente — e avisa quando instalar mais piora o resultado.",
+          "A curriculum that orders capabilities by marginal gain for your agent — and warns when installing more makes results worse.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://superagentskill.com/curriculum" },
@@ -44,7 +44,7 @@ const STATUS_STYLE: Record<string, string> = {
   conflict: "border-destructive/40 bg-destructive/5",
 };
 
-const CATEGORY_ORDER: DomainCategory[] = ["Fundação", "Receita", "Execução", "Operações", "Mídia & Produto"];
+const CATEGORY_ORDER: DomainCategory[] = ["Foundation", "Revenue", "Execution", "Operations", "Media & Product"];
 
 function CurriculumPage() {
   const search = Route.useSearch();
@@ -94,7 +94,7 @@ function CurriculumPage() {
       });
       setResult(res);
     } catch {
-      setError("Não foi possível montar a trilha agora. Tente novamente.");
+      setError("Could not build the track right now. Try again.");
     } finally {
       setBusy(false);
     }
@@ -110,32 +110,32 @@ function CurriculumPage() {
     <SitePage>
       <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
         <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">
-          Universidade de agentes
+          Agent university
         </p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight md:text-5xl">
-          Trilha adaptativa, não catálogo.
+          Adaptive track, not a catalog.
         </h1>
         <p className="mt-4 max-w-2xl text-base text-muted-foreground">
-          O currículo ordena capacidades por <strong>ganho marginal</strong> para este agente: o que ele já
-          cobre rende menos, pré-requisitos vêm antes, conflitos são penalizados. E existe um{" "}
-          <strong>orçamento de contexto</strong> — passado dele, a recomendação é remover, não instalar.
+          The curriculum orders capabilities by <strong>marginal gain</strong> for this agent: what it already
+          covers yields less, prerequisites come first, conflicts are penalized. And there's a{" "}
+          <strong>context budget</strong> — past it, the recommendation is to remove, not install.
         </p>
 
         <div className="mt-8 rounded-2xl border border-border bg-card p-5">
           {search.diagnosis_id ? (
             <p className="text-sm text-muted-foreground">
-              Usando o diagnóstico{" "}
-              <code className="font-mono text-xs">{search.diagnosis_id.slice(0, 8)}…</code> como base.
+              Using diagnosis{" "}
+              <code className="font-mono text-xs">{search.diagnosis_id.slice(0, 8)}…</code> as the base.
             </p>
           ) : (
             <>
-              <div className="text-sm font-medium">Sem diagnóstico? Diga onde dói</div>
+              <div className="text-sm font-medium">No diagnosis? Tell us where it hurts</div>
               <p className="mt-1 text-xs text-muted-foreground">
-                O ideal é começar pelo{" "}
+                It's best to start with the{" "}
                 <Link to="/diagnose" className="text-primary underline">
-                  exame de admissão
+                  admission exam
                 </Link>
-                . Sem ele, marque as classes de erro que você observa e escolha o domínio.
+                . Without it, mark the error classes you observe and choose the domain.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {ERROR_CLASSES.map((ec) => {
@@ -162,7 +162,7 @@ function CurriculumPage() {
                 <Input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Buscar domínio (ex: pricing, ads, security...)"
+                  placeholder="Search domain (e.g. pricing, ads, security...)"
                   className="pl-9"
                 />
               </div>
@@ -194,7 +194,7 @@ function CurriculumPage() {
           )}
 
           <label className="mt-5 block text-xs font-medium text-muted-foreground">
-            Capacidades já instaladas (opcional)
+            Capabilities already installed (optional)
           </label>
           <Textarea
             value={installed}
@@ -205,7 +205,7 @@ function CurriculumPage() {
 
           <Button onClick={run} disabled={busy} className="mt-4">
             {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Montar trilha
+            Build track
           </Button>
         </div>
 
@@ -220,10 +220,10 @@ function CurriculumPage() {
             <div className="rounded-2xl border border-border bg-card p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2 text-sm font-medium">
-                  <GraduationCap className="h-4 w-4 text-primary" /> Próximo passo
+                  <GraduationCap className="h-4 w-4 text-primary" /> Next step
                 </div>
                 <div className="font-mono text-xs text-muted-foreground">
-                  contexto {result.installed_count}/{result.context_budget}
+                  context {result.installed_count}/{result.context_budget}
                 </div>
               </div>
               <p className="mt-3 text-sm text-muted-foreground">{result.note}</p>
@@ -244,22 +244,22 @@ function CurriculumPage() {
                   {result.next.in_registry && (
                     <Button asChild size="sm" className="mt-4">
                       <Link to="/marketplace" search={{ q: result.next.slug } as never}>
-                        Ver no marketplace <ArrowRight className="ml-2 h-4 w-4" />
+                        View on marketplace <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
                   )}
                 </div>
               ) : (
                 <p className="mt-4 text-sm">
-                  Nada a instalar agora — o ganho marginal de qualquer adição está abaixo do custo de
-                  contexto.
+                  Nothing to install right now — the marginal gain of any addition is below the context
+                  cost.
                 </p>
               )}
             </div>
 
             {!!result.track?.length && (
               <div className="rounded-2xl border border-border bg-card p-5">
-                <h2 className="text-sm font-semibold">Trilha completa (ordenada por ganho marginal)</h2>
+                <h2 className="text-sm font-semibold">Full track (ordered by marginal gain)</h2>
                 <ol className="mt-4 space-y-3">
                   {result.track.map((c: any, i: number) => (
                     <li key={c.slug} className={`rounded-xl border p-4 ${STATUS_STYLE[c.status] ?? "border-border"}`}>
@@ -268,18 +268,18 @@ function CurriculumPage() {
                         <span className="text-sm font-medium">{c.title}</span>
                         <span className="font-mono text-[11px] text-muted-foreground">{c.slug}</span>
                         <span className="ml-auto font-mono text-xs text-primary">
-                          ganho {c.marginal_gain}
+                          gain {c.marginal_gain}
                         </span>
                       </div>
                       <p className="mt-2 text-sm text-muted-foreground">{c.why}</p>
                       {!!c.missing_prerequisites?.length && (
                         <p className="mt-2 flex items-center gap-1.5 text-xs text-amber-500">
-                          <Lock className="h-3.5 w-3.5" /> requer antes: {c.missing_prerequisites.join(", ")}
+                          <Lock className="h-3.5 w-3.5" /> requires first: {c.missing_prerequisites.join(", ")}
                         </p>
                       )}
                       {!!c.conflicts_with?.length && (
                         <p className="mt-2 flex items-center gap-1.5 text-xs text-destructive">
-                          <AlertTriangle className="h-3.5 w-3.5" /> conflita com: {c.conflicts_with.join(", ")}
+                          <AlertTriangle className="h-3.5 w-3.5" /> conflicts with: {c.conflicts_with.join(", ")}
                         </p>
                       )}
                     </li>
@@ -291,7 +291,7 @@ function CurriculumPage() {
             {!!result.remove_suggestions?.length && (
               <div className="rounded-2xl border border-destructive/40 bg-destructive/5 p-5">
                 <h2 className="flex items-center gap-2 text-sm font-semibold">
-                  <Trash2 className="h-4 w-4" /> Remova antes de adicionar
+                  <Trash2 className="h-4 w-4" /> Remove before adding
                 </h2>
                 <ul className="mt-3 space-y-2 text-sm">
                   {result.remove_suggestions.map((r: any) => (

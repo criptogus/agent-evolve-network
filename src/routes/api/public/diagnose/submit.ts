@@ -73,7 +73,7 @@ export const Route = createFileRoute("/api/public/diagnose/submit")({
           const msg = err instanceof Error ? err.message : "error";
           if (msg === "unknown_domain") {
             return json(
-              { ok: false, error: "unknown_domain", message: "Informe `domain` ou `diagnosis_id`, e case_ids válidos." },
+              { ok: false, error: "unknown_domain", message: "Provide `domain` or `diagnosis_id`, plus valid case_ids." },
               400,
             );
           }

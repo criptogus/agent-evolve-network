@@ -13,17 +13,17 @@ import { DOMAINS, type DomainId, type DomainCategory } from "@/lib/university/ty
 export const Route = createFileRoute("/diagnose")({
   head: () => ({
     meta: [
-      { title: "Exame de admissão do agente — Super Agent Skill" },
+      { title: "Agent admission exam — Super Agent Skill" },
       {
         name: "description",
         content:
-          "Antes de instalar skill, meça o agente: 168 tarefas fixas em 21 domínios corporativos, score por classe de erro (ambiguidade, alucinação, formato, abandono, política) e prescrição do que instalar em seguida.",
+          "Before installing a skill, measure the agent: 168 fixed tasks across 21 corporate domains, a score by error class (ambiguity, hallucination, format, abandonment, policy), and a prescription for what to install next.",
       },
-      { property: "og:title", content: "Matrícula é diagnóstico, não download" },
+      { property: "og:title", content: "Enrollment is diagnosis, not download" },
       {
         property: "og:description",
         content:
-          "Exame de admissão para agentes: descubra a classe de erro que trava o seu agente e receba a prescrição — não um catálogo.",
+          "Admission exam for agents: find the error class that's blocking your agent and get the prescription — not a catalog.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://superagentskill.com/diagnose" },
@@ -36,7 +36,7 @@ export const Route = createFileRoute("/diagnose")({
 
 type Task = { case_id: string; prompt: string; output_contract?: string };
 
-const CATEGORY_ORDER: DomainCategory[] = ["Fundação", "Receita", "Execução", "Operações", "Mídia & Produto"];
+const CATEGORY_ORDER: DomainCategory[] = ["Foundation", "Revenue", "Execution", "Operations", "Media & Product"];
 
 function DiagnosePage() {
   const start = useServerFn(startDiagnosis);
@@ -76,12 +76,12 @@ function DiagnosePage() {
   const agentBrief = useMemo(() => {
     if (!exam) return "";
     return [
-      "Execute cada tarefa abaixo como se fosse um pedido real do usuário. Não busque contexto extra e não otimize para o exame.",
-      "Devolva um único JSON: um array de { case_id, answer, latency_ms?, tokens? }.",
+      "Execute each task below as if it were a real user request. Do not seek extra context and do not optimize for the exam.",
+      "Return a single JSON: an array of { case_id, answer, latency_ms?, tokens? }.",
       "",
       ...exam.tasks.map(
         (t, i) =>
-          `### ${i + 1}. ${t.case_id}\n${t.prompt}${t.output_contract ? `\nContrato de saída: ${t.output_contract}` : ""}`,
+          `### ${i + 1}. ${t.case_id}\n${t.prompt}${t.output_contract ? `\nOutput contract: ${t.output_contract}` : ""}`,
       ),
     ].join("\n");
   }, [exam]);
@@ -95,7 +95,7 @@ function DiagnosePage() {
       const res = await start({ data: { domain, installed_skills: installedList } });
       setExam({ diagnosis_id: res.diagnosis_id, tasks: res.tasks as Task[] });
     } catch {
-      setError("Não foi possível iniciar o exame agora. Tente novamente.");
+      setError("Could not start the exam right now. Try again.");
     } finally {
       setBusy(false);
     }
@@ -109,13 +109,13 @@ function DiagnosePage() {
       try {
         parsed = JSON.parse(transcript);
       } catch {
-        setError("O transcript precisa ser um JSON válido: array de { case_id, answer }.");
+        setError("The transcript must be valid JSON: an array of { case_id, answer }.");
         setBusy(false);
         return;
       }
       const answers = Array.isArray(parsed) ? parsed : parsed?.answers;
       if (!Array.isArray(answers) || !answers.length) {
-        setError("Nenhuma resposta encontrada no JSON.");
+        setError("No answers found in the JSON.");
         setBusy(false);
         return;
       }
@@ -134,7 +134,7 @@ function DiagnosePage() {
       });
       setReport(res);
     } catch {
-      setError("Falha ao pontuar o transcript. Verifique os case_id enviados.");
+      setError("Failed to score the transcript. Check the case_id values sent.");
     } finally {
       setBusy(false);
     }
@@ -144,20 +144,20 @@ function DiagnosePage() {
     <SitePage>
       <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
         <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">
-          Universidade de agentes
+          Agent university
         </p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight md:text-5xl">
-          Matrícula é diagnóstico, não download.
+          Enrollment is diagnosis, not download.
         </h1>
         <p className="mt-4 max-w-2xl text-base text-muted-foreground">
-          Instalar skill por nome é chute. Aqui o agente faz um exame de admissão com tarefas fixas do
-          domínio e recebe o transcript: <strong>onde</strong> ele falha, em <strong>qual classe de
-          erro</strong> e com que custo. Só então vem a prescrição.
+          Installing a skill by name is a guess. Here the agent takes an admission exam with fixed domain
+          tasks and gets the transcript back: <strong>where</strong> it fails, in <strong>which error
+          class</strong>, and at what cost. Only then comes the prescription.
         </p>
 
         <div className="mt-8 rounded-2xl border border-border bg-card p-5">
           <div className="flex items-center gap-2 text-sm font-medium">
-            <Stethoscope className="h-4 w-4 text-primary" /> 1. Escolha o domínio
+            <Stethoscope className="h-4 w-4 text-primary" /> 1. Choose the domain
           </div>
 
           <div className="relative mt-4">
@@ -165,7 +165,7 @@ function DiagnosePage() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar domínio (ex: vendas, pricing, ads...)"
+              placeholder="Search domain (e.g. sales, pricing, ads...)"
               className="pl-9"
             />
           </div>
@@ -196,8 +196,8 @@ function DiagnosePage() {
           </div>
 
           <label className="mt-5 block text-xs font-medium text-muted-foreground">
-            Capacidades já instaladas no agente (opcional, separadas por vírgula) — usadas para calcular
-            ganho marginal
+            Capabilities already installed on the agent (optional, comma-separated) — used to calculate
+            marginal gain
           </label>
           <Textarea
             value={installed}
@@ -208,27 +208,27 @@ function DiagnosePage() {
 
           <Button onClick={onStart} disabled={busy} className="mt-4">
             {busy && !exam ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Gerar exame
+            Generate exam
           </Button>
         </div>
 
         {exam && (
           <div className="mt-6 rounded-2xl border border-border bg-card p-5">
             <div className="flex items-center gap-2 text-sm font-medium">
-              <ClipboardCheck className="h-4 w-4 text-primary" /> 2. Rode as {exam.tasks.length} tarefas no
-              seu agente
+              <ClipboardCheck className="h-4 w-4 text-primary" /> 2. Run the {exam.tasks.length} tasks on
+              your agent
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Cole o bloco abaixo no seu agente (Claude, Hermes, ChatGPT, Cursor). Ele executa e devolve o
-              JSON com as respostas. As expectativas de correção são privadas por design — parte dos casos é
+              Paste the block below into your agent (Claude, Hermes, ChatGPT, Cursor). It runs the tasks and returns
+              the JSON with the answers. Grading expectations are private by design — part of the cases are
               holdout.
             </p>
             <div className="mt-4">
-              <CodeBlock code={agentBrief} lang="markdown" filename="exame.md" />
+              <CodeBlock code={agentBrief} lang="markdown" filename="exam.md" />
             </div>
 
             <label className="mt-5 block text-xs font-medium text-muted-foreground">
-              3. Cole aqui o JSON de respostas
+              3. Paste the answers JSON here
             </label>
             <Textarea
               value={transcript}
@@ -238,7 +238,7 @@ function DiagnosePage() {
             />
             <Button onClick={onSubmit} disabled={busy || !transcript.trim()} className="mt-4">
               {busy && exam ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Pontuar transcript
+              Score transcript
             </Button>
           </div>
         )}
@@ -253,7 +253,7 @@ function DiagnosePage() {
           <div className="mt-6 rounded-2xl border border-border bg-card p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-sm font-medium">
-                <Activity className="h-4 w-4 text-primary" /> Transcript do exame
+                <Activity className="h-4 w-4 text-primary" /> Exam transcript
               </div>
               <div className="font-mono text-sm">
                 {report.overall_score}/100 · <span className="text-muted-foreground">{report.grade}</span>
@@ -268,10 +268,10 @@ function DiagnosePage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
-                    <th className="py-2">Classe de erro</th>
-                    <th className="py-2">Casos</th>
-                    <th className="py-2">Falhas</th>
-                    <th className="py-2">Taxa</th>
+                    <th className="py-2">Error class</th>
+                    <th className="py-2">Cases</th>
+                    <th className="py-2">Failures</th>
+                    <th className="py-2">Rate</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -291,7 +291,7 @@ function DiagnosePage() {
 
             {!!report.prescription?.length && (
               <>
-                <h2 className="mt-6 text-sm font-semibold">Prescrição</h2>
+                <h2 className="mt-6 text-sm font-semibold">Prescription</h2>
                 <ul className="mt-2 space-y-2">
                   {report.prescription.map((p: any) => (
                     <li key={p.slug} className="rounded-xl border border-border p-3 text-sm">
@@ -301,7 +301,7 @@ function DiagnosePage() {
                       </div>
                       <div className="mt-1 text-muted-foreground">{p.why}</div>
                       <div className="mt-1 font-mono text-xs text-primary">
-                        ganho esperado ≈ +{p.expected_gain_pp} pp
+                        expected gain ≈ +{p.expected_gain_pp} pp
                       </div>
                     </li>
                   ))}
@@ -320,17 +320,17 @@ function DiagnosePage() {
                     } as never
                   }
                 >
-                  Ver a trilha <ArrowRight className="ml-2 h-4 w-4" />
+                  See the track <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/connect">Rodar isso pelo MCP</Link>
+                <Link to="/connect">Run this via MCP</Link>
               </Button>
             </div>
 
             <details className="mt-6">
               <summary className="cursor-pointer text-sm text-muted-foreground">
-                Ver resultado caso a caso
+                See case-by-case results
               </summary>
               <ul className="mt-3 space-y-1 text-xs">
                 {report.results.map((r: any) => (
@@ -348,11 +348,11 @@ function DiagnosePage() {
         )}
 
         <div className="mt-10 rounded-2xl border border-border bg-muted/30 p-5">
-          <h2 className="text-sm font-semibold">Pelo MCP ou por HTTP puro</h2>
+          <h2 className="text-sm font-semibold">Via MCP or plain HTTP</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            No MCP: <code className="font-mono text-xs">diagnose_start</code> →{" "}
+            Via MCP: <code className="font-mono text-xs">diagnose_start</code> →{" "}
             <code className="font-mono text-xs">diagnose_submit</code> →{" "}
-            <code className="font-mono text-xs">curriculum_next</code>. Sem MCP, JSON puro:
+            <code className="font-mono text-xs">curriculum_next</code>. Without MCP, plain JSON:
           </p>
           <div className="mt-3">
             <CodeBlock
@@ -360,7 +360,7 @@ function DiagnosePage() {
   -H 'Content-Type: application/json' \\
   -d '{"domain":"${domain}"}'
 
-# execute as tarefas e devolva o transcript
+# run the tasks and return the transcript
 curl -sS https://superagentskill.com/api/public/diagnose/submit \\
   -H 'Content-Type: application/json' \\
   -d '{"diagnosis_id":"<id>","answers":[{"case_id":"gtm-amb-1","answer":"..."}]}'`}

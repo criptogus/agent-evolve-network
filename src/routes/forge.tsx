@@ -224,7 +224,7 @@ function AuthorTab() {
           active={m.isPending}
           done={!!m.data}
           stages={AUTHOR_STAGES}
-          title="Criando o pacote (pesquisa → método SkillForge → spec Anthropic → refino até 9+/10)"
+          title="Creating the package (research → SkillForge method → Anthropic spec → refine to 9+/10)"
         />
         {m.error && <p className="text-sm text-destructive">{(m.error as Error).message}</p>}
         {m.data && (
@@ -285,7 +285,7 @@ function EvaluateTab({ packages }: { packages: Array<{ slug: string; name: strin
           active={m.isPending}
           done={!!m.data}
           stages={EVAL_STAGES}
-          title="Avaliando o skill (multi-modelo · adversarial · safety)"
+          title="Evaluating the skill (multi-model · adversarial · safety)"
           finalScore={m.data?.evaluation.overall_score ?? null}
           verdict={m.data?.evaluation.verdict ?? null}
         />
@@ -360,7 +360,7 @@ function EvolveTab({ packages, allPackages }: {
           active={m.isPending}
           done={!!m.data}
           stages={EVOLVE_STAGES}
-          title="Aprimorando o skill até virar campeão"
+          title="Improving the skill until it becomes a champion"
         />
         {m.error && <p className="text-sm text-destructive">{(m.error as Error).message}</p>}
         {m.data && (

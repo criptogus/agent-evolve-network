@@ -74,7 +74,7 @@ test("instruction drift is caught by forbidden markers", () => {
 
 test("typography variants do not create false failures", () => {
   const kase = findCase("fin-drift-1");
-  assert.equal(scoreCase(kase, "Vendas subiram para 1,2M (relatório interno de vendas) — alta de 8%.").passed, true);
+  assert.equal(scoreCase(kase, "Sales rose to 1.2M (internal sales report) — up 8%.").passed, true);
 });
 
 test("unanswered cases count as failures and shape the error profile", () => {
@@ -82,7 +82,7 @@ test("unanswered cases count as failures and shape the error profile", () => {
   const report = buildReport({
     domain: "gtm",
     case_ids: cases.map((c) => c.id),
-    answers: [{ case_id: "gtm-amb-1", answer: "Vou assumir 50 assentos e enviar." }],
+    answers: [{ case_id: "gtm-amb-1", answer: "I will assume 50 seats and send it." }],
   });
   assert.equal(report.total, cases.length);
   assert.ok(report.overall_score < 20);
@@ -158,5 +158,5 @@ test("over the context budget the plan recommends removal, not addition", () => 
   const plan = planCurriculum({ failing: ["format_break"], installed, budget: 3 });
   assert.equal(plan.over_budget, true);
   assert.equal(plan.next, null);
-  assert.ok(plan.note.includes("teto"));
+  assert.ok(plan.note.includes("cap"));
 });
