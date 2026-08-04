@@ -157,8 +157,8 @@ function Pricing() {
             )}
             <p className="mt-2 text-sm text-muted-foreground">
               {cadence === "yearly"
-                ? `${PRICE_YEARLY_LIST} billed monthly, ${PRICE_YEARLY} billed yearly. Cancel any time.`
-                : `Full flexibility. Switch to yearly whenever you want and pay ${PRICE_YEARLY} instead of ${PRICE_YEARLY_LIST}.`}
+                ? `${PRICE_YEARLY_LIST} billed monthly, ${PRICE_YEARLY} billed yearly. Your subscription renews automatically every 12 months at the same discounted ${PRICE_YEARLY}/year rate as long as it stays active — the discount is not a first-year promo, it is the ongoing yearly price. Cancel any time and keep access until the end of your current billing year.`
+                : `Full flexibility. Switch to yearly whenever you want and lock in ${PRICE_YEARLY}/year instead of ${PRICE_YEARLY_LIST}.`}
             </p>
             <button
               onClick={onGetPro}
