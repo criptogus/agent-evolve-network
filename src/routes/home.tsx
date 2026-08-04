@@ -128,16 +128,11 @@ function HomeDashboard() {
     throwOnError: false,
   });
 
-  const trending = useMemo(() => {
-    const items = market.data?.items ?? [];
-    return [...items]
-      .sort(
-        (a, b) =>
-          (b.trust_score ?? 0) - (a.trust_score ?? 0) ||
-          b.install_count - a.install_count,
-      )
-      .slice(0, 6);
-  }, [market.data]);
+  const trending = useMemo(
+    () => rankRecommended(market.data?.items ?? [], 6),
+    [market.data],
+  );
+
 
   // Signed-out visitors belong on the landing page, which sells the product.
   useEffect(() => {
