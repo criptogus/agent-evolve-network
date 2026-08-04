@@ -52,24 +52,8 @@ function classifyRedirect(uri: string): "loopback" | "private-scheme" | "https" 
   return "private-scheme";
 }
 
-function LangSwitcher({ lang, onChange }: { lang: Lang; onChange: (l: Lang) => void }) {
-  return (
-    <div className="absolute right-4 top-4 flex gap-1 text-xs">
-      <button
-        onClick={() => onChange("en")}
-        className={`rounded px-2 py-1 ${lang === "en" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-      >
-        EN
-      </button>
-      <button
-        onClick={() => onChange("pt-BR")}
-        className={`rounded px-2 py-1 ${lang === "pt-BR" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"}`}
-      >
-        PT
-      </button>
-    </div>
-  );
-}
+// The product is English-only; the language switcher was removed on purpose.
+
 
 function SuccessPage() {
   const [handoff, setHandoff] = useState<Handoff | null>(null);
