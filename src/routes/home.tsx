@@ -137,7 +137,7 @@ function HomeDashboard() {
 
   // Signed-out visitors belong on the landing page, which sells the product.
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/", replace: true });
+    if (!loading && !user) navigate({ to: "/", search: {}, replace: true });
   }, [loading, user, navigate]);
 
   const firstName =

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BookOpen, Bot, ShieldCheck, Sparkles, User } from "lucide-react";
+import { BookOpen, Bot, Download, ShieldCheck, Sparkles, Star, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { MarketplaceItem } from "@/lib/marketplace/list.functions";
 import { trustTier, TRUST_TIER_LABELS, type TrustTier } from "@/lib/marketplace/trust-tiers";
@@ -53,6 +53,26 @@ function StatRow({
   );
 }
 
+function formatCount(count: number) {
+  return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(count);
+}
+
+function PopularityBadge({ p }: { p: MarketplaceItem }) {
+  return (
+    <span
+      className="relative z-10 inline-flex max-w-full items-center gap-1.5 rounded-md border border-signal/40 bg-signal/10 px-2 py-1 font-mono text-[10px] font-medium text-foreground"
+      title={`${p.install_count.toLocaleString("en-US")} installs and ${p.rating_count.toLocaleString("en-US")} ratings`}
+      aria-label={`${p.install_count.toLocaleString("en-US")} installs and ${p.rating_count.toLocaleString("en-US")} ratings`}
+    >
+      <Download className="h-3 w-3 shrink-0" aria-hidden />
+      <span>{formatCount(p.install_count)} installs</span>
+      <span aria-hidden className="text-muted-foreground">·</span>
+      <Star className="h-3 w-3 shrink-0 text-amber-500" aria-hidden />
+      <span>{formatCount(p.rating_count)} ratings</span>
+    </span>
+  );
+}
+
 export function PackageCard({ p }: { p: MarketplaceItem }) {
   const tier = trustTier(p.trust_score, p.trust_verified);
   const Icon = TYPE_ICON[p.type];
@@ -81,6 +101,9 @@ export function PackageCard({ p }: { p: MarketplaceItem }) {
             <span className="font-mono uppercase tracking-wider">{p.type}</span>
             <span aria-hidden>·</span>
             <AuthorLink handle={p.author_handle} verified={p.author_verified} />
+          </div>
+          <div className="relative z-10 mt-2">
+            <PopularityBadge p={p} />
           </div>
         </div>
         <div className="relative z-10 flex shrink-0 items-center gap-1.5">

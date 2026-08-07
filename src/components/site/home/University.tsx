@@ -64,7 +64,7 @@ export function University() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link to="/curriculum">
+              <Link to="/curriculum" search={{}}>
                 <GraduationCap className="mr-2 h-4 w-4" /> View the adaptive track
               </Link>
             </Button>
