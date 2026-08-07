@@ -323,21 +323,32 @@ function HomeDashboard() {
 
       {/* Ready to install */}
       <section className="mx-auto max-w-7xl px-6 py-10">
+        {profileReady && !projectType && (
+          <div className="mb-6">
+            <ProjectTypePicker value={projectType} onChange={setProjectType} />
+          </div>
+        )}
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               Ready to install
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Most-installed, broadly useful packages — all above the Trust
-              Score bar.
-
+              {projectType
+                ? "Ranked for your project type — popular, broadly useful and above the Trust Score bar."
+                : "Most-installed, broadly useful packages — all above the Trust Score bar."}
             </p>
+            {profileReady && projectType && (
+              <div className="mt-3">
+                <ProjectTypePicker compact value={projectType} onChange={setProjectType} />
+              </div>
+            )}
           </div>
           <Link to="/marketplace" className="shrink-0 text-sm font-medium text-primary hover:underline">
             All skills →
           </Link>
         </div>
+
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {market.isLoading &&
