@@ -8,7 +8,10 @@ import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
 import { isTrustDemoted, TRUST_TIER_RANK, trustTier } from "@/lib/marketplace/trust-tiers";
 import { PackageCard } from "@/components/marketplace/PackageCard";
-import { isBeginnerFriendly, isBroadPurpose } from "@/lib/marketplace/recommend";
+import { isBeginnerFriendly, isBroadPurpose, recommendationScore } from "@/lib/marketplace/recommend";
+import { projectFitScore, projectTypeLabel } from "@/lib/marketplace/project-profile";
+import { useProjectType } from "@/hooks/use-project-type";
+import { ProjectTypePicker } from "@/components/marketplace/ProjectTypePicker";
 import { AuthorLink } from "@/components/marketplace/AuthorLink";
 import {
   BarChart3,
@@ -65,6 +68,7 @@ const TYPES = ["all", "skill", "playbook", "soul", "guardrail"] as const;
 type TypeFilter = (typeof TYPES)[number];
 
 const SORTS = [
+  { value: "best_fit", label: "Best fit for my project", group: "Recommended" },
   { value: "trust_desc", label: "Highest Trust Score", group: "Trust" },
   { value: "trust_asc", label: "Lowest Trust Score", group: "Trust" },
   { value: "rating_desc", label: "Highest rated", group: "Rating" },
@@ -197,6 +201,8 @@ function Marketplace() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   /** Active one-click preset (General-purpose / Most installed / Beginner-friendly). */
   const [quick, setQuick] = useState<string | null>(null);
+  const { projectType, setProjectType, hydrated: profileReady } = useProjectType();
+  const [askedSkipped, setAskedSkipped] = useState(false);
   const quickPreset = QUICK_FILTERS.find((f) => f.value === quick) ?? null;
 
   const items = data?.items ?? [];
@@ -232,6 +238,11 @@ function Marketplace() {
     const sorted = [...result];
     sorted.sort((a, b) => {
       switch (sort) {
+        case "best_fit": {
+          const fitA = projectFitScore(a, projectType) + recommendationScore(a);
+          const fitB = projectFitScore(b, projectType) + recommendationScore(b);
+          return fitB - fitA || b.install_count - a.install_count;
+        }
         case "installs_desc": {
           // Default sort only: curation demotion. Unscored / below-Baseline
           // packages sort after trust-scored ones (nothing is hidden); order
@@ -275,7 +286,7 @@ function Marketplace() {
       }
     });
     return sorted;
-  }, [items, type, tags, verticalGroup, q, verifiedOnly, installBucket, sort, quickPreset]);
+  }, [items, type, tags, verticalGroup, q, verifiedOnly, installBucket, sort, quickPreset, projectType]);
 
   const typeCounts = useMemo(() => {
     const base: Record<TypeFilter, number> = {
@@ -357,6 +368,12 @@ function Marketplace() {
     setInstallBucket("any");
     setSort("installs_desc");
     setQuick(null);
+  }
+
+  function chooseProjectType(next: typeof projectType) {
+    setProjectType(next);
+    if (next) setSort("best_fit");
+    else if (sort === "best_fit") setSort("installs_desc");
   }
 
   function toggleQuick(value: string) {
@@ -504,6 +521,11 @@ function Marketplace() {
           {quickPreset && (
             <span className="text-[11px] text-muted-foreground">{quickPreset.hint}</span>
           )}
+          {profileReady && projectType && (
+            <div className="ml-auto">
+              <ProjectTypePicker compact value={projectType} onChange={chooseProjectType} />
+            </div>
+          )}
         </div>
         {activeChips.length > 0 && (
           <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-6 pb-3">
@@ -525,6 +547,16 @@ function Marketplace() {
         )}
 
       </div>
+
+      {profileReady && !projectType && !askedSkipped && (
+        <div className="mx-auto max-w-7xl px-6 pt-8">
+          <ProjectTypePicker
+            value={projectType}
+            onChange={chooseProjectType}
+            onDismiss={() => setAskedSkipped(true)}
+          />
+        </div>
+      )}
 
       {/* Sidebar + grid */}
       <section className="mx-auto max-w-7xl gap-10 px-6 py-10 lg:grid lg:grid-cols-[224px_1fr]">
@@ -638,6 +670,9 @@ function Marketplace() {
                   <strong className="text-foreground">{filtered.length.toLocaleString("en-US")}</strong>{" "}
                   {filtered.length === 1 ? "package" : "packages"}
                   {dirty && <> of {items.length.toLocaleString("en-US")}</>}
+                  {projectType && sort === "best_fit" && (
+                    <> · ranked for {projectTypeLabel(projectType)}</>
+                  )}
                 </>
               )}
             </p>
