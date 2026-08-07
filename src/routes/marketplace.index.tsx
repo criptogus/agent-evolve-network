@@ -547,6 +547,16 @@ function Marketplace() {
 
       </div>
 
+      {profileReady && !projectType && (
+        <div className="mx-auto max-w-7xl px-6 pt-8">
+          <ProjectTypePicker
+            value={projectType}
+            onChange={chooseProjectType}
+            onDismiss={() => setProjectType(null)}
+          />
+        </div>
+      )}
+
       {/* Sidebar + grid */}
       <section className="mx-auto max-w-7xl gap-10 px-6 py-10 lg:grid lg:grid-cols-[224px_1fr]">
         <aside className={`${filtersOpen ? "block" : "hidden"} mb-8 lg:mb-0 lg:block`}>
@@ -659,6 +669,9 @@ function Marketplace() {
                   <strong className="text-foreground">{filtered.length.toLocaleString("en-US")}</strong>{" "}
                   {filtered.length === 1 ? "package" : "packages"}
                   {dirty && <> of {items.length.toLocaleString("en-US")}</>}
+                  {projectType && sort === "best_fit" && (
+                    <> · ranked for {projectTypeLabel(projectType)}</>
+                  )}
                 </>
               )}
             </p>
