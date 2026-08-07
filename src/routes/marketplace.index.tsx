@@ -15,6 +15,7 @@ import {
   Check,
   Bot,
   FolderOpen,
+  GraduationCap,
   Loader2,
   Palette,
   Search,
@@ -194,6 +195,9 @@ function Marketplace() {
   const [installBucket, setInstallBucket] = useState<InstallBucket>("any");
   const [sort, setSort] = useState<SortKey>("installs_desc");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  /** Active one-click preset (General-purpose / Most installed / Beginner-friendly). */
+  const [quick, setQuick] = useState<string | null>(null);
+  const quickPreset = QUICK_FILTERS.find((f) => f.value === quick) ?? null;
 
   const items = data?.items ?? [];
   const verticals = data?.verticals ?? [];
@@ -213,6 +217,7 @@ function Marketplace() {
         const grp = VERTICAL_GROUPS.find((g) => g.value === verticalGroup);
         if (grp && (!p.vertical || !(grp.verticals as readonly string[]).includes(p.vertical))) return false;
       }
+      if (quickPreset && !quickPreset.match(p)) return false;
       if (verifiedOnly && !p.author_verified) return false;
       if (p.install_count < bucket.min || p.install_count > bucket.max) return false;
       if (!needle) return true;
@@ -270,7 +275,7 @@ function Marketplace() {
       }
     });
     return sorted;
-  }, [items, type, tags, verticalGroup, q, verifiedOnly, installBucket, sort]);
+  }, [items, type, tags, verticalGroup, q, verifiedOnly, installBucket, sort, quickPreset]);
 
   const typeCounts = useMemo(() => {
     const base: Record<TypeFilter, number> = {
@@ -310,6 +315,7 @@ function Marketplace() {
     verticalGroup !== "all" ||
     verifiedOnly ||
     installBucket !== "any" ||
+    quick !== null ||
     sort !== "installs_desc";
 
   const activeChips: { key: string; label: string; clear: () => void }[] = [
@@ -324,6 +330,9 @@ function Marketplace() {
             clear: () => setVerticalGroup("all"),
           },
         ]
+      : []),
+    ...(quickPreset
+      ? [{ key: "quick", label: quickPreset.label, clear: () => setQuick(null) }]
       : []),
     ...(verifiedOnly
       ? [{ key: "verified", label: "Verified authors", clear: () => setVerifiedOnly(false) }]
@@ -347,6 +356,14 @@ function Marketplace() {
     setVerifiedOnly(false);
     setInstallBucket("any");
     setSort("installs_desc");
+    setQuick(null);
+  }
+
+  function toggleQuick(value: string) {
+    const next = quick === value ? null : value;
+    setQuick(next);
+    const preset = QUICK_FILTERS.find((f) => f.value === next);
+    if (preset?.sort) setSort(preset.sort);
   }
 
 
@@ -460,6 +477,33 @@ function Marketplace() {
               </select>
             </label>
           </div>
+        </div>
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-6 pb-3">
+          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            Quick filters
+          </span>
+          {QUICK_FILTERS.map((f) => {
+            const active = quick === f.value;
+            return (
+              <button
+                key={f.value}
+                onClick={() => toggleQuick(f.value)}
+                aria-pressed={active}
+                title={f.hint}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  active
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                <f.icon className="h-3.5 w-3.5" aria-hidden />
+                {f.label}
+              </button>
+            );
+          })}
+          {quickPreset && (
+            <span className="text-[11px] text-muted-foreground">{quickPreset.hint}</span>
+          )}
         </div>
         {activeChips.length > 0 && (
           <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-6 pb-3">
