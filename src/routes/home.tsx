@@ -27,6 +27,8 @@ import { useConnectionStatus } from "@/hooks/use-connection-status";
 import { getCreditSummary } from "@/lib/credits/credits.functions";
 import { listMarketplace } from "@/lib/marketplace/list.functions";
 import { rankRecommended } from "@/lib/marketplace/recommend";
+import { useProjectType } from "@/hooks/use-project-type";
+import { ProjectTypePicker } from "@/components/marketplace/ProjectTypePicker";
 
 const TITLE = "Your command center — Super Agent Skill";
 const DESCRIPTION =

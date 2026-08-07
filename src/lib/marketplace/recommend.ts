@@ -7,6 +7,8 @@
  * primary sort, and demotes narrow platform-specific packages.
  */
 
+import { projectFitScore, type ProjectType } from "./project-profile";
+
 export type RankableItem = {
   slug: string;
   name: string;
@@ -123,10 +125,14 @@ export function recommendationScore(item: RankableItem): number {
  * Popular, broadly applicable packages first. Packages with a known-low Trust
  * Score (< 0.4) are dropped so popularity never promotes untested content.
  */
-export function rankRecommended<T extends RankableItem>(items: T[], limit = 6): T[] {
+export function rankRecommended<T extends RankableItem>(
+  items: T[],
+  limit = 6,
+  projectType: ProjectType | null = null,
+): T[] {
   return items
     .filter((i) => i.trust_score === null || i.trust_score >= 0.4)
-    .map((i) => ({ i, s: recommendationScore(i) }))
+    .map((i) => ({ i, s: recommendationScore(i) + projectFitScore(i, projectType) }))
     .sort((a, b) => b.s - a.s || b.i.install_count - a.i.install_count)
     .slice(0, limit)
     .map((x) => x.i);
