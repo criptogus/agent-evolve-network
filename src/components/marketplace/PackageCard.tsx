@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BookOpen, Bot, ShieldCheck, Sparkles, User } from "lucide-react";
+import { BookOpen, Bot, Download, ShieldCheck, Sparkles, Star, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { MarketplaceItem } from "@/lib/marketplace/list.functions";
 import { trustTier, TRUST_TIER_LABELS, type TrustTier } from "@/lib/marketplace/trust-tiers";
