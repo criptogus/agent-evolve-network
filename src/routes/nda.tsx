@@ -186,10 +186,10 @@ function NdaPage() {
                   Upgrade
                 </Link>
                 <Link
-                  to="/security"
+                  to="/privacy"
                   className="inline-flex h-11 items-center rounded-md border border-border bg-surface px-5 text-sm font-medium"
                 >
-                  View Trust Center
+                  View privacy policy
                 </Link>
               </div>
             </>

@@ -117,7 +117,7 @@ function LoginPage() {
     <div className="min-h-screen bg-background">
       <Nav />
       <section className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-md flex-col items-center justify-center px-6 py-16">
-        <Link to="/" className="mb-6 flex items-center gap-2">
+        <Link to="/" search={{}} className="mb-6 flex items-center gap-2">
           <Logo className="h-7 w-7" />
           <span className="text-base font-semibold tracking-tight">Super Agent Skill</span>
         </Link>
