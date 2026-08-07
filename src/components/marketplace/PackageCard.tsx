@@ -8,6 +8,7 @@ import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 import { SoulDisclaimerBadge } from "@/components/souls/SoulDisclaimer";
 import { AuthorLink } from "@/components/marketplace/AuthorLink";
 import { Stars } from "@/components/reviews/Stars";
+import { JargonHints } from "@/components/marketplace/JargonHints";
 
 const TYPE_ICON: Record<MarketplaceItem["type"], LucideIcon> = {
   skill: Sparkles,
@@ -120,6 +121,10 @@ export function PackageCard({ p }: { p: MarketplaceItem }) {
       </div>
 
       <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
+
+      <div className="mt-2">
+        <JargonHints text={`${p.name} ${p.description}`} />
+      </div>
 
       {p.type === "soul" && (
         <div className="relative z-10 mt-2">
