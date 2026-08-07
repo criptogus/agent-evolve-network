@@ -131,3 +131,42 @@ export function rankRecommended<T extends RankableItem>(items: T[], limit = 6): 
     .slice(0, limit)
     .map((x) => x.i);
 }
+
+/** True when the package targets work most teams do, regardless of stack. */
+export function isBroadPurpose(item: {
+  name: string;
+  description: string;
+  vertical?: string | null;
+}): boolean {
+  const text = `${item.name} ${item.description} ${item.vertical ?? ""}`.toLowerCase();
+  return matches(text, BROAD) && !matches(text, NICHE);
+}
+
+/** True when the package is narrow / stack- or compliance-specific. */
+export function isNichePurpose(item: {
+  name: string;
+  description: string;
+  vertical?: string | null;
+}): boolean {
+  const text = `${item.name} ${item.description} ${item.vertical ?? ""}`.toLowerCase();
+  return matches(text, NICHE);
+}
+
+/**
+ * Beginner-friendly = broadly useful, already proven by other users, and above
+ * the Trust bar. Deliberately conservative: a first install should not fail.
+ */
+export function isBeginnerFriendly(item: {
+  name: string;
+  description: string;
+  vertical?: string | null;
+  install_count: number;
+  rating_avg: number;
+  rating_count: number;
+  trust_score: number | null;
+}): boolean {
+  if (isNichePurpose(item)) return false;
+  const proven = item.install_count >= 25 || (item.rating_count >= 3 && item.rating_avg >= 4);
+  const trusted = (item.trust_score ?? 0) >= 0.6;
+  return proven && trusted && isBroadPurpose(item);
+}
