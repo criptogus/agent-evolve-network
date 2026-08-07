@@ -202,6 +202,7 @@ function Marketplace() {
   /** Active one-click preset (General-purpose / Most installed / Beginner-friendly). */
   const [quick, setQuick] = useState<string | null>(null);
   const { projectType, setProjectType, hydrated: profileReady } = useProjectType();
+  const [askedSkipped, setAskedSkipped] = useState(false);
   const quickPreset = QUICK_FILTERS.find((f) => f.value === quick) ?? null;
 
   const items = data?.items ?? [];
@@ -547,12 +548,12 @@ function Marketplace() {
 
       </div>
 
-      {profileReady && !projectType && (
+      {profileReady && !projectType && !askedSkipped && (
         <div className="mx-auto max-w-7xl px-6 pt-8">
           <ProjectTypePicker
             value={projectType}
             onChange={chooseProjectType}
-            onDismiss={() => setProjectType(null)}
+            onDismiss={() => setAskedSkipped(true)}
           />
         </div>
       )}
