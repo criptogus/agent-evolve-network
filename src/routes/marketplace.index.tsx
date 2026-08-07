@@ -8,6 +8,7 @@ import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
 import { isTrustDemoted, TRUST_TIER_RANK, trustTier } from "@/lib/marketplace/trust-tiers";
 import { PackageCard } from "@/components/marketplace/PackageCard";
+import { isBeginnerFriendly, isBroadPurpose } from "@/lib/marketplace/recommend";
 import { AuthorLink } from "@/components/marketplace/AuthorLink";
 import {
   BarChart3,
