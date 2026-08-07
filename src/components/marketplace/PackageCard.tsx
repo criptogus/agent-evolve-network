@@ -102,6 +102,9 @@ export function PackageCard({ p }: { p: MarketplaceItem }) {
             <span aria-hidden>·</span>
             <AuthorLink handle={p.author_handle} verified={p.author_verified} />
           </div>
+          <div className="relative z-10 mt-2">
+            <PopularityBadge p={p} />
+          </div>
         </div>
         <div className="relative z-10 flex shrink-0 items-center gap-1.5">
           {p.type !== "soul" && <PriceBadge priceCredits={p.price_credits} />}
