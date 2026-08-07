@@ -131,9 +131,11 @@ function HomeDashboard() {
     throwOnError: false,
   });
 
+  const { projectType, setProjectType, hydrated: profileReady } = useProjectType();
+
   const trending = useMemo(
-    () => rankRecommended(market.data?.items ?? [], 6),
-    [market.data],
+    () => rankRecommended(market.data?.items ?? [], 6, projectType),
+    [market.data, projectType],
   );
 
 
