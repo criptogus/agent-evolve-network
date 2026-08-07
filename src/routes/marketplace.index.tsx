@@ -135,6 +135,46 @@ const VERTICAL_GROUPS: {
   },
 ];
 
+/**
+ * One-click presets so people don't have to reason about Trust/installs to
+ * avoid narrow, stack-specific packages.
+ */
+const QUICK_FILTERS: {
+  value: string;
+  label: string;
+  icon: LucideIcon;
+  hint: string;
+  /** Extra predicate applied on top of the regular filters. */
+  match: (p: MarketplaceItem) => boolean;
+  /** Sort forced while the preset is active. */
+  sort?: SortKey;
+}[] = [
+  {
+    value: "general",
+    label: "General-purpose",
+    icon: Sparkles,
+    hint: "Useful on most projects — not tied to one stack or vendor",
+    match: (p) => isBroadPurpose(p),
+  },
+  {
+    value: "popular",
+    label: "Most installed",
+    icon: Trophy,
+    hint: "Ordered by real install volume",
+    match: (p) => p.install_count >= 1,
+    sort: "installs_desc",
+  },
+  {
+    value: "beginner",
+    label: "Beginner-friendly",
+    icon: GraduationCap,
+    hint: "Broadly useful, already proven by others and above the Trust bar",
+    match: (p) => isBeginnerFriendly(p),
+  },
+];
+
+
+
 function Marketplace() {
   const fetchFn = useServerFn(listMarketplace);
   const { data, isLoading, isError } = useQuery({
