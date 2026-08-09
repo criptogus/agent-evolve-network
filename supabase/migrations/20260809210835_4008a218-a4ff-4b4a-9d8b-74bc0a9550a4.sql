@@ -1,0 +1,1 @@
+delete from public.subscriptions where environment = 'sandbox' and stripe_subscription_id = 'sub_1U2dwJIaKlRpu2f023Vi5hKu';
