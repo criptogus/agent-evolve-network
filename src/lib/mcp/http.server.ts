@@ -32,6 +32,7 @@ import {
   installMyAgentTool,
 } from "@/lib/mcp/tools/agents";
 import { whoamiTool, uploadStatusTool, recommendPackagesTool } from "@/lib/mcp/tools/onboarding";
+import { resumeSessionTool, whatsNewTool, checkUpdatesTool } from "@/lib/mcp/tools/returning";
 import {
   diagnoseStartTool,
   diagnoseSubmitTool,
@@ -70,6 +71,12 @@ const mcp = createMcpServer({
     "  - Any `unauthorized` / `subscription_required` / quota error: call `whoami` and relay its `next_steps` to the user verbatim instead of guessing.",
     "  - `recommend_packages` → best first installs (popularity-first, niche packages demoted). Use it when the user has NOT named a topic.",
     "  - `upload_status` → what happened to files sent through `upload_packages` (queued | processing | done | failed).",
+    "",
+    "## 0.5 RETURNING SESSION (second connection onward — do this instead of asking the user what they were doing)",
+    "  - `resume_session` → this account's live workspace: drafts and packages under review, upload jobs still running, cloud skills, agents built, last University diagnosis + prescription, and the score trend of every document reviewed recently. Ends with `next_actions`, ranked for THIS account. Free, never counts against quota.",
+    "  - `whats_new { since }` → registry packages published/updated since the user's last session, plus platform version and changes on their own packages.",
+    "  - `check_updates { installed }` → send the slugs (and versions) found in the user's `.agents/` or `.claude/skills/` folder; get back what drifted behind the registry and how to refresh it.",
+    "  - Rule of thumb: `whoami` answers 'am I connected?', `resume_session` answers 'what should we do next?'. On any session after the first, call `resume_session` before proposing work.",
     "",
     "## 1. UPGRADE a local file (PRIMARY use case)",
     "When the user says 'improve / refine / harden / audit / score / level up' a local skill, playbook, soul or guardrail file:",
@@ -152,6 +159,9 @@ const mcp = createMcpServer({
     whoamiTool,
     uploadStatusTool,
     recommendPackagesTool,
+    resumeSessionTool,
+    whatsNewTool,
+    checkUpdatesTool,
   ],
 });
 
@@ -263,6 +273,9 @@ const FREE_TOOLS = new Set([
   "report_execution",
   "list_agents",
   "upload_status",
+  "resume_session",
+  "whats_new",
+  "check_updates",
 ]);
 
 /** Stable, hashed identity for quota bucketing. */
