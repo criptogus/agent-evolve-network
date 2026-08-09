@@ -10,10 +10,13 @@ import { getCurriculumPlan } from "@/lib/university/university.functions";
 import { DOMAINS, ERROR_CLASSES, ERROR_CLASS_LABEL, type DomainId, type ErrorClass, type DomainCategory } from "@/lib/university/types";
 
 export const Route = createFileRoute("/curriculum")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    diagnosis_id: typeof s.diagnosis_id === "string" ? s.diagnosis_id : undefined,
-    domain: typeof s.domain === "string" ? (s.domain as DomainId) : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): { diagnosis_id?: string; domain?: DomainId } => {
+    const out: { diagnosis_id?: string; domain?: DomainId } = {};
+    if (typeof s.diagnosis_id === "string") out.diagnosis_id = s.diagnosis_id;
+    if (typeof s.domain === "string") out.domain = s.domain as DomainId;
+    return out;
+  },
+
   head: () => ({
     meta: [
       { title: "Adaptive learning track for the agent — Super Agent Skill" },
