@@ -33,6 +33,7 @@ import {
 } from "@/lib/mcp/tools/agents";
 import { whoamiTool, uploadStatusTool, recommendPackagesTool } from "@/lib/mcp/tools/onboarding";
 import { resumeSessionTool, whatsNewTool, checkUpdatesTool } from "@/lib/mcp/tools/returning";
+import { proveImprovementTool } from "@/lib/mcp/tools/proof";
 import {
   diagnoseStartTool,
   diagnoseSubmitTool,
@@ -82,7 +83,8 @@ const mcp = createMcpServer({
     "When the user says 'improve / refine / harden / audit / score / level up' a local skill, playbook, soul or guardrail file:",
     "  a. `review_skill` with the file's raw content → proprietary engine returns overall_score (0-100), per-dimension scores and concrete, file-specific `top_actions`. (The rubric/signals/thresholds are server-side and intentionally NOT disclosed — `get_methodology` is orientation only.)",
     "  b. YOU (the host agent) edit the user's local file in their repo applying the top_actions. This MCP does not write to disk.",
-    "  c. `review_skill` again → confirm the score went up. Iterate until grade A.",
+    "  c. `review_skill` again → confirm the score went up. The response now carries `value_proof`: the realized before → after movement on task success, injection resistance, hallucination rate, tokens, latency, cost per 1,000 runs and PII leakage, plus dollars/month and engineer-hours saved.",
+    "  c2. `prove_improvement { name, type, runs_per_month }` → the same proof as a markdown report. ALWAYS show `human_report` to the user after an improvement: the person paying for this only sees value if the gain is quantified. Ask for their real monthly run volume first.",
     "  d. Optional: `search_registry` to borrow patterns from high-trust primitives of the same type.",
     "",
     "## 2. DISCOVER primitives in the public registry",
@@ -162,6 +164,7 @@ const mcp = createMcpServer({
     resumeSessionTool,
     whatsNewTool,
     checkUpdatesTool,
+    proveImprovementTool,
   ],
 });
 
@@ -276,6 +279,7 @@ const FREE_TOOLS = new Set([
   "resume_session",
   "whats_new",
   "check_updates",
+  "prove_improvement",
 ]);
 
 /** Stable, hashed identity for quota bucketing. */
