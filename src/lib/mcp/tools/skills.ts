@@ -40,6 +40,11 @@ export const overviewTool = defineTool({
       version: "1.6.0",
       tagline:
         "Battle-tested toolkit for designing, auditing and shipping AI primitives — skills, playbooks, souls, guardrails.",
+      first_connection: {
+        description:
+          "Call whoami before reporting any auth or quota problem — it returns tier, quota, write access and the exact next step. Free.",
+        tools: ["whoami", "recommend_packages", "upload_status"],
+      },
       intents: {
         upgrade_local_file: {
           description:
@@ -79,6 +84,7 @@ export const overviewTool = defineTool({
             "4. report_execution  — (after the user runs it) feed the trust system. Best-effort.",
           ],
           tools: [
+            "recommend_packages",
             "search_registry",
             "list_packages",
             "get_package",
@@ -91,9 +97,10 @@ export const overviewTool = defineTool({
             "Push a local primitive upward to the registry so others (and future-you) benefit. Requires OAuth.",
           workflow: [
             "1. upload_packages   — bulk upload markdown/prompt/JSON files. Normalised by SkillForge into PRIVATE draft packages. Never auto-published; public listing requires author submit + admin review/approval.",
-            "2. request_primitive — ask SuperAgentSkill to AUTHOR a brand-new primitive from scratch via the forge pipeline.",
+            "2. upload_status     — poll queued files by job_id until done/failed. Never tell the user an upload failed before checking this.",
+            "3. request_primitive — ask SuperAgentSkill to AUTHOR a brand-new primitive from scratch via the forge pipeline.",
           ],
-          tools: ["upload_packages", "request_primitive"],
+          tools: ["upload_packages", "upload_status", "request_primitive"],
         },
         cloud_skill_manager: {
           description:
