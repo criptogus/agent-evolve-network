@@ -31,6 +31,7 @@ import {
   getMyAgentTool,
   installMyAgentTool,
 } from "@/lib/mcp/tools/agents";
+import { whoamiTool, uploadStatusTool, recommendPackagesTool } from "@/lib/mcp/tools/onboarding";
 import {
   diagnoseStartTool,
   diagnoseSubmitTool,
@@ -63,6 +64,12 @@ const mcp = createMcpServer({
   instructions: [
     "# SuperAgentSkill MCP",
     "Battle-tested toolkit for designing, auditing and shipping AI primitives (skills, playbooks, souls, guardrails). Use it for THREE distinct intents:",
+    "",
+    "## 0. FIRST CONNECTION (do this before reporting any auth problem)",
+    "  - `whoami` → whether this session is authenticated, which tier/quota applies, whether write tools are unlocked, and the exact next step. Free, never counts against quota.",
+    "  - Any `unauthorized` / `subscription_required` / quota error: call `whoami` and relay its `next_steps` to the user verbatim instead of guessing.",
+    "  - `recommend_packages` → best first installs (popularity-first, niche packages demoted). Use it when the user has NOT named a topic.",
+    "  - `upload_status` → what happened to files sent through `upload_packages` (queued | processing | done | failed).",
     "",
     "## 1. UPGRADE a local file (PRIMARY use case)",
     "When the user says 'improve / refine / harden / audit / score / level up' a local skill, playbook, soul or guardrail file:",
@@ -142,6 +149,9 @@ const mcp = createMcpServer({
     diagnoseStartTool,
     diagnoseSubmitTool,
     curriculumNextTool,
+    whoamiTool,
+    uploadStatusTool,
+    recommendPackagesTool,
   ],
 });
 
@@ -246,7 +256,14 @@ const WRITE_TOOLS = new Set(["upload_packages", "request_primitive"]);
 // Tools that are SO cheap / discovery-oriented they don't count against quota.
 // `report_execution` is included so post-run telemetry is truly best-effort
 // and never blocks a user's flow on quota.
-const FREE_TOOLS = new Set(["overview", "get_methodology", "report_execution", "list_agents"]);
+const FREE_TOOLS = new Set([
+  "overview",
+  "whoami",
+  "get_methodology",
+  "report_execution",
+  "list_agents",
+  "upload_status",
+]);
 
 /** Stable, hashed identity for quota bucketing. */
 function quotaIdentity(userId: string | null, request: Request): string {
