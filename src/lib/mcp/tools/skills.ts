@@ -45,6 +45,12 @@ export const overviewTool = defineTool({
           "Call whoami before reporting any auth or quota problem — it returns tier, quota, write access and the exact next step. Free.",
         tools: ["whoami", "recommend_packages", "upload_status"],
       },
+      returning_session: {
+        description:
+          "Second connection onward: resume_session gives this account's workspace (drafts, review status, running uploads, cloud skills, agents, last diagnosis, score trends) plus ranked next_actions. whats_new covers registry/platform changes since the last session; check_updates flags locally installed packages that drifted behind. All free.",
+        tools: ["resume_session", "whats_new", "check_updates"],
+      },
+
       intents: {
         upgrade_local_file: {
           description:
