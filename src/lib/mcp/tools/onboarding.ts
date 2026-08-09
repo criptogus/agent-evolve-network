@@ -124,7 +124,7 @@ export const whoamiTool = defineTool({
     return json({
       connected: true,
       identity: { user_id: userId, email, handle },
-      auth_source: (ctx?.auth?.source as string | undefined) ?? "bearer",
+      auth_source: ((ctx?.auth?.claims as { source?: string } | undefined)?.source) ?? "bearer",
       tier,
       limits,
       usage_last_24h: { reads: readDay, writes: writeDay },
