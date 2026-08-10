@@ -75,16 +75,19 @@ export function EffectivenessPanel() {
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 pb-3">
           <div>
-            <CardTitle className="text-base">Learning loop</CardTitle>
+            <CardTitle className="text-base">Autonomous learning loop</CardTitle>
             <p className="mt-1 text-xs text-muted-foreground">
-              Picks the copy variant and the trigger with the best measured outcome, and only changes
-              anything after {data?.min_samples ?? 20} sends per variant. Cadence caps never change.
+              Runs without approvals: it picks the copy variant, the trigger and the send hour with the
+              best measured outcome, and publishes its own replacement copy once the guardrails below
+              pass. It only changes anything after {data?.min_samples ?? 20} sends per variant, and
+              cadence caps never change.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Badge variant={data?.learning_enabled ? "default" : "secondary"}>
-              {data?.learning_enabled ? "Learning on" : "Learning paused"}
+              {data?.learning_enabled ? "Autonomous" : "Learning paused"}
             </Badge>
+
             <Button
               size="sm"
               variant="outline"
