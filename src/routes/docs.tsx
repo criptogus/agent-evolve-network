@@ -107,6 +107,71 @@ function Docs() {
             />
           </div>
 
+          <h2 id="open-skills-cli" className="mt-12 text-2xl font-semibold tracking-tight">
+            Or install with the open Skills CLI
+          </h2>
+          <p className="mt-2 text-muted-foreground">
+            Every published SAK skill is mirrored as a standard{" "}
+            <code className="font-mono text-foreground">SKILL.md</code> package, so the open{" "}
+            <a
+              href={OPEN_SKILLS_SITE}
+              target="_blank"
+              rel="noreferrer"
+              className="text-primary underline underline-offset-4"
+            >
+              skills.sh
+            </a>{" "}
+            CLI can install them into {OPEN_SKILLS_AGENTS.length}+ agents — Claude Code, Cursor,
+            Codex, Copilot, Windsurf, Gemini CLI, Cline, Zed and more. No account, no MCP.
+          </p>
+          <div className="mt-4">
+            <CodeBlock
+              lang="bash"
+              code={`# the whole graded catalog
+${openSkillsInstallAll}
+
+# a single skill
+${openSkillsInstallOne("<slug>")}
+
+# refresh installed skills
+${openSkillsUpdate}`}
+            />
+          </div>
+
+          <div className="mt-6 overflow-x-auto rounded-xl border border-border">
+            <table className="w-full border-collapse text-left text-sm">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="px-4 py-2.5 font-medium">Install route</th>
+                  <th className="px-4 py-2.5 font-medium">Account</th>
+                  <th className="px-4 py-2.5 font-medium">Trust Score</th>
+                  <th className="px-4 py-2.5 font-medium">Telemetry</th>
+                  <th className="px-4 py-2.5 font-medium">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {INSTALL_ROUTES.map((r) => (
+                  <tr key={r.id} className="border-t border-border align-top">
+                    <td className="px-4 py-3">
+                      <div className="font-medium">{r.label}</div>
+                      <code className="mt-1 block font-mono text-xs text-muted-foreground">
+                        {r.command}
+                      </code>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {r.account ? "Required" : "Not needed"}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {r.trustScore ? "Included" : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{r.telemetry ? "Yes" : "No"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{r.note}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
           <h2 id="skills" className="mt-12 text-2xl font-semibold tracking-tight">
             2. Trigger the upgrade
           </h2>
