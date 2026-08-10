@@ -139,6 +139,7 @@ import { Route as ApiOgSkillOfTheWeekSvgRouteImport } from './routes/api/og.skil
 import { Route as ApiPublicDotwellKnownOauthAuthorizationServerRouteImport } from './routes/api/public/[.]well-known.oauth-authorization-server'
 import { Route as ApiPublicDotwellKnownOauthProtectedResourceRouteImport } from './routes/api/public/[.]well-known.oauth-protected-resource'
 import { Route as ApiPublicCertificationsIdRouteImport } from './routes/api/public/certifications.$id'
+import { Route as ApiPublicCrmRunRouteImport } from './routes/api/public/crm/run'
 import { Route as ApiPublicCurriculumNextRouteImport } from './routes/api/public/curriculum/next'
 import { Route as ApiPublicDiagnoseStartRouteImport } from './routes/api/public/diagnose/start'
 import { Route as ApiPublicDiagnoseSubmitRouteImport } from './routes/api/public/diagnose/submit'
@@ -825,6 +826,11 @@ const ApiPublicCertificationsIdRoute =
     path: '/api/public/certifications/$id',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCrmRunRoute = ApiPublicCrmRunRouteImport.update({
+  id: '/api/public/crm/run',
+  path: '/api/public/crm/run',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCurriculumNextRoute = ApiPublicCurriculumNextRouteImport.update({
   id: '/api/public/curriculum/next',
   path: '/api/public/curriculum/next',
@@ -1093,6 +1099,7 @@ export interface FileRoutesByFullPath {
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
+  '/api/public/crm/run': typeof ApiPublicCrmRunRoute
   '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
   '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
   '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
@@ -1249,6 +1256,7 @@ export interface FileRoutesByTo {
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
+  '/api/public/crm/run': typeof ApiPublicCrmRunRoute
   '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
   '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
   '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
@@ -1407,6 +1415,7 @@ export interface FileRoutesById {
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
+  '/api/public/crm/run': typeof ApiPublicCrmRunRoute
   '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
   '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
   '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
@@ -1566,6 +1575,7 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
+    | '/api/public/crm/run'
     | '/api/public/curriculum/next'
     | '/api/public/diagnose/start'
     | '/api/public/diagnose/submit'
@@ -1722,6 +1732,7 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
+    | '/api/public/crm/run'
     | '/api/public/curriculum/next'
     | '/api/public/diagnose/start'
     | '/api/public/diagnose/submit'
@@ -1879,6 +1890,7 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
+    | '/api/public/crm/run'
     | '/api/public/curriculum/next'
     | '/api/public/diagnose/start'
     | '/api/public/diagnose/submit'
@@ -2010,6 +2022,7 @@ export interface RootRouteChildren {
   ApiPublicDotwellKnownOauthAuthorizationServerRoute: typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   ApiPublicDotwellKnownOauthProtectedResourceRoute: typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   ApiPublicCertificationsIdRoute: typeof ApiPublicCertificationsIdRoute
+  ApiPublicCrmRunRoute: typeof ApiPublicCrmRunRoute
   ApiPublicCurriculumNextRoute: typeof ApiPublicCurriculumNextRoute
   ApiPublicDiagnoseStartRoute: typeof ApiPublicDiagnoseStartRoute
   ApiPublicDiagnoseSubmitRoute: typeof ApiPublicDiagnoseSubmitRoute
@@ -2943,6 +2956,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCertificationsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/crm/run': {
+      id: '/api/public/crm/run'
+      path: '/api/public/crm/run'
+      fullPath: '/api/public/crm/run'
+      preLoaderRoute: typeof ApiPublicCrmRunRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/curriculum/next': {
       id: '/api/public/curriculum/next'
       path: '/api/public/curriculum/next'
@@ -3425,6 +3445,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDotwellKnownOauthProtectedResourceRoute:
     ApiPublicDotwellKnownOauthProtectedResourceRoute,
   ApiPublicCertificationsIdRoute: ApiPublicCertificationsIdRoute,
+  ApiPublicCrmRunRoute: ApiPublicCrmRunRoute,
   ApiPublicCurriculumNextRoute: ApiPublicCurriculumNextRoute,
   ApiPublicDiagnoseStartRoute: ApiPublicDiagnoseStartRoute,
   ApiPublicDiagnoseSubmitRoute: ApiPublicDiagnoseSubmitRoute,
@@ -3449,13 +3470,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
