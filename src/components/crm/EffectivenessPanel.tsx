@@ -59,12 +59,13 @@ export function EffectivenessPanel() {
       toast.success(
         r.job === "score"
           ? `Scored ${r.checked} messages · ${r.converted} converted`
-          : `Tuner: ${r.paused} paused, ${r.drafted} drafted`,
+          : `Tuner: ${r.paused} paused, ${r.activated} published, ${r.blocked} blocked by guardrails`,
       );
       q.refetch();
     },
     onError: (e: any) => toast.error(e?.message ?? "Job failed"),
   });
+
 
   const data = q.data;
   const maxHour = Math.max(1, ...(data?.hours ?? []).map((h) => h.sent));
