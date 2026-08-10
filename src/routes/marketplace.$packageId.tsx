@@ -25,6 +25,7 @@ import { useEffect, useState } from "react";
 import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 import { PackageGallery } from "@/components/marketplace/PackageGallery";
 import { StatLine } from "@/components/marketplace/StatLine";
+import { openSkillsInstallOne, openSkillsUpdate } from "@/lib/skills/open-skills";
 
 export const Route = createFileRoute("/marketplace/$packageId")({
   loader: async ({ params }) => {
