@@ -52,6 +52,7 @@ function Docs() {
             {[
               "Quickstart",
               "MCP Gateway",
+              "Open Skills CLI",
               "Skills",
               "Playbooks",
               "Souls",
