@@ -108,6 +108,37 @@ function QuickCopyStrip({
           </li>
         ))}
       </ul>
+      <div className="mt-4 flex flex-col gap-2 rounded-xl border border-border bg-background p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="text-sm font-semibold">No MCP? Use the open Skills CLI</div>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Installs our graded SKILL.md files into Claude Code, Cursor, Codex, Copilot, Windsurf
+            and more.
+          </p>
+          <code className="mt-2 block font-mono text-[11px] text-primary">
+            {openSkillsInstallAll}
+          </code>
+        </div>
+        <button
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(openSkillsInstallAll);
+              setCopiedId("open-skills");
+              setTimeout(() => setCopiedId((v) => (v === "open-skills" ? null : v)), 1600);
+            } catch {
+              /* noop */
+            }
+          }}
+          aria-label="Copy open Skills CLI command"
+          className={`inline-flex h-9 shrink-0 items-center justify-center rounded-md px-3 text-xs font-semibold transition-all ${
+            copiedId === "open-skills"
+              ? "bg-signal/20 text-signal"
+              : "border border-border bg-card text-foreground hover:border-primary/50"
+          }`}
+        >
+          {copiedId === "open-skills" ? "✓ Copied" : "Copy command"}
+        </button>
+      </div>
     </div>
   );
 }
