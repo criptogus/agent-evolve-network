@@ -494,10 +494,13 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
 
     const { data: pending } = await admin
       .from("crm_copy_variants")
-      .select("id, trigger, variant, label, subject_override, heading_override, intro_override, created_at")
-      .eq("status", "pending")
+      .select(
+        "id, trigger, variant, label, subject_override, heading_override, intro_override, notes, created_at",
+      )
+      .in("status", ["pending", "quarantined"])
       .order("created_at", { ascending: false })
       .limit(20);
+
 
     const { data: changelog } = await admin
       .from("crm_tuning_log")
