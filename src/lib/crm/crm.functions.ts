@@ -596,5 +596,13 @@ export const runCrmLearningNow = createServerFn({ method: "POST" })
       return { job: "score" as const, ...r };
     }
     const r = await runTuner({ dryRun: data.dryRun });
-    return { job: "tune" as const, paused: r.paused.length, drafted: r.drafted.length, leaders: r.leaders };
+    return {
+      job: "tune" as const,
+      paused: r.paused.length,
+      drafted: r.drafted.length,
+      activated: r.activated.length,
+      blocked: r.blocked.length,
+      leaders: r.leaders,
+    };
+
   });
