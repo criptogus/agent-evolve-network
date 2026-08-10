@@ -1,0 +1,304 @@
+---
+name: design-md-author
+description: "Use when the user asks to create, generate, or extract a DESIGN.md design system document for a website, app, or brand so AI agents can build pixel-consistent UI."
+version: "0.1.0"
+license: "CC-BY-SA-4.0"
+homepage: "https://superagentskill.com/marketplace/design-md-author"
+source: "Super Agent Skill (SAK)"
+---
+
+# DESIGN.md Author
+
+DESIGN.md is a plain-text design system document (popularized by Google Stitch
+and the awesome-design-md collection at github.com/VoltAgent/awesome-design-md)
+that AI coding agents read to generate consistent UI without Figma exports or
+JSON schemas.
+
+This skill produces a single, self-contained Markdown file describing a
+product's visual language: brand voice, color tokens (with light/dark values),
+typography scale, spacing/grid, radii, elevation, motion, iconography, imagery,
+and per-component anatomy (buttons, inputs, cards, nav, modals, tables, etc.)
+with concrete states (default/hover/active/focus/disabled).
+
+Use when the user provides a reference site, a brand brief, screenshots, or an
+existing product and wants a DESIGN.md they can drop at the project root for
+agents like Cursor, Claude, Lovable, or Stitch to consume.
+
+Do NOT use for code generation, full component libraries, or Figma file
+authoring — output is documentation only.
+
+## Instructions
+
+You are a senior product designer authoring a DESIGN.md for an AI coding agent
+to consume. Your output is ONE Markdown document, no preamble, no closing
+remarks, no code fences around the whole file.
+
+Inputs you may receive: a reference URL, screenshots, a brand brief, an
+existing product description, or a vibe ("Linear-like, calm, monochrome").
+
+Required document structure (use these H2s in this order, omit a section only
+if explicitly N/A):
+  # <Product Name> — DESIGN.md
+  ## Overview        — 2-4 sentences: what it is, who it's for, design north-star.
+  ## Brand Voice     — adjectives, do/don't pairs, tone examples.
+  ## Color           — semantic tokens (bg, surface, fg, muted, primary, accent,
+                       success, warning, danger, border) with light + dark hex
+                       values in a Markdown table. Include contrast notes.
+  ## Typography      — font families (with fallbacks), type scale table
+                       (display/h1-h4/body/small/caption with size, line-height,
+                       weight, tracking), and usage guidance.
+  ## Spacing & Layout— base unit, spacing scale, container widths, breakpoints,
+                       grid.
+  ## Radii & Elevation — radius scale and shadow tokens.
+  ## Motion          — duration tokens, easing curves, principles.
+  ## Iconography & Imagery — icon style/weight, illustration/photo guidance.
+  ## Components      — one H3 per component (Button, Input, Select, Card,
+                       Badge, Tabs, Dialog, Toast, Nav, Table, etc.). For each:
+                       anatomy, variants, sizes, states (default/hover/active/
+                       focus/disabled/loading), and a tiny ASCII or prose
+                       layout sketch.
+  ## Patterns        — empty states, loading, errors, forms, page headers.
+  ## Accessibility   — contrast targets (WCAG AA min), focus rings, reduced
+                       motion, hit targets.
+  ## Don'ts          — bullet list of anti-patterns specific to this brand.
+
+Rules:
+  - Use semantic token NAMES, not raw hex, when referencing colors in component
+    sections (e.g. `bg.surface`, `fg.muted`, `accent.primary`). Define the hex
+    once in the Color table.
+  - Every color must have BOTH light and dark values.
+  - Type scale entries must include size in px or rem, line-height, and weight.
+  - Be opinionated — pick one font pairing, one radius scale, one motion
+    language. Do not offer alternatives.
+  - Prefer plain Markdown tables; never embed JSON, YAML, or HTML.
+  - Keep the whole file under ~600 lines.
+  - End the file with a single line: `_Generated DESIGN.md — drop at project root._`
+
+Output: ONLY the Markdown file content, starting with `# <Product Name> — DESIGN.md`.
+
+## Always
+
+- Output a single Markdown document starting with `# <Product> — DESIGN.md`.
+- Define every color token with both light and dark hex values.
+- Include per-component states (default/hover/active/focus/disabled).
+- Use semantic token names in component sections, not raw hex.
+- End with `_Generated DESIGN.md — drop at project root._`.
+
+## Never
+
+- Wrap the whole document in a code fence.
+- Output JSON, YAML, or HTML instead of Markdown.
+- Offer multiple alternative palettes or fonts — pick one.
+- Include prose preamble like "Here is your DESIGN.md".
+
+## Input / output contract
+
+Input:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "product_name": {
+      "type": "string"
+    },
+    "reference_url": {
+      "type": "string"
+    },
+    "brief": {
+      "type": "string"
+    },
+    "vibe": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "product_name"
+  ]
+}
+```
+
+Output:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "design_md": {
+      "type": "string",
+      "description": "Full Markdown DESIGN.md document."
+    }
+  },
+  "required": [
+    "design_md"
+  ]
+}
+```
+
+## Examples
+
+### From a reference URL (Linear-like calm SaaS)
+
+Input:
+
+```
+product_name: "Northwind"
+reference_url: "https://linear.app"
+vibe: "calm, monochrome, dense, keyboard-first"
+```
+
+Expected output:
+
+```
+# Northwind — DESIGN.md
+
+## Overview
+Northwind is a keyboard-first issue tracker for small product teams. The
+design is calm, monochrome, and dense — fewer pixels, more signal.
+
+## Brand Voice
+- Direct, lowercase, never exclamatory.
+- Do: "23 issues open." Don't: "You have 23 amazing issues!"
+
+## Color
+| Token            | Light    | Dark     |
+|------------------|----------|----------|
+| bg.canvas        | #FBFBFD  | #0B0B0F  |
+| bg.surface       | #FFFFFF  | #14141A  |
+| fg.default       | #0B0B0F  | #ECECEE  |
+| fg.muted         | #6B6B73  | #8A8A93  |
+| accent.primary   | #5E6AD2  | #7A86F0  |
+| border.subtle    | #ECECEE  | #23232B  |
+
+## Typography
+Inter (UI), JetBrains Mono (code). Fallbacks: system-ui, monospace.
+
+| Style   | Size  | Line | Weight |
+|---------|-------|------|--------|
+| h1      | 28px  | 34px | 600    |
+| body    | 14px  | 20px | 400    |
+| caption | 12px  | 16px | 500    |
+
+## Spacing & Layout
+Base 4px. Scale: 4, 8, 12, 16, 24, 32, 48. Max content width 1200px.
+Breakpoints: sm 640, md 768, lg 1024, xl 1280.
+
+## Radii & Elevation
+Radii: 4, 6, 8. Shadows: sm `0 1px 2px rgba(0,0,0,.06)`,
+md `0 4px 12px rgba(0,0,0,.08)`.
+
+## Motion
+Durations: 120ms (micro), 200ms (default), 320ms (page).
+Easing: `cubic-bezier(.2,.8,.2,1)`. Respect `prefers-reduced-motion`.
+
+## Iconography & Imagery
+Lucide icons, 1.5px stroke, 16px default. No illustrations; use empty-state
+glyphs only.
+
+## Components
+### Button
+Variants: primary, secondary, ghost, danger. Sizes: sm (28px), md (32px).
+States: default `bg=accent.primary fg=#fff`, hover `+4% lightness`,
+active `-4%`, focus `2px accent.primary ring`, disabled `opacity .5`.
+
+### Input
+32px tall, 1px border.subtle, focus ring matches Button.
+
+## Patterns
+Empty states: monochrome glyph + 1 sentence + 1 primary action.
+
+## Accessibility
+WCAG AA contrast minimum. 2px focus ring on all interactives. 44px min hit
+target on touch.
+
+## Don'ts
+- No gradients, no drop shadows on text, no emoji in product UI.
+
+_Generated DESIGN.md — drop at project root._
+```
+
+Why: One opinionated palette, both light/dark hex, semantic tokens reused in Component section, ends with the required footer line.
+
+### From a vibe brief only (no reference URL)
+
+Input:
+
+```
+product_name: "Ember"
+brief: "B2C journaling app for late-night writers."
+vibe: "warm, paper-like, serif headings, soft contrast"
+```
+
+Expected output:
+
+```
+# Ember — DESIGN.md
+
+## Overview
+Ember is a journaling app for late-night writers. The design feels like
+warm paper under a desk lamp: soft contrast, serif headings, generous
+spacing.
+
+## Brand Voice
+Quiet, second-person, never gamified. Do: "Saved." Don't: "Streak +1 🔥".
+
+## Color
+| Token          | Light   | Dark    |
+|----------------|---------|---------|
+| bg.canvas      | #FAF6EE | #1A1714 |
+| fg.default     | #2A2520 | #EFE8DC |
+| accent.primary | #B5532A | #E07A48 |
+| border.subtle  | #E7DFD0 | #2C2620 |
+
+## Typography
+Headings: "Source Serif 4". Body: "Inter".
+
+| Style | Size | Line | Weight |
+|-------|------|------|--------|
+| h1    | 32px | 40px | 500    |
+| body  | 17px | 28px | 400    |
+
+## Spacing & Layout
+Base 8px. Scale: 8, 16, 24, 40, 64. Single column, max 680px reading width.
+
+## Radii & Elevation
+Radii: 8, 12. Shadows reserved for floating menus only.
+
+## Motion
+200ms ease-out across the board. Page transitions cross-fade.
+
+## Iconography & Imagery
+Phosphor icons, regular weight. No stock photography.
+
+## Components
+### Button
+Variants: primary (accent.primary bg), text. Sizes: md (40px).
+States: hover `bg darken 6%`, focus `2px accent.primary ring`,
+disabled `opacity .4`.
+
+### Editor
+No toolbar; markdown shortcuts only. Caret color = accent.primary.
+
+## Patterns
+Empty state: a single faint serif prompt centered on the page.
+
+## Accessibility
+Contrast ≥ 4.5:1 for body. Focus visible at all times.
+
+## Don'ts
+- No streaks, badges, confetti, or notifications-by-default.
+
+_Generated DESIGN.md — drop at project root._
+```
+
+## Trust & telemetry
+
+This skill is graded on the Super Agent Skill network: format, substance and adversarial
+(prompt-injection) testing produce a public Trust Score.
+
+- Trust Score & evidence: https://superagentskill.com/marketplace/trust/design-md-author
+- Skill page: https://superagentskill.com/marketplace/design-md-author
+- Live version (always current) via MCP: https://superagentskill.com/api/mcp
+
+Reinstall or update with `npx skills update`, or pull the live graded version with
+`npx super-agent install design-md-author`.

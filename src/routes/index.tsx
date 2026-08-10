@@ -8,6 +8,7 @@ import { PRICING_SENTENCE } from "@/lib/pricing-copy";
 import { Hero } from "@/components/site/home/Hero";
 import { Problem } from "@/components/site/home/Problem";
 import { LabSteps } from "@/components/site/home/LabSteps";
+import { OpenSkills } from "@/components/site/home/OpenSkills";
 import { FounderLetter } from "@/components/site/home/FounderLetter";
 import { University } from "@/components/site/home/University";
 import { AgentFactory } from "@/components/site/home/AgentFactory";
@@ -28,7 +29,7 @@ const OG_IMAGE = "https://superagentskill.com/og-2026-07-31.jpg";
 
 // Kept between 50 and 160 chars.
 function buildDescription(skillsLabel: string) {
-  return `${skillsLabel} MCP skills for Claude, Hermes and ChatGPT — signed, tested against jailbreaks and scored in public. Connect once, no code.`;
+  return `${skillsLabel} graded agent skills — tested against jailbreaks, scored in public. Install with the open skills CLI (skills.sh), our CLI or MCP.`;
 }
 
 export const Route = createFileRoute("/")({
@@ -188,6 +189,8 @@ function Home() {
       <Hero />
       <Problem />
       <LabSteps />
+      <OpenSkills />
+
       <AgentFactory />
       <University />
       <FounderLetter />

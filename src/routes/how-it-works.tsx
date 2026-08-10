@@ -3,6 +3,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { HowItWorks } from "@/components/site/home/HowItWorks";
 import { CompatibleAgents } from "@/components/site/home/CompatibleAgents";
+import { OpenSkills } from "@/components/site/home/OpenSkills";
 import { Proof } from "@/components/site/home/Proof";
 import { CoreConcepts } from "@/components/site/home/CoreConcepts";
 import { CtaSection } from "@/components/site/home/CtaSection";
@@ -10,7 +11,7 @@ import { canonicalLink } from "@/lib/seo/canonical";
 
 const TITLE = "How it works — connect, install, keep it verified | Super Agent Skill";
 const DESCRIPTION =
-  "The mechanics behind Super Agent Skill: connect your agent over MCP, install tested skills and agents, and see how Trust Score, signatures and adversarial testing are produced.";
+  "The mechanics behind Super Agent Skill: install tested skills with the open skills CLI (skills.sh), our CLI or MCP, and see how Trust Score, signatures and adversarial testing are produced.";
 
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
@@ -53,6 +54,7 @@ function HowItWorksPage() {
         </section>
         <HowItWorks />
         <CompatibleAgents />
+        <OpenSkills />
         <Proof />
         <CoreConcepts />
         <CtaSection />

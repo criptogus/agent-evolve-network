@@ -1,0 +1,91 @@
+---
+name: fin-earnings-recap
+description: "Build a post-earnings recap for a stock using yfinance — headline result vs estimates, quarterly financial trends, stock price reaction, and what changed. Use when the user asks for earnings recap work, or mentions fin, earnings, recap."
+version: "0.1.0"
+license: "MIT"
+homepage: "https://superagentskill.com/marketplace/fin-earnings-recap"
+source: "Super Agent Skill (SAK)"
+---
+
+# Earnings Recap
+
+Use this skill when a user wants a recap after a company has reported earnings: the headline EPS and
+revenue result versus estimates, detailed beat/miss, quarterly financial trends, the stock's price
+reaction around the report, and context on what changed. It uses yfinance for earnings results,
+financial statements, and ~30 days of price history to capture the reaction window.
+
+Output is a structured recap (headline result, earnings vs estimates detail, quarterly trends, price
+reaction, context). It correctly handles before/after-market timing when measuring the reaction.
+Research/educational only, not financial advice; it does not recommend trades.
+
+## Instructions
+
+You are an equity-research assistant building a post-earnings recap from yfinance data.
+Step 1 - Ensure yfinance is available.
+Step 2 - Identify the ticker and gather: earnings result, financial statements, ~30 days of price
+history around the report, and context.
+Step 3 - Determine the most recent earnings date from earnings_history; measure the price reaction
+as close on the last trading day before earnings to close on the first trading day after, carefully
+accounting for before/after-market reporting timing.
+Step 4 - Build the recap with sections:
+(1) Headline Result (EPS/revenue actual vs estimate, beat/miss); (2) Earnings vs Estimates Detail;
+(3) Quarterly Financial Trends (revenue, margins, segment direction); (4) Stock Price Reaction
+(magnitude and direction); (5) Context & What Changed.
+Step 5 - Respond with a clear, structured report.
+Caveats: data may be partial or delayed; reaction windows are approximate. Research/educational only,
+not financial advice; do not recommend trades.
+
+## Always
+
+- Fetch data via yfinance rather than answering from memory.
+- Account for before/after-market timing when computing the price reaction.
+- State that output is research/educational, not financial advice.
+
+## Never
+
+- Recommend buying or selling after the print.
+- Misattribute the reaction window without checking report timing.
+
+## Examples
+
+### Recap a print
+
+Input:
+
+```
+Recap NVDA's latest earnings
+```
+
+Expected output:
+
+```
+Reports headline EPS/revenue vs estimates and beat/miss, quarterly trends, the measured price
+reaction around the report date, and what changed. Disclaimer: research-only, not advice.
+```
+
+### Reaction focus
+
+Input:
+
+```
+How did the stock react to AAPL's last report?
+```
+
+Expected output:
+
+```
+Finds the earnings date, measures last-close-before to first-close-after (respecting after-hours
+timing), and reports the percentage move with brief context. Not a trade recommendation.
+```
+
+## Trust & telemetry
+
+This skill is graded on the Super Agent Skill network: format, substance and adversarial
+(prompt-injection) testing produce a public Trust Score.
+
+- Trust Score & evidence: https://superagentskill.com/marketplace/trust/fin-earnings-recap
+- Skill page: https://superagentskill.com/marketplace/fin-earnings-recap
+- Live version (always current) via MCP: https://superagentskill.com/api/mcp
+
+Reinstall or update with `npx skills update`, or pull the live graded version with
+`npx super-agent install fin-earnings-recap`.

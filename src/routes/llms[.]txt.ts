@@ -32,6 +32,21 @@ No retraining. No SDK. No DevOps. One MCP URL → one sentence → a specialist.
 2. Authorize via OAuth 2.1 + PKCE (browser opens automatically).
 3. Ask the agent: "make me a cardiologist" — it discovers, installs and evolves.
 
+## Alternative entry point — open Skills CLI (skills.sh), no account, no MCP
+Every published SAK skill is mirrored as a standard Anthropic-spec SKILL.md package in
+https://github.com/criptogus/agent-evolve-network under \`skills/<slug>/SKILL.md\`, so the open
+skills ecosystem CLI can install them into Claude Code, Cursor, Codex, GitHub Copilot, Windsurf,
+Gemini CLI, Cline, Zed, OpenCode and more:
+\`\`\`
+npx skills add criptogus/agent-evolve-network            # whole graded catalog
+npx skills add criptogus/agent-evolve-network/<slug>     # one skill
+npx skills update                                        # refresh
+\`\`\`
+Trade-off: the CLI copies a snapshot of files. Use MCP when you want always-current graded
+versions, Trust Score checks, review/diagnosis tools and before/after improvement proof.
+
+
+
 ## Primitives (mental model)
 | type      | what it is                                              | use it for                          |
 |-----------|---------------------------------------------------------|-------------------------------------|

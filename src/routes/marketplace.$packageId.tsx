@@ -25,6 +25,7 @@ import { useEffect, useState } from "react";
 import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 import { PackageGallery } from "@/components/marketplace/PackageGallery";
 import { StatLine } from "@/components/marketplace/StatLine";
+import { openSkillsInstallOne, openSkillsUpdate } from "@/lib/skills/open-skills";
 
 export const Route = createFileRoute("/marketplace/$packageId")({
   loader: async ({ params }) => {
@@ -370,16 +371,21 @@ function PackageDetail() {
             <div className="rounded-xl border border-border bg-background p-5 shadow-elevated">
               {/* Primary: no-signup MCP path */}
               <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
-                Install via MCP — no account needed
+                Install — no account needed
               </div>
               <p className="mt-1.5 text-xs text-muted-foreground">
-                Add the gateway URL to Claude or Cursor — this skill is included, no signup
-                required.
+                Use the open skills CLI, our CLI, or add the MCP gateway URL to Claude or Cursor.
+                No signup required.
               </p>
               <div className="mt-3 space-y-2">
-                <CodeBlockCopy code={MCP_GATEWAY_URL} label="gateway URL" />
+                <CodeBlockCopy
+                  code={openSkillsInstallOne(pkg.id)}
+                  label="open skills CLI command"
+                />
                 <CodeBlockCopy code={`npx super-agent install ${pkg.id}`} label="install command" />
+                <CodeBlockCopy code={MCP_GATEWAY_URL} label="gateway URL" />
               </div>
+
 
               <div className="mt-5 flex items-center gap-3">
                 <span className="h-px flex-1 bg-border" />
@@ -686,7 +692,7 @@ function DetailsPanel({ pkg }: { pkg: Package }) {
   );
 }
 
-/** Three install paths: MCP gateway, CLI, manual copy. */
+/** Four install paths: open Skills CLI, MCP gateway, our CLI, manual copy. */
 function InstallInstructions({ pkg }: { pkg: Package }) {
   return (
     <div className="space-y-4">
@@ -695,7 +701,24 @@ function InstallInstructions({ pkg }: { pkg: Package }) {
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
             1
           </span>
-          <h3 className="text-sm font-semibold">MCP gateway — no account needed</h3>
+          <h3 className="text-sm font-semibold">Open Skills CLI (skills.sh)</h3>
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Standard <code className="font-mono text-foreground">SKILL.md</code> install for Claude
+          Code, Cursor, Codex, Copilot, Windsurf, Gemini, Cline, Zed and more. No account needed.
+        </p>
+        <div className="mt-3 space-y-2">
+          <CodeBlockCopy code={openSkillsInstallOne(pkg.id)} label="open skills install" />
+          <CodeBlockCopy code={openSkillsUpdate} label="update installed skills" />
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+            2
+          </span>
+          <h3 className="text-sm font-semibold">MCP gateway — always the current graded version</h3>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
           Add this URL as an MCP server in Claude, Hermes, Cursor or ChatGPT. This package is
@@ -709,9 +732,9 @@ function InstallInstructions({ pkg }: { pkg: Package }) {
       <div className="rounded-xl border border-border bg-card p-5">
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
-            2
+            3
           </span>
-          <h3 className="text-sm font-semibold">CLI</h3>
+          <h3 className="text-sm font-semibold">SAK CLI</h3>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
           Install a pinned version into the current project.
@@ -728,10 +751,11 @@ function InstallInstructions({ pkg }: { pkg: Package }) {
       <div className="rounded-xl border border-border bg-card p-5">
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
-            3
+            4
           </span>
           <h3 className="text-sm font-semibold">Copy / paste</h3>
         </div>
+
         <p className="mt-2 text-sm text-muted-foreground">
           {pkg.systemPrompt
             ? "Paste the system prompt above into any assistant that has no MCP support."

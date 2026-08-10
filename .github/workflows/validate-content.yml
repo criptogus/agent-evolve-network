@@ -6,6 +6,7 @@ on:
       - "content/**"
       - "scripts/validate-content.mjs"
       - "scripts/audit-skills.mjs"
+      - "scripts/build-skills-sh-mirror.mjs"
       - "src/lib/security/prompt-injection-guard.ts"
       - ".github/workflows/validate-content.yml"
   push:
@@ -14,6 +15,7 @@ on:
       - "content/**"
       - "scripts/validate-content.mjs"
       - "scripts/audit-skills.mjs"
+      - "scripts/build-skills-sh-mirror.mjs"
       - "src/lib/security/prompt-injection-guard.ts"
 
 jobs:
@@ -30,3 +32,7 @@ jobs:
         run: bun run validate:content
       - name: Security audit (prompt injection / malicious functions)
         run: bun run audit:skills
+      # The skills/ mirror is what `npx skills add` (skills.sh) installs — it must
+      # never drift from content/skills/*.yaml.
+      - name: Check open Skills CLI mirror is current
+        run: bun run check:skills-mirror

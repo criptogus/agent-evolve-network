@@ -117,7 +117,23 @@ curl -sS https://superagentskill.com/api/public/mcp \\
 Then \`{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}\`, then
 \`tools/call\` with \`{"name":"search_registry","arguments":{"query":"..."}}\`.
 
-### 3. No-SSE escape hatches
+### 3. Or install files instead of connecting (open Skills CLI, skills.sh)
+
+Every published skill is mirrored as a standard SKILL.md package in
+\`github.com/criptogus/agent-evolve-network\` at \`skills/<slug>/SKILL.md\`:
+
+\`\`\`bash
+npx skills add criptogus/agent-evolve-network            # whole graded catalog
+npx skills add criptogus/agent-evolve-network/<slug>     # one skill
+npx skills update                                        # refresh installed skills
+\`\`\`
+
+Works with Claude Code, Cursor, Codex, GitHub Copilot, Windsurf, Gemini CLI, Cline, Zed,
+OpenCode and other agents the CLI supports. This is a file snapshot: no live Trust Score
+lookups, no review/diagnosis tools, no telemetry. Connect over MCP when you need those.
+
+### 4. No-SSE escape hatches
+
 
 Some runtimes cannot hold an SSE stream. These are plain JSON:
 
