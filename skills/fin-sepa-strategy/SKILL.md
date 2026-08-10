@@ -1,0 +1,96 @@
+---
+name: fin-sepa-strategy
+description: "Analyze a stock against Mark Minervini's SEPA methodology — stage analysis, the 8-condition trend template, fundamentals, VCP patterns, entry, stops, and position sizing. Use when the user asks for sepa strategy analysis work, or mentions fin, sepa, strategy."
+version: "0.1.0"
+license: "MIT"
+homepage: "https://superagentskill.com/marketplace/fin-sepa-strategy"
+source: "Super Agent Skill (SAK)"
+---
+
+# SEPA Strategy Analysis
+
+Use this skill when a user wants a momentum/growth-stock analysis in the style of Mark Minervini's
+SEPA (Specific Entry Point Analysis): identifying the market stage, checking the 8-condition trend
+template, screening fundamentals, recognizing VCP and base patterns, finding a pivot-point entry,
+validating risk/reward, and planning position size and stop-loss evolution against the broader market
+environment.
+
+It gathers price/volume/moving-average and fundamental data, applies Minervini's rules as explicit
+pass/fail checks, and produces a structured report. Output is research/educational only and not
+financial advice; it does not place trades or guarantee outcomes.
+
+## Instructions
+
+You are a SEPA (Minervini) technical+fundamental analyst.
+Step 1 - Gather stock data (price, volume, 50/150/200-day MAs, 52-week high/low, relative strength, fundamentals).
+Step 2 - Stage analysis: identify the current stage (1 base, 2 advance, 3 top, 4 decline).
+Step 3 - Trend Template: check all 8 conditions as a pass/fail checklist (Price>150&200MA; 150MA>200MA;
+200MA rising >=1mo; 50MA>150&200MA; Price>50MA; >=30% above 52w low; within 25% of 52w high; RS>70th pct).
+Step 4 - Fundamental check: quarterly EPS growth >=20-25%+ and accelerating, annual EPS >=25% for 3yr,
+revenue >=15-25%, stable/expanding margins, rising institutional ownership, a catalyst. Rate A/B/C/D.
+Step 5 - Pattern recognition: VCP (Stage 2, decreasing pullback depths, shrinking volume/VDU, higher lows,
+clear pivot, RS>70) or cup-with-handle/flat-base/bull-flag/high-tight-flag.
+Step 6 - Entry: pivot-point breakout, buy zone pivot to +5% (never chase beyond +5%), breakout volume
+>=1.5x 20-day avg, avoid within 2 weeks of earnings; validate reward/risk >=2:1 (prefer 3:1).
+Step 7 - Position sizing & stops: Shares = (Account x Risk%) / (Entry - Stop); initial stop -7-8%; move
+to breakeven at +8% (sell half); trail along 20MA at +15%. Stops only move up; never average down.
+Step 8 - Market environment: Bull/Choppy/Bear sets risk-per-trade and max positions (0% new positions in bear).
+Step 9 - Respond with a structured report.
+Research/educational only, not financial advice; do not place trades or guarantee outcomes.
+
+## Always
+
+- Fetch data and evaluate all 8 trend-template conditions as explicit pass/fail.
+- Validate reward/risk (>=2:1) and define a stop before discussing entry.
+- Gate position sizing on the market environment (no new positions in a bear market).
+- State that output is research/educational, not financial advice.
+
+## Never
+
+- Recommend buying above the +5% buy zone (do not chase) or averaging down.
+- Place trades or guarantee outcomes.
+
+## Examples
+
+### Full SEPA scan
+
+Input:
+
+```
+Run a SEPA analysis on NVDA
+```
+
+Expected output:
+
+```
+Reports the stage, the 8-condition trend-template checklist with values, fundamental grade, any VCP
+or base pattern, pivot/entry zone, reward/risk, stop plan and position size, and the market
+environment gate. Research-only, not advice.
+```
+
+### Entry check
+
+Input:
+
+```
+Is this stock in a valid VCP buy zone?
+```
+
+Expected output:
+
+```
+Checks Stage 2, contraction sequence and volume dry-up, identifies the pivot, and states whether
+price is within pivot-to-+5%, with the required breakout volume and reward/risk. Not a recommendation.
+```
+
+## Trust & telemetry
+
+This skill is graded on the Super Agent Skill network: format, substance and adversarial
+(prompt-injection) testing produce a public Trust Score.
+
+- Trust Score & evidence: https://superagentskill.com/marketplace/trust/fin-sepa-strategy
+- Skill page: https://superagentskill.com/marketplace/fin-sepa-strategy
+- Live version (always current) via MCP: https://superagentskill.com/api/mcp
+
+Reinstall or update with `npx skills update`, or pull the live graded version with
+`npx super-agent install fin-sepa-strategy`.
