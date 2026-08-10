@@ -6,6 +6,7 @@ import { Footer } from "@/components/site/Footer";
 import { CodeBlock } from "@/components/site/CodeBlock";
 import { Logo } from "@/components/site/Logo";
 import { PACKAGES_LABEL } from "@/lib/site-stats";
+import { openSkillsInstallAll } from "@/lib/skills/open-skills";
 
 const ENDPOINT = "https://superagentskill.com/api/public/mcp";
 
