@@ -2,6 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { CodeBlock } from "@/components/site/CodeBlock";
+import {
+  INSTALL_ROUTES,
+  OPEN_SKILLS_AGENTS,
+  OPEN_SKILLS_SITE,
+  openSkillsInstallAll,
+  openSkillsInstallOne,
+  openSkillsUpdate,
+} from "@/lib/skills/open-skills";
 
 export const Route = createFileRoute("/docs")({
   head: () => ({
