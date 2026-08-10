@@ -14,6 +14,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "validate:content": "node --experimental-strip-types scripts/validate-content.mjs",
+    "build:skills-mirror": "node scripts/build-skills-sh-mirror.mjs",
+    "check:skills-mirror": "node scripts/build-skills-sh-mirror.mjs --check",
     "audit:skills": "node --experimental-strip-types scripts/audit-skills.mjs",
     "scan:skillspector": "node scripts/scan-skillspector.mjs",
     "sync:content": "node scripts/sync-content-to-registry.mjs",
