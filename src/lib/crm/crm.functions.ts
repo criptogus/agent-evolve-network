@@ -405,8 +405,10 @@ export type CrmEffectiveness = {
     subject: string | null;
     heading: string | null;
     intro: string | null;
+    notes: string | null;
     created_at: string;
   }>;
+  guardrails: Array<{ allowed: boolean; rule: string }>;
   changelog: Array<{
     action: string;
     trigger: string | null;
@@ -416,10 +418,13 @@ export type CrmEffectiveness = {
   }>;
 };
 
+
 export const getCrmEffectiveness = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .handler(async (): Promise<CrmEffectiveness> => {
     const { loadLearningState } = await import("@/lib/crm/learning.server");
+    const { AUTONOMY_RULES } = await import("@/lib/crm/guardrails");
+
     const { OUTCOMES, VARIANTS, armKey, estimatedRate, EMPTY_ARM } = await import(
       "@/lib/crm/learning"
     );
@@ -491,10 +496,13 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
 
     const { data: pending } = await admin
       .from("crm_copy_variants")
-      .select("id, trigger, variant, label, subject_override, heading_override, intro_override, created_at")
-      .eq("status", "pending")
+      .select(
+        "id, trigger, variant, label, subject_override, heading_override, intro_override, notes, created_at",
+      )
+      .in("status", ["pending", "quarantined"])
       .order("created_at", { ascending: false })
       .limit(20);
+
 
     const { data: changelog } = await admin
       .from("crm_tuning_log")
@@ -518,8 +526,11 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
         subject: p.subject_override,
         heading: p.heading_override,
         intro: p.intro_override,
+        notes: p.notes ?? null,
         created_at: p.created_at,
       })),
+      guardrails: AUTONOMY_RULES,
+
       changelog: ((changelog ?? []) as any[]).map((c) => ({
         action: c.action,
         trigger: c.trigger,
@@ -585,5 +596,13 @@ export const runCrmLearningNow = createServerFn({ method: "POST" })
       return { job: "score" as const, ...r };
     }
     const r = await runTuner({ dryRun: data.dryRun });
-    return { job: "tune" as const, paused: r.paused.length, drafted: r.drafted.length, leaders: r.leaders };
+    return {
+      job: "tune" as const,
+      paused: r.paused.length,
+      drafted: r.drafted.length,
+      activated: r.activated.length,
+      blocked: r.blocked.length,
+      leaders: r.leaders,
+    };
+
   });

@@ -5,6 +5,9 @@
  * and the admin UI, so every surface tells the customer the same story.
  * All customer-facing copy in this file is English-only by product rule.
  */
+import { GUARDRAILS } from "@/lib/crm/guardrails";
+
+
 
 export type CrmCustomerRow = {
   user_id: string;
@@ -278,11 +281,15 @@ export const TRIGGERS: Record<TriggerId, TriggerDef> = {
   },
 };
 
-/** Global cadence caps agreed with the product owner. */
+/**
+ * Global cadence caps. Single source of truth lives in the autonomy guardrails —
+ * the learning loop is not allowed to widen them.
+ */
 export const CADENCE = {
-  maxEmailsPer7Days: 2,
-  minHoursBetweenEmails: 48,
+  maxEmailsPer7Days: GUARDRAILS.maxEmailsPer7Days,
+  minHoursBetweenEmails: GUARDRAILS.minHoursBetweenEmails,
 };
+
 
 export type SentSummary = {
   /** lifetime count per trigger */

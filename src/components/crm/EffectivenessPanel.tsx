@@ -59,12 +59,13 @@ export function EffectivenessPanel() {
       toast.success(
         r.job === "score"
           ? `Scored ${r.checked} messages · ${r.converted} converted`
-          : `Tuner: ${r.paused} paused, ${r.drafted} drafted`,
+          : `Tuner: ${r.paused} paused, ${r.activated} published, ${r.blocked} blocked by guardrails`,
       );
       q.refetch();
     },
     onError: (e: any) => toast.error(e?.message ?? "Job failed"),
   });
+
 
   const data = q.data;
   const maxHour = Math.max(1, ...(data?.hours ?? []).map((h) => h.sent));
@@ -74,16 +75,19 @@ export function EffectivenessPanel() {
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 pb-3">
           <div>
-            <CardTitle className="text-base">Learning loop</CardTitle>
+            <CardTitle className="text-base">Autonomous learning loop</CardTitle>
             <p className="mt-1 text-xs text-muted-foreground">
-              Picks the copy variant and the trigger with the best measured outcome, and only changes
-              anything after {data?.min_samples ?? 20} sends per variant. Cadence caps never change.
+              Runs without approvals: it picks the copy variant, the trigger and the send hour with the
+              best measured outcome, and publishes its own replacement copy once the guardrails below
+              pass. It only changes anything after {data?.min_samples ?? 20} sends per variant, and
+              cadence caps never change.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Badge variant={data?.learning_enabled ? "default" : "secondary"}>
-              {data?.learning_enabled ? "Learning on" : "Learning paused"}
+              {data?.learning_enabled ? "Autonomous" : "Learning paused"}
             </Badge>
+
             <Button
               size="sm"
               variant="outline"
@@ -262,14 +266,39 @@ export function EffectivenessPanel() {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Drafted variants waiting for approval</CardTitle>
+          <CardTitle className="text-base">Guardrails</CardTitle>
           <p className="mt-1 text-xs text-muted-foreground">
-            Written by AI when a framing loses. Nothing is sent before you approve it.
+            The hard limits the CRM can never cross on its own. Anything that breaks one of these is
+            quarantined instead of being sent.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {(data?.guardrails ?? []).map((g, i) => (
+              <li key={i} className="flex items-start gap-2 rounded border p-2 text-sm">
+                <Badge variant={g.allowed ? "default" : "secondary"} className="mt-0.5 shrink-0">
+                  {g.allowed ? "Can" : "Cannot"}
+                </Badge>
+                <span className={g.allowed ? "" : "text-muted-foreground"}>{g.rule}</span>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Quarantined copy</CardTitle>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Self-written variants that failed a guardrail. They are never sent — publishing one is a
+            manual override.
           </p>
         </CardHeader>
         <CardContent>
           {(data?.pending ?? []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">No drafts pending.</p>
+            <p className="text-sm text-muted-foreground">
+              Nothing quarantined — every self-written variant passed the guardrails.
+            </p>
           ) : (
             <ul className="space-y-3">
               {(data?.pending ?? []).map((p) => (
@@ -281,10 +310,11 @@ export function EffectivenessPanel() {
                     <div className="flex gap-2">
                       <Button
                         size="sm"
+                        variant="outline"
                         disabled={reviewMutation.isPending}
                         onClick={() => reviewMutation.mutate({ id: p.id, decision: "approve" })}
                       >
-                        Approve
+                        Publish anyway
                       </Button>
                       <Button
                         size="sm"
@@ -292,7 +322,7 @@ export function EffectivenessPanel() {
                         disabled={reviewMutation.isPending}
                         onClick={() => reviewMutation.mutate({ id: p.id, decision: "reject" })}
                       >
-                        Reject
+                        Discard
                       </Button>
                     </div>
                   </div>
@@ -300,6 +330,7 @@ export function EffectivenessPanel() {
                     <div className="font-semibold">{p.subject}</div>
                     <div>{p.heading}</div>
                     <p className="text-muted-foreground">{p.intro}</p>
+                    {p.notes ? <p className="text-xs text-destructive">{p.notes}</p> : null}
                   </div>
                 </li>
               ))}
@@ -307,6 +338,7 @@ export function EffectivenessPanel() {
           )}
         </CardContent>
       </Card>
+
     </div>
   );
 }
