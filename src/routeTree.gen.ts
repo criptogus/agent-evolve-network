@@ -142,6 +142,7 @@ import { Route as ApiPublicDotwellKnownOauthProtectedResourceRouteImport } from 
 import { Route as ApiPublicCertificationsIdRouteImport } from './routes/api/public/certifications.$id'
 import { Route as ApiPublicCrmRunRouteImport } from './routes/api/public/crm/run'
 import { Route as ApiPublicCrmScoreRouteImport } from './routes/api/public/crm/score'
+import { Route as ApiPublicCrmTuneRouteImport } from './routes/api/public/crm/tune'
 import { Route as ApiPublicCurriculumNextRouteImport } from './routes/api/public/curriculum/next'
 import { Route as ApiPublicDiagnoseStartRouteImport } from './routes/api/public/diagnose/start'
 import { Route as ApiPublicDiagnoseSubmitRouteImport } from './routes/api/public/diagnose/submit'
@@ -845,6 +846,11 @@ const ApiPublicCrmScoreRoute = ApiPublicCrmScoreRouteImport.update({
   path: '/api/public/crm/score',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCrmTuneRoute = ApiPublicCrmTuneRouteImport.update({
+  id: '/api/public/crm/tune',
+  path: '/api/public/crm/tune',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCurriculumNextRoute = ApiPublicCurriculumNextRouteImport.update({
   id: '/api/public/curriculum/next',
   path: '/api/public/curriculum/next',
@@ -1126,6 +1132,7 @@ export interface FileRoutesByFullPath {
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
   '/api/public/crm/run': typeof ApiPublicCrmRunRoute
   '/api/public/crm/score': typeof ApiPublicCrmScoreRoute
+  '/api/public/crm/tune': typeof ApiPublicCrmTuneRoute
   '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
   '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
   '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
@@ -1287,6 +1294,7 @@ export interface FileRoutesByTo {
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
   '/api/public/crm/run': typeof ApiPublicCrmRunRoute
   '/api/public/crm/score': typeof ApiPublicCrmScoreRoute
+  '/api/public/crm/tune': typeof ApiPublicCrmTuneRoute
   '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
   '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
   '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
@@ -1450,6 +1458,7 @@ export interface FileRoutesById {
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
   '/api/public/crm/run': typeof ApiPublicCrmRunRoute
   '/api/public/crm/score': typeof ApiPublicCrmScoreRoute
+  '/api/public/crm/tune': typeof ApiPublicCrmTuneRoute
   '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
   '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
   '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
@@ -1614,6 +1623,7 @@ export interface FileRouteTypes {
     | '/api/public/certifications/$id'
     | '/api/public/crm/run'
     | '/api/public/crm/score'
+    | '/api/public/crm/tune'
     | '/api/public/curriculum/next'
     | '/api/public/diagnose/start'
     | '/api/public/diagnose/submit'
@@ -1775,6 +1785,7 @@ export interface FileRouteTypes {
     | '/api/public/certifications/$id'
     | '/api/public/crm/run'
     | '/api/public/crm/score'
+    | '/api/public/crm/tune'
     | '/api/public/curriculum/next'
     | '/api/public/diagnose/start'
     | '/api/public/diagnose/submit'
@@ -1937,6 +1948,7 @@ export interface FileRouteTypes {
     | '/api/public/certifications/$id'
     | '/api/public/crm/run'
     | '/api/public/crm/score'
+    | '/api/public/crm/tune'
     | '/api/public/curriculum/next'
     | '/api/public/diagnose/start'
     | '/api/public/diagnose/submit'
@@ -2072,6 +2084,7 @@ export interface RootRouteChildren {
   ApiPublicCertificationsIdRoute: typeof ApiPublicCertificationsIdRoute
   ApiPublicCrmRunRoute: typeof ApiPublicCrmRunRoute
   ApiPublicCrmScoreRoute: typeof ApiPublicCrmScoreRoute
+  ApiPublicCrmTuneRoute: typeof ApiPublicCrmTuneRoute
   ApiPublicCurriculumNextRoute: typeof ApiPublicCurriculumNextRoute
   ApiPublicDiagnoseStartRoute: typeof ApiPublicDiagnoseStartRoute
   ApiPublicDiagnoseSubmitRoute: typeof ApiPublicDiagnoseSubmitRoute
@@ -3028,6 +3041,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCrmScoreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/crm/tune': {
+      id: '/api/public/crm/tune'
+      path: '/api/public/crm/tune'
+      fullPath: '/api/public/crm/tune'
+      preLoaderRoute: typeof ApiPublicCrmTuneRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/curriculum/next': {
       id: '/api/public/curriculum/next'
       path: '/api/public/curriculum/next'
@@ -3528,6 +3548,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCertificationsIdRoute: ApiPublicCertificationsIdRoute,
   ApiPublicCrmRunRoute: ApiPublicCrmRunRoute,
   ApiPublicCrmScoreRoute: ApiPublicCrmScoreRoute,
+  ApiPublicCrmTuneRoute: ApiPublicCrmTuneRoute,
   ApiPublicCurriculumNextRoute: ApiPublicCurriculumNextRoute,
   ApiPublicDiagnoseStartRoute: ApiPublicDiagnoseStartRoute,
   ApiPublicDiagnoseSubmitRoute: ApiPublicDiagnoseSubmitRoute,
