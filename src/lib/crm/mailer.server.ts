@@ -14,6 +14,7 @@ import { buildMessage, type CrmMessage } from "@/lib/crm/copy";
 import { buildSnapshot, loadCustomerRows } from "@/lib/crm/snapshot.server";
 import type { CrmSnapshot } from "@/lib/crm/types";
 import {
+  classifyStage,
   decideTrigger,
   TRIGGERS,
   type CrmCustomerRow,
@@ -223,7 +224,7 @@ export async function runCadence(opts: {
       await admin.from("crm_lifecycle_state").upsert(
         {
           user_id: row.user_id,
-          stage: (await buildSnapshotStage(row)) ?? row.stage,
+          stage: classifyStage(row),
           last_active_at: row.last_active_at,
           emails_sent_7d: sent.last7d,
         },
@@ -243,13 +244,4 @@ export async function runCadence(opts: {
     });
   }
   return result;
-}
-
-async function buildSnapshotStage(row: CrmCustomerRow): Promise<string | null> {
-  try {
-    const { classifyStage } = await import("@/lib/crm/segments");
-    return classifyStage(row);
-  } catch {
-    return null;
-  }
 }
