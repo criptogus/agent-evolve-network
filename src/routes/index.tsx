@@ -29,7 +29,7 @@ const OG_IMAGE = "https://superagentskill.com/og-2026-07-31.jpg";
 
 // Kept between 50 and 160 chars.
 function buildDescription(skillsLabel: string) {
-  return `${skillsLabel} MCP skills for Claude, Hermes and ChatGPT — signed, tested against jailbreaks and scored in public. Connect once, no code.`;
+  return `${skillsLabel} graded agent skills — tested against jailbreaks, scored in public. Install with the open skills CLI (skills.sh), our CLI or MCP.`;
 }
 
 export const Route = createFileRoute("/")({
