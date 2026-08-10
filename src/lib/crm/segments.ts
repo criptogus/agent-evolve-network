@@ -5,6 +5,9 @@
  * and the admin UI, so every surface tells the customer the same story.
  * All customer-facing copy in this file is English-only by product rule.
  */
+import { GUARDRAILS } from "@/lib/crm/guardrails";
+
+
 
 export type CrmCustomerRow = {
   user_id: string;
