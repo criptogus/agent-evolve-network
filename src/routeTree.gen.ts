@@ -69,6 +69,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
 import { Route as AdminAgentKpisRouteImport } from './routes/admin.agent-kpis'
 import { Route as AdminCalibrationRouteImport } from './routes/admin.calibration'
+import { Route as AdminCrmRouteImport } from './routes/admin.crm'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminFunnelRouteImport } from './routes/admin.funnel'
 import { Route as AdminMetaAdsPackRouteImport } from './routes/admin.meta-ads-pack'
@@ -139,6 +140,7 @@ import { Route as ApiOgSkillOfTheWeekSvgRouteImport } from './routes/api/og.skil
 import { Route as ApiPublicDotwellKnownOauthAuthorizationServerRouteImport } from './routes/api/public/[.]well-known.oauth-authorization-server'
 import { Route as ApiPublicDotwellKnownOauthProtectedResourceRouteImport } from './routes/api/public/[.]well-known.oauth-protected-resource'
 import { Route as ApiPublicCertificationsIdRouteImport } from './routes/api/public/certifications.$id'
+import { Route as ApiPublicCrmRunRouteImport } from './routes/api/public/crm/run'
 import { Route as ApiPublicCurriculumNextRouteImport } from './routes/api/public/curriculum/next'
 import { Route as ApiPublicDiagnoseStartRouteImport } from './routes/api/public/diagnose/start'
 import { Route as ApiPublicDiagnoseSubmitRouteImport } from './routes/api/public/diagnose/submit'
@@ -465,6 +467,11 @@ const AdminAgentKpisRoute = AdminAgentKpisRouteImport.update({
 const AdminCalibrationRoute = AdminCalibrationRouteImport.update({
   id: '/calibration',
   path: '/calibration',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCrmRoute = AdminCrmRouteImport.update({
+  id: '/crm',
+  path: '/crm',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminCustomersRoute = AdminCustomersRouteImport.update({
@@ -825,6 +832,11 @@ const ApiPublicCertificationsIdRoute =
     path: '/api/public/certifications/$id',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCrmRunRoute = ApiPublicCrmRunRouteImport.update({
+  id: '/api/public/crm/run',
+  path: '/api/public/crm/run',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCurriculumNextRoute = ApiPublicCurriculumNextRouteImport.update({
   id: '/api/public/curriculum/next',
   path: '/api/public/curriculum/next',
@@ -1022,6 +1034,7 @@ export interface FileRoutesByFullPath {
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/agent-kpis': typeof AdminAgentKpisRoute
   '/admin/calibration': typeof AdminCalibrationRoute
+  '/admin/crm': typeof AdminCrmRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
@@ -1093,6 +1106,7 @@ export interface FileRoutesByFullPath {
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
+  '/api/public/crm/run': typeof ApiPublicCrmRunRoute
   '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
   '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
   '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
@@ -1178,6 +1192,7 @@ export interface FileRoutesByTo {
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/agent-kpis': typeof AdminAgentKpisRoute
   '/admin/calibration': typeof AdminCalibrationRoute
+  '/admin/crm': typeof AdminCrmRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
@@ -1249,6 +1264,7 @@ export interface FileRoutesByTo {
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
+  '/api/public/crm/run': typeof ApiPublicCrmRunRoute
   '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
   '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
   '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
@@ -1336,6 +1352,7 @@ export interface FileRoutesById {
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/agent-kpis': typeof AdminAgentKpisRoute
   '/admin/calibration': typeof AdminCalibrationRoute
+  '/admin/crm': typeof AdminCrmRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
@@ -1407,6 +1424,7 @@ export interface FileRoutesById {
   '/api/public/.well-known/oauth-authorization-server': typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
+  '/api/public/crm/run': typeof ApiPublicCrmRunRoute
   '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
   '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
   '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
@@ -1495,6 +1513,7 @@ export interface FileRouteTypes {
     | '/admin/accounts'
     | '/admin/agent-kpis'
     | '/admin/calibration'
+    | '/admin/crm'
     | '/admin/customers'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
@@ -1566,6 +1585,7 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
+    | '/api/public/crm/run'
     | '/api/public/curriculum/next'
     | '/api/public/diagnose/start'
     | '/api/public/diagnose/submit'
@@ -1651,6 +1671,7 @@ export interface FileRouteTypes {
     | '/admin/accounts'
     | '/admin/agent-kpis'
     | '/admin/calibration'
+    | '/admin/crm'
     | '/admin/customers'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
@@ -1722,6 +1743,7 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
+    | '/api/public/crm/run'
     | '/api/public/curriculum/next'
     | '/api/public/diagnose/start'
     | '/api/public/diagnose/submit'
@@ -1808,6 +1830,7 @@ export interface FileRouteTypes {
     | '/admin/accounts'
     | '/admin/agent-kpis'
     | '/admin/calibration'
+    | '/admin/crm'
     | '/admin/customers'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
@@ -1879,6 +1902,7 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-authorization-server'
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
+    | '/api/public/crm/run'
     | '/api/public/curriculum/next'
     | '/api/public/diagnose/start'
     | '/api/public/diagnose/submit'
@@ -2010,6 +2034,7 @@ export interface RootRouteChildren {
   ApiPublicDotwellKnownOauthAuthorizationServerRoute: typeof ApiPublicDotwellKnownOauthAuthorizationServerRoute
   ApiPublicDotwellKnownOauthProtectedResourceRoute: typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   ApiPublicCertificationsIdRoute: typeof ApiPublicCertificationsIdRoute
+  ApiPublicCrmRunRoute: typeof ApiPublicCrmRunRoute
   ApiPublicCurriculumNextRoute: typeof ApiPublicCurriculumNextRoute
   ApiPublicDiagnoseStartRoute: typeof ApiPublicDiagnoseStartRoute
   ApiPublicDiagnoseSubmitRoute: typeof ApiPublicDiagnoseSubmitRoute
@@ -2451,6 +2476,13 @@ declare module '@tanstack/react-router' {
       path: '/calibration'
       fullPath: '/admin/calibration'
       preLoaderRoute: typeof AdminCalibrationRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/crm': {
+      id: '/admin/crm'
+      path: '/crm'
+      fullPath: '/admin/crm'
+      preLoaderRoute: typeof AdminCrmRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/customers': {
@@ -2943,6 +2975,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCertificationsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/crm/run': {
+      id: '/api/public/crm/run'
+      path: '/api/public/crm/run'
+      fullPath: '/api/public/crm/run'
+      preLoaderRoute: typeof ApiPublicCrmRunRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/curriculum/next': {
       id: '/api/public/curriculum/next'
       path: '/api/public/curriculum/next'
@@ -3137,6 +3176,7 @@ interface AdminRouteChildren {
   AdminAccountsRoute: typeof AdminAccountsRoute
   AdminAgentKpisRoute: typeof AdminAgentKpisRoute
   AdminCalibrationRoute: typeof AdminCalibrationRoute
+  AdminCrmRoute: typeof AdminCrmRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminFunnelRoute: typeof AdminFunnelRoute
   AdminMetaAdsPackRoute: typeof AdminMetaAdsPackRoute
@@ -3157,6 +3197,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAccountsRoute: AdminAccountsRoute,
   AdminAgentKpisRoute: AdminAgentKpisRoute,
   AdminCalibrationRoute: AdminCalibrationRoute,
+  AdminCrmRoute: AdminCrmRoute,
   AdminCustomersRoute: AdminCustomersRoute,
   AdminFunnelRoute: AdminFunnelRoute,
   AdminMetaAdsPackRoute: AdminMetaAdsPackRoute,
@@ -3425,6 +3466,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDotwellKnownOauthProtectedResourceRoute:
     ApiPublicDotwellKnownOauthProtectedResourceRoute,
   ApiPublicCertificationsIdRoute: ApiPublicCertificationsIdRoute,
+  ApiPublicCrmRunRoute: ApiPublicCrmRunRoute,
   ApiPublicCurriculumNextRoute: ApiPublicCurriculumNextRoute,
   ApiPublicDiagnoseStartRoute: ApiPublicDiagnoseStartRoute,
   ApiPublicDiagnoseSubmitRoute: ApiPublicDiagnoseSubmitRoute,
@@ -3449,13 +3491,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

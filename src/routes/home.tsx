@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { ValueSoFarCard } from "@/components/crm/ValueSoFarCard";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowRight,
@@ -320,6 +321,8 @@ function HomeDashboard() {
           </div>
         </div>
       </section>
+
+      <ValueSoFarCard />
 
       {/* Ready to install */}
       <section className="mx-auto max-w-7xl px-6 py-10">
