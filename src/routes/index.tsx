@@ -189,6 +189,8 @@ function Home() {
       <Hero />
       <Problem />
       <LabSteps />
+      <OpenSkills />
+
       <AgentFactory />
       <University />
       <FounderLetter />
