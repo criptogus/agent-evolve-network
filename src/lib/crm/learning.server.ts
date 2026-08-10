@@ -307,8 +307,11 @@ export async function scoreOutcomes(limit = 500): Promise<ScoreRunResult> {
 export type TuneResult = {
   paused: Array<{ trigger: string; variant: string; reason: string }>;
   drafted: Array<{ trigger: string; variant: string }>;
+  activated: Array<{ trigger: string; variant: string }>;
+  blocked: Array<{ trigger: string; variant: string; reason: string }>;
   leaders: Array<{ trigger: string; variant: string; rate: number; sent: number }>;
 };
+
 
 async function draftReplacement(
   trigger: string,
