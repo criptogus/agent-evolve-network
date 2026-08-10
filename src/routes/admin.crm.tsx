@@ -36,6 +36,8 @@ import {
   runCrmCadenceNow,
 } from "@/lib/crm/crm.functions";
 import { TRIGGERS } from "@/lib/crm/segments";
+import { EffectivenessPanel } from "@/components/crm/EffectivenessPanel";
+
 
 export const Route = createFileRoute("/admin/crm")({
   head: () => ({
