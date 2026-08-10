@@ -241,6 +241,34 @@ export const resumeSessionTool = defineTool({
         : null,
       reviews_in_progress: inProgress,
       next_actions: next.sort((a, b) => a.priority - b.priority),
+      // Value proof for the human paying the bill: realized ROI so far plus the
+      // money still on the table. Same numbers as the dashboard and the emails.
+      value_summary: await (async () => {
+        try {
+          const { computeRoi } = await import("@/lib/crm/snapshot.server");
+          const roi = await computeRoi(userId);
+          if (!roi.reviewed_docs) return null;
+          return {
+            documents_reviewed: roi.reviewed_docs,
+            documents_improved: roi.improved_docs,
+            trust_score_points_gained: roi.points_gained,
+            monthly_usd_saved: roi.monthly_usd_saved,
+            annual_usd_saved: roi.annual_usd_saved,
+            rescued_runs_per_month: roi.rescued_runs_per_month,
+            engineer_hours_saved_per_month: roi.engineer_hours_saved_per_month,
+            headroom_monthly_usd: roi.headroom_monthly_usd,
+            best_improvement: roi.best,
+            show_to_human:
+              roi.improved_docs > 0
+                ? `SAK impact so far: ${roi.improved_docs} document(s) improved, +${roi.points_gained} Trust Score points, ~$${roi.monthly_usd_saved.toLocaleString("en-US")}/month of avoidable spend removed at 10,000 runs/month. About $${roi.headroom_monthly_usd.toLocaleString("en-US")}/month is still on the table.`
+                : `No measured improvement yet — ${roi.reviewed_docs} document(s) reviewed. About $${roi.headroom_monthly_usd.toLocaleString("en-US")}/month is on the table if they reach grade A.`,
+            disclaimer:
+              "Projected from the public SAK benchmark using this account's real scores at 10,000 runs/month.",
+          };
+        } catch {
+          return null;
+        }
+      })(),
       dashboard: `${ORIGIN}/home`,
     });
   },
