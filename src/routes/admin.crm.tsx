@@ -302,6 +302,9 @@ function CrmAdminPage() {
         </CardContent>
       </Card>
 
+      <EffectivenessPanel />
+
+
       <Sheet open={!!openUser} onOpenChange={(o) => !o && setOpenUser(null)}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
           <SheetHeader>
