@@ -141,6 +141,8 @@ import { Route as ApiPublicDotwellKnownOauthAuthorizationServerRouteImport } fro
 import { Route as ApiPublicDotwellKnownOauthProtectedResourceRouteImport } from './routes/api/public/[.]well-known.oauth-protected-resource'
 import { Route as ApiPublicCertificationsIdRouteImport } from './routes/api/public/certifications.$id'
 import { Route as ApiPublicCrmRunRouteImport } from './routes/api/public/crm/run'
+import { Route as ApiPublicCrmScoreRouteImport } from './routes/api/public/crm/score'
+import { Route as ApiPublicCrmTuneRouteImport } from './routes/api/public/crm/tune'
 import { Route as ApiPublicCurriculumNextRouteImport } from './routes/api/public/curriculum/next'
 import { Route as ApiPublicDiagnoseStartRouteImport } from './routes/api/public/diagnose/start'
 import { Route as ApiPublicDiagnoseSubmitRouteImport } from './routes/api/public/diagnose/submit'
@@ -164,6 +166,8 @@ import { Route as DotwellKnownOauthAuthorizationServerApiPublicMcpRouteImport } 
 import { Route as DotwellKnownOauthProtectedResourceApiPublicMcpRouteImport } from './routes/[.]well-known.oauth-protected-resource.api.public.mcp'
 import { Route as ApiAgentsSlugDownloadExtRouteImport } from './routes/api/agents.$slug.download.$ext'
 import { Route as ApiBadgesTrustSlugSvgRouteImport } from './routes/api/badges.trust.$slug.svg'
+import { Route as ApiPublicCrmCTokenRouteImport } from './routes/api/public/crm/c.$token'
+import { Route as ApiPublicCrmOTokenRouteImport } from './routes/api/public/crm/o.$token'
 import { Route as ApiAgentsBuildIdDownloadExtRouteImport } from './routes/api/agents.build.$id.download.$ext'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
@@ -837,6 +841,16 @@ const ApiPublicCrmRunRoute = ApiPublicCrmRunRouteImport.update({
   path: '/api/public/crm/run',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCrmScoreRoute = ApiPublicCrmScoreRouteImport.update({
+  id: '/api/public/crm/score',
+  path: '/api/public/crm/score',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCrmTuneRoute = ApiPublicCrmTuneRouteImport.update({
+  id: '/api/public/crm/tune',
+  path: '/api/public/crm/tune',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCurriculumNextRoute = ApiPublicCurriculumNextRouteImport.update({
   id: '/api/public/curriculum/next',
   path: '/api/public/curriculum/next',
@@ -959,6 +973,16 @@ const ApiAgentsSlugDownloadExtRoute =
 const ApiBadgesTrustSlugSvgRoute = ApiBadgesTrustSlugSvgRouteImport.update({
   id: '/api/badges/trust/$slug/svg',
   path: '/api/badges/trust/$slug/svg',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCrmCTokenRoute = ApiPublicCrmCTokenRouteImport.update({
+  id: '/api/public/crm/c/$token',
+  path: '/api/public/crm/c/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCrmOTokenRoute = ApiPublicCrmOTokenRouteImport.update({
+  id: '/api/public/crm/o/$token',
+  path: '/api/public/crm/o/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAgentsBuildIdDownloadExtRoute =
@@ -1107,6 +1131,8 @@ export interface FileRoutesByFullPath {
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
   '/api/public/crm/run': typeof ApiPublicCrmRunRoute
+  '/api/public/crm/score': typeof ApiPublicCrmScoreRoute
+  '/api/public/crm/tune': typeof ApiPublicCrmTuneRoute
   '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
   '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
   '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
@@ -1130,6 +1156,8 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource/api/public/mcp': typeof DotwellKnownOauthProtectedResourceApiPublicMcpRoute
   '/api/agents/$slug/download/$ext': typeof ApiAgentsSlugDownloadExtRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
+  '/api/public/crm/c/$token': typeof ApiPublicCrmCTokenRoute
+  '/api/public/crm/o/$token': typeof ApiPublicCrmOTokenRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1265,6 +1293,8 @@ export interface FileRoutesByTo {
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
   '/api/public/crm/run': typeof ApiPublicCrmRunRoute
+  '/api/public/crm/score': typeof ApiPublicCrmScoreRoute
+  '/api/public/crm/tune': typeof ApiPublicCrmTuneRoute
   '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
   '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
   '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
@@ -1288,6 +1318,8 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource/api/public/mcp': typeof DotwellKnownOauthProtectedResourceApiPublicMcpRoute
   '/api/agents/$slug/download/$ext': typeof ApiAgentsSlugDownloadExtRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
+  '/api/public/crm/c/$token': typeof ApiPublicCrmCTokenRoute
+  '/api/public/crm/o/$token': typeof ApiPublicCrmOTokenRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1425,6 +1457,8 @@ export interface FileRoutesById {
   '/api/public/.well-known/oauth-protected-resource': typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   '/api/public/certifications/$id': typeof ApiPublicCertificationsIdRoute
   '/api/public/crm/run': typeof ApiPublicCrmRunRoute
+  '/api/public/crm/score': typeof ApiPublicCrmScoreRoute
+  '/api/public/crm/tune': typeof ApiPublicCrmTuneRoute
   '/api/public/curriculum/next': typeof ApiPublicCurriculumNextRoute
   '/api/public/diagnose/start': typeof ApiPublicDiagnoseStartRoute
   '/api/public/diagnose/submit': typeof ApiPublicDiagnoseSubmitRoute
@@ -1448,6 +1482,8 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource/api/public/mcp': typeof DotwellKnownOauthProtectedResourceApiPublicMcpRoute
   '/api/agents/$slug/download/$ext': typeof ApiAgentsSlugDownloadExtRoute
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
+  '/api/public/crm/c/$token': typeof ApiPublicCrmCTokenRoute
+  '/api/public/crm/o/$token': typeof ApiPublicCrmOTokenRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1586,6 +1622,8 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
     | '/api/public/crm/run'
+    | '/api/public/crm/score'
+    | '/api/public/crm/tune'
     | '/api/public/curriculum/next'
     | '/api/public/diagnose/start'
     | '/api/public/diagnose/submit'
@@ -1609,6 +1647,8 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource/api/public/mcp'
     | '/api/agents/$slug/download/$ext'
     | '/api/badges/trust/$slug/svg'
+    | '/api/public/crm/c/$token'
+    | '/api/public/crm/o/$token'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
@@ -1744,6 +1784,8 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
     | '/api/public/crm/run'
+    | '/api/public/crm/score'
+    | '/api/public/crm/tune'
     | '/api/public/curriculum/next'
     | '/api/public/diagnose/start'
     | '/api/public/diagnose/submit'
@@ -1767,6 +1809,8 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource/api/public/mcp'
     | '/api/agents/$slug/download/$ext'
     | '/api/badges/trust/$slug/svg'
+    | '/api/public/crm/c/$token'
+    | '/api/public/crm/o/$token'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   id:
@@ -1903,6 +1947,8 @@ export interface FileRouteTypes {
     | '/api/public/.well-known/oauth-protected-resource'
     | '/api/public/certifications/$id'
     | '/api/public/crm/run'
+    | '/api/public/crm/score'
+    | '/api/public/crm/tune'
     | '/api/public/curriculum/next'
     | '/api/public/diagnose/start'
     | '/api/public/diagnose/submit'
@@ -1926,6 +1972,8 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource/api/public/mcp'
     | '/api/agents/$slug/download/$ext'
     | '/api/badges/trust/$slug/svg'
+    | '/api/public/crm/c/$token'
+    | '/api/public/crm/o/$token'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
@@ -2035,6 +2083,8 @@ export interface RootRouteChildren {
   ApiPublicDotwellKnownOauthProtectedResourceRoute: typeof ApiPublicDotwellKnownOauthProtectedResourceRoute
   ApiPublicCertificationsIdRoute: typeof ApiPublicCertificationsIdRoute
   ApiPublicCrmRunRoute: typeof ApiPublicCrmRunRoute
+  ApiPublicCrmScoreRoute: typeof ApiPublicCrmScoreRoute
+  ApiPublicCrmTuneRoute: typeof ApiPublicCrmTuneRoute
   ApiPublicCurriculumNextRoute: typeof ApiPublicCurriculumNextRoute
   ApiPublicDiagnoseStartRoute: typeof ApiPublicDiagnoseStartRoute
   ApiPublicDiagnoseSubmitRoute: typeof ApiPublicDiagnoseSubmitRoute
@@ -2052,6 +2102,8 @@ export interface RootRouteChildren {
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
   ApiAgentsSlugDownloadExtRoute: typeof ApiAgentsSlugDownloadExtRoute
   ApiBadgesTrustSlugSvgRoute: typeof ApiBadgesTrustSlugSvgRoute
+  ApiPublicCrmCTokenRoute: typeof ApiPublicCrmCTokenRoute
+  ApiPublicCrmOTokenRoute: typeof ApiPublicCrmOTokenRoute
   ApiAgentsBuildIdDownloadExtRoute: typeof ApiAgentsBuildIdDownloadExtRoute
   ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -2982,6 +3034,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCrmRunRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/crm/score': {
+      id: '/api/public/crm/score'
+      path: '/api/public/crm/score'
+      fullPath: '/api/public/crm/score'
+      preLoaderRoute: typeof ApiPublicCrmScoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/crm/tune': {
+      id: '/api/public/crm/tune'
+      path: '/api/public/crm/tune'
+      fullPath: '/api/public/crm/tune'
+      preLoaderRoute: typeof ApiPublicCrmTuneRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/curriculum/next': {
       id: '/api/public/curriculum/next'
       path: '/api/public/curriculum/next'
@@ -3141,6 +3207,20 @@ declare module '@tanstack/react-router' {
       path: '/api/badges/trust/$slug/svg'
       fullPath: '/api/badges/trust/$slug/svg'
       preLoaderRoute: typeof ApiBadgesTrustSlugSvgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/crm/c/$token': {
+      id: '/api/public/crm/c/$token'
+      path: '/api/public/crm/c/$token'
+      fullPath: '/api/public/crm/c/$token'
+      preLoaderRoute: typeof ApiPublicCrmCTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/crm/o/$token': {
+      id: '/api/public/crm/o/$token'
+      path: '/api/public/crm/o/$token'
+      fullPath: '/api/public/crm/o/$token'
+      preLoaderRoute: typeof ApiPublicCrmOTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/agents/build/$id/download/$ext': {
@@ -3467,6 +3547,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicDotwellKnownOauthProtectedResourceRoute,
   ApiPublicCertificationsIdRoute: ApiPublicCertificationsIdRoute,
   ApiPublicCrmRunRoute: ApiPublicCrmRunRoute,
+  ApiPublicCrmScoreRoute: ApiPublicCrmScoreRoute,
+  ApiPublicCrmTuneRoute: ApiPublicCrmTuneRoute,
   ApiPublicCurriculumNextRoute: ApiPublicCurriculumNextRoute,
   ApiPublicDiagnoseStartRoute: ApiPublicDiagnoseStartRoute,
   ApiPublicDiagnoseSubmitRoute: ApiPublicDiagnoseSubmitRoute,
@@ -3484,6 +3566,8 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
   ApiAgentsSlugDownloadExtRoute: ApiAgentsSlugDownloadExtRoute,
   ApiBadgesTrustSlugSvgRoute: ApiBadgesTrustSlugSvgRoute,
+  ApiPublicCrmCTokenRoute: ApiPublicCrmCTokenRoute,
+  ApiPublicCrmOTokenRoute: ApiPublicCrmOTokenRoute,
   ApiAgentsBuildIdDownloadExtRoute: ApiAgentsBuildIdDownloadExtRoute,
   ApiPacksCustomizationIdDownloadExtRoute:
     ApiPacksCustomizationIdDownloadExtRoute,
@@ -3491,13 +3575,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

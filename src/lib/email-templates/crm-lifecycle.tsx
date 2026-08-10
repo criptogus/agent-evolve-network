@@ -34,6 +34,7 @@ interface Props {
   ctaLabel?: string
   ctaUrl?: string
   footnote?: string
+  pixelUrl?: string
 }
 
 const metricRow = {
@@ -53,6 +54,7 @@ const CrmLifecycleEmail = ({
   ctaLabel = 'Open my dashboard',
   ctaUrl = `${BRAND.url}/home`,
   footnote,
+  pixelUrl,
 }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
@@ -143,6 +145,9 @@ const CrmLifecycleEmail = ({
             superagentskill.com
           </Link>
         </Text>
+        {pixelUrl ? (
+          <img src={pixelUrl} width={1} height={1} alt="" style={{ display: 'none' }} />
+        ) : null}
       </Container>
     </Body>
   </Html>

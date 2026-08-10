@@ -700,6 +700,54 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_copy_variants: {
+        Row: {
+          created_at: string
+          framing: string
+          heading_override: string | null
+          id: string
+          intro_override: string | null
+          label: string
+          notes: string | null
+          origin: string
+          status: string
+          subject_override: string | null
+          trigger: string
+          updated_at: string
+          variant: string
+        }
+        Insert: {
+          created_at?: string
+          framing?: string
+          heading_override?: string | null
+          id?: string
+          intro_override?: string | null
+          label: string
+          notes?: string | null
+          origin?: string
+          status?: string
+          subject_override?: string | null
+          trigger: string
+          updated_at?: string
+          variant: string
+        }
+        Update: {
+          created_at?: string
+          framing?: string
+          heading_override?: string | null
+          id?: string
+          intro_override?: string | null
+          label?: string
+          notes?: string | null
+          origin?: string
+          status?: string
+          subject_override?: string | null
+          trigger?: string
+          updated_at?: string
+          variant?: string
+        }
+        Relationships: []
+      }
       crm_lifecycle_state: {
         Row: {
           created_at: string
@@ -740,35 +788,163 @@ export type Database = {
         Row: {
           channel: string
           created_at: string
+          cta_path: string | null
           id: string
           message_id: string | null
           recipient_email: string | null
           roi_snapshot: Json
+          send_hour: number | null
+          stage_at_send: string | null
           template: string
+          tracking_token: string | null
           trigger: string
           user_id: string
+          variant: string
         }
         Insert: {
           channel?: string
           created_at?: string
+          cta_path?: string | null
           id?: string
           message_id?: string | null
           recipient_email?: string | null
           roi_snapshot?: Json
+          send_hour?: number | null
+          stage_at_send?: string | null
           template: string
+          tracking_token?: string | null
           trigger: string
           user_id: string
+          variant?: string
         }
         Update: {
           channel?: string
           created_at?: string
+          cta_path?: string | null
           id?: string
           message_id?: string | null
           recipient_email?: string | null
           roi_snapshot?: Json
+          send_hour?: number | null
+          stage_at_send?: string | null
           template?: string
+          tracking_token?: string | null
           trigger?: string
           user_id?: string
+          variant?: string
+        }
+        Relationships: []
+      }
+      crm_message_outcomes: {
+        Row: {
+          clicked_at: string | null
+          complained_at: string | null
+          conversion_kind: string | null
+          converted_at: string | null
+          created_at: string
+          id: string
+          message_log_id: string
+          opened_at: string | null
+          scored_at: string | null
+          send_hour: number | null
+          trigger: string
+          unsubscribed_at: string | null
+          updated_at: string
+          user_id: string
+          variant: string
+          window_closed: boolean
+        }
+        Insert: {
+          clicked_at?: string | null
+          complained_at?: string | null
+          conversion_kind?: string | null
+          converted_at?: string | null
+          created_at?: string
+          id?: string
+          message_log_id: string
+          opened_at?: string | null
+          scored_at?: string | null
+          send_hour?: number | null
+          trigger: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_id: string
+          variant?: string
+          window_closed?: boolean
+        }
+        Update: {
+          clicked_at?: string | null
+          complained_at?: string | null
+          conversion_kind?: string | null
+          converted_at?: string | null
+          created_at?: string
+          id?: string
+          message_log_id?: string
+          opened_at?: string | null
+          scored_at?: string | null
+          send_hour?: number | null
+          trigger?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_id?: string
+          variant?: string
+          window_closed?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_message_outcomes_message_log_id_fkey"
+            columns: ["message_log_id"]
+            isOneToOne: true
+            referencedRelation: "crm_message_log"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      crm_tuning_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          reason: string
+          stats: Json
+          trigger: string | null
+          variant: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          reason: string
+          stats?: Json
+          trigger?: string | null
+          variant?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          stats?: Json
+          trigger?: string | null
+          variant?: string | null
         }
         Relationships: []
       }
@@ -3965,6 +4141,13 @@ export type Database = {
         Args: { _package_id: string; _window_days?: number }
         Returns: Json
       }
+      crm_active_hours: {
+        Args: { _user_id: string }
+        Returns: {
+          events: number
+          hour: number
+        }[]
+      }
       crm_customers: {
         Args: { _limit?: number; _offset?: number }
         Returns: {
@@ -4002,6 +4185,30 @@ export type Database = {
           user_id: string
         }[]
       }
+      crm_effectiveness: {
+        Args: { _days?: number }
+        Returns: {
+          clicked: number
+          converted: number
+          last_sent_at: string
+          opened: number
+          sent: number
+          trigger: string
+          unsubscribed: number
+          variant: string
+        }[]
+      }
+      crm_send_hour_stats: {
+        Args: { _days?: number }
+        Returns: {
+          converted: number
+          engaged: number
+          send_hour: number
+          sent: number
+        }[]
+      }
+      crm_track_click: { Args: { _token: string }; Returns: string }
+      crm_track_open: { Args: { _token: string }; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
