@@ -524,8 +524,11 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
         subject: p.subject_override,
         heading: p.heading_override,
         intro: p.intro_override,
+        notes: p.notes ?? null,
         created_at: p.created_at,
       })),
+      guardrails: AUTONOMY_RULES,
+
       changelog: ((changelog ?? []) as any[]).map((c) => ({
         action: c.action,
         trigger: c.trigger,
