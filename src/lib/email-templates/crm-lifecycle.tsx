@@ -145,6 +145,9 @@ const CrmLifecycleEmail = ({
             superagentskill.com
           </Link>
         </Text>
+        {pixelUrl ? (
+          <img src={pixelUrl} width={1} height={1} alt="" style={{ display: 'none' }} />
+        ) : null}
       </Container>
     </Body>
   </Html>
