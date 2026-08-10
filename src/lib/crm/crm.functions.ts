@@ -364,3 +364,226 @@ export const getMyValueSummary = createServerFn({ method: "GET" })
       disclaimer: empty.disclaimer,
     };
   });
+
+/* ------------------------------------------------------------ learning loop */
+
+export type CrmEffectiveness = {
+  learning_enabled: boolean;
+  min_samples: number;
+  triggers: Array<{
+    trigger: string;
+    label: string;
+    outcome: string;
+    window_hours: number;
+    sent: number;
+    opened: number;
+    clicked: number;
+    converted: number;
+    unsubscribed: number;
+    conversion_rate: number;
+  }>;
+  variants: Array<{
+    trigger: string;
+    variant: string;
+    label: string;
+    framing: string;
+    status: string;
+    origin: string;
+    sent: number;
+    opened: number;
+    clicked: number;
+    converted: number;
+    estimated_rate: number;
+    is_leader: boolean;
+  }>;
+  hours: Array<{ hour: number; sent: number; engaged: number; converted: number }>;
+  pending: Array<{
+    id: string;
+    trigger: string;
+    variant: string;
+    label: string;
+    subject: string | null;
+    heading: string | null;
+    intro: string | null;
+    created_at: string;
+  }>;
+  changelog: Array<{
+    action: string;
+    trigger: string | null;
+    variant: string | null;
+    reason: string;
+    created_at: string;
+  }>;
+};
+
+export const getCrmEffectiveness = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .handler(async (): Promise<CrmEffectiveness> => {
+    const { loadLearningState } = await import("@/lib/crm/learning.server");
+    const { OUTCOMES, VARIANTS, armKey, estimatedRate, EMPTY_ARM } = await import(
+      "@/lib/crm/learning"
+    );
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const admin = supabaseAdmin as any;
+
+    const state = await loadLearningState();
+
+    const triggers = (Object.keys(TRIGGERS) as TriggerId[]).map((t) => {
+      const arms = state.arms[t] ?? VARIANTS[t];
+      let sent = 0;
+      let opened = 0;
+      let clicked = 0;
+      let converted = 0;
+      let unsubscribed = 0;
+      for (const a of arms) {
+        const s = state.stats[armKey(t, a.variant)] ?? EMPTY_ARM;
+        sent += s.sent;
+        opened += s.opened;
+        clicked += s.clicked;
+        converted += s.converted;
+      }
+      return {
+        trigger: t,
+        label: TRIGGERS[t].label,
+        outcome: OUTCOMES[t].label,
+        window_hours: OUTCOMES[t].windowHours,
+        sent,
+        opened,
+        clicked,
+        converted,
+        unsubscribed,
+        conversion_rate: sent > 0 ? Math.round((converted / sent) * 1000) / 10 : 0,
+      };
+    });
+
+    const variants: CrmEffectiveness["variants"] = [];
+    for (const t of Object.keys(VARIANTS) as TriggerId[]) {
+      const all = [...VARIANTS[t]];
+      for (const a of state.arms[t] ?? []) if (!all.some((x) => x.variant === a.variant)) all.push(a);
+      const active = new Set((state.arms[t] ?? []).map((a) => a.variant));
+      let leader = "";
+      let leaderRate = -1;
+      for (const a of all) {
+        const rate = estimatedRate(state.stats[armKey(t, a.variant)] ?? EMPTY_ARM);
+        if (active.has(a.variant) && rate > leaderRate) {
+          leaderRate = rate;
+          leader = a.variant;
+        }
+      }
+      for (const a of all) {
+        const s = state.stats[armKey(t, a.variant)] ?? EMPTY_ARM;
+        variants.push({
+          trigger: t,
+          variant: a.variant,
+          label: a.label,
+          framing: a.framing,
+          status: active.has(a.variant) ? "active" : "paused",
+          origin: a.variant.startsWith("ai-") ? "ai" : "builtin",
+          sent: s.sent,
+          opened: s.opened,
+          clicked: s.clicked,
+          converted: s.converted,
+          estimated_rate: Math.round(estimatedRate(s) * 1000) / 10,
+          is_leader: a.variant === leader,
+        });
+      }
+    }
+
+    const { data: pending } = await admin
+      .from("crm_copy_variants")
+      .select("id, trigger, variant, label, subject_override, heading_override, intro_override, created_at")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    const { data: changelog } = await admin
+      .from("crm_tuning_log")
+      .select("action, trigger, variant, reason, created_at")
+      .order("created_at", { ascending: false })
+      .limit(30);
+
+    return {
+      learning_enabled: state.settings.enabled,
+      min_samples: state.settings.minSamples,
+      triggers,
+      variants,
+      hours: Object.entries(state.hours)
+        .map(([h, s]) => ({ hour: Number(h), sent: s.sent, engaged: s.engaged, converted: s.converted }))
+        .sort((a, b) => a.hour - b.hour),
+      pending: ((pending ?? []) as any[]).map((p) => ({
+        id: p.id,
+        trigger: p.trigger,
+        variant: p.variant,
+        label: p.label,
+        subject: p.subject_override,
+        heading: p.heading_override,
+        intro: p.intro_override,
+        created_at: p.created_at,
+      })),
+      changelog: ((changelog ?? []) as any[]).map((c) => ({
+        action: c.action,
+        trigger: c.trigger,
+        variant: c.variant,
+        reason: c.reason,
+        created_at: c.created_at,
+      })),
+    };
+  });
+
+export const setCrmLearning = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) => z.object({ enabled: z.boolean() }).parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const admin = supabaseAdmin as any;
+    await admin
+      .from("crm_settings")
+      .upsert(
+        { key: "learning", value: { enabled: data.enabled, min_samples: 20 }, updated_at: new Date().toISOString() },
+        { onConflict: "key" },
+      );
+    await admin.from("crm_tuning_log").insert({
+      action: data.enabled ? "learning_enabled" : "learning_paused",
+      reason: "Changed by an admin from the CRM dashboard",
+    });
+    return { enabled: data.enabled };
+  });
+
+export const reviewCrmVariant = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    z.object({ id: z.string().uuid(), decision: z.enum(["approve", "reject"]) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const admin = supabaseAdmin as any;
+    const status = data.decision === "approve" ? "active" : "rejected";
+    const { data: row } = await admin
+      .from("crm_copy_variants")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("id", data.id)
+      .select("trigger, variant")
+      .maybeSingle();
+    await admin.from("crm_tuning_log").insert({
+      action: data.decision === "approve" ? "approve_variant" : "reject_variant",
+      trigger: row?.trigger ?? null,
+      variant: row?.variant ?? null,
+      reason: "Reviewed by an admin",
+    });
+    return { status };
+  });
+
+export const runCrmLearningNow = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    z.object({ job: z.enum(["score", "tune"]), dryRun: z.boolean().default(true) }).parse(d ?? {}),
+  )
+  .handler(async ({ data }) => {
+    const { scoreOutcomes, runTuner } = await import("@/lib/crm/learning.server");
+    if (data.job === "score") {
+      const r = await scoreOutcomes(500);
+      return { job: "score" as const, ...r };
+    }
+    const r = await runTuner({ dryRun: data.dryRun });
+    return { job: "tune" as const, paused: r.paused.length, drafted: r.drafted.length, leaders: r.leaders };
+  });
