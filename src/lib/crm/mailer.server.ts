@@ -4,7 +4,8 @@
  * Renders the lifecycle template, respects suppression and the agreed cadence
  * caps (max 2 emails / 7 days, min 48h apart), enqueues through the same
  * `transactional_emails` queue as the rest of the product, and records every
- * send in `crm_message_log` with the ROI snapshot it showed.
+ * send in `crm_message_log` with the ROI snapshot, the copy variant and a
+ * tracking token so the learning loop can measure the result.
  */
 import * as React from "react";
 import { render } from "@react-email/render";
@@ -13,9 +14,18 @@ import { TEMPLATES } from "@/lib/email-templates/registry";
 import { buildMessage, type CrmMessage } from "@/lib/crm/copy";
 import { buildSnapshot, loadCustomerRows } from "@/lib/crm/snapshot.server";
 import type { CrmSnapshot } from "@/lib/crm/types";
+import { applyVariant } from "@/lib/crm/learning";
+import {
+  chooseVariant,
+  isGoodSendHour,
+  loadFatigue,
+  loadLearningState,
+  rankTriggers,
+  type LearningState,
+} from "@/lib/crm/learning.server";
 import {
   classifyStage,
-  decideTrigger,
+  eligibleTriggers,
   TRIGGERS,
   type CrmCustomerRow,
   type SentSummary,
@@ -77,7 +87,7 @@ export async function loadSentSummary(userId: string): Promise<SentSummary> {
 }
 
 export type SendResult =
-  | { sent: true; trigger: TriggerId; messageId: string; subject: string }
+  | { sent: true; trigger: TriggerId; messageId: string; subject: string; variant: string }
   | { sent: false; reason: string };
 
 /** Renders + enqueues one CRM email. `force` skips cadence checks (admin "send now"). */
@@ -87,6 +97,7 @@ export async function sendCrmEmail(opts: {
   snapshot?: CrmSnapshot;
   force?: boolean;
   dryRun?: boolean;
+  state?: LearningState;
 }): Promise<SendResult> {
   const { row, trigger } = opts;
   if (!row.email) return { sent: false, reason: "no email" };
@@ -100,12 +111,19 @@ export async function sendCrmEmail(opts: {
   if (supErr) return { sent: false, reason: "suppression check failed" };
   if (suppressed) return { sent: false, reason: "suppressed" };
 
+  const state = opts.state ?? (await loadLearningState());
+  const { def, override } = chooseVariant(state, trigger);
+
   const snapshot = opts.snapshot ?? (await buildSnapshot(row));
-  const message: CrmMessage = buildMessage(trigger, snapshot);
-  if (opts.dryRun) return { sent: false, reason: `dry-run:${trigger}` };
+  const base: CrmMessage = buildMessage(trigger, snapshot);
+  const message = applyVariant(base, def, override);
+  if (opts.dryRun) return { sent: false, reason: `dry-run:${trigger}/${def.variant}` };
 
   const entry = TEMPLATES[TEMPLATE_NAME];
   if (!entry) return { sent: false, reason: "template missing" };
+
+  const messageId = `crm-${trigger}-${row.user_id}-${Date.now()}`;
+  const trackingToken = token();
 
   const templateData = {
     subject: message.subject,
@@ -115,15 +133,16 @@ export async function sendCrmEmail(opts: {
     metrics: message.metrics,
     bullets: message.bullets,
     ctaLabel: message.ctaLabel,
-    ctaUrl: `${SITE_URL}${message.ctaPath}`,
+    // Click goes through the tracker, which 302s to the same internal path.
+    ctaUrl: `${SITE_URL}/api/public/crm/c/${trackingToken}`,
     footnote: message.footnote,
+    pixelUrl: `${SITE_URL}/api/public/crm/o/${trackingToken}`,
   };
 
   const element = React.createElement(entry.component, templateData as any);
   const html = await render(element);
   const text = await render(element, { plainText: true });
 
-  const messageId = `crm-${trigger}-${row.user_id}-${Date.now()}`;
   const unsub = await unsubscribeToken(email);
 
   await admin.from("email_send_log").insert({
@@ -131,7 +150,7 @@ export async function sendCrmEmail(opts: {
     template_name: TEMPLATE_NAME,
     recipient_email: email,
     status: "pending",
-    metadata: { crm_trigger: trigger, user_id: row.user_id },
+    metadata: { crm_trigger: trigger, crm_variant: def.variant, user_id: row.user_id },
   });
 
   const { error: enqueueError } = await admin.rpc("enqueue_email", {
@@ -145,7 +164,7 @@ export async function sendCrmEmail(opts: {
       html,
       text,
       purpose: "transactional",
-      label: `crm-${trigger}`,
+      label: `crm-${trigger}-${def.variant}`,
       idempotency_key: messageId,
       unsubscribe_token: unsub,
       queued_at: new Date().toISOString(),
@@ -170,11 +189,18 @@ export async function sendCrmEmail(opts: {
     channel: "email",
     message_id: messageId,
     recipient_email: email,
+    variant: def.variant,
+    tracking_token: trackingToken,
+    send_hour: new Date().getUTCHours(),
+    stage_at_send: snapshot.stage,
+    cta_path: message.ctaPath,
     roi_snapshot: {
       stage: snapshot.stage,
       usage: snapshot.usage,
       roi: snapshot.roi,
       subject: message.subject,
+      variant: def.variant,
+      variant_label: def.label,
     },
   });
 
@@ -190,7 +216,7 @@ export async function sendCrmEmail(opts: {
     { onConflict: "user_id" },
   );
 
-  return { sent: true, trigger, messageId, subject: message.subject };
+  return { sent: true, trigger, messageId, subject: message.subject, variant: def.variant };
 }
 
 export type CadenceRunResult = {
@@ -198,6 +224,7 @@ export type CadenceRunResult = {
   sent: number;
   skipped: number;
   dryRun: boolean;
+  learning: boolean;
   details: Array<{ email: string; stage: string; action: string }>;
 };
 
@@ -206,19 +233,30 @@ export async function runCadence(opts: {
   dryRun?: boolean;
   limit?: number;
   maxSends?: number;
+  ignoreSendWindow?: boolean;
 } = {}): Promise<CadenceRunResult> {
   const dryRun = !!opts.dryRun;
   const maxSends = opts.maxSends ?? 200;
   const rows = await loadCustomerRows(opts.limit ?? 1000, 0);
-  const result: CadenceRunResult = { scanned: rows.length, sent: 0, skipped: 0, dryRun, details: [] };
+  const state = await loadLearningState();
+  const result: CadenceRunResult = {
+    scanned: rows.length,
+    sent: 0,
+    skipped: 0,
+    dryRun,
+    learning: state.settings.enabled,
+    details: [],
+  };
 
   for (const row of rows) {
     if (result.sent >= maxSends) break;
     const sent = await loadSentSummary(row.user_id);
-    const decision = decideTrigger(row, sent);
+    const cooldownMultiplier = state.settings.enabled ? await loadFatigue(row.user_id) : 1;
+    const { blocked, triggers } = eligibleTriggers(row, sent, cooldownMultiplier);
+    const ranked = rankTriggers(state, triggers);
     const redacted = row.email ? `${row.email[0]}***@${row.email.split("@")[1] ?? ""}` : "***";
 
-    if (!decision.send) {
+    const skip = async (reason: string) => {
       result.skipped += 1;
       // Keep the lifecycle stage fresh even when we stay silent.
       await admin.from("crm_lifecycle_state").upsert(
@@ -230,17 +268,32 @@ export async function runCadence(opts: {
         },
         { onConflict: "user_id" },
       );
+      if (reason) result.details.push({ email: redacted, stage: classifyStage(row), action: reason });
+    };
+
+    if (blocked || ranked.length === 0) {
+      await skip("");
+      continue;
+    }
+
+    // Right time: only send inside the customer's active window unless the
+    // message is urgent (win-back / at-risk) or we have no timing data.
+    const urgent = ranked[0] === "at_risk" || ranked[0] === "win_back";
+    if (!opts.ignoreSendWindow && !urgent && !(await isGoodSendHour(row.user_id, state))) {
+      await skip("waiting for a better send hour");
       continue;
     }
 
     const snapshot = await buildSnapshot(row);
-    const out = await sendCrmEmail({ row, trigger: decision.trigger, snapshot, dryRun });
+    const out = await sendCrmEmail({ row, trigger: ranked[0]!, snapshot, dryRun, state });
     if (out.sent) result.sent += 1;
     else result.skipped += 1;
     result.details.push({
       email: redacted,
       stage: snapshot.stage,
-      action: out.sent ? `sent ${out.trigger} (${TRIGGERS[out.trigger].label})` : out.reason,
+      action: out.sent
+        ? `sent ${out.trigger}/${out.variant} (${TRIGGERS[out.trigger].label})`
+        : out.reason,
     });
   }
   return result;

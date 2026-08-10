@@ -299,13 +299,20 @@ export type TriggerDecision =
   | { send: true; trigger: TriggerId }
   | { send: false; reason: string };
 
-/** Deterministic cadence decision for one customer. */
-export function decideTrigger(row: CrmCustomerRow, sent: SentSummary): TriggerDecision {
-  if (row.crm_unsubscribed) return { send: false, reason: "unsubscribed" };
-  if (!row.email) return { send: false, reason: "no email" };
-  if (sent.last7d >= CADENCE.maxEmailsPer7Days) return { send: false, reason: "weekly cap" };
+/**
+ * Every trigger that passes the hard constraints right now, in deterministic
+ * rule order. `cooldownMultiplier` comes from the fatigue backoff (1 = normal).
+ */
+export function eligibleTriggers(
+  row: CrmCustomerRow,
+  sent: SentSummary,
+  cooldownMultiplier = 1,
+): { blocked?: string; triggers: TriggerId[] } {
+  if (row.crm_unsubscribed) return { blocked: "unsubscribed", triggers: [] };
+  if (!row.email) return { blocked: "no email", triggers: [] };
+  if (sent.last7d >= CADENCE.maxEmailsPer7Days) return { blocked: "weekly cap", triggers: [] };
   if (sent.lastAnyAt && daysSince(sent.lastAnyAt) * 24 < CADENCE.minHoursBetweenEmails)
-    return { send: false, reason: "min gap" };
+    return { blocked: "min gap", triggers: [] };
 
   const stage = classifyStage(row);
   const age = daysSince(row.signed_up_at);
@@ -317,7 +324,7 @@ export function decideTrigger(row: CrmCustomerRow, sent: SentSummary): TriggerDe
     if (!def.stages.includes(stage)) return false;
     if ((sent.counts[id] ?? 0) >= def.maxSends) return false;
     const last = sent.lastAt[id];
-    if (last && daysSince(last) < def.cooldownDays) return false;
+    if (last && daysSince(last) < def.cooldownDays * cooldownMultiplier) return false;
     return extra;
   };
 
@@ -334,8 +341,18 @@ export function decideTrigger(row: CrmCustomerRow, sent: SentSummary): TriggerDe
     ["opportunity_nudge", opportunities(row).length > 0],
   ];
 
-  for (const [id, extra] of order) {
-    if (eligible(id, extra)) return { send: true, trigger: id };
-  }
-  return { send: false, reason: "nothing due" };
+  return { triggers: order.filter(([id, extra]) => eligible(id, extra)).map(([id]) => id) };
+}
+
+/** Deterministic cadence decision for one customer. */
+export function decideTrigger(
+  row: CrmCustomerRow,
+  sent: SentSummary,
+  cooldownMultiplier = 1,
+): TriggerDecision {
+  const { blocked, triggers } = eligibleTriggers(row, sent, cooldownMultiplier);
+  if (blocked) return { send: false, reason: blocked };
+  const first = triggers[0];
+  if (!first) return { send: false, reason: "nothing due" };
+  return { send: true, trigger: first };
 }
