@@ -174,7 +174,7 @@ export type CrmCustomerDetail = {
   stage_label: string;
   paying: boolean;
   usage: Record<string, number | boolean>;
-  roi: Record<string, unknown>;
+  roi: Record<string, number | string | null>;
   opportunities: Array<{ id: string; title: string; why: string; cta: string; href: string }>;
   messages: Array<{ trigger: string; subject: string | null; created_at: string; status: string }>;
   preview: { subject: string; heading: string; intro: string[]; bullets: string[]; metrics: Array<{ label: string; value: string; note?: string }> } | null;
@@ -230,8 +230,23 @@ export const getCrmCustomer = createServerFn({ method: "POST" })
       stage: snapshot.stage,
       stage_label: LABELS[snapshot.stage],
       paying: snapshot.paying,
-      usage: snapshot.usage as unknown as Record<string, number | boolean>,
-      roi: snapshot.roi as unknown as Record<string, unknown>,
+      usage: { ...snapshot.usage } as Record<string, number | boolean>,
+      roi: {
+        improved_docs: snapshot.roi.improved_docs,
+        reviewed_docs: snapshot.roi.reviewed_docs,
+        points_gained: snapshot.roi.points_gained,
+        monthly_usd_saved: snapshot.roi.monthly_usd_saved,
+        annual_usd_saved: snapshot.roi.annual_usd_saved,
+        rescued_runs_per_month: snapshot.roi.rescued_runs_per_month,
+        engineer_hours_saved_per_month: snapshot.roi.engineer_hours_saved_per_month,
+        tokens_saved_per_month: snapshot.roi.tokens_saved_per_month,
+        headroom_monthly_usd: snapshot.roi.headroom_monthly_usd,
+        latest_score: snapshot.roi.latest_score,
+        latest_grade: snapshot.roi.latest_grade,
+        best_name: snapshot.roi.best?.name ?? null,
+        best_before: snapshot.roi.best?.before ?? null,
+        best_after: snapshot.roi.best?.after ?? null,
+      },
       opportunities: snapshot.opportunities,
       messages: ((msgs ?? []) as any[]).map((m) => ({
         trigger: m.trigger,
