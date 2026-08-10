@@ -371,16 +371,21 @@ function PackageDetail() {
             <div className="rounded-xl border border-border bg-background p-5 shadow-elevated">
               {/* Primary: no-signup MCP path */}
               <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
-                Install via MCP — no account needed
+                Install — no account needed
               </div>
               <p className="mt-1.5 text-xs text-muted-foreground">
-                Add the gateway URL to Claude or Cursor — this skill is included, no signup
-                required.
+                Use the open skills CLI, our CLI, or add the MCP gateway URL to Claude or Cursor.
+                No signup required.
               </p>
               <div className="mt-3 space-y-2">
-                <CodeBlockCopy code={MCP_GATEWAY_URL} label="gateway URL" />
+                <CodeBlockCopy
+                  code={openSkillsInstallOne(pkg.id)}
+                  label="open skills CLI command"
+                />
                 <CodeBlockCopy code={`npx super-agent install ${pkg.id}`} label="install command" />
+                <CodeBlockCopy code={MCP_GATEWAY_URL} label="gateway URL" />
               </div>
+
 
               <div className="mt-5 flex items-center gap-3">
                 <span className="h-px flex-1 bg-border" />
