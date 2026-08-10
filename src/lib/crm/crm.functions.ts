@@ -405,8 +405,10 @@ export type CrmEffectiveness = {
     subject: string | null;
     heading: string | null;
     intro: string | null;
+    notes: string | null;
     created_at: string;
   }>;
+  guardrails: Array<{ allowed: boolean; rule: string }>;
   changelog: Array<{
     action: string;
     trigger: string | null;
@@ -415,6 +417,7 @@ export type CrmEffectiveness = {
     created_at: string;
   }>;
 };
+
 
 export const getCrmEffectiveness = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
