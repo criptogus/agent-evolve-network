@@ -353,16 +353,23 @@ async function draftReplacement(
 }
 
 /**
- * Weekly self-tuner: recompute stats, pause statistically losing arms, ask the
- * model for a replacement draft (pending human approval) and log every change.
+ * Autonomous self-tuner: recompute stats, pause statistically losing arms and
+ * publish self-written replacements — no human approval. Every change has to
+ * pass the guardrails in `@/lib/crm/guardrails`; whatever fails is quarantined
+ * and logged instead of going live.
  */
 export async function runTuner(opts: { dryRun?: boolean } = {}): Promise<TuneResult> {
   const state = await loadLearningState();
-  const result: TuneResult = { paused: [], drafted: [], leaders: [] };
+  const result: TuneResult = { paused: [], drafted: [], activated: [], blocked: [], leaders: [] };
   if (!state.settings.enabled) return result;
+
+  const { GUARDRAILS, canActivate, canPause, checkCopy } = await import("@/lib/crm/guardrails");
+  let activations = 0;
 
   for (const [trigger, defs] of Object.entries(state.arms)) {
     if (defs.length < 2) continue;
+    let activeCount = defs.length;
+    let pausesThisRun = 0;
     const scored = defs.map((d) => ({
       def: d,
       stats: state.stats[armKey(trigger, d.variant)] ?? EMPTY_ARM,
@@ -379,8 +386,25 @@ export async function runTuner(opts: { dryRun?: boolean } = {}): Promise<TuneRes
       if (arm.def.variant === leader.def.variant) continue;
       const verdict = shouldPauseArm(arm.stats, leader.stats, state.settings.minSamples);
       if (!verdict.pause) continue;
+
+      const pauseGate = canPause(activeCount, pausesThisRun);
+      if (!pauseGate.ok) {
+        result.blocked.push({ trigger, variant: arm.def.variant, reason: pauseGate.violations.join("; ") });
+        if (!opts.dryRun)
+          await admin.from("crm_tuning_log").insert({
+            action: "guardrail_blocked_pause",
+            trigger,
+            variant: arm.def.variant,
+            reason: pauseGate.violations.join("; "),
+            stats: {},
+          });
+        continue;
+      }
+
       result.paused.push({ trigger, variant: arm.def.variant, reason: verdict.reason });
       if (opts.dryRun) continue;
+      pausesThisRun += 1;
+      activeCount -= 1;
 
       await admin.from("crm_copy_variants").upsert(
         {
@@ -405,27 +429,56 @@ export async function runTuner(opts: { dryRun?: boolean } = {}): Promise<TuneRes
 
       const draft = await draftReplacement(trigger, leader.def, verdict.reason);
       if (!draft) continue;
+      result.drafted.push({ trigger, variant: draft.variant });
+
+      const copyGate = checkCopy(draft);
+      const slotGate = canActivate(activeCount, leader.stats.sent);
+      const overRun = activations >= GUARDRAILS.maxAutoActivationsPerRun;
+      const violations = [
+        ...copyGate.violations,
+        ...slotGate.violations,
+        ...(overRun ? [`already published ${GUARDRAILS.maxAutoActivationsPerRun} new variants in this run`] : []),
+      ];
+      const live = violations.length === 0;
+
       await admin.from("crm_copy_variants").insert({
         trigger,
         variant: draft.variant,
         label: draft.label,
         framing: "capability",
-        status: "pending",
+        status: live ? "active" : "quarantined",
         subject_override: draft.subject,
         heading_override: draft.heading,
         intro_override: draft.intro,
         origin: "ai",
-        notes: `Drafted to replace ${arm.def.variant}`,
+        notes: live
+          ? `Published automatically to replace ${arm.def.variant}`
+          : `Quarantined by guardrails: ${violations.join("; ")}`,
       });
-      await admin.from("crm_tuning_log").insert({
-        action: "draft_variant",
-        trigger,
-        variant: draft.variant,
-        reason: `Replacement drafted for ${arm.def.variant}; waiting for approval`,
-        stats: {},
-      });
-      result.drafted.push({ trigger, variant: draft.variant });
+
+      if (live) {
+        activations += 1;
+        activeCount += 1;
+        result.activated.push({ trigger, variant: draft.variant });
+        await admin.from("crm_tuning_log").insert({
+          action: "activate_variant",
+          trigger,
+          variant: draft.variant,
+          reason: `Passed all guardrails and replaced ${arm.def.variant}`,
+          stats: {},
+        });
+      } else {
+        result.blocked.push({ trigger, variant: draft.variant, reason: violations.join("; ") });
+        await admin.from("crm_tuning_log").insert({
+          action: "guardrail_quarantined_variant",
+          trigger,
+          variant: draft.variant,
+          reason: violations.join("; "),
+          stats: {},
+        });
+      }
     }
   }
   return result;
+
 }
