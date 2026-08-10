@@ -8,6 +8,7 @@ import { PRICING_SENTENCE } from "@/lib/pricing-copy";
 import { Hero } from "@/components/site/home/Hero";
 import { Problem } from "@/components/site/home/Problem";
 import { LabSteps } from "@/components/site/home/LabSteps";
+import { OpenSkills } from "@/components/site/home/OpenSkills";
 import { FounderLetter } from "@/components/site/home/FounderLetter";
 import { University } from "@/components/site/home/University";
 import { AgentFactory } from "@/components/site/home/AgentFactory";
