@@ -54,6 +54,7 @@ function HowItWorksPage() {
         </section>
         <HowItWorks />
         <CompatibleAgents />
+        <OpenSkills />
         <Proof />
         <CoreConcepts />
         <CtaSection />
