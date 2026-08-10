@@ -700,6 +700,78 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_lifecycle_state: {
+        Row: {
+          created_at: string
+          crm_unsubscribed: boolean
+          emails_sent_7d: number
+          first_seen: string
+          last_active_at: string | null
+          last_email_at: string | null
+          stage: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          crm_unsubscribed?: boolean
+          emails_sent_7d?: number
+          first_seen?: string
+          last_active_at?: string | null
+          last_email_at?: string | null
+          stage?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          crm_unsubscribed?: boolean
+          emails_sent_7d?: number
+          first_seen?: string
+          last_active_at?: string | null
+          last_email_at?: string | null
+          stage?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      crm_message_log: {
+        Row: {
+          channel: string
+          created_at: string
+          id: string
+          message_id: string | null
+          recipient_email: string | null
+          roi_snapshot: Json
+          template: string
+          trigger: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          id?: string
+          message_id?: string | null
+          recipient_email?: string | null
+          roi_snapshot?: Json
+          template: string
+          trigger: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          id?: string
+          message_id?: string | null
+          recipient_email?: string | null
+          roi_snapshot?: Json
+          template?: string
+          trigger?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -3892,6 +3964,43 @@ export type Database = {
       compute_skill_drift: {
         Args: { _package_id: string; _window_days?: number }
         Returns: Json
+      }
+      crm_customers: {
+        Args: { _limit?: number; _offset?: number }
+        Returns: {
+          agent_count: number
+          cancel_at_period_end: boolean
+          cloud_skill_count: number
+          credits_spent: number
+          crm_unsubscribed: boolean
+          current_period_end: string
+          diagnosis_count: number
+          display_name: string
+          email: string
+          emails_sent_7d: number
+          executions_30d: number
+          handle: string
+          install_count: number
+          last_active_at: string
+          last_email_at: string
+          last_review_at: string
+          last_sign_in_at: string
+          mcp_call_count: number
+          mcp_last_call_at: string
+          mcp_last_used_at: string
+          mcp_token_count: number
+          package_count: number
+          plan_slug: string
+          price_cents: number
+          residency_count: number
+          review_count: number
+          signed_up_at: string
+          stage: string
+          sub_environment: string
+          sub_status: string
+          upload_count: number
+          user_id: string
+        }[]
       }
       delete_email: {
         Args: { message_id: number; queue_name: string }
