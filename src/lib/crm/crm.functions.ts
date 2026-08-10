@@ -423,6 +423,8 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .handler(async (): Promise<CrmEffectiveness> => {
     const { loadLearningState } = await import("@/lib/crm/learning.server");
+    const { AUTONOMY_RULES } = await import("@/lib/crm/guardrails");
+
     const { OUTCOMES, VARIANTS, armKey, estimatedRate, EMPTY_ARM } = await import(
       "@/lib/crm/learning"
     );
