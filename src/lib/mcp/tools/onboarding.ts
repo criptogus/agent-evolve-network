@@ -12,7 +12,24 @@ import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { rankRecommended, type RankableItem } from "@/lib/marketplace/recommend";
-import type { ProjectType } from "@/lib/marketplace/project-profile";
+import {
+  isProjectType,
+  type ProjectType,
+} from "@/lib/marketplace/project-profile";
+
+/** Maps legacy hyphenated MCP values onto the canonical project-type ids. */
+const PROJECT_TYPE_ALIASES: Record<string, ProjectType> = {
+  "web-app": "web_app",
+  "api-service": "api",
+  "mcp-agent": "mcp_agent",
+  "backend-data": "backend",
+};
+
+function normalizeProjectType(value: string | undefined): ProjectType | null {
+  if (!value) return null;
+  if (isProjectType(value)) return value;
+  return PROJECT_TYPE_ALIASES[value] ?? null;
+}
 
 const supabaseAdmin = _supabaseAdmin as any;
 const json = (v: unknown) => JSON.stringify(v, null, 2);
@@ -213,7 +230,17 @@ export const recommendPackagesTool = defineTool({
     "[DISCOVER] Best first-install suggestions. Ranks the registry by real popularity (installs + rated reviews) with Trust Score as a quality floor, demotes narrow stack-specific packages (Expo/EAS, Kubernetes, SAML, FHIR…), and optionally biases toward what the user is building. Prefer this over list_packages when the user has NOT named a specific topic. Read-only, no auth.",
   parameters: z.object({
     project_type: z
-      .enum(["web-app", "api-service", "mcp-agent", "backend-data"])
+      .enum([
+        "web_app",
+        "api",
+        "mcp_agent",
+        "backend",
+        // Legacy hyphenated aliases kept accepted so older callers keep working.
+        "web-app",
+        "api-service",
+        "mcp-agent",
+        "backend-data",
+      ])
       .optional()
       .describe("What the user is building. Biases ranking toward packages that fit that shape."),
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).optional(),
@@ -270,9 +297,10 @@ export const recommendPackagesTool = defineTool({
       },
     );
 
-    const ranked = rankRecommended(rankable, limit, (project_type as ProjectType | undefined) ?? null);
+    const fit = normalizeProjectType(project_type);
+    const ranked = rankRecommended(rankable, limit, fit);
     return json({
-      project_type: project_type ?? null,
+      project_type: fit,
       ranking: "popularity-first (installs + rated reviews), Trust Score >= 0.4 floor, niche packages demoted",
       count: ranked.length,
       items: ranked.map((i) => ({

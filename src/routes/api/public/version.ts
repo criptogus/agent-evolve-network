@@ -4,7 +4,7 @@ import {
   PLATFORM_CODENAME,
   PLATFORM_STAGE,
   PLATFORM_BUILD_DATE,
-  CHANGELOG,
+  PUBLIC_CHANGELOG,
 } from "@/lib/version";
 
 const CORS = {
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/api/public/version")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       GET: async () => {
-        const latest = CHANGELOG[0];
+        const latest = PUBLIC_CHANGELOG[0];
         return Response.json(
           {
             version: PLATFORM_VERSION,

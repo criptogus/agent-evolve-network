@@ -36,7 +36,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     kind: "patch",
     title: "Maintenance release",
     highlights: [
-      "Implementou guardrails do CRM",
+      "Added deterministic guardrails to the autonomous CRM",
       "Work in progress",
     ],
   },
@@ -1173,3 +1173,27 @@ export function formatVersionLabel() {
   const stage = PLATFORM_STAGE === "ga" ? "" : ` · ${PLATFORM_STAGE}`;
   return `v${PLATFORM_VERSION}${stage} · ${PLATFORM_CODENAME}`;
 }
+
+/**
+ * Placeholder/low-signal highlight lines produced by automated version bumps,
+ * plus a coarse non-English guard. These must never reach public surfaces
+ * (/about, /api/public/version) — the product is English-only.
+ */
+const PLACEHOLDER_HIGHLIGHT =
+  /^(work in progress|wip|update plan|update memory|update|updates|changes?|fix(es)?|tweaks?|misc\.?|minor|patch|refactor|cleanup|chore|edits?|housekeeping and minor improvements\.?)$/i;
+
+const NON_ENGLISH_HINT =
+  /\b(implementou|implementar|corrigiu|corrigir|melhorar|melhorou|criar|criou|adicionou|ajustes?|pagina|página|versao|versão|para|pois|nao|não)\b/i;
+
+function cleanHighlights(list: string[]): string[] {
+  return list.filter(
+    (h) => !PLACEHOLDER_HIGHLIGHT.test(h.trim()) && !NON_ENGLISH_HINT.test(h),
+  );
+}
+
+/** Changelog safe for public display: no placeholders, no empty entries. */
+export const PUBLIC_CHANGELOG: ChangelogEntry[] = CHANGELOG.map((e) => ({
+  ...e,
+  highlights: cleanHighlights(e.highlights),
+})).filter((e) => e.highlights.length > 0);
+

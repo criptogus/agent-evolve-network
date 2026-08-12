@@ -15,7 +15,7 @@ Component artifacts are versioned and released independently via git tags:
 
 ### Changed
 
-- Implementou guardrails do CRM
+- Added deterministic guardrails to the autonomous CRM
 - Work in progress
 
 ## [0.1.120] — 2026-08-10 — *Genesis* (alpha) — Maintenance release
