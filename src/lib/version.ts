@@ -1218,9 +1218,17 @@ function cleanHighlights(list: string[]): string[] {
   );
 }
 
+/**
+ * Neutral stand-in so a release whose only highlights were placeholders still
+ * appears publicly. Dropping the entry entirely made `latest_release` lag
+ * behind `PLATFORM_VERSION` on /about and /api/public/version.
+ */
+const FALLBACK_HIGHLIGHT = "Stability and performance improvements.";
+
 /** Changelog safe for public display: no placeholders, no empty entries. */
-export const PUBLIC_CHANGELOG: ChangelogEntry[] = CHANGELOG.map((e) => ({
-  ...e,
-  highlights: cleanHighlights(e.highlights),
-})).filter((e) => e.highlights.length > 0);
+export const PUBLIC_CHANGELOG: ChangelogEntry[] = CHANGELOG.map((e) => {
+  const highlights = cleanHighlights(e.highlights);
+  return { ...e, highlights: highlights.length > 0 ? highlights : [FALLBACK_HIGHLIGHT] };
+});
+
 
