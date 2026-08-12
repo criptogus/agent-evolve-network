@@ -194,8 +194,8 @@ export const getCrmCustomer = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const admin = supabaseAdmin as any;
 
-    const rows = await loadCustomerRows(1000, 0);
-    const row = rows.find((r) => r.user_id === data.userId);
+    const rows = await loadCustomerRows(1, 0, data.userId);
+    const row = rows[0] ?? null;
     if (!row) throw new Error("Customer not found");
     const snapshot = await buildSnapshot(row);
     const sent = await loadSentSummary(row.user_id);
@@ -273,8 +273,8 @@ export const sendCrmNow = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { loadCustomerRows } = await import("@/lib/crm/snapshot.server");
     const { sendCrmEmail } = await import("@/lib/crm/mailer.server");
-    const rows = await loadCustomerRows(1000, 0);
-    const row = rows.find((r) => r.user_id === data.userId);
+    const rows = await loadCustomerRows(1, 0, data.userId);
+    const row = rows[0] ?? null;
     if (!row) throw new Error("Customer not found");
     const res = await sendCrmEmail({
       row,
