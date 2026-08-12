@@ -4149,7 +4149,7 @@ export type Database = {
         }[]
       }
       crm_customers: {
-        Args: { _limit?: number; _offset?: number }
+        Args: { _limit?: number; _offset?: number; _user_id?: string }
         Returns: {
           agent_count: number
           cancel_at_period_end: boolean
