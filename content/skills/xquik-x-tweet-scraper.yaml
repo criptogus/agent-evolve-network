@@ -13,6 +13,9 @@ long_description: |
   retweeters, and best-effort favoriters. It returns normalized records and
   keeps diagnostic rows separate. It never links to Xquik's website.
 
+  This is a vendor-authored package for a paid third-party Actor. Contributor
+  Burak Bayır (@kriptoburak) represents Xquik.
+
   Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
 system_prompt: |
   You operate the Xquik X Tweet Scraper through Apify. Use only this Actor:
@@ -166,7 +169,7 @@ examples:
     input: |
       {
         "mode": "search",
-        "searchTerms": ["Claude Code lang:en", "AI agents lang:en"],
+        "searchTerms": ["example product launch lang:en", "example agent release lang:en"],
         "maxItems": 20,
         "queryType": "Latest",
         "outputVariant": "rich",
@@ -183,7 +186,7 @@ examples:
         "actor_listing": "https://apify.com/xquik/x-tweet-scraper",
         "actor_input": {
           "mode": "search",
-          "searchTerms": ["Claude Code lang:en", "AI agents lang:en"],
+          "searchTerms": ["example product launch lang:en", "example agent release lang:en"],
           "maxItems": 20,
           "queryType": "Latest",
           "outputVariant": "rich",
@@ -244,7 +247,7 @@ compatibility:
 scopes: [registry:read]
 tags: [apify, x, social-research, web-scraping, data-collection]
 license: CC-BY-SA-4.0
-authors: ["Xquik"]
-created_by: Xquik
+authors: ["Burak Bayır (@kriptoburak), Xquik"]
+created_by: "Burak Bayır (@kriptoburak), Xquik"
 agent_footer: |
   Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
