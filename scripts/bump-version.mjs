@@ -103,7 +103,8 @@ function classify(commitList) {
 const kind = overrideBump ?? classify(commits);
 
 // Low-quality placeholder subjects that should never appear in the changelog.
-const LOW_QUALITY = /^(changes?|update|updates|fix|fixes|wip|tweak|tweaks|misc|misc\.|minor|patch|refactor|cleanup|chore|edit|edits)\.?$/i;
+const LOW_QUALITY =
+  /^(changes?|update|updates|update plan|update memory|work in progress|fix|fixes|wip|tweak|tweaks|misc|misc\.|minor|patch|refactor|cleanup|chore|edit|edits)\.?$/i;
 
 function stripConventionalPrefix(s) {
   return s.replace(/^([a-z]+)(\([^)]+\))?!?:\s*/i, "").trim();

@@ -6,7 +6,7 @@ import {
   PLATFORM_CODENAME,
   PLATFORM_STAGE,
   PLATFORM_BUILD_DATE,
-  CHANGELOG,
+  PUBLIC_CHANGELOG,
   formatVersionLabel,
 } from "@/lib/version";
 
@@ -39,7 +39,7 @@ const KIND_BADGE: Record<"major" | "minor" | "patch", string> = {
 };
 
 function AboutPage() {
-  const recent = CHANGELOG.slice(0, 8);
+  const recent = PUBLIC_CHANGELOG.slice(0, 8);
 
   return (
     <SitePage>
