@@ -308,8 +308,8 @@ export const getMyValueSummary = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<MyValueSummary> => {
     const { userId } = context as { userId: string };
     const { loadCustomerRows, buildSnapshot } = await import("@/lib/crm/snapshot.server");
-    const rows = await loadCustomerRows(1000, 0);
-    const row = rows.find((r) => r.user_id === userId);
+    const rows = await loadCustomerRows(1, 0, userId);
+    const row = rows[0] ?? null;
     const empty: MyValueSummary = {
       stage: "new",
       stage_label: STAGE_LABELS.new,

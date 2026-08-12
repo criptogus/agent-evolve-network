@@ -162,9 +162,20 @@ export async function buildSnapshot(row: CrmCustomerRow): Promise<CrmSnapshot> {
   };
 }
 
-/** Load customer rows from the admin reporting function. */
-export async function loadCustomerRows(limit = 500, offset = 0): Promise<CrmCustomerRow[]> {
-  const { data, error } = await admin.rpc("crm_customers", { _limit: limit, _offset: offset });
+/**
+ * Load customer rows from the admin reporting function.
+ * Pass `userId` to fetch exactly one customer instead of scanning the list.
+ */
+export async function loadCustomerRows(
+  limit = 500,
+  offset = 0,
+  userId: string | null = null,
+): Promise<CrmCustomerRow[]> {
+  const { data, error } = await admin.rpc("crm_customers", {
+    _limit: limit,
+    _offset: offset,
+    _user_id: userId,
+  });
   if (error) throw new Error(error.message);
   return (data ?? []) as CrmCustomerRow[];
 }
