@@ -1,81 +1,39 @@
-# Strategic plan: turn skill creators into the growth engine
+# Ready for Agent Plugins v1 (agent-plugins.org)
 
-## Goal
-Move the platform from a "tool subscription" model to a **creator-owned marketplace economy**. The primary lever is retention & activation of skill creators, with the hardest drop-off being users who see value but do not pay. The long-term bet is that creators who earn money from their skills will supply higher-quality capabilities, which attracts more end users, which drives more Pro conversions, which pays creators more.
+Agent Plugins is the new vendor-neutral package format (TSC from Amazon, Cursor, Microsoft, OpenAI, Vercel) that wraps two component types we already ship: Agent Skills (`SKILL.md`) and MCP servers. Verified spec v1.0.0 requirements: a plugin is a directory with a required root `plugin.json` (closed schema: `$schema`, `name`, `version`, `description`, `author`, `homepage`, `repository`, `license`, `keywords`, `extensions`), optional `skills/<name>/SKILL.md`, and optional root `mcp.json` (`$schema` + `mcpServers`, per-server `stdio` / `streamable-http` / `sse` variants).
 
-## Current state (verified)
-- Creators can author, evaluate and publish skills via `/forge` and get a Trust Score.
-- The marketplace ranks by popularity first, Trust Score second, with a niche-penalty for stack-specific skills.
-- The CRM already segments creators by lifecycle stage and can nudge them toward publishing and Pro.
-- Value-proof reports translate score improvements into dollars and engineer-hours for end users.
-- Pro is priced at `$19/mo` or `$140/yr` and unlocks batch reviews, the Agent Store and SAK University.
-- There is no visible revenue-share or creator-payout mechanism tying creator earnings to platform usage.
+Our current state: `content/skills/*.yaml` is the source of truth, `scripts/build-skills-sh-mirror.mjs` already emits spec-correct `skills/<slug>/SKILL.md`, and we serve a hosted MCP endpoint at `/api/public/mcp`. We are one manifest layer away from being a conformant plugin publisher.
 
-## Strategic initiatives
+## 1. Repo becomes a conformant plugin
 
-### 1. Creator monetization (revenue share)
-Introduce a transparent creator economy so publishing skills becomes a revenue activity, not just a distribution activity.
+- Add root `plugin.json` (`name: superagentskill`, version from `src/lib/version.ts`, homepage/repository/license/keywords, `author`) so `npx`-style clients that read Agent Plugins can consume this repo directly. The existing `skills/` mirror already satisfies the skills component location.
+- Add root `mcp.json` declaring our hosted server as `type: "streamable-http"` with `url: https://superagentskill.com/api/public/mcp` (no secrets in `headers` — auth stays client-managed, as the spec requires).
+- Extend `scripts/build-skills-sh-mirror.mjs` (or a sibling `scripts/build-agent-plugin.mjs`) to generate both manifests from the same content source, plus a `--check` mode wired into `npm run check:skills-mirror` and the validate-content workflow so manifests never drift from the platform version.
 
-- **Pro attribution**: when a user upgrades to Pro within 30 days of installing or reviewing a creator's skill, attribute a share of that subscription to the creator.
-- **Pack purchases**: existing `pack_purchases` and `package_purchases` tables can be extended with a `creator_royalty_cents` column and a monthly payout accrual.
-- **Payout ledger**: new `creator_earnings` table tracking per-skill accrued earnings, paid/unpaid status, and Stripe Connect / manual payout records.
-- **Minimum thresholds**: e.g. `$25` minimum payout, 30-day holding period to reduce refunds/chargebacks.
+## 2. Per-skill and per-agent plugin packages (download + API)
 
-### 2. Creator analytics dashboard
-Build a `/creator/dashboard` (or `/creator`) route that shows each publisher:
+- New generator producing one plugin directory per catalog item: `plugin.json` + `skills/<slug>/SKILL.md` (+ `references/` when the skill has examples), reusing the current serializer.
+- New endpoints under `src/routes/api/public/`:
+  - `plugins/<slug>/plugin.json` and `plugins/<slug>/mcp.json` — manifests served from live database content.
+  - `plugins/<slug>.zip` — the full portable plugin package (skill files + manifests), so any conformant client can install a graded SAK skill with no account.
+  - `plugins.json` — an index of available plugins for discovery.
+- Agent Store items (soul + skills + playbooks) map naturally to a multi-skill plugin: one `plugin.json`, several `skills/*`, `mcp.json` pointing at our server for graded updates. Pro gating stays where it is today.
 
-- Installs, reviews, executions and Trust Score evolution per skill.
-- Estimated revenue, attributed Pro conversions, and pack sales.
-- Which skills drive the most value (outcome proof) for end users.
-- Benchmarks against top creators in the same vertical.
+## 3. Conformance validator
 
-This addresses activation by making the value creators generate visible in money and distribution, not just abstract scores.
+- `scripts/validate-agent-plugin.mjs`: validates generated manifests against the v1 rules we must not violate — closed top-level fields, plugin `name` charset (`a-z0-9-.`, no `--`/`..`, alphanumeric ends, 1-64 chars), canonical `$schema` identifiers, plugin-relative paths starting with `./` and contained in the plugin root, HTTPS-only non-loopback MCP URLs, no credentials in headers.
+- Tests in `tests/agent-plugins.test.mjs` covering a valid manifest, each fatal violation, and the packaged skill layout.
 
-### 3. Outcome-based marketplace ranking
-Evolve the marketplace from "most installed" to "most value delivered".
+## 4. Communicate it (this is the point of "preparing")
 
-- Add an `outcome_score` derived from real execution outcomes, review deltas, and value-proof reports.
-- Blend `outcome_score` with popularity and Trust Score so high-quality, high-impact skills surface even if they are niche.
-- Show "verified outcome" badges on skill cards (e.g. "saved avg $X/month for teams").
-
-This helps end users find skills that actually work, which increases installs and Pro conversion.
-
-### 4. Creator success program (SAK University for publishers)
-Turn the existing residency/university infrastructure toward creator education.
-
-- Tracks: "Build your first skill", "Get to Trust Score A", "Monetize your expertise", "Build an agent team".
-- Credentials: verified creator badges and "Top earner" status.
-- Office hours / async feedback: the existing feedback-request system can be expanded into a mentor queue.
-
-### 5. Team/collaboration for creators
-Allow creators to collaborate on skills, agents and playbooks.
-
-- Organizations / teams with shared revenue splits.
-- Co-authoring on packages.
-- Private team registries (enterprise bridge).
-
-This expands the addressable audience from individual creators to agencies and internal platform teams.
-
-## What we will NOT do in this phase
-- Add new social features (follows, comments) — low activation impact.
-- Lower Pro price — the drop-off is value perception, not price.
-- Build a custom payment processor — use Stripe Connect for payouts.
-
-## Success metrics
-- **Creator activation**: % of published creators who return within 14 days.
-- **Creator monetization**: number of creators with >$0 accrued earnings; median monthly creator earnings.
-- **Pro conversion attributed to skills**: % of Pro upgrades with a skill install/review in the previous 30 days.
-- **Marketplace quality**: average Trust Score of top 50 skills; % of installs from skills with outcome badges.
-
-## Suggested first implementation slice
-1. Schema: `creator_earnings` table and `creator_payouts` table with RLS/grants.
-2. Server function: `attributeProConversion` to record earnings when a Pro subscription starts.
-3. Route: `/creator/dashboard` with earnings, installs and Trust Score charts.
-4. Marketplace: add outcome badge to `PackageCard` and an `outcome_score` column to ranking.
-5. CRM trigger: `creator_first_earning` to notify creators when they have accrued their first dollar.
+- Landing: extend the existing `OpenSkills` section into "Works with the open agent standards" — Agent Plugins v1, Agent Skills `SKILL.md`, and MCP — with a copyable install line and the differentiator kept as-is (the standards give distribution; SAK adds the Trust Score, adversarial pass rate and before/after proof).
+- `/docs`: new "Agent Plugins (v1)" block with the layout we emit, the manifest example, the package download URL, and the compatibility matrix row added to `INSTALL_ROUTES` in `src/lib/skills/open-skills.ts`.
+- `/marketplace/<slug>`: extra install option "Download Agent Plugin (.zip)" next to the existing commands.
+- `/how-it-works`, `/welcome`, `/agents.md`, `/llms.txt`: one line each declaring Agent Plugins v1 conformance and the plugin endpoint, since agents read those first.
+- Update `head()` descriptions on the touched routes; ship as a minor version bump via `scripts/bump-version.mjs` with a CHANGELOG entry.
 
 ## Technical notes
-- Use `createServerFn` for attribution logic; keep payout reads under `requireSupabaseAuth`.
-- Use Stripe Connect for payouts; do not store bank details in the database.
-- Ensure all new public tables follow the GRANT/RLS/policy pattern.
-- Keep all user-facing copy English-only per project rule.
+
+- No database schema changes, no new secrets, no new dependencies (zip built with a small pure-JS store-only writer or an existing dependency if one is already present).
+- Manifests are generated, never hand-edited, from `content/skills/*.yaml` and the live registry, so the repo mirror and the API stay identical.
+- All copy stays English-only; illustrative numbers keep their projection labels.
