@@ -123,6 +123,7 @@ import { Route as ApiPublicInstallDothermesDotshRouteImport } from './routes/api
 import { Route as ApiPublicMcpRouteImport } from './routes/api/public/mcp'
 import { Route as ApiPublicOnboardingRouteImport } from './routes/api/public/onboarding'
 import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packages'
+import { Route as ApiPublicPluginsDotjsonRouteImport } from './routes/api/public/plugins[.]json'
 import { Route as ApiPublicReviewRouteImport } from './routes/api/public/review'
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
@@ -154,6 +155,7 @@ import { Route as ApiPublicOauthRevokeRouteImport } from './routes/api/public/oa
 import { Route as ApiPublicOauthTokenRouteImport } from './routes/api/public/oauth/token'
 import { Route as ApiPublicPackagesSlugRouteImport } from './routes/api/public/packages.$slug'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicPluginsSlugDotzipRouteImport } from './routes/api/public/plugins.$slug[.]zip'
 import { Route as ApiPublicReviewBatchRouteImport } from './routes/api/public/review.batch'
 import { Route as ApiSkillsSlugExportRouteImport } from './routes/api/skills.$slug.export'
 import { Route as ApiSkillsSlugExportDotmdRouteImport } from './routes/api/skills.$slug.export[.]md'
@@ -168,6 +170,8 @@ import { Route as ApiAgentsSlugDownloadExtRouteImport } from './routes/api/agent
 import { Route as ApiBadgesTrustSlugSvgRouteImport } from './routes/api/badges.trust.$slug.svg'
 import { Route as ApiPublicCrmCTokenRouteImport } from './routes/api/public/crm/c.$token'
 import { Route as ApiPublicCrmOTokenRouteImport } from './routes/api/public/crm/o.$token'
+import { Route as ApiPublicPluginsSlugMcpDotjsonRouteImport } from './routes/api/public/plugins.$slug.mcp[.]json'
+import { Route as ApiPublicPluginsSlugPluginDotjsonRouteImport } from './routes/api/public/plugins.$slug.plugin[.]json'
 import { Route as ApiAgentsBuildIdDownloadExtRouteImport } from './routes/api/agents.build.$id.download.$ext'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
@@ -744,6 +748,11 @@ const ApiPublicPackagesRoute = ApiPublicPackagesRouteImport.update({
   path: '/api/public/packages',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPluginsDotjsonRoute = ApiPublicPluginsDotjsonRouteImport.update({
+  id: '/api/public/plugins.json',
+  path: '/api/public/plugins.json',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicReviewRoute = ApiPublicReviewRouteImport.update({
   id: '/api/public/review',
   path: '/api/public/review',
@@ -908,6 +917,12 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPluginsSlugDotzipRoute =
+  ApiPublicPluginsSlugDotzipRouteImport.update({
+    id: '/api/public/plugins/$slug.zip',
+    path: '/api/public/plugins/$slug.zip',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicReviewBatchRoute = ApiPublicReviewBatchRouteImport.update({
   id: '/batch',
   path: '/batch',
@@ -985,6 +1000,18 @@ const ApiPublicCrmOTokenRoute = ApiPublicCrmOTokenRouteImport.update({
   path: '/api/public/crm/o/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPluginsSlugMcpDotjsonRoute =
+  ApiPublicPluginsSlugMcpDotjsonRouteImport.update({
+    id: '/api/public/plugins/$slug/mcp.json',
+    path: '/api/public/plugins/$slug/mcp.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicPluginsSlugPluginDotjsonRoute =
+  ApiPublicPluginsSlugPluginDotjsonRouteImport.update({
+    id: '/api/public/plugins/$slug/plugin.json',
+    path: '/api/public/plugins/$slug/plugin.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiAgentsBuildIdDownloadExtRoute =
   ApiAgentsBuildIdDownloadExtRouteImport.update({
     id: '/api/agents/build/$id/download/$ext',
@@ -1113,6 +1140,7 @@ export interface FileRoutesByFullPath {
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/onboarding': typeof ApiPublicOnboardingRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/plugins.json': typeof ApiPublicPluginsDotjsonRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -1144,6 +1172,7 @@ export interface FileRoutesByFullPath {
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/plugins/$slug.zip': typeof ApiPublicPluginsSlugDotzipRoute
   '/api/public/review/batch': typeof ApiPublicReviewBatchRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
@@ -1158,6 +1187,8 @@ export interface FileRoutesByFullPath {
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/public/crm/c/$token': typeof ApiPublicCrmCTokenRoute
   '/api/public/crm/o/$token': typeof ApiPublicCrmOTokenRoute
+  '/api/public/plugins/$slug/mcp.json': typeof ApiPublicPluginsSlugMcpDotjsonRoute
+  '/api/public/plugins/$slug/plugin.json': typeof ApiPublicPluginsSlugPluginDotjsonRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1275,6 +1306,7 @@ export interface FileRoutesByTo {
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/onboarding': typeof ApiPublicOnboardingRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/plugins.json': typeof ApiPublicPluginsDotjsonRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -1306,6 +1338,7 @@ export interface FileRoutesByTo {
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/plugins/$slug.zip': typeof ApiPublicPluginsSlugDotzipRoute
   '/api/public/review/batch': typeof ApiPublicReviewBatchRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
@@ -1320,6 +1353,8 @@ export interface FileRoutesByTo {
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/public/crm/c/$token': typeof ApiPublicCrmCTokenRoute
   '/api/public/crm/o/$token': typeof ApiPublicCrmOTokenRoute
+  '/api/public/plugins/$slug/mcp.json': typeof ApiPublicPluginsSlugMcpDotjsonRoute
+  '/api/public/plugins/$slug/plugin.json': typeof ApiPublicPluginsSlugPluginDotjsonRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1439,6 +1474,7 @@ export interface FileRoutesById {
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/onboarding': typeof ApiPublicOnboardingRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/plugins.json': typeof ApiPublicPluginsDotjsonRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -1470,6 +1506,7 @@ export interface FileRoutesById {
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/plugins/$slug.zip': typeof ApiPublicPluginsSlugDotzipRoute
   '/api/public/review/batch': typeof ApiPublicReviewBatchRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
@@ -1484,6 +1521,8 @@ export interface FileRoutesById {
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/public/crm/c/$token': typeof ApiPublicCrmCTokenRoute
   '/api/public/crm/o/$token': typeof ApiPublicCrmOTokenRoute
+  '/api/public/plugins/$slug/mcp.json': typeof ApiPublicPluginsSlugMcpDotjsonRoute
+  '/api/public/plugins/$slug/plugin.json': typeof ApiPublicPluginsSlugPluginDotjsonRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1604,6 +1643,7 @@ export interface FileRouteTypes {
     | '/api/public/mcp'
     | '/api/public/onboarding'
     | '/api/public/packages'
+    | '/api/public/plugins.json'
     | '/api/public/review'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1635,6 +1675,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/token'
     | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
+    | '/api/public/plugins/$slug.zip'
     | '/api/public/review/batch'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
@@ -1649,6 +1690,8 @@ export interface FileRouteTypes {
     | '/api/badges/trust/$slug/svg'
     | '/api/public/crm/c/$token'
     | '/api/public/crm/o/$token'
+    | '/api/public/plugins/$slug/mcp.json'
+    | '/api/public/plugins/$slug/plugin.json'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
@@ -1766,6 +1809,7 @@ export interface FileRouteTypes {
     | '/api/public/mcp'
     | '/api/public/onboarding'
     | '/api/public/packages'
+    | '/api/public/plugins.json'
     | '/api/public/review'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1797,6 +1841,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/token'
     | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
+    | '/api/public/plugins/$slug.zip'
     | '/api/public/review/batch'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
@@ -1811,6 +1856,8 @@ export interface FileRouteTypes {
     | '/api/badges/trust/$slug/svg'
     | '/api/public/crm/c/$token'
     | '/api/public/crm/o/$token'
+    | '/api/public/plugins/$slug/mcp.json'
+    | '/api/public/plugins/$slug/plugin.json'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   id:
@@ -1929,6 +1976,7 @@ export interface FileRouteTypes {
     | '/api/public/mcp'
     | '/api/public/onboarding'
     | '/api/public/packages'
+    | '/api/public/plugins.json'
     | '/api/public/review'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1960,6 +2008,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/token'
     | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
+    | '/api/public/plugins/$slug.zip'
     | '/api/public/review/batch'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
@@ -1974,6 +2023,8 @@ export interface FileRouteTypes {
     | '/api/badges/trust/$slug/svg'
     | '/api/public/crm/c/$token'
     | '/api/public/crm/o/$token'
+    | '/api/public/plugins/$slug/mcp.json'
+    | '/api/public/plugins/$slug/plugin.json'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
@@ -2069,6 +2120,7 @@ export interface RootRouteChildren {
   ApiPublicMcpRoute: typeof ApiPublicMcpRouteWithChildren
   ApiPublicOnboardingRoute: typeof ApiPublicOnboardingRoute
   ApiPublicPackagesRoute: typeof ApiPublicPackagesRouteWithChildren
+  ApiPublicPluginsDotjsonRoute: typeof ApiPublicPluginsDotjsonRoute
   ApiPublicReviewRoute: typeof ApiPublicReviewRouteWithChildren
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
@@ -2093,6 +2145,7 @@ export interface RootRouteChildren {
   ApiPublicOauthRevokeRoute: typeof ApiPublicOauthRevokeRoute
   ApiPublicOauthTokenRoute: typeof ApiPublicOauthTokenRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPublicPluginsSlugDotzipRoute: typeof ApiPublicPluginsSlugDotzipRoute
   ApiSkillsSlugExportRoute: typeof ApiSkillsSlugExportRoute
   ApiSkillsSlugExportDotmdRoute: typeof ApiSkillsSlugExportDotmdRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -2104,6 +2157,8 @@ export interface RootRouteChildren {
   ApiBadgesTrustSlugSvgRoute: typeof ApiBadgesTrustSlugSvgRoute
   ApiPublicCrmCTokenRoute: typeof ApiPublicCrmCTokenRoute
   ApiPublicCrmOTokenRoute: typeof ApiPublicCrmOTokenRoute
+  ApiPublicPluginsSlugMcpDotjsonRoute: typeof ApiPublicPluginsSlugMcpDotjsonRoute
+  ApiPublicPluginsSlugPluginDotjsonRoute: typeof ApiPublicPluginsSlugPluginDotjsonRoute
   ApiAgentsBuildIdDownloadExtRoute: typeof ApiAgentsBuildIdDownloadExtRoute
   ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -2908,6 +2963,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPackagesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/plugins.json': {
+      id: '/api/public/plugins.json'
+      path: '/api/public/plugins.json'
+      fullPath: '/api/public/plugins.json'
+      preLoaderRoute: typeof ApiPublicPluginsDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/review': {
       id: '/api/public/review'
       path: '/api/public/review'
@@ -3125,6 +3187,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/plugins/$slug.zip': {
+      id: '/api/public/plugins/$slug.zip'
+      path: '/api/public/plugins/$slug.zip'
+      fullPath: '/api/public/plugins/$slug.zip'
+      preLoaderRoute: typeof ApiPublicPluginsSlugDotzipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/review/batch': {
       id: '/api/public/review/batch'
       path: '/batch'
@@ -3221,6 +3290,20 @@ declare module '@tanstack/react-router' {
       path: '/api/public/crm/o/$token'
       fullPath: '/api/public/crm/o/$token'
       preLoaderRoute: typeof ApiPublicCrmOTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/plugins/$slug/mcp.json': {
+      id: '/api/public/plugins/$slug/mcp.json'
+      path: '/api/public/plugins/$slug/mcp.json'
+      fullPath: '/api/public/plugins/$slug/mcp.json'
+      preLoaderRoute: typeof ApiPublicPluginsSlugMcpDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/plugins/$slug/plugin.json': {
+      id: '/api/public/plugins/$slug/plugin.json'
+      path: '/api/public/plugins/$slug/plugin.json'
+      fullPath: '/api/public/plugins/$slug/plugin.json'
+      preLoaderRoute: typeof ApiPublicPluginsSlugPluginDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/agents/build/$id/download/$ext': {
@@ -3530,6 +3613,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicMcpRoute: ApiPublicMcpRouteWithChildren,
   ApiPublicOnboardingRoute: ApiPublicOnboardingRoute,
   ApiPublicPackagesRoute: ApiPublicPackagesRouteWithChildren,
+  ApiPublicPluginsDotjsonRoute: ApiPublicPluginsDotjsonRoute,
   ApiPublicReviewRoute: ApiPublicReviewRouteWithChildren,
   ApiPublicSearchRoute: ApiPublicSearchRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
@@ -3557,6 +3641,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicOauthRevokeRoute: ApiPublicOauthRevokeRoute,
   ApiPublicOauthTokenRoute: ApiPublicOauthTokenRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPublicPluginsSlugDotzipRoute: ApiPublicPluginsSlugDotzipRoute,
   ApiSkillsSlugExportRoute: ApiSkillsSlugExportRoute,
   ApiSkillsSlugExportDotmdRoute: ApiSkillsSlugExportDotmdRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
@@ -3568,6 +3653,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBadgesTrustSlugSvgRoute: ApiBadgesTrustSlugSvgRoute,
   ApiPublicCrmCTokenRoute: ApiPublicCrmCTokenRoute,
   ApiPublicCrmOTokenRoute: ApiPublicCrmOTokenRoute,
+  ApiPublicPluginsSlugMcpDotjsonRoute: ApiPublicPluginsSlugMcpDotjsonRoute,
+  ApiPublicPluginsSlugPluginDotjsonRoute:
+    ApiPublicPluginsSlugPluginDotjsonRoute,
   ApiAgentsBuildIdDownloadExtRoute: ApiAgentsBuildIdDownloadExtRoute,
   ApiPacksCustomizationIdDownloadExtRoute:
     ApiPacksCustomizationIdDownloadExtRoute,

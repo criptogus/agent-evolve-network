@@ -45,6 +45,18 @@ npx skills update                                        # refresh
 Trade-off: the CLI copies a snapshot of files. Use MCP when you want always-current graded
 versions, Trust Score checks, review/diagnosis tools and before/after improvement proof.
 
+## Alternative entry point — Agent Plugins v1.0.0 (agent-plugins.org)
+This repository is a conformant Agent Plugin: root \`plugin.json\`, \`mcp.json\` and \`skills/\`.
+Every published skill is also served as a self-contained portable package:
+\`\`\`
+GET https://superagentskill.com/api/public/plugins.json               # discovery index
+GET https://superagentskill.com/api/public/plugins/<slug>/plugin.json # manifest
+GET https://superagentskill.com/api/public/plugins/<slug>/mcp.json    # MCP config
+GET https://superagentskill.com/api/public/plugins/<slug>.zip         # full package
+\`\`\`
+Each package contains plugin.json, mcp.json and skills/<slug>/SKILL.md. Authorization is
+client-managed: manifests never carry credentials.
+
 
 
 ## Primitives (mental model)

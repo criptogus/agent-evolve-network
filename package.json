@@ -1,6 +1,6 @@
 {
   "name": "tanstack_start_ts",
-  "version": "0.1.126",
+  "version": "0.2.0",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -16,6 +16,8 @@
     "validate:content": "node --experimental-strip-types scripts/validate-content.mjs",
     "build:skills-mirror": "node scripts/build-skills-sh-mirror.mjs",
     "check:skills-mirror": "node scripts/build-skills-sh-mirror.mjs --check",
+    "build:agent-plugin": "node scripts/build-agent-plugin.mjs",
+    "check:agent-plugin": "node scripts/build-agent-plugin.mjs --check",
     "audit:skills": "node --experimental-strip-types scripts/audit-skills.mjs",
     "scan:skillspector": "node scripts/scan-skillspector.mjs",
     "sync:content": "node scripts/sync-content-to-registry.mjs",
@@ -107,7 +109,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
-    "@lovable.dev/vite-tanstack-config": "2.12.0",
+    "@lovable.dev/vite-tanstack-config": "2.13.1",
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",

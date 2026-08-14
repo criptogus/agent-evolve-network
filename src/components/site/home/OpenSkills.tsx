@@ -2,6 +2,9 @@ import { Link } from "@tanstack/react-router";
 import { ShieldCheck, Terminal, Plug } from "lucide-react";
 import { CodeBlockCopy } from "@/components/site/CopyButton";
 import {
+  AGENT_PLUGINS_SITE,
+  AGENT_PLUGINS_SPEC_VERSION,
+  AGENT_PLUGINS_STEWARDS,
   OPEN_SKILLS_AGENTS,
   OPEN_SKILLS_SITE,
   openSkillsInstallAll,
@@ -54,6 +57,22 @@ export function OpenSkills() {
               skills.sh
             </a>{" "}
             CLI, with our own CLI, or over MCP. Same skills, whichever route your agent prefers.
+          </p>
+          <p className="mt-3 text-pretty text-sm leading-relaxed text-muted-foreground md:text-base">
+            We are also conformant with{" "}
+            <a
+              href={AGENT_PLUGINS_SITE}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="text-foreground underline decoration-border underline-offset-4 hover:decoration-primary"
+            >
+              Agent Plugins v{AGENT_PLUGINS_SPEC_VERSION}
+            </a>{" "}
+            — the vendor-neutral package format stewarded by {AGENT_PLUGINS_STEWARDS.join(", ")}.
+            Every graded skill downloads as a portable{" "}
+            <code className="font-mono text-foreground">plugin.json</code> +{" "}
+            <code className="font-mono text-foreground">mcp.json</code> +{" "}
+            <code className="font-mono text-foreground">SKILL.md</code> package.
           </p>
         </div>
 

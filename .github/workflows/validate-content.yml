@@ -7,6 +7,7 @@ on:
       - "scripts/validate-content.mjs"
       - "scripts/audit-skills.mjs"
       - "scripts/build-skills-sh-mirror.mjs"
+      - "scripts/build-agent-plugin.mjs"
       - "src/lib/security/prompt-injection-guard.ts"
       - ".github/workflows/validate-content.yml"
   push:
@@ -16,6 +17,7 @@ on:
       - "scripts/validate-content.mjs"
       - "scripts/audit-skills.mjs"
       - "scripts/build-skills-sh-mirror.mjs"
+      - "scripts/build-agent-plugin.mjs"
       - "src/lib/security/prompt-injection-guard.ts"
 
 jobs:
@@ -36,3 +38,6 @@ jobs:
       # never drift from content/skills/*.yaml.
       - name: Check open Skills CLI mirror is current
         run: bun run check:skills-mirror
+      # Root plugin.json / mcp.json must stay conformant with agent-plugins.org v1.
+      - name: Check Agent Plugin manifests are current
+        run: bun run check:agent-plugin
