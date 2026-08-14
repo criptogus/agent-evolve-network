@@ -169,6 +169,7 @@ import { Route as ApiAgentsSlugDownloadExtRouteImport } from './routes/api/agent
 import { Route as ApiBadgesTrustSlugSvgRouteImport } from './routes/api/badges.trust.$slug.svg'
 import { Route as ApiPublicCrmCTokenRouteImport } from './routes/api/public/crm/c.$token'
 import { Route as ApiPublicCrmOTokenRouteImport } from './routes/api/public/crm/o.$token'
+import { Route as ApiPublicPluginsSlugPluginDotjsonRouteImport } from './routes/api/public/plugins.$slug.plugin[.]json'
 import { Route as ApiAgentsBuildIdDownloadExtRouteImport } from './routes/api/agents.build.$id.download.$ext'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
@@ -991,6 +992,12 @@ const ApiPublicCrmOTokenRoute = ApiPublicCrmOTokenRouteImport.update({
   path: '/api/public/crm/o/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPluginsSlugPluginDotjsonRoute =
+  ApiPublicPluginsSlugPluginDotjsonRouteImport.update({
+    id: '/api/public/plugins/$slug/plugin.json',
+    path: '/api/public/plugins/$slug/plugin.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiAgentsBuildIdDownloadExtRoute =
   ApiAgentsBuildIdDownloadExtRouteImport.update({
     id: '/api/agents/build/$id/download/$ext',
@@ -1165,6 +1172,7 @@ export interface FileRoutesByFullPath {
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/public/crm/c/$token': typeof ApiPublicCrmCTokenRoute
   '/api/public/crm/o/$token': typeof ApiPublicCrmOTokenRoute
+  '/api/public/plugins/$slug/plugin.json': typeof ApiPublicPluginsSlugPluginDotjsonRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1328,6 +1336,7 @@ export interface FileRoutesByTo {
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/public/crm/c/$token': typeof ApiPublicCrmCTokenRoute
   '/api/public/crm/o/$token': typeof ApiPublicCrmOTokenRoute
+  '/api/public/plugins/$slug/plugin.json': typeof ApiPublicPluginsSlugPluginDotjsonRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1493,6 +1502,7 @@ export interface FileRoutesById {
   '/api/badges/trust/$slug/svg': typeof ApiBadgesTrustSlugSvgRoute
   '/api/public/crm/c/$token': typeof ApiPublicCrmCTokenRoute
   '/api/public/crm/o/$token': typeof ApiPublicCrmOTokenRoute
+  '/api/public/plugins/$slug/plugin.json': typeof ApiPublicPluginsSlugPluginDotjsonRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1659,6 +1669,7 @@ export interface FileRouteTypes {
     | '/api/badges/trust/$slug/svg'
     | '/api/public/crm/c/$token'
     | '/api/public/crm/o/$token'
+    | '/api/public/plugins/$slug/plugin.json'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
@@ -1822,6 +1833,7 @@ export interface FileRouteTypes {
     | '/api/badges/trust/$slug/svg'
     | '/api/public/crm/c/$token'
     | '/api/public/crm/o/$token'
+    | '/api/public/plugins/$slug/plugin.json'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   id:
@@ -1986,6 +1998,7 @@ export interface FileRouteTypes {
     | '/api/badges/trust/$slug/svg'
     | '/api/public/crm/c/$token'
     | '/api/public/crm/o/$token'
+    | '/api/public/plugins/$slug/plugin.json'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
@@ -2117,6 +2130,7 @@ export interface RootRouteChildren {
   ApiBadgesTrustSlugSvgRoute: typeof ApiBadgesTrustSlugSvgRoute
   ApiPublicCrmCTokenRoute: typeof ApiPublicCrmCTokenRoute
   ApiPublicCrmOTokenRoute: typeof ApiPublicCrmOTokenRoute
+  ApiPublicPluginsSlugPluginDotjsonRoute: typeof ApiPublicPluginsSlugPluginDotjsonRoute
   ApiAgentsBuildIdDownloadExtRoute: typeof ApiAgentsBuildIdDownloadExtRoute
   ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -3243,6 +3257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCrmOTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/plugins/$slug/plugin.json': {
+      id: '/api/public/plugins/$slug/plugin.json'
+      path: '/api/public/plugins/$slug/plugin.json'
+      fullPath: '/api/public/plugins/$slug/plugin.json'
+      preLoaderRoute: typeof ApiPublicPluginsSlugPluginDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/agents/build/$id/download/$ext': {
       id: '/api/agents/build/$id/download/$ext'
       path: '/api/agents/build/$id/download/$ext'
@@ -3589,6 +3610,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBadgesTrustSlugSvgRoute: ApiBadgesTrustSlugSvgRoute,
   ApiPublicCrmCTokenRoute: ApiPublicCrmCTokenRoute,
   ApiPublicCrmOTokenRoute: ApiPublicCrmOTokenRoute,
+  ApiPublicPluginsSlugPluginDotjsonRoute:
+    ApiPublicPluginsSlugPluginDotjsonRoute,
   ApiAgentsBuildIdDownloadExtRoute: ApiAgentsBuildIdDownloadExtRoute,
   ApiPacksCustomizationIdDownloadExtRoute:
     ApiPacksCustomizationIdDownloadExtRoute,
