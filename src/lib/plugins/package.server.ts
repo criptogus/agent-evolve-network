@@ -86,10 +86,7 @@ export async function loadPluginPackage(slug: string): Promise<PluginPackage | n
 
   const examples = (ver.examples as unknown[] | null) ?? [];
   if (examples.length) {
-    const examplesMd = buildExamplesMd({
-      name: pkg.name,
-      examples: examples as Parameters<typeof buildExamplesMd>[0]["examples"],
-    });
+    const examplesMd = buildExamplesMd(examples as Parameters<typeof buildExamplesMd>[0]);
     if (examplesMd) files.set(`skills/${pkg.slug}/references/examples.md`, examplesMd);
   }
 
