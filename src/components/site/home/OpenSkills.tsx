@@ -2,6 +2,9 @@ import { Link } from "@tanstack/react-router";
 import { ShieldCheck, Terminal, Plug } from "lucide-react";
 import { CodeBlockCopy } from "@/components/site/CopyButton";
 import {
+  AGENT_PLUGINS_SITE,
+  AGENT_PLUGINS_SPEC_VERSION,
+  AGENT_PLUGINS_STEWARDS,
   OPEN_SKILLS_AGENTS,
   OPEN_SKILLS_SITE,
   openSkillsInstallAll,
