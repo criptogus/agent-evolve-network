@@ -70,6 +70,15 @@ export const INSTALL_ROUTES = [
     telemetry: true,
     note: "Always-current graded versions, plus review, diagnosis and before/after proof tools.",
   },
+  {
+    id: "agent-plugins",
+    label: "Agent Plugin package (agent-plugins.org)",
+    command: "https://superagentskill.com/api/public/plugins/<slug>.zip",
+    account: false,
+    trustScore: true,
+    telemetry: false,
+    note: "Portable Agent Plugins v1 package: plugin.json, mcp.json and skills/<slug>/SKILL.md. Load it in any conformant client.",
+  },
 ] as const;
 
 /* ------------------------------------------------------------------------- */
