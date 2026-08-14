@@ -71,3 +71,25 @@ export const INSTALL_ROUTES = [
     note: "Always-current graded versions, plus review, diagnosis and before/after proof tools.",
   },
 ] as const;
+
+/* ------------------------------------------------------------------------- */
+/* Agent Plugins v1 (https://agent-plugins.org)                              */
+/* ------------------------------------------------------------------------- */
+
+export const AGENT_PLUGINS_SITE = "https://agent-plugins.org";
+export const AGENT_PLUGINS_SPEC_VERSION = "1.0.0";
+
+/** Discovery index of every SAK skill available as a portable plugin package. */
+export const AGENT_PLUGINS_INDEX_URL = "https://superagentskill.com/api/public/plugins.json";
+
+/** Portable plugin package (.zip) for one skill. */
+export function agentPluginZipUrl(slug: string) {
+  return `https://superagentskill.com/api/public/plugins/${slug}.zip`;
+}
+
+export function agentPluginManifestUrl(slug: string) {
+  return `https://superagentskill.com/api/public/plugins/${slug}/plugin.json`;
+}
+
+/** Agents / clients that read the Agent Plugins format. */
+export const AGENT_PLUGINS_STEWARDS = ["Amazon", "Cursor", "Microsoft", "OpenAI", "Vercel"] as const;
