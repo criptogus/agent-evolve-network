@@ -3,9 +3,14 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { CodeBlock } from "@/components/site/CodeBlock";
 import {
+  AGENT_PLUGINS_INDEX_URL,
+  AGENT_PLUGINS_SITE,
+  AGENT_PLUGINS_SPEC_VERSION,
+  AGENT_PLUGINS_STEWARDS,
   INSTALL_ROUTES,
   OPEN_SKILLS_AGENTS,
   OPEN_SKILLS_SITE,
+  agentPluginZipUrl,
   openSkillsInstallAll,
   openSkillsInstallOne,
   openSkillsUpdate,
