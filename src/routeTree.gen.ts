@@ -155,6 +155,7 @@ import { Route as ApiPublicOauthRevokeRouteImport } from './routes/api/public/oa
 import { Route as ApiPublicOauthTokenRouteImport } from './routes/api/public/oauth/token'
 import { Route as ApiPublicPackagesSlugRouteImport } from './routes/api/public/packages.$slug'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicPluginsSlugDotzipRouteImport } from './routes/api/public/plugins.$slug[.]zip'
 import { Route as ApiPublicReviewBatchRouteImport } from './routes/api/public/review.batch'
 import { Route as ApiSkillsSlugExportRouteImport } from './routes/api/skills.$slug.export'
 import { Route as ApiSkillsSlugExportDotmdRouteImport } from './routes/api/skills.$slug.export[.]md'
@@ -916,6 +917,12 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPluginsSlugDotzipRoute =
+  ApiPublicPluginsSlugDotzipRouteImport.update({
+    id: '/api/public/plugins/$slug.zip',
+    path: '/api/public/plugins/$slug.zip',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicReviewBatchRoute = ApiPublicReviewBatchRouteImport.update({
   id: '/batch',
   path: '/batch',
@@ -1165,6 +1172,7 @@ export interface FileRoutesByFullPath {
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/plugins/$slug.zip': typeof ApiPublicPluginsSlugDotzipRoute
   '/api/public/review/batch': typeof ApiPublicReviewBatchRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
@@ -1330,6 +1338,7 @@ export interface FileRoutesByTo {
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/plugins/$slug.zip': typeof ApiPublicPluginsSlugDotzipRoute
   '/api/public/review/batch': typeof ApiPublicReviewBatchRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
@@ -1497,6 +1506,7 @@ export interface FileRoutesById {
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/plugins/$slug.zip': typeof ApiPublicPluginsSlugDotzipRoute
   '/api/public/review/batch': typeof ApiPublicReviewBatchRoute
   '/api/skills/$slug/export': typeof ApiSkillsSlugExportRoute
   '/api/skills/$slug/export.md': typeof ApiSkillsSlugExportDotmdRoute
@@ -1665,6 +1675,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/token'
     | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
+    | '/api/public/plugins/$slug.zip'
     | '/api/public/review/batch'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
@@ -1830,6 +1841,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/token'
     | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
+    | '/api/public/plugins/$slug.zip'
     | '/api/public/review/batch'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
@@ -1996,6 +2008,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/token'
     | '/api/public/packages/$slug'
     | '/api/public/payments/webhook'
+    | '/api/public/plugins/$slug.zip'
     | '/api/public/review/batch'
     | '/api/skills/$slug/export'
     | '/api/skills/$slug/export.md'
@@ -2132,6 +2145,7 @@ export interface RootRouteChildren {
   ApiPublicOauthRevokeRoute: typeof ApiPublicOauthRevokeRoute
   ApiPublicOauthTokenRoute: typeof ApiPublicOauthTokenRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPublicPluginsSlugDotzipRoute: typeof ApiPublicPluginsSlugDotzipRoute
   ApiSkillsSlugExportRoute: typeof ApiSkillsSlugExportRoute
   ApiSkillsSlugExportDotmdRoute: typeof ApiSkillsSlugExportDotmdRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -3173,6 +3187,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/plugins/$slug.zip': {
+      id: '/api/public/plugins/$slug.zip'
+      path: '/api/public/plugins/$slug.zip'
+      fullPath: '/api/public/plugins/$slug.zip'
+      preLoaderRoute: typeof ApiPublicPluginsSlugDotzipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/review/batch': {
       id: '/api/public/review/batch'
       path: '/batch'
@@ -3620,6 +3641,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicOauthRevokeRoute: ApiPublicOauthRevokeRoute,
   ApiPublicOauthTokenRoute: ApiPublicOauthTokenRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPublicPluginsSlugDotzipRoute: ApiPublicPluginsSlugDotzipRoute,
   ApiSkillsSlugExportRoute: ApiSkillsSlugExportRoute,
   ApiSkillsSlugExportDotmdRoute: ApiSkillsSlugExportDotmdRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
