@@ -711,6 +711,25 @@ function InstallInstructions({ pkg }: { pkg: Package }) {
           <CodeBlockCopy code={openSkillsInstallOne(pkg.id)} label="open skills install" />
           <CodeBlockCopy code={openSkillsUpdate} label="update installed skills" />
         </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Prefer a portable package?{" "}
+          <a
+            href={agentPluginZipUrl(pkg.id)}
+            className="text-foreground underline decoration-border underline-offset-4 hover:decoration-primary"
+          >
+            Download the Agent Plugin (.zip)
+          </a>{" "}
+          — conformant with the{" "}
+          <a
+            href={AGENT_PLUGINS_SITE}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-foreground underline decoration-border underline-offset-4 hover:decoration-primary"
+          >
+            agent-plugins.org
+          </a>{" "}
+          v{AGENT_PLUGINS_SPEC_VERSION} spec.
+        </p>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5">
