@@ -55,6 +55,22 @@ export function OpenSkills() {
             </a>{" "}
             CLI, with our own CLI, or over MCP. Same skills, whichever route your agent prefers.
           </p>
+          <p className="mt-3 text-pretty text-sm leading-relaxed text-muted-foreground md:text-base">
+            We are also conformant with{" "}
+            <a
+              href={AGENT_PLUGINS_SITE}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="text-foreground underline decoration-border underline-offset-4 hover:decoration-primary"
+            >
+              Agent Plugins v{AGENT_PLUGINS_SPEC_VERSION}
+            </a>{" "}
+            — the vendor-neutral package format stewarded by {AGENT_PLUGINS_STEWARDS.join(", ")}.
+            Every graded skill downloads as a portable{" "}
+            <code className="font-mono text-foreground">plugin.json</code> +{" "}
+            <code className="font-mono text-foreground">mcp.json</code> +{" "}
+            <code className="font-mono text-foreground">SKILL.md</code> package.
+          </p>
         </div>
 
         <div className="mt-8 max-w-2xl space-y-3">
