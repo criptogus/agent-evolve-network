@@ -132,7 +132,22 @@ Works with Claude Code, Cursor, Codex, GitHub Copilot, Windsurf, Gemini CLI, Cli
 OpenCode and other agents the CLI supports. This is a file snapshot: no live Trust Score
 lookups, no review/diagnosis tools, no telemetry. Connect over MCP when you need those.
 
-### 4. No-SSE escape hatches
+### 4. Or load a portable Agent Plugin (agent-plugins.org v1.0.0)
+
+This repo is a conformant plugin (root \`plugin.json\` + \`mcp.json\` + \`skills/\`), and every
+published skill is served as a standalone package:
+
+\`\`\`bash
+curl https://superagentskill.com/api/public/plugins.json                 # discovery index
+curl -LO https://superagentskill.com/api/public/plugins/<slug>.zip       # portable package
+curl https://superagentskill.com/api/public/plugins/<slug>/plugin.json   # manifest only
+\`\`\`
+
+The package holds \`plugin.json\`, \`mcp.json\` and \`skills/<slug>/SKILL.md\`, so any conformant
+client (Amazon, Cursor, Microsoft, OpenAI, Vercel tooling) can load the graded skill without an
+account. Credentials are never embedded — the client supplies auth for the MCP server.
+
+### 5. No-SSE escape hatches
 
 
 Some runtimes cannot hold an SSE stream. These are plain JSON:
