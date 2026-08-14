@@ -16,6 +16,8 @@
     "validate:content": "node --experimental-strip-types scripts/validate-content.mjs",
     "build:skills-mirror": "node scripts/build-skills-sh-mirror.mjs",
     "check:skills-mirror": "node scripts/build-skills-sh-mirror.mjs --check",
+    "build:agent-plugin": "node scripts/build-agent-plugin.mjs",
+    "check:agent-plugin": "node scripts/build-agent-plugin.mjs --check",
     "audit:skills": "node --experimental-strip-types scripts/audit-skills.mjs",
     "scan:skillspector": "node scripts/scan-skillspector.mjs",
     "sync:content": "node scripts/sync-content-to-registry.mjs",
