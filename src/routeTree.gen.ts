@@ -123,6 +123,7 @@ import { Route as ApiPublicInstallDothermesDotshRouteImport } from './routes/api
 import { Route as ApiPublicMcpRouteImport } from './routes/api/public/mcp'
 import { Route as ApiPublicOnboardingRouteImport } from './routes/api/public/onboarding'
 import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packages'
+import { Route as ApiPublicPluginsDotjsonRouteImport } from './routes/api/public/plugins[.]json'
 import { Route as ApiPublicReviewRouteImport } from './routes/api/public/review'
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
@@ -744,6 +745,11 @@ const ApiPublicPackagesRoute = ApiPublicPackagesRouteImport.update({
   path: '/api/public/packages',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPluginsDotjsonRoute = ApiPublicPluginsDotjsonRouteImport.update({
+  id: '/api/public/plugins.json',
+  path: '/api/public/plugins.json',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicReviewRoute = ApiPublicReviewRouteImport.update({
   id: '/api/public/review',
   path: '/api/public/review',
@@ -1113,6 +1119,7 @@ export interface FileRoutesByFullPath {
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/onboarding': typeof ApiPublicOnboardingRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/plugins.json': typeof ApiPublicPluginsDotjsonRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -1275,6 +1282,7 @@ export interface FileRoutesByTo {
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/onboarding': typeof ApiPublicOnboardingRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/plugins.json': typeof ApiPublicPluginsDotjsonRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -1439,6 +1447,7 @@ export interface FileRoutesById {
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
   '/api/public/onboarding': typeof ApiPublicOnboardingRoute
   '/api/public/packages': typeof ApiPublicPackagesRouteWithChildren
+  '/api/public/plugins.json': typeof ApiPublicPluginsDotjsonRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -1604,6 +1613,7 @@ export interface FileRouteTypes {
     | '/api/public/mcp'
     | '/api/public/onboarding'
     | '/api/public/packages'
+    | '/api/public/plugins.json'
     | '/api/public/review'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1766,6 +1776,7 @@ export interface FileRouteTypes {
     | '/api/public/mcp'
     | '/api/public/onboarding'
     | '/api/public/packages'
+    | '/api/public/plugins.json'
     | '/api/public/review'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -1929,6 +1940,7 @@ export interface FileRouteTypes {
     | '/api/public/mcp'
     | '/api/public/onboarding'
     | '/api/public/packages'
+    | '/api/public/plugins.json'
     | '/api/public/review'
     | '/api/public/search'
     | '/api/public/telemetry'
@@ -2069,6 +2081,7 @@ export interface RootRouteChildren {
   ApiPublicMcpRoute: typeof ApiPublicMcpRouteWithChildren
   ApiPublicOnboardingRoute: typeof ApiPublicOnboardingRoute
   ApiPublicPackagesRoute: typeof ApiPublicPackagesRouteWithChildren
+  ApiPublicPluginsDotjsonRoute: typeof ApiPublicPluginsDotjsonRoute
   ApiPublicReviewRoute: typeof ApiPublicReviewRouteWithChildren
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
@@ -2908,6 +2921,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPackagesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/plugins.json': {
+      id: '/api/public/plugins.json'
+      path: '/api/public/plugins.json'
+      fullPath: '/api/public/plugins.json'
+      preLoaderRoute: typeof ApiPublicPluginsDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/review': {
       id: '/api/public/review'
       path: '/api/public/review'
@@ -3530,6 +3550,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicMcpRoute: ApiPublicMcpRouteWithChildren,
   ApiPublicOnboardingRoute: ApiPublicOnboardingRoute,
   ApiPublicPackagesRoute: ApiPublicPackagesRouteWithChildren,
+  ApiPublicPluginsDotjsonRoute: ApiPublicPluginsDotjsonRoute,
   ApiPublicReviewRoute: ApiPublicReviewRouteWithChildren,
   ApiPublicSearchRoute: ApiPublicSearchRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
