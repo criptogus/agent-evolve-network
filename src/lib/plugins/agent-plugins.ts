@@ -217,10 +217,10 @@ export function validateMcpConfig(input: unknown): string[] {
         errors.push(`${name}: command is required`);
       } else if (/\s/.test(command)) {
         errors.push(`${name}: command must be a single executable token`);
-      } else if (command.startsWith(".") && !command.startsWith("./")) {
-        errors.push(`${name}: plugin-relative command must begin with ./`);
       } else if (command.includes("..")) {
         errors.push(`${name}: command must stay inside the plugin root`);
+      } else if (command.startsWith(".") && !command.startsWith("./")) {
+        errors.push(`${name}: plugin-relative command must begin with ./ (plugin root)`);
       }
       const cwd = s["cwd"];
       if (cwd !== undefined) {
