@@ -185,6 +185,59 @@ ${openSkillsUpdate}`}
             </table>
           </div>
 
+          <h2 id="agent-plugins" className="mt-12 text-2xl font-semibold tracking-tight">
+            Or load an Agent Plugin (v{AGENT_PLUGINS_SPEC_VERSION})
+          </h2>
+          <p className="mt-2 text-muted-foreground">
+            Every published skill is also served as a portable{" "}
+            <a
+              href={AGENT_PLUGINS_SITE}
+              target="_blank"
+              rel="noreferrer"
+              className="text-primary underline underline-offset-4"
+            >
+              Agent Plugins
+            </a>{" "}
+            package — the vendor-neutral format stewarded by{" "}
+            {AGENT_PLUGINS_STEWARDS.join(", ")}. One manifest, the standard{" "}
+            <code className="font-mono text-foreground">SKILL.md</code> component and our MCP server
+            in one directory, so a conformant client loads the graded skill with no account.
+          </p>
+          <div className="mt-4">
+            <CodeBlock
+              lang="text"
+              code={`<slug>/
+├── plugin.json          # Agent Plugins v${AGENT_PLUGINS_SPEC_VERSION} manifest
+├── mcp.json             # our MCP server (streamable-http)
+└── skills/
+    └── <slug>/
+        ├── SKILL.md
+        └── references/examples.md`}
+            />
+          </div>
+          <div className="mt-4">
+            <CodeBlock
+              lang="bash"
+              code={`# download one portable plugin package
+curl -LO ${agentPluginZipUrl("<slug>")}
+
+# manifest only
+curl ${"https://superagentskill.com/api/public/plugins/<slug>/plugin.json"}
+
+# discovery index of every graded plugin
+curl ${AGENT_PLUGINS_INDEX_URL}`}
+            />
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">
+            This repository is itself a conformant plugin: root{" "}
+            <code className="font-mono text-foreground">plugin.json</code> +{" "}
+            <code className="font-mono text-foreground">mcp.json</code> +{" "}
+            <code className="font-mono text-foreground">skills/</code>. Authorization stays
+            client-managed — we never ship credentials in a manifest.
+          </p>
+
+
+
           <h2 id="skills" className="mt-12 text-2xl font-semibold tracking-tight">
             2. Trigger the upgrade
           </h2>
