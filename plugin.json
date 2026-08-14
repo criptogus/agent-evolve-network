@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "superagentskill",
-  "version": "0.1.126",
+  "version": "0.2.0",
   "description": "Graded agent skills from the Super Agent Skill network: every skill carries a public Trust Score, adversarial pass rate and before/after evidence.",
   "author": {
     "name": "Super Agent Skill",
