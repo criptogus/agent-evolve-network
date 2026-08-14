@@ -25,7 +25,7 @@ export const Route = createFileRoute("/api/public/plugins.json")({
       GET: async () => {
         const { data, error } = await supabaseAdmin
           .from("packages")
-          .select("slug,name,type,description,latest_version,install_count,trust_score")
+          .select("id,slug,name,type,description,latest_version,install_count")
           .eq("is_published", true)
           .eq("review_status", "approved")
           .order("install_count", { ascending: false })
@@ -39,13 +39,20 @@ export const Route = createFileRoute("/api/public/plugins.json")({
           });
         }
 
+        const { data: scores } = await supabaseAdmin
+          .from("package_trust_scores")
+          .select("package_id,score");
+        const scoreByPackage = new Map<string, number>(
+          (scores ?? []).map((s: any) => [s.package_id as string, s.score as number]),
+        );
+
         const plugins = (data ?? []).map((p: any) => ({
           name: p.slug,
           title: p.name,
           type: p.type,
           description: p.description,
           version: p.latest_version,
-          trust_score: p.trust_score ?? null,
+          trust_score: scoreByPackage.get(p.id) ?? null,
           installs: p.install_count ?? 0,
           plugin_manifest: `${SAK_SITE}/api/public/plugins/${p.slug}/plugin.json`,
           mcp_config: `${SAK_SITE}/api/public/plugins/${p.slug}/mcp.json`,
