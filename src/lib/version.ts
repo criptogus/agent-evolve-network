@@ -12,7 +12,7 @@
  * We are still pre-1.0: rapid evolution, no stability guarantees.
  */
 
-export const PLATFORM_VERSION = "0.3.9" as const;
+export const PLATFORM_VERSION = "0.4.0" as const;
 export const PLATFORM_CODENAME = "Genesis" as const;
 export const PLATFORM_STAGE: "alpha" | "beta" | "ga" = "alpha";
 export const PLATFORM_BUILD_DATE = "2026-08-15" as const;
@@ -30,6 +30,18 @@ export type ChangelogEntry = {
  * Every deployed change appends a new entry (or amends the top one before shipping).
  */
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "0.4.0",
+    date: "2026-08-15",
+    kind: "minor",
+    title: "Instrumentation-band landing page",
+    highlights: [
+      "Landing hero rebuilt as a dark instrumentation band with an illustrative Trust Report panel.",
+      "Closing CTA mirrors the hero surface, with reassurance line and one-click MCP URL copy.",
+      "New deep-surface design tokens (bg-deep family) shared by hero and CTA bands.",
+      "Fixed counters that could stay at zero when already visible at hydration.",
+    ],
+  },
   {
     version: "0.3.9",
     date: "2026-08-15",

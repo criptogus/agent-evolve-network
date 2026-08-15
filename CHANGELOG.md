@@ -11,7 +11,15 @@ Component artifacts are versioned and released independently via git tags:
 - **`super-agent` CLI** — `cli-v*` tags publish cross-platform binaries.
 - **`@superagentskill/sdk`** — versioned in `packages/sdk-ts/package.json`.
 
+## [0.4.0] — 2026-08-15 — *Genesis* (alpha) — Instrumentation-band landing page
+
+- Landing hero rebuilt as a dark instrumentation band with an illustrative Trust Report panel.
+- Closing CTA mirrors the hero surface, with a reassurance line and one-click MCP URL copy.
+- New deep-surface design tokens (`bg-deep` family) shared by the hero and CTA bands.
+- Fixed counters that could stay at zero when already visible at hydration.
+
 ## [0.3.9] — 2026-08-15 — *Genesis* (alpha) — Maintenance release
+
 
 ### Changed
 
