@@ -34,7 +34,7 @@ export const exportSkillBundle = createServerFn({ method: "POST" })
     if (error) throw new Response(error.message, { status: 500 });
     if (!rows?.length) throw new Response("No skills to export", { status: 400 });
 
-    const { buildBundleFiles, bundleFileName } = await import("./bundle");
+    const { buildBundleFiles, bundleFileName, bundlePath } = await import("./bundle");
     const { zipBundle, toBase64 } = await import("./bundle.server");
 
     const { provider, files } = buildBundleFiles(data.tool, data.scope, rows);
@@ -50,14 +50,13 @@ export const exportSkillBundle = createServerFn({ method: "POST" })
       client_name: "Web (private .zip export)",
       skill_count: rows.length,
       bytes: bytes.length,
-      changes: files
-        .filter((f) => !["README.md", "install.sh", "sak-bundle.json"].includes(f.path))
-        .map((f, i) => ({
-          slug: rows[i]?.slug ?? f.path,
-          path: f.path,
-          action: "write",
-          version: rows[i]?.version ?? null,
-        })),
+      changes: rows.map((r: any) => ({
+        slug: r.slug,
+        path: bundlePath(provider, data.scope, r.slug) ?? r.slug,
+        action: "write",
+        version: r.version ?? null,
+        note: "packaged into the zip",
+      })),
     });
 
     return {
