@@ -28,6 +28,11 @@ export const GUARDRAILS = {
 /** Plain-language list of what the CRM may and may not do on its own. */
 export const AUTONOMY_RULES: Array<{ allowed: boolean; rule: string }> = [
   { allowed: true, rule: "Pick the copy variant and the send hour with the best measured outcome." },
+  {
+    allowed: true,
+    rule:
+      "Time messages from each customer's measured activity (product usage and cloud library syncs) and stretch the cooldown up to 3x for segments that engage below average.",
+  },
   { allowed: true, rule: "Pause a variant once it is statistically behind the leader." },
   { allowed: true, rule: "Write a replacement variant and publish it when it passes every copy check." },
   { allowed: true, rule: "Rank triggers by measured business value and back off for unengaged customers." },

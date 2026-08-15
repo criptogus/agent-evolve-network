@@ -4349,6 +4349,15 @@ export type Database = {
           hour: number
         }[]
       }
+      crm_activity_hours: {
+        Args: { _days?: number; _user_id: string }
+        Returns: {
+          events: number
+          hour: number
+          sync_events: number
+          usage_events: number
+        }[]
+      }
       crm_customers: {
         Args: { _limit?: number; _offset?: number; _user_id?: string }
         Returns: {
@@ -4412,6 +4421,17 @@ export type Database = {
           unsubscribed: number
           usage_pattern: string
           variant: string
+        }[]
+      }
+      crm_segment_send_hour_stats: {
+        Args: { _days?: number }
+        Returns: {
+          converted: number
+          engaged: number
+          send_hour: number
+          sent: number
+          tool_id: string
+          usage_pattern: string
         }[]
       }
       crm_send_hour_stats: {

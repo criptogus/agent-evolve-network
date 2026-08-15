@@ -560,3 +560,195 @@ export function segmentSignificance(
         : `no clear winner yet (z=${z.toFixed(2)})`,
   };
 }
+
+/* ------------------------------------------- adaptive per-segment send timing */
+
+/**
+ * One hour of measured customer activity. `usageEvents` counts product work
+ * (tool calls, skill runs, evaluations); `syncEvents` counts cloud-library sync
+ * activity (syncs, conflict resolutions). Sync activity is the stronger signal
+ * that the customer is at their machine with an agent open, so it weighs more.
+ */
+export type ActivityHour = { hour: number; events: number; usageEvents?: number; syncEvents?: number };
+
+/** Engagement by send hour inside one segment. Key: `segmentKey::hour`. */
+export type SegmentHourStats = Record<string, HourStat>;
+
+export const segmentHourKey = (seg: Segment, hour: number) => `${segmentKey(seg)}::${hour}`;
+
+const USAGE_WEIGHT = 1;
+const SYNC_WEIGHT = 1.6;
+
+export type TimingConfidence = "none" | "low" | "medium" | "high";
+
+export type TimingProfile = {
+  /** Hours (UTC) ranked best-first. */
+  ranked: number[];
+  /** Hours we are willing to send in right now. */
+  window: number[];
+  confidence: TimingConfidence;
+  /** Multiplier applied on top of each trigger's base cooldown. Never below 1. */
+  cooldownMultiplier: number;
+  signals: {
+    usageEvents: number;
+    syncEvents: number;
+    segmentSends: number;
+    globalSends: number;
+    segmentEngagementRate: number;
+    globalEngagementRate: number;
+  };
+  reason: string;
+};
+
+function hourRate(s: HourStat): number {
+  return (s.converted + s.engaged * 0.4 + 1) / (s.sent + 2);
+}
+
+function totalStat(list: HourStat[]): HourStat {
+  return list.reduce(
+    (a, b) => ({ sent: a.sent + b.sent, engaged: a.engaged + b.engaged, converted: a.converted + b.converted }),
+    { sent: 0, engaged: 0, converted: 0 },
+  );
+}
+
+function engagementRate(s: HourStat): number {
+  return (s.converted + s.engaged * 0.4 + 1) / (s.sent + 2);
+}
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+/**
+ * Builds the send-timing decision for one customer from three measured sources,
+ * in decreasing order of specificity:
+ *
+ *  1. that customer's own activity clock (usage + cloud sync), which says when
+ *     they are actually working;
+ *  2. engagement by send hour inside their segment (tool + usage pattern), which
+ *     says when this kind of customer replies;
+ *  3. global engagement by send hour, as the fallback when the segment is thin.
+ *
+ * The same evidence sets the cooldown multiplier: audiences that engage below
+ * the global rate get spaced out further, so a poorly-performing segment is
+ * contacted less rather than at a worse hour.
+ */
+export function buildTimingProfile(input: {
+  activity: ActivityHour[];
+  globalHours: Record<number, HourStat>;
+  segmentHours?: SegmentHourStats;
+  segment?: Segment;
+  minSamples?: number;
+}): TimingProfile {
+  const minSamples = Math.max(5, input.minSamples ?? 20);
+  const segment = input.segment ?? { toolId: null, pattern: null };
+  const segmentHours = input.segmentHours ?? {};
+
+  const score = new Map<number, number>();
+  const bump = (hour: number, value: number) => score.set(hour, (score.get(hour) ?? 0) + value);
+
+  // 1. Own activity clock.
+  let usageEvents = 0;
+  let syncEvents = 0;
+  const weighted: Array<{ hour: number; weight: number }> = [];
+  for (const a of input.activity) {
+    const usage = a.usageEvents ?? Math.max(0, a.events - (a.syncEvents ?? 0));
+    const sync = a.syncEvents ?? 0;
+    usageEvents += usage;
+    syncEvents += sync;
+    weighted.push({ hour: a.hour, weight: usage * USAGE_WEIGHT + sync * SYNC_WEIGHT });
+  }
+  const weightTotal = weighted.reduce((n, w) => n + w.weight, 0);
+  if (weightTotal > 0) for (const w of weighted) bump(w.hour, (w.weight / weightTotal) * 3);
+
+  // 2. Segment engagement by hour.
+  const segEntries: Array<{ hour: number; stat: HourStat }> = [];
+  for (let hour = 0; hour < 24; hour++) {
+    const stat = segmentHours[segmentHourKey(segment, hour)];
+    if (stat) segEntries.push({ hour, stat });
+  }
+  const segTotal = totalStat(segEntries.map((e) => e.stat));
+  for (const e of segEntries) {
+    if (e.stat.sent < 3) continue;
+    bump(e.hour, hourRate(e.stat) * 2);
+  }
+
+  // 3. Global engagement by hour.
+  const globalEntries = Object.entries(input.globalHours).map(([h, stat]) => ({ hour: Number(h), stat }));
+  const globalTotal = totalStat(globalEntries.map((e) => e.stat));
+  for (const e of globalEntries) {
+    if (e.stat.sent < 5) continue;
+    bump(e.hour, hourRate(e.stat));
+  }
+
+  const ranked = [...score.entries()].sort((a, b) => b[1] - a[1]).map(([h]) => h);
+
+  const activityStrength = usageEvents + syncEvents;
+  const confidence: TimingConfidence =
+    ranked.length === 0
+      ? "none"
+      : segTotal.sent >= minSamples && activityStrength >= 20
+        ? "high"
+        : activityStrength >= 10 || segTotal.sent >= Math.ceil(minSamples / 2)
+          ? "medium"
+          : "low";
+
+  // Tighter window the more we know; with nothing measured, every hour is fine.
+  const width = confidence === "high" ? 3 : confidence === "medium" ? 4 : confidence === "low" ? 6 : 24;
+  const top = ranked.slice(0, width);
+  const window =
+    confidence === "none"
+      ? Array.from({ length: 24 }, (_, i) => i)
+      : [...new Set(top.flatMap((h) => [h, (h + 1) % 24, (h + 23) % 24]))].sort((a, b) => a - b);
+
+  const segmentEngagementRate = engagementRate(segTotal);
+  const globalEngagementRate = engagementRate(globalTotal);
+
+  let cooldownMultiplier = 1;
+  const reasons: string[] = [];
+  if (segTotal.sent >= minSamples && globalTotal.sent >= minSamples) {
+    const ratio = segmentEngagementRate / (globalEngagementRate || 1);
+    if (ratio < 1) {
+      cooldownMultiplier = Math.min(3, 1 / Math.max(0.34, ratio));
+      reasons.push("segment engages below average — spacing messages out");
+    } else {
+      reasons.push("segment engages at or above average — standard spacing");
+    }
+  }
+  if (activityStrength > 0 && activityStrength < 5) {
+    cooldownMultiplier = Math.max(cooldownMultiplier, 1.5);
+    reasons.push("little measured activity yet");
+  }
+  cooldownMultiplier = round2(Math.max(1, Math.min(3, cooldownMultiplier)));
+
+  if (syncEvents > 0) reasons.unshift(`${syncEvents} sync events in the activity clock`);
+  if (confidence === "none") reasons.unshift("no timing data — any hour allowed");
+
+  return {
+    ranked,
+    window,
+    confidence,
+    cooldownMultiplier,
+    signals: {
+      usageEvents,
+      syncEvents,
+      segmentSends: segTotal.sent,
+      globalSends: globalTotal.sent,
+      segmentEngagementRate: round2(segmentEngagementRate),
+      globalEngagementRate: round2(globalEngagementRate),
+    },
+    reason: reasons.join("; ") || "using the customer's activity clock",
+  };
+}
+
+/** Is `hour` (UTC) inside the profile's allowed window? */
+export function isWithinTimingWindow(hour: number, profile: TimingProfile): boolean {
+  return profile.window.length === 0 || profile.window.includes(hour);
+}
+
+/** Hours until the next allowed send hour, from `hour`. */
+export function hoursUntilWindow(hour: number, profile: TimingProfile): number {
+  if (isWithinTimingWindow(hour, profile)) return 0;
+  for (let d = 1; d <= 24; d++) if (profile.window.includes((hour + d) % 24)) return d;
+  return 0;
+}

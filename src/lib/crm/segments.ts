@@ -326,7 +326,8 @@ export type TriggerDecision =
 
 /**
  * Every trigger that passes the hard constraints right now, in deterministic
- * rule order. `cooldownMultiplier` comes from the fatigue backoff (1 = normal).
+ * rule order. `cooldownMultiplier` combines the fatigue backoff with the
+ * per-segment timing stretch (1 = normal spacing, higher = wait longer).
  */
 export function eligibleTriggers(
   row: CrmCustomerRow,

@@ -38,6 +38,7 @@ import {
 import { TRIGGERS } from "@/lib/crm/segments";
 import { EffectivenessPanel } from "@/components/crm/EffectivenessPanel";
 import { SegmentPerformancePanel } from "@/components/crm/SegmentPerformancePanel";
+import { TimingPanel } from "@/components/crm/TimingPanel";
 
 
 export const Route = createFileRoute("/admin/crm")({
@@ -308,6 +309,8 @@ function CrmAdminPage() {
       <EffectivenessPanel />
 
       <SegmentPerformancePanel />
+
+      <TimingPanel />
 
 
       <Sheet open={!!openUser} onOpenChange={(o) => !o && setOpenUser(null)}>
