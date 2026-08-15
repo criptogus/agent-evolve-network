@@ -26,9 +26,14 @@ export const Route = createFileRoute("/api/public/plugins/$slug/signature.json")
         const pkg = await loadPluginPackage(slug);
         if (!pkg) return new Response("not found", { status: 404, headers: CORS });
 
+        // Must mirror the .zip route byte-for-byte.
         const zip = new JSZip();
-        const root = zip.folder(pkg.pluginName)!;
-        for (const [rel, contents] of pkg.files) root.file(rel, contents, { date: new Date(0) });
+        for (const [rel, contents] of pkg.files) {
+          zip.file(`${pkg.pluginName}/${rel}`, contents, {
+            date: new Date(0),
+            createFolders: false,
+          });
+        }
         const bytes = await zip.generateAsync({ type: "uint8array" });
 
         const filename = `${pkg.pluginName}-agent-plugin.zip`;

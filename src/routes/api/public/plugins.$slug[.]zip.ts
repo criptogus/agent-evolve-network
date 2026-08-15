@@ -32,10 +32,15 @@ export const Route = createFileRoute("/api/public/plugins/$slug.zip")({
         if (!pkg) return new Response("not found", { status: 404, headers: CORS });
 
         const zip = new JSZip();
-        const root = zip.folder(pkg.pluginName)!;
-        // Fixed timestamps keep the archive byte-identical across requests, so
-        // the sidecar signature stays valid for any copy of this version.
-        for (const [rel, contents] of pkg.files) root.file(rel, contents, { date: new Date(0) });
+        // Fixed timestamps and no implicit directory entries keep the archive
+        // byte-identical across requests, so the sidecar signature stays valid
+        // for any copy of this version.
+        for (const [rel, contents] of pkg.files) {
+          zip.file(`${pkg.pluginName}/${rel}`, contents, {
+            date: new Date(0),
+            createFolders: false,
+          });
+        }
 
         const bytes = await zip.generateAsync({ type: "uint8array" });
         const sig = signBytes(bytes);
