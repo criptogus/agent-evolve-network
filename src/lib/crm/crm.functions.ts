@@ -230,7 +230,10 @@ export const getCrmCustomer = createServerFn({ method: "POST" })
       stage: snapshot.stage,
       stage_label: LABELS[snapshot.stage],
       paying: snapshot.paying,
-      usage: { ...snapshot.usage } as Record<string, number | boolean>,
+      usage: { ...snapshot.usage } as Record<string, number | boolean | string[]>,
+      tool: snapshot.tool,
+      tools: snapshot.tools,
+      pattern: snapshot.pattern,
       roi: {
         improved_docs: snapshot.roi.improved_docs,
         reviewed_docs: snapshot.roi.reviewed_docs,
