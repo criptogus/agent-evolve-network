@@ -51,6 +51,10 @@ export const VARIANTS: Record<TriggerId, VariantDef[]> = {
     { variant: "v1", label: "Break-even math", framing: "roi" },
     { variant: "v2", label: "Limits you are hitting", framing: "capability" },
   ],
+  cloud_library_upsell: [
+    { variant: "v1", label: "One library, every tool", framing: "capability" },
+    { variant: "v2", label: "Cost of scattered skills", framing: "risk" },
+  ],
   at_risk: [
     { variant: "v1", label: "Silent regressions", framing: "risk" },
     { variant: "v2", label: "One-call resume", framing: "capability" },
@@ -155,6 +159,12 @@ export const OUTCOMES: Record<TriggerId, OutcomeDef> = {
     label: "Used a new capability",
   },
   pro_upsell: { kind: "subscription", windowHours: 168, weight: 3.0, label: "Started paying" },
+  cloud_library_upsell: {
+    kind: "subscription",
+    windowHours: 168,
+    weight: 2.8,
+    label: "Started paying",
+  },
   at_risk: { kind: "any_value_action", windowHours: 168, weight: 2.0, label: "Came back" },
   win_back: { kind: "any_value_action", windowHours: 336, weight: 2.2, label: "Came back" },
   pro_value_recap: {
