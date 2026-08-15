@@ -29,6 +29,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SyncAnywhere } from "@/components/cloud-skills/SyncAnywhere";
 
 export const Route = createFileRoute("/account/cloud-skills")({
   head: () => ({
@@ -369,7 +370,10 @@ function CloudSkillsPage() {
           )}
         </div>
 
+        <SyncAnywhere exampleSlug={skills[0]?.slug} />
+
         <p className="mt-6 text-xs text-muted-foreground">
+
           Cloud skills are also accessible via the MCP API. Use{" "}
           <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
             cloud_skills_save
