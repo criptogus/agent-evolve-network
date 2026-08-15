@@ -57,7 +57,7 @@ export function ExportBundle({
         `${r.skill_count} skill${r.skill_count === 1 ? "" : "s"} exported for ${r.tool.label}`,
         {
           description: r.integrity.signed
-            ? `Signed bundle — run "bash verify.sh" before installing (digest ${r.integrity.content_digest.slice(0, 12)}...)`
+            ? `Signed archive — run "bash verify.sh" to check it (digest ${r.integrity.content_digest.slice(0, 12)}...)`
             : "Bundle is hashed but unsigned on this deployment — verify.sh will report it.",
         },
       );
@@ -71,12 +71,17 @@ export function ExportBundle({
   return (
     <section className="mt-6 rounded-2xl border border-border bg-surface p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold">Export as a private package (.zip)</h2>
-        <Badge variant="secondary">Private to your account</Badge>
+        <h2 className="text-lg font-semibold">Offline backup archive (.zip)</h2>
+        <Badge variant="outline">Backup only — not an installer</Badge>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
-        One archive with your own skills, already in the folder structure the tool expects.
-        Unzip it anywhere — no MCP connection, no account needed on the machine that uses it.
+        A signed snapshot of your own skills, in the folder structure the tool expects, for
+        offline copies, audits and air-gapped machines.{" "}
+        <strong className="text-foreground">
+          Installing into Claude Code, Codex, Cursor and friends always goes through MCP
+        </strong>{" "}
+        — use the sync prompt above so versions and conflicts stay tracked. The archive ships
+        no install script on purpose.
       </p>
 
       <div className="mt-5">
@@ -155,7 +160,7 @@ export function ExportBundle({
 
       <div className="mt-5 rounded-xl border border-border/60 bg-background/60 p-4">
         <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-          Inside the zip
+          Inside the archive
         </div>
         <ul className="mt-2 space-y-1 font-mono text-xs">
           {preview.map((p) => (
@@ -167,21 +172,20 @@ export function ExportBundle({
             <li className="text-muted-foreground">+{chosen.length - preview.length} more</li>
           )}
           <li className="break-all">README.md</li>
-          <li className="break-all">install.sh</li>
           <li className="break-all">verify.sh</li>
           <li className="break-all">sak-bundle.json</li>
         </ul>
         <p className="mt-2 text-xs text-muted-foreground">
           {activeScope === "global"
-            ? "Global files are staged under home/ — install.sh copies them into $HOME."
-            : "Project files sit at the repo root — run install.sh inside your repo."}{" "}
-          Existing files are backed up as <code className="font-mono">.bak</code>, never deleted.
+            ? "Global files are staged under home/, mirroring $HOME."
+            : "Project files mirror your repo root."}{" "}
+          Nothing here touches your machine — copying files by hand skips version tracking and
+          conflict detection, so prefer MCP sync.
         </p>
         <p className="mt-2 text-xs text-muted-foreground">
           Tamper-evident: <code className="font-mono">sak-bundle.json</code> carries a sha256 for
           every file plus an Ed25519 signature over the combined digest.{" "}
-          <code className="font-mono">bash verify.sh</code> checks both, and{" "}
-          <code className="font-mono">install.sh</code> refuses to copy anything that fails.
+          <code className="font-mono">bash verify.sh</code> fails loudly if either does not match.
         </p>
         <div className="mt-3">
           <Button
@@ -189,7 +193,7 @@ export function ExportBundle({
             onClick={() => mut.mutate()}
             disabled={mut.isPending || chosen.length === 0}
           >
-            {mut.isPending ? "Packaging..." : `Download .zip for ${provider.label}`}
+            {mut.isPending ? "Packaging..." : `Download backup .zip for ${provider.label}`}
           </Button>
         </div>
       </div>

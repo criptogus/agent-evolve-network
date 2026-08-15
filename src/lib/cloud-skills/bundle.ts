@@ -1,19 +1,26 @@
 /**
- * Private export bundle: turns a set of cloud skills into the exact on-disk
- * layout a given agent tool expects, so the user can unzip it wherever they
- * want (no MCP, no network, no sharing).
+ * Private backup archive: turns a set of cloud skills into the exact on-disk
+ * layout a given agent tool expects, so the user keeps an offline, auditable
+ * copy of their vault.
  *
- * Integrity: every payload file (skills, README.md, install.sh, verify.sh) is
- * hashed, the hashes are rolled into one `content_digest`, and that digest is
+ * NOT an install path. Installing the personal vault into a local agent
+ * (Claude Code, Codex, Cursor, ...) always happens over MCP via
+ * `cloud_skills_sync`, which is conflict-aware and idempotent. The archive
+ * therefore ships no install script.
+ *
+ * Integrity: every payload file (skills, README.md, verify.sh) is hashed, the
+ * hashes are rolled into one `content_digest`, and that digest is
  * Ed25519-signed server-side. The result lands in `sak-bundle.json`, which is
  * therefore built LAST and excluded from its own digest.
  *
  * Pure: builds the file list only. Zipping and signing happen server-side in
  * `bundle.server.ts`; the UI reuses this to preview paths.
  */
+
 import {
   getProvider,
   renderSkillFile,
+  syncPrompt,
   targetPath,
   type Provider,
   type ProviderScope,
@@ -86,23 +93,40 @@ function readme(provider: Provider, scope: ProviderScope, skills: SkillForRender
   const dir = provider.dirs[scope]!;
   const isGlobal = scope === "global";
   return [
-    `# Private skill bundle for ${provider.label}`,
+    `# Private skill archive for ${provider.label}`,
     "",
     `${skills.length} skill${skills.length === 1 ? "" : "s"} from your SuperAgent Skill cloud library,`,
     `already shaped for ${provider.label} (${scope} scope, layout: ${provider.layout}).`,
     "",
-    "## Verify before installing",
+    "## This archive is a backup, not an installer",
     "",
-    "Every file in this bundle is hashed in `sak-bundle.json`, and the combined digest is",
-    "signed with the SuperAgent Skill Ed25519 release key. Check it first:",
+    `Installing your personal vault into ${provider.label} always happens over MCP:`,
+    "the server knows which versions you already have, detects conflicts with your local",
+    "files and never deletes anything. A zip cannot do that.",
+    "",
+    "Paste this in your agent:",
+    "",
+    "```text",
+    syncPrompt(provider.id, scope, "ask"),
+    "```",
+    "",
+    "It calls the MCP tool `cloud_skills_sync` and writes each file at its exact path",
+    isGlobal ? `under \`${dir}/\`.` : `under \`${dir}/\` in the current repo.`,
+    "Not connected yet? Follow https://superagentskill.com/welcome (one MCP endpoint, OAuth login).",
+    "",
+    "Use this archive for offline copies, audits, air-gapped machines and long-term retention.",
+    "",
+    "## Verify this archive",
+    "",
+    "Every file here is hashed in `sak-bundle.json`, and the combined digest is signed",
+    "with the SuperAgent Skill Ed25519 release key:",
     "",
     "```bash",
     "bash verify.sh         # hashes every file, then verifies the signature",
     "```",
     "",
     "Expected output ends with `bundle verified` — anything else means the archive was",
-    "modified after export and should not be installed. `install.sh` runs this check",
-    "automatically and refuses to copy files when it fails.",
+    "modified after export and should not be trusted.",
     "",
     "What is checked:",
     "",
@@ -122,42 +146,25 @@ function readme(provider: Provider, scope: ProviderScope, skills: SkillForRender
     "`verify.sh` needs `python3` or `node` for hashing and `openssl` or `node` for the",
     "signature; it says exactly which step it could not run instead of silently passing.",
     "",
-    "## Install",
-    "",
-    isGlobal
-      ? [
-          "This bundle targets your home directory. From the unzipped folder:",
-          "",
-          "```bash",
-          'bash install.sh        # verifies, then copies home/* into "$HOME"',
-          "```",
-          "",
-          `Or copy manually: everything under \`home/\` maps 1:1 onto \`$HOME\`, so \`home/${dir.replace(/^~\//, "")}/\` becomes \`${dir}/\`.`,
-        ].join("\n")
-      : [
-          "This bundle targets a project root. From the unzipped folder, inside your repo:",
-          "",
-          "```bash",
-          "bash install.sh        # verifies, then copies the tool folders into the current repo",
-          "```",
-          "",
-          `Or copy manually: drop the \`${dir.split("/")[0]}\` folder at the root of your project.`,
-        ].join("\n"),
-    "",
-    "## What lands where",
+    "## What the files map to",
     "",
     ...skills.map((s) => `- \`${bundlePath(provider, scope, s.slug)}\` — ${s.name}`),
+    "",
+    isGlobal
+      ? `> Paths under \`home/\` map 1:1 onto \`$HOME\`, so \`home/${dir.replace(/^~\//, "")}/\` corresponds to \`${dir}/\`.`
+      : `> The \`${dir.split("/")[0]}\` folder corresponds to the root of your project.`,
     "",
     `> ${provider.note}`,
     "",
     "## Notes",
     "",
-    "- This bundle is private: it was generated for your account and contains only your own skills.",
-    "- `install.sh` never deletes files; existing files with the same name are backed up as `<file>.bak`.",
-    "- Re-export any time to pick up new versions, or use the MCP tool `cloud_skills_sync` for in-place, conflict-aware syncing.",
+    "- This archive is private: it was generated for your account and contains only your own skills.",
+    "- No install script is shipped on purpose — use `cloud_skills_sync` over MCP so versions and conflicts stay tracked.",
+    "- Re-export any time to refresh the snapshot; MCP sync always serves the latest versions.",
     "- Exports are deterministic: the same skills produce the same files, hashes and signature.",
   ].join("\n");
 }
+
 
 /**
  * Standalone integrity checker shipped inside the bundle. POSIX sh, no network:
@@ -341,50 +348,6 @@ function verifyScript(): string {
   ].join("\n");
 }
 
-function installScript(provider: Provider, scope: ProviderScope): string {
-  const dir = provider.dirs[scope]!;
-  const root = scope === "global" ? "home" : dir.split("/")[0]!;
-  const dest = scope === "global" ? '"$HOME"' : '"$PWD"';
-  return [
-    "#!/usr/bin/env bash",
-    "set -euo pipefail",
-    "",
-    `# Installs this private skill bundle for ${provider.label} (${scope} scope).`,
-    `# Source: superagentskill.com — files are copied into ${scope === "global" ? "$HOME" : "the current directory"}.`,
-    "",
-    'HERE="$(cd "$(dirname "$0")" && pwd)"',
-    `SRC="$HERE/${root}"`,
-    `DEST=${dest}`,
-    "",
-    "# Integrity gate: never install files that no longer match the signed manifest.",
-    'if [ "${SAK_SKIP_VERIFY:-0}" = "1" ]; then',
-    '  echo "WARNING: integrity check skipped (SAK_SKIP_VERIFY=1)" >&2',
-    'elif [ -f "$HERE/verify.sh" ]; then',
-    '  if ! bash "$HERE/verify.sh"; then',
-    '    echo "Aborting: this bundle failed verification and may have been altered." >&2',
-    '    echo "Re-export it from superagentskill.com, or set SAK_SKIP_VERIFY=1 to install anyway." >&2',
-    "    exit 1",
-    "  fi",
-    "else",
-    '  echo "WARNING: verify.sh missing — cannot confirm bundle integrity" >&2',
-    "fi",
-    "",
-    'if [ ! -d "$SRC" ]; then echo "Nothing to install: $SRC missing" >&2; exit 1; fi',
-    "",
-    'find "$SRC" -type f | while read -r file; do',
-    '  rel="${file#"$SRC"/}"',
-    scope === "global" ? '  out="$DEST/$rel"' : `  out="$DEST/${root}/$rel"`,
-    '  mkdir -p "$(dirname "$out")"',
-    '  if [ -f "$out" ]; then cp "$out" "$out.bak"; echo "backup: $out.bak"; fi',
-    '  cp "$file" "$out"',
-    '  echo "wrote: $out"',
-    "done",
-    "",
-    'echo "Done."',
-    "",
-  ].join("\n");
-}
-
 /**
  * Payload file list (everything except the manifest), deterministic and sorted.
  * The server hashes/signs this list and appends `sak-bundle.json`.
@@ -409,7 +372,6 @@ export function buildBundleFiles(
   const files: BundleFile[] = [
     ...skillFiles,
     { path: "README.md", content: `${readme(provider, scope, ordered)}\n` },
-    { path: "install.sh", content: installScript(provider, scope) },
     { path: "verify.sh", content: verifyScript() },
   ].sort((a, b) => a.path.localeCompare(b.path));
 

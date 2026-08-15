@@ -46,12 +46,14 @@ export function SyncAnywhere({ sampleSlug = "my-skill" }: { sampleSlug?: string 
   return (
     <section className="mt-8 rounded-2xl border border-border bg-surface p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold">Use your library anywhere</h2>
-        <Badge variant="secondary">Private to your account</Badge>
+        <h2 className="text-lg font-semibold">Install into your agent (via MCP)</h2>
+        <Badge variant="secondary">Recommended install path</Badge>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
-        Your skills stay encrypted in your private library and are never shared with other
-        users. Pick a tool and your agent writes them at the exact path that tool reads.
+        Your skills stay in your private library and are never shared with other users. Pick a
+        tool and your agent installs them over MCP at the exact path that tool reads — versions
+        tracked, conflicts detected, nothing deleted. This is the supported way to install your
+        vault locally; the zip below is only an offline backup.
       </p>
 
       <div className="mt-5">
