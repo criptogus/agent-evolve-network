@@ -564,6 +564,78 @@ export type Database = {
           },
         ]
       }
+      cloud_skill_sync_conflicts: {
+        Row: {
+          client_name: string | null
+          cloud_hash: string | null
+          cloud_lines: number | null
+          cloud_version: number | null
+          created_at: string
+          decided_at: string | null
+          decision: string | null
+          detail: string | null
+          id: string
+          kind: string
+          local_content: string | null
+          local_lines: number | null
+          local_only_lines: number | null
+          path: string
+          provider: string
+          provider_label: string | null
+          scope: string
+          slug: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_name?: string | null
+          cloud_hash?: string | null
+          cloud_lines?: number | null
+          cloud_version?: number | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: string | null
+          detail?: string | null
+          id?: string
+          kind?: string
+          local_content?: string | null
+          local_lines?: number | null
+          local_only_lines?: number | null
+          path: string
+          provider: string
+          provider_label?: string | null
+          scope: string
+          slug: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_name?: string | null
+          cloud_hash?: string | null
+          cloud_lines?: number | null
+          cloud_version?: number | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: string | null
+          detail?: string | null
+          id?: string
+          kind?: string
+          local_content?: string | null
+          local_lines?: number | null
+          local_only_lines?: number | null
+          path?: string
+          provider?: string
+          provider_label?: string | null
+          scope?: string
+          slug?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cloud_skill_sync_events: {
         Row: {
           bytes: number | null
@@ -868,8 +940,10 @@ export type Database = {
           send_hour: number | null
           stage_at_send: string | null
           template: string
+          tool_id: string | null
           tracking_token: string | null
           trigger: string
+          usage_pattern: string | null
           user_id: string
           variant: string
         }
@@ -884,8 +958,10 @@ export type Database = {
           send_hour?: number | null
           stage_at_send?: string | null
           template: string
+          tool_id?: string | null
           tracking_token?: string | null
           trigger: string
+          usage_pattern?: string | null
           user_id: string
           variant?: string
         }
@@ -900,8 +976,10 @@ export type Database = {
           send_hour?: number | null
           stage_at_send?: string | null
           template?: string
+          tool_id?: string | null
           tracking_token?: string | null
           trigger?: string
+          usage_pattern?: string | null
           user_id?: string
           variant?: string
         }
@@ -4271,6 +4349,15 @@ export type Database = {
           hour: number
         }[]
       }
+      crm_activity_hours: {
+        Args: { _days?: number; _user_id: string }
+        Returns: {
+          events: number
+          hour: number
+          sync_events: number
+          usage_events: number
+        }[]
+      }
       crm_customers: {
         Args: { _limit?: number; _offset?: number; _user_id?: string }
         Returns: {
@@ -4319,6 +4406,32 @@ export type Database = {
           trigger: string
           unsubscribed: number
           variant: string
+        }[]
+      }
+      crm_effectiveness_by_segment: {
+        Args: { _days?: number }
+        Returns: {
+          clicked: number
+          converted: number
+          last_sent_at: string
+          opened: number
+          sent: number
+          tool_id: string
+          trigger: string
+          unsubscribed: number
+          usage_pattern: string
+          variant: string
+        }[]
+      }
+      crm_segment_send_hour_stats: {
+        Args: { _days?: number }
+        Returns: {
+          converted: number
+          engaged: number
+          send_hour: number
+          sent: number
+          tool_id: string
+          usage_pattern: string
         }[]
       }
       crm_send_hour_stats: {
