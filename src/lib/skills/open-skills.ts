@@ -96,8 +96,14 @@ export function agentPluginZipUrl(slug: string) {
   return `https://superagentskill.com/api/public/plugins/${slug}.zip`;
 }
 
+/** Agent Plugins v1 manifest for one skill. */
 export function agentPluginManifestUrl(slug: string) {
   return `https://superagentskill.com/api/public/plugins/${slug}/plugin.json`;
+}
+
+/** MCP server config (Agent Plugins v1 companion file) for one skill. */
+export function agentPluginMcpUrl(slug: string) {
+  return `https://superagentskill.com/api/public/plugins/${slug}/mcp.json`;
 }
 
 /** Agents / clients that read the Agent Plugins format. */
