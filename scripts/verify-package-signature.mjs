@@ -52,6 +52,20 @@ if (!ok) {
   process.exit(1);
 }
 
+if (sidecar.content_digest && sidecar.content_signature) {
+  const okContent = verify(
+    null,
+    Buffer.from(sidecar.content_digest),
+    pub,
+    Buffer.from(sidecar.content_signature, "base64"),
+  );
+  if (!okContent) {
+    console.error("✗ content digest signature invalid");
+    process.exit(1);
+  }
+  console.log(`  payload ${sidecar.files?.length ?? 0} files, digest ${sidecar.content_digest}`);
+}
+
 console.log(
   `✓ verified ${sidecar.filename} (${sidecar.slug}${sidecar.version ? ` v${sidecar.version}` : ""})\n` +
     `  sha256  ${sha256}\n  key id  ${keyId}\n  signed  ${sidecar.signed_at}`,
