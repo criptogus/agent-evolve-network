@@ -18,8 +18,11 @@ export const Route = createFileRoute("/api/public/plugins/$slug/signature.json")
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       GET: async ({ params, request }) => {
-        const raw = (params as Record<string, string>)["slug.signature.json"] ?? "";
-        const slug = raw.replace(/\.signature\.json$/, "");
+        // The dynamic segment key varies with the literal suffix in the file
+        // name, so take whichever param carries the slug.
+        const raw =
+          Object.values(params as Record<string, string>).find((v) => typeof v === "string" && v) ?? "";
+        const slug = raw.replace(/\.signature\.json$/, "").replace(/\.json$/, "");
         const pkg = await loadPluginPackage(slug);
         if (!pkg) return new Response("not found", { status: 404, headers: CORS });
 
