@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,9 +48,8 @@ function SegmentTable({
       </TableHeader>
       <TableBody>
         {rows.map((g) => (
-          <>
+          <Fragment key={g.key}>
             <TableRow
-              key={g.key}
               className="cursor-pointer"
               onClick={() => onToggle(g.key)}
             >
@@ -71,7 +70,7 @@ function SegmentTable({
               </TableCell>
             </TableRow>
             {expanded === g.key && (
-              <TableRow key={`${g.key}-detail`}>
+              <TableRow>
                 <TableCell colSpan={6} className="bg-muted/30">
                   <div className="space-y-1">
                     {g.variants.map((v: any) => (
@@ -95,7 +94,7 @@ function SegmentTable({
                 </TableCell>
               </TableRow>
             )}
-          </>
+          </Fragment>
         ))}
       </TableBody>
     </Table>
