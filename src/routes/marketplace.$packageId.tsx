@@ -857,7 +857,7 @@ function InstallInstructions({ pkg }: { pkg: Package }) {
       <div className="rounded-xl border border-border bg-card p-5">
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
-            4
+            5
           </span>
           <h3 className="text-sm font-semibold">Copy / paste</h3>
         </div>
