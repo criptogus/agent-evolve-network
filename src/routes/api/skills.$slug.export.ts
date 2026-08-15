@@ -64,21 +64,27 @@ export const Route = createFileRoute("/api/skills/$slug/export")({
 
         const zip = new JSZip();
         const folder = zip.folder(pkg.slug)!;
-        folder.file("SKILL.md", skillMd);
-        folder.folder("references")!.file("examples.md", examplesMd);
+        const epoch = { date: new Date(0) };
+        folder.file("SKILL.md", skillMd, epoch);
+        folder.folder("references")!.file("examples.md", examplesMd, epoch);
         if (violations.length) {
           folder.file(
             "ANTHROPIC_SPEC_WARNINGS.md",
-            ["# Anthropic spec warnings", "", ...violations.map((v) => `- **${v.field}**: ${v.message}`)].join("\n")
+            ["# Anthropic spec warnings", "", ...violations.map((v) => `- **${v.field}**: ${v.message}`)].join("\n"),
+            epoch
           );
         }
 
         const bytes = await zip.generateAsync({ type: "uint8array" });
+        const sig = signBytes(bytes);
         return new Response(bytes as unknown as BodyInit, {
           headers: {
             "Content-Type": "application/zip",
             "Content-Disposition": `attachment; filename="${pkg.slug}-skill.zip"`,
             "Cache-Control": "public, max-age=300",
+            "X-SAK-Signing-Public-Key": SIGNING_PUBLIC_KEY_PATH,
+            "Access-Control-Expose-Headers": EXPOSED_SIGNATURE_HEADERS,
+            ...signatureHeaders(sig),
           },
         });
       },
