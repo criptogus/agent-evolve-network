@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import JSZip from "jszip";
 import { loadPluginPackage } from "@/lib/plugins/package.server";
 import {
+  buildSignedZipEntries,
   signBytes,
   signatureHeaders,
   EXPOSED_SIGNATURE_HEADERS,
@@ -34,12 +35,14 @@ export const Route = createFileRoute("/api/public/plugins/$slug.zip")({
         const zip = new JSZip();
         // Fixed timestamps and no implicit directory entries keep the archive
         // byte-identical across requests, so the sidecar signature stays valid
-        // for any copy of this version.
-        for (const [rel, contents] of pkg.files) {
-          zip.file(`${pkg.pluginName}/${rel}`, contents, {
-            date: new Date(0),
-            createFolders: false,
-          });
+        // for any copy of this version. SIGNATURE.json travels inside the bundle.
+        for (const [path, contents] of buildSignedZipEntries({
+          pluginName: pkg.pluginName,
+          slug: pkg.slug,
+          files: pkg.files,
+          version: pkg.manifest.version ?? null,
+        })) {
+          zip.file(path, contents, { date: new Date(0), createFolders: false });
         }
 
         const bytes = await zip.generateAsync({ type: "uint8array" });

@@ -1,7 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import JSZip from "jszip";
 import { loadPluginPackage } from "@/lib/plugins/package.server";
-import { buildSidecar, signBytes, EXPOSED_SIGNATURE_HEADERS } from "@/lib/plugins/signature.server";
+import {
+  buildSidecar,
+  buildSignedZipEntries,
+  signBytes,
+  EXPOSED_SIGNATURE_HEADERS,
+} from "@/lib/plugins/signature.server";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -28,11 +33,13 @@ export const Route = createFileRoute("/api/public/plugins/$slug/signature.json")
 
         // Must mirror the .zip route byte-for-byte.
         const zip = new JSZip();
-        for (const [rel, contents] of pkg.files) {
-          zip.file(`${pkg.pluginName}/${rel}`, contents, {
-            date: new Date(0),
-            createFolders: false,
-          });
+        for (const [path, contents] of buildSignedZipEntries({
+          pluginName: pkg.pluginName,
+          slug: pkg.slug,
+          files: pkg.files,
+          version: pkg.manifest.version ?? null,
+        })) {
+          zip.file(path, contents, { date: new Date(0), createFolders: false });
         }
         const bytes = await zip.generateAsync({ type: "uint8array" });
 
@@ -44,6 +51,7 @@ export const Route = createFileRoute("/api/public/plugins/$slug/signature.json")
           filename,
           bytes: bytes.byteLength,
           origin: new URL(request.url).origin,
+          payload: pkg.files,
         });
 
         return new Response(JSON.stringify(sidecar, null, 2), {
