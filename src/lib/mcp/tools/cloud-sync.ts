@@ -11,16 +11,44 @@ import {
   targetPath,
   type ProviderScope,
 } from "@/lib/cloud-skills/providers";
+import {
+  CONFLICT_STRATEGIES,
+  contentHash,
+  detectConflict,
+  resolveConflict,
+  type ConflictStrategy,
+  type LocalFile,
+} from "@/lib/cloud-skills/conflicts";
 
 const supabaseAdmin = _supabaseAdmin as any;
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 
 const ScopeSchema = z.enum(["project", "global"]).default("project");
+const StrategySchema = z
+  .enum(["ask", "overwrite", "merge", "keep_both"])
+  .default("ask")
+  .describe(
+    "What to do when a different file already exists at the target path: ask (report only), overwrite (cloud wins), merge (cloud wins, local-only lines kept under a marked section), keep_both (write cloud version with a -sak suffix).",
+  );
+const ExistingSchema = z
+  .array(
+    z.object({
+      slug: z.string(),
+      version: z.number().int().optional(),
+      content: z.string().max(200_000).optional(),
+      content_hash: z.string().optional(),
+    }),
+  )
+  .max(500)
+  .optional()
+  .describe(
+    "Files already present locally. Send `content` (or `content_hash`) so conflicts can be detected exactly; `merge` requires `content`.",
+  );
 
 export const cloudSkillsTargetsTool = defineTool({
   name: "cloud_skills_targets",
   description:
-    "[CLOUD] List the agent tools your cloud library can be synced into (Hermes, Claude Code, Codex, Cursor, Lovable, OpenClaw, Windsurf, Copilot, Zed, Gemini CLI, ...) with the exact directory and file layout each one expects.",
+    "[CLOUD] List the agent tools your cloud library can be synced into (Hermes, Claude Code, Codex, Cursor, Lovable, OpenClaw, Windsurf, Copilot, Zed, Gemini CLI, ...) with the exact directory and file layout each one expects, plus the available conflict strategies.",
   parameters: z.object({}),
   execute: async () =>
     json({
@@ -33,6 +61,7 @@ export const cloudSkillsTargetsTool = defineTool({
         paths: scopesFor(p).map((s) => targetPath(p, s, "<slug>")),
         note: p.note,
       })),
+      conflict_strategies: CONFLICT_STRATEGIES,
     }),
 });
 
@@ -48,66 +77,107 @@ async function loadSkills(userId: string, slugs?: string[]) {
   return (data ?? []) as any[];
 }
 
-function buildFiles(providerId: string, scope: ProviderScope, skills: any[]) {
+function planFor(
+  providerId: string,
+  scope: ProviderScope,
+  skills: any[],
+  existing: LocalFile[],
+  strategy: ConflictStrategy,
+) {
   const p = getProvider(providerId);
   if (!p) throw new Error(json({ error: "unknown_tool", tool: providerId, known: PROVIDER_IDS }));
   if (!p.dirs[scope])
     throw new Error(
       json({ error: "unsupported_scope", tool: providerId, supported: scopesFor(p) }),
     );
+
+  const localBySlug = new Map(existing.map((e) => [e.slug, e]));
+  const resolved = skills.map((s) => {
+    const path = targetPath(p, scope, s.slug)!;
+    const incoming = renderSkillFile(p, s);
+    const local = localBySlug.get(s.slug);
+    const conflict = detectConflict({
+      slug: s.slug,
+      path,
+      incoming,
+      cloudVersion: s.version,
+      local,
+    });
+    const file = resolveConflict({ slug: s.slug, path, incoming, conflict, strategy, local });
+    return { ...file, version: s.version, cloud_hash: contentHash(incoming), conflict_detail: conflict };
+  });
+
+  const orphans = existing
+    .map((e) => e.slug)
+    .filter((slug) => !skills.some((s) => s.slug === slug));
+
   return {
     provider: p,
-    files: skills.map((s) => ({
-      path: targetPath(p, scope, s.slug)!,
-      slug: s.slug,
-      version: s.version,
-      content: renderSkillFile(p, s),
-    })),
+    write: resolved.filter((r) => r.action !== "skip"),
+    skipped: resolved
+      .filter((r) => r.action === "skip")
+      .map((r) => ({ slug: r.slug, path: r.path, reason: r.note, conflict: r.conflict })),
+    conflicts: resolved
+      .filter((r) => r.conflict === "diverged" || r.conflict === "unknown")
+      .map((r) => ({ ...r.conflict_detail, resolution: r.action, applied_path: r.path })),
+    orphans,
   };
 }
 
 export const cloudSkillsSyncTool = defineTool({
   name: "cloud_skills_sync",
   description:
-    "[CLOUD] Materialise your private cloud library for one agent tool. Returns the exact file paths and file contents to write on disk (SKILL.md folders, flat Markdown or Cursor .mdc, depending on the tool). Requires OAuth + paid subscription. Nothing is deleted: files you no longer have in the cloud are only reported.",
+    "[CLOUD] Materialise your private cloud library for one agent tool. Returns the exact file paths and contents to write (SKILL.md folders, flat Markdown or Cursor .mdc). Detects conflicts when a different file already exists at the target path and resolves them with conflict_strategy: ask | overwrite | merge | keep_both. Requires OAuth + paid subscription. Nothing is ever deleted.",
   parameters: z.object({
     tool: z.string().min(1).describe(`One of: ${PROVIDER_IDS.join(", ")}`),
     scope: ScopeSchema,
     slugs: z.array(z.string()).max(200).optional().describe("Limit the sync to these slugs."),
-    existing: z
-      .array(z.object({ slug: z.string(), version: z.number().int().optional() }))
-      .max(500)
-      .optional()
-      .describe("Skills already present locally, so unchanged ones can be skipped."),
+    existing: ExistingSchema,
+    conflict_strategy: StrategySchema,
   }),
   execute: async (input, ctx) => {
     const userId = await requirePaidUser(ctx);
     const skills = await loadSkills(userId, input.slugs);
-    const { provider, files } = buildFiles(input.tool, input.scope as ProviderScope, skills);
+    const plan = planFor(
+      input.tool,
+      input.scope as ProviderScope,
+      skills,
+      input.existing ?? [],
+      input.conflict_strategy as ConflictStrategy,
+    );
 
-    const have = new Map((input.existing ?? []).map((e) => [e.slug, e.version ?? -1]));
-    const write = files.filter((f) => have.get(f.slug) !== f.version);
-    const unchanged = files.filter((f) => have.get(f.slug) === f.version).map((f) => f.slug);
-    const orphans = (input.existing ?? [])
-      .map((e) => e.slug)
-      .filter((slug) => !files.some((f) => f.slug === slug));
+    const unresolved = plan.conflicts.filter((c) => c.resolution === "skip");
 
     return json({
-      tool: provider.id,
-      label: provider.label,
+      tool: plan.provider.id,
+      label: plan.provider.label,
       scope: input.scope,
-      layout: provider.layout,
-      directory: provider.dirs[input.scope as ProviderScope],
-      note: provider.note,
-      write_count: write.length,
-      unchanged,
-      orphans,
+      layout: plan.provider.layout,
+      directory: plan.provider.dirs[input.scope as ProviderScope],
+      note: plan.provider.note,
+      conflict_strategy: input.conflict_strategy,
+      write_count: plan.write.length,
+      conflict_count: plan.conflicts.length,
+      unresolved_conflicts: unresolved,
+      conflicts: plan.conflicts,
+      skipped: plan.skipped,
+      orphans: plan.orphans,
       instructions: [
         "Write every entry in `files` at its exact `path`, creating directories as needed.",
         "These files are private to this user — do not commit secrets or share them.",
-        `Entries in \`orphans\` exist locally but not in the cloud library; ask before deleting.`,
+        unresolved.length
+          ? "Show the user the `unresolved_conflicts` list and ask which strategy to use, then call this tool again with conflict_strategy set to overwrite, merge or keep_both."
+          : "No unresolved conflicts.",
+        "Entries in `orphans` exist locally but not in the cloud library; ask before deleting.",
       ],
-      files: write,
+      files: plan.write.map((f) => ({
+        slug: f.slug,
+        path: f.path,
+        action: f.action,
+        version: f.version,
+        note: f.note,
+        content: f.content,
+      })),
     });
   },
 });
@@ -115,11 +185,16 @@ export const cloudSkillsSyncTool = defineTool({
 export const cloudSkillsSyncAllTool = defineTool({
   name: "cloud_skills_sync_all",
   description:
-    "[CLOUD] Same as cloud_skills_sync but for several agent tools in one call, so one library lands in Claude Code, Cursor, Codex, Hermes and others at once. Requires OAuth + paid subscription.",
+    "[CLOUD] Same as cloud_skills_sync but for several agent tools in one call, so one library lands in Claude Code, Cursor, Codex, Hermes and others at once. Supports the same conflict_strategy. Requires OAuth + paid subscription.",
   parameters: z.object({
     tools: z.array(z.string().min(1)).min(1).max(10),
     scope: ScopeSchema,
     slugs: z.array(z.string()).max(200).optional(),
+    existing: z
+      .record(z.string(), ExistingSchema.unwrap())
+      .optional()
+      .describe("Optional per-tool map of local files, keyed by tool id."),
+    conflict_strategy: StrategySchema,
   }),
   execute: async (input, ctx) => {
     const userId = await requirePaidUser(ctx);
@@ -127,12 +202,27 @@ export const cloudSkillsSyncAllTool = defineTool({
 
     const results = input.tools.map((t) => {
       try {
-        const { provider, files } = buildFiles(t, input.scope as ProviderScope, skills);
+        const plan = planFor(
+          t,
+          input.scope as ProviderScope,
+          skills,
+          (input.existing?.[t] as LocalFile[] | undefined) ?? [],
+          input.conflict_strategy as ConflictStrategy,
+        );
         return {
-          tool: provider.id,
-          label: provider.label,
-          directory: provider.dirs[input.scope as ProviderScope],
-          files,
+          tool: plan.provider.id,
+          label: plan.provider.label,
+          directory: plan.provider.dirs[input.scope as ProviderScope],
+          conflict_count: plan.conflicts.length,
+          conflicts: plan.conflicts,
+          skipped: plan.skipped,
+          orphans: plan.orphans,
+          files: plan.write.map((f) => ({
+            slug: f.slug,
+            path: f.path,
+            action: f.action,
+            content: f.content,
+          })),
         };
       } catch (e: any) {
         return { tool: t, error: String(e?.message ?? e) };
@@ -142,7 +232,9 @@ export const cloudSkillsSyncAllTool = defineTool({
     return json({
       scope: input.scope,
       skill_count: skills.length,
-      instructions: "Write every file at its exact path for each tool. Do not delete anything.",
+      conflict_strategy: input.conflict_strategy,
+      instructions:
+        "Write every file at its exact path for each tool. Never delete local files; unresolved conflicts must be confirmed with the user first.",
       results,
     });
   },
