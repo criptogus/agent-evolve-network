@@ -142,6 +142,15 @@
   --surface-elevated: oklch(1 0 0);
   --grid-line: oklch(0.93 0.005 270);
 
+  /* Instrumentation band (theme-independent) */
+  --deep: oklch(0.16 0.014 265);
+  --deep-elevated: oklch(0.21 0.014 265);
+  --deep-sunken: oklch(0.13 0.014 265);
+  --deep-foreground: oklch(0.985 0 0);
+  --deep-muted: oklch(0.73 0.012 265);
+  --deep-border: oklch(1 0 0 / 12%);
+
+
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.18 0.01 270);
   --popover: oklch(1 0 0);
