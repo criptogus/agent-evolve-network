@@ -66,6 +66,8 @@ function Docs() {
               "Quickstart",
               "MCP Gateway",
               "Open Skills CLI",
+              "Agent Plugins",
+              "Connect step by step",
               "Skills",
               "Playbooks",
               "Souls",
