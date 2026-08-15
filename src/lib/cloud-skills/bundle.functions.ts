@@ -35,9 +35,10 @@ export const exportSkillBundle = createServerFn({ method: "POST" })
     if (!rows?.length) throw new Response("No skills to export", { status: 400 });
 
     const { buildBundleFiles, bundleFileName } = await import("./bundle");
-    const { zipBundle, toBase64 } = await import("./bundle.server");
+    const { zipBundle, toBase64, signBundle } = await import("./bundle.server");
 
-    const { provider, files } = buildBundleFiles(data.tool, data.scope, rows);
+    const { provider, files: payload, skills } = buildBundleFiles(data.tool, data.scope, rows);
+    const { files, integrity } = signBundle(provider, data.scope, skills, payload);
     const bytes = await zipBundle(files);
 
     return {
@@ -48,5 +49,13 @@ export const exportSkillBundle = createServerFn({ method: "POST" })
       scope: data.scope,
       skill_count: rows.length,
       paths: files.map((f) => f.path),
+      integrity: {
+        signed: Boolean(integrity.signature),
+        content_digest: integrity.content_digest,
+        signing_key_id: integrity.signing_key_id,
+        file_count: integrity.files.length,
+        public_key_url: integrity.public_key_url,
+        unsigned_reason: integrity.unsigned_reason ?? null,
+      },
     };
   });

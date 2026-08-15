@@ -55,6 +55,11 @@ export function ExportBundle({
       download(r.filename, r.base64);
       toast.success(
         `${r.skill_count} skill${r.skill_count === 1 ? "" : "s"} exported for ${r.tool.label}`,
+        {
+          description: r.integrity.signed
+            ? `Signed bundle — run "bash verify.sh" before installing (digest ${r.integrity.content_digest.slice(0, 12)}...)`
+            : "Bundle is hashed but unsigned on this deployment — verify.sh will report it.",
+        },
       );
     },
     onError: (e: any) => toast.error(e?.message ?? "Export failed"),
@@ -163,6 +168,7 @@ export function ExportBundle({
           )}
           <li className="break-all">README.md</li>
           <li className="break-all">install.sh</li>
+          <li className="break-all">verify.sh</li>
           <li className="break-all">sak-bundle.json</li>
         </ul>
         <p className="mt-2 text-xs text-muted-foreground">
@@ -170,6 +176,12 @@ export function ExportBundle({
             ? "Global files are staged under home/ — install.sh copies them into $HOME."
             : "Project files sit at the repo root — run install.sh inside your repo."}{" "}
           Existing files are backed up as <code className="font-mono">.bak</code>, never deleted.
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Tamper-evident: <code className="font-mono">sak-bundle.json</code> carries a sha256 for
+          every file plus an Ed25519 signature over the combined digest.{" "}
+          <code className="font-mono">bash verify.sh</code> checks both, and{" "}
+          <code className="font-mono">install.sh</code> refuses to copy anything that fails.
         </p>
         <div className="mt-3">
           <Button
