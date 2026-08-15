@@ -31,6 +31,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SyncAnywhere } from "@/components/cloud-skills/SyncAnywhere";
 import { ExportBundle } from "@/components/cloud-skills/ExportBundle";
+import { PendingConflicts } from "@/components/cloud-skills/PendingConflicts";
+
 
 export const Route = createFileRoute("/account/cloud-skills")({
   head: () => ({
