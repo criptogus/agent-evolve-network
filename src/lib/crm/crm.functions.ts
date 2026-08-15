@@ -174,6 +174,9 @@ export type CrmCustomerDetail = {
   stage_label: string;
   paying: boolean;
   usage: Record<string, number | boolean>;
+  tool: { id: string | null; label: string; path: string; pain: string };
+  tools: Array<{ id: string; label: string }>;
+  pattern: string;
   roi: Record<string, number | string | null>;
   opportunities: Array<{ id: string; title: string; why: string; cta: string; href: string }>;
   messages: Array<{ trigger: string; subject: string | null; created_at: string; status: string }>;
