@@ -172,6 +172,14 @@ export function opportunities(row: CrmCustomerRow): Opportunity[] {
       cta: "Publish a skill",
       href: "/upload",
     });
+  if (!isPaying(row) && row.cloud_skill_count === 0 && row.review_count + row.upload_count >= 2)
+    out.push({
+      id: "cloud_library",
+      title: "Store your skills privately and use them everywhere",
+      why: "A private cloud library that syncs into Hermes, Claude Code, Codex, Cursor, Lovable and OpenClaw — same skills, every tool.",
+      cta: "See the cloud library",
+      href: "/account/cloud-skills",
+    });
   if (!isPaying(row) && row.review_count >= 3)
     out.push({
       id: "pro",
@@ -190,6 +198,7 @@ export type TriggerId =
   | "value_digest"
   | "opportunity_nudge"
   | "pro_upsell"
+  | "cloud_library_upsell"
   | "at_risk"
   | "win_back"
   | "pro_value_recap";
@@ -254,6 +263,15 @@ export const TRIGGERS: Record<TriggerId, TriggerDef> = {
     maxSends: 3,
     stages: ["activated", "power"],
     description: "Enough usage to justify Pro, framed against their own numbers.",
+  },
+  cloud_library_upsell: {
+    id: "cloud_library_upsell",
+    label: "Cloud library upsell",
+    cooldownDays: 12,
+    maxSends: 2,
+    stages: ["activated", "power"],
+    description:
+      "Has skills worth keeping but no paid plan — private cloud library + sync into every agent tool.",
   },
   at_risk: {
     id: "at_risk",
@@ -344,6 +362,10 @@ export function eligibleTriggers(
     ["win_back", true],
     ["pro_value_recap", isPaying(row)],
     ["pro_upsell", !isPaying(row) && row.review_count >= 3],
+    [
+      "cloud_library_upsell",
+      !isPaying(row) && row.cloud_skill_count === 0 && row.review_count + row.upload_count >= 2,
+    ],
     ["value_digest", actions >= 1],
     ["opportunity_nudge", opportunities(row).length > 0],
   ];
