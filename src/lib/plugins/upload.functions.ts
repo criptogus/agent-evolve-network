@@ -1,6 +1,31 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/middleware";
+import type { ConformanceReport } from "./conformance";
+
+/** Wire-safe projection of a conformance report (no open-ended manifest maps). */
+function serializeReport(report: ConformanceReport) {
+  return {
+    conformant: report.conformant,
+    failed: report.failed,
+    warnings: report.warnings,
+    plugin_name: report.manifest?.name ?? null,
+    plugin_version: report.manifest?.version ?? null,
+    checks: report.checks.map((c) => ({
+      id: c.id,
+      title: c.title,
+      level: c.level,
+      status: c.status,
+      detail: c.detail,
+    })),
+    skills: report.skills.map((s) => ({
+      dir: s.dir,
+      name: s.name,
+      description: s.description,
+      bytes: s.bytes,
+    })),
+  };
+}
 
 const ZipInput = z.object({
   filename: z.string().max(200).default("plugin.zip"),
@@ -15,7 +40,7 @@ export const validatePluginUpload = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { validateZipPayload } = await import("./upload.server");
     const { report } = await validateZipPayload(data.zip_base64);
-    return { filename: data.filename, report };
+    return { filename: data.filename, report: serializeReport(report) };
   });
 
 const PublishInput = ZipInput.extend({
@@ -40,7 +65,7 @@ export const publishPluginUpload = createServerFn({ method: "POST" })
     const fileMap = new Map(Object.entries(files));
     const report = runPluginConformance(fileMap);
     if (!report.conformant) {
-      return { ok: false as const, report, package: null, published: false };
+      return { ok: false as const, report: serializeReport(report), package: null, published: false };
     }
 
     const draft = pluginToDraft(fileMap, report);
@@ -74,5 +99,10 @@ export const publishPluginUpload = createServerFn({ method: "POST" })
       report: report.checks,
     });
 
-    return { ok: true as const, report, package: { id: pkg.id, slug: pkg.slug }, published };
+    return {
+      ok: true as const,
+      report: serializeReport(report),
+      package: { id: pkg.id as string, slug: pkg.slug as string },
+      published,
+    };
   });
