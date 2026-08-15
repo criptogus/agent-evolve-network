@@ -201,6 +201,7 @@ export function buildMessage(trigger: TriggerId, s: CrmSnapshot): CrmMessage {
           "Batch review a whole repository of skills in one call",
           "Agent Store: ready-to-run agents with soul, skills, playbooks and guardrails",
           "Unlimited residency rounds and signed credentials",
+          `Private cloud library that syncs your skills${toolSuffix || " into 15 agent tools"}`,
         ],
         ctaLabel: "See Pro",
         ctaPath: "/pricing",
