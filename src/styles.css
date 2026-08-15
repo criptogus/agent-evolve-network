@@ -233,6 +233,32 @@
     mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 30%, transparent 80%);
   }
   .hero-glow { background: var(--gradient-radial-red); }
+  /* Fine technical grid for the instrumentation band, faded at the edges. */
+  .deep-grid {
+    background-image:
+      linear-gradient(to right, oklch(1 0 0 / 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(1 0 0 / 0.045) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 65% 55% at 50% 0%, black 60%, transparent 100%);
+  }
+  .deep-glow {
+    background: radial-gradient(ellipse 55% 45% at 25% 0%, color-mix(in oklab, var(--primary) 26%, transparent), transparent 70%);
+  }
+  @keyframes sweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+  }
+  .sweep::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.18), transparent);
+    animation: sweep 3.2s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sweep::after { animation: none; opacity: 0; }
+  }
+
   .mesh-bg { background: var(--gradient-mesh); }
   .text-gradient {
     background: linear-gradient(180deg, var(--foreground) 0%, color-mix(in oklab, var(--foreground) 70%, transparent) 100%);
