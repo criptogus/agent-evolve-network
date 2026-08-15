@@ -79,3 +79,34 @@ test("missing keys degrade to an unsigned sidecar instead of throwing", async ()
   assert.match(sig.unsigned_reason ?? "", /not configured/);
   process.env.SIGNING_PRIVATE_KEY = saved;
 });
+
+test("content digest is stable, order-independent and tamper-evident", async () => {
+  const { contentDigest, signDigest, buildEmbeddedSignature } = await import(
+    "../src/lib/plugins/signature.server.ts"
+  );
+  const a = contentDigest([
+    ["plugin.json", "{}"],
+    ["skills/x/SKILL.md", "# x"],
+  ]);
+  const b = contentDigest([
+    ["skills/x/SKILL.md", "# x"],
+    ["plugin.json", "{}"],
+  ]);
+  assert.equal(a.digest, b.digest);
+  assert.deepEqual(
+    a.files.map((f) => f.path),
+    ["plugin.json", "skills/x/SKILL.md"],
+  );
+
+  const tampered = contentDigest([
+    ["plugin.json", "{}"],
+    ["skills/x/SKILL.md", "# x (injected)"],
+  ]);
+  assert.notEqual(a.digest, tampered.digest);
+
+  // Ed25519 is deterministic: identical payload => identical embedded file.
+  const args = { slug: "x", version: "1.0.0", files: [["plugin.json", "{}"]], publicKeyUrl: "/k.pem" };
+  assert.equal(buildEmbeddedSignature(args), buildEmbeddedSignature(args));
+  assert.equal(signDigest(a.digest).signature, signDigest(a.digest).signature);
+  assert.ok(!buildEmbeddedSignature(args).includes("signed_at"));
+});
