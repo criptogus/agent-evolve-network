@@ -44,9 +44,7 @@ export function Hero() {
 
             <h1 className="mt-6 text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-[4rem]">
               Install tested capabilities in your{" "}
-              <span className="bg-gradient-to-r from-primary to-signal bg-clip-text text-transparent">
-                AI agent
-              </span>
+              <span className="text-primary">AI agent</span>
               .
             </h1>
 
@@ -173,7 +171,7 @@ export function Hero() {
                     </span>
                   </div>
                   <div className="relative mt-3 h-1.5 w-full overflow-hidden rounded-full bg-deep-border sweep">
-                    <div className="h-full w-[96%] rounded-full bg-gradient-to-r from-primary to-signal" />
+                    <div className="h-full w-[96%] rounded-full bg-signal" />
                   </div>
                   <div className="mt-2 flex justify-between font-mono text-[10px] text-deep-muted">
                     <span>Jailbreak · role-play · exfiltration probes</span>
