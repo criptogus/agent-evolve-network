@@ -87,7 +87,15 @@ export async function loadSentSummary(userId: string): Promise<SentSummary> {
 }
 
 export type SendResult =
-  | { sent: true; trigger: TriggerId; messageId: string; subject: string; variant: string }
+  | {
+      sent: true;
+      trigger: TriggerId;
+      messageId: string;
+      subject: string;
+      variant: string;
+      toolId: string | null;
+      pattern: string | null;
+    }
   | { sent: false; reason: string };
 
 /** Renders + enqueues one CRM email. `force` skips cadence checks (admin "send now"). */
@@ -112,12 +120,20 @@ export async function sendCrmEmail(opts: {
   if (suppressed) return { sent: false, reason: "suppressed" };
 
   const state = opts.state ?? (await loadLearningState());
-  const { def, override } = chooseVariant(state, trigger);
 
+  // The snapshot decides the personalization segment (agent tool + usage
+  // pattern), and the A/B draw happens inside that segment.
   const snapshot = opts.snapshot ?? (await buildSnapshot(row));
+  const segment = { toolId: snapshot.tool.id, pattern: snapshot.pattern };
+  const { def, override } = chooseVariant(state, trigger, segment);
+
   const base: CrmMessage = buildMessage(trigger, snapshot);
   const message = applyVariant(base, def, override);
-  if (opts.dryRun) return { sent: false, reason: `dry-run:${trigger}/${def.variant}` };
+  if (opts.dryRun)
+    return {
+      sent: false,
+      reason: `dry-run:${trigger}/${def.variant} (${segment.toolId ?? "unknown tool"}/${segment.pattern})`,
+    };
 
   const entry = TEMPLATES[TEMPLATE_NAME];
   if (!entry) return { sent: false, reason: "template missing" };
@@ -150,7 +166,13 @@ export async function sendCrmEmail(opts: {
     template_name: TEMPLATE_NAME,
     recipient_email: email,
     status: "pending",
-    metadata: { crm_trigger: trigger, crm_variant: def.variant, user_id: row.user_id },
+    metadata: {
+      crm_trigger: trigger,
+      crm_variant: def.variant,
+      crm_tool: segment.toolId,
+      crm_pattern: segment.pattern,
+      user_id: row.user_id,
+    },
   });
 
   const { error: enqueueError } = await admin.rpc("enqueue_email", {
@@ -193,6 +215,8 @@ export async function sendCrmEmail(opts: {
     tracking_token: trackingToken,
     send_hour: new Date().getUTCHours(),
     stage_at_send: snapshot.stage,
+    tool_id: segment.toolId,
+    usage_pattern: segment.pattern,
     cta_path: message.ctaPath,
     roi_snapshot: {
       stage: snapshot.stage,
@@ -201,6 +225,9 @@ export async function sendCrmEmail(opts: {
       subject: message.subject,
       variant: def.variant,
       variant_label: def.label,
+      tool_id: segment.toolId,
+      tool_label: snapshot.tool.label,
+      usage_pattern: segment.pattern,
     },
   });
 
@@ -216,7 +243,15 @@ export async function sendCrmEmail(opts: {
     { onConflict: "user_id" },
   );
 
-  return { sent: true, trigger, messageId, subject: message.subject, variant: def.variant };
+  return {
+    sent: true,
+    trigger,
+    messageId,
+    subject: message.subject,
+    variant: def.variant,
+    toolId: segment.toolId,
+    pattern: segment.pattern,
+  };
 }
 
 export type CadenceRunResult = {

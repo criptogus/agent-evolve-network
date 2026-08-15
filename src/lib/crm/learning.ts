@@ -339,3 +339,224 @@ export function shouldPauseArm(
     };
   return { pause: false, reason: "difference not significant" };
 }
+
+/* ---------------------------------------------------- segmented A/B testing  */
+
+/**
+ * A segment is the personalization context of a message: the agent tool the
+ * customer connects with plus their usage pattern. Copy is already tailored per
+ * segment, so the experiment has to be measured per segment too — a framing
+ * that wins for Cursor authors can lose for Claude Code reviewers.
+ */
+export type Segment = { toolId: string | null; pattern: string | null };
+
+export const UNKNOWN_SEGMENT_PART = "unknown";
+
+export function segmentKey(seg: Segment): string {
+  return `${seg.toolId || UNKNOWN_SEGMENT_PART}|${seg.pattern || UNKNOWN_SEGMENT_PART}`;
+}
+
+/** Stats key for one arm inside one segment. */
+export const segmentArmKey = (trigger: string, variant: string, seg: Segment) =>
+  `${trigger}::${variant}::${segmentKey(seg)}`;
+
+export function addStats(a: ArmStats, b: ArmStats): ArmStats {
+  return {
+    sent: a.sent + b.sent,
+    opened: a.opened + b.opened,
+    clicked: a.clicked + b.clicked,
+    converted: a.converted + b.converted,
+  };
+}
+
+/**
+ * Hierarchical (partial pooling) posterior for one arm in one segment.
+ *
+ * Segments are small, so a raw per-segment rate would chase noise. We shrink
+ * the segment towards the arm's global rate with `strength` pseudo-observations:
+ * with no segment data the arm behaves exactly like the global experiment, and
+ * as segment volume grows the segment takes over.
+ */
+export function blendedPosterior(
+  segment: ArmStats,
+  global: ArmStats,
+  strength = 8,
+): { success: number; sent: number; rate: number } {
+  const globalRate = estimatedRate(global);
+  const segSuccess = successScore(segment);
+  const success = segSuccess + globalRate * strength;
+  const sent = segment.sent + strength;
+  return { success, sent, rate: success / sent };
+}
+
+/**
+ * Thompson sampling inside one segment: same arms as the global experiment,
+ * but the posterior is the segment's own data pooled with the global arm.
+ */
+export function pickVariantForSegment(
+  trigger: TriggerId,
+  arms: VariantDef[],
+  globalStats: Record<string, ArmStats>,
+  segmentStats: Record<string, ArmStats>,
+  seg: Segment,
+  rand: () => number = Math.random,
+  strength = 8,
+): VariantDef {
+  const pool = arms.length > 0 ? arms : VARIANTS[trigger];
+  let best = pool[0]!;
+  let bestDraw = -1;
+  for (const arm of pool) {
+    const g = globalStats[armKey(trigger, arm.variant)] ?? EMPTY_ARM;
+    const s = segmentStats[segmentArmKey(trigger, arm.variant, seg)] ?? EMPTY_ARM;
+    const { success, sent } = blendedPosterior(s, g, strength);
+    const draw = betaSample(1 + success, 1 + Math.max(0, sent - success), rand);
+    if (draw > bestDraw) {
+      bestDraw = draw;
+      best = arm;
+    }
+  }
+  return best;
+}
+
+export type SegmentRow = {
+  trigger: string;
+  variant: string;
+  tool_id: string;
+  usage_pattern: string;
+  stats: ArmStats;
+};
+
+export type SegmentBreakdown = {
+  /** "tool" | "pattern" | "tool+pattern" */
+  dimension: "tool" | "pattern" | "tool_pattern";
+  key: string;
+  tool_id: string | null;
+  usage_pattern: string | null;
+  sent: number;
+  opened: number;
+  clicked: number;
+  converted: number;
+  conversion_rate: number;
+  open_rate: number;
+  click_rate: number;
+  /** Best-performing variant in this segment, once it has any volume. */
+  leader: { trigger: string; variant: string; sent: number; converted: number; rate: number } | null;
+  /** Per-variant detail so the admin can compare arms inside the segment. */
+  variants: Array<{
+    trigger: string;
+    variant: string;
+    sent: number;
+    opened: number;
+    clicked: number;
+    converted: number;
+    conversion_rate: number;
+  }>;
+};
+
+const pct = (n: number, d: number) => (d > 0 ? Math.round((n / d) * 1000) / 10 : 0);
+
+/**
+ * Roll raw per-(trigger, variant, tool, pattern) rows up into one dimension so
+ * the dashboard can answer "which copy converts best for Cursor?" and
+ * "which converts best for authors?" from the same data.
+ */
+export function summarizeSegments(
+  rows: SegmentRow[],
+  dimension: "tool" | "pattern" | "tool_pattern",
+): SegmentBreakdown[] {
+  const groups = new Map<string, SegmentBreakdown>();
+
+  for (const r of rows) {
+    const key =
+      dimension === "tool" ? r.tool_id : dimension === "pattern" ? r.usage_pattern : `${r.tool_id}|${r.usage_pattern}`;
+    let g = groups.get(key);
+    if (!g) {
+      g = {
+        dimension,
+        key,
+        tool_id: dimension === "pattern" ? null : r.tool_id,
+        usage_pattern: dimension === "tool" ? null : r.usage_pattern,
+        sent: 0,
+        opened: 0,
+        clicked: 0,
+        converted: 0,
+        conversion_rate: 0,
+        open_rate: 0,
+        click_rate: 0,
+        leader: null,
+        variants: [],
+      };
+      groups.set(key, g);
+    }
+    g.sent += r.stats.sent;
+    g.opened += r.stats.opened;
+    g.clicked += r.stats.clicked;
+    g.converted += r.stats.converted;
+
+    const existing = g.variants.find((v) => v.trigger === r.trigger && v.variant === r.variant);
+    const target =
+      existing ??
+      (g.variants.push({
+        trigger: r.trigger,
+        variant: r.variant,
+        sent: 0,
+        opened: 0,
+        clicked: 0,
+        converted: 0,
+        conversion_rate: 0,
+      }),
+      g.variants[g.variants.length - 1]!);
+    target.sent += r.stats.sent;
+    target.opened += r.stats.opened;
+    target.clicked += r.stats.clicked;
+    target.converted += r.stats.converted;
+  }
+
+  for (const g of groups.values()) {
+    g.conversion_rate = pct(g.converted, g.sent);
+    g.open_rate = pct(g.opened, g.sent);
+    g.click_rate = pct(g.clicked, g.sent);
+    for (const v of g.variants) v.conversion_rate = pct(v.converted, v.sent);
+    g.variants.sort(
+      (a, b) => b.conversion_rate - a.conversion_rate || b.sent - a.sent || a.variant.localeCompare(b.variant),
+    );
+    const best = g.variants.filter((v) => v.sent > 0)[0];
+    g.leader = best
+      ? {
+          trigger: best.trigger,
+          variant: best.variant,
+          sent: best.sent,
+          converted: best.converted,
+          rate: best.conversion_rate,
+        }
+      : null;
+  }
+
+  return [...groups.values()].sort((a, b) => b.sent - a.sent || a.key.localeCompare(b.key));
+}
+
+/**
+ * Two-proportion z-test between the two best arms of a segment. Used to label a
+ * segment result as significant instead of implying certainty from small counts.
+ */
+export function segmentSignificance(
+  g: SegmentBreakdown,
+  minSamples = 20,
+): { significant: boolean; z: number; label: string } {
+  const [a, b] = g.variants.filter((v) => v.sent > 0);
+  if (!a || !b) return { significant: false, z: 0, label: "needs a second variant" };
+  if (a.sent < minSamples || b.sent < minSamples)
+    return { significant: false, z: 0, label: `needs ${minSamples}+ sends per variant` };
+  const pa = a.converted / a.sent;
+  const pb = b.converted / b.sent;
+  const se = Math.sqrt((pa * (1 - pa)) / a.sent + (pb * (1 - pb)) / b.sent) || 1e-6;
+  const z = (pa - pb) / se;
+  return {
+    significant: Math.abs(z) >= 1.96,
+    z: Math.round(z * 100) / 100,
+    label:
+      Math.abs(z) >= 1.96
+        ? `${a.variant} wins here (z=${z.toFixed(2)})`
+        : `no clear winner yet (z=${z.toFixed(2)})`,
+  };
+}

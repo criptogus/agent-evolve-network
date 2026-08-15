@@ -940,8 +940,10 @@ export type Database = {
           send_hour: number | null
           stage_at_send: string | null
           template: string
+          tool_id: string | null
           tracking_token: string | null
           trigger: string
+          usage_pattern: string | null
           user_id: string
           variant: string
         }
@@ -956,8 +958,10 @@ export type Database = {
           send_hour?: number | null
           stage_at_send?: string | null
           template: string
+          tool_id?: string | null
           tracking_token?: string | null
           trigger: string
+          usage_pattern?: string | null
           user_id: string
           variant?: string
         }
@@ -972,8 +976,10 @@ export type Database = {
           send_hour?: number | null
           stage_at_send?: string | null
           template?: string
+          tool_id?: string | null
           tracking_token?: string | null
           trigger?: string
+          usage_pattern?: string | null
           user_id?: string
           variant?: string
         }
@@ -4390,6 +4396,21 @@ export type Database = {
           sent: number
           trigger: string
           unsubscribed: number
+          variant: string
+        }[]
+      }
+      crm_effectiveness_by_segment: {
+        Args: { _days?: number }
+        Returns: {
+          clicked: number
+          converted: number
+          last_sent_at: string
+          opened: number
+          sent: number
+          tool_id: string
+          trigger: string
+          unsubscribed: number
+          usage_pattern: string
           variant: string
         }[]
       }

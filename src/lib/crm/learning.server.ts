@@ -15,12 +15,15 @@ import {
   fatigueMultiplier,
   isGoodHour,
   pickVariant,
+  pickVariantForSegment,
   preferredHours,
+  segmentArmKey,
   shouldPauseArm,
   triggerScore,
   type ArmStats,
   type HourStat,
   type OutcomeKind,
+  type Segment,
   type VariantDef,
   type VariantOverride,
 } from "@/lib/crm/learning";
@@ -34,6 +37,8 @@ export type LearningState = {
   settings: LearningSettings;
   /** arm key -> stats */
   stats: Record<string, ArmStats>;
+  /** trigger::variant::tool|pattern -> stats, for the per-segment experiment */
+  segmentStats: Record<string, ArmStats>;
   /** trigger -> active arms (built-ins plus approved additions, minus paused) */
   arms: Record<string, VariantDef[]>;
   /** trigger::variant -> copy overrides */
@@ -55,6 +60,7 @@ export async function loadSettings(): Promise<LearningSettings> {
 export async function loadLearningState(): Promise<LearningState> {
   const settings = await loadSettings();
   const stats: Record<string, ArmStats> = {};
+  const segmentStats: Record<string, ArmStats> = {};
   const hours: Record<number, HourStat> = {};
   const arms: Record<string, VariantDef[]> = {};
   const overrides: Record<string, VariantOverride> = {};
@@ -71,6 +77,21 @@ export async function loadLearningState(): Promise<LearningState> {
     }
   } catch {
     /* no history yet */
+  }
+
+  try {
+    const { data } = await admin.rpc("crm_effectiveness_by_segment", { _days: 120 });
+    for (const r of (data ?? []) as any[]) {
+      const seg: Segment = { toolId: r.tool_id ?? null, pattern: r.usage_pattern ?? null };
+      segmentStats[segmentArmKey(r.trigger, r.variant, seg)] = {
+        sent: Number(r.sent ?? 0),
+        opened: Number(r.opened ?? 0),
+        clicked: Number(r.clicked ?? 0),
+        converted: Number(r.converted ?? 0),
+      };
+    }
+  } catch {
+    /* segmented history is optional */
   }
 
   try {
@@ -115,18 +136,27 @@ export async function loadLearningState(): Promise<LearningState> {
   for (const [trigger, defs] of Object.entries(VARIANTS))
     if ((arms[trigger] ?? []).length === 0) arms[trigger] = [defs[0]!];
 
-  return { settings, stats, arms, overrides, hours };
+  return { settings, stats, segmentStats, arms, overrides, hours };
 }
 
+/**
+ * Pick the arm for one send. When the caller knows the personalization segment
+ * (agent tool + usage pattern) the draw uses that segment's own posterior pooled
+ * with the global arm, so the experiment runs per audience without splitting the
+ * data into unusable slices.
+ */
 export function chooseVariant(
   state: LearningState,
   trigger: TriggerId,
-): { def: VariantDef; override?: VariantOverride } {
+  segment?: Segment,
+): { def: VariantDef; override?: VariantOverride; segment: Segment | null } {
   const arms = state.arms[trigger] ?? VARIANTS[trigger];
-  const def = state.settings.enabled
-    ? pickVariant(trigger, arms, state.stats)
-    : (arms[0] ?? VARIANTS[trigger][0]!);
-  return { def, override: state.overrides[armKey(trigger, def.variant)] };
+  const def = !state.settings.enabled
+    ? (arms[0] ?? VARIANTS[trigger][0]!)
+    : segment
+      ? pickVariantForSegment(trigger, arms, state.stats, state.segmentStats ?? {}, segment)
+      : pickVariant(trigger, arms, state.stats);
+  return { def, override: state.overrides[armKey(trigger, def.variant)], segment: segment ?? null };
 }
 
 /** Rank eligible triggers by learned expected value (ties keep rule order). */
