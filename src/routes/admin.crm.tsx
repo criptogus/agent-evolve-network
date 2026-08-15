@@ -322,7 +322,17 @@ function CrmAdminPage() {
                 <Badge>{detail.data.stage_label}</Badge>
                 <Badge variant="secondary">{detail.data.paying ? "paying" : "free"}</Badge>
                 <Badge variant="outline">next: {detail.data.next_trigger}</Badge>
+                <Badge variant="outline">tool: {detail.data.tool.label}</Badge>
+                <Badge variant="outline">pattern: {detail.data.pattern}</Badge>
+                {detail.data.tools
+                  .filter((t) => t.id !== detail.data!.tool.id)
+                  .map((t) => (
+                    <Badge key={t.id} variant="secondary">
+                      also {t.label}
+                    </Badge>
+                  ))}
               </div>
+
 
               <section>
                 <h3 className="mb-2 text-sm font-semibold">Usage</h3>
