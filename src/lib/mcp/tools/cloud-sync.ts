@@ -19,6 +19,11 @@ import {
   type ConflictStrategy,
   type LocalFile,
 } from "@/lib/cloud-skills/conflicts";
+import {
+  recordPendingConflicts,
+  clearResolvedConflicts,
+  openConflictsForUser,
+} from "@/lib/cloud-skills/pending-conflicts.server";
 
 const supabaseAdmin = _supabaseAdmin as any;
 const json = (v: unknown) => JSON.stringify(v, null, 2);
@@ -124,6 +129,53 @@ function planFor(
   };
 }
 
+
+/**
+ * Keeps the web-app conflict queue in sync with what the agent just saw:
+ * unresolved conflicts become pending items the user can decide on at
+ * /account/cloud-skills, and anything no longer conflicting leaves the queue.
+ */
+async function syncConflictQueue(
+  userId: string,
+  plan: ReturnType<typeof planFor>,
+  scope: ProviderScope,
+  existing: LocalFile[],
+  clientName?: string | null,
+) {
+  const localBySlug = new Map(existing.map((e) => [e.slug, e]));
+  const unresolved = plan.conflicts.filter((c: any) => c.resolution === "skip");
+
+  const queued = await recordPendingConflicts({
+    userId,
+    provider: plan.provider.id,
+    providerLabel: plan.provider.label,
+    scope,
+    clientName,
+    conflicts: unresolved.map((c: any) => ({
+      slug: c.slug,
+      path: c.path,
+      kind: c.kind,
+      detail: c.detail,
+      local_lines: c.local_lines ?? null,
+      cloud_lines: c.cloud_lines ?? null,
+      local_only_lines: c.local_only_lines ?? null,
+      local_content: localBySlug.get(c.slug)?.content ?? null,
+      cloud_hash: null,
+      cloud_version: null,
+    })),
+  });
+
+  const unresolvedSlugs = new Set(unresolved.map((c: any) => c.slug));
+  const settled = plan.write
+    .map((f: any) => f.slug)
+    .concat(plan.skipped.filter((s: any) => s.conflict === "identical").map((s: any) => s.slug))
+    .filter((slug: string) => !unresolvedSlugs.has(slug));
+
+  await clearResolvedConflicts({ userId, provider: plan.provider.id, scope, slugs: settled });
+
+  return queued;
+}
+
 export const cloudSkillsSyncTool = defineTool({
   name: "cloud_skills_sync",
   description:
@@ -147,6 +199,13 @@ export const cloudSkillsSyncTool = defineTool({
     );
 
     const unresolved = plan.conflicts.filter((c) => c.resolution === "skip");
+    const queued = await syncConflictQueue(
+      userId,
+      plan,
+      input.scope as ProviderScope,
+      input.existing ?? [],
+      (ctx as any)?.clientName ?? null,
+    );
 
     return json({
       tool: plan.provider.id,
@@ -158,6 +217,10 @@ export const cloudSkillsSyncTool = defineTool({
       conflict_strategy: input.conflict_strategy,
       write_count: plan.write.length,
       conflict_count: plan.conflicts.length,
+      queued_for_review: queued,
+      review_url: queued
+        ? "https://superagentskill.com/account/cloud-skills#pending-conflicts"
+        : undefined,
       unresolved_conflicts: unresolved,
       conflicts: plan.conflicts,
       skipped: plan.skipped,
@@ -166,7 +229,7 @@ export const cloudSkillsSyncTool = defineTool({
         "Write every entry in `files` at its exact `path`, creating directories as needed.",
         "These files are private to this user — do not commit secrets or share them.",
         unresolved.length
-          ? "Show the user the `unresolved_conflicts` list and ask which strategy to use, then call this tool again with conflict_strategy set to overwrite, merge or keep_both."
+          ? "Show the user the `unresolved_conflicts` list and ask which strategy to use, then call this tool again with conflict_strategy set to overwrite, merge or keep_both. They can also decide file by file at `review_url` and download the resolved files."
           : "No unresolved conflicts.",
         "Entries in `orphans` exist locally but not in the cloud library; ask before deleting.",
       ],
@@ -200,7 +263,7 @@ export const cloudSkillsSyncAllTool = defineTool({
     const userId = await requirePaidUser(ctx);
     const skills = await loadSkills(userId, input.slugs);
 
-    const results = input.tools.map((t) => {
+    const results = await Promise.all(input.tools.map(async (t) => {
       try {
         const plan = planFor(
           t,
@@ -209,7 +272,15 @@ export const cloudSkillsSyncAllTool = defineTool({
           (input.existing?.[t] as LocalFile[] | undefined) ?? [],
           input.conflict_strategy as ConflictStrategy,
         );
+        const queued = await syncConflictQueue(
+          userId,
+          plan,
+          input.scope as ProviderScope,
+          (input.existing?.[t] as LocalFile[] | undefined) ?? [],
+          (ctx as any)?.clientName ?? null,
+        );
         return {
+          queued_for_review: queued,
           tool: plan.provider.id,
           label: plan.provider.label,
           directory: plan.provider.dirs[input.scope as ProviderScope],
@@ -227,7 +298,7 @@ export const cloudSkillsSyncAllTool = defineTool({
       } catch (e: any) {
         return { tool: t, error: String(e?.message ?? e) };
       }
-    });
+    }));
 
     return json({
       scope: input.scope,
@@ -236,6 +307,37 @@ export const cloudSkillsSyncAllTool = defineTool({
       instructions:
         "Write every file at its exact path for each tool. Never delete local files; unresolved conflicts must be confirmed with the user first.",
       results,
+    });
+  },
+});
+
+export const cloudSkillsPendingConflictsTool = defineTool({
+  name: "cloud_skills_pending_conflicts",
+  description:
+    "[CLOUD] List the sync conflicts still waiting for a human decision, per tool and scope, with the exact file paths. The user can decide file by file (merge | overwrite | keep both | skip) and finish the sync at /account/cloud-skills, or you can re-run cloud_skills_sync with an explicit conflict_strategy.",
+  parameters: z.object({}),
+  execute: async (_input, ctx) => {
+    const userId = await requirePaidUser(ctx);
+    const items = await openConflictsForUser(userId);
+    return json({
+      count: items.length,
+      review_url: "https://superagentskill.com/account/cloud-skills#pending-conflicts",
+      pending: items.map((i) => ({
+        tool: i.provider,
+        label: i.provider_label,
+        scope: i.scope,
+        slug: i.slug,
+        path: i.path,
+        kind: i.kind,
+        detail: i.detail,
+        local_only_lines: i.local_only_lines,
+        decision: i.decision,
+        status: i.status,
+        updated_at: i.updated_at,
+      })),
+      instructions: items.length
+        ? "Ask the user how to resolve each file, then either re-run cloud_skills_sync with the chosen conflict_strategy or point them to review_url to confirm and download the resolved files."
+        : "Nothing is waiting on a human decision.",
     });
   },
 });

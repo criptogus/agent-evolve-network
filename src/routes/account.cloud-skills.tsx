@@ -31,6 +31,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SyncAnywhere } from "@/components/cloud-skills/SyncAnywhere";
 import { ExportBundle } from "@/components/cloud-skills/ExportBundle";
+import { PendingConflicts } from "@/components/cloud-skills/PendingConflicts";
+
 
 export const Route = createFileRoute("/account/cloud-skills")({
   head: () => ({
@@ -288,7 +290,12 @@ function CloudSkillsPage() {
 
         <SyncAnywhere sampleSlug={skills[0]?.slug ?? "my-skill"} />
 
+        <div id="pending-conflicts" className="mt-6 scroll-mt-24">
+          <PendingConflicts />
+        </div>
+
         <ExportBundle skills={skills.map((s) => ({ id: s.id, slug: s.slug, name: s.name }))} />
+
 
         {/* Skills list */}
         <div className="mt-8 rounded-2xl border border-border bg-surface">
