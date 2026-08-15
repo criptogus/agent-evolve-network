@@ -10,6 +10,7 @@ import { supabaseAdmin as _admin } from "@/integrations/supabase/client.server";
 import { buildValueProof } from "@/lib/skills/value-proof";
 import { projectImpact } from "@/lib/skills/impact-projection";
 import type { CrmRoi, CrmSnapshot } from "@/lib/crm/types";
+import { detectedTools, toolAngle, usagePattern } from "@/lib/crm/tool-profile";
 import {
   classifyStage,
   opportunities,
@@ -134,8 +135,50 @@ export function displayName(row: CrmCustomerRow): string {
   return row.email?.split("@")[0] ?? "there";
 }
 
+/** Client labels observed for this user: OAuth client names + personal token labels. */
+export async function loadClientNames(userId: string): Promise<string[]> {
+  const names: string[] = [];
+  try {
+    const { data } = await admin
+      .from("mcp_oauth_tokens")
+      .select("client_id, mcp_oauth_clients(client_name)")
+      .eq("user_id", userId)
+      .limit(50);
+    for (const t of (data ?? []) as any[]) {
+      const nested = t.mcp_oauth_clients;
+      const label = Array.isArray(nested) ? nested[0]?.client_name : nested?.client_name;
+      if (label) names.push(String(label));
+      else if (t.client_id) names.push(String(t.client_id));
+    }
+  } catch {
+    /* optional signal */
+  }
+  try {
+    const { data } = await admin
+      .from("mcp_tokens")
+      .select("name")
+      .eq("user_id", userId)
+      .limit(50);
+    for (const t of (data ?? []) as any[]) if (t.name) names.push(String(t.name));
+  } catch {
+    /* optional signal */
+  }
+  return [...new Set(names)].slice(0, 8);
+}
+
 export async function buildSnapshot(row: CrmCustomerRow): Promise<CrmSnapshot> {
-  const roi = await computeRoi(row.user_id);
+  const [roi, clientNames] = await Promise.all([
+    computeRoi(row.user_id),
+    loadClientNames(row.user_id),
+  ]);
+  const pattern = usagePattern({
+    reviews: row.review_count,
+    uploads: row.upload_count,
+    published: row.package_count,
+    agents: row.agent_count,
+    residencies: row.residency_count,
+    installs: row.install_count,
+  });
   return {
     row,
     stage: classifyStage(row),
@@ -155,10 +198,14 @@ export async function buildSnapshot(row: CrmCustomerRow): Promise<CrmSnapshot> {
       connected: row.mcp_token_count > 0 || row.mcp_call_count > 0,
       days_since_signup: days(row.signed_up_at),
       days_idle: days(row.last_active_at),
+      client_names: clientNames,
     },
     roi,
     opportunities: opportunities(row),
     paying: isPaying(row),
+    tool: toolAngle(clientNames),
+    tools: detectedTools(clientNames),
+    pattern,
   };
 }
 
