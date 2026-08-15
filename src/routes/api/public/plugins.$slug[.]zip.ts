@@ -28,8 +28,9 @@ export const Route = createFileRoute("/api/public/plugins/$slug.zip")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       GET: async ({ params }) => {
-        const slug = params.slug.replace(/\.zip$/, "");
-        const pkg = await loadPluginPackage(slug);
+        console.log("[plugin-zip] params keys:", Object.keys(params), "full:", JSON.stringify(params));
+        const slug = (params as Record<string, string | undefined>).slug ?? (params as Record<string, string | undefined>)["slug.zip"] ?? "";
+        const pkg = await loadPluginPackage(slug.replace(/\.zip$/, ""));
         if (!pkg) return new Response("not found", { status: 404, headers: CORS });
 
         const zip = new JSZip();
