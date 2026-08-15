@@ -2736,6 +2736,57 @@ export type Database = {
         }
         Relationships: []
       }
+      plugin_conformance_runs: {
+        Row: {
+          conformant: boolean
+          created_at: string
+          created_by: string
+          filename: string
+          id: string
+          package_id: string | null
+          plugin_name: string | null
+          published: boolean
+          report: Json
+        }
+        Insert: {
+          conformant?: boolean
+          created_at?: string
+          created_by: string
+          filename: string
+          id?: string
+          package_id?: string | null
+          plugin_name?: string | null
+          published?: boolean
+          report?: Json
+        }
+        Update: {
+          conformant?: boolean
+          created_at?: string
+          created_by?: string
+          filename?: string
+          id?: string
+          package_id?: string | null
+          plugin_name?: string | null
+          published?: boolean
+          report?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plugin_conformance_runs_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "package_rankings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plugin_conformance_runs_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       presets: {
         Row: {
           created_at: string
