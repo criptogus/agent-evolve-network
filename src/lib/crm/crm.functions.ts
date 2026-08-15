@@ -666,7 +666,7 @@ export const getCrmSegmentPerformance = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ days: z.number().int().min(7).max(365).default(120) }).parse(d ?? {}))
   .handler(async ({ data }): Promise<CrmSegmentPerformance> => {
-    const { summarizeSegments, segmentSignificance, VARIANTS, type SegmentRow } = (await import(
+    const { summarizeSegments, segmentSignificance, VARIANTS } = (await import(
       "@/lib/crm/learning"
     )) as any;
     const { loadSettings } = await import("@/lib/crm/learning.server");
@@ -727,9 +727,9 @@ export const getCrmSegmentPerformance = createServerFn({ method: "POST" })
         })),
       }));
 
-    const byTool = shape(summarizeSegments(rows as SegmentRow[], "tool"), toolLabel);
-    const byPattern = shape(summarizeSegments(rows as SegmentRow[], "pattern"), patternLabel);
-    const cells = summarizeSegments(rows as SegmentRow[], "tool_pattern");
+    const byTool = shape(summarizeSegments(rows, "tool"), toolLabel);
+    const byPattern = shape(summarizeSegments(rows, "pattern"), patternLabel);
+    const cells = summarizeSegments(rows, "tool_pattern");
 
     const totals = rows.reduce(
       (acc, r) => ({
