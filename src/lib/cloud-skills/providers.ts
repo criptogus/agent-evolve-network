@@ -182,12 +182,23 @@ export function renderSkillFile(p: Provider, skill: SkillForRender): string {
 }
 
 /** Copy-paste prompt that makes an agent perform the sync itself. */
-export function syncPrompt(providerId: string, scope: ProviderScope): string {
+export function syncPrompt(
+  providerId: string,
+  scope: ProviderScope,
+  strategy: "ask" | "overwrite" | "merge" | "keep_both" = "ask",
+): string {
   const p = getProvider(providerId);
   const label = p?.label ?? providerId;
   return [
     `Sync my SuperAgent Skill cloud library into ${label} (${scope} scope).`,
-    `Call the MCP tool cloud_skills_sync with { tool: "${providerId}", scope: "${scope}" },`,
-    "then write every returned file at its exact path. Do not delete anything I did not ask you to delete.",
-  ].join(" ");
+    "First read the skill files that already exist at the target directory and pass them as `existing` (slug + full content) so conflicts are detected exactly.",
+    `Then call the MCP tool cloud_skills_sync with { tool: "${providerId}", scope: "${scope}", conflict_strategy: "${strategy}" }`,
+    "and write every returned file at its exact path.",
+    strategy === "ask"
+      ? "If it reports unresolved conflicts, show me each one and ask whether to overwrite, merge or keep both before writing."
+      : "",
+    "Never delete a local file I did not ask you to delete.",
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
