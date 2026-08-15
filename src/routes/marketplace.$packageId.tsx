@@ -349,7 +349,7 @@ function PackageDetail() {
           <Section
             id="install"
             title="Install instructions"
-            description="Three ways in — pick the one your client supports."
+            description="Five ways in — pick the one your client supports."
           >
             <InstallInstructions pkg={pkg} />
           </Section>
