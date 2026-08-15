@@ -59,7 +59,14 @@ export function CountUp({
       { threshold: 0.3 },
     );
     io.observe(node);
-    return () => io.disconnect();
+    // Safety net: some browsers never fire the observer for nodes already in the
+    // viewport at hydration time, which used to leave the counters at 0.
+    const fallback = window.setTimeout(start, 900);
+    return () => {
+      window.clearTimeout(fallback);
+      io.disconnect();
+    };
+
   }, [to, duration]);
 
   const display = decimals > 0 ? value.toFixed(decimals) : Math.round(value).toLocaleString();
