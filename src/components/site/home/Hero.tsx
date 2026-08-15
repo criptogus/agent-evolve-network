@@ -8,7 +8,7 @@ import { useTrack, useTrackOnce } from "@/lib/telemetry/use-track";
 const MCP_URL = "https://superagentskill.com/api/public/mcp";
 
 const CHECKS = [
-  { icon: ShieldCheck, label: "Adversarial harness", value: "Jailbreaks blocked" },
+  { icon: ShieldCheck, label: "Injection probes", value: "Blocked" },
   { icon: FileCheck2, label: "Format + substance", value: "Scored separately" },
   { icon: Lock, label: "Signed package", value: "Integrity verified" },
 ] as const;
