@@ -87,6 +87,77 @@ export function signBytes(bytes: Uint8Array): PackageSignature {
   }
 }
 
+export type FileDigest = { path: string; sha256: string };
+
+/**
+ * Content digest over the package payload, independent of zip container bytes:
+ * sha256 of sorted "path\0<sha256>\n" lines. Survives re-zipping, so a repacked
+ * or extracted copy can still be proven authentic.
+ */
+export function contentDigest(files: Iterable<[string, string]>): {
+  digest: string;
+  files: FileDigest[];
+} {
+  const list: FileDigest[] = [...files]
+    .map(([path, contents]) => ({
+      path,
+      sha256: createHash("sha256").update(contents, "utf8").digest("hex"),
+    }))
+    .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+  const digest = createHash("sha256")
+    .update(list.map((f) => `${f.path}\0${f.sha256}\n`).join(""))
+    .digest("hex");
+  return { digest, files: list };
+}
+
+/** Ed25519 is deterministic, so the same digest always yields the same signature. */
+export function signDigest(digestHex: string): { signature: string | null; signing_key_id: string | null } {
+  const priv = pem("SIGNING_PRIVATE_KEY");
+  const keyId = signingKeyId();
+  if (!priv || !keyId) return { signature: null, signing_key_id: null };
+  try {
+    return {
+      signature: sign(null, Buffer.from(digestHex), createPrivateKey(priv)).toString("base64"),
+      signing_key_id: keyId,
+    };
+  } catch {
+    return { signature: null, signing_key_id: null };
+  }
+}
+
+/**
+ * SIGNATURE.json embedded inside the archive. Intentionally has no timestamp:
+ * the bundle must stay byte-identical across downloads so the detached sidecar
+ * hash keeps matching.
+ */
+export function buildEmbeddedSignature(input: {
+  slug: string;
+  version: string | null;
+  files: Iterable<[string, string]>;
+  publicKeyUrl: string;
+}): string {
+  const { digest, files } = contentDigest(input.files);
+  const signed = signDigest(digest);
+  return `${JSON.stringify(
+    {
+      spec: "sak-package-signature/v1",
+      algorithm: "ed25519",
+      slug: input.slug,
+      version: input.version,
+      content_digest: digest,
+      signature: signed.signature,
+      signing_key_id: signed.signing_key_id,
+      files,
+      verify: {
+        public_key_url: input.publicKeyUrl,
+        note: "content_digest = sha256 of sorted `path\\0<file sha256>\\n` lines (this file excluded); signature is Ed25519 over the ascii digest.",
+      },
+    },
+    null,
+    2,
+  )}\n`;
+}
+
 /** Response headers so clients can verify without a second request. */
 export function signatureHeaders(sig: PackageSignature): Record<string, string> {
   const h: Record<string, string> = {
