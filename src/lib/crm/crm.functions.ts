@@ -764,3 +764,130 @@ export const getCrmSegmentPerformance = createServerFn({ method: "POST" })
       }),
     };
   });
+
+export type CrmTimingPlan = {
+  learning_enabled: boolean;
+  now_hour: number;
+  segments: Array<{
+    key: string;
+    tool_label: string;
+    pattern_label: string;
+    sends: number;
+    engagement_rate: number;
+    confidence: string;
+    cooldown_multiplier: number;
+    best_hours: number[];
+    window: number[];
+    reason: string;
+  }>;
+  customers: Array<{
+    email: string;
+    tool_label: string;
+    pattern_label: string;
+    usage_events: number;
+    sync_events: number;
+    confidence: string;
+    cooldown_multiplier: number;
+    best_hours: number[];
+    open_now: boolean;
+    hours_until_window: number;
+  }>;
+};
+
+/**
+ * What the cadence engine currently believes about *when* to send: the learned
+ * window and cooldown stretch per segment, plus a sample of live customers with
+ * their own activity clock (product usage + cloud sync).
+ */
+export const getCrmTimingPlan = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) => z.object({ sample: z.number().int().min(1).max(50).default(12) }).parse(d ?? {}))
+  .handler(async ({ data }): Promise<CrmTimingPlan> => {
+    const { buildTimingProfile, hoursUntilWindow, isWithinTimingWindow, segmentKey } = await import(
+      "@/lib/crm/learning"
+    );
+    const { loadLearningState, loadActivityHours } = await import("@/lib/crm/learning.server");
+    const { loadCustomerRows } = await import("@/lib/crm/snapshot.server");
+    const { buildSnapshot } = await import("@/lib/crm/snapshot.server");
+    const { PATTERN_LABELS } = await import("@/lib/crm/tool-profile");
+    const { getProvider } = await import("@/lib/cloud-skills/providers");
+
+    const state = await loadLearningState();
+    const nowHour = new Date().getUTCHours();
+    const toolLabel = (id: string | null) =>
+      !id || id === "unknown" ? "Tool not detected" : (getProvider(id)?.label ?? id);
+    const patternLabel = (id: string | null) =>
+      !id || id === "unknown" ? "Pattern unknown" : ((PATTERN_LABELS as any)[id] ?? id);
+
+    // Segment-level policy: no per-customer activity, so this is purely what the
+    // measured engagement-by-hour data says for that audience.
+    const seen = new Map<string, { toolId: string; pattern: string; sent: number; engaged: number; converted: number }>();
+    for (const [key, stat] of Object.entries(state.segmentHours)) {
+      const [seg] = key.split("::");
+      const [toolId = "unknown", pattern = "unknown"] = (seg ?? "").split("|");
+      const prev = seen.get(seg!) ?? { toolId, pattern, sent: 0, engaged: 0, converted: 0 };
+      seen.set(seg!, {
+        ...prev,
+        sent: prev.sent + stat.sent,
+        engaged: prev.engaged + stat.engaged,
+        converted: prev.converted + stat.converted,
+      });
+    }
+
+    const segments = [...seen.entries()]
+      .sort((a, b) => b[1].sent - a[1].sent)
+      .map(([key, agg]) => {
+        const segment = { toolId: agg.toolId, pattern: agg.pattern };
+        const profile = buildTimingProfile({
+          activity: [],
+          globalHours: state.hours,
+          segmentHours: state.segmentHours,
+          segment,
+          minSamples: state.settings.minSamples,
+        });
+        return {
+          key,
+          tool_label: toolLabel(agg.toolId),
+          pattern_label: patternLabel(agg.pattern),
+          sends: agg.sent,
+          engagement_rate:
+            agg.sent > 0 ? Math.round(((agg.converted + agg.engaged * 0.4) / agg.sent) * 1000) / 10 : 0,
+          confidence: profile.confidence,
+          cooldown_multiplier: profile.cooldownMultiplier,
+          best_hours: profile.ranked.slice(0, 4),
+          window: profile.window,
+          reason: profile.reason,
+        };
+      });
+
+    const rows = await loadCustomerRows(data.sample, 0);
+    const customers: CrmTimingPlan["customers"] = [];
+    for (const row of rows) {
+      const snapshot = await buildSnapshot(row);
+      const segment = { toolId: snapshot.tool.id, pattern: snapshot.pattern };
+      const activity = await loadActivityHours(row.user_id);
+      const profile = buildTimingProfile({
+        activity,
+        globalHours: state.hours,
+        segmentHours: state.segmentHours,
+        segment,
+        minSamples: state.settings.minSamples,
+      });
+      customers.push({
+        email: row.email
+          ? `${row.email[0]}***@${row.email.split("@")[1] ?? ""}`
+          : `${segmentKey(segment)}`,
+        tool_label: toolLabel(segment.toolId),
+        pattern_label: patternLabel(segment.pattern),
+        usage_events: profile.signals.usageEvents,
+        sync_events: profile.signals.syncEvents,
+        confidence: profile.confidence,
+        cooldown_multiplier: profile.cooldownMultiplier,
+        best_hours: profile.ranked.slice(0, 4),
+        open_now: isWithinTimingWindow(nowHour, profile),
+        hours_until_window: hoursUntilWindow(nowHour, profile),
+      });
+    }
+
+    return { learning_enabled: state.settings.enabled, now_hour: nowHour, segments, customers };
+  });

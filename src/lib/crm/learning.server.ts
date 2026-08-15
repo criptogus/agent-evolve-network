@@ -11,12 +11,14 @@ import {
   OUTCOMES,
   EMPTY_ARM,
   armKey,
+  buildTimingProfile,
+  isWithinTimingWindow,
+  hoursUntilWindow,
+  segmentHourKey,
   estimatedRate,
   fatigueMultiplier,
-  isGoodHour,
   pickVariant,
   pickVariantForSegment,
-  preferredHours,
   segmentArmKey,
   shouldPauseArm,
   triggerScore,
@@ -24,6 +26,8 @@ import {
   type HourStat,
   type OutcomeKind,
   type Segment,
+  type SegmentHourStats,
+  type TimingProfile,
   type VariantDef,
   type VariantOverride,
 } from "@/lib/crm/learning";
@@ -44,6 +48,8 @@ export type LearningState = {
   /** trigger::variant -> copy overrides */
   overrides: Record<string, VariantOverride>;
   hours: Record<number, HourStat>;
+  /** `tool|pattern::hour` -> engagement, for per-segment send timing */
+  segmentHours: SegmentHourStats;
 };
 
 export async function loadSettings(): Promise<LearningSettings> {
@@ -62,6 +68,7 @@ export async function loadLearningState(): Promise<LearningState> {
   const stats: Record<string, ArmStats> = {};
   const segmentStats: Record<string, ArmStats> = {};
   const hours: Record<number, HourStat> = {};
+  const segmentHours: SegmentHourStats = {};
   const arms: Record<string, VariantDef[]> = {};
   const overrides: Record<string, VariantOverride> = {};
 
@@ -107,6 +114,20 @@ export async function loadLearningState(): Promise<LearningState> {
     /* ignore */
   }
 
+  try {
+    const { data } = await admin.rpc("crm_segment_send_hour_stats", { _days: 120 });
+    for (const r of (data ?? []) as any[]) {
+      const seg: Segment = { toolId: r.tool_id ?? null, pattern: r.usage_pattern ?? null };
+      segmentHours[segmentHourKey(seg, Number(r.send_hour))] = {
+        sent: Number(r.sent ?? 0),
+        engaged: Number(r.engaged ?? 0),
+        converted: Number(r.converted ?? 0),
+      };
+    }
+  } catch {
+    /* per-segment timing history is optional */
+  }
+
   // Start from the built-in arms, then apply the registry (paused / approved).
   for (const [trigger, defs] of Object.entries(VARIANTS)) arms[trigger] = [...defs];
   try {
@@ -136,7 +157,7 @@ export async function loadLearningState(): Promise<LearningState> {
   for (const [trigger, defs] of Object.entries(VARIANTS))
     if ((arms[trigger] ?? []).length === 0) arms[trigger] = [defs[0]!];
 
-  return { settings, stats, segmentStats, arms, overrides, hours };
+  return { settings, stats, segmentStats, arms, overrides, hours, segmentHours };
 }
 
 /**
@@ -189,20 +210,84 @@ export async function loadFatigue(userId: string): Promise<number> {
   }
 }
 
-/** Is now a good moment to reach this customer? */
-export async function isGoodSendHour(userId: string, state: LearningState): Promise<boolean> {
-  if (!state.settings.enabled) return true;
+/** Measured activity clock for one customer: product usage plus cloud sync work. */
+export async function loadActivityHours(
+  userId: string,
+): Promise<Array<{ hour: number; events: number; usageEvents: number; syncEvents: number }>> {
   try {
-    const { data } = await admin.rpc("crm_active_hours", { _user_id: userId });
-    const active = ((data ?? []) as any[]).map((r) => ({
+    const { data } = await admin.rpc("crm_activity_hours", { _user_id: userId, _days: 90 });
+    return ((data ?? []) as any[]).map((r) => ({
       hour: Number(r.hour),
       events: Number(r.events ?? 0),
+      usageEvents: Number(r.usage_events ?? 0),
+      syncEvents: Number(r.sync_events ?? 0),
     }));
-    if (active.length === 0) return true;
-    return isGoodHour(new Date().getUTCHours(), preferredHours(active, state.hours));
   } catch {
-    return true;
+    // Older deployments only have the usage-only clock.
+    try {
+      const { data } = await admin.rpc("crm_active_hours", { _user_id: userId });
+      return ((data ?? []) as any[]).map((r) => ({
+        hour: Number(r.hour),
+        events: Number(r.events ?? 0),
+        usageEvents: Number(r.events ?? 0),
+        syncEvents: 0,
+      }));
+    } catch {
+      return [];
+    }
   }
+}
+
+const NEUTRAL_TIMING: TimingProfile = {
+  ranked: [],
+  window: [],
+  confidence: "none",
+  cooldownMultiplier: 1,
+  signals: {
+    usageEvents: 0,
+    syncEvents: 0,
+    segmentSends: 0,
+    globalSends: 0,
+    segmentEngagementRate: 0,
+    globalEngagementRate: 0,
+  },
+  reason: "learning disabled — no timing adjustment",
+};
+
+/**
+ * Timing decision for one customer: which UTC hours to use and how much to
+ * stretch the cooldown, from their own activity (usage + sync) and how their
+ * segment engages by hour.
+ */
+export async function loadTimingProfile(
+  userId: string,
+  state: LearningState,
+  segment?: Segment,
+): Promise<TimingProfile> {
+  if (!state.settings.enabled) return NEUTRAL_TIMING;
+  return buildTimingProfile({
+    activity: await loadActivityHours(userId),
+    globalHours: state.hours,
+    segmentHours: state.segmentHours,
+    segment,
+    minSamples: state.settings.minSamples,
+  });
+}
+
+/** Is now inside the customer's learned send window? */
+export function isSendHourNow(profile: TimingProfile): boolean {
+  return isWithinTimingWindow(new Date().getUTCHours(), profile);
+}
+
+/** How many hours until the next allowed send hour. */
+export function hoursUntilSendWindow(profile: TimingProfile): number {
+  return hoursUntilWindow(new Date().getUTCHours(), profile);
+}
+
+/** Legacy entry point kept for callers that do not know the segment. */
+export async function isGoodSendHour(userId: string, state: LearningState): Promise<boolean> {
+  if (!state.settings.enabled) return true;
+  return isSendHourNow(await loadTimingProfile(userId, state));
 }
 
 /* ---------------------------------------------------------- outcome scoring  */

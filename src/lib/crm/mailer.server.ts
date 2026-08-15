@@ -17,8 +17,10 @@ import type { CrmSnapshot } from "@/lib/crm/types";
 import { applyVariant } from "@/lib/crm/learning";
 import {
   chooseVariant,
-  isGoodSendHour,
+  hoursUntilSendWindow,
+  isSendHourNow,
   loadFatigue,
+  loadTimingProfile,
   loadLearningState,
   rankTriggers,
   type LearningState,
@@ -286,9 +288,6 @@ export async function runCadence(opts: {
   for (const row of rows) {
     if (result.sent >= maxSends) break;
     const sent = await loadSentSummary(row.user_id);
-    const cooldownMultiplier = state.settings.enabled ? await loadFatigue(row.user_id) : 1;
-    const { blocked, triggers } = eligibleTriggers(row, sent, cooldownMultiplier);
-    const ranked = rankTriggers(state, triggers);
     const redacted = row.email ? `${row.email[0]}***@${row.email.split("@")[1] ?? ""}` : "***";
 
     const skip = async (reason: string) => {
@@ -306,20 +305,32 @@ export async function runCadence(opts: {
       if (reason) result.details.push({ email: redacted, stage: classifyStage(row), action: reason });
     };
 
+    // The snapshot names the personalization segment (agent tool + usage
+    // pattern), which drives both the timing window and the cooldown stretch.
+    const snapshot = await buildSnapshot(row);
+    const segment = { toolId: snapshot.tool.id, pattern: snapshot.pattern };
+    const timing = await loadTimingProfile(row.user_id, state, segment);
+
+    const fatigue = state.settings.enabled ? await loadFatigue(row.user_id) : 1;
+    const cooldownMultiplier = fatigue * timing.cooldownMultiplier;
+    const { blocked, triggers } = eligibleTriggers(row, sent, cooldownMultiplier);
+    const ranked = rankTriggers(state, triggers);
+
     if (blocked || ranked.length === 0) {
       await skip("");
       continue;
     }
 
-    // Right time: only send inside the customer's active window unless the
+    // Right time: only send inside the customer's measured window unless the
     // message is urgent (win-back / at-risk) or we have no timing data.
     const urgent = ranked[0] === "at_risk" || ranked[0] === "win_back";
-    if (!opts.ignoreSendWindow && !urgent && !(await isGoodSendHour(row.user_id, state))) {
-      await skip("waiting for a better send hour");
+    if (!opts.ignoreSendWindow && !urgent && !isSendHourNow(timing)) {
+      await skip(
+        `waiting ${hoursUntilSendWindow(timing)}h for this customer's send window (${timing.confidence} confidence)`,
+      );
       continue;
     }
 
-    const snapshot = await buildSnapshot(row);
     const out = await sendCrmEmail({ row, trigger: ranked[0]!, snapshot, dryRun, state });
     if (out.sent) result.sent += 1;
     else result.skipped += 1;
