@@ -10,6 +10,8 @@ import {
   INSTALL_ROUTES,
   OPEN_SKILLS_AGENTS,
   OPEN_SKILLS_SITE,
+  agentPluginManifestUrl,
+  agentPluginMcpUrl,
   agentPluginZipUrl,
   openSkillsInstallAll,
   openSkillsInstallOne,
