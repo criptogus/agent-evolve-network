@@ -762,6 +762,68 @@ function InstallInstructions({ pkg }: { pkg: Package }) {
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
             2
           </span>
+          <h3 className="text-sm font-semibold">Agent Plugin endpoints — /plugin.json + /mcp.json</h3>
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Load this skill as a portable{" "}
+          <a
+            href={AGENT_PLUGINS_SITE}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-foreground underline decoration-border underline-offset-4 hover:decoration-primary"
+          >
+            Agent Plugins
+          </a>{" "}
+          package. Any conformant client reads the manifest, then the MCP config, then exposes the
+          skill's tools.
+        </p>
+        <div className="mt-3 space-y-2">
+          <CodeBlockCopy
+            code={agentPluginManifestUrl(pkg.id)}
+            label="plugin.json endpoint"
+          />
+          <CodeBlockCopy code={agentPluginMcpUrl(pkg.id)} label="mcp.json endpoint" />
+        </div>
+        <ol className="mt-4 list-decimal space-y-1.5 pl-4 text-xs text-muted-foreground">
+          <li>
+            Point your agent at{" "}
+            <code className="font-mono text-foreground">{agentPluginManifestUrl(pkg.id)}</code>.
+          </li>
+          <li>
+            The agent fetches{" "}
+            <code className="font-mono text-foreground">/mcp.json</code> to discover the MCP server
+            URL.
+          </li>
+          <li>
+            It loads the skill from{" "}
+            <code className="font-mono text-foreground">skills/{pkg.id}/SKILL.md</code>.
+          </li>
+          <li>Call any listed tool — no account required for read tools.</li>
+        </ol>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Prefer the full archive?{" "}
+          <a
+            href={agentPluginZipUrl(pkg.id)}
+            className="text-foreground underline decoration-border underline-offset-4 hover:decoration-primary"
+          >
+            Download the .zip
+          </a>{" "}
+          and verify the{" "}
+          <a
+            href={`/api/public/plugins/${pkg.id}/signature.json`}
+            className="font-mono text-foreground underline decoration-border underline-offset-4 hover:decoration-primary"
+          >
+            signature sidecar
+          </a>
+          .
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+            3
+          </span>
           <h3 className="text-sm font-semibold">MCP gateway — always the current graded version</h3>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
