@@ -209,6 +209,7 @@ ${openSkillsUpdate}`}
               code={`<slug>/
 ├── plugin.json          # Agent Plugins v${AGENT_PLUGINS_SPEC_VERSION} manifest
 ├── mcp.json             # our MCP server (streamable-http)
+├── SIGNATURE.json       # Ed25519 signature over the package payload
 └── skills/
     └── <slug>/
         ├── SKILL.md
@@ -235,6 +236,26 @@ curl ${AGENT_PLUGINS_INDEX_URL}`}
             <code className="font-mono text-foreground">skills/</code>. Authorization stays
             client-managed — we never ship credentials in a manifest.
           </p>
+
+          <h3 className="mt-6 text-base font-semibold">Verify the signature</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Every package download is signed with our Ed25519 release key. The archive carries an
+            embedded <code className="font-mono text-foreground">SIGNATURE.json</code> (valid even
+            after extracting or repacking), and a detached sidecar pins the sha256 of the exact
+            bytes we served. Signature data also travels in{" "}
+            <code className="font-mono text-foreground">X-SAK-*</code> response headers.
+          </p>
+          <div className="mt-3">
+            <CodeBlock
+              lang="bash"
+              code={`# detached signature + our public key
+curl -O https://superagentskill.com/api/public/plugins/<slug>/signature.json
+curl -O https://superagentskill.com/api/public/signing-key.pem
+
+# integrity check (hash + Ed25519 signature + key id)
+node scripts/verify-package-signature.mjs <slug>-agent-plugin.zip signature.json signing-key.pem`}
+            />
+          </div>
 
 
 
