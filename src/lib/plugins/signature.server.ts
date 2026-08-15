@@ -27,6 +27,10 @@ export type SignatureSidecar = PackageSignature & {
   version: string | null;
   filename: string;
   bytes: number;
+  /** Container-independent payload digest, also signed. */
+  content_digest?: string;
+  content_signature?: string | null;
+  files?: { path: string; sha256: string }[];
   verify: {
     public_key_url: string;
     instructions: string;
