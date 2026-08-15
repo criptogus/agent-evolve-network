@@ -364,7 +364,10 @@ export function eligibleTriggers(
     ["pro_upsell", !isPaying(row) && row.review_count >= 3],
     [
       "cloud_library_upsell",
-      !isPaying(row) && row.cloud_skill_count === 0 && row.review_count + row.upload_count >= 2,
+      !isPaying(row) &&
+        row.cloud_skill_count === 0 &&
+        row.review_count + row.upload_count >= 2 &&
+        (row.mcp_token_count > 0 || row.mcp_call_count > 0),
     ],
     ["value_digest", actions >= 1],
     ["opportunity_nudge", opportunities(row).length > 0],
