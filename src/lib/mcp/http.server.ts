@@ -19,6 +19,7 @@ import {
   cloudSkillsTargetsTool,
   cloudSkillsSyncTool,
   cloudSkillsSyncAllTool,
+  cloudSkillsPendingConflictsTool,
 } from "@/lib/mcp/tools/cloud-sync";
 import {
   cloudSkillsListTool,
@@ -159,6 +160,7 @@ const mcp = createMcpServer({
     cloudSkillsTargetsTool,
     cloudSkillsSyncTool,
     cloudSkillsSyncAllTool,
+    cloudSkillsPendingConflictsTool,
     listAgentsTool,
     installAgentTool,
     createAgentTool,
