@@ -182,7 +182,11 @@ export function buildSidecar(input: {
   filename: string;
   bytes: number;
   origin: string;
+  /** Payload entries (without the embedded SIGNATURE.json) for the content digest. */
+  payload?: Iterable<[string, string]>;
 }): SignatureSidecar {
+  const content = input.payload ? contentDigest(input.payload) : null;
+  const contentSigned = content ? signDigest(content.digest) : null;
   return {
     spec: "sak-package-signature/v1",
     ...input.sig,
@@ -190,14 +194,42 @@ export function buildSidecar(input: {
     version: input.version,
     filename: input.filename,
     bytes: input.bytes,
+    ...(content
+      ? {
+          content_digest: content.digest,
+          content_signature: contentSigned?.signature ?? null,
+          files: content.files,
+        }
+      : {}),
     verify: {
       public_key_url: `${input.origin}${SIGNING_PUBLIC_KEY_PATH}`,
       instructions:
         "sha256 the downloaded .zip, compare with `sha256`, then verify the base64 `signature` " +
         "as an Ed25519 signature over the ascii sha256 hex string using the public key. " +
+        "An extracted or repacked copy can still be verified via `content_digest` / `content_signature`. " +
         "Helper: node scripts/verify-package-signature.mjs <file.zip> <signature.json> [public-key.pem]",
     },
   };
+}
+
+/** The exact entry list both the .zip and the sidecar route must build. */
+export function buildSignedZipEntries(pkg: {
+  pluginName: string;
+  slug: string;
+  files: Map<string, string>;
+  version: string | null;
+}): [string, string][] {
+  const payload: [string, string][] = [...pkg.files].map(([rel, contents]) => [rel, contents]);
+  const signatureFile = buildEmbeddedSignature({
+    slug: pkg.slug,
+    version: pkg.version,
+    files: payload,
+    publicKeyUrl: SIGNING_PUBLIC_KEY_PATH,
+  });
+  return [...payload, ["SIGNATURE.json", signatureFile]].map(([rel, contents]) => [
+    `${pkg.pluginName}/${rel}`,
+    contents,
+  ]);
 }
 
 /** CORS-safe exposure so browsers/agents can read the signature headers. */
