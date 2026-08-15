@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Download, Trash2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Download, GitCompare, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -27,6 +27,7 @@ import {
   dismissPendingConflicts,
   confirmPendingConflicts,
 } from "@/lib/cloud-skills/pending-conflicts.functions";
+import { ConflictDiff } from "./ConflictDiff";
 
 function download(filename: string, base64: string) {
   const bin = atob(base64);
@@ -54,6 +55,7 @@ export function PendingConflicts() {
 
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [confirmKey, setConfirmKey] = useState<string | null>(null);
+  const [diffId, setDiffId] = useState<string | null>(null);
 
   const q = useQuery({
     queryKey: ["cloud-skill-conflicts"],
