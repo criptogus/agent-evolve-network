@@ -10,6 +10,7 @@ import {
   targetPath,
   type ProviderScope,
 } from "@/lib/cloud-skills/providers";
+import { CONFLICT_STRATEGIES, type ConflictStrategy } from "@/lib/cloud-skills/conflicts";
 
 /**
  * "Use your library anywhere" panel. The library is private to the account —
@@ -20,13 +21,18 @@ export function SyncAnywhere({ sampleSlug = "my-skill" }: { sampleSlug?: string 
   const provider = getProvider(toolId)!;
   const scopes = scopesFor(provider);
   const [scope, setScope] = useState<ProviderScope>(scopes[0]!);
+  const [strategy, setStrategy] = useState<ConflictStrategy>("ask");
   const activeScope = scopes.includes(scope) ? scope : scopes[0]!;
 
   const path = useMemo(
     () => targetPath(provider, activeScope, sampleSlug),
     [provider, activeScope, sampleSlug],
   );
-  const prompt = useMemo(() => syncPrompt(provider.id, activeScope), [provider, activeScope]);
+  const prompt = useMemo(
+    () => syncPrompt(provider.id, activeScope, strategy),
+    [provider, activeScope, strategy],
+  );
+  const activeStrategy = CONFLICT_STRATEGIES.find((c) => c.id === strategy)!;
 
   const copy = async (text: string, label: string) => {
     try {
@@ -85,6 +91,25 @@ export function SyncAnywhere({ sampleSlug = "my-skill" }: { sampleSlug?: string 
             </Button>
           ))}
         </div>
+      </div>
+
+      <div className="mt-5">
+        <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+          If the skill already exists there
+        </div>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {CONFLICT_STRATEGIES.map((c) => (
+            <Button
+              key={c.id}
+              size="sm"
+              variant={c.id === strategy ? "default" : "outline"}
+              onClick={() => setStrategy(c.id)}
+            >
+              {c.label}
+            </Button>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">{activeStrategy.description}</p>
       </div>
 
       <div className="mt-5 rounded-xl border border-border/60 bg-background/60 p-4">
