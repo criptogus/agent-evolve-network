@@ -20,6 +20,7 @@
 import {
   getProvider,
   renderSkillFile,
+  syncPrompt,
   targetPath,
   type Provider,
   type ProviderScope,
@@ -347,50 +348,6 @@ function verifyScript(): string {
   ].join("\n");
 }
 
-function installScript(provider: Provider, scope: ProviderScope): string {
-  const dir = provider.dirs[scope]!;
-  const root = scope === "global" ? "home" : dir.split("/")[0]!;
-  const dest = scope === "global" ? '"$HOME"' : '"$PWD"';
-  return [
-    "#!/usr/bin/env bash",
-    "set -euo pipefail",
-    "",
-    `# Installs this private skill bundle for ${provider.label} (${scope} scope).`,
-    `# Source: superagentskill.com — files are copied into ${scope === "global" ? "$HOME" : "the current directory"}.`,
-    "",
-    'HERE="$(cd "$(dirname "$0")" && pwd)"',
-    `SRC="$HERE/${root}"`,
-    `DEST=${dest}`,
-    "",
-    "# Integrity gate: never install files that no longer match the signed manifest.",
-    'if [ "${SAK_SKIP_VERIFY:-0}" = "1" ]; then',
-    '  echo "WARNING: integrity check skipped (SAK_SKIP_VERIFY=1)" >&2',
-    'elif [ -f "$HERE/verify.sh" ]; then',
-    '  if ! bash "$HERE/verify.sh"; then',
-    '    echo "Aborting: this bundle failed verification and may have been altered." >&2',
-    '    echo "Re-export it from superagentskill.com, or set SAK_SKIP_VERIFY=1 to install anyway." >&2',
-    "    exit 1",
-    "  fi",
-    "else",
-    '  echo "WARNING: verify.sh missing — cannot confirm bundle integrity" >&2',
-    "fi",
-    "",
-    'if [ ! -d "$SRC" ]; then echo "Nothing to install: $SRC missing" >&2; exit 1; fi',
-    "",
-    'find "$SRC" -type f | while read -r file; do',
-    '  rel="${file#"$SRC"/}"',
-    scope === "global" ? '  out="$DEST/$rel"' : `  out="$DEST/${root}/$rel"`,
-    '  mkdir -p "$(dirname "$out")"',
-    '  if [ -f "$out" ]; then cp "$out" "$out.bak"; echo "backup: $out.bak"; fi',
-    '  cp "$file" "$out"',
-    '  echo "wrote: $out"',
-    "done",
-    "",
-    'echo "Done."',
-    "",
-  ].join("\n");
-}
-
 /**
  * Payload file list (everything except the manifest), deterministic and sorted.
  * The server hashes/signs this list and appends `sak-bundle.json`.
@@ -415,7 +372,6 @@ export function buildBundleFiles(
   const files: BundleFile[] = [
     ...skillFiles,
     { path: "README.md", content: `${readme(provider, scope, ordered)}\n` },
-    { path: "install.sh", content: installScript(provider, scope) },
     { path: "verify.sh", content: verifyScript() },
   ].sort((a, b) => a.path.localeCompare(b.path));
 
