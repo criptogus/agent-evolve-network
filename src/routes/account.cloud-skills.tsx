@@ -29,6 +29,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SyncAnywhere } from "@/components/cloud-skills/SyncAnywhere";
 
 export const Route = createFileRoute("/account/cloud-skills")({
   head: () => ({
