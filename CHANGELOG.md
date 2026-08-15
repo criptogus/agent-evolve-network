@@ -11,6 +11,12 @@ Component artifacts are versioned and released independently via git tags:
 - **`super-agent` CLI** — `cli-v*` tags publish cross-platform binaries.
 - **`@superagentskill/sdk`** — versioned in `packages/sdk-ts/package.json`.
 
+## [0.3.6] — 2026-08-15 — *Genesis* (alpha) — Maintenance release
+
+### Changed
+
+- Implementou detecção de conflitos
+
 ## [0.3.5] — 2026-08-15 — *Genesis* (alpha) — Maintenance release
 
 ### Changed
