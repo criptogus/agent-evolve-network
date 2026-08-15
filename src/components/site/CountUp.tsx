@@ -9,7 +9,11 @@ interface CountUpProps {
   className?: string;
 }
 
-/** Animates from 0 → `to` once when first scrolled into view. Respects prefers-reduced-motion. */
+/**
+ * Animates from 0 → `to` once, as soon as the element is on screen (or after a
+ * short grace period, so counters that are already in the viewport at hydration
+ * never get stuck at zero). Respects prefers-reduced-motion.
+ */
 export function CountUp({
   to,
   duration = 1400,
@@ -20,20 +24,16 @@ export function CountUp({
 }: CountUpProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const [value, setValue] = useState(0);
-  const started = useRef(false);
 
   useEffect(() => {
-    if (started.current) return;
-    const node = ref.current;
-    if (!node) return;
+    let done = false;
+    let raf = 0;
 
-    const reduced =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 
     const start = () => {
-      if (started.current) return;
-      started.current = true;
+      if (done) return;
+      done = true;
       if (reduced) {
         setValue(to);
         return;
@@ -42,31 +42,35 @@ export function CountUp({
       const tick = (now: number) => {
         const p = Math.min(1, (now - t0) / duration);
         // ease-out-quart
-        const eased = 1 - Math.pow(1 - p, 4);
-        setValue(eased * to);
-        if (p < 1) requestAnimationFrame(tick);
+        setValue((1 - Math.pow(1 - p, 4)) * to);
+        if (p < 1) raf = requestAnimationFrame(tick);
       };
-      requestAnimationFrame(tick);
+      raf = requestAnimationFrame(tick);
     };
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          start();
-          io.disconnect();
-        }
-      },
-      { threshold: 0.3 },
-    );
-    io.observe(node);
-    // Safety net: some browsers never fire the observer for nodes already in the
-    // viewport at hydration time, which used to leave the counters at 0.
-    const fallback = window.setTimeout(start, 900);
+    const node = ref.current;
+    let io: IntersectionObserver | undefined;
+    if (node && typeof IntersectionObserver !== "undefined") {
+      io = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            start();
+            io?.disconnect();
+          }
+        },
+        { threshold: 0.2 },
+      );
+      io.observe(node);
+    }
+
+    // Safety net for nodes already visible at hydration time.
+    const fallback = window.setTimeout(start, 700);
+
     return () => {
       window.clearTimeout(fallback);
-      io.disconnect();
+      cancelAnimationFrame(raf);
+      io?.disconnect();
     };
-
   }, [to, duration]);
 
   const display = decimals > 0 ? value.toFixed(decimals) : Math.round(value).toLocaleString();
