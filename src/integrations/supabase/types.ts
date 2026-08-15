@@ -564,6 +564,78 @@ export type Database = {
           },
         ]
       }
+      cloud_skill_sync_events: {
+        Row: {
+          bytes: number | null
+          changes: Json
+          client_name: string | null
+          conflict_count: number
+          conflicts: Json
+          created_at: string
+          error: string | null
+          id: string
+          orphan_count: number
+          orphans: Json
+          provider: string
+          provider_label: string | null
+          scope: string
+          skill_count: number
+          skipped_count: number
+          source: string
+          status: string
+          strategy: string | null
+          unresolved_count: number
+          user_id: string
+          written_count: number
+        }
+        Insert: {
+          bytes?: number | null
+          changes?: Json
+          client_name?: string | null
+          conflict_count?: number
+          conflicts?: Json
+          created_at?: string
+          error?: string | null
+          id?: string
+          orphan_count?: number
+          orphans?: Json
+          provider: string
+          provider_label?: string | null
+          scope: string
+          skill_count?: number
+          skipped_count?: number
+          source?: string
+          status?: string
+          strategy?: string | null
+          unresolved_count?: number
+          user_id: string
+          written_count?: number
+        }
+        Update: {
+          bytes?: number | null
+          changes?: Json
+          client_name?: string | null
+          conflict_count?: number
+          conflicts?: Json
+          created_at?: string
+          error?: string | null
+          id?: string
+          orphan_count?: number
+          orphans?: Json
+          provider?: string
+          provider_label?: string | null
+          scope?: string
+          skill_count?: number
+          skipped_count?: number
+          source?: string
+          status?: string
+          strategy?: string | null
+          unresolved_count?: number
+          user_id?: string
+          written_count?: number
+        }
+        Relationships: []
+      }
       cloud_skill_versions: {
         Row: {
           changelog: string | null
