@@ -564,6 +564,78 @@ export type Database = {
           },
         ]
       }
+      cloud_skill_sync_conflicts: {
+        Row: {
+          client_name: string | null
+          cloud_hash: string | null
+          cloud_lines: number | null
+          cloud_version: number | null
+          created_at: string
+          decided_at: string | null
+          decision: string | null
+          detail: string | null
+          id: string
+          kind: string
+          local_content: string | null
+          local_lines: number | null
+          local_only_lines: number | null
+          path: string
+          provider: string
+          provider_label: string | null
+          scope: string
+          slug: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_name?: string | null
+          cloud_hash?: string | null
+          cloud_lines?: number | null
+          cloud_version?: number | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: string | null
+          detail?: string | null
+          id?: string
+          kind?: string
+          local_content?: string | null
+          local_lines?: number | null
+          local_only_lines?: number | null
+          path: string
+          provider: string
+          provider_label?: string | null
+          scope: string
+          slug: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_name?: string | null
+          cloud_hash?: string | null
+          cloud_lines?: number | null
+          cloud_version?: number | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: string | null
+          detail?: string | null
+          id?: string
+          kind?: string
+          local_content?: string | null
+          local_lines?: number | null
+          local_only_lines?: number | null
+          path?: string
+          provider?: string
+          provider_label?: string | null
+          scope?: string
+          slug?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cloud_skill_sync_events: {
         Row: {
           bytes: number | null
