@@ -30,6 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SyncAnywhere } from "@/components/cloud-skills/SyncAnywhere";
+import { ExportBundle } from "@/components/cloud-skills/ExportBundle";
 
 export const Route = createFileRoute("/account/cloud-skills")({
   head: () => ({
@@ -286,6 +287,8 @@ function CloudSkillsPage() {
         </div>
 
         <SyncAnywhere sampleSlug={skills[0]?.slug ?? "my-skill"} />
+
+        <ExportBundle skills={skills.map((s) => ({ id: s.id, slug: s.slug, name: s.name }))} />
 
         {/* Skills list */}
         <div className="mt-8 rounded-2xl border border-border bg-surface">
