@@ -28,6 +28,8 @@ import { StatLine } from "@/components/marketplace/StatLine";
 import {
   AGENT_PLUGINS_SITE,
   AGENT_PLUGINS_SPEC_VERSION,
+  agentPluginManifestUrl,
+  agentPluginMcpUrl,
   agentPluginZipUrl,
   openSkillsInstallOne,
   openSkillsUpdate,
