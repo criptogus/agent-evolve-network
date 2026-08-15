@@ -76,6 +76,7 @@ import { Route as AdminMetaAdsPackRouteImport } from './routes/admin.meta-ads-pa
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
 import { Route as AdminPaymentsHealthRouteImport } from './routes/admin.payments-health'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
+import { Route as AdminPluginsRouteImport } from './routes/admin.plugins'
 import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminReviewRouteImport } from './routes/admin.review'
 import { Route as AdminReviewAuditRouteImport } from './routes/admin.review-audit'
@@ -512,6 +513,11 @@ const AdminPaymentsHealthRoute = AdminPaymentsHealthRouteImport.update({
 const AdminPlansRoute = AdminPlansRouteImport.update({
   id: '/plans',
   path: '/plans',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPluginsRoute = AdminPluginsRouteImport.update({
+  id: '/plugins',
+  path: '/plugins',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminRequestsRoute = AdminRequestsRouteImport.update({
@@ -1106,6 +1112,7 @@ export interface FileRoutesByFullPath {
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/payments-health': typeof AdminPaymentsHealthRoute
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/plugins': typeof AdminPluginsRoute
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/review': typeof AdminReviewRoute
   '/admin/review-audit': typeof AdminReviewAuditRoute
@@ -1274,6 +1281,7 @@ export interface FileRoutesByTo {
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/payments-health': typeof AdminPaymentsHealthRoute
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/plugins': typeof AdminPluginsRoute
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/review': typeof AdminReviewRoute
   '/admin/review-audit': typeof AdminReviewAuditRoute
@@ -1444,6 +1452,7 @@ export interface FileRoutesById {
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/payments-health': typeof AdminPaymentsHealthRoute
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/plugins': typeof AdminPluginsRoute
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/review': typeof AdminReviewRoute
   '/admin/review-audit': typeof AdminReviewAuditRoute
@@ -1615,6 +1624,7 @@ export interface FileRouteTypes {
     | '/admin/packages'
     | '/admin/payments-health'
     | '/admin/plans'
+    | '/admin/plugins'
     | '/admin/requests'
     | '/admin/review'
     | '/admin/review-audit'
@@ -1783,6 +1793,7 @@ export interface FileRouteTypes {
     | '/admin/packages'
     | '/admin/payments-health'
     | '/admin/plans'
+    | '/admin/plugins'
     | '/admin/requests'
     | '/admin/review'
     | '/admin/review-audit'
@@ -1952,6 +1963,7 @@ export interface FileRouteTypes {
     | '/admin/packages'
     | '/admin/payments-health'
     | '/admin/plans'
+    | '/admin/plugins'
     | '/admin/requests'
     | '/admin/review'
     | '/admin/review-audit'
@@ -2660,6 +2672,13 @@ declare module '@tanstack/react-router' {
       path: '/plans'
       fullPath: '/admin/plans'
       preLoaderRoute: typeof AdminPlansRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/plugins': {
+      id: '/admin/plugins'
+      path: '/plugins'
+      fullPath: '/admin/plugins'
+      preLoaderRoute: typeof AdminPluginsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/requests': {
@@ -3388,6 +3407,7 @@ interface AdminRouteChildren {
   AdminPackagesRoute: typeof AdminPackagesRouteWithChildren
   AdminPaymentsHealthRoute: typeof AdminPaymentsHealthRoute
   AdminPlansRoute: typeof AdminPlansRoute
+  AdminPluginsRoute: typeof AdminPluginsRoute
   AdminRequestsRoute: typeof AdminRequestsRoute
   AdminReviewRoute: typeof AdminReviewRoute
   AdminReviewAuditRoute: typeof AdminReviewAuditRoute
@@ -3409,6 +3429,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminPackagesRoute: AdminPackagesRouteWithChildren,
   AdminPaymentsHealthRoute: AdminPaymentsHealthRoute,
   AdminPlansRoute: AdminPlansRoute,
+  AdminPluginsRoute: AdminPluginsRoute,
   AdminRequestsRoute: AdminRequestsRoute,
   AdminReviewRoute: AdminReviewRoute,
   AdminReviewAuditRoute: AdminReviewAuditRoute,

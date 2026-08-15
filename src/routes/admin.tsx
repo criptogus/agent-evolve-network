@@ -29,6 +29,7 @@ const NAV = [
   { to: "/admin/plans", label: "Plans" },
   { to: "/admin/packages", label: "Packages" },
   { to: "/admin/packages/new", label: "Wizard" },
+  { to: "/admin/plugins", label: "Agent Plugins · publish" },
   { to: "/admin/import/github", label: "Import · GitHub" },
   { to: "/admin/import/markdown", label: "Import · Markdown" },
   { to: "/admin/requests", label: "Requests" },
