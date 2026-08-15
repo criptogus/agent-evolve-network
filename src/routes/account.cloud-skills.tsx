@@ -29,6 +29,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SyncAnywhere } from "@/components/cloud-skills/SyncAnywhere";
 
 export const Route = createFileRoute("/account/cloud-skills")({
   head: () => ({
@@ -235,7 +236,8 @@ function CloudSkillsPage() {
           <div className="mt-8 rounded-2xl border border-border bg-surface p-6">
             <h2 className="text-lg font-semibold">What you get</h2>
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <li>Save skills to the cloud and sync across all your projects</li>
+              <li>Private, per-account storage — never shared with other users</li>
+              <li>One-call sync into Hermes, Claude Code, Codex, Cursor, Lovable, OpenClaw and 9 more tools</li>
               <li>Version history with changelog for every update</li>
               <li>Import/export in SKILL.md format (compatible with 60+ agents)</li>
               <li>Template variables for reusable, customizable skills</li>
@@ -282,6 +284,8 @@ function CloudSkillsPage() {
           </Button>
           <Button onClick={() => setShowCreate(true)}>New skill</Button>
         </div>
+
+        <SyncAnywhere sampleSlug={skills[0]?.slug ?? "my-skill"} />
 
         {/* Skills list */}
         <div className="mt-8 rounded-2xl border border-border bg-surface">
