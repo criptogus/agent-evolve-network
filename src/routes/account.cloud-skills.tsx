@@ -288,7 +288,12 @@ function CloudSkillsPage() {
 
         <SyncAnywhere sampleSlug={skills[0]?.slug ?? "my-skill"} />
 
+        <div className="mt-6">
+          <PendingConflicts />
+        </div>
+
         <ExportBundle skills={skills.map((s) => ({ id: s.id, slug: s.slug, name: s.name }))} />
+
 
         {/* Skills list */}
         <div className="mt-8 rounded-2xl border border-border bg-surface">
