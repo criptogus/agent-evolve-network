@@ -225,7 +225,10 @@ ${openSkillsUpdate}`}
 curl -LO ${agentPluginZipUrl("<slug>")}
 
 # manifest only
-curl ${"https://superagentskill.com/api/public/plugins/<slug>/plugin.json"}
+curl ${agentPluginManifestUrl("<slug>")}
+
+# MCP server config only
+curl ${agentPluginMcpUrl("<slug>")}
 
 # discovery index of every graded plugin
 curl ${AGENT_PLUGINS_INDEX_URL}`}
@@ -238,6 +241,102 @@ curl ${AGENT_PLUGINS_INDEX_URL}`}
             <code className="font-mono text-foreground">skills/</code>. Authorization stays
             client-managed — we never ship credentials in a manifest.
           </p>
+
+          <h2 id="connect-step-by-step" className="mt-12 text-2xl font-semibold tracking-tight">
+            Connect an agent using /plugin.json and /mcp.json
+          </h2>
+          <p className="mt-2 text-muted-foreground">
+            Any MCP-compatible agent can load a SAK skill in four steps without an account. Replace{" "}
+            <code className="font-mono text-foreground">&lt;slug&gt;</code> with the skill's short
+            name from the marketplace.
+          </p>
+
+          <div className="mt-6 space-y-4">
+            <div className="rounded-xl border border-border bg-card p-5">
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+                  1
+                </span>
+                <h3 className="text-sm font-semibold">Fetch the manifest</h3>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                The manifest describes the plugin, its version, and where the companion files live.
+              </p>
+              <div className="mt-3">
+                <CodeBlock lang="bash" code={`curl ${agentPluginManifestUrl("<slug>")}`} />
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                A conformant client fetches this automatically when you point it at the plugin URL.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card p-5">
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+                  2
+                </span>
+                <h3 className="text-sm font-semibold">Fetch the MCP server config</h3>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                The <code className="font-mono text-foreground">mcp.json</code> file tells the agent
+                how to reach the MCP server for this skill.
+              </p>
+              <div className="mt-3">
+                <CodeBlock lang="bash" code={`curl ${agentPluginMcpUrl("<slug>")}`} />
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                It contains the Streamable HTTP endpoint and, for write tools, the OAuth metadata
+                location.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card p-5">
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+                  3
+                </span>
+                <h3 className="text-sm font-semibold">Register the MCP server in your agent</h3>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Most clients accept the server URL directly. If your client needs a JSON config, use
+                the endpoint from <code className="font-mono text-foreground">mcp.json</code>.
+              </p>
+              <div className="mt-3">
+                <CodeBlock
+                  lang="json"
+                  code={`{
+  "mcpServers": {
+    "super-agent-skill": {
+      "url": "https://superagentskill.com/api/public/mcp"
+    }
+  }
+}`}
+                />
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card p-5">
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+                  4
+                </span>
+                <h3 className="text-sm font-semibold">Verify the connection</h3>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Ask the agent to list available tools or call the skill you just loaded.
+              </p>
+              <div className="mt-3">
+                <CodeBlock
+                  lang="text"
+                  code={`> Use the Super Agent Skill MCP to call overview
+
+→ Server: super-agent-skill
+→ Tools:  list_packages, search_registry, get_package, review_skill, …
+→ Status: connected`}
+                />
+              </div>
+            </div>
+          </div>
 
           <h3 className="mt-6 text-base font-semibold">Verify the signature</h3>
           <p className="mt-2 text-sm text-muted-foreground">
