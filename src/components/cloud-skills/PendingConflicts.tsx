@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Download, Trash2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Download, GitCompare, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -27,6 +27,7 @@ import {
   dismissPendingConflicts,
   confirmPendingConflicts,
 } from "@/lib/cloud-skills/pending-conflicts.functions";
+import { ConflictDiff } from "./ConflictDiff";
 
 function download(filename: string, base64: string) {
   const bin = atob(base64);
@@ -54,6 +55,7 @@ export function PendingConflicts() {
 
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [confirmKey, setConfirmKey] = useState<string | null>(null);
+  const [diffId, setDiffId] = useState<string | null>(null);
 
   const q = useQuery({
     queryKey: ["cloud-skill-conflicts"],
@@ -233,13 +235,32 @@ export function PendingConflicts() {
                           {d.label}
                         </Button>
                       ))}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="gap-1"
+                        onClick={() => setDiffId(diffId === item.id ? null : item.id)}
+                      >
+                        <GitCompare className="h-4 w-4" />
+                        {diffId === item.id ? "Hide diff" : "Compare side by side"}
+                      </Button>
                       {!item.has_local_content && (
                         <span className="self-center text-xs text-muted-foreground">
                           Merge needs the local file content, which this agent did not send.
                         </span>
                       )}
                     </div>
+
+                    {diffId === item.id && (
+                      <ConflictDiff
+                        conflictId={item.id}
+                        decision={item.decision}
+                        canMerge={item.has_local_content}
+                        onPick={(d) => decideMut.mutate({ ids: [item.id], decision: d })}
+                      />
+                    )}
                   </div>
+
                 ))}
 
                 <div className="flex items-center justify-end gap-2 pt-1">

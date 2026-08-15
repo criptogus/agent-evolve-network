@@ -170,3 +170,51 @@ export const confirmPendingConflicts = createServerFn({ method: "POST" })
       archive,
     };
   });
+
+/**
+ * Side-by-side preview data for one queued conflict: the local file captured by
+ * the agent and the cloud version rendered for that tool. Scoped to the caller.
+ */
+export const getConflictPreview = createServerFn({ method: "GET" })
+  .middleware([requirePaidSubscription])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d ?? {}))
+  .handler(async ({ data, context }) => {
+    const { supabase: sb, userId } = context as any;
+    const supabase = sb as any;
+
+    const { data: row, error } = await supabase
+      .from(TABLE)
+      .select("id, provider, provider_label, scope, slug, path, kind, detail, local_content, cloud_version, decision")
+      .eq("user_id", userId)
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw new Response(error.message, { status: 500 });
+    if (!row) throw new Response("Conflict not found", { status: 404 });
+
+    const { data: skill, error: skillErr } = await supabase
+      .from("cloud_skills")
+      .select("slug, name, description, category, tags, version, content")
+      .eq("user_id", userId)
+      .eq("slug", row.slug)
+      .maybeSingle();
+    if (skillErr) throw new Response(skillErr.message, { status: 500 });
+
+    const { getProvider, renderSkillFile } = await import("./providers");
+    const provider = getProvider(row.provider);
+    const cloud_content = provider && skill ? renderSkillFile(provider, skill as any) : null;
+
+    return {
+      id: row.id,
+      path: row.path,
+      slug: row.slug,
+      kind: row.kind,
+      detail: row.detail,
+      decision: row.decision,
+      provider_label: row.provider_label ?? provider?.label ?? row.provider,
+      scope: row.scope,
+      cloud_version: row.cloud_version,
+      local_content: (row.local_content as string | null) ?? null,
+      cloud_content,
+      missing_skill: !skill,
+    };
+  });
