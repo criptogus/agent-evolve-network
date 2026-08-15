@@ -10,7 +10,7 @@ const CORS = {
   "Access-Control-Expose-Headers": EXPOSED_SIGNATURE_HEADERS,
 };
 
-// GET /api/public/plugins/<slug>.signature.json
+// GET /api/public/plugins/<slug>/signature.json
 // Detached signature sidecar for the matching .zip package. Deterministic zip
 // generation means this hash matches the bytes served by the .zip route.
 export const Route = createFileRoute("/api/public/plugins/$slug/signature.json")({

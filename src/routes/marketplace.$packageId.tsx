@@ -739,7 +739,7 @@ function InstallInstructions({ pkg }: { pkg: Package }) {
         <p className="mt-2 text-xs text-muted-foreground">
           Every package is Ed25519-signed for integrity and traceability. Verify with the{" "}
           <a
-            href={`/api/public/plugins/${pkg.id}.signature.json`}
+            href={`/api/public/plugins/${pkg.id}/signature.json`}
             className="font-mono text-foreground underline decoration-border underline-offset-4 hover:decoration-primary"
           >
             signature sidecar
