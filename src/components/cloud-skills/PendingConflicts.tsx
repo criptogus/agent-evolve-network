@@ -233,13 +233,32 @@ export function PendingConflicts() {
                           {d.label}
                         </Button>
                       ))}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="gap-1"
+                        onClick={() => setDiffId(diffId === item.id ? null : item.id)}
+                      >
+                        <GitCompare className="h-4 w-4" />
+                        {diffId === item.id ? "Hide diff" : "Compare side by side"}
+                      </Button>
                       {!item.has_local_content && (
                         <span className="self-center text-xs text-muted-foreground">
                           Merge needs the local file content, which this agent did not send.
                         </span>
                       )}
                     </div>
+
+                    {diffId === item.id && (
+                      <ConflictDiff
+                        conflictId={item.id}
+                        decision={item.decision}
+                        canMerge={item.has_local_content}
+                        onPick={(d) => decideMut.mutate({ ids: [item.id], decision: d })}
+                      />
+                    )}
                   </div>
+
                 ))}
 
                 <div className="flex items-center justify-end gap-2 pt-1">
