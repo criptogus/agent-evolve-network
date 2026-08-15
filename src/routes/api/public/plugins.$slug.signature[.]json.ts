@@ -13,7 +13,7 @@ const CORS = {
 // GET /api/public/plugins/<slug>.signature.json
 // Detached signature sidecar for the matching .zip package. Deterministic zip
 // generation means this hash matches the bytes served by the .zip route.
-export const Route = createFileRoute("/api/public/plugins/$slug.signature.json")({
+export const Route = createFileRoute("/api/public/plugins/$slug/signature.json")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
