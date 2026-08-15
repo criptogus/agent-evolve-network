@@ -290,7 +290,7 @@ function CloudSkillsPage() {
 
         <SyncAnywhere sampleSlug={skills[0]?.slug ?? "my-skill"} />
 
-        <div className="mt-6">
+        <div id="pending-conflicts" className="mt-6 scroll-mt-24">
           <PendingConflicts />
         </div>
 
