@@ -369,7 +369,10 @@ function CloudSkillsPage() {
           )}
         </div>
 
+        <SyncAnywhere exampleSlug={skills[0]?.slug} />
+
         <p className="mt-6 text-xs text-muted-foreground">
+
           Cloud skills are also accessible via the MCP API. Use{" "}
           <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
             cloud_skills_save
