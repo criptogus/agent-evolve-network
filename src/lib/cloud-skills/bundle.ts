@@ -1,16 +1,22 @@
 /**
- * Private export bundle: turns a set of cloud skills into the exact on-disk
- * layout a given agent tool expects, so the user can unzip it wherever they
- * want (no MCP, no network, no sharing).
+ * Private backup archive: turns a set of cloud skills into the exact on-disk
+ * layout a given agent tool expects, so the user keeps an offline, auditable
+ * copy of their vault.
  *
- * Integrity: every payload file (skills, README.md, install.sh, verify.sh) is
- * hashed, the hashes are rolled into one `content_digest`, and that digest is
+ * NOT an install path. Installing the personal vault into a local agent
+ * (Claude Code, Codex, Cursor, ...) always happens over MCP via
+ * `cloud_skills_sync`, which is conflict-aware and idempotent. The archive
+ * therefore ships no install script.
+ *
+ * Integrity: every payload file (skills, README.md, verify.sh) is hashed, the
+ * hashes are rolled into one `content_digest`, and that digest is
  * Ed25519-signed server-side. The result lands in `sak-bundle.json`, which is
  * therefore built LAST and excluded from its own digest.
  *
  * Pure: builds the file list only. Zipping and signing happen server-side in
  * `bundle.server.ts`; the UI reuses this to preview paths.
  */
+
 import {
   getProvider,
   renderSkillFile,
