@@ -126,6 +126,7 @@ import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packa
 import { Route as ApiPublicPluginsDotjsonRouteImport } from './routes/api/public/plugins[.]json'
 import { Route as ApiPublicReviewRouteImport } from './routes/api/public/review'
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
+import { Route as ApiPublicSigningKeyDotpemRouteImport } from './routes/api/public/signing-key[.]pem'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
 import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug'
@@ -172,6 +173,7 @@ import { Route as ApiPublicCrmCTokenRouteImport } from './routes/api/public/crm/
 import { Route as ApiPublicCrmOTokenRouteImport } from './routes/api/public/crm/o.$token'
 import { Route as ApiPublicPluginsSlugMcpDotjsonRouteImport } from './routes/api/public/plugins.$slug.mcp[.]json'
 import { Route as ApiPublicPluginsSlugPluginDotjsonRouteImport } from './routes/api/public/plugins.$slug.plugin[.]json'
+import { Route as ApiPublicPluginsSlugSignatureDotjsonRouteImport } from './routes/api/public/plugins.$slug.signature[.]json'
 import { Route as ApiAgentsBuildIdDownloadExtRouteImport } from './routes/api/agents.build.$id.download.$ext'
 import { Route as ApiPacksCustomizationIdDownloadExtRouteImport } from './routes/api/packs.customization.$id.download.$ext'
 
@@ -763,6 +765,12 @@ const ApiPublicSearchRoute = ApiPublicSearchRouteImport.update({
   path: '/api/public/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSigningKeyDotpemRoute =
+  ApiPublicSigningKeyDotpemRouteImport.update({
+    id: '/api/public/signing-key.pem',
+    path: '/api/public/signing-key.pem',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicTelemetryRoute = ApiPublicTelemetryRouteImport.update({
   id: '/api/public/telemetry',
   path: '/api/public/telemetry',
@@ -1012,6 +1020,12 @@ const ApiPublicPluginsSlugPluginDotjsonRoute =
     path: '/api/public/plugins/$slug/plugin.json',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPluginsSlugSignatureDotjsonRoute =
+  ApiPublicPluginsSlugSignatureDotjsonRouteImport.update({
+    id: '/api/public/plugins/$slug/signature.json',
+    path: '/api/public/plugins/$slug/signature.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiAgentsBuildIdDownloadExtRoute =
   ApiAgentsBuildIdDownloadExtRouteImport.update({
     id: '/api/agents/build/$id/download/$ext',
@@ -1143,6 +1157,7 @@ export interface FileRoutesByFullPath {
   '/api/public/plugins.json': typeof ApiPublicPluginsDotjsonRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
+  '/api/public/signing-key.pem': typeof ApiPublicSigningKeyDotpemRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
@@ -1189,6 +1204,7 @@ export interface FileRoutesByFullPath {
   '/api/public/crm/o/$token': typeof ApiPublicCrmOTokenRoute
   '/api/public/plugins/$slug/mcp.json': typeof ApiPublicPluginsSlugMcpDotjsonRoute
   '/api/public/plugins/$slug/plugin.json': typeof ApiPublicPluginsSlugPluginDotjsonRoute
+  '/api/public/plugins/$slug/signature.json': typeof ApiPublicPluginsSlugSignatureDotjsonRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1309,6 +1325,7 @@ export interface FileRoutesByTo {
   '/api/public/plugins.json': typeof ApiPublicPluginsDotjsonRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
+  '/api/public/signing-key.pem': typeof ApiPublicSigningKeyDotpemRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
@@ -1355,6 +1372,7 @@ export interface FileRoutesByTo {
   '/api/public/crm/o/$token': typeof ApiPublicCrmOTokenRoute
   '/api/public/plugins/$slug/mcp.json': typeof ApiPublicPluginsSlugMcpDotjsonRoute
   '/api/public/plugins/$slug/plugin.json': typeof ApiPublicPluginsSlugPluginDotjsonRoute
+  '/api/public/plugins/$slug/signature.json': typeof ApiPublicPluginsSlugSignatureDotjsonRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1477,6 +1495,7 @@ export interface FileRoutesById {
   '/api/public/plugins.json': typeof ApiPublicPluginsDotjsonRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
+  '/api/public/signing-key.pem': typeof ApiPublicSigningKeyDotpemRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
@@ -1523,6 +1542,7 @@ export interface FileRoutesById {
   '/api/public/crm/o/$token': typeof ApiPublicCrmOTokenRoute
   '/api/public/plugins/$slug/mcp.json': typeof ApiPublicPluginsSlugMcpDotjsonRoute
   '/api/public/plugins/$slug/plugin.json': typeof ApiPublicPluginsSlugPluginDotjsonRoute
+  '/api/public/plugins/$slug/signature.json': typeof ApiPublicPluginsSlugSignatureDotjsonRoute
   '/api/agents/build/$id/download/$ext': typeof ApiAgentsBuildIdDownloadExtRoute
   '/api/packs/customization/$id/download/$ext': typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -1646,6 +1666,7 @@ export interface FileRouteTypes {
     | '/api/public/plugins.json'
     | '/api/public/review'
     | '/api/public/search'
+    | '/api/public/signing-key.pem'
     | '/api/public/telemetry'
     | '/api/public/version'
     | '/forge/report/$slug'
@@ -1692,6 +1713,7 @@ export interface FileRouteTypes {
     | '/api/public/crm/o/$token'
     | '/api/public/plugins/$slug/mcp.json'
     | '/api/public/plugins/$slug/plugin.json'
+    | '/api/public/plugins/$slug/signature.json'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesByTo: FileRoutesByTo
@@ -1812,6 +1834,7 @@ export interface FileRouteTypes {
     | '/api/public/plugins.json'
     | '/api/public/review'
     | '/api/public/search'
+    | '/api/public/signing-key.pem'
     | '/api/public/telemetry'
     | '/api/public/version'
     | '/forge/report/$slug'
@@ -1858,6 +1881,7 @@ export interface FileRouteTypes {
     | '/api/public/crm/o/$token'
     | '/api/public/plugins/$slug/mcp.json'
     | '/api/public/plugins/$slug/plugin.json'
+    | '/api/public/plugins/$slug/signature.json'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   id:
@@ -1979,6 +2003,7 @@ export interface FileRouteTypes {
     | '/api/public/plugins.json'
     | '/api/public/review'
     | '/api/public/search'
+    | '/api/public/signing-key.pem'
     | '/api/public/telemetry'
     | '/api/public/version'
     | '/forge/report/$slug'
@@ -2025,6 +2050,7 @@ export interface FileRouteTypes {
     | '/api/public/crm/o/$token'
     | '/api/public/plugins/$slug/mcp.json'
     | '/api/public/plugins/$slug/plugin.json'
+    | '/api/public/plugins/$slug/signature.json'
     | '/api/agents/build/$id/download/$ext'
     | '/api/packs/customization/$id/download/$ext'
   fileRoutesById: FileRoutesById
@@ -2123,6 +2149,7 @@ export interface RootRouteChildren {
   ApiPublicPluginsDotjsonRoute: typeof ApiPublicPluginsDotjsonRoute
   ApiPublicReviewRoute: typeof ApiPublicReviewRouteWithChildren
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
+  ApiPublicSigningKeyDotpemRoute: typeof ApiPublicSigningKeyDotpemRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -2159,6 +2186,7 @@ export interface RootRouteChildren {
   ApiPublicCrmOTokenRoute: typeof ApiPublicCrmOTokenRoute
   ApiPublicPluginsSlugMcpDotjsonRoute: typeof ApiPublicPluginsSlugMcpDotjsonRoute
   ApiPublicPluginsSlugPluginDotjsonRoute: typeof ApiPublicPluginsSlugPluginDotjsonRoute
+  ApiPublicPluginsSlugSignatureDotjsonRoute: typeof ApiPublicPluginsSlugSignatureDotjsonRoute
   ApiAgentsBuildIdDownloadExtRoute: typeof ApiAgentsBuildIdDownloadExtRoute
   ApiPacksCustomizationIdDownloadExtRoute: typeof ApiPacksCustomizationIdDownloadExtRoute
 }
@@ -2984,6 +3012,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/signing-key.pem': {
+      id: '/api/public/signing-key.pem'
+      path: '/api/public/signing-key.pem'
+      fullPath: '/api/public/signing-key.pem'
+      preLoaderRoute: typeof ApiPublicSigningKeyDotpemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/telemetry': {
       id: '/api/public/telemetry'
       path: '/api/public/telemetry'
@@ -3306,6 +3341,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPluginsSlugPluginDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/plugins/$slug/signature.json': {
+      id: '/api/public/plugins/$slug/signature.json'
+      path: '/api/public/plugins/$slug/signature.json'
+      fullPath: '/api/public/plugins/$slug/signature.json'
+      preLoaderRoute: typeof ApiPublicPluginsSlugSignatureDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/agents/build/$id/download/$ext': {
       id: '/api/agents/build/$id/download/$ext'
       path: '/api/agents/build/$id/download/$ext'
@@ -3616,6 +3658,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicPluginsDotjsonRoute: ApiPublicPluginsDotjsonRoute,
   ApiPublicReviewRoute: ApiPublicReviewRouteWithChildren,
   ApiPublicSearchRoute: ApiPublicSearchRoute,
+  ApiPublicSigningKeyDotpemRoute: ApiPublicSigningKeyDotpemRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
@@ -3656,6 +3699,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicPluginsSlugMcpDotjsonRoute: ApiPublicPluginsSlugMcpDotjsonRoute,
   ApiPublicPluginsSlugPluginDotjsonRoute:
     ApiPublicPluginsSlugPluginDotjsonRoute,
+  ApiPublicPluginsSlugSignatureDotjsonRoute:
+    ApiPublicPluginsSlugSignatureDotjsonRoute,
   ApiAgentsBuildIdDownloadExtRoute: ApiAgentsBuildIdDownloadExtRoute,
   ApiPacksCustomizationIdDownloadExtRoute:
     ApiPacksCustomizationIdDownloadExtRoute,

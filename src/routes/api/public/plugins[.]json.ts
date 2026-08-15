@@ -57,6 +57,7 @@ export const Route = createFileRoute("/api/public/plugins.json")({
           plugin_manifest: `${SAK_SITE}/api/public/plugins/${p.slug}/plugin.json`,
           mcp_config: `${SAK_SITE}/api/public/plugins/${p.slug}/mcp.json`,
           package_zip: `${SAK_SITE}/api/public/plugins/${p.slug}.zip`,
+          package_signature: `${SAK_SITE}/api/public/plugins/${p.slug}/signature.json`,
           homepage: `${SAK_SITE}/marketplace/${p.slug}`,
         }));
 

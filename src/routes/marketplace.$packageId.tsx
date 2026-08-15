@@ -736,6 +736,23 @@ function InstallInstructions({ pkg }: { pkg: Package }) {
           </a>{" "}
           v{AGENT_PLUGINS_SPEC_VERSION} spec.
         </p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Every package is Ed25519-signed for integrity and traceability. Verify with the{" "}
+          <a
+            href={`/api/public/plugins/${pkg.id}/signature.json`}
+            className="font-mono text-foreground underline decoration-border underline-offset-4 hover:decoration-primary"
+          >
+            signature sidecar
+          </a>{" "}
+          and our{" "}
+          <a
+            href="/api/public/signing-key.pem"
+            className="font-mono text-foreground underline decoration-border underline-offset-4 hover:decoration-primary"
+          >
+            public key
+          </a>
+          .
+        </p>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5">

@@ -1,6 +1,6 @@
 {
   "name": "tanstack_start_ts",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -32,9 +32,10 @@
     "release:changelog": "node scripts/generate-changelog.mjs",
     "trust:attest": "node scripts/generate-trust-attestation.mjs",
     "trust:verify": "node scripts/verify-trust-attestation.mjs",
+    "package:verify": "node scripts/verify-package-signature.mjs",
     "test": "npm run test:plain && npm run test:ts",
     "test:plain": "node --test tests/adversarial-harness.test.mjs tests/trust.test.mjs tests/release-signing.test.mjs tests/cli-install.test.mjs tests/trust-attestation.test.mjs",
-    "test:ts": "node --experimental-strip-types --test tests/site-stats.test.mjs tests/certify.test.mjs tests/prompt-injection-guard.test.mjs tests/audit-skills.test.mjs tests/runtime.test.mjs tests/integrations.test.mjs tests/growth-revenue-split.test.mjs tests/trust-badge.test.mjs tests/bounties.test.mjs tests/trust-scoring.test.mjs tests/adversarial-holdout.test.mjs tests/adversarial-judge.test.mjs tests/paired-benchmark.test.mjs tests/format-rubric.test.mjs tests/lang-detect.test.mjs tests/university.test.mjs"
+    "test:ts": "node --experimental-strip-types --test tests/site-stats.test.mjs tests/certify.test.mjs tests/prompt-injection-guard.test.mjs tests/audit-skills.test.mjs tests/runtime.test.mjs tests/integrations.test.mjs tests/growth-revenue-split.test.mjs tests/trust-badge.test.mjs tests/bounties.test.mjs tests/trust-scoring.test.mjs tests/adversarial-holdout.test.mjs tests/adversarial-judge.test.mjs tests/paired-benchmark.test.mjs tests/format-rubric.test.mjs tests/lang-detect.test.mjs tests/university.test.mjs tests/package-signature.test.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",
