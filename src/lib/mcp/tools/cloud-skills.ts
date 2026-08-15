@@ -17,7 +17,7 @@ async function resolveUserFromToken(token: string): Promise<string | null> {
   return data.user_id;
 }
 
-async function requirePaidUser(ctx: any): Promise<string> {
+export async function requirePaidUser(ctx: any): Promise<string> {
   const sessionUserId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
   const userId = sessionUserId;
   if (!userId) {

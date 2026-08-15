@@ -204,6 +204,30 @@ export function buildMessage(trigger: TriggerId, s: CrmSnapshot): CrmMessage {
         ctaPath: "/pricing",
       };
 
+    case "cloud_library_upsell":
+      return {
+        trigger,
+        subject: "Your skills only live in one repo — that is the expensive part",
+        preheader: "A private cloud library that syncs into every agent tool you use.",
+        heading: "One library, every agent tool",
+        intro: [
+          `You have measured ${num(s.usage.reviews + s.usage.uploads)} document(s) on SAK, but they still live wherever you happened to write them.`,
+          "The Cloud Skill Manager keeps them in a library that is private to your account — never shared with other users — and syncs them into Hermes, Claude Code, Codex, Cursor, Lovable, OpenClaw, Windsurf, Copilot, Zed and Gemini CLI with one call.",
+        ],
+        metrics: [
+          { label: "Agent tools supported", value: "15" },
+          { label: "Pro", value: "$19/month", note: "or $140/year" },
+          ...roiMetrics(s).slice(0, 1),
+        ],
+        bullets: [
+          "Private per-account storage with version history and changelog",
+          "cloud_skills_sync writes each skill at the exact path your tool reads",
+          "Switch machines or tools without re-copying a single prompt",
+        ],
+        ctaLabel: "See the cloud library",
+        ctaPath: "/account/cloud-skills",
+      };
+
     case "at_risk":
       return {
         trigger,

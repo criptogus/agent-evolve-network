@@ -16,6 +16,11 @@ import {
   submitFeedbackTool,
 } from "@/lib/mcp/tools/skills";
 import {
+  cloudSkillsTargetsTool,
+  cloudSkillsSyncTool,
+  cloudSkillsSyncAllTool,
+} from "@/lib/mcp/tools/cloud-sync";
+import {
   cloudSkillsListTool,
   cloudSkillsGetTool,
   cloudSkillsSaveTool,
@@ -108,6 +113,8 @@ const mcp = createMcpServer({
     "  - `cloud_skills_export` to export a skill as SKILL.md (Markdown + YAML frontmatter) ready to paste.",
     "  - `cloud_skills_import` to import a SKILL.md file into your cloud library.",
     "  - `cloud_skills_delete` to remove a skill from your library.",
+    "  - `cloud_skills_targets` to see every agent tool the library can be synced into (Hermes, Claude Code, Codex, Cursor, Lovable, OpenClaw, Windsurf, Copilot, Zed, Gemini CLI...) with the exact paths each expects.",
+    "  - `cloud_skills_sync` / `cloud_skills_sync_all` to materialise the library as files for one or many tools. The library is PRIVATE to the user: never share or publish its contents.",
     "",
     "## 5. AGENT STORE (paid subscribers only)",
     "Ready-to-use agents bundling a soul + skills + playbooks: CEO, COO, CTO, CMO, HR Director, Agent Architect, Corporate Finance, Board Meetings, Google Ads, Meta Ads, Newsletter, LinkedIn, X.",
@@ -149,6 +156,9 @@ const mcp = createMcpServer({
     cloudSkillsDeleteTool,
     cloudSkillsExportTool,
     cloudSkillsImportTool,
+    cloudSkillsTargetsTool,
+    cloudSkillsSyncTool,
+    cloudSkillsSyncAllTool,
     listAgentsTool,
     installAgentTool,
     createAgentTool,
