@@ -615,3 +615,152 @@ export const runCrmLearningNow = createServerFn({ method: "POST" })
     };
 
   });
+
+export type CrmSegmentPerformance = {
+  days: number;
+  min_samples: number;
+  totals: { sent: number; opened: number; clicked: number; converted: number; conversion_rate: number };
+  by_tool: Array<{
+    key: string;
+    label: string;
+    sent: number;
+    opened: number;
+    clicked: number;
+    converted: number;
+    conversion_rate: number;
+    open_rate: number;
+    click_rate: number;
+    leader: { trigger: string; variant: string; rate: number; sent: number } | null;
+    significance: string;
+    variants: Array<{
+      trigger: string;
+      trigger_label: string;
+      variant: string;
+      variant_label: string;
+      sent: number;
+      opened: number;
+      clicked: number;
+      converted: number;
+      conversion_rate: number;
+    }>;
+  }>;
+  by_pattern: CrmSegmentPerformance["by_tool"];
+  matrix: Array<{
+    tool: string;
+    tool_label: string;
+    pattern: string;
+    pattern_label: string;
+    sent: number;
+    converted: number;
+    conversion_rate: number;
+    leader_variant: string | null;
+  }>;
+};
+
+/**
+ * A/B results for the personalized upsell copy, sliced by the two dimensions the
+ * copy is personalized on: the agent tool the customer connects with and their
+ * usage pattern. Same numbers the bandit uses when it draws a variant.
+ */
+export const getCrmSegmentPerformance = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) => z.object({ days: z.number().int().min(7).max(365).default(120) }).parse(d ?? {}))
+  .handler(async ({ data }): Promise<CrmSegmentPerformance> => {
+    const { summarizeSegments, segmentSignificance, VARIANTS, type SegmentRow } = (await import(
+      "@/lib/crm/learning"
+    )) as any;
+    const { loadSettings } = await import("@/lib/crm/learning.server");
+    const { PATTERN_LABELS } = await import("@/lib/crm/tool-profile");
+    const { getProvider } = await import("@/lib/cloud-skills/providers");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const admin = supabaseAdmin as any;
+
+    const settings = await loadSettings();
+    const { data: raw } = await admin.rpc("crm_effectiveness_by_segment", { _days: data.days });
+
+    const rows = ((raw ?? []) as any[]).map((r) => ({
+      trigger: String(r.trigger),
+      variant: String(r.variant),
+      tool_id: String(r.tool_id ?? "unknown"),
+      usage_pattern: String(r.usage_pattern ?? "unknown"),
+      stats: {
+        sent: Number(r.sent ?? 0),
+        opened: Number(r.opened ?? 0),
+        clicked: Number(r.clicked ?? 0),
+        converted: Number(r.converted ?? 0),
+      },
+    }));
+
+    const toolLabel = (id: string) =>
+      id === "unknown" ? "Tool not detected" : (getProvider(id)?.label ?? id);
+    const patternLabel = (id: string) =>
+      id === "unknown" ? "Pattern unknown" : ((PATTERN_LABELS as any)[id] ?? id);
+    const variantLabel = (trigger: string, variant: string) =>
+      ((VARIANTS as any)[trigger] ?? []).find((v: any) => v.variant === variant)?.label ?? variant;
+    const triggerLabel = (trigger: string) => (TRIGGERS as any)[trigger]?.label ?? trigger;
+
+    const shape = (groups: any[], labeller: (k: string) => string) =>
+      groups.map((g) => ({
+        key: g.key,
+        label: labeller(g.key),
+        sent: g.sent,
+        opened: g.opened,
+        clicked: g.clicked,
+        converted: g.converted,
+        conversion_rate: g.conversion_rate,
+        open_rate: g.open_rate,
+        click_rate: g.click_rate,
+        leader: g.leader
+          ? { trigger: g.leader.trigger, variant: g.leader.variant, rate: g.leader.rate, sent: g.leader.sent }
+          : null,
+        significance: segmentSignificance(g, settings.minSamples).label,
+        variants: g.variants.map((v: any) => ({
+          trigger: v.trigger,
+          trigger_label: triggerLabel(v.trigger),
+          variant: v.variant,
+          variant_label: variantLabel(v.trigger, v.variant),
+          sent: v.sent,
+          opened: v.opened,
+          clicked: v.clicked,
+          converted: v.converted,
+          conversion_rate: v.conversion_rate,
+        })),
+      }));
+
+    const byTool = shape(summarizeSegments(rows as SegmentRow[], "tool"), toolLabel);
+    const byPattern = shape(summarizeSegments(rows as SegmentRow[], "pattern"), patternLabel);
+    const cells = summarizeSegments(rows as SegmentRow[], "tool_pattern");
+
+    const totals = rows.reduce(
+      (acc, r) => ({
+        sent: acc.sent + r.stats.sent,
+        opened: acc.opened + r.stats.opened,
+        clicked: acc.clicked + r.stats.clicked,
+        converted: acc.converted + r.stats.converted,
+        conversion_rate: 0,
+      }),
+      { sent: 0, opened: 0, clicked: 0, converted: 0, conversion_rate: 0 },
+    );
+    totals.conversion_rate = totals.sent > 0 ? Math.round((totals.converted / totals.sent) * 1000) / 10 : 0;
+
+    return {
+      days: data.days,
+      min_samples: settings.minSamples,
+      totals,
+      by_tool: byTool,
+      by_pattern: byPattern,
+      matrix: cells.map((c: any) => {
+        const [tool, pattern] = c.key.split("|");
+        return {
+          tool,
+          tool_label: toolLabel(tool),
+          pattern,
+          pattern_label: patternLabel(pattern),
+          sent: c.sent,
+          converted: c.converted,
+          conversion_rate: c.conversion_rate,
+          leader_variant: c.leader?.variant ?? null,
+        };
+      }),
+    };
+  });
