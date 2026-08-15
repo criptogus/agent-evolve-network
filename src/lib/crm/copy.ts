@@ -5,6 +5,7 @@
  */
 import type { CrmSnapshot } from "@/lib/crm/types";
 import type { TriggerId } from "@/lib/crm/segments";
+import { PATTERN_LABELS, patternHook, personalizedBullets } from "@/lib/crm/tool-profile";
 
 export type CrmMetric = { label: string; value: string; note?: string };
 
@@ -67,6 +68,7 @@ function nextSteps(s: CrmSnapshot, max = 3): string[] {
 }
 
 export function buildMessage(trigger: TriggerId, s: CrmSnapshot): CrmMessage {
+  const toolSuffix = s.tool.id ? ` in ${s.tool.label}` : "";
   const first = s.opportunities[0];
   const best = s.roi.best;
 
@@ -204,29 +206,38 @@ export function buildMessage(trigger: TriggerId, s: CrmSnapshot): CrmMessage {
         ctaPath: "/pricing",
       };
 
-    case "cloud_library_upsell":
+    case "cloud_library_upsell": {
+      const tool = s.tool;
+      const others = s.tools.filter((t) => t.id !== tool.id).map((t) => t.label);
       return {
         trigger,
-        subject: "Your skills only live in one repo — that is the expensive part",
-        preheader: "A private cloud library that syncs into every agent tool you use.",
-        heading: "One library, every agent tool",
+        subject: tool.id
+          ? `Your skills do not follow you into ${tool.label} yet`
+          : "Your skills only live in one repo — that is the expensive part",
+        preheader: tool.id
+          ? `A private library that syncs straight into ${tool.label}.`
+          : "A private library that syncs into every agent tool you use.",
+        heading: tool.id ? `One library, and ${tool.label} reads it` : "One library, every agent tool",
         intro: [
-          `You have measured ${num(s.usage.reviews + s.usage.uploads)} document(s) on SAK, but they still live wherever you happened to write them.`,
-          "The Cloud Skill Manager keeps them in a library that is private to your account — never shared with other users — and syncs them into Hermes, Claude Code, Codex, Cursor, Lovable, OpenClaw, Windsurf, Copilot, Zed and Gemini CLI with one call.",
+          patternHook(s.pattern, tool),
+          tool.pain,
+          others.length
+            ? `You also connect from ${others.join(" and ")} — the same library lands there in the same call.`
+            : "The Cloud Skill Manager keeps them in a library that is private to your account and writes them wherever your agent runs.",
         ],
         metrics: [
-          { label: "Agent tools supported", value: "15" },
+          ...(tool.id
+            ? [{ label: `Where they land in ${tool.label}`, value: tool.path }]
+            : [{ label: "Agent tools supported", value: "15" }]),
+          { label: "How you use SAK", value: PATTERN_LABELS[s.pattern] },
           { label: "Pro", value: "$19/month", note: "or $140/year" },
           ...roiMetrics(s).slice(0, 1),
         ],
-        bullets: [
-          "Private per-account storage with version history and changelog",
-          "cloud_skills_sync writes each skill at the exact path your tool reads",
-          "Switch machines or tools without re-copying a single prompt",
-        ],
-        ctaLabel: "See the cloud library",
+        bullets: personalizedBullets(s.pattern, tool),
+        ctaLabel: tool.id ? `Sync my library into ${tool.label}` : "See the cloud library",
         ctaPath: "/account/cloud-skills",
       };
+    }
 
     case "at_risk":
       return {
