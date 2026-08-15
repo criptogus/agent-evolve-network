@@ -126,6 +126,7 @@ import { Route as ApiPublicPackagesRouteImport } from './routes/api/public/packa
 import { Route as ApiPublicPluginsDotjsonRouteImport } from './routes/api/public/plugins[.]json'
 import { Route as ApiPublicReviewRouteImport } from './routes/api/public/review'
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
+import { Route as ApiPublicSigningKeyDotpemRouteImport } from './routes/api/public/signing-key[.]pem'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
 import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug'
@@ -763,6 +764,12 @@ const ApiPublicSearchRoute = ApiPublicSearchRouteImport.update({
   path: '/api/public/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSigningKeyDotpemRoute =
+  ApiPublicSigningKeyDotpemRouteImport.update({
+    id: '/api/public/signing-key.pem',
+    path: '/api/public/signing-key.pem',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicTelemetryRoute = ApiPublicTelemetryRouteImport.update({
   id: '/api/public/telemetry',
   path: '/api/public/telemetry',
@@ -1143,6 +1150,7 @@ export interface FileRoutesByFullPath {
   '/api/public/plugins.json': typeof ApiPublicPluginsDotjsonRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
+  '/api/public/signing-key.pem': typeof ApiPublicSigningKeyDotpemRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
@@ -1309,6 +1317,7 @@ export interface FileRoutesByTo {
   '/api/public/plugins.json': typeof ApiPublicPluginsDotjsonRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
+  '/api/public/signing-key.pem': typeof ApiPublicSigningKeyDotpemRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
@@ -1477,6 +1486,7 @@ export interface FileRoutesById {
   '/api/public/plugins.json': typeof ApiPublicPluginsDotjsonRoute
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
+  '/api/public/signing-key.pem': typeof ApiPublicSigningKeyDotpemRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
@@ -1646,6 +1656,7 @@ export interface FileRouteTypes {
     | '/api/public/plugins.json'
     | '/api/public/review'
     | '/api/public/search'
+    | '/api/public/signing-key.pem'
     | '/api/public/telemetry'
     | '/api/public/version'
     | '/forge/report/$slug'
@@ -1812,6 +1823,7 @@ export interface FileRouteTypes {
     | '/api/public/plugins.json'
     | '/api/public/review'
     | '/api/public/search'
+    | '/api/public/signing-key.pem'
     | '/api/public/telemetry'
     | '/api/public/version'
     | '/forge/report/$slug'
@@ -1979,6 +1991,7 @@ export interface FileRouteTypes {
     | '/api/public/plugins.json'
     | '/api/public/review'
     | '/api/public/search'
+    | '/api/public/signing-key.pem'
     | '/api/public/telemetry'
     | '/api/public/version'
     | '/forge/report/$slug'
@@ -2123,6 +2136,7 @@ export interface RootRouteChildren {
   ApiPublicPluginsDotjsonRoute: typeof ApiPublicPluginsDotjsonRoute
   ApiPublicReviewRoute: typeof ApiPublicReviewRouteWithChildren
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
+  ApiPublicSigningKeyDotpemRoute: typeof ApiPublicSigningKeyDotpemRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -2984,6 +2998,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/signing-key.pem': {
+      id: '/api/public/signing-key.pem'
+      path: '/api/public/signing-key.pem'
+      fullPath: '/api/public/signing-key.pem'
+      preLoaderRoute: typeof ApiPublicSigningKeyDotpemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/telemetry': {
       id: '/api/public/telemetry'
       path: '/api/public/telemetry'
@@ -3616,6 +3637,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicPluginsDotjsonRoute: ApiPublicPluginsDotjsonRoute,
   ApiPublicReviewRoute: ApiPublicReviewRouteWithChildren,
   ApiPublicSearchRoute: ApiPublicSearchRoute,
+  ApiPublicSigningKeyDotpemRoute: ApiPublicSigningKeyDotpemRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
