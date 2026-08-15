@@ -11,6 +11,12 @@ import JSZip from "jszip";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
 import { buildSkillMd, buildExamplesMd, validateAnthropicSpec } from "@/lib/skills/anthropic-spec";
+import {
+  signBytes,
+  signatureHeaders,
+  EXPOSED_SIGNATURE_HEADERS,
+  SIGNING_PUBLIC_KEY_PATH,
+} from "@/lib/plugins/signature.server";
 
 export const Route = createFileRoute("/api/skills/$slug/export")({
   server: {
