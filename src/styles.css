@@ -40,8 +40,21 @@
   --color-signal: var(--signal);
   --color-signal-foreground: var(--signal-foreground);
 
+  /* Instrumentation band — an intentionally dark surface used for the hero and
+     other "evidence" sections. Identical in light and dark mode so the brand
+     always opens on the same note. */
+  --color-deep: var(--deep);
+  --color-deep-elevated: var(--deep-elevated);
+  --color-deep-sunken: var(--deep-sunken);
+  --color-deep-foreground: var(--deep-foreground);
+  --color-deep-muted: var(--deep-muted);
+  --color-deep-border: var(--deep-border);
+
   --shadow-elevated: 0 1px 2px 0 oklch(0 0 0 / 0.04), 0 8px 24px -8px oklch(0 0 0 / 0.08);
   --shadow-glow: 0 0 0 1px var(--primary), 0 8px 32px -4px color-mix(in oklab, var(--primary) 35%, transparent);
+  --shadow-cta: 0 10px 30px -10px color-mix(in oklab, var(--primary) 60%, transparent);
+  --shadow-panel: 0 40px 80px -32px oklch(0 0 0 / 0.65);
+
 
   --gradient-radial-red: radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 70%);
   --gradient-mesh: radial-gradient(circle at 20% 0%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 50%), radial-gradient(circle at 80% 30%, color-mix(in oklab, var(--primary) 6%, transparent), transparent 50%);
