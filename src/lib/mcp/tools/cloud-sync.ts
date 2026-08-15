@@ -19,9 +19,43 @@ import {
   type ConflictStrategy,
   type LocalFile,
 } from "@/lib/cloud-skills/conflicts";
+import { recordSyncEvent } from "@/lib/cloud-skills/sync-log.server";
+import type { SyncChange } from "@/lib/cloud-skills/sync-log";
 
 const supabaseAdmin = _supabaseAdmin as any;
 const json = (v: unknown) => JSON.stringify(v, null, 2);
+
+const AgentSchema = z
+  .string()
+  .max(120)
+  .optional()
+  .describe(
+    "Optional label of the agent/app running this sync (e.g. \"Claude Code\", \"Cursor\"). Stored in the user's sync history for auditing.",
+  );
+
+/** Per-file audit rows for one plan. */
+function changesOf(plan: {
+  write: any[];
+  skipped: { slug: string; path: string; reason?: string | null; conflict?: string }[];
+}): SyncChange[] {
+  return [
+    ...plan.write.map((f) => ({
+      slug: f.slug,
+      path: f.path,
+      action: f.action,
+      version: f.version ?? null,
+      note: f.note ?? null,
+      conflict: f.conflict === "diverged" || f.conflict === "unknown",
+    })),
+    ...plan.skipped.map((s) => ({
+      slug: s.slug,
+      path: s.path,
+      action: "skip",
+      note: s.reason ?? null,
+      conflict: s.conflict === "diverged" || s.conflict === "unknown",
+    })),
+  ];
+}
 
 const ScopeSchema = z.enum(["project", "global"]).default("project");
 const StrategySchema = z
@@ -134,6 +168,7 @@ export const cloudSkillsSyncTool = defineTool({
     slugs: z.array(z.string()).max(200).optional().describe("Limit the sync to these slugs."),
     existing: ExistingSchema,
     conflict_strategy: StrategySchema,
+    agent: AgentSchema,
   }),
   execute: async (input, ctx) => {
     const userId = await requirePaidUser(ctx);
@@ -147,6 +182,19 @@ export const cloudSkillsSyncTool = defineTool({
     );
 
     const unresolved = plan.conflicts.filter((c) => c.resolution === "skip");
+
+    await recordSyncEvent(supabaseAdmin, userId, {
+      source: "mcp_sync",
+      provider: plan.provider.id,
+      provider_label: plan.provider.label,
+      scope: input.scope as ProviderScope,
+      strategy: input.conflict_strategy,
+      client_name: input.agent ?? null,
+      skill_count: skills.length,
+      changes: changesOf(plan),
+      conflicts: plan.conflicts,
+      orphans: plan.orphans,
+    });
 
     return json({
       tool: plan.provider.id,
@@ -195,11 +243,13 @@ export const cloudSkillsSyncAllTool = defineTool({
       .optional()
       .describe("Optional per-tool map of local files, keyed by tool id."),
     conflict_strategy: StrategySchema,
+    agent: AgentSchema,
   }),
   execute: async (input, ctx) => {
     const userId = await requirePaidUser(ctx);
     const skills = await loadSkills(userId, input.slugs);
 
+    const audits: Promise<void>[] = [];
     const results = input.tools.map((t) => {
       try {
         const plan = planFor(
@@ -208,6 +258,20 @@ export const cloudSkillsSyncAllTool = defineTool({
           skills,
           (input.existing?.[t] as LocalFile[] | undefined) ?? [],
           input.conflict_strategy as ConflictStrategy,
+        );
+        audits.push(
+          recordSyncEvent(supabaseAdmin, userId, {
+            source: "mcp_sync_all",
+            provider: plan.provider.id,
+            provider_label: plan.provider.label,
+            scope: input.scope as ProviderScope,
+            strategy: input.conflict_strategy,
+            client_name: input.agent ?? null,
+            skill_count: skills.length,
+            changes: changesOf(plan),
+            conflicts: plan.conflicts,
+            orphans: plan.orphans,
+          }),
         );
         return {
           tool: plan.provider.id,
@@ -225,9 +289,24 @@ export const cloudSkillsSyncAllTool = defineTool({
           })),
         };
       } catch (e: any) {
-        return { tool: t, error: String(e?.message ?? e) };
+        const message = String(e?.message ?? e);
+        audits.push(
+          recordSyncEvent(supabaseAdmin, userId, {
+            source: "mcp_sync_all",
+            provider: t,
+            provider_label: getProvider(t)?.label ?? t,
+            scope: input.scope as ProviderScope,
+            strategy: input.conflict_strategy,
+            client_name: input.agent ?? null,
+            skill_count: skills.length,
+            changes: [],
+            error: message,
+          }),
+        );
+        return { tool: t, error: message };
       }
     });
+    await Promise.all(audits);
 
     return json({
       scope: input.scope,

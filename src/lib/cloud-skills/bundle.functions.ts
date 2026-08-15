@@ -40,6 +40,26 @@ export const exportSkillBundle = createServerFn({ method: "POST" })
     const { provider, files } = buildBundleFiles(data.tool, data.scope, rows);
     const bytes = await zipBundle(files);
 
+    const { recordSyncEvent } = await import("./sync-log.server");
+    await recordSyncEvent(supabase, userId, {
+      source: "zip_export",
+      provider: provider.id,
+      provider_label: provider.label,
+      scope: data.scope,
+      strategy: null,
+      client_name: "Web (private .zip export)",
+      skill_count: rows.length,
+      bytes: bytes.length,
+      changes: files
+        .filter((f) => !["README.md", "install.sh", "sak-bundle.json"].includes(f.path))
+        .map((f, i) => ({
+          slug: rows[i]?.slug ?? f.path,
+          path: f.path,
+          action: "write",
+          version: rows[i]?.version ?? null,
+        })),
+    });
+
     return {
       filename: bundleFileName(provider.id, data.scope, rows.length),
       base64: toBase64(bytes),
