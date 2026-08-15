@@ -24,6 +24,11 @@ import {
   cloudSkillsImportTool,
 } from "@/lib/mcp/tools/cloud-skills";
 import {
+  cloudSkillsProvidersTool,
+  cloudSkillsSyncTool,
+  cloudSkillsSyncAllTool,
+} from "@/lib/mcp/tools/cloud-sync";
+import {
   listAgentsTool,
   installAgentTool,
   createAgentTool,
