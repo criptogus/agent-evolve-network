@@ -28,12 +28,29 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
   process.exit(2);
 }
 
-const ALLOWLIST = new Set(
-  (process.env.RLS_ALLOWLIST || "")
+const FILE_ALLOWLIST = (() => {
+  try {
+    const raw = JSON.parse(
+      readFileSync(
+        new URL("../security/rls-no-policy-allowlist.json", import.meta.url),
+        "utf8",
+      ),
+    );
+    return Object.keys(raw.tables ?? {});
+  } catch {
+    return [];
+  }
+})();
+
+const ALLOWLIST = new Set([
+  ...FILE_ALLOWLIST,
+  ...(process.env.RLS_ALLOWLIST || "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean),
-);
+]);
+
+
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: false },
