@@ -11,6 +11,7 @@
  * Allowlist tables intentionally without policies via env:
  *   RLS_ALLOWLIST="table_a,table_b"
  */
+import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL =
@@ -27,12 +28,29 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
   process.exit(2);
 }
 
-const ALLOWLIST = new Set(
-  (process.env.RLS_ALLOWLIST || "")
+const FILE_ALLOWLIST = (() => {
+  try {
+    const raw = JSON.parse(
+      readFileSync(
+        new URL("../security/rls-no-policy-allowlist.json", import.meta.url),
+        "utf8",
+      ),
+    );
+    return Object.keys(raw.tables ?? {});
+  } catch {
+    return [];
+  }
+})();
+
+const ALLOWLIST = new Set([
+  ...FILE_ALLOWLIST,
+  ...(process.env.RLS_ALLOWLIST || "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean),
-);
+]);
+
+
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: false },
@@ -46,8 +64,12 @@ if (error) {
 }
 
 const rows = data ?? [];
+// An allowlist entry only excuses a deny-all table (RLS on, no policies).
+// RLS being DISABLED is never allowlistable — that exposes every row.
 const problems = rows.filter(
-  (r) => r.issue !== "OK" && !ALLOWLIST.has(r.table_name),
+  (r) =>
+    r.issue !== "OK" &&
+    (r.issue === "RLS_DISABLED" || !ALLOWLIST.has(r.table_name)),
 );
 
 const total = rows.length;
