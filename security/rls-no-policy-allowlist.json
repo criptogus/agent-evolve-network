@@ -1,0 +1,10 @@
+{
+  "$comment": "Tables where RLS is enabled with ZERO policies on purpose — a deny-all lockdown. They are only reachable through server-side code (service role / SECURITY DEFINER functions), never from the browser. `npm run check:rls` treats these as OK; every other policy-less table fails the build.",
+  "tables": {
+    "mcp_idempotency": "Server-only idempotency keys for MCP calls.",
+    "mcp_oauth_authorizations": "Server-only OAuth authorization codes.",
+    "mcp_oauth_clients": "Server-only registered OAuth clients.",
+    "mcp_oauth_tokens": "Server-only OAuth access/refresh tokens.",
+    "share_promos": "Server-only share promo cache; rendered through server functions."
+  }
+}
