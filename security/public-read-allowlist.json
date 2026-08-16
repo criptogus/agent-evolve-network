@@ -1,0 +1,10 @@
+{
+  "$comment": "Tables that are INTENTIONALLY readable by the anonymous (unauthenticated) role. Any other public-schema table that returns rows to the anon key fails `npm run check:public-access`. Adding an entry here is a deliberate security decision — justify it in the `reason` field.",
+  "tables": {
+    "packages": "Public marketplace catalogue (skills, playbooks, souls). Read-only listing data.",
+    "pack_items": "Join rows for public curated packs; contain no user data.",
+    "packs": "Public curated pack definitions.",
+    "plans": "Public pricing plans shown on /pricing.",
+    "profiles": "Public author identity only (display fields). Sensitive columns are withheld by column-level policies; referral codes live in user_referral_codes."
+  }
+}
