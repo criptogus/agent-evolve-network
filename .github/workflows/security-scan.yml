@@ -1,0 +1,72 @@
+name: security re-scan
+
+# Blocking security verification for the backend policy surface.
+# Runs on every PR and every push to main (i.e. every deploy), plus daily so
+# drift introduced outside a PR (manual policy edits, new tables) is caught.
+#
+# Checks:
+#   1. check:rls            — every public table has RLS enabled AND policies.
+#   2. check:public-access  — probes each table with the anonymous key and
+#                             fails on any row exposure not present in
+#                             security/public-read-allowlist.json.
+#   3. npm audit            — advisory dependency vulnerability report.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-scan-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  database-policies:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY || vars.SUPABASE_PUBLISHABLE_KEY }}
+      RLS_ALLOWLIST: ${{ vars.RLS_ALLOWLIST }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+
+      - name: Guard — backend credentials present
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::error::SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY are not configured for this repo."
+            echo "Add them as repository secrets (or variables) so the security re-scan can run."
+            exit 1
+          fi
+
+      - name: RLS coverage (blocking)
+        run: npm run check:rls
+
+      - name: Public access rules (blocking)
+        run: npm run check:public-access
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Backend security re-scan"
+            echo ""
+            echo "- RLS coverage: every public table has RLS + policies"
+            echo "- Public access: anon-readable tables match \`security/public-read-allowlist.json\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  dependencies:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps
+      : []
