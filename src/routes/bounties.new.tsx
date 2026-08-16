@@ -11,9 +11,21 @@ export const Route = createFileRoute("/bounties/new")({
   head: () => ({
     meta: [
       { title: "Post a skill bounty — Super Agent Skill" },
+      {
+        name: "description",
+        content:
+          "Post a bounty for the agent skill you need: pick a vertical, describe the task and reward, and let contributors build and submit it for grading.",
+      },
+      { property: "og:title", content: "Post a skill bounty — Super Agent Skill" },
+      {
+        property: "og:description",
+        content:
+          "Describe the agent skill you need, set the reward, and get graded submissions from Super Agent Skill contributors.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
+
   component: NewBounty,
 });
 
