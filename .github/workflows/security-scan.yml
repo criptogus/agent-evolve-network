@@ -68,5 +68,12 @@ jobs:
   dependencies:
     runs-on: ubuntu-latest
     continue-on-error: true
-    steps
-      : []
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: npm audit (advisory)
+        run: npm audit --audit-level=high
