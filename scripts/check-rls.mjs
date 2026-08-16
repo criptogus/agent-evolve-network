@@ -64,8 +64,12 @@ if (error) {
 }
 
 const rows = data ?? [];
+// An allowlist entry only excuses a deny-all table (RLS on, no policies).
+// RLS being DISABLED is never allowlistable — that exposes every row.
 const problems = rows.filter(
-  (r) => r.issue !== "OK" && !ALLOWLIST.has(r.table_name),
+  (r) =>
+    r.issue !== "OK" &&
+    (r.issue === "RLS_DISABLED" || !ALLOWLIST.has(r.table_name)),
 );
 
 const total = rows.length;
