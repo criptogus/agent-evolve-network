@@ -43,10 +43,11 @@ export function Hero() {
             </div>
 
             <h1 className="mt-6 text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-[4rem]">
-              Install tested capabilities in your{" "}
-              <span className="text-primary">AI agent</span>
-              .
+              Tested &amp; signed{" "}
+              <span className="text-primary">AI agent skills</span>
+              , installed in one command.
             </h1>
+
 
             <p className="mx-auto mt-5 max-w-xl text-pretty text-base leading-relaxed text-deep-muted lg:mx-0 lg:text-lg">
               Connect Claude, Codex, Cursor or ChatGPT once. Every skill, playbook and agent you
