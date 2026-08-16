@@ -46,4 +46,25 @@ before it can be synced or released:
    uploaded to the repo's Security tab as SARIF; they do not block merges by
    default. See `CONTRIBUTING.md` for setup.
 
+## Automated backend re-scan (every deploy)
+
+The database policy surface is re-verified on every pull request, every push to
+`main`, and once a day via `.github/workflows/security-scan.yml`:
+
+1. **`npm run check:rls`** (blocking) — every table in `public` must have RLS
+   enabled and at least one policy. Deliberate deny-all tables (server-only,
+   RLS on with zero policies) are declared in
+   `security/rls-no-policy-allowlist.json`. A table with RLS *disabled* can
+   never be allowlisted.
+2. **`npm run check:public-access`** (blocking) — probes every table with the
+   anonymous publishable key and fails if any table returns rows to an
+   unauthenticated visitor unless it is listed, with a justification, in
+   `security/public-read-allowlist.json`.
+3. **`npm audit`** (advisory) — dependency vulnerability report.
+
+Both checks also run locally and before deploy via `npm run check:security`
+(wired into `predeploy`). CI needs `SUPABASE_URL` and
+`SUPABASE_PUBLISHABLE_KEY` as repository secrets or variables; the workflow
+fails loudly if they are absent rather than skipping the scan.
+
 Thank you for helping keep the ecosystem safe.
