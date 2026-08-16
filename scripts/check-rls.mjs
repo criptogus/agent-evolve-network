@@ -11,6 +11,7 @@
  * Allowlist tables intentionally without policies via env:
  *   RLS_ALLOWLIST="table_a,table_b"
  */
+import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL =
