@@ -21,7 +21,7 @@ Update later:
 npx skills update
 ```
 
-104 skills are mirrored here. Every skill also carries a public **Trust Score** —
+105 skills are mirrored here. Every skill also carries a public **Trust Score** —
 format, substance and adversarial (prompt-injection) grading — at
 https://superagentskill.com/marketplace/trust/<skill-name>.
 
