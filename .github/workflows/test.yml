@@ -13,22 +13,5 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
-      - name: Plain node:test suites
-        run: |
-          node --test \
-            tests/adversarial-harness.test.mjs \
-            tests/trust.test.mjs \
-            tests/release-signing.test.mjs \
-            tests/cli-install.test.mjs
-      - name: TypeScript-source node:test suites
-        run: |
-          node --experimental-strip-types --test \
-            tests/prompt-injection-guard.test.mjs \
-            tests/runtime.test.mjs \
-            tests/integrations.test.mjs \
-            tests/growth-revenue-split.test.mjs \
-            tests/trust-badge.test.mjs \
-            tests/bounties.test.mjs \
-            tests/trust-scoring.test.mjs \
-            tests/adversarial-holdout.test.mjs \
-            tests/adversarial-judge.test.mjs
+      - name: Run canonical test suite
+        run: npm test
