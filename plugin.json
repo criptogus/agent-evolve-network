@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "superagentskill",
-  "version": "0.2.0",
+  "version": "0.4.5",
   "description": "Graded agent skills from the Super Agent Skill network: every skill carries a public Trust Score, adversarial pass rate and before/after evidence.",
   "author": {
     "name": "Super Agent Skill",
@@ -23,7 +23,7 @@
       "marketplace": "https://superagentskill.com/marketplace",
       "mcp_endpoint": "https://superagentskill.com/api/public/mcp",
       "plugin_index": "https://superagentskill.com/api/public/plugins.json",
-      "skills_included": 104
+      "skills_included": 105
     }
   }
 }
