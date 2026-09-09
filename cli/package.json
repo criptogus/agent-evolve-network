@@ -4,19 +4,20 @@
   "description": "Plug-and-play Super Agent Skill MCP: OAuth login, client auto-config, local stdio bridge, and skill package install for Claude / Cursor / Codex / VS Code / Windsurf.",
   "type": "module",
   "bin": {
-    "super-agent": "./super-agent.mjs"
+    "super-agent": "./super-agent.js"
   },
   "files": [
-    "super-agent.mjs",
+    "super-agent.js",
     "README.md"
   ],
   "scripts": {
+    "prebuild:bin": "bun build ./super-agent.ts --target=node --outfile=super-agent.js",
     "build:bin": "npx -y @yao-pkg/pkg . --targets node20-linux-x64,node20-macos-x64,node20-macos-arm64,node20-win-x64 --out-path dist",
-    "build:bun": "bun build ./super-agent.mjs --compile --outfile dist/super-agent"
+    "build:bun": "bun build ./super-agent.ts --compile --outfile dist/super-agent"
   },
   "pkg": {
     "scripts": [
-      "super-agent.mjs"
+      "super-agent.js"
     ],
     "outputPath": "dist"
   },

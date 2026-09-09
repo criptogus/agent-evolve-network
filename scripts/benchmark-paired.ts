@@ -6,8 +6,8 @@
 // comparison true and reproducible.
 //
 // Usage:
-//   node --experimental-strip-types scripts/benchmark-paired.mjs --skill code-reviewer --mock
-//   node --experimental-strip-types scripts/benchmark-paired.mjs --skill code-reviewer --out benchmark.json
+//   node --experimental-strip-types scripts/benchmark-paired.ts --skill code-reviewer --mock
+//   node --experimental-strip-types scripts/benchmark-paired.ts --skill code-reviewer --out benchmark.json
 //
 // Without --mock, requires AI_GATEWAY_BASE_URL / AI_GATEWAY_API_KEY in env.
 
@@ -17,7 +17,7 @@ import { parse as parseYaml } from "yaml";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 // Pure modules only (no-extension internal imports in runner.ts don't resolve
-// under plain node) — case loading is done inline, same as eval-adversarial.mjs.
+// under plain node) — case loading is done inline, same as eval-adversarial.ts.
 const { evaluateCase, summarize } = await import("../src/lib/adversarial/scorer.ts");
 const { pairedComparison, BENCHMARK_METHODOLOGY_VERSION } =
   await import("../src/lib/benchmark/paired.ts");

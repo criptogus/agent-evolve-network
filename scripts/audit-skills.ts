@@ -16,8 +16,8 @@
 // reported as warnings but do not fail the build.
 //
 // Usage:  npm run audit:skills
-//         node --experimental-strip-types scripts/audit-skills.mjs
-//         node --experimental-strip-types scripts/audit-skills.mjs --json
+//         node --experimental-strip-types scripts/audit-skills.ts
+//         node --experimental-strip-types scripts/audit-skills.ts --json
 //         AUDIT_REJECT_AT=critical npm run audit:skills
 
 import { readdirSync, readFileSync, statSync } from "node:fs";

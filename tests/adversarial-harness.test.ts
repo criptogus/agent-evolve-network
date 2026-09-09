@@ -8,7 +8,7 @@ import { parse as parseYaml } from "yaml";
 const ROOT = new URL("..", import.meta.url).pathname;
 
 test("validate:content does not raise errors for adversarial cases", () => {
-  const r = spawnSync("node", ["scripts/validate-content.mjs"], { cwd: ROOT, encoding: "utf8" });
+  const r = spawnSync("node", ["--experimental-strip-types", "scripts/validate-content.ts"], { cwd: ROOT, encoding: "utf8" });
   // Pre-existing skill examples may fail; adversarial files must not contribute errors.
   const advErrors = (r.stderr.match(/content\/adversarial\//g) || []).length;
   assert.equal(advErrors, 0, `adversarial validation errors: ${r.stderr}`);
@@ -17,7 +17,7 @@ test("validate:content does not raise errors for adversarial cases", () => {
 test("eval:adversarial --mock returns a report and detects refusal cases", () => {
   const r = spawnSync(
     "node",
-    ["scripts/eval-adversarial.mjs", "--skill", "code-reviewer", "--mock", "--allowFail", "true"],
+    ["--experimental-strip-types", "scripts/eval-adversarial.ts", "--skill", "code-reviewer", "--mock", "--allowFail", "true"],
     { cwd: ROOT, encoding: "utf8" },
   );
   assert.notEqual(r.status, 1, `script crashed: ${r.stderr}`);

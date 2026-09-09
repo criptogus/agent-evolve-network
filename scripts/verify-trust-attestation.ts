@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 // Offline verifier for a trust attestation produced by
-// generate-trust-attestation.mjs. Designed to be run by a consumer's security
+// generate-trust-attestation.ts. Designed to be run by a consumer's security
 // team with nothing but: the package file, the .trust.json, and the publisher's
 // SIGNING_PUBLIC_KEY.pem. No network, no trust in the hosted registry.
 //
 // Usage:
-//   node scripts/verify-trust-attestation.mjs \
+//   node scripts/verify-trust-attestation.ts \
 //     --attestation code-reviewer.trust.json \
 //     --pkg content/skills/code-reviewer.yaml \
 //     --pubkey pub.pem

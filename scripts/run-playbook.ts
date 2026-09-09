@@ -3,8 +3,8 @@
 // AI gateway (requires AI_GATEWAY_BASE_URL + AI_GATEWAY_API_KEY).
 //
 // Usage:
-//   node scripts/run-playbook.mjs --playbook bug-triage --inputs '{"report":"...","repo_context":"node"}'
-//   node scripts/run-playbook.mjs --playbook bug-triage --inputs-file ./inputs.json --gateway
+//   node scripts/run-playbook.ts --playbook bug-triage --inputs '{"report":"...","repo_context":"node"}'
+//   node scripts/run-playbook.ts --playbook bug-triage --inputs-file ./inputs.json --gateway
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";

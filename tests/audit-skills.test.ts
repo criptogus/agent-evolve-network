@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { auditPackage } from "../scripts/audit-skills.mjs";
+import { auditPackage } from "../scripts/audit-skills.ts";
 
 test("clean skill produces no findings and is not blocked", () => {
   const r = auditPackage({

@@ -2,7 +2,7 @@
 // Run the adversarial suite against a local skill YAML. Useful in CI before publish.
 //
 // Usage:
-//   node scripts/eval-adversarial.mjs --skill code-reviewer [--vertical security] [--mock]
+//   node scripts/eval-adversarial.ts --skill code-reviewer [--vertical security] [--mock]
 //
 // Without --mock, requires AI_GATEWAY_API_KEY and AI_GATEWAY_BASE_URL in env.
 

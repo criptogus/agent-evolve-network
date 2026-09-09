@@ -2,7 +2,7 @@
 // Complementary skill security scan powered by NVIDIA SkillSpector.
 //
 // This is a SECOND, independent opinion layered on top of the curated
-// `audit:skills` gate (scripts/audit-skills.mjs). Where audit:skills is a
+// `audit:skills` gate (scripts/audit-skills.ts). Where audit:skills is a
 // high-precision, schema-aware gate tuned to this marketplace, SkillSpector
 // brings NVIDIA's broader catalogue of vulnerability patterns (prompt
 // injection, data exfiltration, privilege escalation, supply-chain, excessive
@@ -18,11 +18,11 @@
 // unless SKILLSPECTOR_REQUIRED=1 (or --require) is set.
 //
 // Usage:
-//   node scripts/scan-skillspector.mjs                # scan all packages (advisory)
-//   node scripts/scan-skillspector.mjs content/skills/foo.yaml ...   # scan specific files
-//   node scripts/scan-skillspector.mjs --block        # non-zero exit when a package is risky
-//   node scripts/scan-skillspector.mjs --sarif report.sarif          # write merged SARIF
-//   node scripts/scan-skillspector.mjs --json         # machine-readable summary on stdout
+//   node scripts/scan-skillspector.ts                # scan all packages (advisory)
+//   node scripts/scan-skillspector.ts content/skills/foo.yaml ...   # scan specific files
+//   node scripts/scan-skillspector.ts --block        # non-zero exit when a package is risky
+//   node scripts/scan-skillspector.ts --sarif report.sarif          # write merged SARIF
+//   node scripts/scan-skillspector.ts --json         # machine-readable summary on stdout
 //
 // Env:
 //   SKILLSPECTOR_BIN        path to the skillspector executable (default: "skillspector")

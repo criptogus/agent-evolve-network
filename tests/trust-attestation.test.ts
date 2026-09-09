@@ -35,7 +35,7 @@ function fixture() {
 function attest(pkg, ev, att, k) {
   return spawnSync(
     "node",
-    ["scripts/generate-trust-attestation.mjs", "--pkg", pkg, "--eval", ev, "--out", att],
+    ["--experimental-strip-types", "scripts/generate-trust-attestation.ts", "--pkg", pkg, "--eval", ev, "--out", att],
     { cwd: ROOT, encoding: "utf8", env: { ...process.env, SIGNING_PRIVATE_KEY: k.priv, SIGNING_PUBLIC_KEY: k.pub } },
   );
 }
@@ -43,7 +43,7 @@ function attest(pkg, ev, att, k) {
 function doVerify(att, pkg, pubPem) {
   return spawnSync(
     "node",
-    ["scripts/verify-trust-attestation.mjs", "--attestation", att, "--pkg", pkg],
+    ["--experimental-strip-types", "scripts/verify-trust-attestation.ts", "--attestation", att, "--pkg", pkg],
     { cwd: ROOT, encoding: "utf8", env: { ...process.env, SIGNING_PUBLIC_KEY: pubPem } },
   );
 }

@@ -4,7 +4,7 @@
  * signature sidecar (sak-package-signature/v1).
  *
  * Usage:
- *   node scripts/verify-package-signature.mjs <file.zip> <signature.json> [public-key.pem]
+ *   node scripts/verify-package-signature.ts <file.zip> <signature.json> [public-key.pem]
  *
  * Without a local PEM the public key is fetched from the sidecar's
  * `verify.public_key_url`. Exit code 0 = verified, 1 = failed.
@@ -14,7 +14,7 @@ import { readFileSync } from "node:fs";
 
 const [zipPath, sidecarPath, pemPath] = process.argv.slice(2);
 if (!zipPath || !sidecarPath) {
-  console.error("usage: verify-package-signature.mjs <file.zip> <signature.json> [public-key.pem]");
+  console.error("usage: verify-package-signature.ts <file.zip> <signature.json> [public-key.pem]");
   process.exit(1);
 }
 

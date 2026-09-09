@@ -34,7 +34,7 @@ jobs:
         run: |
           set -euo pipefail
           BEFORE=$(node -e "console.log(require('./package.json').version)")
-          node scripts/bump-version.mjs
+          node --experimental-strip-types scripts/bump-version.ts
           AFTER=$(node -e "console.log(require('./package.json').version)")
           echo "before=$BEFORE" >> "$GITHUB_OUTPUT"
           echo "after=$AFTER" >> "$GITHUB_OUTPUT"

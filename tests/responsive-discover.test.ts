@@ -10,7 +10,7 @@
  *   2. The skill / playbook / soul / guardrail tab row (must scroll-x).
  *   3. The body grid (must stack below the `lg` breakpoint, 1024px).
  *
- * Run: node --test tests/responsive-discover.test.mjs
+ * Run: node --test tests/responsive-discover.test.ts
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";

@@ -3,7 +3,7 @@
 // public.packages table of the connected Supabase project.
 //
 // Usage:
-//   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/sync-content-to-registry.mjs
+//   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/sync-content-to-registry.ts
 //   bun run sync:content
 //
 // Idempotent: matches on slug, updates name/description/type/version/body.

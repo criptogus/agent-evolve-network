@@ -3,7 +3,7 @@
 // air-gapped environments alongside the bundle and SIGNING_PUBLIC_KEY.pem.
 //
 // Usage:
-//   node scripts/verify-release-bundle.mjs --dir ./bundle
+//   node scripts/verify-release-bundle.ts --dir ./bundle
 // Exits non-zero on any tampered file or missing signature.
 
 import { createHash, createPublicKey, verify } from "node:crypto";

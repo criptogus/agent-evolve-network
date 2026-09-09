@@ -4,7 +4,7 @@
 //   { messages: [{ role: "system", content: persona }, { role: "user", ... }, { role: "assistant", ... }] }
 //
 // Usage:
-//   node scripts/build-soul-finetune-dataset.mjs --soul fintech-compliance --out dataset.jsonl
+//   node scripts/build-soul-finetune-dataset.ts --soul fintech-compliance --out dataset.jsonl
 //   Requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY when --source=db (default --source=examples).
 
 import { readFileSync, writeFileSync } from "node:fs";
