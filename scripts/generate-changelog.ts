@@ -10,7 +10,7 @@
  * GITHUB_REPOSITORY env var is set (it is, in Actions).
  *
  * Usage:
- *   node scripts/generate-changelog.mjs --version content-v1.2.0 [--from content-v1.1.0] [--out CHANGELOG.md]
+ *   node scripts/generate-changelog.ts --version content-v1.2.0 [--from content-v1.1.0] [--out CHANGELOG.md]
  *
  * Prints the changelog to stdout AND writes it to --out (default: dist/release/CHANGELOG.md).
  */

@@ -149,7 +149,7 @@ ${SITE}/marketplace/trust/<skill-name>.
 ## Source of truth
 
 Do not edit files in this directory. They are generated from \`content/skills/*.yaml\` by
-\`scripts/build-skills-sh-mirror.mjs\` (\`npm run build:skills-mirror\`). Skills authored inside the
+\`scripts/build-skills-sh-mirror.ts\` (\`npm run build:skills-mirror\`). Skills authored inside the
 app are served live from ${SITE}/api/skills/<slug>/export.md and through the MCP server at
 ${SITE}/api/mcp, which always returns the current graded version plus telemetry.
 `;

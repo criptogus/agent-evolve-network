@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Signs a release bundle produced by build-release-bundles.mjs with Ed25519.
+// Signs a release bundle produced by build-release-bundles.ts with Ed25519.
 // Emits <bundle>.sig and a SIGNATURES.json sidecar so air-gapped consumers
-// can verify integrity offline with scripts/verify-release-bundle.mjs.
+// can verify integrity offline with scripts/verify-release-bundle.ts.
 //
 // Usage:
 //   SIGNING_PRIVATE_KEY=$(cat priv.pem) SIGNING_PUBLIC_KEY=$(cat pub.pem) \
-//     node scripts/sign-release-bundle.mjs --dir dist/release
+//     node scripts/sign-release-bundle.ts --dir dist/release
 
 import { createHash, createPrivateKey, createPublicKey, sign } from "node:crypto";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";

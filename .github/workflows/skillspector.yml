@@ -17,7 +17,7 @@ on:
       - "content/playbooks/**"
       - "content/souls/**"
       - "content/integrations/**"
-      - "scripts/scan-skillspector.mjs"
+      - "scripts/scan-skillspector.ts"
       - ".github/workflows/skillspector.yml"
 
 permissions:
@@ -75,7 +75,7 @@ jobs:
           SKILLSPECTOR_LOG_LEVEL: ERROR
         run: |
           # Static analysis only — no LLM provider key needed in CI.
-          node scripts/scan-skillspector.mjs ${{ steps.changed.outputs.files }} \
+          node --experimental-strip-types scripts/scan-skillspector.ts ${{ steps.changed.outputs.files }} \
             --sarif skillspector.sarif
 
       - name: Upload SARIF to code scanning

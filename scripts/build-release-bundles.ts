@@ -18,8 +18,8 @@
  *   - content/schemas/<type>.schema.json (so consumers can re-validate offline)
  *
  * Usage:
- *   node scripts/build-release-bundles.mjs --version content-v1.2.0
- *   VERSION=content-v1.2.0 node scripts/build-release-bundles.mjs
+ *   node scripts/build-release-bundles.ts --version content-v1.2.0
+ *   VERSION=content-v1.2.0 node scripts/build-release-bundles.ts
  *
  * Validation runs first — bad content aborts the release.
  */
@@ -57,7 +57,7 @@ const FILE_VERSION = VERSION.replace(/^content-/, "");
 console.log(`▸ Building release bundles for ${VERSION}`);
 
 // 1) Validate first — abort on any failure.
-const validate = spawnSync(process.execPath, [join(ROOT, "scripts/validate-content.mjs")], {
+const validate = spawnSync(process.execPath, ["--experimental-strip-types", join(ROOT, "scripts/validate-content.ts")], {
   stdio: "inherit",
 });
 if (validate.status !== 0) {

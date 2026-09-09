@@ -5,7 +5,7 @@
  *   plugin.json  — plugin manifest (name, version, metadata, extensions)
  *   mcp.json     — our hosted MCP server as a portable streamable-http entry
  *
- * The `skills/` component directory is produced by build-skills-sh-mirror.mjs,
+ * The `skills/` component directory is produced by build-skills-sh-mirror.ts,
  * so together this repo is a conformant plugin package that any Agent Plugins
  * client can load.
  *

@@ -2,15 +2,15 @@
 // Produces a signed, independently-verifiable trust attestation for a single
 // package. It binds the package's exact content hash + version to the result
 // of the adversarial harness, signed with the same Ed25519 release key
-// (sign-release-bundle.mjs). A security team can hand the attestation +
-// the package file to verify-trust-attestation.mjs and confirm offline that
+// (sign-release-bundle.ts). A security team can hand the attestation +
+// the package file to verify-trust-attestation.ts and confirm offline that
 // "this exact file passed N adversarial cases at score X" — no need to trust
 // the hosted Trust Score endpoint.
 //
 // Usage:
-//   node scripts/eval-adversarial.mjs --skill code-reviewer --mock --out eval.json
+//   node scripts/eval-adversarial.ts --skill code-reviewer --mock --out eval.json
 //   SIGNING_PRIVATE_KEY=$(cat priv.pem) SIGNING_PUBLIC_KEY=$(cat pub.pem) \
-//     node scripts/generate-trust-attestation.mjs \
+//     node scripts/generate-trust-attestation.ts \
 //       --pkg content/skills/code-reviewer.yaml --eval eval.json
 
 import { createHash, createPrivateKey, createPublicKey, sign } from "node:crypto";

@@ -4,12 +4,12 @@
 // "these comparative numbers came from THIS methodology run on THESE inputs".
 //
 // Sign:
-//   node scripts/benchmark-paired.mjs --skill code-reviewer --out benchmark.json   # live run
+//   node scripts/benchmark-paired.ts --skill code-reviewer --out benchmark.json   # live run
 //   SIGNING_PRIVATE_KEY=$(cat priv.pem) SIGNING_PUBLIC_KEY=$(cat pub.pem) \
-//     node scripts/sign-benchmark.mjs --benchmark benchmark.json --out benchmark.signed.json
+//     node scripts/sign-benchmark.ts --benchmark benchmark.json --out benchmark.signed.json
 //
 // Verify (no private key needed):
-//   node scripts/sign-benchmark.mjs --verify benchmark.signed.json --pubkey pub.pem
+//   node scripts/sign-benchmark.ts --verify benchmark.signed.json --pubkey pub.pem
 
 import { createHash, createPrivateKey, createPublicKey, sign, verify } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -57,7 +57,7 @@ if (!SIGNING_PRIVATE_KEY || !SIGNING_PUBLIC_KEY) {
 const benchmark = JSON.parse(readFileSync(benchPath, "utf8"));
 if (benchmark.mode !== "live") {
   console.error(
-    "✗ refusing to sign a mock benchmark. Run benchmark-paired.mjs without --mock first.",
+    "✗ refusing to sign a mock benchmark. Run benchmark-paired.ts without --mock first.",
   );
   process.exit(2);
 }

@@ -3,7 +3,7 @@
 // content/schemas/<type>.schema.json. Also enforces unique slugs and template skipping.
 //
 // Usage:  bun run validate:content
-//         node scripts/validate-content.mjs
+//         node scripts/validate-content.ts
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, basename } from "node:path";

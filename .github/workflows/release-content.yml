@@ -49,11 +49,11 @@ jobs:
         run: bun run validate:content
 
       - name: Build release bundles
-        run: node scripts/build-release-bundles.mjs --version "${{ steps.ver.outputs.version }}"
+        run: node --experimental-strip-types scripts/build-release-bundles.ts --version "${{ steps.ver.outputs.version }}"
 
       - name: Generate changelog
         run: |
-          node scripts/generate-changelog.mjs \
+          node --experimental-strip-types scripts/generate-changelog.ts \
             --version "${{ steps.ver.outputs.version }}" \
             --out dist/release/CHANGELOG.md
 

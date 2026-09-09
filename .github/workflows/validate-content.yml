@@ -4,20 +4,20 @@ on:
   pull_request:
     paths:
       - "content/**"
-      - "scripts/validate-content.mjs"
-      - "scripts/audit-skills.mjs"
-      - "scripts/build-skills-sh-mirror.mjs"
-      - "scripts/build-agent-plugin.mjs"
+      - "scripts/validate-content.ts"
+      - "scripts/audit-skills.ts"
+      - "scripts/build-skills-sh-mirror.ts"
+      - "scripts/build-agent-plugin.ts"
       - "src/lib/security/prompt-injection-guard.ts"
       - ".github/workflows/validate-content.yml"
   push:
     branches: [main]
     paths:
       - "content/**"
-      - "scripts/validate-content.mjs"
-      - "scripts/audit-skills.mjs"
-      - "scripts/build-skills-sh-mirror.mjs"
-      - "scripts/build-agent-plugin.mjs"
+      - "scripts/validate-content.ts"
+      - "scripts/audit-skills.ts"
+      - "scripts/build-skills-sh-mirror.ts"
+      - "scripts/build-agent-plugin.ts"
       - "src/lib/security/prompt-injection-guard.ts"
 
 jobs:

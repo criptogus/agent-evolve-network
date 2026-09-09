@@ -3,7 +3,7 @@
  * Auto-bump PLATFORM_VERSION and prepend a CHANGELOG entry.
  *
  * Invoked by .github/workflows/auto-bump-version.yml on every push to main.
- * Also runnable locally: `node scripts/bump-version.mjs [patch|minor|major]`.
+ * Also runnable locally: `node scripts/bump-version.ts [patch|minor|major]`.
  *
  * Logic (see docs/VERSIONING.md):
  *  - Inspect commits since the last version bump (tag `v<version>` or the
