@@ -11,6 +11,12 @@ Component artifacts are versioned and released independently via git tags:
 - **`super-agent` CLI** — `cli-v*` tags publish cross-platform binaries.
 - **`@superagentskill/sdk`** — versioned in `packages/sdk-ts/package.json`.
 
+## [0.5.1] — 2026-10-08 — *Genesis* (alpha) — Maintenance release
+
+### Changed
+
+- Run every local test and fix Node TypeScript module resolution
+
 ## [0.5.0] — 2026-09-09 — *Genesis* (alpha) — Feature update
 
 ### Changed
