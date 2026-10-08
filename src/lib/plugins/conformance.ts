@@ -11,7 +11,7 @@ import {
   validateMcpConfig,
   isValidPluginName,
   type PluginManifest,
-} from "./agent-plugins";
+} from "./agent-plugins.ts";
 
 export type CheckLevel = "required" | "recommended";
 export type CheckStatus = "pass" | "fail" | "warn" | "skip";

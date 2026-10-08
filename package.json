@@ -37,7 +37,8 @@
     "package:verify": "node --experimental-strip-types scripts/verify-package-signature.ts",
     "test": "npm run test:plain && npm run test:ts",
     "test:plain": "node --experimental-strip-types --test tests/adversarial-harness.test.ts tests/trust.test.ts tests/release-signing.test.ts tests/cli-install.test.ts tests/trust-attestation.test.ts",
-    "test:ts": "node --experimental-strip-types --test tests/site-stats.test.ts tests/certify.test.ts tests/prompt-injection-guard.test.ts tests/audit-skills.test.ts tests/runtime.test.ts tests/integrations.test.ts tests/growth-revenue-split.test.ts tests/trust-badge.test.ts tests/bounties.test.ts tests/trust-scoring.test.ts tests/adversarial-holdout.test.ts tests/adversarial-judge.test.ts tests/paired-benchmark.test.ts tests/format-rubric.test.ts tests/lang-detect.test.ts tests/university.test.ts tests/package-signature.test.ts"
+    "test:ts": "node --experimental-strip-types --test tests/site-stats.test.ts tests/certify.test.ts tests/prompt-injection-guard.test.ts tests/audit-skills.test.ts tests/runtime.test.ts tests/integrations.test.ts tests/growth-revenue-split.test.ts tests/trust-badge.test.ts tests/bounties.test.ts tests/trust-scoring.test.ts tests/adversarial-holdout.test.ts tests/adversarial-judge.test.ts tests/paired-benchmark.test.ts tests/format-rubric.test.ts tests/lang-detect.test.ts tests/university.test.ts tests/package-signature.test.ts",
+    "test:all": "node --experimental-strip-types --test tests/*.test.ts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",
