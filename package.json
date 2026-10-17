@@ -82,7 +82,7 @@
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/react-query": "^5.83.0",
     "@tanstack/react-router": "^1.170.18",
-    "@tanstack/react-start": "^1.168.33",
+    "@tanstack/react-start": "1.168.60",
     "@tanstack/router-plugin": "^1.168.23",
     "ai": "^6.0.177",
     "class-variance-authority": "^0.7.1",
