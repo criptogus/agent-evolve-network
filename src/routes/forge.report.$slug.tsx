@@ -62,7 +62,9 @@ export const Route = createFileRoute("/forge/report/$slug")({
   errorComponent: ({ error }) => (
     <div className="mx-auto max-w-2xl p-10 text-center">
       <h1 className="text-2xl font-semibold">Couldn't load report</h1>
-      <p className="mt-2 text-muted-foreground">{error.message}</p>
+      <p className="mt-2 text-muted-foreground">
+        {error instanceof Error ? error.message : "An unexpected error occurred. Please try again."}
+      </p>
       <Link to="/marketplace" className="mt-4 inline-block text-primary">
         Back to marketplace →
       </Link>

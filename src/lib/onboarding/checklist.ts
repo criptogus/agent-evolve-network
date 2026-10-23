@@ -88,8 +88,7 @@ export function nextStep(completed: readonly string[]): OnboardingStep | null {
 }
 
 export type EvidenceCheck =
-  | { ok: true; needsDb?: { kind: "package"; slug: string } }
-  | { ok: false; reason: string };
+  { ok: true; needsDb?: { kind: "package"; slug: string } } | { ok: false; reason: string };
 
 function num(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;

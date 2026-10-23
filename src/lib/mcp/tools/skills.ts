@@ -679,13 +679,7 @@ export const uploadPackagesTool = defineTool({
 const ENGINE = "sas-eval/5";
 
 type PillarId =
-  | "identity"
-  | "scope"
-  | "procedure"
-  | "examples"
-  | "guardrails"
-  | "trust"
-  | "portability";
+  "identity" | "scope" | "procedure" | "examples" | "guardrails" | "trust" | "portability";
 
 const PILLAR_TITLE: Record<PillarId, string> = {
   identity: "Identity",

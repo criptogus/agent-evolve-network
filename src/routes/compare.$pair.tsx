@@ -57,8 +57,7 @@ async function loadSide(slug: string): Promise<Side> {
 }
 
 type LoaderData =
-  | { kind: "editorial"; comparison: Comparison }
-  | { kind: "pair"; left: Side; right: Side };
+  { kind: "editorial"; comparison: Comparison } | { kind: "pair"; left: Side; right: Side };
 
 export const Route = createFileRoute("/compare/$pair")({
   loader: async ({ params }): Promise<LoaderData> => {

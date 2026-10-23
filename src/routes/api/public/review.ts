@@ -130,11 +130,7 @@ export const Route = createFileRoute("/api/public/review")({
             type: type as "skill" | "playbook" | "soul" | "guardrail",
             content,
             doc_class: docClass as
-              | "skill"
-              | "governance"
-              | "playbook-ops"
-              | "guardrail-ops"
-              | "auto",
+              "skill" | "governance" | "playbook-ops" | "guardrail-ops" | "auto",
             semantic_check: semanticCheck,
             language: language as "en" | "pt" | "es" | "fr" | "de" | "it" | undefined,
           });

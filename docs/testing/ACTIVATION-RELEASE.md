@@ -23,3 +23,9 @@ The old lint had 11,965 errors: formatting dominated, with 612 existing explicit
 - Jev advisory review used minimal public copy/implementation summaries. It confirmed the copy distinguishes evidence availability and that legacy lint debt must not be described as fixed. Detailed local receipts retained outside the repository.
 
 No paid Lovable agent, model evaluation, signing operation, provisioning or generated evidence was invoked. Local auth tests do not establish live OAuth provider, email-delivery or paid-checkout success. Public MCP must be checked again after release; a 403 from the audit environment alone does not establish the cause.
+
+## Dependency audit
+
+The first CI audit exposed 8 vulnerable packages (6 critical, 1 high, 1 moderate). Update the patched TanStack Start line without bypassing Vite peer constraints, plus DOMPurify and launch-editor patches in the lockfile. The dependency audit now blocks high/critical vulnerabilities in CI and is included in the repeatable local batch. A clean report is a release prerequisite; do not interpret the former advisory job as approval to publish.
+
+Patched dependency receipts: TanStack Start 1.168.60 (Vite 7 compatible), start-server-core 1.169.39, DOMPurify 3.4.17 and launch-editor 2.14.2. Both npm and Bun lockfiles synchronized; frozen Bun lock validation passed. npm audit reports zero vulnerabilities after these updates. Updated router error handling for unknown errors and the current pending navigation state.

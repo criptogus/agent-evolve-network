@@ -5,12 +5,7 @@
  */
 
 export type GuardrailCategory =
-  | "compliance"
-  | "security"
-  | "privacy"
-  | "quality"
-  | "financial"
-  | "brand";
+  "compliance" | "security" | "privacy" | "quality" | "financial" | "brand";
 
 export type LibraryGuardrail = {
   slug: string;

@@ -43,13 +43,7 @@ export type CrmCustomerRow = {
 };
 
 export type CrmStage =
-  | "new"
-  | "connected"
-  | "activated"
-  | "power"
-  | "paying"
-  | "at_risk"
-  | "dormant";
+  "new" | "connected" | "activated" | "power" | "paying" | "at_risk" | "dormant";
 
 export const STAGE_LABELS: Record<CrmStage, string> = {
   new: "New (not connected)",

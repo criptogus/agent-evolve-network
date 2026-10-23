@@ -2,11 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 
 type ToolKey =
-  | "list_packages"
-  | "search_registry"
-  | "get_package"
-  | "request_primitive"
-  | "upload_packages";
+  "list_packages" | "search_registry" | "get_package" | "request_primitive" | "upload_packages";
 
 type Result = {
   status: number;

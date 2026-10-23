@@ -305,7 +305,7 @@ function DiscoverPage() {
 
   // Detect any in-flight loader/navigation so we can show subtle loading UI.
   const isLoading = useRouterState({
-    select: (s) => s.isLoading || s.isTransitioning,
+    select: (s) => s.isLoading || s.status === "pending",
   });
 
   // Local search input mirrors `?q=` with debounce.

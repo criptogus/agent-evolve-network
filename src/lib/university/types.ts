@@ -75,11 +75,7 @@ export type DomainId =
   | "cybersecurity";
 
 export type DomainCategory =
-  | "Foundation"
-  | "Revenue"
-  | "Execution"
-  | "Operations"
-  | "Media & Product";
+  "Foundation" | "Revenue" | "Execution" | "Operations" | "Media & Product";
 
 export type DomainMeta = {
   id: DomainId;
