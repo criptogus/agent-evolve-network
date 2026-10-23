@@ -39,3 +39,6 @@ dist-ssr
 
 # Local validation receipts
 artifacts/validation/
+
+# Private raw adversarial traces and judge evidence
+artifacts/adversarial-business/

@@ -1,6 +1,6 @@
 {
   "name": "tanstack_start_ts",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -46,7 +46,9 @@
     "check:dependencies": "npm audit --audit-level=high",
     "check:types:sdk": "tsc -p packages/sdk-ts/tsconfig.json --noEmit",
     "build:business-skills": "node --experimental-strip-types scripts/build-business-skills.mjs",
-    "check:business-skills": "node --experimental-strip-types scripts/build-business-skills.mjs --check && node scripts/check-business-skills.mjs"
+    "check:business-skills": "node --experimental-strip-types scripts/build-business-skills.mjs --check && node scripts/check-business-skills.mjs",
+    "eval:business:local": "node --experimental-strip-types scripts/run-business-adversarial.mjs",
+    "eval:business:sql": "node scripts/record-business-adversarial.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",
