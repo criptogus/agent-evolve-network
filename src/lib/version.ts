@@ -35,9 +35,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-10-23",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "eliminate legacy explicit any and enforce strict type gates (#61)",
-    ],
+    highlights: ["eliminate legacy explicit any and enforce strict type gates (#61)"],
   },
   {
     version: "0.5.6",

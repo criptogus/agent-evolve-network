@@ -18,12 +18,14 @@ The security checks use the existing Supabase publishable environment. The UI ch
 
 Actual local evidence:
 
-- 198 tests pass, including eight new boundary/regression tests.
+- 199 tests pass, including eight new boundary/regression tests and an isolated version-generator regression test.
 - Application and SDK TypeScript checks pass.
-- Strict ESLint reports zero errors and zero explicit-any violations across 636 files; existing development warnings remain advisory.
+- Strict ESLint reports zero errors and zero explicit-any violations across 637 files; existing development warnings remain advisory.
 - Production build and dependency audit pass.
 - Content, skills mirror, and Agent Plugin artifact checks pass.
 - RLS and anonymous-access probes pass across 85 public tables, preserving existing allowlists.
 - Signup checks pass at 390px and 1440px; screenshots were visually reviewed.
 
 The batch writes logs, exact exit codes and aggregate results to `artifacts/validation/`. Jev's advisory review is retained there separately; deterministic checks and code inspection decide release readiness. Publication must use the validated Git commit after CI passes and source synchronization is confirmed.
+
+The automatic `0.5.7` version update exposed a Prettier violation in generated changelog metadata. The generator now formats TypeScript using the repository configuration. Its isolated Git fixture runs the real bump command, checks formatting, and verifies matching versions and changelog content. The post-bump app/SDK, build, lint and artifact batch passes without a lint exception.

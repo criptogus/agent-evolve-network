@@ -18,6 +18,7 @@
  */
 
 import { execSync } from "node:child_process";
+import { format, resolveConfig } from "prettier";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -179,7 +180,10 @@ newVersionSrc = newVersionSrc.replace(
   (m) => m + entry,
 );
 
-writeFileSync(VERSION_FILE, newVersionSrc);
+writeFileSync(
+  VERSION_FILE,
+  await format(newVersionSrc, { ...(await resolveConfig(VERSION_FILE)), filepath: VERSION_FILE }),
+);
 
 // ---------- rewrite package.json ----------
 const pkg = JSON.parse(readFileSync(PKG_FILE, "utf8"));
