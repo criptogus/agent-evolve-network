@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -40,8 +41,11 @@ export function BuyButton({
       qc.invalidateQueries({ queryKey: ["credits-summary"] });
       qc.invalidateQueries({ queryKey: ["credits-pill"] });
       qc.invalidateQueries({ queryKey: ["my-purchases"] });
-    } catch (err: any) {
-      const msg = err?.message || (await err?.text?.()) || "Purchase failed";
+    } catch (err) {
+      const msg =
+        errorField(err, "message") ||
+        (err instanceof Response ? await err.text() : errorField(err)) ||
+        "Purchase failed";
       toast.error(typeof msg === "string" ? msg : "Purchase failed");
     } finally {
       setLoading(false);

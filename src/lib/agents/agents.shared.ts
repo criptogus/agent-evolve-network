@@ -1,8 +1,9 @@
+import type { AppDatabaseClient } from "@/integrations/supabase/database";
 import { z } from "zod";
 
 export const SlugInput = z.object({ slug: z.string().min(1).max(80) });
 
-export async function assertPaid(supabase: any, userId: string) {
+export async function assertPaid(supabase: AppDatabaseClient, userId: string) {
   const { data: sub } = await supabase
     .from("subscriptions")
     .select("status,current_period_end")

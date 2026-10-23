@@ -12,7 +12,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import type { TemplateEntry } from "./registry";
+import type { TemplateEntry, TemplateData } from "./registry";
 import { BRAND, styles } from "./_brand";
 
 /**
@@ -155,8 +155,7 @@ const CrmLifecycleEmail = ({
 
 export const template = {
   component: CrmLifecycleEmail,
-  subject: (data: Record<string, any>) =>
-    (data?.subject as string) || "Your SuperAgent Skill update",
+  subject: (data: TemplateData) => (data?.subject as string) || "Your SuperAgent Skill update",
   displayName: "CRM lifecycle",
   previewData: {
     subject: "Your week on SAK: $1,240/month of avoidable spend removed",

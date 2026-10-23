@@ -3,7 +3,7 @@ import { Crown } from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
 import { EmptyState } from "@/components/site/EmptyState";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 type Winner = {
   week_starting: string;
@@ -25,12 +25,10 @@ export const Route = createFileRoute("/skill-of-the-week")({
       )
       .order("week_starting", { ascending: false })
       .limit(52);
-    const winners = (data ?? []).map(
-      (r: { packages: Winner["package"]; week_starting: string } & Record<string, unknown>) => ({
-        ...r,
-        package: r.packages,
-      }),
-    ) as Winner[];
+    const winners = (data ?? []).map((r) => ({
+      ...r,
+      package: r.packages,
+    }));
     return { current: winners[0] ?? null, history: winners.slice(1) };
   },
   head: ({ loaderData }) => ({

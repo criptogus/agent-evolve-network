@@ -65,8 +65,8 @@ function CustomersAdminPage() {
     const items = (data?.customers ?? []).filter((c) => (onlyPaying ? c.is_paying : true));
     const dir = sortDir === "asc" ? 1 : -1;
     return [...items].sort((a, b) => {
-      const av: any = (a as any)[sortKey];
-      const bv: any = (b as any)[sortKey];
+      const av = a[sortKey];
+      const bv = b[sortKey];
       if (av === bv) return 0;
       if (av == null) return 1;
       if (bv == null) return -1;
@@ -120,7 +120,12 @@ function CustomersAdminPage() {
               <SelectItem value="sandbox">Sandbox</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={range} onValueChange={(v) => setRange(v as any)}>
+          <Select
+            value={range}
+            onValueChange={(v) => {
+              if (v === "7d" || v === "30d" || v === "90d" || v === "365d") setRange(v);
+            }}
+          >
             <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>

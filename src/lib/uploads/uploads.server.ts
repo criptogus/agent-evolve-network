@@ -1,3 +1,6 @@
+import { toJson } from "@/lib/json";
+import { errorField } from "@/lib/errors";
+import type { AppDatabaseClient } from "@/integrations/supabase/database";
 // Shared bulk-upload pipeline used by both the UI server fn and the MCP tool.
 import { generateDraft, insertDraftPackage, inferType } from "@/lib/admin/author.server";
 import { inspectContent } from "@/lib/security/prompt-injection-guard";
@@ -87,7 +90,7 @@ export function previewUpload(files: UploadFileInput[]): UploadPreview[] {
  * publish later from /admin or via the forge loop.
  */
 export async function processBulkUpload(
-  supabase: any,
+  supabase: AppDatabaseClient,
   userId: string,
   files: UploadFileInput[],
 ): Promise<{ results: UploadResult[]; queued: QueuedJob[] }> {
@@ -114,13 +117,13 @@ export async function processBulkUpload(
       if (guard.severity !== "none") {
         // Best-effort audit; never block on logging failures.
         try {
-          await (supabaseAdmin as any).from("upload_injection_audit").insert({
+          await supabaseAdmin.from("upload_injection_audit").insert({
             user_id: userId,
             filename: f.name,
             inferred_type: inferred,
             severity: guard.severity,
             rejected: guard.rejected,
-            findings: guard.findings,
+            findings: toJson(guard.findings),
             content_sample: f.content.slice(0, 1024),
           });
         } catch {
@@ -155,8 +158,8 @@ export async function processBulkUpload(
       out.slug = pkg.slug;
       out.type = inferred;
       out.forge_report_url = `/forge/report/${pkg.slug}`;
-    } catch (e: any) {
-      const msg = e?.message ?? "failed";
+    } catch (e) {
+      const msg = errorField(e, "message") ?? "failed";
       out.error = msg;
       out.status = "failed";
       // Server-side visibility — without this the MCP caller sees a
@@ -214,10 +217,10 @@ export async function processBulkUpload(
             type: job?.inferred_type ?? f.type ?? inferType(f.name, f.content),
           });
         }
-      } catch (e: any) {
+      } catch (e) {
         // If the queue itself is unavailable, fall back to per-file failure
         // records so the caller knows the overflow didn't silently disappear.
-        const msg = e?.message ?? "enqueue failed";
+        const msg = errorField(e, "message") ?? "enqueue failed";
         console.error(`[uploads.processBulkUpload] enqueue failed user=${userId}: ${msg}`);
         for (const f of enqueueable) {
           results.push({

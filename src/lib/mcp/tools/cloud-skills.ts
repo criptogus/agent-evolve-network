@@ -1,9 +1,10 @@
+import type { ToolExecutionContext } from "mcp-tanstack-start";
 import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { hashToken } from "@/lib/account/tokens.server";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 
 async function resolveUserFromToken(token: string): Promise<string | null> {
@@ -20,7 +21,7 @@ async function resolveUserFromToken(token: string): Promise<string | null> {
   return data.user_id;
 }
 
-export async function requirePaidUser(ctx: any): Promise<string> {
+export async function requirePaidUser(ctx: ToolExecutionContext): Promise<string> {
   const sessionUserId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
   const userId = sessionUserId;
   if (!userId) {

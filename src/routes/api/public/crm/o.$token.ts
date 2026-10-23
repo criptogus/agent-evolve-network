@@ -15,7 +15,7 @@ export const Route = createFileRoute("/api/public/crm/o/$token")({
         if (/^[a-f0-9]{16,128}$/.test(token)) {
           try {
             const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-            await (supabaseAdmin as any).rpc("crm_track_open", { _token: token });
+            await supabaseAdmin.rpc("crm_track_open", { _token: token });
           } catch {
             /* tracking must never break the email */
           }

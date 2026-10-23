@@ -42,7 +42,7 @@ function ConnectionsPage() {
       toast.success(`Revoked ${r.revoked} token${r.revoked === 1 ? "" : "s"}.`);
       qc.invalidateQueries({ queryKey: ["mcp-connections"] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Revoke failed"),
+    onError: (e) => toast.error(e?.message ?? "Revoke failed"),
   });
 
   return (

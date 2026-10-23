@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 import { submitExam } from "@/lib/university/university.server";
 import { ERROR_CLASSES, ERROR_CLASS_LABEL, type DomainId } from "@/lib/university/types";
@@ -46,7 +47,7 @@ export const Route = createFileRoute("/api/public/diagnose/submit")({
         } catch {
           return json({ ok: false, error: "invalid_json" }, 400);
         }
-        const raw = Array.isArray(body.answers) ? (body.answers as any[]) : [];
+        const raw = Array.isArray(body.answers) ? body.answers : [];
         if (!raw.length) return json({ ok: false, error: "answers_required" }, 400);
         if (raw.length > 80) return json({ ok: false, error: "too_many_answers", max: 80 }, 400);
 
@@ -71,7 +72,7 @@ export const Route = createFileRoute("/api/public/diagnose/submit")({
           });
           return json({ ok: true, ...report });
         } catch (err) {
-          const msg = err instanceof Error ? err.message : "error";
+          const msg = err instanceof Error ? errorField(err, "message") : "error";
           if (msg === "unknown_domain") {
             return json(
               {

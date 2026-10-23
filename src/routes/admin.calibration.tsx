@@ -50,7 +50,7 @@ function AdminCalibrationPage() {
       );
       q.refetch();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Run failed"),
+    onError: (e) => toast.error(e?.message ?? "Run failed"),
   });
 
   const recal = useMutation({
@@ -61,7 +61,7 @@ function AdminCalibrationPage() {
           r.calibration.agreement * 100,
         )}% · ${r.calibration.false_pass} false-pass`,
       ),
-    onError: (e: any) => toast.error(e?.message ?? "Recalibration failed"),
+    onError: (e) => toast.error(e?.message ?? "Recalibration failed"),
   });
 
   const rows = (q.data?.rows ?? []) as JudgeCalibrationRow[];

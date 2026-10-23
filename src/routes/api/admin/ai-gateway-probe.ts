@@ -1,8 +1,9 @@
+import { errorField } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 import { generateText } from "ai";
 import { describeGatewayConfig, getGatewayModel } from "@/lib/ai-gateway";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 // Admin-only diagnostic. Returns:
 //  - which env var supplied the gateway key (or "configured: false")
@@ -63,8 +64,12 @@ async function handle(req: Request): Promise<Response> {
         // keep cost trivial — we just want a successful HTTP round-trip
       });
       probe.probe = { ok: true, ms: Date.now() - t0, text: r.text.slice(0, 80) };
-    } catch (e: any) {
-      probe.probe = { ok: false, ms: Date.now() - t0, error: e?.message ?? String(e) };
+    } catch (e) {
+      probe.probe = {
+        ok: false,
+        ms: Date.now() - t0,
+        error: errorField(e, "message") ?? String(e),
+      };
     }
   }
 

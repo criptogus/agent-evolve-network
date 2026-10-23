@@ -3,7 +3,7 @@ import { SitePage } from "@/components/site/SitePage";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { findComparison, type Comparison } from "@/lib/seo/comparisons";
 import { canonicalLink, SITE_URL } from "@/lib/seo/canonical";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 // SEO landing: /compare/<slug-a>-vs-<slug-b>
 // Auto-generated head-to-head scorecard. Programmatic SEO — one URL per pair,
@@ -15,7 +15,7 @@ type Side = {
   description: string | null;
   trust_score: number | null;
   adversarial_pass_rate: number | null;
-  installs_7d: number | null;
+  runs_7d: number | null;
 };
 
 async function loadSide(slug: string): Promise<Side> {
@@ -31,7 +31,7 @@ async function loadSide(slug: string): Promise<Side> {
       description: null,
       trust_score: null,
       adversarial_pass_rate: null,
-      installs_7d: null,
+      runs_7d: null,
     };
   const [{ data: trust }, { data: perf }] = await Promise.all([
     supabaseAdmin
@@ -40,7 +40,7 @@ async function loadSide(slug: string): Promise<Side> {
       .eq("package_id", pkg.id)
       .maybeSingle(),
     supabaseAdmin
-      .from("skill_performance_daily")
+      .from("package_metrics_daily")
       .select("runs")
       .eq("package_id", pkg.id)
       .gte("day", new Date(Date.now() - 7 * 86400_000).toISOString()),
@@ -51,8 +51,7 @@ async function loadSide(slug: string): Promise<Side> {
     description: pkg.description,
     trust_score: trust?.score ?? null,
     adversarial_pass_rate: trust?.adversarial_pass_rate ?? null,
-    installs_7d:
-      (perf ?? []).reduce((s, r: { runs: number | null }) => s + (r.runs ?? 0), 0) || null,
+    runs_7d: (perf ?? []).reduce((s, r: { runs: number | null }) => s + (r.runs ?? 0), 0) || null,
   };
 }
 
@@ -162,7 +161,7 @@ function ComparePage() {
                 l={left.adversarial_pass_rate}
                 r={right.adversarial_pass_rate}
               />
-              <NumberRow label="Installs (7d)" l={left.installs_7d} r={right.installs_7d} />
+              <NumberRow label="Runs (7d)" l={left.runs_7d} r={right.runs_7d} />
               <TextRow label="Description" l={left.description} r={right.description} />
             </tbody>
           </table>

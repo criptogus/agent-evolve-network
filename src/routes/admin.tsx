@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
@@ -124,8 +125,8 @@ function AdminLayout() {
                 await bootstrap();
                 setBootstrapMsg("You are now admin. Reloading…");
                 setTimeout(() => window.location.reload(), 600);
-              } catch (e: any) {
-                setBootstrapMsg(e?.message ?? "Could not claim admin");
+              } catch (e) {
+                setBootstrapMsg(errorField(e, "message") ?? "Could not claim admin");
               }
             }}
           >

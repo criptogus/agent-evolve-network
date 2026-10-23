@@ -1,6 +1,7 @@
+import { CustomizedItemsSchema, ResearchSourcesSchema } from "@/lib/packs/customization-data";
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 async function loadCustomization(id: string, authHeader: string | null) {
   // Verify owner using bearer
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/api/packs/customization/$id/download/$ext
         const r = await loadCustomization(params.id, request.headers.get("authorization"));
         if (!r.ok) return new Response(r.msg, { status: r.status });
         const { row, pack } = r;
-        const items = (row.items ?? []) as any[];
+        const items = CustomizedItemsSchema.parse(row.items ?? []);
         if (params.ext === "json") {
           const body = {
             pack: { slug: pack?.slug, name: pack?.name, theme: pack?.theme },
@@ -66,7 +67,8 @@ export const Route = createFileRoute("/api/packs/customization/$id/download/$ext
         if (Array.isArray(row.research_sources) && row.research_sources.length) {
           lines.push("");
           lines.push("**References**");
-          for (const s of row.research_sources as any[]) lines.push(`- ${s.title} — ${s.ref}`);
+          for (const s of ResearchSourcesSchema.parse(row.research_sources))
+            lines.push(`- ${s.title} — ${s.ref}`);
         }
         for (const it of items) {
           lines.push("");

@@ -10,7 +10,7 @@ import { runForgeLoop } from "@/lib/skills/forge-loop.functions";
 import { ImpactProjectionReport } from "@/components/skills/ImpactProjectionReport";
 import { projectImpact } from "@/lib/skills/impact-projection";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 /* ---------- server: read public report data (no auth required) ---------- */
 const ReportInput = z.object({ slug: z.string() });

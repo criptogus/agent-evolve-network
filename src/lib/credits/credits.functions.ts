@@ -106,8 +106,8 @@ export const listMyLedger = createServerFn({ method: "GET" })
       .parse(d ?? {}),
   )
   .handler(async ({ context, data }): Promise<{ entries: LedgerEntry[] }> => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const { data: rows, error } = await supabase
       .from("credit_ledger")
       .select("id,delta,balance_after,reason,ref_type,ref_id,description,metadata,created_at")
@@ -124,8 +124,8 @@ export const purchasePackage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => PurchaseInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const { data: result, error } = await supabase.rpc("purchase_package", {
       _package_id: data.package_id,
     });
@@ -164,8 +164,8 @@ export const purchasePackage = createServerFn({ method: "POST" })
 export const listMyPurchases = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const { data, error } = await supabase
       .from("package_purchases")
       .select("package_id, credits_paid, created_at")

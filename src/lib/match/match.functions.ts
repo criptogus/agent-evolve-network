@@ -3,7 +3,7 @@ import { z } from "zod";
 import { generateText, Output } from "ai";
 import { getGatewayModel } from "@/lib/ai-gateway";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { MCP_REGISTRY, compactMcpCatalogForLLM, getMcpById } from "./mcp-registry";
 
 const Input = z.object({

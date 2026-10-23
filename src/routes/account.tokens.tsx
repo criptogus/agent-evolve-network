@@ -54,7 +54,7 @@ function TokensPage() {
       if (r.ok) toast.success(`Token valid · ${r.name} (${r.prefix}…)`);
       else toast.error(r.reason ?? "Invalid token");
     },
-    onError: (e: any) => toast.error(e?.message ?? "Validation failed"),
+    onError: (e) => toast.error(e?.message ?? "Validation failed"),
   });
 
   const copy = async (text: string, label = "Copied") => {
@@ -216,7 +216,7 @@ function TokensPage() {
           )}
           {q.data && q.data.items.length > 0 && (
             <ul className="divide-y divide-border/60">
-              {q.data.items.map((t: any) => (
+              {q.data.items.map((t) => (
                 <li
                   key={t.id}
                   className="flex flex-wrap items-center justify-between gap-3 px-5 py-3"

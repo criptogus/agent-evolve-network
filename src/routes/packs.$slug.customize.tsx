@@ -61,7 +61,7 @@ function CustomizePack() {
     queryFn: () => getFn({ data: { customization_id: activeId! } }),
     enabled: !!activeId,
     refetchInterval: (q) => {
-      const s = (q.state.data as any)?.status;
+      const s = q.state.data?.status;
       return s === "ready" || s === "error" ? false : 2000;
     },
   });
@@ -82,13 +82,13 @@ function CustomizePack() {
       qc.invalidateQueries({ queryKey: ["pack-customizations", pack?.pack.id] });
       run.mutate(r.customization_id);
     },
-    onError: (e: any) => toast.error(String(e?.message || e)),
+    onError: (e) => toast.error(String(e?.message || e)),
   });
 
   const run = useMutation({
     mutationFn: (id: string) => runFn({ data: { customization_id: id } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["pack-customization", activeId] }),
-    onError: (e: any) => toast.error(String(e?.message || e)),
+    onError: (e) => toast.error(String(e?.message || e)),
   });
 
   if (!pack)
@@ -110,8 +110,8 @@ function CustomizePack() {
     );
   }
 
-  const status = (cust as any)?.status as string | undefined;
-  const items = ((cust as any)?.items ?? []) as Array<{
+  const status = cust?.status as string | undefined;
+  const items = (cust?.items ?? []) as Array<{
     name: string;
     type: string;
     role: string;
@@ -188,7 +188,7 @@ function CustomizePack() {
               <div className="pt-3">
                 <p className="text-xs text-muted-foreground">Previous customizations</p>
                 <div className="mt-1 space-y-1">
-                  {list.customizations.map((c: any) => (
+                  {list.customizations.map((c) => (
                     <button
                       key={c.id}
                       onClick={() => setActiveId(c.id)}
@@ -228,11 +228,11 @@ function CustomizePack() {
                   active={status === "customizing"}
                 />
                 <Phase label="Bundle ready" done={status === "ready"} />
-                {(cust as any).research_summary && (
+                {cust.research_summary && (
                   <div className="rounded border border-border p-3 text-sm">
                     <p className="font-semibold">State-of-the-art brief</p>
                     <p className="mt-1 whitespace-pre-wrap text-muted-foreground">
-                      {(cust as any).research_summary}
+                      {cust.research_summary}
                     </p>
                   </div>
                 )}
@@ -293,7 +293,7 @@ function CustomizePack() {
                 )}
                 {status === "ready" && activeId && <DownloadButtons customizationId={activeId} />}
                 {status === "error" && (
-                  <p className="text-sm text-destructive">Error: {(cust as any).error}</p>
+                  <p className="text-sm text-destructive">Error: {cust.error}</p>
                 )}
               </>
             )}

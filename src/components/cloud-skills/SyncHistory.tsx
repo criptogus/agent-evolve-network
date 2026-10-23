@@ -76,7 +76,7 @@ export function SyncHistory() {
     enabled: !!openId,
   });
 
-  const usedProviders = new Set((summary.data?.targets ?? []).map((t: any) => t.provider));
+  const usedProviders = new Set((summary.data?.targets ?? []).map((t) => t.provider));
   const filterable = PROVIDERS.filter((p) => usedProviders.has(p.id));
 
   return (
@@ -93,7 +93,7 @@ export function SyncHistory() {
       {/* Per-target rollup */}
       {summary.data?.targets?.length ? (
         <div className="mt-5 grid gap-2 sm:grid-cols-2">
-          {summary.data.targets.map((t: any) => (
+          {summary.data.targets.map((t) => (
             <button
               key={`${t.provider}:${t.scope}`}
               onClick={() => {
@@ -177,7 +177,7 @@ export function SyncHistory() {
           </p>
         ) : (
           <ul className="divide-y divide-border/60">
-            {events.data.events.map((e: any) => (
+            {events.data.events.map((e) => (
               <li key={e.id} className="flex flex-wrap items-center gap-3 p-3">
                 <Badge variant={STATUS_VARIANT[e.status] ?? "outline"}>
                   {label(SYNC_STATUS_LABELS, e.status)}
@@ -259,7 +259,7 @@ export function SyncHistory() {
                 <h3 className="mb-2 text-sm font-semibold">Changes applied</h3>
                 {detail.data.event.changes?.length ? (
                   <ul className="space-y-1">
-                    {detail.data.event.changes.map((c: any, i: number) => (
+                    {detail.data.event.changes.map((c, i: number) => (
                       <li
                         key={`${c.path}-${i}`}
                         className="rounded border border-border/60 px-2 py-1 font-mono text-xs"

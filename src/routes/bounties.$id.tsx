@@ -3,7 +3,7 @@ import { SitePage } from "@/components/site/SitePage";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { submitToBounty } from "@/lib/growth/bounties.functions";
 
 type Bounty = {

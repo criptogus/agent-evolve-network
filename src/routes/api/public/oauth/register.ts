@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { corsPreflight, jsonResponse, oauthError } from "@/lib/oauth/mcp-oauth.server";
 
 // RFC 8252 (OAuth for Native Apps) permits three redirect_uri shapes:

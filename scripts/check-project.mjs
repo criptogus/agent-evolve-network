@@ -4,6 +4,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 const checks = [
   "test:all",
   "check:types",
+  "check:types:sdk",
   "check:dependencies",
   "build",
   "lint",

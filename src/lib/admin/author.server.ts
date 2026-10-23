@@ -1,3 +1,6 @@
+import { toJson } from "@/lib/json";
+import { recordOf } from "@/lib/json";
+import type { AppDatabaseClient } from "@/integrations/supabase/database";
 import { generateText, Output } from "ai";
 import { getGatewayModel, describeGatewayConfig } from "@/lib/ai-gateway";
 import {
@@ -190,7 +193,7 @@ export async function generateDraftWithMeta(
         );
       }
       return { draft, generation_path: "structured", attempts: attempts.map(fmtAttempt) };
-    } catch (e: any) {
+    } catch (e) {
       const msg = describeAttemptError(e);
       attempts.push({ model: modelId, error: msg });
       console.error(`[skillforge.author] ${modelId} structured failed:`, msg);
@@ -218,7 +221,7 @@ export async function generateDraftWithMeta(
       attempts,
     );
     return { draft, generation_path: "text", attempts: attempts.map(fmtAttempt) };
-  } catch (e: any) {
+  } catch (e) {
     attempts.push({ model: "text-fallback", error: describeAttemptError(e) });
     console.error(
       `[skillforge.author] text fallback failed:`,
@@ -250,15 +253,16 @@ function fmtAttempt(a: { model: string; error: string }): string {
 // AI SDK errors hide the upstream body inside `e.text` (NoObjectGeneratedError),
 // `e.responseBody` (HTTP errors), or `e.cause`. Bare `e.message` strips all of
 // that and leaves operators chasing "Bad Request" with no context.
-function describeAttemptError(e: any): string {
+function describeAttemptError(error: unknown): string {
+  const e = recordOf(error);
   const parts: string[] = [];
   if (e?.message) parts.push(String(e.message));
-  if (e?.name && !parts[0]?.includes(e.name)) parts.unshift(String(e.name));
+  if (e?.name && !parts[0]?.includes(String(e.name))) parts.unshift(String(e.name));
   if (e?.text && typeof e.text === "string") parts.push(`text=${e.text.slice(0, 400)}`);
   if (e?.responseBody && typeof e.responseBody === "string")
     parts.push(`body=${e.responseBody.slice(0, 400)}`);
-  if (e?.cause?.message && e.cause.message !== e?.message)
-    parts.push(`cause=${String(e.cause.message).slice(0, 200)}`);
+  if (recordOf(e.cause).message && recordOf(e.cause).message !== e?.message)
+    parts.push(`cause=${String(recordOf(e.cause).message).slice(0, 200)}`);
   return parts.join(" | ") || String(e);
 }
 
@@ -301,9 +305,12 @@ function extractJsonObject(text: string): unknown {
 }
 
 export async function insertDraftPackage(
-  supabase: any,
+  supabase: AppDatabaseClient,
   userId: string,
-  draft: any,
+  draft: Pick<
+    PackageDraft,
+    "slug" | "name" | "type" | "description" | "long_description" | "system_prompt"
+  > & { rules: unknown; examples: unknown; compatibility: unknown; scopes: unknown[] },
   meta: { source_kind: "github" | "markdown" | "request" | "wizard"; source_ref: string },
 ) {
   const baseSlug = draft.slug;
@@ -339,7 +346,7 @@ export async function insertDraftPackage(
       is_published: false,
       review_status: "draft",
       latest_version: "0.1.0",
-      scopes: draft.scopes,
+      scopes: draft.scopes.filter((scope): scope is string => typeof scope === "string"),
       source_kind: meta.source_kind,
       source_ref: meta.source_ref,
     })
@@ -353,13 +360,14 @@ export async function insertDraftPackage(
     status: "beta",
     notes: `Source: ${meta.source_kind} (${meta.source_ref})`,
     system_prompt: draft.system_prompt,
-    rules: draft.rules,
-    examples: draft.examples,
-    compatibility: draft.compatibility,
+    rules: toJson(draft.rules),
+    examples: toJson(draft.examples),
+    compatibility: toJson(draft.compatibility),
   });
   if (verErr) throw new Response(`Insert version failed: ${verErr.message}`, { status: 500 });
 
-  return pkg;
+  const { search_vector: _searchVector, ...publicPackage } = pkg;
+  return publicPackage;
 }
 
 export function inferType(

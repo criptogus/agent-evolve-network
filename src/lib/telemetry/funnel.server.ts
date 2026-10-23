@@ -3,7 +3,7 @@ import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.
 import { classifyUserAgent } from "@/lib/telemetry/bot-detect";
 import type { FunnelInputData } from "./funnel.shared";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 /**
  * Best-effort funnel event insert. Server-authoritative tags: client-supplied

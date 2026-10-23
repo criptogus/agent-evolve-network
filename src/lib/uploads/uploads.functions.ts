@@ -28,9 +28,9 @@ export const bulkUploadPackages = createServerFn({ method: "POST" })
       results: UploadResult[];
       queued: Array<{ id: string; filename: string; inferred_type: string }>;
     }> => {
-      const { supabase: _sbCtx, userId } = context as any;
-      const supabase = _sbCtx as any;
-      const { results, queued } = await processBulkUpload(supabase as any, userId, data.files);
+      const { supabase: _sbCtx, userId } = context;
+      const supabase = _sbCtx;
+      const { results, queued } = await processBulkUpload(supabase, userId, data.files);
       return { results, queued };
     },
   );

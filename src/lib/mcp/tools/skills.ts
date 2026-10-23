@@ -1,9 +1,12 @@
+import { recordOf, isRecord } from "@/lib/json";
+import type { ToolExecutionContext } from "mcp-tanstack-start";
+import { errorField } from "@/lib/errors";
 import { defineTool } from "mcp-tanstack-start";
 import { detectLanguage, normalizeTypography, type Lang } from "@/lib/mcp/lang-detect";
 import { z } from "zod";
 import { generateText, Output } from "ai";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { hashToken } from "@/lib/account/tokens.server";
 import { processBulkUpload, previewUpload } from "@/lib/uploads/uploads.server";
 import { getGatewayModel } from "@/lib/ai-gateway";
@@ -413,15 +416,15 @@ export const reportExecutionTool = defineTool({
       _tokens_out: input.tokens_out,
       _error_kind: input.error_kind,
       _agent_fp: input.agent_fp,
-      _arm: input.arm ?? null,
-      _experiment_key: input.experiment_key ?? null,
-      _task_completed: input.task_completed ?? null,
-      _human_intervention: input.human_intervention ?? null,
-      _user_rating: input.user_rating ?? null,
-      _baseline_latency_ms: input.baseline_latency_ms ?? null,
-      _baseline_tokens: input.baseline_tokens ?? null,
-      _workspace_hash: input.workspace_hash ?? null,
-    } as any);
+      _arm: input.arm ?? undefined,
+      _experiment_key: input.experiment_key ?? undefined,
+      _task_completed: input.task_completed ?? undefined,
+      _human_intervention: input.human_intervention ?? undefined,
+      _user_rating: input.user_rating ?? undefined,
+      _baseline_latency_ms: input.baseline_latency_ms ?? undefined,
+      _baseline_tokens: input.baseline_tokens ?? undefined,
+      _workspace_hash: input.workspace_hash ?? undefined,
+    });
     if (error) return json({ ok: false, error: error.message });
     return json({ ok: true, execution_id: data });
   },
@@ -445,11 +448,11 @@ export const reportOutcomeTool = defineTool({
   execute: async (input) => {
     const { data, error } = await supabaseAdmin.rpc("attach_execution_outcome", {
       _execution_id: input.execution_id,
-      _task_completed: input.task_completed ?? null,
-      _human_intervention: input.human_intervention ?? null,
-      _user_rating: input.user_rating ?? null,
-      _agent_fp: input.agent_fp ?? null,
-    } as any);
+      _task_completed: input.task_completed ?? undefined,
+      _human_intervention: input.human_intervention ?? undefined,
+      _user_rating: input.user_rating ?? undefined,
+      _agent_fp: input.agent_fp ?? undefined,
+    });
     if (error) return json({ ok: false, error: error.message });
     return json({ ok: true, updated: data === true });
   },
@@ -467,11 +470,11 @@ export const getUpliftTool = defineTool({
     const { data, error } = await supabaseAdmin.rpc("get_skill_uplift", {
       _slug: slug,
       _days: days ?? 30,
-    } as any);
+    });
     if (error) return json({ ok: false, error: error.message });
-    const arms = ((data as any)?.arms ?? {}) as Record<string, any>;
-    const c = arms.control ?? { n: 0, completed: 0 };
-    const t = arms.treatment ?? { n: 0, completed: 0 };
+    const arms = recordOf(recordOf(data).arms);
+    const c = recordOf(arms.control);
+    const t = recordOf(arms.treatment);
     const stats = twoProportionUplift(
       { n: Number(c.n ?? 0), completed: Number(c.completed ?? 0) },
       { n: Number(t.n ?? 0), completed: Number(t.completed ?? 0) },
@@ -571,7 +574,7 @@ export const uploadPackagesTool = defineTool({
       // Returning a schema-valid payload beats letting the host time out at 35s.
       const TOOL_BUDGET_MS = 20_000;
       const { results, queued } = await Promise.race([
-        processBulkUpload(supabaseAdmin as any, userId, files),
+        processBulkUpload(supabaseAdmin, userId, files),
         new Promise<never>((_, reject) =>
           setTimeout(
             () => reject(new Error("accept_timeout: upload queue did not respond in 20s")),
@@ -625,8 +628,8 @@ export const uploadPackagesTool = defineTool({
         await putIdempotent(userId, "upload_packages", idempotency_key, response);
       }
       return json(response);
-    } catch (e: any) {
-      const msg = e?.message ?? "upload_failed";
+    } catch (e) {
+      const msg = errorField(e, "message") ?? "upload_failed";
       console.error(`[mcp.upload_packages] user=${userId} unexpected:`, e);
       // Keep the failure inside the same shape so hosts that validate the
       // tool output don't report "response did not match schema".
@@ -1912,21 +1915,21 @@ One verdict object per pillar (all 7), plus the document-level summary.
     const start = raw.indexOf("{");
     const end = raw.lastIndexOf("}");
     if (start < 0 || end <= start) return null;
-    let obj: any;
+    let obj: Record<string, unknown>;
     try {
-      obj = JSON.parse(raw.slice(start, end + 1));
+      obj = recordOf(JSON.parse(raw.slice(start, end + 1)));
     } catch {
       return null;
     }
-    const list = Array.isArray(obj?.verdicts) ? obj.verdicts : [];
+    const list = Array.isArray(obj?.verdicts) ? obj.verdicts.filter(isRecord) : [];
     const verdicts: RawVerdict[] = [];
     for (const v of list) {
       const pillar = str(v?.pillar).trim();
       if (!PILLARS.has(pillar)) continue;
       const score = num(v?.substance_score, NaN);
       if (!Number.isFinite(score)) continue;
-      const excerpts = (Array.isArray(v?.excerpts) ? v.excerpts : [])
-        .map((e: any) => ({ line: optLine(e?.line), quote: str(e?.quote) }))
+      const excerpts = (Array.isArray(v?.excerpts) ? v.excerpts.filter(isRecord) : [])
+        .map((e) => ({ line: optLine(e?.line), quote: str(e?.quote) }))
         .filter((e: { quote: string }) => e.quote.trim().length > 0);
       verdicts.push({
         pillar: pillar as PillarId,
@@ -1967,8 +1970,12 @@ One verdict object per pillar (all 7), plus the document-level summary.
         break;
       }
       attempts.push({ model: modelId, ms: Date.now() - t0, error: "unparseable_json" });
-    } catch (e: any) {
-      attempts.push({ model: modelId, ms: Date.now() - t0, error: e?.message ?? String(e) });
+    } catch (e) {
+      attempts.push({
+        model: modelId,
+        ms: Date.now() - t0,
+        error: errorField(e, "message") ?? String(e),
+      });
     }
     if (attempt < 2) await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
   }
@@ -2472,7 +2479,7 @@ export const reviewSkillTool = defineTool({
       previous_hash,
       previous_overall_score,
     },
-    ctx?: any,
+    ctx?: ToolExecutionContext,
   ) => {
     const callerId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
     const core = await computeReview({
@@ -2678,7 +2685,7 @@ export const reviewSkillsBatchTool = defineTool({
           doc_class: f.doc_class,
           semantic_check,
           language,
-        }).catch((e: any) => ({ file: f.name, error: e?.message ?? "review_failed" })),
+        }).catch((e: unknown) => ({ file: f.name, error: errorField(e) ?? "review_failed" })),
       ),
     );
 
@@ -2755,11 +2762,11 @@ export const submitFeedbackTool = defineTool({
       _request_id: request_id,
       _rating: rating,
       _sentiment: inferred,
-      _comments: comments ?? null,
+      _comments: comments ?? undefined,
       _source: "mcp",
-      _agent_model: agent_model ?? null,
+      _agent_model: agent_model ?? undefined,
       _context: {},
-    } as any);
+    });
     if (error) return json({ ok: false, error: error.message });
     return json({ ok: true, feedback_id: data, message: "Thanks — recorded." });
   },

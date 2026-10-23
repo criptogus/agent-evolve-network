@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";

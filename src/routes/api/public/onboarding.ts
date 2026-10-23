@@ -1,3 +1,5 @@
+import { toJson } from "@/lib/json";
+import { errorField } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 import { createHash, randomUUID } from "crypto";
 import { z } from "zod";
@@ -77,7 +79,7 @@ export const Route = createFileRoute("/api/public/onboarding")({
         let completed: string[] = [];
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const { data } = await (supabaseAdmin as any)
+          const { data } = await supabaseAdmin
             .from("agent_onboarding_steps")
             .select("step_id")
             .eq("session_hash", hashSession(session));
@@ -146,7 +148,7 @@ export const Route = createFileRoute("/api/public/onboarding")({
 
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const db = supabaseAdmin as any;
+          const db = supabaseAdmin;
 
           if (check.needsDb?.kind === "package") {
             const { data: pkg } = await db
@@ -176,7 +178,7 @@ export const Route = createFileRoute("/api/public/onboarding")({
               client_name: client_name ?? null,
               ua_family: cls.family,
               is_bot: cls.isBot,
-              evidence: (evidence ?? {}) as Record<string, unknown>,
+              evidence: toJson(evidence ?? {}),
             },
             { onConflict: "session_hash,step_id" },
           );
@@ -213,7 +215,7 @@ export const Route = createFileRoute("/api/public/onboarding")({
             {
               ok: false,
               error: "server_error",
-              message: err instanceof Error ? err.message : "unknown",
+              message: err instanceof Error ? errorField(err, "message") : "unknown",
             },
             500,
           );

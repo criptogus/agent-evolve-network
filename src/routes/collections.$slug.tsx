@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SitePage } from "@/components/site/SitePage";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 type CollectionRow = {
   id: string;
@@ -34,12 +34,10 @@ export const Route = createFileRoute("/collections/$slug")({
       .select("package_id,position,note,packages(slug,name,description)")
       .eq("collection_id", (c as CollectionRow).id)
       .order("position", { ascending: true });
-    const items = (rows ?? []).map(
-      (r: { packages: Item["package"] } & Record<string, unknown>) => ({
-        ...r,
-        package: r.packages,
-      }),
-    ) as Item[];
+    const items = (rows ?? []).map((r) => ({
+      ...r,
+      package: r.packages,
+    }));
 
     return { collection: c as CollectionRow, items };
   },

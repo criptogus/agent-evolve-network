@@ -18,8 +18,8 @@ export type ConnectionStatus = {
 export const getConnectionStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<ConnectionStatus> => {
-    const { supabase: _sb, userId } = context as any;
-    const supabase = _sb as any;
+    const { supabase: _sb, userId } = context;
+    const supabase = _sb;
 
     const empty: ConnectionStatus = {
       connected: false,

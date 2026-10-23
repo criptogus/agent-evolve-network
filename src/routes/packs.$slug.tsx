@@ -45,7 +45,7 @@ function PackDetail() {
       qc.invalidateQueries({ queryKey: ["credits-summary"] });
       navigate({ to: "/packs/$slug/customize", params: { slug } });
     },
-    onError: (e: any) => toast.error(String(e?.message || e)),
+    onError: (e) => toast.error(String(e?.message || e)),
   });
 
   if (isLoading)

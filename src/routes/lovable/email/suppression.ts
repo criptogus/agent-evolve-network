@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { createClient } from "@supabase/supabase-js";
 import { WebhookError, verifyWebhookRequest } from "@lovable.dev/webhooks-js";
 import { createFileRoute } from "@tanstack/react-router";
@@ -87,7 +88,7 @@ export const Route = createFileRoute("/lovable/email/suppression")({
               default:
                 console.error("Webhook verification failed", {
                   code: error.code,
-                  message: error.message,
+                  message: errorField(error, "message"),
                 });
                 return Response.json({ error: "Verification failed" }, { status: 401 });
             }

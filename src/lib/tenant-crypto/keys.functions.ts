@@ -1,3 +1,4 @@
+import type { AppDatabaseClient } from "@/integrations/supabase/database";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
@@ -12,7 +13,7 @@ import {
 } from "./envelope.server";
 import { getActiveTenantKey, logKeyEvent } from "./keys.server";
 
-type Ctx = { userId: string; supabase: any };
+type Ctx = { userId: string; supabase: AppDatabaseClient };
 
 /** Public status: never returns key material. */
 export const getEncryptionStatus = createServerFn({ method: "GET" })
@@ -46,7 +47,7 @@ export const getEncryptionStatus = createServerFn({ method: "GET" })
       events: (events ?? []) as Array<{
         id: string;
         event: string;
-        detail: any;
+        detail: import("@/integrations/supabase/types").Json;
         created_at: string;
       }>,
     };

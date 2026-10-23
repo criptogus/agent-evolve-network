@@ -1,3 +1,4 @@
+import type { Database, Insert } from "@/integrations/supabase/database";
 /**
  * CRM learning layer — server side.
  *
@@ -26,7 +27,7 @@ import {
 } from "@/lib/crm/learning";
 import type { TriggerId } from "@/lib/crm/segments";
 
-const admin = _admin as any;
+const admin = _admin;
 
 export type LearningSettings = { enabled: boolean; minSamples: number };
 
@@ -65,7 +66,7 @@ export async function loadLearningState(): Promise<LearningState> {
 
   try {
     const { data } = await admin.rpc("crm_effectiveness", { _days: 120 });
-    for (const r of (data ?? []) as any[]) {
+    for (const r of data ?? []) {
       stats[armKey(r.trigger, r.variant)] = {
         sent: Number(r.sent ?? 0),
         opened: Number(r.opened ?? 0),
@@ -79,7 +80,7 @@ export async function loadLearningState(): Promise<LearningState> {
 
   try {
     const { data } = await admin.rpc("crm_send_hour_stats", { _days: 120 });
-    for (const r of (data ?? []) as any[]) {
+    for (const r of data ?? []) {
       hours[Number(r.send_hour)] = {
         sent: Number(r.sent ?? 0),
         engaged: Number(r.engaged ?? 0),
@@ -98,14 +99,21 @@ export async function loadLearningState(): Promise<LearningState> {
       .select(
         "trigger, variant, label, framing, status, subject_override, heading_override, intro_override",
       );
-    for (const row of (data ?? []) as any[]) {
+    for (const row of data ?? []) {
       const list = arms[row.trigger] ?? [];
       if (row.status !== "active") {
         arms[row.trigger] = list.filter((a) => a.variant !== row.variant);
         continue;
       }
       if (!list.some((a) => a.variant === row.variant))
-        list.push({ variant: row.variant, label: row.label, framing: row.framing });
+        list.push({
+          variant: row.variant,
+          label: row.label,
+          framing:
+            row.framing === "roi" || row.framing === "risk" || row.framing === "capability"
+              ? row.framing
+              : "capability",
+        });
       arms[row.trigger] = list;
       overrides[armKey(row.trigger, row.variant)] = {
         subject: row.subject_override,
@@ -153,7 +161,7 @@ export async function loadFatigue(userId: string): Promise<number> {
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(3);
-    const rows = (data ?? []) as any[];
+    const rows = data ?? [];
     let engaged = 0;
     for (const r of rows) {
       const o = Array.isArray(r.crm_message_outcomes)
@@ -172,7 +180,7 @@ export async function isGoodSendHour(userId: string, state: LearningState): Prom
   if (!state.settings.enabled) return true;
   try {
     const { data } = await admin.rpc("crm_active_hours", { _user_id: userId });
-    const active = ((data ?? []) as any[]).map((r) => ({
+    const active = (data ?? []).map((r) => ({
       hour: Number(r.hour),
       events: Number(r.events ?? 0),
     }));
@@ -185,7 +193,10 @@ export async function isGoodSendHour(userId: string, state: LearningState): Prom
 
 /* ---------------------------------------------------------- outcome scoring  */
 
-const TABLES: Record<OutcomeKind, Array<{ table: string; col: string }>> = {
+const TABLES: Record<
+  OutcomeKind,
+  Array<{ table: keyof Database["public"]["Tables"]; col: string }>
+> = {
   connected: [{ table: "mcp_call_log", col: "user_id" }],
   review: [{ table: "package_evaluations", col: "triggered_by" }],
   install_or_review: [
@@ -257,7 +268,7 @@ export async function scoreOutcomes(limit = 500): Promise<ScoreRunResult> {
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  const rows = (data ?? []) as any[];
+  const rows = data ?? [];
   if (rows.length === 0) return out;
 
   const { data: existing } = await admin
@@ -268,7 +279,7 @@ export async function scoreOutcomes(limit = 500): Promise<ScoreRunResult> {
       rows.map((r) => r.id),
     );
   const closed = new Set(
-    ((existing ?? []) as any[]).filter((o) => o.window_closed).map((o) => o.message_log_id),
+    (existing ?? []).filter((o) => o.window_closed).map((o) => o.message_log_id),
   );
 
   for (const row of rows) {
@@ -287,7 +298,7 @@ export async function scoreOutcomes(limit = 500): Promise<ScoreRunResult> {
       new Date(Math.min(windowEnd, Date.now())).toISOString(),
     );
 
-    const patch: Record<string, unknown> = {
+    const patch: Insert<"crm_message_outcomes"> = {
       message_log_id: row.id,
       user_id: row.user_id,
       trigger: row.trigger,

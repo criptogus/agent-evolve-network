@@ -3,7 +3,7 @@ import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.
 import { USE_CASES } from "@/lib/seo/use-cases";
 import { COMPARISONS } from "@/lib/seo/comparisons";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 const SITE = "https://superagentskill.com";
 

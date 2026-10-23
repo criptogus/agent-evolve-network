@@ -1,3 +1,4 @@
+import { parseEnvelope, type RpcEnvelope } from "./protocol";
 /**
  * @superagentskill/sdk — typed client for the Super Agent Skill MCP server.
  *
@@ -141,7 +142,10 @@ export class SuperAgentSkill {
 
   // ------------------ Internals -----------------------------------------
 
-  private async rawRequest(body: unknown, init: { signal?: AbortSignal }): Promise<any> {
+  private async rawRequest(
+    body: unknown,
+    init: { signal?: AbortSignal },
+  ): Promise<RpcEnvelope | null> {
     let attempt = 0;
     let lastErr: unknown = null;
     while (attempt <= this.maxRetries) {
@@ -262,20 +266,15 @@ function parseRetryAfter(res: Response): number {
   return 1;
 }
 
-async function safeJson(res: Response): Promise<any> {
+async function safeJson(res: Response): Promise<RpcEnvelope | null> {
   try {
-    return await res.json();
+    return parseEnvelope(await res.text());
   } catch {
     return null;
   }
 }
-
-function tryParse(text: string): any {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return null;
-  }
+function tryParse(text: string): RpcEnvelope | null {
+  return parseEnvelope(text);
 }
 
 /**

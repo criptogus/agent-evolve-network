@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -22,7 +23,7 @@ import {
 import { recordSyncEvent } from "@/lib/cloud-skills/sync-log.server";
 import type { SyncChange } from "@/lib/cloud-skills/sync-log";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 
 const AgentSchema = z
@@ -35,7 +36,7 @@ const AgentSchema = z
 
 /** Per-file audit rows for one plan. */
 function changesOf(plan: {
-  write: any[];
+  write: ReturnType<typeof planFor>["write"];
   skipped: { slug: string; path: string; reason?: string | null; conflict?: string }[];
 }): SyncChange[] {
   return [
@@ -108,13 +109,13 @@ async function loadSkills(userId: string, slugs?: string[]) {
   if (slugs?.length) q = q.in("slug", slugs);
   const { data, error } = await q;
   if (error) throw new Error(json({ error: error.message }));
-  return (data ?? []) as any[];
+  return data ?? [];
 }
 
 function planFor(
   providerId: string,
   scope: ProviderScope,
-  skills: any[],
+  skills: Awaited<ReturnType<typeof loadSkills>>,
   existing: LocalFile[],
   strategy: ConflictStrategy,
 ) {
@@ -296,8 +297,8 @@ export const cloudSkillsSyncAllTool = defineTool({
             content: f.content,
           })),
         };
-      } catch (e: any) {
-        const message = String(e?.message ?? e);
+      } catch (e) {
+        const message = String(errorField(e, "message") ?? e);
         audits.push(
           recordSyncEvent(supabaseAdmin, userId, {
             source: "mcp_sync_all",

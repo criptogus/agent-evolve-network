@@ -1,10 +1,11 @@
+import { errorField } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { processBulkUpload } from "@/lib/uploads/uploads.server";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { verifyBearer, extractBearer } from "@/lib/auth/bearer.server";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 // REST counterpart of the MCP `upload_packages` tool. Advertised on the
 // /account/tokens page snippets. Always inserts as PRIVATE drafts —
@@ -115,9 +116,12 @@ async function handle(request: Request): Promise<Response> {
             ? "Open /account/packages to submit a draft for admin review."
             : "No file was accepted. See `error_summary` for the cause.",
     });
-  } catch (e: any) {
+  } catch (e) {
     console.error("[api/packages/upload] fatal:", e);
-    return json({ error: "internal", message: e?.message ?? String(e) }, { status: 500 });
+    return json(
+      { error: "internal", message: errorField(e, "message") ?? String(e) },
+      { status: 500 },
+    );
   }
 }
 

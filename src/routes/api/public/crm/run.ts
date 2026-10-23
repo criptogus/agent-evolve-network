@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
@@ -45,7 +46,7 @@ export const Route = createFileRoute("/api/public/crm/run")({
         } catch (err) {
           console.error("CRM cadence run failed", err);
           return Response.json(
-            { ok: false, error: err instanceof Error ? err.message : "unknown" },
+            { ok: false, error: err instanceof Error ? errorField(err, "message") : "unknown" },
             { status: 500 },
           );
         }

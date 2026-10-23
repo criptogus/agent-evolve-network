@@ -37,7 +37,7 @@ function AccountLibraryPage() {
       toast.success("Removed from your library.");
       qc.invalidateQueries({ queryKey: ["account", "my-library"] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Action failed"),
+    onError: (e) => toast.error(e?.message ?? "Action failed"),
   });
 
   return (

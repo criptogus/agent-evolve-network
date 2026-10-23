@@ -1,3 +1,15 @@
+import { z } from "zod";
+const QuotaSchema = z.object({
+  allowed: z.boolean().optional(),
+  tier: z.string().optional(),
+  reason: z.string().optional(),
+  limit: z.number().optional(),
+  used: z.number().optional(),
+  remaining: z.number().optional(),
+  reset_at: z.string().optional(),
+  window: z.string().optional(),
+});
+type Quota = z.infer<typeof QuotaSchema>;
 import { responseOutcome } from "./outcome.ts";
 import { createMcpServer } from "mcp-tanstack-start";
 import {
@@ -46,7 +58,7 @@ import {
   curriculumNextTool,
 } from "@/lib/mcp/tools/university";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { ORIGIN, sha256, CORS_HEADERS } from "@/lib/oauth/mcp-oauth.server";
 import { verifyBearerDetailed } from "@/lib/auth/bearer.server";
 
@@ -311,7 +323,7 @@ function quotaIdentity(userId: string | null, request: Request): string {
   return `ip:${sha256(ip).slice(0, 32)}`;
 }
 
-function rateLimited(quota: any, id: string | number | null) {
+function rateLimited(quota: Quota, id: string | number | null) {
   const tier = quota?.tier ?? "trial";
   const reason = quota?.reason ?? "rate_limited";
   const win = quota?.window === "hour" ? "this hour" : "today";
@@ -406,17 +418,19 @@ async function handle(request: Request): Promise<Response> {
 
   // Quota gate. Skip discovery / lifecycle methods (initialize, tools/list, ping…)
   // and ultra-cheap tools, since they're needed just to bootstrap the session.
-  let lastQuota: any = null;
+  let lastQuota: Quota | null = null;
   if (isToolsCall && !FREE_TOOLS.has(toolName)) {
     const identity = quotaIdentity(userId, request);
     const isWrite = WRITE_TOOLS.has(toolName);
-    const { data: quota, error: quotaErr } = await supabaseAdmin.rpc("mcp_check_and_log_call", {
+    const { data: rawQuota, error: quotaErr } = await supabaseAdmin.rpc("mcp_check_and_log_call", {
       _user_id: userId,
       _identity: identity,
       _tool_name: toolName,
       _is_write: isWrite,
     } as never);
-    if (!quotaErr) lastQuota = quota ?? null;
+    const result = QuotaSchema.safeParse(rawQuota);
+    const quota = result.success ? result.data : null;
+    if (!quotaErr) lastQuota = quota;
     if (!quotaErr && quota && quota.allowed === false) {
       return withAuthStatus(withRateLimitHeaders(rateLimited(quota, rpcId), quota), authStatus);
     }

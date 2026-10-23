@@ -318,7 +318,7 @@ function AuthorTab() {
               </pre>
             </details>
             <div className="mt-3">
-              <FeedbackPrompt request={(m.data as any).feedback_request} />
+              <FeedbackPrompt request={m.data.feedback_request} />
             </div>
           </div>
         )}
@@ -426,7 +426,7 @@ function EvaluateTab({ packages }: { packages: Array<{ slug: string; name: strin
                 {JSON.stringify(m.data.evaluation.example_results, null, 2)}
               </pre>
             </details>
-            <FeedbackPrompt request={(m.data as any).feedback_request} />
+            <FeedbackPrompt request={m.data.feedback_request} />
           </div>
         )}
       </CardContent>
@@ -519,7 +519,7 @@ function EvolveTab({
                 )}
               </pre>
             </details>
-            <FeedbackPrompt request={(m.data as any).feedback_request} />
+            <FeedbackPrompt request={m.data.feedback_request} />
           </div>
         )}
       </CardContent>

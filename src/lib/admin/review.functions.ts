@@ -1,7 +1,9 @@
+import { packageTypeEnum } from "@/lib/skills/schemas";
+import type { AppDatabaseClient } from "@/integrations/supabase/database";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 export type ReviewStatus = "draft" | "pending" | "approved" | "paused" | "rejected";
 
@@ -23,7 +25,7 @@ export type ReviewQueueItem = {
   created_at: string;
 };
 
-async function assertAdmin(supabase: any, userId: string) {
+async function assertAdmin(supabase: AppDatabaseClient, userId: string) {
   const { data, error } = await supabase
     .from("user_roles")
     .select("role")
@@ -54,7 +56,7 @@ export const listReviewQueue = createServerFn({ method: "GET" })
       .order("review_status", { ascending: true })
       .order("updated_at", { ascending: false })
       .limit(500);
-    if (data.type !== "all") q = q.eq("type", data.type as any);
+    if (data.type !== "all") q = q.eq("type", packageTypeEnum.parse(data.type));
     const { data: rows, error } = await q;
     if (error) throw new Response(error.message, { status: 500 });
     return { items: (rows ?? []) as ReviewQueueItem[] };
@@ -68,8 +70,8 @@ export const submitForReview = createServerFn({ method: "POST" })
     return { slug };
   })
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const { data: pkg } = await supabase
       .from("packages")
       .select("id, author_id")

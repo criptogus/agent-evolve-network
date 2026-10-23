@@ -40,7 +40,7 @@ export function anonymizeWorkspace(workspaceId?: string): string | null {
 }
 
 export interface TelemetrySink {
-  insert(rows: Array<Record<string, unknown>>): Promise<{ error?: { message: string } | null }>;
+  insert(rows: ExecutionRow[]): Promise<{ error?: { message: string } | null }>;
 }
 
 export async function ingestExecution(event: ExecutionEvent, sink: TelemetrySink) {
@@ -66,3 +66,13 @@ export async function ingestExecution(event: ExecutionEvent, sink: TelemetrySink
   if (error) throw new Error(`telemetry ingest failed: ${error.message}`);
   return row;
 }
+
+export type ExecutionRow = Omit<
+  ExecutionEvent,
+  "workspace_id" | "package_version" | "runtime" | "latency_ms"
+> & {
+  workspace_hash: string | null;
+  package_version: string | null;
+  runtime: string | null;
+  latency_ms: number | null;
+};

@@ -1,3 +1,8 @@
+import { recordOf, toJson } from "@/lib/json";
+import type { Json } from "@/integrations/supabase/types";
+import { QueuedEmailSchema } from "@/lib/email-templates/queue-payload";
+import type { Database } from "@/integrations/supabase/database";
+import { errorField } from "@/lib/errors";
 import { sendLovableEmail } from "@lovable.dev/email-js";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createFileRoute } from "@tanstack/react-router";
@@ -36,16 +41,16 @@ function getRetryAfterSeconds(error: unknown): number {
 }
 
 async function moveToDlq(
-  supabase: SupabaseClient<any, any>,
+  supabase: SupabaseClient<Database>,
   queue: string,
-  msg: { msg_id: number; message: Record<string, unknown> },
+  msg: { msg_id: number; message: Json },
   reason: string,
 ): Promise<void> {
-  const payload = msg.message;
+  const payload = recordOf(msg.message);
   await supabase.from("email_send_log").insert({
-    message_id: payload.message_id,
+    message_id: typeof payload.message_id === "string" ? payload.message_id : null,
     template_name: (payload.label || queue) as string,
-    recipient_email: payload.to,
+    recipient_email: typeof payload.to === "string" ? payload.to : "unknown",
     status: "dlq",
     error_message: reason,
   });
@@ -53,7 +58,7 @@ async function moveToDlq(
     source_queue: queue,
     dlq_name: `${queue}_dlq`,
     message_id: msg.msg_id,
-    payload,
+    payload: toJson(payload),
   });
   if (error) {
     console.error("Failed to move message to DLQ", { queue, msg_id: msg.msg_id, reason, error });
@@ -85,7 +90,10 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
           return Response.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const supabase: SupabaseClient<any, any> = createClient(supabaseUrl, supabaseServiceKey);
+        const supabase: SupabaseClient<Database> = createClient<Database>(
+          supabaseUrl,
+          supabaseServiceKey,
+        );
 
         // 1. Check rate-limit cooldown and read queue config
         const { data: state } = await supabase
@@ -128,9 +136,9 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
           const messageIds = Array.from(
             new Set(
               messages
-                .map((msg: any) =>
-                  msg?.message?.message_id && typeof msg.message.message_id === "string"
-                    ? msg.message.message_id
+                .map((msg) =>
+                  typeof recordOf(msg.message).message_id === "string"
+                    ? String(recordOf(msg.message).message_id)
                     : null,
                 )
                 .filter((id: string | null): id is string => Boolean(id)),
@@ -163,7 +171,12 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
 
           for (let i = 0; i < messages.length; i++) {
             const msg = messages[i];
-            const payload = msg.message;
+            const parsedPayload = QueuedEmailSchema.safeParse(msg.message);
+            if (!parsedPayload.success) {
+              await moveToDlq(supabase, queue, msg, "Invalid queued email payload");
+              continue;
+            }
+            const payload = parsedPayload.data;
             const failedAttempts =
               payload?.message_id && typeof payload.message_id === "string"
                 ? (failedAttemptsByMessageId.get(payload.message_id) ?? 0)
@@ -172,7 +185,7 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
             // Drop expired messages (TTL exceeded).
             // Prefer payload.queued_at when present; fall back to PGMQ's enqueued_at
             // which is always set by the queue.
-            const queuedAt = payload.queued_at ?? msg.enqueued_at;
+            const queuedAt = payload.queued_at;
             if (queuedAt) {
               const ageMs = Date.now() - new Date(queuedAt).getTime();
               const maxAgeMs = ttlMinutes[queue] * 60 * 1000;

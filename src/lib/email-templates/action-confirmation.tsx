@@ -12,7 +12,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import type { TemplateEntry } from "./registry";
+import type { TemplateEntry, TemplateData } from "./registry";
 import { BRAND, styles } from "./_brand";
 
 interface Props {
@@ -81,7 +81,7 @@ const ActionConfirmationEmail = ({ name, action, details, actionUrl, actionLabel
 
 export const template = {
   component: ActionConfirmationEmail,
-  subject: (data: Record<string, any>) =>
+  subject: (data: TemplateData) =>
     data?.action ? `${data.action} — SuperAgent Skill` : "Action confirmed — SuperAgent Skill",
   displayName: "Action confirmation",
   previewData: {

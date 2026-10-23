@@ -75,7 +75,7 @@ function AccountsPage() {
               </tr>
             </thead>
             <tbody>
-              {(accounts.data?.accounts ?? []).map((a: any) => {
+              {(accounts.data?.accounts ?? []).map((a) => {
                 const isAdmin = a.roles.includes("admin");
                 return (
                   <tr key={a.id} className="border-t">
@@ -107,7 +107,7 @@ function AccountsPage() {
                           <SelectValue placeholder="Set plan" />
                         </SelectTrigger>
                         <SelectContent>
-                          {(plans.data?.plans ?? []).map((p: any) => (
+                          {(plans.data?.plans ?? []).map((p) => (
                             <SelectItem key={p.id} value={p.id}>
                               {p.name}
                             </SelectItem>

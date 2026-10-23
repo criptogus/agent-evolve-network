@@ -1,3 +1,4 @@
+import type { CurriculumPlan } from "@/lib/university/curriculum";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -77,7 +78,7 @@ function CurriculumPage() {
   const [domain, setDomain] = useState<DomainId | undefined>(search.domain);
   const [failing, setFailing] = useState<ErrorClass[]>([]);
   const [installed, setInstalled] = useState("");
-  const [result, setResult] = useState<any | null>(null);
+  const [result, setResult] = useState<CurriculumPlan | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -303,7 +304,7 @@ function CurriculumPage() {
               <div className="rounded-2xl border border-border bg-card p-5">
                 <h2 className="text-sm font-semibold">Full track (ordered by marginal gain)</h2>
                 <ol className="mt-4 space-y-3">
-                  {result.track.map((c: any, i: number) => (
+                  {result.track.map((c, i: number) => (
                     <li
                       key={c.slug}
                       className={`rounded-xl border p-4 ${STATUS_STYLE[c.status] ?? "border-border"}`}
@@ -343,7 +344,7 @@ function CurriculumPage() {
                   <Trash2 className="h-4 w-4" /> Remove before adding
                 </h2>
                 <ul className="mt-3 space-y-2 text-sm">
-                  {result.remove_suggestions.map((r: any) => (
+                  {result.remove_suggestions.map((r) => (
                     <li key={r.slug}>
                       <span className="font-mono text-xs">{r.slug}</span> — {r.why}
                     </li>

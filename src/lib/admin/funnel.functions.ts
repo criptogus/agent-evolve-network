@@ -14,8 +14,8 @@ export const getMcpFunnelSummary = createServerFn({ method: "GET" })
       .parse(d ?? {}),
   )
   .handler(async ({ context, data }) => {
-    const { supabase: _sb } = context as any;
-    const supabase = _sb as any;
+    const { supabase: _sb } = context;
+    const supabase = _sb;
     const excludeBots = data.exclude_bots ?? true;
     const { data: rows, error } = await supabase.rpc("mcp_funnel_summary", {
       _days: data.days ?? 7,
@@ -36,8 +36,8 @@ export const getMcpFunnelTrafficBreakdown = createServerFn({ method: "GET" })
     z.object({ days: z.number().int().min(1).max(90).optional() }).parse(d ?? {}),
   )
   .handler(async ({ context, data }) => {
-    const { supabase: _sb } = context as any;
-    const supabase = _sb as any;
+    const { supabase: _sb } = context;
+    const supabase = _sb;
     const { data: rows, error } = await supabase.rpc("mcp_funnel_traffic_breakdown", {
       _days: data.days ?? 7,
     });
@@ -66,8 +66,8 @@ export const getMcpFunnelUaFamilies = createServerFn({ method: "GET" })
       .parse(d ?? {}),
   )
   .handler(async ({ context, data }) => {
-    const { supabase: _sb } = context as any;
-    const supabase = _sb as any;
+    const { supabase: _sb } = context;
+    const supabase = _sb;
     const { data: rows, error } = await supabase.rpc("mcp_funnel_ua_families", {
       _days: data.days ?? 7,
       _limit: data.limit ?? 20,
