@@ -26,11 +26,17 @@ export function captureRefFromUrl(): string | null {
       // don't overwrite an existing capture (first-touch attribution)
       if (!getStoredRef()) {
         setCookie(norm);
-        try { localStorage.setItem(STORAGE, norm); } catch {}
+        try {
+          localStorage.setItem(STORAGE, norm);
+        } catch {
+          /* Best-effort browser storage or navigation. */
+        }
       }
       return norm;
     }
-  } catch {}
+  } catch {
+    /* Best-effort browser storage or navigation. */
+  }
   return null;
 }
 
@@ -39,13 +45,19 @@ export function getStoredRef(): string | null {
   try {
     const ls = localStorage.getItem(STORAGE);
     if (ls) return ls;
-  } catch {}
+  } catch {
+    /* Best-effort browser storage or navigation. */
+  }
   return getCookie();
 }
 
 export function clearStoredRef() {
   if (typeof window === "undefined") return;
-  try { localStorage.removeItem(STORAGE); } catch {}
+  try {
+    localStorage.removeItem(STORAGE);
+  } catch {
+    /* Best-effort browser storage or navigation. */
+  }
   document.cookie = `${COOKIE}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
 }
 

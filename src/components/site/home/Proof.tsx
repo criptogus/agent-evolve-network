@@ -7,13 +7,13 @@ export function Proof() {
       Icon: ShieldCheck,
       title: "Attacked before it ships",
       plain: "Adversarial harness",
-      body: "Every skill runs an adversarial gauntlet — prompt injection, jailbreaks, data exfiltration, policy bypass — before it can publish. Pass rate is public, per attack class.",
+      body: "The evaluation tooling supports prompt injection, jailbreak, exfiltration and policy-bypass tests. Check the version report for recorded results.",
     },
     {
       Icon: BadgeCheck,
       title: "Signed, not just published",
       plain: "Ed25519 · offline-verifiable",
-      body: "Releases are Ed25519-signed and verifiable offline. Your security team can check the math without trusting us.",
+      body: "Signed releases can be verified offline with Ed25519. Signature availability is shown per version; unsigned packages are not presented as signed.",
     },
     {
       Icon: Activity,
@@ -25,7 +25,7 @@ export function Proof() {
       Icon: RefreshCw,
       title: "Gets better while you sleep",
       plain: "SkillForge",
-      body: "SkillForge re-tests every skill daily and ships patched versions automatically — no retraining, no downtime, every install reversible and audited.",
+      body: "Review new evaluation results and version changes before updating. Evaluation coverage varies by package and version.",
     },
   ];
   return (

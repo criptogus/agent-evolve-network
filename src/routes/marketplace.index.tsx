@@ -8,7 +8,11 @@ import { TermsStatusBanner } from "@/components/site/TermsStatusBanner";
 import { listMarketplace, type MarketplaceItem } from "@/lib/marketplace/list.functions";
 import { isTrustDemoted, TRUST_TIER_RANK, trustTier } from "@/lib/marketplace/trust-tiers";
 import { PackageCard } from "@/components/marketplace/PackageCard";
-import { isBeginnerFriendly, isBroadPurpose, recommendationScore } from "@/lib/marketplace/recommend";
+import {
+  isBeginnerFriendly,
+  isBroadPurpose,
+  recommendationScore,
+} from "@/lib/marketplace/recommend";
 import { projectFitScore, projectTypeLabel } from "@/lib/marketplace/project-profile";
 import { useProjectType } from "@/hooks/use-project-type";
 import { ProjectTypePicker } from "@/components/marketplace/ProjectTypePicker";
@@ -44,7 +48,10 @@ export const Route = createFileRoute("/marketplace/")({
           "Browse the live registry of skills, playbooks, souls (incl. famous founders & operators) and guardrails. Search by name, person and category.",
       },
       { property: "og:title", content: "Marketplace — Super Agent Skill" },
-      { property: "og:description", content: "Live registry of skills, playbooks, souls and guardrails for AI agents." },
+      {
+        property: "og:description",
+        content: "Live registry of skills, playbooks, souls and guardrails for AI agents.",
+      },
       { property: "og:url", content: "https://superagentskill.com/marketplace" },
     ],
     links: [{ rel: "canonical", href: "https://superagentskill.com/marketplace" }],
@@ -106,7 +113,6 @@ function useDebounced<T>(value: T, delay = 250): T {
   }, [value, delay]);
   return debounced;
 }
-
 
 const INSTALL_BUCKETS = [
   { value: "any", label: "Any installs", min: 0, max: Infinity },
@@ -178,8 +184,6 @@ const QUICK_FILTERS: {
   },
 ];
 
-
-
 function Marketplace() {
   const fetchFn = useServerFn(listMarketplace);
   const { data, isLoading, isError } = useQuery({
@@ -221,7 +225,8 @@ function Marketplace() {
       if (tags.length && (!p.vertical || !tags.includes(p.vertical))) return false;
       if (verticalGroup !== "all") {
         const grp = VERTICAL_GROUPS.find((g) => g.value === verticalGroup);
-        if (grp && (!p.vertical || !(grp.verticals as readonly string[]).includes(p.vertical))) return false;
+        if (grp && (!p.vertical || !(grp.verticals as readonly string[]).includes(p.vertical)))
+          return false;
       }
       if (quickPreset && !quickPreset.match(p)) return false;
       if (verifiedOnly && !p.author_verified) return false;
@@ -247,14 +252,22 @@ function Marketplace() {
           // Default sort only: curation demotion. Unscored / below-Baseline
           // packages sort after trust-scored ones (nothing is hidden); order
           // within each group stays install-count based.
-          const demoteA = isTrustDemoted(trustTier(a.trust_score, a.trust_verified)) ? 1 : 0;
-          const demoteB = isTrustDemoted(trustTier(b.trust_score, b.trust_verified)) ? 1 : 0;
+          const demoteA = isTrustDemoted(
+            trustTier(a.trust_score, a.trust_verified, a.trust_confidence),
+          )
+            ? 1
+            : 0;
+          const demoteB = isTrustDemoted(
+            trustTier(b.trust_score, b.trust_verified, b.trust_confidence),
+          )
+            ? 1
+            : 0;
           if (demoteA !== demoteB) return demoteA - demoteB;
           return b.install_count - a.install_count;
         }
         case "trust_desc": {
-          const tierA = trustTier(a.trust_score, a.trust_verified);
-          const tierB = trustTier(b.trust_score, b.trust_verified);
+          const tierA = trustTier(a.trust_score, a.trust_verified, a.trust_confidence);
+          const tierB = trustTier(b.trust_score, b.trust_verified, b.trust_confidence);
           if (TRUST_TIER_RANK[tierA] !== TRUST_TIER_RANK[tierB])
             return TRUST_TIER_RANK[tierA] - TRUST_TIER_RANK[tierB];
           return (b.trust_score ?? -1) - (a.trust_score ?? -1) || b.install_count - a.install_count;
@@ -269,13 +282,11 @@ function Marketplace() {
           return b.rating_count - a.rating_count || (b.rating_avg || 0) - (a.rating_avg || 0);
         case "version_desc":
           return (
-            compareVersions(b.latest_version, a.latest_version) ||
-            b.install_count - a.install_count
+            compareVersions(b.latest_version, a.latest_version) || b.install_count - a.install_count
           );
         case "version_asc":
           return (
-            compareVersions(a.latest_version, b.latest_version) ||
-            a.install_count - b.install_count
+            compareVersions(a.latest_version, b.latest_version) || a.install_count - b.install_count
           );
         case "recent":
           return (b.created_at ?? "").localeCompare(a.created_at ?? "");
@@ -286,7 +297,18 @@ function Marketplace() {
       }
     });
     return sorted;
-  }, [items, type, tags, verticalGroup, q, verifiedOnly, installBucket, sort, quickPreset, projectType]);
+  }, [
+    items,
+    type,
+    tags,
+    verticalGroup,
+    q,
+    verifiedOnly,
+    installBucket,
+    sort,
+    quickPreset,
+    projectType,
+  ]);
 
   const typeCounts = useMemo(() => {
     const base: Record<TypeFilter, number> = {
@@ -383,7 +405,6 @@ function Marketplace() {
     if (preset?.sort) setSort(preset.sort);
   }
 
-
   return (
     <div className="min-h-screen bg-background">
       <Nav />
@@ -408,11 +429,15 @@ function Marketplace() {
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-xs text-muted-foreground">
             <span>
-              <strong className="text-foreground">{data ? items.length.toLocaleString("en-US") : "—"}</strong>{" "}
+              <strong className="text-foreground">
+                {data ? items.length.toLocaleString("en-US") : "—"}
+              </strong>{" "}
               packages
             </span>
             <span>
-              <strong className="text-foreground">{data ? totalInstalls.toLocaleString("en-US") : "—"}</strong>{" "}
+              <strong className="text-foreground">
+                {data ? totalInstalls.toLocaleString("en-US") : "—"}
+              </strong>{" "}
               installs
             </span>
             {verticals.length > 0 && (
@@ -545,7 +570,6 @@ function Marketplace() {
             </button>
           </div>
         )}
-
       </div>
 
       {profileReady && !projectType && !askedSkipped && (
@@ -619,7 +643,6 @@ function Marketplace() {
               </FilterGroup>
             )}
 
-
             <FilterGroup title="Refine">
               <label className="flex cursor-pointer items-center gap-2 py-1 text-sm">
                 <input
@@ -667,7 +690,9 @@ function Marketplace() {
                 "Loading registry…"
               ) : (
                 <>
-                  <strong className="text-foreground">{filtered.length.toLocaleString("en-US")}</strong>{" "}
+                  <strong className="text-foreground">
+                    {filtered.length.toLocaleString("en-US")}
+                  </strong>{" "}
                   {filtered.length === 1 ? "package" : "packages"}
                   {dirty && <> of {items.length.toLocaleString("en-US")}</>}
                   {projectType && sort === "best_fit" && (
@@ -752,7 +777,9 @@ function FilterRow({
       onClick={onClick}
       aria-pressed={active}
       className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
-        active ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+        active
+          ? "bg-primary/10 font-medium text-primary"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground"
       }`}
     >
       {checkbox && (
@@ -792,7 +819,9 @@ export function TypeBadge({ type }: { type: MarketplaceItem["type"] }) {
           ? "border-violet-500/30 bg-violet-500/10 text-violet-600 dark:text-violet-400"
           : "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400";
   return (
-    <span className={`rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${cls}`}>
+    <span
+      className={`rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${cls}`}
+    >
       {type}
     </span>
   );

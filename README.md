@@ -6,7 +6,7 @@
 
 ### **The signed skill registry for AI agents.**
 
-> **Hundreds of packages — every one adversarially tested, Ed25519-signed, and Trust-Scored. So your security team says yes.**
+> **Hundreds of packages, with tooling for adversarial evaluation, Ed25519 signing and evidence-based Trust Scores. Check each version’s report: publication does not mean verification.**
 > (Live count on [superagentskill.com/marketplace](https://superagentskill.com/marketplace).)
 
 **Skills, playbooks, souls (drop-in expert personas) and guardrails — one MCP endpoint or `npx super-agent install` away from any AI agent.**
@@ -100,8 +100,8 @@ bun install && bun run dev
 
 **What we ship that other registries don't:**
 
-- 🛡 **Proprietary adversarial harness.** Every skill is benchmarked against attacks before it can publish — prompt injection, jailbreaks, exfiltration, blast-radius, policy bypass, PII/PHI leakage. Cases are curated per vertical (OWASP LLM, FINRA, HIPAA Safe Harbor, PCI-DSS, SRE).
-- 🔏 **Ed25519-signed releases.** Every published version is cryptographically signed. Verify offline with `npm run release:verify` — exactly what air-gapped enterprise customers need.
+- 🛡 **Proprietary adversarial harness.** The evaluation tooling can benchmark skills against attacks — prompt injection, jailbreaks, exfiltration, blast-radius, policy bypass, PII/PHI leakage. Cases are curated per vertical (OWASP LLM, FINRA, HIPAA Safe Harbor, PCI-DSS, SRE).
+- 🔏 **Ed25519-signed releases.** Published versions can carry cryptographic signatures; check the specific release for a signature. Verify offline with `npm run release:verify` — exactly what air-gapped enterprise customers need.
 - 🧾 **Signed per-package trust attestations.** `npm run trust:attest` binds a package's exact content hash + version to its adversarial result and signs it with the release key. Your security team runs `npm run trust:verify -- --attestation pkg.trust.json --pkg pkg.yaml --pubkey pub.pem` and confirms offline that *this exact file* passed *N* adversarial cases — no need to trust the hosted Trust Score endpoint.
 - 📊 **Public, verifiable Trust Score.** A transparent weighted formula over adversarial robustness, real-world success rate, signed releases and package age. Embed the badge in your README; reviewers see the same number you do.
 - 🏛 **Verticalized Souls.** Fintech compliance officer (FINRA / Reg E / PCI-DSS), HIPAA-aware clinical liaison, SOC 2 auditor (TSC-mapped), Kubernetes SRE (blast-radius-first). Souls that cite the rule before the recommendation.
@@ -228,8 +228,10 @@ Your work isn't just merged — it's *amplified*.
 - [x] SkillForge evolution loop (eval → patch → re-score)
 - [x] Public **Trust Score**, model compatibility matrix, drift detection
 - [x] Hundreds of packages live in the hosted registry (live count on the site)
-- [ ] CLI (`npx sas init`, `sas publish`, `sas eval`)
-- [ ] Cryptographically signed package releases
+- [x] CLI installation and connection commands (see `cli/`)
+- [ ] Expand CLI publishing and evaluation workflows
+- [x] Cryptographic signing and verification tooling
+- [ ] Expand hosted signature and evaluation coverage with version-specific receipts
 - [ ] Versioned downloadable registry bundles
 - [ ] Community-curated **collections** (curated bundles around a use case)
 

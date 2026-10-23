@@ -14,8 +14,8 @@ export function HowItWorks() {
     },
     {
       n: "03",
-      title: "It improves on its own",
-      body: "Every skill is re-tested daily against new attacks. Patched versions arrive automatically; underperformers get re-scored, not buried.",
+      title: "Review evidence and updates",
+      body: "Inspect each version’s available tests and signature metadata. Install an update after reviewing its evidence; not every package has been evaluated.",
     },
   ];
   return (

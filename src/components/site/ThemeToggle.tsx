@@ -12,7 +12,11 @@ function readMode(): Mode {
 
 function applyMode(mode: Mode) {
   document.documentElement.classList.toggle("dark", mode === "dark");
-  try { localStorage.setItem("sas-theme", mode); } catch {}
+  try {
+    localStorage.setItem("sas-theme", mode);
+  } catch {
+    /* Best-effort browser storage or navigation. */
+  }
 }
 
 export function ThemeToggle({ className = "" }: { className?: string }) {

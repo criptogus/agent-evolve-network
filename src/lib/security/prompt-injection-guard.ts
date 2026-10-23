@@ -42,58 +42,130 @@ interface Rule {
 // Patterns are intentionally conservative — high precision, ordered most-specific first.
 const RULES: Rule[] = [
   // Instruction override
-  { label: "ignore previous/above instructions", category: "instruction_override", severity: "high",
-    re: /\b(ignore|disregard|forget)\b[^\n]{0,40}\b(previous|above|prior|earlier|all)\b[^\n]{0,40}\b(instructions?|prompts?|rules?|system)\b/gi },
-  { label: "override system prompt", category: "instruction_override", severity: "high",
-    re: /\b(override|replace|bypass)\b[^\n]{0,40}\b(system|safety|guard ?rails?|policy|instructions?)\b/gi },
-  { label: "new instructions follow", category: "instruction_override", severity: "medium",
-    re: /\b(new|updated|revised)\s+(instructions?|rules?|directives?)\s*[:\-]/gi },
+  {
+    label: "ignore previous/above instructions",
+    category: "instruction_override",
+    severity: "high",
+    re: /\b(ignore|disregard|forget)\b[^\n]{0,40}\b(previous|above|prior|earlier|all)\b[^\n]{0,40}\b(instructions?|prompts?|rules?|system)\b/gi,
+  },
+  {
+    label: "override system prompt",
+    category: "instruction_override",
+    severity: "high",
+    re: /\b(override|replace|bypass)\b[^\n]{0,40}\b(system|safety|guard ?rails?|policy|instructions?)\b/gi,
+  },
+  {
+    label: "new instructions follow",
+    category: "instruction_override",
+    severity: "medium",
+    re: /\b(new|updated|revised)\s+(instructions?|rules?|directives?)\s*[:-]/gi,
+  },
 
   // Role hijack
-  { label: "you are now / from now on you are", category: "role_hijack", severity: "high",
-    re: /\b(you\s+are\s+now|from\s+now\s+on,?\s+you\s+are|act\s+as)\b[^\n]{0,80}/gi },
-  { label: "DAN / jailbreak persona", category: "role_hijack", severity: "high",
-    re: /\b(DAN|do\s+anything\s+now|developer\s+mode|jailbroken)\b/gi },
-  { label: "pretend to / roleplay as", category: "role_hijack", severity: "medium",
-    re: /\b(pretend\s+to\s+be|role-?play\s+as|simulate\s+(being|a))\b/gi },
+  {
+    label: "you are now / from now on you are",
+    category: "role_hijack",
+    severity: "high",
+    re: /\b(you\s+are\s+now|from\s+now\s+on,?\s+you\s+are|act\s+as)\b[^\n]{0,80}/gi,
+  },
+  {
+    label: "DAN / jailbreak persona",
+    category: "role_hijack",
+    severity: "high",
+    re: /\b(DAN|do\s+anything\s+now|developer\s+mode|jailbroken)\b/gi,
+  },
+  {
+    label: "pretend to / roleplay as",
+    category: "role_hijack",
+    severity: "medium",
+    re: /\b(pretend\s+to\s+be|role-?play\s+as|simulate\s+(being|a))\b/gi,
+  },
 
   // Fake system / control tokens
-  { label: "fake SYSTEM message", category: "instruction_override", severity: "critical",
-    re: /(^|\n)\s*(SYSTEM|<\|system\|>|<\|im_start\|>system|\[SYSTEM\])/g },
-  { label: "fake assistant turn", category: "instruction_override", severity: "high",
-    re: /(^|\n)\s*(ASSISTANT|<\|assistant\|>|<\|im_start\|>assistant)/g },
-  { label: "end-of-prompt marker", category: "instruction_override", severity: "medium",
-    re: /---+\s*(end of|---)?\s*(user\s*message|prompt|instructions?)\s*---+/gi },
+  {
+    label: "fake SYSTEM message",
+    category: "instruction_override",
+    severity: "critical",
+    re: /(^|\n)\s*(SYSTEM|<\|system\|>|<\|im_start\|>system|\[SYSTEM\])/g,
+  },
+  {
+    label: "fake assistant turn",
+    category: "instruction_override",
+    severity: "high",
+    re: /(^|\n)\s*(ASSISTANT|<\|assistant\|>|<\|im_start\|>assistant)/g,
+  },
+  {
+    label: "end-of-prompt marker",
+    category: "instruction_override",
+    severity: "medium",
+    re: /---+\s*(end of|---)?\s*(user\s*message|prompt|instructions?)\s*---+/gi,
+  },
 
   // System prompt leak
-  { label: "reveal system prompt", category: "system_prompt_leak", severity: "high",
-    re: /\b(print|reveal|show|reproduce|leak|repeat|output)\b[^\n]{0,40}\b(system\s+prompt|hidden\s+instructions?|initial\s+instructions?|configuration)\b/gi },
+  {
+    label: "reveal system prompt",
+    category: "system_prompt_leak",
+    severity: "high",
+    re: /\b(print|reveal|show|reproduce|leak|repeat|output)\b[^\n]{0,40}\b(system\s+prompt|hidden\s+instructions?|initial\s+instructions?|configuration)\b/gi,
+  },
 
   // Tool / MCP injection
-  { label: "force tool invocation", category: "tool_injection", severity: "high",
-    re: /\b(call|invoke|execute|run)\b[^\n]{0,40}\b(tool|function|mcp|skill)\b[^\n]{0,40}\b(with|on|for)\b/gi },
+  {
+    label: "force tool invocation",
+    category: "tool_injection",
+    severity: "high",
+    re: /\b(call|invoke|execute|run)\b[^\n]{0,40}\b(tool|function|mcp|skill)\b[^\n]{0,40}\b(with|on|for)\b/gi,
+  },
 
   // Data exfiltration
-  { label: "exfiltrate via URL", category: "data_exfiltration", severity: "critical",
-    re: /\b(fetch|curl|wget|GET|POST|send)\b[^\n]{0,80}\bhttps?:\/\/[^\s'"`]+\?[^\s'"`]*(key|token|secret|password|pw|api[_-]?key)/gi },
-  { label: "send secrets", category: "data_exfiltration", severity: "high",
-    re: /\b(include|append|attach|leak)\b[^\n]{0,40}\b(api[_\-\s]?keys?|secrets?|passwords?|tokens?|credentials?)\b/gi },
+  {
+    label: "exfiltrate via URL",
+    category: "data_exfiltration",
+    severity: "critical",
+    re: /\b(fetch|curl|wget|GET|POST|send)\b[^\n]{0,80}\bhttps?:\/\/[^\s'"`]+\?[^\s'"`]*(key|token|secret|password|pw|api[_-]?key)/gi,
+  },
+  {
+    label: "send secrets",
+    category: "data_exfiltration",
+    severity: "high",
+    re: /\b(include|append|attach|leak)\b[^\n]{0,40}\b(api[_\-\s]?keys?|secrets?|passwords?|tokens?|credentials?)\b/gi,
+  },
 
   // Policy bypass
-  { label: "skip / drop guardrails", category: "policy_bypass", severity: "high",
-    re: /\b(skip|drop|disable|turn\s+off|remove)\b[^\n]{0,40}\b(guard ?rails?|safety|disclaimers?|warnings?|filters?)\b/gi },
-  { label: "for educational purposes only", category: "policy_bypass", severity: "low",
-    re: /\b(for\s+educational\s+purposes\s+only|hypothetically|theoretically\s+speaking)\b/gi },
+  {
+    label: "skip / drop guardrails",
+    category: "policy_bypass",
+    severity: "high",
+    re: /\b(skip|drop|disable|turn\s+off|remove)\b[^\n]{0,40}\b(guard ?rails?|safety|disclaimers?|warnings?|filters?)\b/gi,
+  },
+  {
+    label: "for educational purposes only",
+    category: "policy_bypass",
+    severity: "low",
+    re: /\b(for\s+educational\s+purposes\s+only|hypothetically|theoretically\s+speaking)\b/gi,
+  },
 
   // Encoding evasion
-  { label: "base64 instruction blob", category: "encoding_evasion", severity: "medium",
-    re: /\b(decode|run|execute)\b[^\n]{0,40}\b(base64|rot13|hex)\b/gi },
-  { label: "zero-width characters", category: "encoding_evasion", severity: "medium",
-    re: /[​-‏‪-‮⁠-⁯]/g },
+  {
+    label: "base64 instruction blob",
+    category: "encoding_evasion",
+    severity: "medium",
+    re: /\b(decode|run|execute)\b[^\n]{0,40}\b(base64|rot13|hex)\b/gi,
+  },
+  {
+    label: "zero-width characters",
+    category: "encoding_evasion",
+    severity: "medium",
+    re: /[\u200b-‏‪-‮⁠-⁯]/g,
+  },
 ];
 
 const SEVERITY_RANK: Record<InjectionSeverity, number> = {
-  none: 0, low: 1, medium: 2, high: 3, critical: 4,
+  none: 0,
+  low: 1,
+  medium: 2,
+  high: 3,
+  critical: 4,
 };
 
 function worst(a: InjectionSeverity, b: InjectionSeverity): InjectionSeverity {
@@ -147,7 +219,7 @@ export function inspectContent(input: string, opts: GuardOptions = {}): GuardRep
   }
 
   // Strip zero-width characters defensively even when not rejecting.
-  const stripped = input.replace(/[​-‏‪-‮⁠-⁯]/g, "");
+  const stripped = input.replace(/[\u200b-‏‪-‮⁠-⁯]/g, "");
   // Neutralize fake control tokens so a downstream LLM cannot be confused.
   const neutralized = stripped
     .replace(/<\|im_start\|>/g, "<\\|im_start\\|>")
@@ -170,7 +242,10 @@ export function inspectContent(input: string, opts: GuardOptions = {}): GuardRep
   };
 }
 
-export function guardOrThrow(input: string, opts?: GuardOptions): { sanitized: string; report: GuardReport } {
+export function guardOrThrow(
+  input: string,
+  opts?: GuardOptions,
+): { sanitized: string; report: GuardReport } {
   const report = inspectContent(input, opts);
   if (report.rejected) {
     const err = new Error(report.reason ?? "Prompt injection detected in uploaded content.");

@@ -1,3 +1,4 @@
+import { responseOutcome } from "./outcome.ts";
 import { createMcpServer } from "mcp-tanstack-start";
 import {
   overviewTool,
@@ -56,14 +57,14 @@ import { verifyBearerDetailed } from "@/lib/auth/bearer.server";
  * endpoint. Stable string values, safe to log on the client side.
  */
 type AuthStatus =
-  | "none"               // no Authorization header at all
-  | "malformed"          // header present but not `Bearer <token>`
-  | "oauth"              // verified via mcp_oauth_tokens
-  | "pat"                // verified via mcp_tokens
-  | "rejected:oauth"     // OAuth-shaped bearer that did not verify
-  | "rejected:pat"       // PAT-shaped bearer that did not verify
+  | "none" // no Authorization header at all
+  | "malformed" // header present but not `Bearer <token>`
+  | "oauth" // verified via mcp_oauth_tokens
+  | "pat" // verified via mcp_tokens
+  | "rejected:oauth" // OAuth-shaped bearer that did not verify
+  | "rejected:pat" // PAT-shaped bearer that did not verify
   | "rejected:refresh-or-code" // caller sent refresh-token / auth code
-  | "rejected:unsupported";    // unknown bearer shape
+  | "rejected:unsupported"; // unknown bearer shape
 
 const mcp = createMcpServer({
   name: "superagentskill",
@@ -204,7 +205,13 @@ function withAuthStatus(res: Response, status: AuthStatus): Response {
  */
 function withRateLimitHeaders(
   res: Response,
-  quota: { limit?: number; used?: number; remaining?: number; reset_at?: string; window?: string } | null,
+  quota: {
+    limit?: number;
+    used?: number;
+    remaining?: number;
+    reset_at?: string;
+    window?: string;
+  } | null,
 ): Response {
   if (!quota) return res;
   const headers = new Headers(res.headers);
@@ -224,7 +231,11 @@ function withRateLimitHeaders(
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
 }
 
-function unauthorized(reason: string, rpcId: string | number | null = null, authStatus: AuthStatus = "rejected:unsupported") {
+function unauthorized(
+  reason: string,
+  rpcId: string | number | null = null,
+  authStatus: AuthStatus = "rejected:unsupported",
+) {
   // Return BOTH a JSON-RPC error (so MCP clients that surface error.data.hint
   // in chat can render the recovery action inline) and the canonical
   // WWW-Authenticate header (so OAuth-aware clients trigger discovery).
@@ -338,9 +349,11 @@ async function handle(request: Request): Promise<Response> {
   let isDryRun = false;
   try {
     const cloned = request.clone();
-    const body = (await cloned.json().catch(() => null)) as
-      | { id?: string | number | null; method?: string; params?: { name?: string; arguments?: { dry_run?: boolean } } }
-      | null;
+    const body = (await cloned.json().catch(() => null)) as {
+      id?: string | number | null;
+      method?: string;
+      params?: { name?: string; arguments?: { dry_run?: boolean } };
+    } | null;
     if (body) {
       rpcId = body.id ?? null;
       if (body.method === "tools/call") {
@@ -371,8 +384,12 @@ async function handle(request: Request): Promise<Response> {
       authSource = result.auth.source;
       authStatus = result.auth.source === "oauth" ? "oauth" : "pat";
     } else {
-      authStatus = `rejected:${result.reason === "refresh-or-code" ? "refresh-or-code" : result.reason === "oauth-rejected" ? "oauth" : result.reason === "pat-rejected" ? "pat" : "unsupported"}` as AuthStatus;
-      return withAuthStatus(withCors(unauthorized("token rejected", rpcId, authStatus)), authStatus);
+      authStatus =
+        `rejected:${result.reason === "refresh-or-code" ? "refresh-or-code" : result.reason === "oauth-rejected" ? "oauth" : result.reason === "pat-rejected" ? "pat" : "unsupported"}` as AuthStatus;
+      return withAuthStatus(
+        withCors(unauthorized("token rejected", rpcId, authStatus)),
+        authStatus,
+      );
     }
   }
 
@@ -381,7 +398,10 @@ async function handle(request: Request): Promise<Response> {
   // spends model budget — so it's allowed anonymously to let agents test the
   // publish flow before connecting OAuth.
   if (isToolsCall && !userId && WRITE_TOOLS.has(toolName) && !isDryRun) {
-    return withAuthStatus(withCors(unauthorized(`tool "${toolName}" requires authentication`, rpcId, authStatus)), authStatus);
+    return withAuthStatus(
+      withCors(unauthorized(`tool "${toolName}" requires authentication`, rpcId, authStatus)),
+      authStatus,
+    );
   }
 
   // Quota gate. Skip discovery / lifecycle methods (initialize, tools/list, ping…)
@@ -402,38 +422,46 @@ async function handle(request: Request): Promise<Response> {
     }
   }
 
-  // Funnel telemetry: fire-and-forget record of the first successful
-  // tools/call this caller has made. The RPC itself dedupes on event +
-  // (user_id | anon_hash) so we don't need to check here.
-  if (isToolsCall) {
-    const identity = quotaIdentity(userId, request);
-    const anonHash = userId ? null : identity.replace(/^ip:/, "");
-    const ua = request.headers.get("user-agent") ?? "";
-    const { classifyUserAgent } = await import("@/lib/telemetry/bot-detect");
-    const cls = classifyUserAgent(ua);
-    void supabaseAdmin
-      .rpc("record_mcp_funnel_event", {
-        _event: WRITE_TOOLS.has(toolName) ? "mcp_first_write" : "mcp_first_call",
-        _client_id: null,
-        _client_name: null,
-        _anon_hash: anonHash,
-        _props: {
-          tool: toolName,
-          auth_source: authSource,
-          is_bot: cls.isBot,
-          ua_family: cls.family,
-          ua: ua.slice(0, 300),
-        },
-      } as never)
-      .then(() => {}, () => {});
+  // Versioned events avoid reinterpreting historical pre-execution counters.
+  const recordOutcome = async (outcome: "attempted" | "succeeded" | "failed" | "unknown") => {
+    if (!isToolsCall) return;
+    try {
+      const identity = quotaIdentity(userId, request);
+      const ua = request.headers.get("user-agent") ?? "";
+      const { classifyUserAgent } = await import("@/lib/telemetry/bot-detect");
+      const cls = classifyUserAgent(ua);
+      await supabaseAdmin
+        .rpc("record_mcp_funnel_event", {
+          _event: `mcp_call_${outcome}`,
+          _anon_hash: identity.replace(/^ip:/, ""),
+          _props: {
+            tool: toolName,
+            auth_source: authSource,
+            quota_write: WRITE_TOOLS.has(toolName),
+            is_bot: cls.isBot,
+            ua_family: cls.family,
+            metric_version: 2,
+          },
+        } as never)
+        .abortSignal(AbortSignal.timeout(1000));
+    } catch {
+      /* Telemetry never changes the MCP result. */
+    }
+  };
+  await recordOutcome("attempted");
+  let handled: Response;
+  try {
+    handled =
+      userId && authSource
+        ? await mcp.handleRequest(request, {
+            auth: { token, claims: { user_id: userId, source: authSource } },
+          })
+        : await mcp.handleRequest(request);
+  } catch (error) {
+    await recordOutcome("failed");
+    throw error;
   }
-
-  const handled =
-    userId && authSource
-      ? await mcp.handleRequest(request, {
-          auth: { token, claims: { user_id: userId, source: authSource } },
-        })
-      : await mcp.handleRequest(request);
+  if (isToolsCall) await recordOutcome(await responseOutcome(handled, rpcId));
   return withAuthStatus(withRateLimitHeaders(withCors(handled), lastQuota), authStatus);
 }
 /**
@@ -455,7 +483,8 @@ export function mcpInfoResponse(endpoint: string): Response {
       name: "superagentskill",
       transport: "streamable-http",
       endpoint,
-      usage: "POST JSON-RPC 2.0 payloads to this URL. Set Accept: application/json, text/event-stream.",
+      usage:
+        "POST JSON-RPC 2.0 payloads to this URL. Set Accept: application/json, text/event-stream.",
       mirror: endpoint === "/api/public/mcp" ? `${ORIGIN}/api/mcp` : `${ORIGIN}/api/public/mcp`,
       mirror_hint:
         "If this URL is blocked by an edge firewall from your runtime (403 / connection reset), retry the identical JSON-RPC calls against the `mirror` URL.",

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { readdirSync } from "node:fs";
 // Builds a JSONL fine-tune dataset for a vertical Soul by joining its persona
 // rules with consented historical executions. Output:
 //   { messages: [{ role: "system", content: persona }, { role: "user", ... }, { role: "assistant", ... }] }
@@ -20,7 +21,7 @@ const ROOT = new URL("..", import.meta.url).pathname;
 const soul = parseYaml(readFileSync(join(ROOT, `content/souls/${args.soul}.yaml`), "utf8"));
 
 const lines = [];
-const system = `${soul.persona}\n\nValues:\n- ${soul.values.join("\n- ")}\n\nDo say:\n- ${(soul.do_say||[]).join("\n- ")}\n\nDo not say:\n- ${(soul.dont_say||[]).join("\n- ")}`;
+const system = `${soul.persona}\n\nValues:\n- ${soul.values.join("\n- ")}\n\nDo say:\n- ${(soul.do_say || []).join("\n- ")}\n\nDo not say:\n- ${(soul.dont_say || []).join("\n- ")}`;
 
 const source = args.source ?? "examples";
 if (source === "examples") {
@@ -34,14 +35,16 @@ if (source === "examples") {
       const tagOverlap = (kase.tags ?? []).some((t) => (soul.tags ?? []).includes(t));
       if (!tagOverlap && v !== inferVertical(soul.tags ?? [])) continue;
       const expected = synthesizeExpected(kase, soul);
-      lines.push(JSON.stringify({
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: kase.input },
-          { role: "assistant", content: expected },
-        ],
-        meta: { source: "adversarial", case_id: kase.id, severity: kase.severity },
-      }));
+      lines.push(
+        JSON.stringify({
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: kase.input },
+            { role: "assistant", content: expected },
+          ],
+          meta: { source: "adversarial", case_id: kase.id, severity: kase.severity },
+        }),
+      );
     }
   }
 } else {
@@ -56,18 +59,30 @@ function parse(argv) {
   const o = {};
   for (let i = 0; i < argv.length; i++) {
     if (!argv[i].startsWith("--")) continue;
-    const k = argv[i].slice(2), n = argv[i + 1];
-    if (!n || n.startsWith("--")) o[k] = true; else { o[k] = n; i++; }
+    const k = argv[i].slice(2),
+      n = argv[i + 1];
+    if (!n || n.startsWith("--")) o[k] = true;
+    else {
+      o[k] = n;
+      i++;
+    }
   }
   return o;
 }
-function readdirSafe(p) { try { return readdirSync(p); } catch { return []; } }
-function readdirSync(p) { return require("node:fs").readdirSync(p); }
+function readdirSafe(p) {
+  try {
+    return readdirSync(p);
+  } catch {
+    return [];
+  }
+}
 function inferVertical(tags) {
   if (tags.includes("hipaa") || tags.includes("healthcare")) return "healthcare";
   if (tags.includes("fintech") || tags.includes("compliance")) return "fintech";
-  if (tags.includes("sre") || tags.includes("kubernetes") || tags.includes("devops")) return "devops";
-  if (tags.includes("soc2") || tags.includes("audit") || tags.includes("security")) return "security";
+  if (tags.includes("sre") || tags.includes("kubernetes") || tags.includes("devops"))
+    return "devops";
+  if (tags.includes("soc2") || tags.includes("audit") || tags.includes("security"))
+    return "security";
   return "general";
 }
 function synthesizeExpected(kase, soul) {
