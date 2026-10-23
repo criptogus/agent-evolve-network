@@ -37,8 +37,7 @@ export const COMPARISONS: Comparison[] = [
     title: "Super Agent Skill vs raw GitHub prompt repos",
     metaDescription:
       "Should you copy prompts from GitHub repos or install verified skills? Compare raw prompt repos with Super Agent Skill's signed, adversarially tested marketplace.",
-    lede:
-      "GitHub is full of awesome-prompts repos with tens of thousands of stars. They are a great starting point for inspiration — and a risky foundation for production agents. Here is how a raw prompt repo compares to a verified skill marketplace, point by point.",
+    lede: "GitHub is full of awesome-prompts repos with tens of thousands of stars. They are a great starting point for inspiration — and a risky foundation for production agents. Here is how a raw prompt repo compares to a verified skill marketplace, point by point.",
     sections: [
       {
         heading: "Provenance: stars vs signatures",
@@ -58,7 +57,8 @@ export const COMPARISONS: Comparison[] = [
         heading: "Maintenance and install experience",
         paragraphs: [
           "Copy-pasting from a repo means you own drift forever: when the upstream prompt improves, your pasted copy does not. When it breaks against a new model version, nobody tells you.",
-          "Skills install through MCP with a single URL, or via the npx CLI, and updates flow through the same channel with signatures verified on the way in. " + TRUST_FORMULA,
+          "Skills install through MCP with a single URL, or via the npx CLI, and updates flow through the same channel with signatures verified on the way in. " +
+            TRUST_FORMULA,
         ],
       },
     ],
@@ -87,8 +87,7 @@ export const COMPARISONS: Comparison[] = [
     title: "Super Agent Skill vs building skills in-house",
     metaDescription:
       "Build agent skills in-house or install verified ones? Compare engineering cost, adversarial testing burden, and maintenance against Super Agent Skill's marketplace.",
-    lede:
-      "Your team can absolutely write its own agent skills — the question is whether writing the skill is the expensive part. In practice, the prompt is 20% of the work; the testing, hardening, and ongoing re-verification are the other 80%. Here is the honest build-vs-install breakdown.",
+    lede: "Your team can absolutely write its own agent skills — the question is whether writing the skill is the expensive part. In practice, the prompt is 20% of the work; the testing, hardening, and ongoing re-verification are the other 80%. Here is the honest build-vs-install breakdown.",
     sections: [
       {
         heading: "What 'building it in-house' actually includes",
@@ -100,7 +99,8 @@ export const COMPARISONS: Comparison[] = [
       {
         heading: "What the marketplace amortizes for you",
         paragraphs: [
-          "Super Agent Skill runs adversarial testing with attacker and judge LLMs against every published skill, and SkillForge re-tests over time so results stay current instead of decaying. Skills are Ed25519-signed, so what you install is provably what the author published. " + TRUST_FORMULA,
+          "Super Agent Skill runs adversarial testing with attacker and judge LLMs against every published skill, and SkillForge re-tests over time so results stay current instead of decaying. Skills are Ed25519-signed, so what you install is provably what the author published. " +
+            TRUST_FORMULA,
           "Installation is one MCP URL or an npx command, which means evaluating three candidate skills costs minutes, not sprints. The build-vs-buy math shifts: in-house makes sense for skills encoding genuinely proprietary logic; for everything generic — code review, redaction, triage, compliance checks — you are rebuilding tested commodities.",
         ],
       },
@@ -136,8 +136,7 @@ export const COMPARISONS: Comparison[] = [
     title: "Super Agent Skill vs untested marketplace prompts",
     metaDescription:
       "Not all prompt marketplaces test what they sell. See how Super Agent Skill's adversarial testing, Ed25519 signing, and public Trust Score compare to untested prompt stores.",
-    lede:
-      "Prompt marketplaces have multiplied, but most are storefronts: listings, ratings, a buy button. Ratings measure whether buyers liked the output on a sunny day — not whether the prompt survives a hostile one. Here is what separates a tested skill registry from an untested prompt store.",
+    lede: "Prompt marketplaces have multiplied, but most are storefronts: listings, ratings, a buy button. Ratings measure whether buyers liked the output on a sunny day — not whether the prompt survives a hostile one. Here is what separates a tested skill registry from an untested prompt store.",
     sections: [
       {
         heading: "Ratings are not security reviews",
@@ -150,7 +149,8 @@ export const COMPARISONS: Comparison[] = [
         heading: "Tamper-evidence and re-testing",
         paragraphs: [
           "On an untested marketplace, the prompt you download today may differ from the one that earned its reviews, and nothing will tell you. Skills here are Ed25519-signed: content is cryptographically bound to the author, and any modification breaks verification. You can confirm this yourself, offline, with npm run trust:verify.",
-          "Testing is also not a one-time stamp. SkillForge re-runs adversarial evaluations over time, so scores reflect current behavior against current models. " + TRUST_FORMULA,
+          "Testing is also not a one-time stamp. SkillForge re-runs adversarial evaluations over time, so scores reflect current behavior against current models. " +
+            TRUST_FORMULA,
         ],
       },
       {
@@ -185,8 +185,7 @@ export const COMPARISONS: Comparison[] = [
     title: "Signed skills vs unsigned prompts: why it matters",
     metaDescription:
       "Unsigned prompts are unauditable inputs to systems with real permissions. Learn how Ed25519-signed skills give agents tamper-evident, offline-verifiable instructions.",
-    lede:
-      "Agents execute instructions with real permissions — repos, databases, payment APIs. An unsigned prompt is an unauthenticated instruction stream into that permission set. Code signing solved this problem for software distribution decades ago; skills are simply catching up.",
+    lede: "Agents execute instructions with real permissions — repos, databases, payment APIs. An unsigned prompt is an unauthenticated instruction stream into that permission set. Code signing solved this problem for software distribution decades ago; skills are simply catching up.",
     sections: [
       {
         heading: "The threat model for unsigned prompts",
@@ -233,8 +232,7 @@ export const COMPARISONS: Comparison[] = [
     title: "MCP skills vs fine-tuning: which should you use?",
     metaDescription:
       "Fine-tuning bakes behavior into weights; MCP skills deliver it as installable, signed, testable instructions. Compare cost, iteration speed, auditability, and portability.",
-    lede:
-      "Both fine-tuning and skills change how a model behaves. Fine-tuning does it by adjusting weights; a skill does it by supplying structured, installable instructions at runtime through MCP. The difference determines your iteration speed, your audit story, and your bill.",
+    lede: "Both fine-tuning and skills change how a model behaves. Fine-tuning does it by adjusting weights; a skill does it by supplying structured, installable instructions at runtime through MCP. The difference determines your iteration speed, your audit story, and your bill.",
     sections: [
       {
         heading: "Iteration speed and cost",
@@ -282,8 +280,7 @@ export const COMPARISONS: Comparison[] = [
     title: "MCP skills vs RAG for domain expertise",
     metaDescription:
       "RAG retrieves knowledge; MCP skills encode procedure. Learn when to use retrieval, when to install a tested skill, and how the two combine for domain-expert agents.",
-    lede:
-      "RAG and skills both make an agent 'know' your domain, but they carry different cargo. RAG delivers facts at query time; a skill delivers procedure — how to reason, what to check, which tools to call, what to refuse. Most production agents need both, in different places.",
+    lede: "RAG and skills both make an agent 'know' your domain, but they carry different cargo. RAG delivers facts at query time; a skill delivers procedure — how to reason, what to check, which tools to call, what to refuse. Most production agents need both, in different places.",
     sections: [
       {
         heading: "Knowledge vs procedure",
@@ -331,8 +328,7 @@ export const COMPARISONS: Comparison[] = [
     title: "Super Agent Skill vs LangChain Hub prompts",
     metaDescription:
       "LangChain Hub shares prompts for LangChain apps; Super Agent Skill ships signed, adversarially tested skills over MCP. Compare trust, testing, and portability.",
-    lede:
-      "LangChain Hub is a genuinely useful sharing layer for prompts inside the LangChain ecosystem. But sharing and trusting are different problems. If your agent framework question is 'where do I find a prompt,' the Hub answers it; if it's 'what can I safely run in production,' the answer needs signatures and adversarial evidence.",
+    lede: "LangChain Hub is a genuinely useful sharing layer for prompts inside the LangChain ecosystem. But sharing and trusting are different problems. If your agent framework question is 'where do I find a prompt,' the Hub answers it; if it's 'what can I safely run in production,' the answer needs signatures and adversarial evidence.",
     sections: [
       {
         heading: "Distribution vs verification",
@@ -374,8 +370,7 @@ export const COMPARISONS: Comparison[] = [
     title: "Super Agent Skill vs custom GPTs",
     metaDescription:
       "Custom GPTs live inside ChatGPT; MCP skills are portable, Ed25519-signed, and adversarially tested. Compare distribution, trust, and production readiness.",
-    lede:
-      "Custom GPTs made packaging instructions mainstream: give a system prompt a name and a storefront listing. For consumer chat, that's plenty. For teams wiring agents into real systems, the packaging is the easy part — portability, provenance, and testing are where custom GPTs stop and skills begin.",
+    lede: "Custom GPTs made packaging instructions mainstream: give a system prompt a name and a storefront listing. For consumer chat, that's plenty. For teams wiring agents into real systems, the packaging is the easy part — portability, provenance, and testing are where custom GPTs stop and skills begin.",
     sections: [
       {
         heading: "Walled garden vs open protocol",
@@ -387,7 +382,8 @@ export const COMPARISONS: Comparison[] = [
         heading: "Trust: store listing vs verifiable evidence",
         paragraphs: [
           "GPT store rankings run on usage and ratings — the same popularity signals that miss robustness entirely, and GPT instructions are famously extractable and modifiable by their owner at any time with no notice to users. There is no signature binding behavior to an author, and no published hostile-testing results.",
-          "Skills on Super Agent Skill are Ed25519-signed and tamper-evident, adversarially tested by attacker and judge LLMs with pass rates on the listing, and re-tested by SkillForge as models change. " + TRUST_FORMULA,
+          "Skills on Super Agent Skill are Ed25519-signed and tamper-evident, adversarially tested by attacker and judge LLMs with pass rates on the listing, and re-tested by SkillForge as models change. " +
+            TRUST_FORMULA,
         ],
       },
       {

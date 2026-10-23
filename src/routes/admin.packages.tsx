@@ -2,14 +2,24 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { listAllPackages, setPackagePublished, deletePackage } from "@/lib/admin/packages.functions";
+import {
+  listAllPackages,
+  setPackagePublished,
+  deletePackage,
+} from "@/lib/admin/packages.functions";
 import { runForgeLoop } from "@/lib/skills/forge-loop.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/admin/packages")({
   component: PackagesPage,
@@ -24,7 +34,10 @@ function PackagesPage() {
 
   const [search, setSearch] = useState("");
   const [kind, setKind] = useState<string>("");
-  const [loopResult, setLoopResult] = useState<{ slug: string; data: Awaited<ReturnType<typeof loop>> } | null>(null);
+  const [loopResult, setLoopResult] = useState<{
+    slug: string;
+    data: Awaited<ReturnType<typeof loop>>;
+  } | null>(null);
 
   const pkgs = useQuery({
     queryKey: ["admin", "packages", search, kind],
@@ -41,7 +54,10 @@ function PackagesPage() {
   });
   const loopM = useMutation({
     mutationFn: (input: { slug: string; hotswap: boolean }) =>
-      loop({ data: { package_slug: input.slug, hotswap: input.hotswap } }).then((d) => ({ slug: input.slug, data: d })),
+      loop({ data: { package_slug: input.slug, hotswap: input.hotswap } }).then((d) => ({
+        slug: input.slug,
+        data: d,
+      })),
     onSuccess: (r) => {
       setLoopResult(r);
       qc.invalidateQueries({ queryKey: ["admin", "packages"] });
@@ -98,7 +114,9 @@ function PackagesPage() {
                 <tr key={p.id} className="border-t">
                   <td className="px-4 py-3">
                     <div className="font-medium">{p.name}</div>
-                    <div className="text-xs text-muted-foreground">{p.slug} · v{p.latest_version}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {p.slug} · v{p.latest_version}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant="secondary">{p.type}</Badge>
@@ -158,10 +176,18 @@ function PackagesPage() {
       </Card>
 
       {loopM.isPending && (
-        <Card><CardContent className="py-6 text-sm text-muted-foreground">Running Forge loop · evaluate → learn → re-evaluate…</CardContent></Card>
+        <Card>
+          <CardContent className="py-6 text-sm text-muted-foreground">
+            Running Forge loop · evaluate → learn → re-evaluate…
+          </CardContent>
+        </Card>
       )}
       {loopM.error && (
-        <Card><CardContent className="py-4 text-sm text-destructive">{(loopM.error as Error).message}</CardContent></Card>
+        <Card>
+          <CardContent className="py-4 text-sm text-destructive">
+            {(loopM.error as Error).message}
+          </CardContent>
+        </Card>
       )}
       {loopResult && (
         <Card>
@@ -198,9 +224,11 @@ function PackagesPage() {
               </div>
             )}
             <details>
-              <summary className="cursor-pointer text-xs text-muted-foreground">Pipeline stages</summary>
+              <summary className="cursor-pointer text-xs text-muted-foreground">
+                Pipeline stages
+              </summary>
               <pre className="mt-2 whitespace-pre-wrap rounded bg-muted/40 p-2 text-xs">
-{JSON.stringify(loopResult.data.stages, null, 2)}
+                {JSON.stringify(loopResult.data.stages, null, 2)}
               </pre>
             </details>
           </CardContent>

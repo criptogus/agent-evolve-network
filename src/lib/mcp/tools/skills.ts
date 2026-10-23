@@ -679,13 +679,7 @@ export const uploadPackagesTool = defineTool({
 const ENGINE = "sas-eval/5";
 
 type PillarId =
-  | "identity"
-  | "scope"
-  | "procedure"
-  | "examples"
-  | "guardrails"
-  | "trust"
-  | "portability";
+  "identity" | "scope" | "procedure" | "examples" | "guardrails" | "trust" | "portability";
 
 const PILLAR_TITLE: Record<PillarId, string> = {
   identity: "Identity",
@@ -2467,16 +2461,19 @@ export const reviewSkillTool = defineTool({
       .describe("fnv1a hash from a previous run — enables delta_vs_previous in the response"),
     previous_overall_score: z.number().int().min(0).max(100).optional(),
   }),
-  execute: async ({
-    name,
-    type,
-    content,
-    doc_class,
-    semantic_check,
-    language: languageOverride,
-    previous_hash,
-    previous_overall_score,
-  }, ctx?: any) => {
+  execute: async (
+    {
+      name,
+      type,
+      content,
+      doc_class,
+      semantic_check,
+      language: languageOverride,
+      previous_hash,
+      previous_overall_score,
+    },
+    ctx?: any,
+  ) => {
     const callerId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
     const core = await computeReview({
       name,
@@ -2510,7 +2507,9 @@ export const reviewSkillTool = defineTool({
     const history = callerId ? await loadReviewHistory(callerId, key) : null;
     const lastRun = history?.runs[0] ?? null;
     const prevScore =
-      typeof previous_overall_score === "number" ? previous_overall_score : lastRun?.overall_score ?? null;
+      typeof previous_overall_score === "number"
+        ? previous_overall_score
+        : (lastRun?.overall_score ?? null);
     const prevHash = previous_hash ?? lastRun?.doc_hash ?? null;
     const delta =
       typeof prevScore === "number"

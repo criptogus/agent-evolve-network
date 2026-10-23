@@ -259,8 +259,8 @@ export function GradeImpact() {
             Want to see the same delta on your agent?
           </h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            Track pass rate, human intervention, latency, and ROI per skill in the SAK dashboard. Join
-            the access waitlist or see your numbers now.
+            Track pass rate, human intervention, latency, and ROI per skill in the SAK dashboard.
+            Join the access waitlist or see your numbers now.
           </p>
           <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link

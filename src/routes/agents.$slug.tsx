@@ -127,7 +127,11 @@ function AgentDetail() {
                     <Button onClick={() => download("zip")} disabled={busy !== null}>
                       {busy === "zip" ? "Preparing…" : "Download ZIP"}
                     </Button>
-                    <Button variant="outline" onClick={() => download("md")} disabled={busy !== null}>
+                    <Button
+                      variant="outline"
+                      onClick={() => download("md")}
+                      disabled={busy !== null}
+                    >
                       {busy === "md" ? "Preparing…" : "Download single .md"}
                     </Button>
                     <Button variant="outline" onClick={copyPrompt} disabled={busy !== null}>

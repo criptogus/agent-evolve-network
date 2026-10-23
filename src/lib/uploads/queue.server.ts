@@ -15,7 +15,7 @@ export type QueuedJob = {
 
 export async function enqueueUploadJobs(
   userId: string,
-  files: Array<{ name: string; content: string; type?: string }>
+  files: Array<{ name: string; content: string; type?: string }>,
 ): Promise<QueuedJob[]> {
   if (!files.length) return [];
   const rows = files.map((f) => ({

@@ -7,8 +7,6 @@
  */
 import { GUARDRAILS } from "@/lib/crm/guardrails";
 
-
-
 export type CrmCustomerRow = {
   user_id: string;
   email: string | null;
@@ -45,13 +43,7 @@ export type CrmCustomerRow = {
 };
 
 export type CrmStage =
-  | "new"
-  | "connected"
-  | "activated"
-  | "power"
-  | "paying"
-  | "at_risk"
-  | "dormant";
+  "new" | "connected" | "activated" | "power" | "paying" | "at_risk" | "dormant";
 
 export const STAGE_LABELS: Record<CrmStage, string> = {
   new: "New (not connected)",
@@ -308,7 +300,6 @@ export const CADENCE = {
   minHoursBetweenEmails: GUARDRAILS.minHoursBetweenEmails,
 };
 
-
 export type SentSummary = {
   /** lifetime count per trigger */
   counts: Record<string, number>;
@@ -320,9 +311,7 @@ export type SentSummary = {
   lastAnyAt: string | null;
 };
 
-export type TriggerDecision =
-  | { send: true; trigger: TriggerId }
-  | { send: false; reason: string };
+export type TriggerDecision = { send: true; trigger: TriggerId } | { send: false; reason: string };
 
 /**
  * Every trigger that passes the hard constraints right now, in deterministic

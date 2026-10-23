@@ -16,8 +16,7 @@ export const requirePaidSubscription = createMiddleware({ type: "function" })
       .maybeSingle();
 
     const isActive =
-      !!sub &&
-      (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+      !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
 
     if (!isActive) {
       throw new Response(

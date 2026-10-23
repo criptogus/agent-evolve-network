@@ -21,9 +21,21 @@ export const Route = createFileRoute("/evaluation")({
 
 const TYPE_META: Record<EvalRow["type"], { label: string; cls: string; glyph: string }> = {
   skill: { label: "skill", cls: "border-primary/40 bg-primary/10 text-primary", glyph: "◆" },
-  playbook: { label: "playbook", cls: "border-signal/40 bg-signal/15 text-signal-foreground", glyph: "▶" },
-  soul: { label: "soul", cls: "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400", glyph: "✦" },
-  guardrail: { label: "guardrail", cls: "border-destructive/40 bg-destructive/10 text-destructive", glyph: "■" },
+  playbook: {
+    label: "playbook",
+    cls: "border-signal/40 bg-signal/15 text-signal-foreground",
+    glyph: "▶",
+  },
+  soul: {
+    label: "soul",
+    cls: "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    glyph: "✦",
+  },
+  guardrail: {
+    label: "guardrail",
+    cls: "border-destructive/40 bg-destructive/10 text-destructive",
+    glyph: "■",
+  },
 };
 
 function fmtPct(v: number | null): string {
@@ -86,7 +98,8 @@ function EvaluationPage() {
           <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">Evaluation</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
             Real success rate, latency, drift and security findings for every published package.
-            Telemetry is reported via the MCP <code className="font-mono text-xs">report_execution</code> tool.
+            Telemetry is reported via the MCP{" "}
+            <code className="font-mono text-xs">report_execution</code> tool.
           </p>
           <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-5">
             <Stat label="Packages tracked" value={`${totals.tracked} / ${rows.length}`} />
@@ -199,21 +212,9 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Metric({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone?: "good" | "warn";
-}) {
+function Metric({ label, value, tone }: { label: string; value: string; tone?: "good" | "warn" }) {
   const cls =
-    tone === "good"
-      ? "text-signal"
-      : tone === "warn"
-        ? "text-destructive"
-        : "text-foreground";
+    tone === "good" ? "text-signal" : tone === "warn" ? "text-destructive" : "text-foreground";
   return (
     <div>
       <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>

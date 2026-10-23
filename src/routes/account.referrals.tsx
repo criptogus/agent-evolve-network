@@ -12,7 +12,11 @@ export const Route = createFileRoute("/account/referrals")({
   head: () => ({
     meta: [
       { title: "Referrals — Super Agent Skill" },
-      { name: "description", content: "Invite others and earn credits whenever they subscribe or buy on the marketplace." },
+      {
+        name: "description",
+        content:
+          "Invite others and earn credits whenever they subscribe or buy on the marketplace.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -52,7 +56,9 @@ function ReferralsPage() {
       <Nav />
       <section className="border-b border-border bg-surface/50">
         <div className="mx-auto max-w-5xl px-6 py-12">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Grow & earn</span>
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
+            Grow & earn
+          </span>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight">Referrals</h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">
             Share Super Agent Skill with anyone — when they sign up, subscribe, or buy a package
@@ -63,7 +69,9 @@ function ReferralsPage() {
 
       <section className="mx-auto max-w-5xl px-6 py-10">
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-5">
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">Your referral link</div>
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">
+            Your referral link
+          </div>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <code className="flex-1 truncate rounded-md border border-border bg-background px-3 py-2 font-mono text-sm">
               {isLoading ? "Loading…" : link || "—"}
@@ -86,20 +94,55 @@ function ReferralsPage() {
           <Stat label="Clicks" value={(data?.clicks ?? 0).toLocaleString()} />
           <Stat label="Sign-ups" value={(data?.signups ?? 0).toLocaleString()} />
           <Stat label="Subscribed" value={(data?.subscribed ?? 0).toLocaleString()} />
-          <Stat label="Credits earned" value={`+${(data?.credits_earned ?? 0).toLocaleString()}`} accent />
+          <Stat
+            label="Credits earned"
+            value={`+${(data?.credits_earned ?? 0).toLocaleString()}`}
+            accent
+          />
         </div>
 
         <div className="mt-8 rounded-xl border border-border bg-background p-5">
           <div className="text-sm font-semibold">How rewards work</div>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            <li className="flex gap-2"><span className="text-primary">→</span><span>Someone signs up via your link: <span className="text-foreground">+20 credits</span> (and they get +50 to start).</span></li>
-            <li className="flex gap-2"><span className="text-primary">→</span><span>They become a paid subscriber: <span className="text-foreground">+200 credits</span>.</span></li>
-            <li className="flex gap-2"><span className="text-primary">→</span><span>Every package they buy: <span className="text-foreground">5% commission</span> back to you in credits.</span></li>
-            <li className="flex gap-2"><span className="text-primary">→</span><span>Monthly cap: 5,000 credits per referrer. Self-referrals don't count.</span></li>
+            <li className="flex gap-2">
+              <span className="text-primary">→</span>
+              <span>
+                Someone signs up via your link: <span className="text-foreground">+20 credits</span>{" "}
+                (and they get +50 to start).
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span className="text-primary">→</span>
+              <span>
+                They become a paid subscriber: <span className="text-foreground">+200 credits</span>
+                .
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span className="text-primary">→</span>
+              <span>
+                Every package they buy: <span className="text-foreground">5% commission</span> back
+                to you in credits.
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span className="text-primary">→</span>
+              <span>Monthly cap: 5,000 credits per referrer. Self-referrals don't count.</span>
+            </li>
           </ul>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link to="/marketplace" className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm hover:bg-accent">Open marketplace</Link>
-            <Link to="/account/credits" className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm hover:bg-accent">View credits ledger</Link>
+            <Link
+              to="/marketplace"
+              className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm hover:bg-accent"
+            >
+              Open marketplace
+            </Link>
+            <Link
+              to="/account/credits"
+              className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm hover:bg-accent"
+            >
+              View credits ledger
+            </Link>
           </div>
         </div>
       </section>
@@ -110,9 +153,13 @@ function ReferralsPage() {
 
 function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className={`rounded-xl border p-5 ${accent ? "border-primary/30 bg-primary/5" : "border-border bg-background"}`}>
+    <div
+      className={`rounded-xl border p-5 ${accent ? "border-primary/30 bg-primary/5" : "border-border bg-background"}`}
+    >
       <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className={`mt-1.5 font-mono text-3xl font-semibold ${accent ? "text-primary" : ""}`}>{value}</div>
+      <div className={`mt-1.5 font-mono text-3xl font-semibold ${accent ? "text-primary" : ""}`}>
+        {value}
+      </div>
     </div>
   );
 }

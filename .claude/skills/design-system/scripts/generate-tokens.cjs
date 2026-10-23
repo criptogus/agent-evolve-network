@@ -7,8 +7,8 @@
  *   node generate-tokens.cjs --config tokens.json --format tailwind
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 /**
  * Parse command line arguments
@@ -18,17 +18,17 @@ function parseArgs() {
   const options = {
     config: null,
     output: null,
-    format: 'css' // css | tailwind
+    format: "css", // css | tailwind
   };
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--config' || args[i] === '-c') {
+    if (args[i] === "--config" || args[i] === "-c") {
       options.config = args[++i];
-    } else if (args[i] === '--output' || args[i] === '-o') {
+    } else if (args[i] === "--output" || args[i] === "-o") {
       options.output = args[++i];
-    } else if (args[i] === '--format' || args[i] === '-f') {
+    } else if (args[i] === "--format" || args[i] === "-f") {
       options.format = args[++i];
-    } else if (args[i] === '--help' || args[i] === '-h') {
+    } else if (args[i] === "--help" || args[i] === "-h") {
       console.log(`
 Usage: node generate-tokens.cjs [options]
 
@@ -49,11 +49,11 @@ Options:
  * Resolve token references like {primitive.color.blue.600}
  */
 function resolveReference(value, tokens) {
-  if (typeof value !== 'string' || !value.startsWith('{')) {
+  if (typeof value !== "string" || !value.startsWith("{")) {
     return value;
   }
 
-  const path = value.slice(1, -1).split('.');
+  const path = value.slice(1, -1).split(".");
   let result = tokens;
 
   for (const key of path) {
@@ -71,7 +71,7 @@ function resolveReference(value, tokens) {
  * Convert token name to CSS variable name
  */
 function toCssVarName(path) {
-  return '--' + path.join('-').replace(/\./g, '-');
+  return "--" + path.join("-").replace(/\./g, "-");
 }
 
 /**
@@ -81,7 +81,7 @@ function flattenTokens(obj, tokens, prefix = [], result = {}) {
   for (const [key, value] of Object.entries(obj)) {
     const currentPath = [...prefix, key];
 
-    if (value && typeof value === 'object') {
+    if (value && typeof value === "object") {
       if (value.$value !== undefined) {
         // This is a token
         const cssVar = toCssVarName(currentPath);
@@ -101,7 +101,7 @@ function flattenTokens(obj, tokens, prefix = [], result = {}) {
  * Generate CSS output
  */
 function generateCSS(tokens) {
-  const primitive = flattenTokens(tokens.primitive || {}, tokens, ['primitive']);
+  const primitive = flattenTokens(tokens.primitive || {}, tokens, ["primitive"]);
   const semantic = flattenTokens(tokens.semantic || {}, tokens, []);
   const component = flattenTokens(tokens.component || {}, tokens, []);
   const darkSemantic = flattenTokens(tokens.dark?.semantic || {}, tokens, []);
@@ -111,17 +111,23 @@ function generateCSS(tokens) {
 
 /* === PRIMITIVES === */
 :root {
-${Object.entries(primitive).map(([k, v]) => `  ${k}: ${v};`).join('\n')}
+${Object.entries(primitive)
+  .map(([k, v]) => `  ${k}: ${v};`)
+  .join("\n")}
 }
 
 /* === SEMANTIC === */
 :root {
-${Object.entries(semantic).map(([k, v]) => `  ${k}: ${v};`).join('\n')}
+${Object.entries(semantic)
+  .map(([k, v]) => `  ${k}: ${v};`)
+  .join("\n")}
 }
 
 /* === COMPONENTS === */
 :root {
-${Object.entries(component).map(([k, v]) => `  ${k}: ${v};`).join('\n')}
+${Object.entries(component)
+  .map(([k, v]) => `  ${k}: ${v};`)
+  .join("\n")}
 }
 `;
 
@@ -129,7 +135,9 @@ ${Object.entries(component).map(([k, v]) => `  ${k}: ${v};`).join('\n')}
     css += `
 /* === DARK MODE === */
 .dark {
-${Object.entries(darkSemantic).map(([k, v]) => `  ${k}: ${v};`).join('\n')}
+${Object.entries(darkSemantic)
+  .map(([k, v]) => `  ${k}: ${v};`)
+  .join("\n")}
 }
 `;
   }
@@ -146,8 +154,8 @@ function generateTailwind(tokens) {
   // Extract colors for Tailwind
   const colors = {};
   for (const [key, value] of Object.entries(semantic)) {
-    if (key.includes('color')) {
-      const name = key.replace('--color-', '').replace(/-/g, '.');
+    if (key.includes("color")) {
+      const name = key.replace("--color-", "").replace(/-/g, ".");
       colors[name] = `var(${key})`;
     }
   }
@@ -168,7 +176,7 @@ function main() {
   const options = parseArgs();
 
   if (!options.config) {
-    console.error('Error: --config is required');
+    console.error("Error: --config is required");
     process.exit(1);
   }
 
@@ -181,11 +189,11 @@ function main() {
   }
 
   // Read and parse tokens
-  const tokens = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  const tokens = JSON.parse(fs.readFileSync(configPath, "utf-8"));
 
   // Generate output
   let output;
-  if (options.format === 'tailwind') {
+  if (options.format === "tailwind") {
     output = generateTailwind(tokens);
   } else {
     output = generateCSS(tokens);

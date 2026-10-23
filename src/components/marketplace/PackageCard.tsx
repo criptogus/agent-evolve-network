@@ -30,6 +30,7 @@ const TIER_TONE: Record<TrustTier, string> = {
   baseline: "text-amber-600 dark:text-amber-400",
   low: "text-muted-foreground",
   unscored: "text-muted-foreground",
+  insufficient: "text-amber-600 dark:text-amber-400",
 };
 
 /** A stat row with a dotted leader line between label and value (directory style). */
@@ -55,7 +56,9 @@ function StatRow({
 }
 
 function formatCount(count: number) {
-  return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(count);
+  return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(
+    count,
+  );
 }
 
 function PopularityBadge({ p }: { p: MarketplaceItem }) {
@@ -67,7 +70,9 @@ function PopularityBadge({ p }: { p: MarketplaceItem }) {
     >
       <Download className="h-3 w-3 shrink-0" aria-hidden />
       <span>{formatCount(p.install_count)} installs</span>
-      <span aria-hidden className="text-muted-foreground">·</span>
+      <span aria-hidden className="text-muted-foreground">
+        ·
+      </span>
       <Star className="h-3 w-3 shrink-0 text-amber-500" aria-hidden />
       <span>{formatCount(p.rating_count)} ratings</span>
     </span>
@@ -75,7 +80,7 @@ function PopularityBadge({ p }: { p: MarketplaceItem }) {
 }
 
 export function PackageCard({ p }: { p: MarketplaceItem }) {
-  const tier = trustTier(p.trust_score, p.trust_verified);
+  const tier = trustTier(p.trust_score, p.trust_verified, p.trust_confidence);
   const Icon = TYPE_ICON[p.type];
   const linkProps =
     p.type === "soul"
@@ -138,13 +143,13 @@ export function PackageCard({ p }: { p: MarketplaceItem }) {
           icon={ShieldCheck}
           label="Trust"
           title={
-            p.trust_score != null
-              ? `Trust score ${(p.trust_score * 100).toFixed(0)}/100`
-              : "No trust score yet — not adversarially tested"
+            (tier === "verified" || tier === "low") && p.trust_score != null
+              ? `Aggregate trust score ${(p.trust_score * 100).toFixed(0)}/100 — check the version report before installing`
+              : "No verified score for this version — review available evidence"
           }
         >
           <span className={TIER_TONE[tier]}>
-            {p.trust_score != null
+            {(tier === "verified" || tier === "low") && p.trust_score != null
               ? `${(p.trust_score * 100).toFixed(0)}/100 · ${TRUST_TIER_LABELS[tier]}`
               : TRUST_TIER_LABELS[tier]}
           </span>

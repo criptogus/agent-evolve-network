@@ -12,10 +12,7 @@ import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { rankRecommended, type RankableItem } from "@/lib/marketplace/recommend";
-import {
-  isProjectType,
-  type ProjectType,
-} from "@/lib/marketplace/project-profile";
+import { isProjectType, type ProjectType } from "@/lib/marketplace/project-profile";
 
 /** Maps legacy hyphenated MCP values onto the canonical project-type ids. */
 const PROJECT_TYPE_ALIASES: Record<string, ProjectType> = {
@@ -97,7 +94,9 @@ export const whoamiTool = defineTool({
 
     let paid = false;
     try {
-      const { data } = await supabaseAdmin.rpc("has_active_subscription", { _user_id: userId } as never);
+      const { data } = await supabaseAdmin.rpc("has_active_subscription", {
+        _user_id: userId,
+      } as never);
       paid = data === true;
     } catch {
       /* treat as trial */
@@ -136,12 +135,14 @@ export const whoamiTool = defineTool({
     nextSteps.push(
       "Typical first run: review_skill with the user's local SKILL.md → apply top_actions in the repo → review_skill again to confirm the grade went up.",
     );
-    nextSteps.push("Not sure what to install? recommend_packages { project_type } returns popular, broadly useful packages.");
+    nextSteps.push(
+      "Not sure what to install? recommend_packages { project_type } returns popular, broadly useful packages.",
+    );
 
     return json({
       connected: true,
       identity: { user_id: userId, email, handle },
-      auth_source: ((ctx?.auth?.claims as { source?: string } | undefined)?.source) ?? "bearer",
+      auth_source: (ctx?.auth?.claims as { source?: string } | undefined)?.source ?? "bearer",
       tier,
       limits,
       usage_last_24h: { reads: readDay, writes: writeDay },
@@ -161,7 +162,11 @@ export const uploadStatusTool = defineTool({
   description:
     "[PUBLISH] Check what happened to files sent through upload_packages. Pass `job_id` from the upload response, or omit it to get the caller's most recent upload jobs. Returns per-job status (queued | processing | done | failed), the resulting draft slug and the forge report URL, so you can report progress to the user without sending them to the website. Requires the OAuth bearer of the uploading account.",
   parameters: z.object({
-    job_id: z.string().uuid().optional().describe("Job id returned in upload_packages `queued[].id` / `results[].job_id`."),
+    job_id: z
+      .string()
+      .uuid()
+      .optional()
+      .describe("Job id returned in upload_packages `queued[].id` / `results[].job_id`."),
     limit: z.number().int().min(1).max(20).default(5),
   }),
   execute: async ({ job_id, limit }, ctx) => {
@@ -189,7 +194,10 @@ export const uploadStatusTool = defineTool({
     const pkgIds = jobs.map((j: any) => j.package_id).filter(Boolean);
     const slugById = new Map<string, string>();
     if (pkgIds.length) {
-      const { data: pkgs } = await supabaseAdmin.from("packages").select("id,slug").in("id", pkgIds);
+      const { data: pkgs } = await supabaseAdmin
+        .from("packages")
+        .select("id,slug")
+        .in("id", pkgIds);
       for (const p of pkgs ?? []) slugById.set(p.id, p.slug);
     }
 
@@ -279,8 +287,8 @@ export const recommendPackagesTool = defineTool({
       }
     }
 
-    const rankable: (RankableItem & { latest_version: string; author_handle: string | null })[] = rows.map(
-      (p: any) => {
+    const rankable: (RankableItem & { latest_version: string; author_handle: string | null })[] =
+      rows.map((p: any) => {
         const rt = rating.get(p.id) ?? { sum: 0, count: 0 };
         return {
           slug: p.slug,
@@ -294,14 +302,14 @@ export const recommendPackagesTool = defineTool({
           latest_version: p.latest_version,
           author_handle: p.author_handle ?? null,
         };
-      },
-    );
+      });
 
     const fit = normalizeProjectType(project_type);
     const ranked = rankRecommended(rankable, limit, fit);
     return json({
       project_type: fit,
-      ranking: "popularity-first (installs + rated reviews), Trust Score >= 0.4 floor, niche packages demoted",
+      ranking:
+        "popularity-first (installs + rated reviews), Trust Score >= 0.4 floor, niche packages demoted",
       count: ranked.length,
       items: ranked.map((i) => ({
         slug: i.slug,
@@ -311,7 +319,9 @@ export const recommendPackagesTool = defineTool({
         latest_version: i.latest_version,
         author_handle: i.author_handle,
         install_count: i.install_count,
-        rating: i.rating_count ? { avg: Math.round(i.rating_avg * 100) / 100, count: i.rating_count } : null,
+        rating: i.rating_count
+          ? { avg: Math.round(i.rating_avg * 100) / 100, count: i.rating_count }
+          : null,
         trust_score: i.trust_score,
       })),
       next_step:

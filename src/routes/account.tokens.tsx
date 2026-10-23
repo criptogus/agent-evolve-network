@@ -76,18 +76,20 @@ function TokensPage() {
         <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Account</span>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">API tokens</h1>
         <p className="mt-2 text-muted-foreground">
-          Personal tokens that authorize write tools (upload, publish, rollback, evaluate) from
-          your agent, CI, or terminal. Send them as{" "}
+          Personal tokens that authorize write tools (upload, publish, rollback, evaluate) from your
+          agent, CI, or terminal. Send them as{" "}
           <code className="font-mono text-xs">Authorization: Bearer &lt;token&gt;</code>.
         </p>
 
         {/* Create */}
         <div className="mt-8 rounded-2xl border border-border bg-surface p-5">
-          <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">New token</div>
+          <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+            New token
+          </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            Give the token a name so you can recognise it later (e.g. which device or
-            agent it's used from). Tokens without a name can't be minted — you'll thank
-            us when you need to revoke one.
+            Give the token a name so you can recognise it later (e.g. which device or agent it's
+            used from). Tokens without a name can't be minted — you'll thank us when you need to
+            revoke one.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <input
@@ -114,7 +116,8 @@ function TokensPage() {
             <p className="mt-2 text-xs text-muted-foreground">
               Tip: a good name describes where the token will live, e.g.{" "}
               <code className="font-mono">claude-desktop</code>,{" "}
-              <code className="font-mono">ci-deploy</code>, <code className="font-mono">cursor-mac</code>.
+              <code className="font-mono">ci-deploy</code>,{" "}
+              <code className="font-mono">cursor-mac</code>.
             </p>
           )}
           {fresh && (
@@ -203,7 +206,9 @@ function TokensPage() {
           {q.isError && (
             <div className="p-5 text-sm">
               <span className="text-destructive">Sign in to manage tokens.</span>{" "}
-              <Link to="/connect" className="text-primary">Connect →</Link>
+              <Link to="/connect" className="text-primary">
+                Connect →
+              </Link>
             </div>
           )}
           {q.data && q.data.items.length === 0 && (
@@ -212,12 +217,16 @@ function TokensPage() {
           {q.data && q.data.items.length > 0 && (
             <ul className="divide-y divide-border/60">
               {q.data.items.map((t: any) => (
-                <li key={t.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+                <li
+                  key={t.id}
+                  className="flex flex-wrap items-center justify-between gap-3 px-5 py-3"
+                >
                   <div>
                     <div className="text-sm font-medium">{t.name}</div>
                     <div className="font-mono text-xs text-muted-foreground">
-                      {t.prefix}…  ·  created {new Date(t.created_at).toLocaleDateString()}
-                      {t.last_used_at && ` · last used ${new Date(t.last_used_at).toLocaleDateString()}`}
+                      {t.prefix}… · created {new Date(t.created_at).toLocaleDateString()}
+                      {t.last_used_at &&
+                        ` · last used ${new Date(t.last_used_at).toLocaleDateString()}`}
                     </div>
                   </div>
                   <button
@@ -317,8 +326,11 @@ const data = await res.json();`}
               <code className="font-mono text-xs">Authorization</code> header on every tool call.
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
-              See <Link to="/connect" className="text-primary hover:underline">/connect</Link> for
-              one-click snippets per tool.
+              See{" "}
+              <Link to="/connect" className="text-primary hover:underline">
+                /connect
+              </Link>{" "}
+              for one-click snippets per tool.
             </p>
           </SnippetCard>
 
@@ -401,7 +413,11 @@ function SnippetCard({
           <button
             onClick={onValidate}
             disabled={!canValidate || validatePending}
-            title={canValidate ? "Validate the token used in this snippet" : "Mint or paste a token first"}
+            title={
+              canValidate
+                ? "Validate the token used in this snippet"
+                : "Mint or paste a token first"
+            }
             className="rounded border border-border px-2 py-1 text-xs hover:bg-background disabled:opacity-50"
           >
             {validatePending ? "Checking…" : "✓ Validate"}

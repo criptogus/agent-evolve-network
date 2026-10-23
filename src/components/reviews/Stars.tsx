@@ -69,12 +69,12 @@ export function RatingPill({
   className?: string;
 }) {
   if (!count) {
-    return (
-      <span className={`text-[11px] text-muted-foreground ${className}`}>No ratings yet</span>
-    );
+    return <span className={`text-[11px] text-muted-foreground ${className}`}>No ratings yet</span>;
   }
   return (
-    <span className={`inline-flex items-center gap-1 text-[11px] text-muted-foreground ${className}`}>
+    <span
+      className={`inline-flex items-center gap-1 text-[11px] text-muted-foreground ${className}`}
+    >
       <Stars value={avg} size={11} />
       <span className="font-mono text-foreground">{avg.toFixed(1)}</span>
       <span>({count})</span>
@@ -83,5 +83,8 @@ export function RatingPill({
 }
 
 export function useStarColor(n: number) {
-  return useMemo(() => (n >= 4 ? "text-emerald-500" : n >= 3 ? "text-amber-500" : "text-rose-500"), [n]);
+  return useMemo(
+    () => (n >= 4 ? "text-emerald-500" : n >= 3 ? "text-amber-500" : "text-rose-500"),
+    [n],
+  );
 }

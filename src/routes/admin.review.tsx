@@ -44,7 +44,11 @@ export const Route = createFileRoute("/admin/review")({
   head: () => ({
     meta: [
       { title: "Review queue — Super Agent Skill" },
-      { name: "description", content: "Approve, pause or reject submitted packages before they go live in the marketplace." },
+      {
+        name: "description",
+        content:
+          "Approve, pause or reject submitted packages before they go live in the marketplace.",
+      },
     ],
   }),
   component: ReviewPage,
@@ -75,21 +79,27 @@ function ReviewPage() {
       <section className="border-b border-border bg-surface/40">
         <div className="mx-auto max-w-6xl px-6 py-10">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Link to="/admin" className="hover:text-foreground">Admin</Link>
+            <Link to="/admin" className="hover:text-foreground">
+              Admin
+            </Link>
             <span>/</span>
             <span className="font-mono text-foreground">review</span>
           </div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">Review queue</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Approve, pause or reject submitted packages before they appear in the public marketplace.
-            Approving sets <code className="font-mono text-foreground">is_published = true</code>; pausing or rejecting hides them immediately.
+            Approve, pause or reject submitted packages before they appear in the public
+            marketplace. Approving sets{" "}
+            <code className="font-mono text-foreground">is_published = true</code>; pausing or
+            rejecting hides them immediately.
           </p>
 
           <div className="mt-6">
             <Tabs value={type} onValueChange={(v) => setType(v as TypeFilter)}>
               <TabsList>
                 {TYPES.map((t) => (
-                  <TabsTrigger key={t} value={t} className="capitalize">{t}</TabsTrigger>
+                  <TabsTrigger key={t} value={t} className="capitalize">
+                    {t}
+                  </TabsTrigger>
                 ))}
               </TabsList>
             </Tabs>
@@ -106,11 +116,15 @@ function ReviewPage() {
         {isLoading && (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-20 animate-pulse rounded-lg border border-border bg-muted/20" />
+              <div
+                key={i}
+                className="h-20 animate-pulse rounded-lg border border-border bg-muted/20"
+              />
             ))}
           </div>
         )}
-        {!isLoading && !isForbidden &&
+        {!isLoading &&
+          !isForbidden &&
           STATUS_GROUPS.map((g) => (
             <StatusSection
               key={g.key}
@@ -176,22 +190,29 @@ function ReviewRow({ item, onAction }: { item: ReviewQueueItem; onAction: () => 
     onError: (e: any) => toast.error(e?.message ?? "Action failed"),
   });
 
-  const detailLink = item.type === "soul"
-    ? { to: "/souls/$slug" as const, params: { slug: item.slug } }
-    : { to: "/marketplace/$packageId" as const, params: { packageId: item.slug } };
+  const detailLink =
+    item.type === "soul"
+      ? { to: "/souls/$slug" as const, params: { slug: item.slug } }
+      : { to: "/marketplace/$packageId" as const, params: { packageId: item.slug } };
 
   return (
     <Card className="p-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="font-mono text-[10px] uppercase tracking-wider">{item.type}</Badge>
+            <Badge variant="outline" className="font-mono text-[10px] uppercase tracking-wider">
+              {item.type}
+            </Badge>
             <StatusBadge status={item.review_status} />
-            <Badge variant="outline" className="font-mono text-[10px]">v{item.latest_version}</Badge>
+            <Badge variant="outline" className="font-mono text-[10px]">
+              v{item.latest_version}
+            </Badge>
             {item.is_published ? (
               <Badge className="bg-emerald-500/10 text-[10px] text-emerald-600">live</Badge>
             ) : (
-              <Badge variant="outline" className="text-[10px] text-muted-foreground">hidden</Badge>
+              <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                hidden
+              </Badge>
             )}
           </div>
           <div className="mt-2 truncate font-mono text-sm font-semibold">{item.name}</div>
@@ -208,7 +229,10 @@ function ReviewRow({ item, onAction }: { item: ReviewQueueItem; onAction: () => 
           )}
         </div>
         <div className="flex flex-wrap gap-2 md:flex-nowrap">
-          <Link {...detailLink} className="inline-flex h-9 items-center rounded-md border border-border px-3 text-xs hover:border-primary/40">
+          <Link
+            {...detailLink}
+            className="inline-flex h-9 items-center rounded-md border border-border px-3 text-xs hover:border-primary/40"
+          >
             View
           </Link>
           {item.review_status !== "approved" && (
@@ -217,19 +241,37 @@ function ReviewRow({ item, onAction }: { item: ReviewQueueItem; onAction: () => 
             </Button>
           )}
           {item.review_status !== "paused" && item.review_status === "approved" && (
-            <Button size="sm" variant="outline" onClick={() => setOpen("paused")} disabled={mutation.isPending}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setOpen("paused")}
+              disabled={mutation.isPending}
+            >
               Pause
             </Button>
           )}
           {item.review_status !== "rejected" && item.review_status !== "approved" && (
-            <Button size="sm" variant="outline" onClick={() => setOpen("rejected")} disabled={mutation.isPending}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setOpen("rejected")}
+              disabled={mutation.isPending}
+            >
               Reject
             </Button>
           )}
         </div>
       </div>
 
-      <Dialog open={open !== null} onOpenChange={(v) => { if (!v) { setOpen(null); setNotes(""); } }}>
+      <Dialog
+        open={open !== null}
+        onOpenChange={(v) => {
+          if (!v) {
+            setOpen(null);
+            setNotes("");
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -240,9 +282,12 @@ function ReviewRow({ item, onAction }: { item: ReviewQueueItem; onAction: () => 
           </DialogHeader>
           <div className="space-y-3 text-sm">
             <p className="text-muted-foreground">
-              {open === "approved" && "This will make the package public in the marketplace immediately."}
-              {open === "paused" && "This hides the package from the public marketplace. The author keeps access."}
-              {open === "rejected" && "This rejects the submission. The author can revise and resubmit."}
+              {open === "approved" &&
+                "This will make the package public in the marketplace immediately."}
+              {open === "paused" &&
+                "This hides the package from the public marketplace. The author keeps access."}
+              {open === "rejected" &&
+                "This rejects the submission. The author can revise and resubmit."}
             </p>
             <Textarea
               placeholder="Optional reviewer note (visible to the author)"
@@ -252,7 +297,14 @@ function ReviewRow({ item, onAction }: { item: ReviewQueueItem; onAction: () => 
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setOpen(null); setNotes(""); }} disabled={mutation.isPending}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setOpen(null);
+                setNotes("");
+              }}
+              disabled={mutation.isPending}
+            >
               Cancel
             </Button>
             <Button
@@ -270,13 +322,19 @@ function ReviewRow({ item, onAction }: { item: ReviewQueueItem; onAction: () => 
 
 function StatusBadge({ status }: { status: ReviewStatus }) {
   const cls =
-    status === "approved" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
-      : status === "pending" ? "bg-amber-500/10 text-amber-700 border-amber-500/30 dark:text-amber-400"
-      : status === "paused" ? "bg-slate-500/10 text-slate-600 border-slate-500/30 dark:text-slate-300"
-      : status === "rejected" ? "bg-destructive/10 text-destructive border-destructive/30"
-      : "bg-muted text-muted-foreground border-border";
+    status === "approved"
+      ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
+      : status === "pending"
+        ? "bg-amber-500/10 text-amber-700 border-amber-500/30 dark:text-amber-400"
+        : status === "paused"
+          ? "bg-slate-500/10 text-slate-600 border-slate-500/30 dark:text-slate-300"
+          : status === "rejected"
+            ? "bg-destructive/10 text-destructive border-destructive/30"
+            : "bg-muted text-muted-foreground border-border";
   return (
-    <span className={`rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${cls}`}>
+    <span
+      className={`rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${cls}`}
+    >
       {status}
     </span>
   );

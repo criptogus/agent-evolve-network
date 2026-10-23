@@ -65,7 +65,8 @@ export const Route = createFileRoute("/api/public/oauth/register")({
             parsed.error.issues.map((i) => i.message).join("; "),
           );
         }
-        const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("cf-connecting-ip") ?? null;
+        const ip =
+          request.headers.get("x-forwarded-for") ?? request.headers.get("cf-connecting-ip") ?? null;
         const { data, error } = await supabaseAdmin.rpc("mcp_oauth_register_client", {
           _client_name: parsed.data.client_name ?? "MCP Client",
           _redirect_uris: parsed.data.redirect_uris,

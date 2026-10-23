@@ -41,7 +41,9 @@ function GithubImport() {
               {m.isPending ? "Analysing…" : "Import"}
             </Button>
           </div>
-          {m.isError && <div className="text-xs text-destructive">{(m.error as Error).message}</div>}
+          {m.isError && (
+            <div className="text-xs text-destructive">{(m.error as Error).message}</div>
+          )}
         </CardContent>
       </Card>
 
@@ -52,7 +54,10 @@ function GithubImport() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             {m.data.staged.map((s, i) => (
-              <div key={i} className="flex items-center justify-between rounded-md border px-3 py-2">
+              <div
+                key={i}
+                className="flex items-center justify-between rounded-md border px-3 py-2"
+              >
                 <span className="truncate font-mono text-xs">{s.path}</span>
                 {s.error ? (
                   <Badge variant="destructive">{s.error.slice(0, 40)}</Badge>

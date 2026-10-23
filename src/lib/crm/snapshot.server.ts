@@ -154,11 +154,7 @@ export async function loadClientNames(userId: string): Promise<string[]> {
     /* optional signal */
   }
   try {
-    const { data } = await admin
-      .from("mcp_tokens")
-      .select("name")
-      .eq("user_id", userId)
-      .limit(50);
+    const { data } = await admin.from("mcp_tokens").select("name").eq("user_id", userId).limit(50);
     for (const t of (data ?? []) as any[]) if (t.name) names.push(String(t.name));
   } catch {
     /* optional signal */

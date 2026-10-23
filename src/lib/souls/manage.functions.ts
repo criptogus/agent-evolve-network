@@ -185,7 +185,10 @@ export const setSoulVersionStatus = createServerFn({ method: "POST" })
   });
 
 // ----- suggest next semver -----
-export function suggestNextVersion(versions: string[], bump: "patch" | "minor" | "major" = "patch") {
+export function suggestNextVersion(
+  versions: string[],
+  bump: "patch" | "minor" | "major" = "patch",
+) {
   const max = semverMax(versions.length ? versions : ["0.0.0"]);
   const p = parseSemver(max) ?? [0, 0, 0];
   if (bump === "major") return `${p[0] + 1}.0.0`;

@@ -1,9 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-const { repairMinimalDraft, draftFromDocument, slugify } = await import(
-  "../src/lib/skills/draft-repair.ts"
-);
+const { repairMinimalDraft, draftFromDocument, slugify } =
+  await import("../src/lib/skills/draft-repair.ts");
 const { normalizeTypography, detectLanguage } = await import("../src/lib/mcp/lang-detect.ts");
 
 const DOC = `# Framework de Avaliação de Startups

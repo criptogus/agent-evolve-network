@@ -11,7 +11,10 @@ export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
       { title: "Admin — Super Agent Skill" },
-      { name: "description", content: "Manage accounts, plans, packages, and on-demand primitive creation." },
+      {
+        name: "description",
+        content: "Manage accounts, plans, packages, and on-demand primitive creation.",
+      },
     ],
   }),
   component: AdminLayout,
@@ -97,7 +100,9 @@ function AdminLayout() {
     return (
       <div className="min-h-screen bg-background">
         <Nav />
-        <div className="mx-auto max-w-7xl px-6 py-12 text-sm text-muted-foreground">Verifying admin role…</div>
+        <div className="mx-auto max-w-7xl px-6 py-12 text-sm text-muted-foreground">
+          Verifying admin role…
+        </div>
       </div>
     );
   }

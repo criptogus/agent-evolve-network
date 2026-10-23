@@ -53,7 +53,9 @@ export const resumeSessionTool = defineTool({
       safe(
         supabaseAdmin
           .from("packages")
-          .select("slug,name,type,review_status,is_published,install_count,star_count,latest_version,updated_at")
+          .select(
+            "slug,name,type,review_status,is_published,install_count,star_count,latest_version,updated_at",
+          )
           .eq("author_id", userId)
           .order("updated_at", { ascending: false })
           .limit(50),
@@ -102,7 +104,9 @@ export const resumeSessionTool = defineTool({
       ),
       (async () => {
         try {
-          const { data } = await supabaseAdmin.rpc("has_active_subscription", { _user_id: userId } as never);
+          const { data } = await supabaseAdmin.rpc("has_active_subscription", {
+            _user_id: userId,
+          } as never);
           return data === true;
         } catch {
           return false;
@@ -135,8 +139,12 @@ export const resumeSessionTool = defineTool({
 
     const myPkgs = (pkgs ?? []) as any[];
     const drafts = myPkgs.filter((p) => !p.is_published);
-    const pendingReview = myPkgs.filter((p) => p.review_status === "pending" || p.review_status === "submitted");
-    const changesRequested = myPkgs.filter((p) => p.review_status === "rejected" || p.review_status === "changes_requested");
+    const pendingReview = myPkgs.filter(
+      (p) => p.review_status === "pending" || p.review_status === "submitted",
+    );
+    const changesRequested = myPkgs.filter(
+      (p) => p.review_status === "rejected" || p.review_status === "changes_requested",
+    );
     const live = myPkgs.filter((p) => p.is_published && p.review_status === "approved");
     const d = ((diagnosis ?? []) as any[])[0] ?? null;
     const activeJobs = ((jobs ?? []) as any[]).filter((j) => j.status !== "failed");
@@ -220,7 +228,13 @@ export const resumeSessionTool = defineTool({
       window_days: lookback_days,
       tier: sub ? "paid" : "trial",
       packages: {
-        live: live.map((p) => ({ slug: p.slug, name: p.name, type: p.type, installs: p.install_count, stars: p.star_count })),
+        live: live.map((p) => ({
+          slug: p.slug,
+          name: p.name,
+          type: p.type,
+          installs: p.install_count,
+          stars: p.star_count,
+        })),
         drafts: drafts.map((p) => ({ slug: p.slug, name: p.name, review_status: p.review_status })),
         pending_review: pendingReview.map((p) => p.slug),
         changes_requested: changesRequested.map((p) => p.slug),
@@ -279,19 +293,26 @@ export const whatsNewTool = defineTool({
   description:
     "[RETURNING SESSION] What changed since a given moment: newly published and newly updated registry packages, fastest-growing installs, the current platform version, and — when a bearer is present — account changes (drafts approved or rejected, uploads finished). Use it at the start of a session, or when the user asks 'anything new?'. Read-only.",
   parameters: z.object({
-    since: z.string().optional().describe("ISO timestamp of the user's last session. Defaults to 7 days ago."),
+    since: z
+      .string()
+      .optional()
+      .describe("ISO timestamp of the user's last session. Defaults to 7 days ago."),
     type: z.enum(["skill", "playbook", "soul", "guardrail"]).optional(),
     limit: z.number().int().min(1).max(30).default(10),
   }),
   execute: async ({ since, type, limit }, ctx) => {
     const sinceIso = (() => {
       const t = since ? Date.parse(since) : NaN;
-      return Number.isFinite(t) ? new Date(t).toISOString() : new Date(Date.now() - 7 * 86400_000).toISOString();
+      return Number.isFinite(t)
+        ? new Date(t).toISOString()
+        : new Date(Date.now() - 7 * 86400_000).toISOString();
     })();
 
     let newQ = supabaseAdmin
       .from("packages")
-      .select("slug,name,type,description,latest_version,install_count,star_count,created_at,updated_at")
+      .select(
+        "slug,name,type,description,latest_version,install_count,star_count,created_at,updated_at",
+      )
       .eq("is_published", true)
       .eq("review_status", "approved")
       .gt("created_at", sinceIso)
@@ -318,7 +339,11 @@ export const whatsNewTool = defineTool({
       updQ = updQ.eq("type", type);
       topQ = topQ.eq("type", type);
     }
-    const [{ data: fresh }, { data: updated }, { data: top }] = await Promise.all([newQ, updQ, topQ]);
+    const [{ data: fresh }, { data: updated }, { data: top }] = await Promise.all([
+      newQ,
+      updQ,
+      topQ,
+    ]);
 
     const userId = userIdOf(ctx);
     let account: unknown = null;
@@ -348,7 +373,11 @@ export const whatsNewTool = defineTool({
 
     return json({
       since: sinceIso,
-      platform: { version: PLATFORM_VERSION, codename: PLATFORM_CODENAME, changelog: `${ORIGIN}/status` },
+      platform: {
+        version: PLATFORM_VERSION,
+        codename: PLATFORM_CODENAME,
+        changelog: `${ORIGIN}/status`,
+      },
       new_packages: fresh ?? [],
       updated_packages: updated ?? [],
       most_installed: top ?? [],
@@ -357,7 +386,9 @@ export const whatsNewTool = defineTool({
         (fresh ?? []).length || (updated ?? []).length
           ? "Use `get_package { slug }` for a manifest, or `check_updates` to see whether what the user already installed is outdated."
           : "Nothing new in that window. `check_updates` still tells you if local copies drifted behind.",
-      not_connected_hint: userId ? undefined : "Pass a bearer (see `whoami`) to also get changes on your own packages and uploads.",
+      not_connected_hint: userId
+        ? undefined
+        : "Pass a bearer (see `whoami`) to also get changes on your own packages and uploads.",
     });
   },
 });
@@ -368,22 +399,23 @@ export const checkUpdatesTool = defineTool({
     "[RETURNING SESSION] Drift check for packages the user already installed locally. Send the slugs (with the version you have, if known) and get back which ones have a newer version in the registry, the current install/star counts, and the exact `get_package` calls to refresh them. Also flags slugs that no longer exist or were unpublished. Read-only, no auth.",
   parameters: z.object({
     installed: z
-      .array(
-        z.union([
-          z.string(),
-          z.object({ slug: z.string(), version: z.string().optional() }),
-        ]),
-      )
+      .array(z.union([z.string(), z.object({ slug: z.string(), version: z.string().optional() })]))
       .min(1)
       .max(100)
-      .describe("Slugs found in the user's .agents/ or .claude/skills/ folder, optionally with the local version."),
+      .describe(
+        "Slugs found in the user's .agents/ or .claude/skills/ folder, optionally with the local version.",
+      ),
   }),
   execute: async ({ installed }) => {
-    const wanted = installed.map((i) => (typeof i === "string" ? { slug: i, version: undefined } : i));
+    const wanted = installed.map((i) =>
+      typeof i === "string" ? { slug: i, version: undefined } : i,
+    );
     const slugs = [...new Set(wanted.map((w) => w.slug.trim().toLowerCase()).filter(Boolean))];
     const { data, error } = await supabaseAdmin
       .from("packages")
-      .select("slug,name,type,latest_version,install_count,star_count,is_published,review_status,updated_at")
+      .select(
+        "slug,name,type,latest_version,install_count,star_count,is_published,review_status,updated_at",
+      )
       .in("slug", slugs);
     if (error) return json({ error: error.message });
     const bySlug = new Map<string, any>((data ?? []).map((p: any) => [p.slug, p]));
@@ -412,7 +444,10 @@ export const checkUpdatesTool = defineTool({
         refresh_with: `get_package { slug: "${p.slug}" }`,
       };
       if (!p.is_published || p.review_status !== "approved") {
-        unpublished.push({ ...entry, note: "No longer listed publicly — keep the local copy, it will not receive updates." });
+        unpublished.push({
+          ...entry,
+          note: "No longer listed publicly — keep the local copy, it will not receive updates.",
+        });
         continue;
       }
       if (!w.version || w.version !== p.latest_version) outdated.push(entry);

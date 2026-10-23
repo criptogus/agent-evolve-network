@@ -42,10 +42,7 @@ export const Route = createFileRoute("/api/public/telemetry")({
         const model = typeof extra?.model === "string" ? (extra.model as string) : undefined;
 
         try {
-          const row = await ingestExecution(
-            event,
-            supabaseAdmin.from("skill_executions") as any,
-          );
+          const row = await ingestExecution(event, supabaseAdmin.from("skill_executions") as any);
           // Stable per-workspace fingerprint for trust RPC rate limiting.
           const agentFp =
             row.workspace_hash ??

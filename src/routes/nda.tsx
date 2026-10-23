@@ -108,9 +108,7 @@ function NdaPage() {
               Online acceptance · no signature · paid accounts
             </span>
           </div>
-          <h1 className="text-4xl font-semibold tracking-tight">
-            Mutual non-disclosure agreement
-          </h1>
+          <h1 className="text-4xl font-semibold tracking-tight">Mutual non-disclosure agreement</h1>
           <p className="mt-4 text-lg text-muted-foreground">
             There's no NDA to sign, and no PDF to circulate through legal. The agreement lives here
             on the site and takes effect with one click, tied to your paid account —{" "}
@@ -171,12 +169,10 @@ function NdaPage() {
             </>
           ) : !isActive ? (
             <>
-              <h2 className="text-xl font-semibold tracking-tight">
-                Available for paid accounts
-              </h2>
+              <h2 className="text-xl font-semibold tracking-tight">Available for paid accounts</h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Contractual confidentiality comes with paid plans. Upgrade and acceptance
-                becomes available immediately on this page.
+                Contractual confidentiality comes with paid plans. Upgrade and acceptance becomes
+                available immediately on this page.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <Link
@@ -198,8 +194,8 @@ function NdaPage() {
               <h2 className="text-xl font-semibold tracking-tight">Accept with one click</h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 By accepting, we record the date, time, and version of the agreement on your
-                account. It applies to all private content you've already submitted and to what
-                you submit later.
+                account. It applies to all private content you've already submitted and to what you
+                submit later.
               </p>
               <button
                 type="button"

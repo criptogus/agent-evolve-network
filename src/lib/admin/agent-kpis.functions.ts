@@ -26,7 +26,12 @@ export type AgentKpis = {
     onboarding_completed: number;
   };
   top_tools: Array<{ tool_name: string; calls: number; identities: number }>;
-  onboarding_funnel: Array<{ step_id: string; stage: string; sessions: number; completions: number }>;
+  onboarding_funnel: Array<{
+    step_id: string;
+    stage: string;
+    sessions: number;
+    completions: number;
+  }>;
   daily: Array<{ day: string; tool_calls: number; executions: number }>;
 };
 
@@ -43,8 +48,16 @@ export const getAgentKpis = createServerFn({ method: "GET" })
     const since = new Date(Date.now() - days * 86_400_000).toISOString();
 
     const [calls, installs, execs, diagnoses, builds, onboarding, funnel] = await Promise.all([
-      supabase.from("mcp_call_log").select("tool_name,is_write,identity,created_at").gte("created_at", since).limit(50_000),
-      supabase.from("package_installs").select("package_id,installed_at").gte("installed_at", since).limit(50_000),
+      supabase
+        .from("mcp_call_log")
+        .select("tool_name,is_write,identity,created_at")
+        .gte("created_at", since)
+        .limit(50_000),
+      supabase
+        .from("package_installs")
+        .select("package_id,installed_at")
+        .gte("installed_at", since)
+        .limit(50_000),
       supabase
         .from("skill_executions")
         .select("success,task_completed,created_at")
@@ -52,14 +65,25 @@ export const getAgentKpis = createServerFn({ method: "GET" })
         .limit(50_000),
       supabase.from("agent_diagnoses").select("id").gte("created_at", since).limit(50_000),
       supabase.from("agent_builds").select("id").gte("created_at", since).limit(50_000),
-      supabase.from("agent_onboarding_steps").select("session_hash,step_id").gte("created_at", since).limit(50_000),
+      supabase
+        .from("agent_onboarding_steps")
+        .select("session_hash,step_id")
+        .gte("created_at", since)
+        .limit(50_000),
       supabase.rpc("agent_onboarding_funnel", { _days: days }),
     ]);
 
-    const callRows: Array<{ tool_name: string; is_write: boolean; identity: string | null; created_at: string }> =
-      calls.data ?? [];
-    const execRows: Array<{ success: boolean | null; task_completed: boolean | null; created_at: string }> =
-      execs.data ?? [];
+    const callRows: Array<{
+      tool_name: string;
+      is_write: boolean;
+      identity: string | null;
+      created_at: string;
+    }> = calls.data ?? [];
+    const execRows: Array<{
+      success: boolean | null;
+      task_completed: boolean | null;
+      created_at: string;
+    }> = execs.data ?? [];
     const onboardRows: Array<{ session_hash: string; step_id: string }> = onboarding.data ?? [];
 
     // Tool leaderboard
@@ -82,17 +106,23 @@ export const getAgentKpis = createServerFn({ method: "GET" })
       set.add(r.step_id);
       bySession.set(r.session_hash, set);
     }
-    const onboarding_completed = [...bySession.values()].filter(
-      (steps) => STEP_ORDER.every((s) => steps.has(s)),
+    const onboarding_completed = [...bySession.values()].filter((steps) =>
+      STEP_ORDER.every((s) => steps.has(s)),
     ).length;
 
-    const funnelRows: Array<{ step_id: string; stage: string; completions: number; sessions: number }> =
-      funnel.data ?? [];
+    const funnelRows: Array<{
+      step_id: string;
+      stage: string;
+      completions: number;
+      sessions: number;
+    }> = funnel.data ?? [];
     const onboarding_funnel = STEP_ORDER.map((id) => {
       const row = funnelRows.find((r) => r.step_id === id);
       return {
         step_id: id,
-        stage: row?.stage ?? (id === "evaluate" || id === "evolve" || id === "diagnose" ? "evolve" : "connect"),
+        stage:
+          row?.stage ??
+          (id === "evaluate" || id === "evolve" || id === "diagnose" ? "evolve" : "connect"),
         sessions: Number(row?.sessions ?? 0),
         completions: Number(row?.completions ?? 0),
       };

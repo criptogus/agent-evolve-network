@@ -52,7 +52,11 @@ function UploadPage() {
       fn({ data: payload }),
     onSuccess: (res) => setResults(res.results),
     onError: (e: Error) =>
-      setError(e?.message?.includes("Unauthorized") ? "Sign in to upload." : e?.message ?? "Upload failed"),
+      setError(
+        e?.message?.includes("Unauthorized")
+          ? "Sign in to upload."
+          : (e?.message ?? "Upload failed"),
+      ),
   });
 
   function ingest(list: FileList | File[]) {
@@ -69,10 +73,10 @@ function UploadPage() {
             };
             reader.onerror = () => resolve(null);
             reader.readAsText(f);
-          })
-      )
+          }),
+      ),
     ).then((rows) => {
-      const next = [...files, ...rows.filter(Boolean) as Staged[]].slice(0, MAX_FILES);
+      const next = [...files, ...(rows.filter(Boolean) as Staged[])].slice(0, MAX_FILES);
       setFiles(next);
     });
   }
@@ -94,12 +98,18 @@ function UploadPage() {
       <Nav />
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 md:py-12">
         <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Upload</span>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">Bulk-upload skills</h1>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
+          Bulk-upload skills
+        </h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">
-          Drop up to {MAX_FILES} files (Markdown, prompts, JSON). Each one is normalised by the SkillForge author
-          pipeline, classified (skill / playbook / soul / guardrail), and registered as a draft package owned by you.
-          Anything you can do here is also available via MCP — see{" "}
-          <Link to="/account/tokens" className="text-primary underline-offset-2 hover:underline">/account/tokens</Link>.
+          Drop up to {MAX_FILES} files (Markdown, prompts, JSON). Each one is normalised by the
+          SkillForge author pipeline, classified (skill / playbook / soul / guardrail), and
+          registered as a draft package owned by you. Anything you can do here is also available via
+          MCP — see{" "}
+          <Link to="/account/tokens" className="text-primary underline-offset-2 hover:underline">
+            /account/tokens
+          </Link>
+          .
         </p>
 
         {/* Dropzone */}
@@ -114,7 +124,8 @@ function UploadPage() {
         >
           <div className="text-base font-medium">Drop files here, or click to browse</div>
           <div className="mt-1 text-xs text-muted-foreground">
-            {ACCEPT.replace(/\./g, "").toUpperCase().replace(/,/g, " · ")} · up to {MAX_FILES} files · {MAX_BYTES / 1000}KB each
+            {ACCEPT.replace(/\./g, "").toUpperCase().replace(/,/g, " · ")} · up to {MAX_FILES} files
+            · {MAX_BYTES / 1000}KB each
           </div>
           <input
             ref={inputRef}
@@ -133,7 +144,10 @@ function UploadPage() {
               <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
                 {files.length} file{files.length === 1 ? "" : "s"} ready
               </div>
-              <button onClick={() => setFiles([])} className="text-xs text-muted-foreground hover:text-foreground">
+              <button
+                onClick={() => setFiles([])}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
                 Clear
               </button>
             </div>
@@ -142,7 +156,10 @@ function UploadPage() {
                 <li key={i} className="flex flex-wrap items-center gap-3 px-4 py-3">
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-mono text-sm">{f.name}</div>
-                    <div className="text-xs text-muted-foreground">{Math.ceil(f.content.length / 1000)} KB · {f.content.split(/\s+/).length} words</div>
+                    <div className="text-xs text-muted-foreground">
+                      {Math.ceil(f.content.length / 1000)} KB · {f.content.split(/\s+/).length}{" "}
+                      words
+                    </div>
                   </div>
                   <select
                     value={f.type}
@@ -174,15 +191,17 @@ function UploadPage() {
         {/* Submit bar */}
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4">
           <p className="text-sm text-muted-foreground">
-            Uploads are saved as private drafts. Listing on the public marketplace
-            requires submitting for review and admin approval.
+            Uploads are saved as private drafts. Listing on the public marketplace requires
+            submitting for review and admin approval.
           </p>
           <button
             onClick={submit}
             disabled={files.length === 0 || mut.isPending}
             className="inline-flex h-10 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-95 disabled:opacity-50"
           >
-            {mut.isPending ? `Forging ${files.length} skill${files.length === 1 ? "" : "s"}…` : `Forge ${files.length || ""} skill${files.length === 1 ? "" : "s"}`}
+            {mut.isPending
+              ? `Forging ${files.length} skill${files.length === 1 ? "" : "s"}…`
+              : `Forge ${files.length || ""} skill${files.length === 1 ? "" : "s"}`}
           </button>
         </div>
 
@@ -190,7 +209,9 @@ function UploadPage() {
           <div className="mt-4 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
             {error}{" "}
             {error.toLowerCase().includes("sign in") && (
-              <Link to="/connect" className="underline">Connect your agent →</Link>
+              <Link to="/connect" className="underline">
+                Connect your agent →
+              </Link>
             )}
           </div>
         )}
@@ -202,7 +223,13 @@ function UploadPage() {
             <div className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface">
               <table className="w-full text-sm">
                 <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground">
-                  <tr><th className="px-4 py-3">File</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Type</th><th className="px-4 py-3">Slug</th><th className="px-4 py-3">Report</th></tr>
+                  <tr>
+                    <th className="px-4 py-3">File</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Type</th>
+                    <th className="px-4 py-3">Slug</th>
+                    <th className="px-4 py-3">Report</th>
+                  </tr>
                 </thead>
                 <tbody>
                   {results.map((r, i) => (
@@ -210,9 +237,14 @@ function UploadPage() {
                       <td className="px-4 py-3 font-mono text-xs">{r.name}</td>
                       <td className="px-4 py-3">
                         {r.ok ? (
-                          <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-500">forged</span>
+                          <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-500">
+                            forged
+                          </span>
                         ) : (
-                          <span className="rounded bg-destructive/15 px-2 py-0.5 text-xs text-destructive" title={r.error}>
+                          <span
+                            className="rounded bg-destructive/15 px-2 py-0.5 text-xs text-destructive"
+                            title={r.error}
+                          >
                             failed
                           </span>
                         )}
@@ -221,9 +253,11 @@ function UploadPage() {
                       <td className="px-4 py-3 font-mono text-xs">{r.slug ?? "—"}</td>
                       <td className="px-4 py-3 text-xs">
                         {r.forge_report_url ? (
-                          <a href={r.forge_report_url} className="text-primary hover:underline">View →</a>
+                          <a href={r.forge_report_url} className="text-primary hover:underline">
+                            View →
+                          </a>
                         ) : (
-                          r.error ?? "—"
+                          (r.error ?? "—")
                         )}
                       </td>
                     </tr>

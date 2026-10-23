@@ -8,9 +8,8 @@ const { publicKey, privateKey } = generateKeyPairSync("ed25519");
 process.env.SIGNING_PRIVATE_KEY = privateKey.export({ format: "pem", type: "pkcs8" });
 process.env.SIGNING_PUBLIC_KEY = publicKey.export({ format: "pem", type: "spki" });
 
-const { signBytes, signatureHeaders, signingKeyId, buildSidecar } = await import(
-  "../src/lib/plugins/signature.server.ts"
-);
+const { signBytes, signatureHeaders, signingKeyId, buildSidecar } =
+  await import("../src/lib/plugins/signature.server.ts");
 
 test("signs bytes and the signature verifies against the public key", () => {
   const bytes = new TextEncoder().encode("zip-bytes");
@@ -81,9 +80,8 @@ test("missing keys degrade to an unsigned sidecar instead of throwing", async ()
 });
 
 test("content digest is stable, order-independent and tamper-evident", async () => {
-  const { contentDigest, signDigest, buildEmbeddedSignature } = await import(
-    "../src/lib/plugins/signature.server.ts"
-  );
+  const { contentDigest, signDigest, buildEmbeddedSignature } =
+    await import("../src/lib/plugins/signature.server.ts");
   const a = contentDigest([
     ["plugin.json", "{}"],
     ["skills/x/SKILL.md", "# x"],
@@ -105,7 +103,12 @@ test("content digest is stable, order-independent and tamper-evident", async () 
   assert.notEqual(a.digest, tampered.digest);
 
   // Ed25519 is deterministic: identical payload => identical embedded file.
-  const args = { slug: "x", version: "1.0.0", files: [["plugin.json", "{}"]], publicKeyUrl: "/k.pem" };
+  const args = {
+    slug: "x",
+    version: "1.0.0",
+    files: [["plugin.json", "{}"]],
+    publicKeyUrl: "/k.pem",
+  };
   assert.equal(buildEmbeddedSignature(args), buildEmbeddedSignature(args));
   assert.equal(signDigest(a.digest).signature, signDigest(a.digest).signature);
   assert.ok(!buildEmbeddedSignature(args).includes("signed_at"));

@@ -8,7 +8,10 @@ import { createHash, randomBytes } from "node:crypto";
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { createInterface } from "node:readline";
-var REGISTRY = (process.env.SUPER_AGENT_REGISTRY ?? "https://superagentskill.com").replace(/\/+$/, "");
+var REGISTRY = (process.env.SUPER_AGENT_REGISTRY ?? "https://superagentskill.com").replace(
+  /\/+$/,
+  "",
+);
 var TELEMETRY = process.env.SUPER_AGENT_TELEMETRY !== "0";
 var MCP_ENDPOINT = `${REGISTRY}/api/mcp`;
 var CRED_DIR = join(homedir(), ".superagentskill");
@@ -20,30 +23,18 @@ if (!cmd || cmd === "--help" || cmd === "-h") {
   process.exit(0);
 }
 try {
-  if (cmd === "install")
-    await cmdInstall(rest);
-  else if (cmd === "list")
-    await cmdList(rest);
-  else if (cmd === "search")
-    await cmdSearch(rest);
-  else if (cmd === "info")
-    await cmdInfo(rest);
-  else if (cmd === "init")
-    await cmdInit(rest);
-  else if (cmd === "publish")
-    await cmdPublish(rest);
-  else if (cmd === "connect")
-    await cmdConnect(rest);
-  else if (cmd === "login")
-    await cmdLogin();
-  else if (cmd === "status")
-    await cmdStatus();
-  else if (cmd === "logout")
-    await cmdLogout();
-  else if (cmd === "setup")
-    await cmdSetup(rest);
-  else if (cmd === "mcp")
-    await cmdMcpBridge();
+  if (cmd === "install") await cmdInstall(rest);
+  else if (cmd === "list") await cmdList(rest);
+  else if (cmd === "search") await cmdSearch(rest);
+  else if (cmd === "info") await cmdInfo(rest);
+  else if (cmd === "init") await cmdInit(rest);
+  else if (cmd === "publish") await cmdPublish(rest);
+  else if (cmd === "connect") await cmdConnect(rest);
+  else if (cmd === "login") await cmdLogin();
+  else if (cmd === "status") await cmdStatus();
+  else if (cmd === "logout") await cmdLogout();
+  else if (cmd === "setup") await cmdSetup(rest);
+  else if (cmd === "mcp") await cmdMcpBridge();
   else {
     console.error(`unknown command: ${cmd}`);
     printHelp();
@@ -53,8 +44,7 @@ try {
   console.error(`✗ ${e.message}`);
   process.exit(2);
 }
-if (!LONG_RUNNING.has(cmd))
-  setImmediate(() => process.exit(0));
+if (!LONG_RUNNING.has(cmd)) setImmediate(() => process.exit(0));
 function printHelp() {
   console.log(`super-agent — install AI agent skills + plug-and-play MCP
 
@@ -84,45 +74,41 @@ Environment:
 function parseFlags(args) {
   const positional = [];
   const flags = {};
-  for (let i = 0;i < args.length; i++) {
+  for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (a.startsWith("--")) {
       const n = args[i + 1];
-      if (!n || n.startsWith("--"))
-        flags[a.slice(2)] = true;
+      if (!n || n.startsWith("--")) flags[a.slice(2)] = true;
       else {
         flags[a.slice(2)] = n;
         i++;
       }
-    } else
-      positional.push(a);
+    } else positional.push(a);
   }
   return { positional, flags };
 }
 async function getJson(path) {
   const res = await fetch(`${REGISTRY}${path}`, { headers: { accept: "application/json" } });
-  if (!res.ok)
-    throw new Error(`HTTP ${res.status} from ${path}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} from ${path}`);
   return res.json();
 }
 async function getText(path) {
   const res = await fetch(`${REGISTRY}${path}`);
-  if (!res.ok)
-    throw new Error(`HTTP ${res.status} from ${path}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} from ${path}`);
   return res.text();
 }
 async function cmdInstall(args) {
   const { positional, flags } = parseFlags(args);
   const slug = positional[0];
-  if (!slug)
-    throw new Error("install requires <slug>");
+  if (!slug) throw new Error("install requires <slug>");
   const target = (flags.target ?? "all").toLowerCase();
   console.log(`→ fetching ${slug} from ${REGISTRY}`);
   const info = await getJson(`/api/public/packages/${slug}`);
-  const skillMd = await getText(`/api/skills/${slug}/export.md`).catch(async () => synthesizeSkillMd(info));
+  const skillMd = await getText(`/api/skills/${slug}/export.md`).catch(async () =>
+    synthesizeSkillMd(info),
+  );
   const targets = target === "all" ? ["claude", "cursor", "continue", "cline"] : [target];
-  for (const t of targets)
-    writeForTarget(t, slug, skillMd);
+  for (const t of targets) writeForTarget(t, slug, skillMd);
   reportTelemetry({ package_slug: slug, runtime: "cli", success: true });
   console.log(`
 ✓ installed ${slug} for: ${targets.join(", ")}`);
@@ -134,7 +120,7 @@ function writeForTarget(target, slug, skillMd) {
     claude: `.claude/skills/${slug}/SKILL.md`,
     cursor: `.cursor/rules/${slug}.mdc`,
     continue: `.continue/skills/${slug}.md`,
-    cline: `.cline/skills/${slug}.md`
+    cline: `.cline/skills/${slug}.md`,
   };
   const path = map[target];
   if (!path) {
@@ -148,30 +134,29 @@ function writeForTarget(target, slug, skillMd) {
 async function cmdList(args) {
   const { flags } = parseFlags(args);
   const q = flags.query ?? "";
-  const list = await getJson(`/api/public/packages?type=skill${q ? `&q=${encodeURIComponent(q)}` : ""}`);
-  for (const p of list.items ?? list)
-    console.log(`${p.slug.padEnd(36)} ${p.name ?? ""}`);
+  const list = await getJson(
+    `/api/public/packages?type=skill${q ? `&q=${encodeURIComponent(q)}` : ""}`,
+  );
+  for (const p of list.items ?? list) console.log(`${p.slug.padEnd(36)} ${p.name ?? ""}`);
 }
 async function cmdSearch(args) {
-  if (!args[0])
-    throw new Error("search requires a query");
+  if (!args[0]) throw new Error("search requires a query");
   const res = await getJson(`/api/public/search?q=${encodeURIComponent(args.join(" "))}`);
   for (const r of res.results ?? [])
-    console.log(`${r.type.padEnd(10)} ${r.slug.padEnd(32)} ${r.score?.toFixed?.(2) ?? ""}  ${r.snippet ?? ""}`);
+    console.log(
+      `${r.type.padEnd(10)} ${r.slug.padEnd(32)} ${r.score?.toFixed?.(2) ?? ""}  ${r.snippet ?? ""}`,
+    );
 }
 async function cmdInfo(args) {
   const slug = args[0];
-  if (!slug)
-    throw new Error("info requires <slug>");
+  if (!slug) throw new Error("info requires <slug>");
   console.log(JSON.stringify(await getJson(`/api/public/packages/${slug}`), null, 2));
 }
 async function cmdInit(args) {
   const slug = args[0];
-  if (!slug)
-    throw new Error("init requires <slug>");
+  if (!slug) throw new Error("init requires <slug>");
   const file = `${slug}.yaml`;
-  if (existsSync(file))
-    throw new Error(`${file} already exists`);
+  if (existsSync(file)) throw new Error(`${file} already exists`);
   const template = `id: ${slug}
 name: ${slug.replace(/-/g, " ")}
 type: skill
@@ -200,16 +185,16 @@ examples:
 }
 async function cmdPublish(args) {
   const slug = args[0];
-  if (!slug)
-    throw new Error("publish requires <slug>");
+  if (!slug) throw new Error("publish requires <slug>");
   const creds = await ensureToken();
   if (!creds?.access_token)
     throw new Error("publish requires login. Run `super-agent login` first.");
   const file = `${slug}.yaml`;
-  if (!existsSync(file))
-    throw new Error(`Could not find ${file} in current directory.`);
+  if (!existsSync(file)) throw new Error(`Could not find ${file} in current directory.`);
   console.log(`→ Publishing ${slug}... (not fully implemented in backend yet, scaffold only)`);
-  console.log(`✓ Publish scaffold reached. Ensure backend API is ready to accept POST /api/public/packages`);
+  console.log(
+    `✓ Publish scaffold reached. Ensure backend API is ready to accept POST /api/public/packages`,
+  );
 }
 function synthesizeSkillMd(info) {
   return [
@@ -224,29 +209,30 @@ function synthesizeSkillMd(info) {
     info.system_prompt ?? "(not exposed via this endpoint)",
     ``,
     `---`,
-    `Installed from ${REGISTRY}/packs/${info.slug}`
+    `Installed from ${REGISTRY}/packs/${info.slug}`,
   ].join(`
 `);
 }
 function reportTelemetry(event) {
-  if (!TELEMETRY)
-    return;
+  if (!TELEMETRY) return;
   const body = JSON.stringify({
     latency_ms: 0,
     workspace_id: hashCwd(),
     runtime: "cli",
-    ...event
+    ...event,
   });
   fetch(`${REGISTRY}/api/public/telemetry`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body
+    body,
   }).catch(() => {});
 }
 function hashCwd() {
   try {
     const cwd = process.cwd();
-    const pkg = existsSync("package.json") ? JSON.parse(readFileSync("package.json", "utf8"))?.name : "";
+    const pkg = existsSync("package.json")
+      ? JSON.parse(readFileSync("package.json", "utf8"))?.name
+      : "";
     return `${pkg || "anon"}:${cwd.split("/").slice(-2).join("/")}`;
   } catch {
     return "anon";
@@ -267,7 +253,12 @@ function saveCreds(creds) {
   writeFileSync(CRED_FILE, JSON.stringify(creds, null, 2), { mode: 384 });
 }
 function openBrowser(url) {
-  const cmds = platform() === "darwin" ? ["open", [url]] : platform() === "win32" ? ["cmd", ["/c", "start", "", url]] : ["xdg-open", [url]];
+  const cmds =
+    platform() === "darwin"
+      ? ["open", [url]]
+      : platform() === "win32"
+        ? ["cmd", ["/c", "start", "", url]]
+        : ["xdg-open", [url]];
   try {
     const p = spawn(cmds[0], cmds[1], { stdio: "ignore", detached: true });
     p.on("error", () => {});
@@ -279,14 +270,16 @@ async function discover() {
     authorization_endpoint: `${REGISTRY}/oauth/authorize`,
     token_endpoint: `${REGISTRY}/api/public/oauth/token`,
     registration_endpoint: `${REGISTRY}/api/public/oauth/register`,
-    revocation_endpoint: `${REGISTRY}/api/public/oauth/revoke`
+    revocation_endpoint: `${REGISTRY}/api/public/oauth/revoke`,
   };
   try {
-    const pr = await getJson(`/.well-known/oauth-protected-resource/api/mcp`).catch(() => getJson(`/.well-known/oauth-protected-resource`));
+    const pr = await getJson(`/.well-known/oauth-protected-resource/api/mcp`).catch(() =>
+      getJson(`/.well-known/oauth-protected-resource`),
+    );
     const as = (pr.authorization_servers?.[0] ?? REGISTRY).replace(/\/+$/, "");
     const meta = await fetch(`${as}/.well-known/oauth-authorization-server`, {
-      headers: { accept: "application/json" }
-    }).then((r) => r.ok ? r.json() : null);
+      headers: { accept: "application/json" },
+    }).then((r) => (r.ok ? r.json() : null));
     return meta ?? fallback;
   } catch {
     return fallback;
@@ -309,12 +302,17 @@ function startCallbackServer() {
           const code = u.searchParams.get("code");
           const state = u.searchParams.get("state");
           response.writeHead(200, { "content-type": "text/html" });
-          response.end(`<!doctype html><meta charset=utf-8><title>Super Agent Skill</title>` + `<body style="font:16px system-ui;text-align:center;padding:14vh 2rem;background:#0b0b0c;color:#eee">` + (err ? `<h1>Authorization failed</h1><p>${err}</p>` : `<h1>✓ Connected</h1><p>You can close this tab and return to your terminal.</p>`) + `</body>`);
+          response.end(
+            `<!doctype html><meta charset=utf-8><title>Super Agent Skill</title>` +
+              `<body style="font:16px system-ui;text-align:center;padding:14vh 2rem;background:#0b0b0c;color:#eee">` +
+              (err
+                ? `<h1>Authorization failed</h1><p>${err}</p>`
+                : `<h1>✓ Connected</h1><p>You can close this tab and return to your terminal.</p>`) +
+              `</body>`,
+          );
           server.close();
-          if (err)
-            rej(new Error(`authorization denied: ${err}`));
-          else
-            res({ code, state });
+          if (err) rej(new Error(`authorization denied: ${err}`));
+          else res({ code, state });
         });
       });
       resolve({ redirectUri, codePromise });
@@ -333,14 +331,13 @@ async function oauthLogin() {
       grant_types: ["authorization_code", "refresh_token"],
       response_types: ["code"],
       token_endpoint_auth_method: "none",
-      software_id: "super-agent-cli"
-    })
+      software_id: "super-agent-cli",
+    }),
   });
   if (!reg.ok)
     throw new Error(`client registration failed: HTTP ${reg.status} ${await reg.text()}`);
   const client = await reg.json();
-  if (!client.client_id)
-    throw new Error("registration response missing client_id");
+  if (!client.client_id) throw new Error("registration response missing client_id");
   const verifier = b64url(randomBytes(32));
   const challenge = b64url(createHash("sha256").update(verifier).digest());
   const state = b64url(randomBytes(16));
@@ -360,8 +357,7 @@ async function oauthLogin() {
 `);
   openBrowser(authUrl.toString());
   const { code, state: returnedState } = await codePromise;
-  if (returnedState !== state)
-    throw new Error("state mismatch — aborting (possible CSRF)");
+  if (returnedState !== state) throw new Error("state mismatch — aborting (possible CSRF)");
   const tok = await fetch(meta.token_endpoint, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -370,11 +366,10 @@ async function oauthLogin() {
       code,
       redirect_uri: redirectUri,
       client_id: client.client_id,
-      code_verifier: verifier
-    })
+      code_verifier: verifier,
+    }),
   });
-  if (!tok.ok)
-    throw new Error(`token exchange failed: HTTP ${tok.status} ${await tok.text()}`);
+  if (!tok.ok) throw new Error(`token exchange failed: HTTP ${tok.status} ${await tok.text()}`);
   const t = await tok.json();
   const creds = {
     client_id: client.client_id,
@@ -383,36 +378,32 @@ async function oauthLogin() {
     scope: t.scope ?? "mcp:read mcp:write",
     expires_at: Date.now() + (t.expires_in ?? 3600) * 1000,
     token_endpoint: meta.token_endpoint,
-    revocation_endpoint: meta.revocation_endpoint
+    revocation_endpoint: meta.revocation_endpoint,
   };
   saveCreds(creds);
   return creds;
 }
 async function ensureToken() {
   let creds = loadCreds();
-  if (!creds)
-    throw new Error('not logged in — run "super-agent login" first');
-  if (Date.now() < creds.expires_at - 60000)
-    return creds;
-  if (!creds.refresh_token)
-    return creds;
+  if (!creds) throw new Error('not logged in — run "super-agent login" first');
+  if (Date.now() < creds.expires_at - 60000) return creds;
+  if (!creds.refresh_token) return creds;
   const res = await fetch(creds.token_endpoint ?? `${REGISTRY}/api/public/oauth/token`, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       grant_type: "refresh_token",
       refresh_token: creds.refresh_token,
-      client_id: creds.client_id
-    })
+      client_id: creds.client_id,
+    }),
   });
-  if (!res.ok)
-    return creds;
+  if (!res.ok) return creds;
   const t = await res.json();
   creds = {
     ...creds,
     access_token: t.access_token,
     refresh_token: t.refresh_token ?? creds.refresh_token,
-    expires_at: Date.now() + (t.expires_in ?? 3600) * 1000
+    expires_at: Date.now() + (t.expires_in ?? 3600) * 1000,
   };
   saveCreds(creds);
   return creds;
@@ -433,7 +424,9 @@ async function cmdStatus() {
   const expired = Date.now() >= creds.expires_at;
   console.log(`Logged in (${REGISTRY})`);
   console.log(`  scope:      ${creds.scope}`);
-  console.log(`  access:     ${expired ? "expired" : "valid"}${creds.refresh_token ? " (auto-refresh on)" : ""}`);
+  console.log(
+    `  access:     ${expired ? "expired" : "valid"}${creds.refresh_token ? " (auto-refresh on)" : ""}`,
+  );
   console.log(`  expires_at: ${new Date(creds.expires_at).toISOString()}`);
   console.log(`  file:       ${CRED_FILE}`);
 }
@@ -447,7 +440,7 @@ async function cmdLogout() {
     await fetch(creds.revocation_endpoint ?? `${REGISTRY}/api/public/oauth/revoke`, {
       method: "POST",
       headers: { "content-type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ token: creds.refresh_token ?? creds.access_token })
+      body: new URLSearchParams({ token: creds.refresh_token ?? creds.access_token }),
     });
   } catch {}
   try {
@@ -490,7 +483,7 @@ async function writeClientConfig(client) {
   const home = homedir();
   const httpEntry = {
     url: MCP_ENDPOINT,
-    ...bearer ? { headers: { Authorization: `Bearer ${bearer}` } } : {}
+    ...(bearer ? { headers: { Authorization: `Bearer ${bearer}` } } : {}),
   };
   switch (client) {
     case "claude-code": {
@@ -501,13 +494,24 @@ Run this once (Claude Code handles OAuth natively):
 `);
       console.log(`If your Claude Code build can't do MCP OAuth, use the local bridge instead:
 `);
-      console.log(`  claude mcp add super-agent-skill -- npx -y super-agent mcp
-` + `  (the bridge injects your saved token automatically)
-`);
+      console.log(
+        `  claude mcp add super-agent-skill -- npx -y super-agent mcp
+` +
+          `  (the bridge injects your saved token automatically)
+`,
+      );
       return;
     }
     case "claude": {
-      const file = platform() === "darwin" ? join(home, "Library/Application Support/Claude/claude_desktop_config.json") : platform() === "win32" ? join(process.env.APPDATA ?? join(home, "AppData/Roaming"), "Claude/claude_desktop_config.json") : join(home, ".config/Claude/claude_desktop_config.json");
+      const file =
+        platform() === "darwin"
+          ? join(home, "Library/Application Support/Claude/claude_desktop_config.json")
+          : platform() === "win32"
+            ? join(
+                process.env.APPDATA ?? join(home, "AppData/Roaming"),
+                "Claude/claude_desktop_config.json",
+              )
+            : join(home, ".config/Claude/claude_desktop_config.json");
       patchJsonFile(file, (j) => {
         j.mcpServers = j.mcpServers ?? {};
         j.mcpServers["super-agent-skill"] = { command: "npx", args: ["-y", "super-agent", "mcp"] };
@@ -534,7 +538,7 @@ Run this once (Claude Code handles OAuth natively):
         j.mcpServers = j.mcpServers ?? {};
         j.mcpServers["super-agent-skill"] = {
           serverUrl: MCP_ENDPOINT,
-          ...bearer ? { headers: { Authorization: `Bearer ${bearer}` } } : {}
+          ...(bearer ? { headers: { Authorization: `Bearer ${bearer}` } } : {}),
         };
       });
       return;
@@ -542,10 +546,13 @@ Run this once (Claude Code handles OAuth natively):
     case "codex": {
       const file = join(home, ".codex", "config.toml");
       mkdirSync(dirname(file), { recursive: true });
-      const block = `
+      const block =
+        `
 [mcp_servers.super-agent-skill]
-` + `command = "npx"
-` + `args = ["-y", "super-agent", "mcp"]
+` +
+        `command = "npx"
+` +
+        `args = ["-y", "super-agent", "mcp"]
 `;
       const prev = existsSync(file) ? readFileSync(file, "utf8") : "";
       if (prev.includes("[mcp_servers.super-agent-skill]")) {
@@ -557,7 +564,9 @@ Run this once (Claude Code handles OAuth natively):
       return;
     }
     default:
-      throw new Error(`unknown client "${client}". Use: claude-code | claude | cursor | codex | vscode | windsurf`);
+      throw new Error(
+        `unknown client "${client}". Use: claude-code | claude | cursor | codex | vscode | windsurf`,
+      );
   }
 }
 async function cmdSetup(args) {
@@ -573,8 +582,7 @@ async function cmdMcpBridge() {
   const rl = createInterface({ input: process.stdin });
   for await (const line of rl) {
     const trimmed = line.trim();
-    if (!trimmed)
-      continue;
+    if (!trimmed) continue;
     let creds;
     try {
       creds = await ensureToken();
@@ -583,27 +591,31 @@ async function cmdMcpBridge() {
     }
     const headers = {
       "content-type": "application/json",
-      accept: "application/json, text/event-stream"
+      accept: "application/json, text/event-stream",
     };
-    if (creds?.access_token)
-      headers.authorization = `Bearer ${creds.access_token}`;
-    if (sessionId)
-      headers["mcp-session-id"] = sessionId;
+    if (creds?.access_token) headers.authorization = `Bearer ${creds.access_token}`;
+    if (sessionId) headers["mcp-session-id"] = sessionId;
     let res;
     try {
       res = await fetch(MCP_ENDPOINT, { method: "POST", headers, body: trimmed });
     } catch (e) {
-      emit({ jsonrpc: "2.0", id: safeId(trimmed), error: { code: -32000, message: `bridge fetch failed: ${e.message}` } });
+      emit({
+        jsonrpc: "2.0",
+        id: safeId(trimmed),
+        error: { code: -32000, message: `bridge fetch failed: ${e.message}` },
+      });
       continue;
     }
     const sid = res.headers.get("mcp-session-id");
-    if (sid)
-      sessionId = sid;
+    if (sid) sessionId = sid;
     if (res.status === 401) {
       emit({
         jsonrpc: "2.0",
         id: safeId(trimmed),
-        error: { code: -32001, message: "unauthorized — run `super-agent login` to enable write tools" }
+        error: {
+          code: -32001,
+          message: "unauthorized — run `super-agent login` to enable write tools",
+        },
       });
       continue;
     }
@@ -611,26 +623,39 @@ async function cmdMcpBridge() {
     if (ct.includes("text/event-stream")) {
       const text = await res.text();
       for (const chunk of text.split(/\n\n/)) {
-        const dataLines = chunk.split(`
-`).filter((l) => l.startsWith("data:")).map((l) => l.slice(5).trim());
-        if (!dataLines.length)
-          continue;
+        const dataLines = chunk
+          .split(
+            `
+`,
+          )
+          .filter((l) => l.startsWith("data:"))
+          .map((l) => l.slice(5).trim());
+        if (!dataLines.length) continue;
         const payload = dataLines.join("");
         if (payload && payload !== "[DONE]")
-          process.stdout.write(payload + `
-`);
+          process.stdout.write(
+            payload +
+              `
+`,
+          );
       }
     } else {
       const text = (await res.text()).trim();
       if (text)
-        process.stdout.write(text + `
-`);
+        process.stdout.write(
+          text +
+            `
+`,
+        );
     }
   }
 }
 function emit(obj) {
-  process.stdout.write(JSON.stringify(obj) + `
-`);
+  process.stdout.write(
+    JSON.stringify(obj) +
+      `
+`,
+  );
 }
 function safeId(line) {
   try {

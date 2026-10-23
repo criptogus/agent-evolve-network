@@ -30,7 +30,6 @@ export const ExecutionEventSchema = z.object({
   experiment_key: z.string().max(96).nullish(),
 });
 
-
 export type ExecutionEvent = z.infer<typeof ExecutionEventSchema>;
 
 const TELEMETRY_SALT = process.env.TELEMETRY_SALT ?? "super-agent-skill-telemetry";

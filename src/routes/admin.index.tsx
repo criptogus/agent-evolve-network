@@ -32,7 +32,15 @@ function AdminDashboard() {
     },
   });
 
-  const stats = counts.data ?? { users: 0, packages: 0, runs: 0, leads: 0, plans: 0, requests: 0, imports: 0 };
+  const stats = counts.data ?? {
+    users: 0,
+    packages: 0,
+    runs: 0,
+    leads: 0,
+    plans: 0,
+    requests: 0,
+    imports: 0,
+  };
 
   return (
     <div className="space-y-6">

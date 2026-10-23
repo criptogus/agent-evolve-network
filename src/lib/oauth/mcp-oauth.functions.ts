@@ -3,11 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin as any;
-import {
-  CODE_TTL_SECONDS,
-  generateAuthCode,
-  sha256,
-} from "@/lib/oauth/mcp-oauth.server";
+import { CODE_TTL_SECONDS, generateAuthCode, sha256 } from "@/lib/oauth/mcp-oauth.server";
 
 /** Fetch the public client metadata for the consent screen. */
 export const getOauthClient = createServerFn({ method: "POST" })

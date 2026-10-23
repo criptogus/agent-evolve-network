@@ -4,16 +4,16 @@
  *   node render.js --out /tmp/kb.html
  *   node render.js --out /tmp/kb.html --suggestions 'I,The,I'\''m' --layout qwerty-lower
  */
-const fs = require('fs');
-const path = require('path');
-const { renderKeyboardHTML, renderKeyboardCSS } = require('./generate');
+const fs = require("fs");
+const path = require("path");
+const { renderKeyboardHTML, renderKeyboardCSS } = require("./generate");
 
 function parseArgs(argv) {
   const a = {};
   for (let i = 2; i < argv.length; i++) {
-    if (argv[i] === '--out') a.out = argv[++i];
-    else if (argv[i] === '--suggestions') a.suggestions = argv[++i];
-    else if (argv[i] === '--layout') a.layout = argv[++i];
+    if (argv[i] === "--out") a.out = argv[++i];
+    else if (argv[i] === "--suggestions") a.suggestions = argv[++i];
+    else if (argv[i] === "--layout") a.layout = argv[++i];
   }
   return a;
 }
@@ -21,10 +21,12 @@ function parseArgs(argv) {
 function main() {
   const args = parseArgs(process.argv);
   if (!args.out) {
-    console.error('Usage: node render.js --out path.html [--suggestions "a,b,c"] [--layout qwerty-lower]');
+    console.error(
+      'Usage: node render.js --out path.html [--suggestions "a,b,c"] [--layout qwerty-lower]',
+    );
     process.exit(1);
   }
-  const suggestions = args.suggestions ? args.suggestions.split(',') : undefined;
+  const suggestions = args.suggestions ? args.suggestions.split(",") : undefined;
   const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><style>
   html, body { margin: 0; padding: 0; background: #F4F4F4; }

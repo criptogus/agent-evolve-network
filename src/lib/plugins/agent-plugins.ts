@@ -106,7 +106,10 @@ export function buildPluginManifest(input: {
   if (input.homepage) manifest.homepage = input.homepage;
   if (input.repository) manifest.repository = input.repository;
   if (input.license) manifest.license = input.license;
-  const keywords = (input.keywords ?? []).map((k) => String(k)).filter(Boolean).slice(0, 20);
+  const keywords = (input.keywords ?? [])
+    .map((k) => String(k))
+    .filter(Boolean)
+    .slice(0, 20);
   if (keywords.length) manifest.keywords = keywords;
   if (input.extensions) manifest.extensions = input.extensions;
   return manifest;
@@ -116,7 +119,10 @@ export function buildPluginManifest(input: {
  * Our hosted MCP server as a portable `mcp.json`. Never include credentials —
  * headers are visible package data and authorization is client-managed (§7.2.1).
  */
-export function buildMcpConfig(url: string = SAK_MCP_URL, serverName = "superagentskill"): McpConfig {
+export function buildMcpConfig(
+  url: string = SAK_MCP_URL,
+  serverName = "superagentskill",
+): McpConfig {
   return {
     $schema: MCP_SCHEMA_URL,
     mcpServers: {
@@ -259,7 +265,8 @@ export function validateMcpConfig(input: unknown): string[] {
           if (parsed.protocol === "http:" && !isLoopbackHost(parsed.hostname)) {
             errors.push(`${name}: non-loopback url must use https`);
           }
-          if (parsed.username || parsed.password) errors.push(`${name}: url must not carry userinfo`);
+          if (parsed.username || parsed.password)
+            errors.push(`${name}: url must not carry userinfo`);
           if (parsed.hash) errors.push(`${name}: url must not carry a fragment`);
         }
       }

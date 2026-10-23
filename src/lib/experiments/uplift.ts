@@ -16,10 +16,7 @@ export type Arm = "control" | "treatment";
 
 /** Stable [0,1) hash of a subject within an experiment. */
 export function subjectHashUnit(experimentKey: string, subject: string): number {
-  const hex = createHash("sha256")
-    .update(`${experimentKey}:${subject}`)
-    .digest("hex")
-    .slice(0, 13);
+  const hex = createHash("sha256").update(`${experimentKey}:${subject}`).digest("hex").slice(0, 13);
   return parseInt(hex, 16) / 2 ** 52;
 }
 
@@ -28,11 +25,7 @@ export function subjectHashUnit(experimentKey: string, subject: string): number 
  * an arm. Same subject always lands in the same arm for a given experiment, so
  * a customer never flips mid-session and the split is auditable.
  */
-export function assignArm(
-  experimentKey: string,
-  subject: string,
-  controlShare = 0.1,
-): Arm {
+export function assignArm(experimentKey: string, subject: string, controlShare = 0.1): Arm {
   const share = Math.max(0, Math.min(0.5, controlShare));
   if (share === 0) return "treatment";
   return subjectHashUnit(experimentKey, subject) < share ? "control" : "treatment";
@@ -45,8 +38,7 @@ export function normalCdf(z: number): number {
   const t = 1 / (1 + 0.3275911 * x);
   const erf =
     1 -
-    ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t +
-      0.254829592) *
+    ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) *
       t *
       Math.exp(-x * x);
   return 0.5 * (1 + sign * erf);
@@ -105,9 +97,7 @@ export function twoProportionUplift(
   }
 
   const significant =
-    pValue < 0.05 &&
-    n1 >= MIN_PER_ARM_FOR_SIGNIFICANCE &&
-    n2 >= MIN_PER_ARM_FOR_SIGNIFICANCE;
+    pValue < 0.05 && n1 >= MIN_PER_ARM_FOR_SIGNIFICANCE && n2 >= MIN_PER_ARM_FOR_SIGNIFICANCE;
 
   return {
     control_rate: round4(p1),

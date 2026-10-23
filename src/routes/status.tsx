@@ -78,9 +78,7 @@ function StatusPage() {
 
         <div
           className={`mt-8 rounded-2xl border p-5 ${
-            ok
-              ? "border-emerald-500/40 bg-emerald-500/5"
-              : "border-destructive/40 bg-destructive/5"
+            ok ? "border-emerald-500/40 bg-emerald-500/5" : "border-destructive/40 bg-destructive/5"
           }`}
         >
           <div className="flex items-center gap-3">

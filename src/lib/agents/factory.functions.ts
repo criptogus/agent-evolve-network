@@ -53,9 +53,13 @@ async function assertPaid(supabase: any, userId: string) {
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
-  const active = !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+  const active =
+    !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
   if (!active) {
-    throw new Response("The Agent Factory requires Agent Pass or Enterprise. Upgrade at /pricing.", { status: 402 });
+    throw new Response(
+      "The Agent Factory requires Agent Pass or Enterprise. Upgrade at /pricing.",
+      { status: 402 },
+    );
   }
 }
 
@@ -184,13 +188,27 @@ export const runAgentBuildStep = createServerFn({ method: "POST" })
           return { status: "skills" as AgentBuildStatus, done: false };
         }
         case "skills": {
-          const playbooks = await factory.generateDocs("playbook", brief, research, row.soul ?? "", 3);
-          await patch({ status: "playbooks", step: `${playbooks.length} playbooks authored`, playbooks });
+          const playbooks = await factory.generateDocs(
+            "playbook",
+            brief,
+            research,
+            row.soul ?? "",
+            3,
+          );
+          await patch({
+            status: "playbooks",
+            step: `${playbooks.length} playbooks authored`,
+            playbooks,
+          });
           return { status: "playbooks" as AgentBuildStatus, done: false };
         }
         case "playbooks": {
           const guardrails = await factory.generateGuardrails(brief, research);
-          await patch({ status: "guardrails", step: `${guardrails.length} guardrails attached`, guardrails });
+          await patch({
+            status: "guardrails",
+            step: `${guardrails.length} guardrails attached`,
+            guardrails,
+          });
           return { status: "guardrails" as AgentBuildStatus, done: false };
         }
         case "guardrails": {
@@ -231,13 +249,19 @@ export const runAgentBuildStep = createServerFn({ method: "POST" })
             soul,
             score,
             grade: gradeLetter(score),
-            report: { ...(row.report ?? {}), final_pass: final, repaired: soul !== (row.soul ?? "") },
+            report: {
+              ...(row.report ?? {}),
+              final_pass: final,
+              repaired: soul !== (row.soul ?? ""),
+            },
           });
           try {
             const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-            await (supabaseAdmin as any)
-              .from("mcp_funnel_events")
-              .insert({ event: "agent_build_ready", user_id: userId, props: { slug: row.slug, score } });
+            await (supabaseAdmin as any).from("mcp_funnel_events").insert({
+              event: "agent_build_ready",
+              user_id: userId,
+              props: { slug: row.slug, score },
+            });
           } catch {
             /* best-effort */
           }
@@ -287,7 +311,11 @@ export const deleteAgentBuild = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => IdInput.parse(d))
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context as any;
-    const { error } = await supabase.from("agent_builds").delete().eq("id", data.build_id).eq("user_id", userId);
+    const { error } = await supabase
+      .from("agent_builds")
+      .delete()
+      .eq("id", data.build_id)
+      .eq("user_id", userId);
     if (error) throw new Response(error.message, { status: 500 });
     return { ok: true };
   });
@@ -306,7 +334,8 @@ export const getAgentBuildPrompt = createServerFn({ method: "POST" })
       .eq("user_id", userId)
       .single();
     if (error || !row) throw new Response("Build not found", { status: 404 });
-    if (row.status !== "ready") throw new Response("This agent is still building.", { status: 409 });
+    if (row.status !== "ready")
+      throw new Response("This agent is still building.", { status: 409 });
     const { buildSystemPrompt } = await import("./factory-adapt");
     return { system_prompt: buildSystemPrompt(row as any) };
   });
@@ -348,7 +377,8 @@ export const updateAgentBuildDraft = createServerFn({ method: "POST" })
       .eq("user_id", userId)
       .single();
     if (error || !row) throw new Response("Build not found", { status: 404 });
-    if (row.status !== "ready") throw new Response("Finish the build before editing it.", { status: 409 });
+    if (row.status !== "ready")
+      throw new Response("Finish the build before editing it.", { status: 409 });
 
     const guardrails = data.guardrails.map((g, i) => ({
       ...g,

@@ -48,7 +48,8 @@ export async function requirePaidBearer(request: Request): Promise<PaidCheck> {
     .limit(1)
     .maybeSingle();
 
-  const isActive = !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+  const isActive =
+    !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
   if (!isActive) {
     return {
       ok: false,

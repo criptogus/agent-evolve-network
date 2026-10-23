@@ -56,7 +56,9 @@ function EnvCard({ env }: { env: EnvHealth }) {
         <div>
           <dt className="text-muted-foreground">Webhook endpoints</dt>
           <dd className="mt-1 space-y-1">
-            {env.webhooks.length === 0 && <span className="text-xs text-destructive">none registered</span>}
+            {env.webhooks.length === 0 && (
+              <span className="text-xs text-destructive">none registered</span>
+            )}
             {env.webhooks.map((w) => (
               <div key={w.url} className="break-all font-mono text-[11px] text-muted-foreground">
                 <Pill ok={w.status === "enabled"}>{w.status}</Pill> {w.url}
@@ -111,9 +113,7 @@ function PaymentsHealthPage() {
       </div>
 
       {q.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
-      {q.error && (
-        <p className="text-sm text-destructive">{(q.error as Error).message}</p>
-      )}
+      {q.error && <p className="text-sm text-destructive">{(q.error as Error).message}</p>}
 
       {q.data && (
         <>
@@ -135,12 +135,15 @@ function PaymentsHealthPage() {
                 ].map(([label, value]) => (
                   <div key={label as string}>
                     <div className="text-xl font-semibold">{value as number}</div>
-                    <div className="font-mono text-[11px] uppercase text-muted-foreground">{label}</div>
+                    <div className="font-mono text-[11px] uppercase text-muted-foreground">
+                      {label}
+                    </div>
                   </div>
                 ))}
               </div>
               <p className="mt-3 text-xs text-muted-foreground">
-                Latest: {q.data.events.latest ? new Date(q.data.events.latest).toLocaleString() : "never"}
+                Latest:{" "}
+                {q.data.events.latest ? new Date(q.data.events.latest).toLocaleString() : "never"}
               </p>
               {q.data.events.total === 0 && (
                 <p className="mt-2 text-xs text-destructive">
@@ -183,7 +186,8 @@ function PaymentsHealthPage() {
                 </tbody>
               </table>
               <p className="mt-3 text-xs text-muted-foreground">
-                Rows without a Stripe customer were granted manually and cannot open the billing portal.
+                Rows without a Stripe customer were granted manually and cannot open the billing
+                portal.
               </p>
             </div>
           </div>

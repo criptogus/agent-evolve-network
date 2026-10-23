@@ -109,9 +109,7 @@ export const createLovableAiGatewayProvider = (lovableApiKey: string) =>
 export function getGatewayModel(modelId: string = "default") {
   const cfg = resolveConfig();
   const resolved =
-    modelId === "default"
-      ? process.env.AI_GATEWAY_MODEL || "google/gemini-2.5-flash"
-      : modelId;
+    modelId === "default" ? process.env.AI_GATEWAY_MODEL || "google/gemini-2.5-flash" : modelId;
   return providerFor(cfg)(resolved);
 }
 

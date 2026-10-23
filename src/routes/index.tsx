@@ -26,10 +26,9 @@ const TITLE = "AI Agent Skills Marketplace — Super Agent Skill";
 // Static branded share card in public/ — bump the filename when artwork changes.
 const OG_IMAGE = "https://superagentskill.com/og-2026-07-31.jpg";
 
-
 // Kept between 50 and 160 chars.
 function buildDescription(skillsLabel: string) {
-  return `${skillsLabel} graded agent skills — tested against jailbreaks, scored in public. Install with the open skills CLI (skills.sh), our CLI or MCP.`;
+  return `${skillsLabel} agent skills — inspect available evaluation evidence and version-specific trust reports. Install with the open skills CLI (skills.sh), our CLI or MCP.`;
 }
 
 export const Route = createFileRoute("/")({
@@ -59,7 +58,7 @@ export const Route = createFileRoute("/")({
         { name: "twitter:image", content: OG_IMAGE },
         {
           name: "twitter:title",
-          content: "Claude & AI agent skills — signed, tested, installed in 30s",
+          content: "Discover and evaluate skills for Claude & AI agents",
         },
         { name: "twitter:description", content: description },
       ],
@@ -85,7 +84,7 @@ const SOFTWARE_LD = {
   applicationCategory: "DeveloperApplication",
   operatingSystem: "Any (MCP-compatible)",
   description:
-    "Signed, adversarially-tested registry of skills, playbooks, souls and guardrails for AI agents. Every package ships with a verifiable Trust Score so teams can ship AI to customers safely.",
+    "An open registry of skills, playbooks, souls and guardrails for AI agents. Inspect available evaluation evidence and version-specific trust reports before installing.",
   url: "https://superagentskill.com",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
 };
@@ -108,7 +107,7 @@ const FAQ_LD = {
       name: "How is a skill tested?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Format and substance are scored separately. Format is deterministic: structure, output contract, token budget, truncation. Substance is judged against the job the skill claims to do, with the exact excerpts that justify the score. Every skill also runs through a fixed adversarial harness — jailbreaks, role-play, data-exfiltration probes — and the block rate is recorded. The combined result is the Trust Score.",
+        text: "Format and substance are scored separately. Format is deterministic: structure, output contract, token budget, truncation. Substance is judged against the job the skill claims to do, with the exact excerpts that justify the score. The evaluation workflow can also run a fixed adversarial harness — jailbreaks, role-play, data-exfiltration probes — and the block rate is recorded. The combined result is the Trust Score.",
       },
     },
     {
@@ -140,7 +139,7 @@ const FAQ_LD = {
       name: "Do I need to retrain my agent or change my code?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "No retraining and no code changes. Capabilities install at runtime through MCP, every install is reversible, and every install is logged.",
+        text: "No retraining and no code changes. Capabilities install at runtime through MCP, every install is reversible, and installation telemetry is available for supported connected flows.",
       },
     },
     {
@@ -202,5 +201,3 @@ function Home() {
     </div>
   );
 }
-
-

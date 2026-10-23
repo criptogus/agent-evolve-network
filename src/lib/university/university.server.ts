@@ -64,9 +64,12 @@ export async function startExam(args: {
   };
 }
 
-export async function loadExam(
-  diagnosisId: string,
-): Promise<{ domain: DomainId; case_ids: string[]; installed_skills: string[]; user_id: string | null } | null> {
+export async function loadExam(diagnosisId: string): Promise<{
+  domain: DomainId;
+  case_ids: string[];
+  installed_skills: string[];
+  user_id: string | null;
+} | null> {
   const { data } = await supabaseAdmin
     .from("agent_diagnoses")
     .select("domain,case_ids,installed_skills,user_id")
@@ -162,7 +165,9 @@ export type DiagnosisRow = {
 export async function listDiagnoses(userId: string, limit = 20): Promise<DiagnosisRow[]> {
   const { data } = await supabaseAdmin
     .from("agent_diagnoses")
-    .select("id,domain,status,overall_score,bottleneck,error_profile,prescription,installed_skills,created_at")
+    .select(
+      "id,domain,status,overall_score,bottleneck,error_profile,prescription,installed_skills,created_at",
+    )
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(limit);

@@ -21,27 +21,31 @@
 //   "with_iphone_frame": false
 // }
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-const ICONS = require('./templates/icons.js');
+const ICONS = require("./templates/icons.js");
 
 function escapeHtml(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 // Mimic iOS Smart Punctuation: convert straight quotes to curly, and triple
 // dashes to em-dashes. Applied to paragraph and title text before HTML escaping.
 function smartQuotes(s) {
   return String(s)
-    .replace(/---/g, '—')               // --- → em-dash
-    .replace(/--/g, '–')                // --  → en-dash
-    .replace(/\.\.\./g, '…')            // ... → ellipsis
-    .replace(/(^|[\s(\[{<—–])"/g, '$1“') // opening "
-    .replace(/"/g, '”')                  // closing "
-    .replace(/(^|[\s(\[{<—–])'/g, '$1‘') // opening '
-    .replace(/'/g, '’');                 // closing '  (also handles apostrophes mid-word)
+    .replace(/---/g, "—") // --- → em-dash
+    .replace(/--/g, "–") // --  → en-dash
+    .replace(/\.\.\./g, "…") // ... → ellipsis
+    .replace(/(^|[\s(\[{<—–])"/g, "$1“") // opening "
+    .replace(/"/g, "”") // closing "
+    .replace(/(^|[\s(\[{<—–])'/g, "$1‘") // opening '
+    .replace(/'/g, "’"); // closing '  (also handles apostrophes mid-word)
 }
 
 // Wrap any whole-word match of `word` in <span class="spell">…</span>
@@ -52,14 +56,14 @@ function applySpellMarks(text, words) {
   const escaped = escapeHtml(smart);
   let out = escaped;
   for (const w of words) {
-    const re = new RegExp(`\\b(${w.replace(/[.*+?^${}()|[\\\]\\\\]/g, '\\$&')})\\b`, 'g');
+    const re = new RegExp(`\\b(${w.replace(/[.*+?^${}()|[\\\]\\\\]/g, "\\$&")})\\b`, "g");
     out = out.replace(re, '<span class="spell">$1</span>');
   }
   return out;
 }
 
 function renderStatusBar(sb = {}) {
-  const time = sb.time || '9:41';
+  const time = sb.time || "9:41";
   const batteryPct = sb.battery_pct ?? 87;
   const batteryLow = !!sb.battery_low;
   const showFocus = sb.show_focus_glyph ?? false;
@@ -67,7 +71,7 @@ function renderStatusBar(sb = {}) {
     <div class="status-bar">
       <div class="status-time">
         <span>${escapeHtml(time)}</span>
-        ${showFocus ? `<span class="focus-glyph">${ICONS.focusBed}</span>` : ''}
+        ${showFocus ? `<span class="focus-glyph">${ICONS.focusBed}</span>` : ""}
       </div>
       <div class="status-right">
         ${ICONS.signal}
@@ -100,38 +104,44 @@ function renderBody(spec) {
   const cursorMode = spec.cursor || null; // "title" | "end" | null
   const lastTextBlockIdx = (() => {
     for (let i = blocks.length - 1; i >= 0; i--) {
-      if (blocks[i].type === 'paragraph') return i;
+      if (blocks[i].type === "paragraph") return i;
     }
     return -1;
   })();
-  const titleHtml = applySpellMarks(spec.title || '', spellWords) +
-    (cursorMode === 'title' ? '<span class="cursor cursor--title"></span>' : '');
-  const blocksHtml = blocks.map((b, i) => {
-    if (b.type === 'paragraph') {
-      const isCursorTarget = cursorMode === 'end' && i === lastTextBlockIdx;
-      const inner = applySpellMarks(b.text || '', spellWords) +
-        (isCursorTarget ? '<span class="cursor"></span>' : '');
-      return `<p class="note-paragraph">${inner}</p>`;
-    }
-    if (b.type === 'image') {
-      const cap = b.caption
-        ? `<div class="note-image-caption">${escapeHtml(b.caption)}</div>`
-        : '';
-      return `<img class="note-image" src="${escapeHtml(b.src)}" alt="">${cap}`;
-    }
-    if (b.type === 'checklist') {
-      const items = (b.items || []).map(it => {
-        const cls = it.checked ? 'note-check-box note-check-box--checked' : 'note-check-box';
-        const txtCls = it.checked ? 'note-check-text note-check-text--done' : 'note-check-text';
-        return `<div class="note-check"><div class="${cls}"></div><div class="${txtCls}">${escapeHtml(it.text || '')}</div></div>`;
-      }).join('');
-      return `<div class="note-checklist">${items}</div>`;
-    }
-    if (b.type === 'divider') {
-      return `<hr class="note-divider">`;
-    }
-    return '';
-  }).join('\n');
+  const titleHtml =
+    applySpellMarks(spec.title || "", spellWords) +
+    (cursorMode === "title" ? '<span class="cursor cursor--title"></span>' : "");
+  const blocksHtml = blocks
+    .map((b, i) => {
+      if (b.type === "paragraph") {
+        const isCursorTarget = cursorMode === "end" && i === lastTextBlockIdx;
+        const inner =
+          applySpellMarks(b.text || "", spellWords) +
+          (isCursorTarget ? '<span class="cursor"></span>' : "");
+        return `<p class="note-paragraph">${inner}</p>`;
+      }
+      if (b.type === "image") {
+        const cap = b.caption
+          ? `<div class="note-image-caption">${escapeHtml(b.caption)}</div>`
+          : "";
+        return `<img class="note-image" src="${escapeHtml(b.src)}" alt="">${cap}`;
+      }
+      if (b.type === "checklist") {
+        const items = (b.items || [])
+          .map((it) => {
+            const cls = it.checked ? "note-check-box note-check-box--checked" : "note-check-box";
+            const txtCls = it.checked ? "note-check-text note-check-text--done" : "note-check-text";
+            return `<div class="note-check"><div class="${cls}"></div><div class="${txtCls}">${escapeHtml(it.text || "")}</div></div>`;
+          })
+          .join("");
+        return `<div class="note-checklist">${items}</div>`;
+      }
+      if (b.type === "divider") {
+        return `<hr class="note-divider">`;
+      }
+      return "";
+    })
+    .join("\n");
   return `
     <div class="note">
       <h1 class="note-title">${titleHtml}</h1>
@@ -143,14 +153,14 @@ function renderBody(spec) {
 }
 
 function renderKeyboard(spec) {
-  if (!spec.show_keyboard) return '';
+  if (!spec.show_keyboard) return "";
   const kb = spec.keyboard_state || {};
-  const sug = kb.suggestions || ['see', 'go', 'do'];
-  const r1 = (kb.letters_row1 || 'qwertyuiop').split('');
-  const r2 = (kb.letters_row2 || 'asdfghjkl').split('');
-  const r3 = (kb.letters_row3 || 'zxcvbnm').split('');
-  const upper = kb.shift === 'upper';
-  const ltr = c => upper ? c.toUpperCase() : c;
+  const sug = kb.suggestions || ["see", "go", "do"];
+  const r1 = (kb.letters_row1 || "qwertyuiop").split("");
+  const r2 = (kb.letters_row2 || "asdfghjkl").split("");
+  const r3 = (kb.letters_row3 || "zxcvbnm").split("");
+  const upper = kb.shift === "upper";
+  const ltr = (c) => (upper ? c.toUpperCase() : c);
   return `
     <div class="kbd">
       <div class="kbd-format">
@@ -163,17 +173,17 @@ function renderKeyboard(spec) {
       </div>
       <div class="kbd-base">
         <div class="kbd-suggestions">
-          ${sug.map(s => `<div class="kbd-suggestion">${escapeHtml(smartQuotes(s))}</div>`).join('')}
+          ${sug.map((s) => `<div class="kbd-suggestion">${escapeHtml(smartQuotes(s))}</div>`).join("")}
         </div>
         <div class="kbd-row">
-          ${r1.map(c => `<div class="kbd-key">${ltr(c)}</div>`).join('')}
+          ${r1.map((c) => `<div class="kbd-key">${ltr(c)}</div>`).join("")}
         </div>
         <div class="kbd-row kbd-row--abc">
-          ${r2.map(c => `<div class="kbd-key">${ltr(c)}</div>`).join('')}
+          ${r2.map((c) => `<div class="kbd-key">${ltr(c)}</div>`).join("")}
         </div>
         <div class="kbd-row kbd-row--zxc">
           <div class="kbd-key kbd-key--wide">${ICONS.shift}</div>
-          ${r3.map(c => `<div class="kbd-key">${ltr(c)}</div>`).join('')}
+          ${r3.map((c) => `<div class="kbd-key">${ltr(c)}</div>`).join("")}
           <div class="kbd-key kbd-key--wide">${ICONS.backspace}</div>
         </div>
         <div class="kbd-bottom">
@@ -192,14 +202,14 @@ function renderKeyboard(spec) {
 }
 
 function generateHtml(spec) {
-  const cssPath = path.join(__dirname, 'templates', 'note.css');
-  const css = fs.readFileSync(cssPath, 'utf8');
-  const frame = spec.with_iphone_frame ? '<div class="iphone-frame"></div>' : '';
+  const cssPath = path.join(__dirname, "templates", "note.css");
+  const css = fs.readFileSync(cssPath, "utf8");
+  const frame = spec.with_iphone_frame ? '<div class="iphone-frame"></div>' : "";
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>${escapeHtml(spec.title || 'Apple Notes')}</title>
+<title>${escapeHtml(spec.title || "Apple Notes")}</title>
 <style>${css}</style>
 </head>
 <body>
@@ -219,8 +229,8 @@ module.exports = { generateHtml };
 if (require.main === module) {
   // CLI: node generate.js <spec.json> [out.html]
   const inPath = process.argv[2];
-  const outPath = process.argv[3] || inPath.replace(/\.json$/, '.html');
-  const spec = JSON.parse(fs.readFileSync(inPath, 'utf8'));
+  const outPath = process.argv[3] || inPath.replace(/\.json$/, ".html");
+  const spec = JSON.parse(fs.readFileSync(inPath, "utf8"));
   fs.writeFileSync(outPath, generateHtml(spec));
-  console.log('wrote', outPath);
+  console.log("wrote", outPath);
 }

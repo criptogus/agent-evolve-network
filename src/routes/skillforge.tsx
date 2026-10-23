@@ -103,8 +103,9 @@ function SkillForgePage() {
             </div>
             <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">Your stack</h1>
             <p className="mt-2 max-w-xl text-muted-foreground">
-              Your real Trust Score is the average trust score across the packages you have installed.
-              Install more battle-tested packages — or remove drifting ones — to raise it.
+              Your real Trust Score is the average trust score across the packages you have
+              installed. Install more battle-tested packages — or remove drifting ones — to raise
+              it.
             </p>
           </div>
 
@@ -253,7 +254,8 @@ function SkillForgePage() {
                   <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{p.description}</p>
                   <div className="mt-3 flex items-center justify-between text-xs">
                     <div className="text-muted-foreground">
-                      <span className="font-mono">{p.installCount.toLocaleString()}</span> installs ·{" "}
+                      <span className="font-mono">{p.installCount.toLocaleString()}</span> installs
+                      ·{" "}
                       <span className="font-mono">
                         {p.avgRating > 0 ? `★ ${p.avgRating.toFixed(1)}` : "no reviews"}
                       </span>

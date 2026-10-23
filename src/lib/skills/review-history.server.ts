@@ -40,7 +40,9 @@ export async function loadReviewHistory(
   try {
     const { data } = await supabaseAdmin
       .from("skill_review_runs")
-      .select("overall_score, verdict_score, format_score, substance_score, grade, doc_hash, created_at")
+      .select(
+        "overall_score, verdict_score, format_score, substance_score, grade, doc_hash, created_at",
+      )
       .eq("user_id", userId)
       .eq("doc_key", key)
       .order("created_at", { ascending: false })

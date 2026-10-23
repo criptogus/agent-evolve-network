@@ -27,7 +27,10 @@ test("split is stable for the same salt and disjoint", () => {
     b.holdout.map((c) => c.id),
   );
   const trainIds = new Set(a.train.map((c) => c.id));
-  assert.ok(a.holdout.every((c) => !trainIds.has(c.id)), "train and holdout must be disjoint");
+  assert.ok(
+    a.holdout.every((c) => !trainIds.has(c.id)),
+    "train and holdout must be disjoint",
+  );
 });
 
 test("rotating the salt rotates the holdout membership", () => {

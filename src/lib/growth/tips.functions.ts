@@ -49,7 +49,8 @@ export const createTipIntent = createServerFn({ method: "POST" })
       })
       .select("id")
       .single();
-    if (insErr || !row) throw new Response(insErr?.message ?? "intent insert failed", { status: 500 });
+    if (insErr || !row)
+      throw new Response(insErr?.message ?? "intent insert failed", { status: 500 });
 
     return { ok: true, intent_id: row.id, amount_cents: data.amount_cents };
   });

@@ -17,7 +17,7 @@ export const evaluatePackage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
 
     const { data: pkg, error: pErr } = await supabase
@@ -47,11 +47,19 @@ export const evaluatePackage = createServerFn({ method: "POST" })
       version: {
         system_prompt: ver.system_prompt,
         rules: ver.rules,
-        examples: (ver.examples as Array<{ title: string; input: string; expected_output: string }>) || [],
+        examples:
+          (ver.examples as Array<{ title: string; input: string; expected_output: string }>) || [],
         format: (ver as { format?: string }).format ?? (ver.rules as { format?: string })?.format,
       },
       extraCases: data.extra_cases,
-      goldenCases: (goldenRows as Array<{ title: string; input: string; expected_output: string; label_pass: boolean; label_source: string }>) || [],
+      goldenCases:
+        (goldenRows as Array<{
+          title: string;
+          input: string;
+          expected_output: string;
+          label_pass: boolean;
+          label_source: string;
+        }>) || [],
     });
 
     if (data.persist) {
@@ -83,7 +91,10 @@ export const evaluatePackage = createServerFn({ method: "POST" })
       versionId: ver.id,
       sourceUserId: userId,
       source: "ui",
-      context: { verdict: result.evaluation.verdict, overall_score: result.evaluation.overall_score },
+      context: {
+        verdict: result.evaluation.verdict,
+        overall_score: result.evaluation.overall_score,
+      },
     });
 
     return { package: pkg, version: ver, ...result, feedback_request };

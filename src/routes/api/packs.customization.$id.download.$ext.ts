@@ -16,7 +16,11 @@ async function loadCustomization(id: string, authHeader: string | null) {
     .maybeSingle();
   if (!row) return { ok: false as const, status: 404, msg: "Not found" };
   if (row.status !== "ready") return { ok: false as const, status: 409, msg: "Not ready" };
-  const { data: pack } = await supabaseAdmin.from("packs").select("name, slug, theme").eq("id", row.pack_id).single();
+  const { data: pack } = await supabaseAdmin
+    .from("packs")
+    .select("name, slug, theme")
+    .eq("id", row.pack_id)
+    .single();
   return { ok: true as const, row, pack };
 }
 
@@ -50,7 +54,9 @@ export const Route = createFileRoute("/api/packs/customization/$id/download/$ext
         // markdown bundle
         const lines: string[] = [];
         lines.push(`# ${pack?.name} — customized`);
-        lines.push(`> Theme: ${pack?.theme}  •  Niche: ${row.niche || "(none)"}  •  Audience: ${row.audience || "(none)"}`);
+        lines.push(
+          `> Theme: ${pack?.theme}  •  Niche: ${row.niche || "(none)"}  •  Audience: ${row.audience || "(none)"}`,
+        );
         lines.push("");
         lines.push("## Brief");
         lines.push(row.brief);

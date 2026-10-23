@@ -89,23 +89,25 @@ const ITEMS: Item[] = [
     q: "What exactly happens when I submit a skill, playbook, soul or guardrail?",
     a: (
       <>
-        Your submission enters our <span className="text-foreground">Forge Loop</span> —
-        Drafter → Judge → Critic → Red Team. We may keep it as-is, rewrite it for clarity,
-        merge it with related work, split it into smaller pieces, or use it as training
-        signal for future skills. Per <Link to="/terms" hash="contributor-ip" className="text-primary hover:underline">§6.1</Link>,
-        the resulting artefact (original or improved) is owned by Super Agent Skill, Inc.
+        Your submission enters our <span className="text-foreground">Forge Loop</span> — Drafter →
+        Judge → Critic → Red Team. We may keep it as-is, rewrite it for clarity, merge it with
+        related work, split it into smaller pieces, or use it as training signal for future skills.
+        Per{" "}
+        <Link to="/terms" hash="contributor-ip" className="text-primary hover:underline">
+          §6.1
+        </Link>
+        , the resulting artefact (original or improved) is owned by Super Agent Skill, Inc.
       </>
     ),
   },
   {
-    q: "What does \"improved version\" mean in practice?",
+    q: 'What does "improved version" mean in practice?',
     a: (
       <>
-        We treat the assignment as covering both the literal text you submitted and any
-        derivative — translations, refactors, prompt-rewrites, evaluation suites, automated
-        merges with other skills, and AI-generated upgrades. There is no separate
-        license needed for derivatives; they ship under the same registry rules as the
-        original.
+        We treat the assignment as covering both the literal text you submitted and any derivative —
+        translations, refactors, prompt-rewrites, evaluation suites, automated merges with other
+        skills, and AI-generated upgrades. There is no separate license needed for derivatives; they
+        ship under the same registry rules as the original.
       </>
     ),
   },
@@ -113,11 +115,11 @@ const ITEMS: Item[] = [
     q: "Will my name still appear on the skill after it's improved?",
     a: (
       <>
-        Public attribution is courtesy, not contractual. By default we keep you listed as
-        original contributor on the skill detail page and in the version changelog when the
-        edit is incremental. We may remove attribution if the skill is fundamentally
-        rewritten, merged, deprecated, or if you ask us to. Attribution is never a license
-        — removing your name does not return any rights to you.
+        Public attribution is courtesy, not contractual. By default we keep you listed as original
+        contributor on the skill detail page and in the version changelog when the edit is
+        incremental. We may remove attribution if the skill is fundamentally rewritten, merged,
+        deprecated, or if you ask us to. Attribution is never a license — removing your name does
+        not return any rights to you.
       </>
     ),
   },
@@ -125,10 +127,10 @@ const ITEMS: Item[] = [
     q: "Can I keep using the skill I submitted on my own projects?",
     a: (
       <>
-        Yes. Section 6.1 grants you a perpetual, worldwide, royalty-free license to use the
-        original text of your own contribution outside the platform. You cannot, however,
-        republish improved versions we produce, nor block us from updating, sublicensing,
-        or reselling the skill in the marketplace.
+        Yes. Section 6.1 grants you a perpetual, worldwide, royalty-free license to use the original
+        text of your own contribution outside the platform. You cannot, however, republish improved
+        versions we produce, nor block us from updating, sublicensing, or reselling the skill in the
+        marketplace.
       </>
     ),
   },
@@ -137,21 +139,21 @@ const ITEMS: Item[] = [
     a: (
       <ul className="list-disc space-y-1 pl-5">
         <li>
-          Every accepted change is published as a new <span className="text-foreground">semver</span>{" "}
-          version (e.g. 1.4.0 → 1.5.0). Older versions stay installable for reproducibility.
+          Every accepted change is published as a new{" "}
+          <span className="text-foreground">semver</span> version (e.g. 1.4.0 → 1.5.0). Older
+          versions stay installable for reproducibility.
         </li>
         <li>
-          Installed users see an <span className="text-foreground">Update available</span>{" "}
-          badge. Updates are opt-in — we never silently mutate skills already running on
-          someone's agent.
+          Installed users see an <span className="text-foreground">Update available</span> badge.
+          Updates are opt-in — we never silently mutate skills already running on someone's agent.
         </li>
         <li>
-          We can redistribute any version through MCP, the marketplace, partner registries,
-          bundles, or paid tiers. Revenue from paid distribution belongs to the platform.
+          We can redistribute any version through MCP, the marketplace, partner registries, bundles,
+          or paid tiers. Revenue from paid distribution belongs to the platform.
         </li>
         <li>
-          Skills can be deprecated, hidden, or removed at any time for safety, quality or
-          legal reasons, without notice.
+          Skills can be deprecated, hidden, or removed at any time for safety, quality or legal
+          reasons, without notice.
         </li>
       </ul>
     ),
@@ -160,10 +162,9 @@ const ITEMS: Item[] = [
     q: "What if my submission is rejected?",
     a: (
       <>
-        Rejected submissions are not published, but the assignment in §6.1 still applies to
-        whatever you uploaded. We may retain the content for moderation logs and to train
-        our review models. We will not publish rejected work under your name without your
-        consent.
+        Rejected submissions are not published, but the assignment in §6.1 still applies to whatever
+        you uploaded. We may retain the content for moderation logs and to train our review models.
+        We will not publish rejected work under your name without your consent.
       </>
     ),
   },
@@ -172,10 +173,12 @@ const ITEMS: Item[] = [
     a: (
       <>
         You can delete your account, which removes your profile and personal data per our{" "}
-        <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
-        Skills you contributed remain in the registry under the platform's ownership,
-        because other users may have already installed and depend on them. We will, on
-        request, drop your name from the public attribution.
+        <Link to="/privacy" className="text-primary hover:underline">
+          Privacy Policy
+        </Link>
+        . Skills you contributed remain in the registry under the platform's ownership, because
+        other users may have already installed and depend on them. We will, on request, drop your
+        name from the public attribution.
       </>
     ),
   },
@@ -184,9 +187,9 @@ const ITEMS: Item[] = [
     a: (
       <>
         Improved or merged skills are treated as platform-owned compositions. Each original
-        contributor's assignment under §6.1 covers their portion. The merged skill is
-        published as a single platform-owned artefact, not as a co-owned work — there is no
-        joint copyright, no veto rights, and no royalty pool.
+        contributor's assignment under §6.1 covers their portion. The merged skill is published as a
+        single platform-owned artefact, not as a co-owned work — there is no joint copyright, no
+        veto rights, and no royalty pool.
       </>
     ),
   },
@@ -194,11 +197,10 @@ const ITEMS: Item[] = [
     q: "Why this model?",
     a: (
       <>
-        Agent skills evolve fast and get rewritten constantly. A clean assignment lets us
-        ship safety fixes, evaluation upgrades and quality improvements without chasing
-        per-contributor approvals every time. It also protects the platform — and other
-        contributors — from disputes when an improved version no longer resembles the
-        original submission.
+        Agent skills evolve fast and get rewritten constantly. A clean assignment lets us ship
+        safety fixes, evaluation upgrades and quality improvements without chasing per-contributor
+        approvals every time. It also protects the platform — and other contributors — from disputes
+        when an improved version no longer resembles the original submission.
       </>
     ),
   },
@@ -231,7 +233,11 @@ function ContributorFaqPage() {
           <p className="mt-4 text-muted-foreground">
             Plain-English answers to the questions contributors ask most. This page is
             informational; the binding language is in the{" "}
-            <Link to="/terms" hash="contributor-ip" className="text-foreground underline-offset-2 hover:underline">
+            <Link
+              to="/terms"
+              hash="contributor-ip"
+              className="text-foreground underline-offset-2 hover:underline"
+            >
               Terms of Service §6.1
             </Link>
             .
@@ -242,16 +248,11 @@ function ContributorFaqPage() {
       <section className="mx-auto max-w-3xl px-6 py-12">
         <div className="space-y-6">
           {ITEMS.map((item, i) => (
-            <article
-              key={i}
-              className="rounded-lg border border-border bg-surface/40 p-5"
-            >
+            <article key={i} className="rounded-lg border border-border bg-surface/40 p-5">
               <h2 className="text-base font-semibold tracking-tight text-foreground">
                 {i + 1}. {item.q}
               </h2>
-              <div className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                {item.a}
-              </div>
+              <div className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.a}</div>
             </article>
           ))}
         </div>

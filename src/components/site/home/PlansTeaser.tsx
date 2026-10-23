@@ -1,11 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Check } from "lucide-react";
-import {
-  PRICE_MONTHLY,
-  PRICE_YEARLY,
-  PRICE_YEARLY_LIST,
-  SAVE_BADGE,
-} from "@/lib/pricing-copy";
+import { PRICE_MONTHLY, PRICE_YEARLY, PRICE_YEARLY_LIST, SAVE_BADGE } from "@/lib/pricing-copy";
 
 // Keep in sync with /pricing: Free, Pro, Enterprise.
 const INCLUDED = [
@@ -13,7 +8,7 @@ const INCLUDED = [
   "The Agent Factory — build a custom corporate agent from a prompt",
   "The Agent Store — 33 ready-made agents with soul, guardrails and skills",
   "SAK University — diagnosis, adaptive curriculum, residency, credentials",
-  "Continuous adversarial re-testing on everything you installed",
+  "Adversarial evaluation tools and version-specific reports",
   "Private packages, signed releases and mutual NDA on request",
 ];
 
@@ -71,9 +66,8 @@ export function PlansTeaser() {
               {SAVE_BADGE}
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Instead of{" "}
-              <span className="text-foreground">{PRICE_YEARLY_LIST} / year</span> billed monthly at{" "}
-              {PRICE_MONTHLY}, which stays available if you prefer the flexibility.
+              Instead of <span className="text-foreground">{PRICE_YEARLY_LIST} / year</span> billed
+              monthly at {PRICE_MONTHLY}, which stays available if you prefer the flexibility.
             </p>
             <Link
               to="/pricing"

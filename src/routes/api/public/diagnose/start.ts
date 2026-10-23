@@ -35,7 +35,8 @@ export const Route = createFileRoute("/api/public/diagnose/start")({
           method: "POST",
           domains: DOMAINS,
           body_schema: {
-            domain: "gtm | engineering | support | finance | data | marketing | b2b_sales | customer_success | pricing | strategy | project_management | people_ops | legal_compliance | corporate_finance | agentic_crm | supply_chain | data_engineering | social_media | google_ads | meta_ads | linkedin_ads | digital_product | complex_software | tools_mcp | cybersecurity",
+            domain:
+              "gtm | engineering | support | finance | data | marketing | b2b_sales | customer_success | pricing | strategy | project_management | people_ops | legal_compliance | corporate_finance | agentic_crm | supply_chain | data_engineering | social_media | google_ads | meta_ads | linkedin_ads | digital_product | complex_software | tools_mcp | cybersecurity",
             installed_skills: "string[] (optional) — slugs the agent already carries",
             agent_fp: "string (optional) — stable agent fingerprint for delta tracking",
             limit: "number (optional, max 40)",
@@ -55,7 +56,10 @@ export const Route = createFileRoute("/api/public/diagnose/start")({
         }
         const domain = String(body.domain ?? "");
         if (!VALID.has(domain as DomainId)) {
-          return json({ ok: false, error: "invalid_domain", domains: DOMAINS.map((d) => d.id) }, 400);
+          return json(
+            { ok: false, error: "invalid_domain", domains: DOMAINS.map((d) => d.id) },
+            400,
+          );
         }
         const installed = Array.isArray(body.installed_skills)
           ? (body.installed_skills as unknown[]).slice(0, 64).map(String)

@@ -16,8 +16,19 @@ export type EnvHealth = {
 
 export type PaymentsHealth = {
   environments: EnvHealth[];
-  events: { last24h: number; last7d: number; last30d: number; total: number; latest: string | null };
-  subscriptions: Array<{ environment: string; status: string; count: number; missing_customer: number }>;
+  events: {
+    last24h: number;
+    last7d: number;
+    last30d: number;
+    total: number;
+    latest: string | null;
+  };
+  subscriptions: Array<{
+    environment: string;
+    status: string;
+    count: number;
+    missing_customer: number;
+  }>;
 };
 
 async function envHealth(environment: StripeEnv, probe: boolean): Promise<EnvHealth> {
@@ -66,7 +77,9 @@ async function envHealth(environment: StripeEnv, probe: boolean): Promise<EnvHea
       } as any);
       out.checkoutProbe = {
         ok: !!session.client_secret,
-        detail: session.client_secret ? `session ${session.id} created` : "no client_secret returned",
+        detail: session.client_secret
+          ? `session ${session.id} created`
+          : "no client_secret returned",
       };
     } else {
       out.checkoutProbe = { ok: false, detail: probe ? "price missing" : "skipped" };
@@ -79,9 +92,7 @@ async function envHealth(environment: StripeEnv, probe: boolean): Promise<EnvHea
 
 export const getPaymentsHealth = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((d: unknown) =>
-    z.object({ probe: z.boolean().default(false) }).parse(d ?? {}),
-  )
+  .inputValidator((d: unknown) => z.object({ probe: z.boolean().default(false) }).parse(d ?? {}))
   .handler(async ({ data, context }): Promise<PaymentsHealth> => {
     const supabase = (context as { supabase: any }).supabase;
 
@@ -127,6 +138,8 @@ export const getPaymentsHealth = createServerFn({ method: "POST" })
           const [environment, status] = key.split("|");
           return { environment, status, count: v.count, missing_customer: v.missing };
         })
-        .sort((a, b) => a.environment.localeCompare(b.environment) || a.status.localeCompare(b.status)),
+        .sort(
+          (a, b) => a.environment.localeCompare(b.environment) || a.status.localeCompare(b.status),
+        ),
     };
   });

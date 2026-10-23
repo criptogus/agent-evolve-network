@@ -66,7 +66,8 @@ export function LabSteps() {
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 md:py-24">
         <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">The lab</span>
         <h2 className="mt-3 max-w-3xl text-balance text-3xl font-semibold leading-[1.15] tracking-tight md:text-5xl">
-          Every capability is scored, repaired and re-scored before it reaches your agent.
+          Use the evaluation workflow to score, repair and re-score a capability before installing
+          it.
         </h2>
         <p className="mt-4 max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
           Upload a skill or describe an agent. The lab grades it, fixes what fails, saves each
@@ -75,7 +76,7 @@ export function LabSteps() {
 
         {/* 01 — Measure */}
         <div className="mt-16 grid gap-8 lg:grid-cols-[1fr_1.05fr] lg:items-center">
-          <StepHeader n="01" kicker="Measure" title="Every version gets a Trust Score.">
+          <StepHeader n="01" kicker="Measure" title="Check the evidence for each version.">
             The lab builds the evaluation cases, runs them, and scores format, substance, safety and
             schema validity into one number. Below the bar, the skill stays in the lab.
           </StepHeader>
@@ -113,8 +114,8 @@ export function LabSteps() {
         {/* 02 — The loop */}
         <div className="mt-20 grid gap-8 lg:grid-cols-[1fr_1.15fr] lg:items-center">
           <StepHeader n="02" kicker="The loop" title="Test. Repair. Re-score.">
-            Watch a grade-F skill get taken apart and rebuilt. Each pass becomes a new version, and a
-            version only survives if it scores higher than the one before it.
+            Watch a grade-F skill get taken apart and rebuilt. Each pass becomes a new version, and
+            a version only survives if it scores higher than the one before it.
           </StepHeader>
           <div className="min-w-0">
             <Suspense
@@ -145,8 +146,8 @@ export function LabSteps() {
         {/* 04 — Audit trail */}
         <div className="grid gap-8 lg:grid-cols-[1fr_1.05fr] lg:items-center">
           <StepHeader n="04" kicker="Audit trail" title="Every version, on file.">
-            Each review is stored with its score delta, so you can see exactly which change moved the
-            number — and prove it later to a customer, an auditor or your own team.
+            Each review is stored with its score delta, so you can see exactly which change moved
+            the number — and prove it later to a customer, an auditor or your own team.
           </StepHeader>
           <div className="rounded-xl border border-border bg-card p-5">
             <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -187,8 +188,8 @@ export function LabSteps() {
         {/* 05 — Export */}
         <div className="mt-20 grid gap-8 lg:grid-cols-[1fr_1.05fr] lg:items-center">
           <StepHeader n="05" kicker="Export" title="Run it anywhere, in one line.">
-            Install through the MCP endpoint or download the file. The same tested capability runs in
-            every major agent harness, with any model.
+            Install through the MCP endpoint or download the file. The same tested capability runs
+            in every major agent harness, with any model.
           </StepHeader>
           <div className="rounded-xl border border-border bg-card p-5">
             <div className="flex flex-wrap gap-2">

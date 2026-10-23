@@ -24,7 +24,11 @@ export async function runBuildPipeline(
   for (let i = 0; i < 12; i++) {
     if (Date.now() - started > budgetMs - stepBudget) break;
 
-    const { data: row } = await supabaseAdmin.from("agent_builds").select("*").eq("id", buildId).maybeSingle();
+    const { data: row } = await supabaseAdmin
+      .from("agent_builds")
+      .select("*")
+      .eq("id", buildId)
+      .maybeSingle();
     if (!row) return { status: "error", error: "Build not found" };
     if (row.status === "ready" || row.status === "error") {
       return { status: row.status, step: row.step, error: row.error };
@@ -36,7 +40,8 @@ export async function runBuildPipeline(
       principles: (row.report?.principles as string[]) ?? [],
       sources: (row.research_sources as any[]) ?? [],
     };
-    const patch = (p: Record<string, unknown>) => supabaseAdmin.from("agent_builds").update(p).eq("id", buildId);
+    const patch = (p: Record<string, unknown>) =>
+      supabaseAdmin.from("agent_builds").update(p).eq("id", buildId);
 
     try {
       switch (row.status as string) {
@@ -70,13 +75,27 @@ export async function runBuildPipeline(
           break;
         }
         case "skills": {
-          const playbooks = await factory.generateDocs("playbook", brief, research, row.soul ?? "", 3);
-          await patch({ status: "playbooks", step: `${playbooks.length} playbooks authored`, playbooks });
+          const playbooks = await factory.generateDocs(
+            "playbook",
+            brief,
+            research,
+            row.soul ?? "",
+            3,
+          );
+          await patch({
+            status: "playbooks",
+            step: `${playbooks.length} playbooks authored`,
+            playbooks,
+          });
           break;
         }
         case "playbooks": {
           const guardrails = await factory.generateGuardrails(brief, research);
-          await patch({ status: "guardrails", step: `${guardrails.length} guardrails attached`, guardrails });
+          await patch({
+            status: "guardrails",
+            step: `${guardrails.length} guardrails attached`,
+            guardrails,
+          });
           break;
         }
         case "guardrails": {
@@ -117,7 +136,11 @@ export async function runBuildPipeline(
             soul,
             score,
             grade: gradeLetter(score),
-            report: { ...(row.report ?? {}), final_pass: final, repaired: soul !== (row.soul ?? "") },
+            report: {
+              ...(row.report ?? {}),
+              final_pass: final,
+              repaired: soul !== (row.soul ?? ""),
+            },
           });
           return { status: "ready", step: "Agent ready" };
         }

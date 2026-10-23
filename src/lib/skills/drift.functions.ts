@@ -96,7 +96,10 @@ export const detectSkillDrift = createServerFn({ method: "POST" })
         .eq("success", false)
         .gt("created_at", new Date(Date.now() - window_days * 86400_000).toISOString())
         .limit(500);
-      const counts = new Map<string, { model: string | null; error_kind: string | null; count: number }>();
+      const counts = new Map<
+        string,
+        { model: string | null; error_kind: string | null; count: number }
+      >();
       for (const f of fails ?? []) {
         const k = `${f.model ?? "?"}|${f.error_kind ?? "?"}`;
         const e = counts.get(k) ?? { model: f.model, error_kind: f.error_kind, count: 0 };

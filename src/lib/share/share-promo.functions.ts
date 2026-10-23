@@ -38,7 +38,9 @@ function fallbackBody({ name, description, type }: Omit<Input, "url">): string {
   return `${head}\n\n${body}`;
 }
 
-async function generateBody(input: Omit<Input, "url">): Promise<{ body: string; source: "ai" | "fallback" }> {
+async function generateBody(
+  input: Omit<Input, "url">,
+): Promise<{ body: string; source: "ai" | "fallback" }> {
   try {
     const model = getGatewayModel("google/gemini-2.5-flash-lite");
     const { text } = await generateText({
@@ -94,7 +96,7 @@ export async function getOrGenerateBody(input: Omit<Input, "url">): Promise<stri
       description: input.description,
       generated_at: new Date().toISOString(),
     },
-    { onConflict: "type,slug" }
+    { onConflict: "type,slug" },
   );
   mem.set(key, { at: now, body });
   return body;

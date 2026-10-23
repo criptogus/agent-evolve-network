@@ -40,9 +40,13 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (!a.startsWith("--")) continue;
-    const k = a.slice(2), n = argv[i + 1];
+    const k = a.slice(2),
+      n = argv[i + 1];
     if (!n || n.startsWith("--")) out[k] = true;
-    else { out[k] = n; i++; }
+    else {
+      out[k] = n;
+      i++;
+    }
   }
   return out;
 }
@@ -50,14 +54,19 @@ function parseArgs(argv) {
 function mockAdapters() {
   return {
     invokeInstruction: async ({ prompt }) => `[mock-llm] ${prompt.slice(0, 80)}...`,
-    invokeSkill: async ({ slug, inputs }) => `[mock-skill:${slug}] ${JSON.stringify(inputs).slice(0, 80)}`,
+    invokeSkill: async ({ slug, inputs }) =>
+      `[mock-skill:${slug}] ${JSON.stringify(inputs).slice(0, 80)}`,
     invokeTool: async ({ name, inputs }) => ({ name, inputs }),
     onTelemetry: (e) => console.error(`[telemetry] ${JSON.stringify(e)}`),
   };
 }
 
 async function gatewayAdapters() {
-  const { AI_GATEWAY_BASE_URL, AI_GATEWAY_API_KEY, AI_GATEWAY_MODEL = "openai/gpt-4o-mini" } = process.env;
+  const {
+    AI_GATEWAY_BASE_URL,
+    AI_GATEWAY_API_KEY,
+    AI_GATEWAY_MODEL = "openai/gpt-4o-mini",
+  } = process.env;
   if (!AI_GATEWAY_BASE_URL || !AI_GATEWAY_API_KEY) {
     console.error("AI_GATEWAY_BASE_URL and AI_GATEWAY_API_KEY required for --gateway");
     process.exit(1);
@@ -65,7 +74,10 @@ async function gatewayAdapters() {
   const chat = async (prompt) => {
     const r = await fetch(`${AI_GATEWAY_BASE_URL}/chat/completions`, {
       method: "POST",
-      headers: { "content-type": "application/json", authorization: `Bearer ${AI_GATEWAY_API_KEY}` },
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${AI_GATEWAY_API_KEY}`,
+      },
       body: JSON.stringify({
         model: AI_GATEWAY_MODEL,
         messages: [{ role: "user", content: prompt }],
@@ -78,7 +90,8 @@ async function gatewayAdapters() {
   };
   return {
     invokeInstruction: ({ prompt }) => chat(prompt),
-    invokeSkill: ({ slug, inputs }) => chat(`Invoke skill ${slug} with inputs: ${JSON.stringify(inputs)}`),
+    invokeSkill: ({ slug, inputs }) =>
+      chat(`Invoke skill ${slug} with inputs: ${JSON.stringify(inputs)}`),
     onTelemetry: (e) => console.error(`[telemetry] ${JSON.stringify(e)}`),
   };
 }

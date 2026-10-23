@@ -86,8 +86,8 @@ export function SyncHistory() {
         <Badge variant="secondary">Only you can see this</Badge>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
-        Every sync and private export, per tool and per scope: what was written, what was
-        skipped, which conflicts appeared and how they were resolved.
+        Every sync and private export, per tool and per scope: what was written, what was skipped,
+        which conflicts appeared and how they were resolved.
       </p>
 
       {/* Per-target rollup */}
@@ -172,8 +172,8 @@ export function SyncHistory() {
           <p className="p-4 text-sm text-muted-foreground">Loading history...</p>
         ) : !events.data?.events?.length ? (
           <p className="p-4 text-sm text-muted-foreground">
-            No syncs recorded yet. Run a sync from your agent or export a private .zip and it
-            will show up here.
+            No syncs recorded yet. Run a sync from your agent or export a private .zip and it will
+            show up here.
           </p>
         ) : (
           <ul className="divide-y divide-border/60">
@@ -185,8 +185,7 @@ export function SyncHistory() {
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{summarizeSyncEvent(e)}</div>
                   <div className="font-mono text-xs text-muted-foreground">
-                    {when(e.created_at)} ·{" "}
-                    {label(SYNC_SOURCE_LABELS, e.source as SyncSource)}
+                    {when(e.created_at)} · {label(SYNC_SOURCE_LABELS, e.source as SyncSource)}
                     {e.strategy ? ` · ${e.strategy}` : ""}
                     {e.client_name ? ` · ${e.client_name}` : ""}
                   </div>
@@ -273,7 +272,9 @@ export function SyncHistory() {
                           [{c.action}]
                         </span>{" "}
                         <span className="break-all">{c.path}</span>
-                        {c.version ? <span className="text-muted-foreground"> v{c.version}</span> : null}
+                        {c.version ? (
+                          <span className="text-muted-foreground"> v{c.version}</span>
+                        ) : null}
                         {c.conflict ? <span className="text-amber-500"> conflict</span> : null}
                         {c.note ? (
                           <div className="mt-0.5 font-sans text-[11px] text-muted-foreground">

@@ -8,7 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/admin/accounts")({
   component: AccountsPage,
@@ -74,7 +80,9 @@ function AccountsPage() {
                 return (
                   <tr key={a.id} className="border-t">
                     <td className="px-4 py-3">
-                      <div className="font-medium">{a.display_name || a.handle || a.id.slice(0, 8)}</div>
+                      <div className="font-medium">
+                        {a.display_name || a.handle || a.id.slice(0, 8)}
+                      </div>
                       <div className="text-xs text-muted-foreground">{a.handle}</div>
                     </td>
                     <td className="px-4 py-3">

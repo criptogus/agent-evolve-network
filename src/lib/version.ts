@@ -45,36 +45,28 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-10-08",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.5.3",
     date: "2026-10-08",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Corrigiu erro 1016 do backend",
-    ],
+    highlights: ["Corrigiu erro 1016 do backend"],
   },
   {
     version: "0.5.2",
     date: "2026-10-08",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Repair frozen npm install and discover the complete test suite in CI",
-    ],
+    highlights: ["Repair frozen npm install and discover the complete test suite in CI"],
   },
   {
     version: "0.5.1",
     date: "2026-10-08",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Run every local test and fix Node TypeScript module resolution",
-    ],
+    highlights: ["Run every local test and fix Node TypeScript module resolution"],
   },
   {
     version: "0.5.0",
@@ -91,45 +83,35 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-08-16",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Granted RLS access for signup",
-    ],
+    highlights: ["Granted RLS access for signup"],
   },
   {
     version: "0.4.4",
     date: "2026-08-16",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed failing SEO findings",
-    ],
+    highlights: ["Fixed failing SEO findings"],
   },
   {
     version: "0.4.3",
     date: "2026-08-16",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added automated security scan",
-    ],
+    highlights: ["Added automated security scan"],
   },
   {
     version: "0.4.2",
     date: "2026-08-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed security scan issues",
-    ],
+    highlights: ["Fixed security scan issues"],
   },
   {
     version: "0.4.1",
     date: "2026-08-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Refined dark hero band",
-    ],
+    highlights: ["Refined dark hero band"],
   },
   {
     version: "0.4.0",
@@ -148,742 +130,560 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-08-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.3.8",
     date: "2026-08-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Adicionou exportação ZIP privada",
-    ],
+    highlights: ["Adicionou exportação ZIP privada"],
   },
   {
     version: "0.3.7",
     date: "2026-08-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.3.6",
     date: "2026-08-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Implementou detecção de conflitos",
-    ],
+    highlights: ["Implementou detecção de conflitos"],
   },
   {
     version: "0.3.5",
     date: "2026-08-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Adicionou Cloud Skills MCP",
-    ],
+    highlights: ["Adicionou Cloud Skills MCP"],
   },
   {
     version: "0.3.4",
     date: "2026-08-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.3.3",
     date: "2026-08-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.3.2",
     date: "2026-08-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.3.1",
     date: "2026-08-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Implementou assinatura digital",
-    ],
+    highlights: ["Implementou assinatura digital"],
   },
   {
     version: "0.3.0",
     date: "2026-08-15",
     kind: "minor",
     title: "Feature update",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.2.1",
     date: "2026-08-14",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added agent plugins API",
-    ],
+    highlights: ["Added agent plugins API"],
   },
   {
     version: "0.2.0",
     date: "2026-08-14",
     kind: "minor",
     title: "Feature update",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.126",
     date: "2026-08-13",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.125",
     date: "2026-08-12",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed referral code gen logic",
-    ],
+    highlights: ["Fixed referral code gen logic"],
   },
   {
     version: "0.1.124",
     date: "2026-08-12",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.123",
     date: "2026-08-12",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.122",
     date: "2026-08-12",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed QA findings on About",
-    ],
+    highlights: ["Fixed QA findings on About"],
   },
   {
     version: "0.1.121",
     date: "2026-08-10",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added deterministic guardrails to the autonomous CRM",
-      "Work in progress",
-    ],
+    highlights: ["Added deterministic guardrails to the autonomous CRM", "Work in progress"],
   },
   {
     version: "0.1.120",
     date: "2026-08-10",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added email tracking & admin",
-      "Work in progress",
-    ],
+    highlights: ["Added email tracking & admin", "Work in progress"],
   },
   {
     version: "0.1.119",
     date: "2026-08-10",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-      "Work in progress",
-    ],
+    highlights: ["Update plan", "Work in progress"],
   },
   {
     version: "0.1.118",
     date: "2026-08-10",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Finalized rollout & docs",
-      "Work in progress",
-    ],
+    highlights: ["Finalized rollout & docs", "Work in progress"],
   },
   {
     version: "0.1.117",
     date: "2026-08-10",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-    ],
+    highlights: ["Update plan"],
   },
   {
     version: "0.1.116",
     date: "2026-08-10",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Brought internal CRM live",
-      "Work in progress",
-    ],
+    highlights: ["Brought internal CRM live", "Work in progress"],
   },
   {
     version: "0.1.115",
     date: "2026-08-10",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-    ],
+    highlights: ["Update plan"],
   },
   {
     version: "0.1.114",
     date: "2026-08-10",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-      "Work in progress",
-    ],
+    highlights: ["Update plan", "Work in progress"],
   },
   {
     version: "0.1.113",
     date: "2026-08-09",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Corrigiu funil de pagamento",
-    ],
+    highlights: ["Corrigiu funil de pagamento"],
   },
   {
     version: "0.1.112",
     date: "2026-08-09",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Ajustou prova de valor do MCP",
-    ],
+    highlights: ["Ajustou prova de valor do MCP"],
   },
   {
     version: "0.1.111",
     date: "2026-08-09",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Adicionou ferramentas de sessão",
-      "Work in progress",
-    ],
+    highlights: ["Adicionou ferramentas de sessão", "Work in progress"],
   },
   {
     version: "0.1.110",
     date: "2026-08-09",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Improved MCP onboarding",
-    ],
+    highlights: ["Improved MCP onboarding"],
   },
   {
     version: "0.1.109",
     date: "2026-08-09",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Melhorou a experiência do MCP.",
-      "Work in progress",
-    ],
+    highlights: ["Melhorou a experiência do MCP.", "Work in progress"],
   },
   {
     version: "0.1.108",
     date: "2026-08-07",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added skill tooltips",
-    ],
+    highlights: ["Added skill tooltips"],
   },
   {
     version: "0.1.107",
     date: "2026-08-07",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added project-type onboarding",
-    ],
+    highlights: ["Added project-type onboarding"],
   },
   {
     version: "0.1.106",
     date: "2026-08-07",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.105",
     date: "2026-08-07",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added popularity badges to cards",
-      "Work in progress",
-    ],
+    highlights: ["Added popularity badges to cards", "Work in progress"],
   },
   {
     version: "0.1.104",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added popularity-based ranking",
-    ],
+    highlights: ["Added popularity-based ranking"],
   },
   {
     version: "0.1.103",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Adicionou nota de renovação",
-    ],
+    highlights: ["Adicionou nota de renovação"],
   },
   {
     version: "0.1.102",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Sincronizou desconto em 3 lugares",
-    ],
+    highlights: ["Sincronizou desconto em 3 lugares"],
   },
   {
     version: "0.1.101",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Set annual price & secured",
-    ],
+    highlights: ["Set annual price & secured"],
   },
   {
     version: "0.1.100",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Rebuilt landing & pricing",
-    ],
+    highlights: ["Rebuilt landing & pricing"],
   },
   {
     version: "0.1.99",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added pricing section and FAQ",
-    ],
+    highlights: ["Added pricing section and FAQ"],
   },
   {
     version: "0.1.98",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-    ],
+    highlights: ["Update plan"],
   },
   {
     version: "0.1.97",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-      "Work in progress",
-    ],
+    highlights: ["Update plan", "Work in progress"],
   },
   {
     version: "0.1.96",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Melhorou o fluxo inicial da home",
-    ],
+    highlights: ["Melhorou o fluxo inicial da home"],
   },
   {
     version: "0.1.95",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed referral code security",
-    ],
+    highlights: ["Fixed referral code security"],
   },
   {
     version: "0.1.94",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.93",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Improved marketplace search UX",
-    ],
+    highlights: ["Improved marketplace search UX"],
   },
   {
     version: "0.1.92",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.91",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Redesignou marketplace como openalternative",
-      "Rodeou todo o sistema em inglês",
-    ],
+    highlights: ["Redesignou marketplace como openalternative", "Rodeou todo o sistema em inglês"],
   },
   {
     version: "0.1.90",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed telemetry and referral",
-      "Work in progress",
-    ],
+    highlights: ["Fixed telemetry and referral", "Work in progress"],
   },
   {
     version: "0.1.89",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed a checkout error",
-    ],
+    highlights: ["Fixed a checkout error"],
   },
   {
     version: "0.1.88",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.87",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.86",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-    ],
+    highlights: ["Update plan"],
   },
   {
     version: "0.1.85",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Work in progress",
-    ],
+    highlights: ["Work in progress"],
   },
   {
     version: "0.1.84",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-    ],
+    highlights: ["Update plan"],
   },
   {
     version: "0.1.83",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Mapped diagnostics and curricula",
-      "Work in progress",
-    ],
+    highlights: ["Mapped diagnostics and curricula", "Work in progress"],
   },
   {
     version: "0.1.82",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-    ],
+    highlights: ["Update plan"],
   },
   {
     version: "0.1.81",
     date: "2026-08-04",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-      "Work in progress",
-    ],
+    highlights: ["Update plan", "Work in progress"],
   },
   {
     version: "0.1.80",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added X profile to the repo",
-      "Work in progress",
-    ],
+    highlights: ["Added X profile to the repo", "Work in progress"],
   },
   {
     version: "0.1.79",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added a guardrails library",
-    ],
+    highlights: ["Added a guardrails library"],
   },
   {
     version: "0.1.78",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added a guided editor",
-    ],
+    highlights: ["Added a guided editor"],
   },
   {
     version: "0.1.77",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Expanded the catalog to 33 agents",
-      "Work in progress",
-    ],
+    highlights: ["Expanded the catalog to 33 agents", "Work in progress"],
   },
   {
     version: "0.1.76",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-      "Work in progress",
-    ],
+    highlights: ["Update plan", "Work in progress"],
   },
   {
     version: "0.1.75",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed review author pipeline",
-    ],
+    highlights: ["Fixed review author pipeline"],
   },
   {
     version: "0.1.74",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-      "Work in progress",
-    ],
+    highlights: ["Update plan", "Work in progress"],
   },
   {
     version: "0.1.73",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Updated the social card with the new URL",
-    ],
+    highlights: ["Updated the social card with the new URL"],
   },
   {
     version: "0.1.72",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed owner-only upload jobs",
-    ],
+    highlights: ["Fixed owner-only upload jobs"],
   },
   {
     version: "0.1.71",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Updated the og:image on X",
-      "Work in progress",
-    ],
+    highlights: ["Updated the og:image on X", "Work in progress"],
   },
   {
     version: "0.1.70",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Improved site SEO and metadata",
-      "Work in progress",
-    ],
+    highlights: ["Improved site SEO and metadata", "Work in progress"],
   },
   {
     version: "0.1.69",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Applied a copy/UI audit",
-    ],
+    highlights: ["Applied a copy/UI audit"],
   },
   {
     version: "0.1.68",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.67",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Created a 3-step wizard",
-      "Work in progress",
-    ],
+    highlights: ["Created a 3-step wizard", "Work in progress"],
   },
   {
     version: "0.1.66",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Simplified the UI and surfaced the benchmark",
-    ],
+    highlights: ["Simplified the UI and surfaced the benchmark"],
   },
   {
     version: "0.1.65",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Work in progress",
-    ],
+    highlights: ["Work in progress"],
   },
   {
     version: "0.1.64",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Codify the vendor-skills policy in CONTRIBUTING",
-    ],
+    highlights: ["Codify the vendor-skills policy in CONTRIBUTING"],
   },
   {
     version: "0.1.63",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added the Agent Factory",
-      "Work in progress",
-    ],
+    highlights: ["Added the Agent Factory", "Work in progress"],
   },
   {
     version: "0.1.62",
     date: "2026-07-31",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-    ],
+    highlights: ["Update plan"],
   },
   {
     version: "0.1.61",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Animated the MCP step-by-step guide",
-    ],
+    highlights: ["Animated the MCP step-by-step guide"],
   },
   {
     version: "0.1.60",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-    ],
+    highlights: ["Update plan"],
   },
   {
     version: "0.1.59",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.58",
@@ -900,63 +700,49 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Update plan",
-    ],
+    highlights: ["Update plan"],
   },
   {
     version: "0.1.56",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Changed hero CTA copy",
-    ],
+    highlights: ["Changed hero CTA copy"],
   },
   {
     version: "0.1.55",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added User-Agent to the docs",
-    ],
+    highlights: ["Added User-Agent to the docs"],
   },
   {
     version: "0.1.54",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed hanging Worker guard",
-    ],
+    highlights: ["Fixed hanging Worker guard"],
   },
   {
     version: "0.1.53",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Updated the official MCP URL",
-    ],
+    highlights: ["Updated the official MCP URL"],
   },
   {
     version: "0.1.52",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Updated Vite plugin to 1.49.0",
-    ],
+    highlights: ["Updated Vite plugin to 1.49.0"],
   },
   {
     version: "0.1.51",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed referral_code access",
-    ],
+    highlights: ["Fixed referral_code access"],
   },
   {
     version: "0.1.50",
@@ -973,135 +759,105 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.48",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.47",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed the upload_packages pipeline",
-    ],
+    highlights: ["Fixed the upload_packages pipeline"],
   },
   {
     version: "0.1.46",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed the JSON endpoint and language detection",
-    ],
+    highlights: ["Fixed the JSON endpoint and language detection"],
   },
   {
     version: "0.1.45",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Created an MCP mirror endpoint",
-    ],
+    highlights: ["Created an MCP mirror endpoint"],
   },
   {
     version: "0.1.44",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.43",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed security findings",
-    ],
+    highlights: ["Fixed security findings"],
   },
   {
     version: "0.1.42",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Applied database migrations",
-    ],
+    highlights: ["Applied database migrations"],
   },
   {
     version: "0.1.41",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Created an online NDA for paid accounts",
-    ],
+    highlights: ["Created an online NDA for paid accounts"],
   },
   {
     version: "0.1.40",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added per-tenant encryption",
-    ],
+    highlights: ["Added per-tenant encryption"],
   },
   {
     version: "0.1.39",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Regenerate package-lock.json to fix npm ci in CI",
-    ],
+    highlights: ["Regenerate package-lock.json to fix npm ci in CI"],
   },
   {
     version: "0.1.38",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Add paired-benchmark pipeline so landing metrics become measured, not asserted",
-    ],
+    highlights: ["Add paired-benchmark pipeline so landing metrics become measured, not asserted"],
   },
   {
     version: "0.1.37",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.36",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added cinematic chart animations",
-    ],
+    highlights: ["Added cinematic chart animations"],
   },
   {
     version: "0.1.35",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.34",
@@ -1120,251 +876,189 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Highlighted the A-grade section",
-      "Work in progress",
-    ],
+    highlights: ["Highlighted the A-grade section", "Work in progress"],
   },
   {
     version: "0.1.32",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added outcome metrics to ROI",
-      "Work in progress",
-    ],
+    highlights: ["Added outcome metrics to ROI", "Work in progress"],
   },
   {
     version: "0.1.31",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Add comparative value charts to the landing A-grade section",
-    ],
+    highlights: ["Add comparative value charts to the landing A-grade section"],
   },
   {
     version: "0.1.30",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added telemetry and ROI",
-    ],
+    highlights: ["Added telemetry and ROI"],
   },
   {
     version: "0.1.29",
     date: "2026-07-30",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Updated eval docs and SAK",
-      "Work in progress",
-    ],
+    highlights: ["Updated eval docs and SAK", "Work in progress"],
   },
   {
     version: "0.1.28",
     date: "2026-07-29",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Addressed security issues from scan",
-      "Work in progress",
-    ],
+    highlights: ["Addressed security issues from scan", "Work in progress"],
   },
   {
     version: "0.1.27",
     date: "2026-07-29",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.26",
     date: "2026-07-29",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Prioritized critical funnel bugs",
-      "Added docs panel to clients",
-    ],
+    highlights: ["Prioritized critical funnel bugs", "Added docs panel to clients"],
   },
   {
     version: "0.1.25",
     date: "2026-07-29",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added QuickCopy to the Welcome screen",
-    ],
+    highlights: ["Added QuickCopy to the Welcome screen"],
   },
   {
     version: "0.1.24",
     date: "2026-07-29",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Work in progress",
-    ],
+    highlights: ["Work in progress"],
   },
   {
     version: "0.1.23",
     date: "2026-07-29",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.22",
     date: "2026-07-29",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Highlighted agents on /welcome",
-    ],
+    highlights: ["Highlighted agents on /welcome"],
   },
   {
     version: "0.1.21",
     date: "2026-07-29",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.20",
     date: "2026-07-29",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Removed Discord link from index",
-    ],
+    highlights: ["Removed Discord link from index"],
   },
   {
     version: "0.1.19",
     date: "2026-07-29",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.18",
     date: "2026-07-29",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.17",
     date: "2026-07-29",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Verified email domain status",
-      "Work in progress",
-    ],
+    highlights: ["Verified email domain status", "Work in progress"],
   },
   {
     version: "0.1.16",
     date: "2026-07-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Set up email infrastructure",
-    ],
+    highlights: ["Set up email infrastructure"],
   },
   {
     version: "0.1.15",
     date: "2026-07-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Set up email infrastructure",
-    ],
+    highlights: ["Set up email infrastructure"],
   },
   {
     version: "0.1.14",
     date: "2026-07-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed security scan issues",
-    ],
+    highlights: ["Fixed security scan issues"],
   },
   {
     version: "0.1.13",
     date: "2026-07-15",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Lovable update",
-      "Work in progress",
-    ],
+    highlights: ["Lovable update", "Work in progress"],
   },
   {
     version: "0.1.12",
     date: "2026-07-14",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed referral data access",
-    ],
+    highlights: ["Fixed referral data access"],
   },
   {
     version: "0.1.11",
     date: "2026-07-14",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Added bot detection",
-    ],
+    highlights: ["Added bot detection"],
   },
   {
     version: "0.1.10",
     date: "2026-07-14",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Housekeeping and minor improvements.",
-    ],
+    highlights: ["Housekeeping and minor improvements."],
   },
   {
     version: "0.1.9",
     date: "2026-07-14",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Instrumentou funil de eventos",
-    ],
+    highlights: ["Instrumentou funil de eventos"],
   },
   {
     version: "0.1.8",
     date: "2026-07-14",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed credit trigger SQL error",
-      "Work in progress",
-    ],
+    highlights: ["Fixed credit trigger SQL error", "Work in progress"],
   },
   {
     version: "0.1.7",
     date: "2026-07-12",
     kind: "patch",
     title: "Maintenance release",
-    highlights: [
-      "Fixed changelog quality",
-    ],
+    highlights: ["Fixed changelog quality"],
   },
   {
     version: "0.1.6",
@@ -1390,9 +1084,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-07-06",
     kind: "patch",
     title: "Public catalog fixes",
-    highlights: [
-      "Fixed anonymous access to the public package catalog and certified badge SVGs.",
-    ],
+    highlights: ["Fixed anonymous access to the public package catalog and certified badge SVGs."],
   },
   {
     version: "0.1.3",
@@ -1452,9 +1144,7 @@ const NON_ENGLISH_HINT =
   /\b(implementou|implementar|corrigiu|corrigir|melhorar|melhorou|criar|criou|adicionou|ajustes?|pagina|página|versao|versão|para|pois|nao|não)\b/i;
 
 function cleanHighlights(list: string[]): string[] {
-  return list.filter(
-    (h) => !PLACEHOLDER_HIGHLIGHT.test(h.trim()) && !NON_ENGLISH_HINT.test(h),
-  );
+  return list.filter((h) => !PLACEHOLDER_HIGHLIGHT.test(h.trim()) && !NON_ENGLISH_HINT.test(h));
 }
 
 /**
@@ -1469,5 +1159,3 @@ export const PUBLIC_CHANGELOG: ChangelogEntry[] = CHANGELOG.map((e) => {
   const highlights = cleanHighlights(e.highlights);
   return { ...e, highlights: highlights.length > 0 ? highlights : [FALLBACK_HIGHLIGHT] };
 });
-
-

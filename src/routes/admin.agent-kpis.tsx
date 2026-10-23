@@ -20,7 +20,9 @@ export const Route = createFileRoute("/admin/agent-kpis")({
   errorComponent: ({ error }) => (
     <main className="mx-auto max-w-4xl px-6 py-16">
       <h1 className="text-xl font-semibold">Could not load the KPIs</h1>
-      <p className="mt-2 text-sm text-muted-foreground">{String((error as Error)?.message ?? error)}</p>
+      <p className="mt-2 text-sm text-muted-foreground">
+        {String((error as Error)?.message ?? error)}
+      </p>
     </main>
   ),
   notFoundComponent: () => (
@@ -69,7 +71,9 @@ function AgentKpisPage() {
               key={r}
               onClick={() => setDays(r)}
               className={`rounded-md border px-3 py-1.5 text-sm ${
-                days === r ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"
+                days === r
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card"
               }`}
             >
               {r}d
@@ -86,7 +90,11 @@ function AgentKpisPage() {
             <Metric label="Tool calls (MCP)" value={t.tool_calls} hint={`${t.write_calls} write`} />
             <Metric label="Distinct agents" value={t.distinct_identities} />
             <Metric label="Installs" value={t.installs} />
-            <Metric label="Executions reported" value={t.executions} hint={`${t.executions_ok} ok`} />
+            <Metric
+              label="Executions reported"
+              value={t.executions}
+              hint={`${t.executions_ok} ok`}
+            />
             <Metric label="Tasks completed" value={t.tasks_completed} />
             <Metric label="Diagnoses" value={t.diagnoses} />
             <Metric label="Agents built" value={t.agents_built} />
@@ -118,13 +126,18 @@ function AgentKpisPage() {
                     const pct = first > 0 ? Math.round((row.sessions / first) * 100) : 0;
                     return (
                       <tr key={row.step_id} className="border-t border-border">
-                        <td className="py-2 font-mono">{i + 1}. {row.step_id}</td>
+                        <td className="py-2 font-mono">
+                          {i + 1}. {row.step_id}
+                        </td>
                         <td className="py-2 text-muted-foreground">{row.stage}</td>
                         <td className="py-2 tabular-nums">{row.sessions}</td>
                         <td className="py-2">
                           <div className="flex items-center gap-2">
                             <div className="h-2 w-32 rounded bg-muted">
-                              <div className="h-2 rounded bg-primary" style={{ width: `${pct}%` }} />
+                              <div
+                                className="h-2 rounded bg-primary"
+                                style={{ width: `${pct}%` }}
+                              />
                             </div>
                             <span className="tabular-nums text-muted-foreground">{pct}%</span>
                           </div>

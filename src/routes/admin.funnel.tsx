@@ -34,6 +34,10 @@ const EVENT_ORDER = [
   "oauth_manual_code_copied",
   "mcp_first_call",
   "mcp_first_write",
+  "mcp_call_attempted",
+  "mcp_call_succeeded",
+  "mcp_call_failed",
+  "mcp_call_unknown",
   "pat_minted",
 ];
 
@@ -42,7 +46,7 @@ const EVENT_LABEL: Record<string, string> = {
   cta_clicked: "Landing CTA clicked",
   signup_viewed: "Signup page viewed",
   signup_started: "Signup submitted",
-  signup_completed: "Signup completed",
+  signup_completed: "Signup accepted (email confirmation may be pending)",
   signup_failed: "Signup failed",
   connect_viewed: "Viewed /connect",
   install_button_clicked: "Clicked install button",
@@ -53,8 +57,12 @@ const EVENT_LABEL: Record<string, string> = {
   oauth_loopback_attempted: "Loopback delivery attempted",
   oauth_scheme_triggered: "Deep-link triggered",
   oauth_manual_code_copied: "Copied manual code",
-  mcp_first_call: "First tools/call",
-  mcp_first_write: "First write tool",
+  mcp_first_call: "Legacy call event (outcome unknown)",
+  mcp_first_write: "Legacy write event (outcome unknown)",
+  mcp_call_attempted: "MCP calls attempted (v2)",
+  mcp_call_succeeded: "MCP calls succeeded (v2)",
+  mcp_call_failed: "MCP calls failed (v2)",
+  mcp_call_unknown: "MCP outcome unavailable (v2)",
   pat_minted: "Minted a PAT",
 };
 
@@ -77,9 +85,6 @@ function AdminFunnelPage() {
     queryKey: ["admin", "mcp-funnel-ua", days],
     queryFn: () => fnUa({ data: { days, limit: 20 } }),
   });
-
-  const top = q.data?.events.find((e) => e.event === "hero_viewed" || e.event === "connect_viewed")?.count ?? 0;
-  const rate = (c: number): string => (top ? `${((c / top) * 100).toFixed(1)}%` : "—");
 
   const ordered = (q.data?.events ?? []).slice().sort((a, b) => {
     const ai = EVENT_ORDER.indexOf(a.event);
@@ -107,9 +112,10 @@ function AdminFunnelPage() {
         <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">Admin</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">Funnel & traffic</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Last {days} days. Events are tagged as bot/human server-side from the User-Agent —
-          bots include search crawlers, uptime probes, scanners, headless browsers, HTTP libs
-          and unknown UAs. Raw events are always kept; reports subtract bots by default.
+          Last {days} days. Events are tagged as bot/human server-side from the User-Agent — bots
+          include search crawlers, uptime probes, scanners, headless browsers, HTTP libs and unknown
+          UAs. Raw events are always kept; reports subtract bots by default. Counts are events, not
+          a cohort conversion rate. Legacy MCP events do not establish success.
         </p>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -155,15 +161,22 @@ function AdminFunnelPage() {
                 <th className="px-4 py-2 font-medium">Step</th>
                 <th className="px-4 py-2 text-right font-medium">Count</th>
                 <th className="px-4 py-2 text-right font-medium">Distinct</th>
-                <th className="px-4 py-2 text-right font-medium">% of top</th>
               </tr>
             </thead>
             <tbody>
               {q.isLoading && (
-                <tr><td className="px-4 py-3 text-muted-foreground" colSpan={4}>Loading…</td></tr>
+                <tr>
+                  <td className="px-4 py-3 text-muted-foreground" colSpan={3}>
+                    Loading…
+                  </td>
+                </tr>
               )}
               {q.isError && (
-                <tr><td className="px-4 py-3 text-destructive" colSpan={4}>Forbidden. Admin role required.</td></tr>
+                <tr>
+                  <td className="px-4 py-3 text-destructive" colSpan={3}>
+                    Forbidden. Admin role required.
+                  </td>
+                </tr>
               )}
               {ordered.map((e) => (
                 <tr key={e.event} className="border-t border-border/60">
@@ -173,11 +186,14 @@ function AdminFunnelPage() {
                   </td>
                   <td className="px-4 py-2 text-right font-mono">{e.count}</td>
                   <td className="px-4 py-2 text-right font-mono">{e.distinct_users}</td>
-                  <td className="px-4 py-2 text-right font-mono text-muted-foreground">{rate(e.count)}</td>
                 </tr>
               ))}
               {q.data && ordered.length === 0 && (
-                <tr><td className="px-4 py-3 text-muted-foreground" colSpan={4}>No events in this window yet.</td></tr>
+                <tr>
+                  <td className="px-4 py-3 text-muted-foreground" colSpan={3}>
+                    No events in this window yet.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -204,9 +220,15 @@ function AdminFunnelPage() {
                       <div className="font-medium">{EVENT_LABEL[r.event] ?? r.event}</div>
                       <div className="font-mono text-[10px] text-muted-foreground">{r.event}</div>
                     </td>
-                    <td className="px-4 py-2 text-right font-mono">{Number(r.human_count).toLocaleString()}</td>
-                    <td className="px-4 py-2 text-right font-mono text-amber-500">{Number(r.bot_count).toLocaleString()}</td>
-                    <td className="px-4 py-2 text-right font-mono text-muted-foreground">{typeof pct === "string" ? pct + (pct === "—" ? "" : "%") : pct}</td>
+                    <td className="px-4 py-2 text-right font-mono">
+                      {Number(r.human_count).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-2 text-right font-mono text-amber-500">
+                      {Number(r.bot_count).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-2 text-right font-mono text-muted-foreground">
+                      {typeof pct === "string" ? pct + (pct === "—" ? "" : "%") : pct}
+                    </td>
                   </tr>
                 );
               })}
@@ -239,7 +261,9 @@ function AdminFunnelPage() {
                       {r.is_bot ? "bot" : "human"}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-right font-mono">{Number(r.count).toLocaleString()}</td>
+                  <td className="px-4 py-2 text-right font-mono">
+                    {Number(r.count).toLocaleString()}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -250,20 +274,14 @@ function AdminFunnelPage() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone?: "pos" | "warn";
-}) {
+function StatCard({ label, value, tone }: { label: string; value: string; tone?: "pos" | "warn" }) {
   const color =
     tone === "pos" ? "text-emerald-500" : tone === "warn" ? "text-amber-500" : "text-foreground";
   return (
     <div className="rounded-2xl border border-border bg-surface p-4">
-      <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
       <div className={`mt-1 text-2xl font-semibold tracking-tight ${color}`}>{value}</div>
     </div>
   );

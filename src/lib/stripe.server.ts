@@ -11,9 +11,7 @@ export type StripeEnv = "sandbox" | "live";
 const GATEWAY_STRIPE_BASE = "https://connector-gateway.lovable.dev/stripe";
 
 export function getConnectionApiKey(env: StripeEnv): string {
-  return env === "sandbox"
-    ? getEnv("STRIPE_SANDBOX_API_KEY")
-    : getEnv("STRIPE_LIVE_API_KEY");
+  return env === "sandbox" ? getEnv("STRIPE_SANDBOX_API_KEY") : getEnv("STRIPE_LIVE_API_KEY");
 }
 
 export function createStripeClient(env: StripeEnv): Stripe {
@@ -93,7 +91,13 @@ export function getStripeErrorMessage(error: unknown): string {
       decline_code?: string;
       param?: string;
       requestId?: string;
-      raw?: { message?: string; type?: string; code?: string; decline_code?: string; param?: string };
+      raw?: {
+        message?: string;
+        type?: string;
+        code?: string;
+        decline_code?: string;
+        param?: string;
+      };
     };
     const message = e.raw?.message ?? e.message;
     if (message) {

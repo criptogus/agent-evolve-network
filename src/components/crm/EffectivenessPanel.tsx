@@ -66,7 +66,6 @@ export function EffectivenessPanel() {
     onError: (e: any) => toast.error(e?.message ?? "Job failed"),
   });
 
-
   const data = q.data;
   const maxHour = Math.max(1, ...(data?.hours ?? []).map((h) => h.sent));
 
@@ -77,10 +76,10 @@ export function EffectivenessPanel() {
           <div>
             <CardTitle className="text-base">Autonomous learning loop</CardTitle>
             <p className="mt-1 text-xs text-muted-foreground">
-              Runs without approvals: it picks the copy variant, the trigger and the send hour with the
-              best measured outcome, and publishes its own replacement copy once the guardrails below
-              pass. It only changes anything after {data?.min_samples ?? 20} sends per variant, and
-              cadence caps never change.
+              Runs without approvals: it picks the copy variant, the trigger and the send hour with
+              the best measured outcome, and publishes its own replacement copy once the guardrails
+              below pass. It only changes anything after {data?.min_samples ?? 20} sends per
+              variant, and cadence caps never change.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -218,7 +217,9 @@ export function EffectivenessPanel() {
                   const rate = h.sent > 0 ? Math.round((h.engaged / h.sent) * 100) : 0;
                   return (
                     <div key={h.hour} className="flex items-center gap-2 text-xs">
-                      <span className="w-10 text-muted-foreground">{String(h.hour).padStart(2, "0")}h</span>
+                      <span className="w-10 text-muted-foreground">
+                        {String(h.hour).padStart(2, "0")}h
+                      </span>
                       <div className="h-2 flex-1 rounded bg-muted">
                         <div
                           className="h-2 rounded bg-primary"
@@ -338,7 +339,6 @@ export function EffectivenessPanel() {
           )}
         </CardContent>
       </Card>
-
     </div>
   );
 }

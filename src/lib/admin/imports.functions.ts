@@ -18,9 +18,11 @@ export const wizardCreatePackage = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => WizardInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
-    const vertical = [data.industry, data.technology, data.business_area].filter(Boolean).join(" / ");
+    const vertical = [data.industry, data.technology, data.business_area]
+      .filter(Boolean)
+      .join(" / ");
     const draft = await generateDraft(data.brief, data.type, vertical || undefined);
     const pkg = await insertDraftPackage(supabase, userId, draft, {
       source_kind: "wizard",
@@ -52,7 +54,7 @@ export const importFromGithub = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => GithubInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
     const m = data.repoUrl.match(/github\.com\/([^/]+)\/([^/?#]+)/);
     if (!m) throw new Response("Invalid GitHub URL", { status: 400 });
@@ -75,14 +77,16 @@ export const importFromGithub = createServerFn({ method: "POST" })
       const apiHeaders: Record<string, string> = { Accept: "application/vnd.github+json" };
       if (process.env.GITHUB_TOKEN) apiHeaders.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
 
-      const repoMeta = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers: apiHeaders });
+      const repoMeta = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+        headers: apiHeaders,
+      });
       if (!repoMeta.ok) throw new Error(`GitHub repo fetch failed: ${repoMeta.status}`);
       const repoJson = await repoMeta.json();
       const branch = repoJson.default_branch || "main";
 
       const treeRes = await fetch(
         `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`,
-        { headers: apiHeaders }
+        { headers: apiHeaders },
       );
       if (!treeRes.ok) throw new Error(`GitHub tree fetch failed: ${treeRes.status}`);
       const tree = await treeRes.json();
@@ -104,7 +108,7 @@ export const importFromGithub = createServerFn({ method: "POST" })
       for (const c of candidates) {
         try {
           const raw = await fetch(
-            `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${c.path}`
+            `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${c.path}`,
           );
           if (!raw.ok) throw new Error(`raw fetch ${raw.status}`);
           const content = await raw.text();
@@ -144,7 +148,7 @@ const MarkdownInput = z.object({
       z.object({
         name: z.string().min(1).max(200),
         content: z.string().min(20).max(120_000),
-      })
+      }),
     )
     .min(1)
     .max(10),
@@ -154,7 +158,7 @@ export const importMarkdown = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => MarkdownInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
     const staged: Array<{ name: string; pkgId?: string; error?: string }> = [];
 

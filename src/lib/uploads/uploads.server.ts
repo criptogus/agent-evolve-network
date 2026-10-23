@@ -13,7 +13,6 @@ import { enqueueUploadJobs, type QueuedJob } from "@/lib/uploads/queue.server";
 // schema" and timeout errors that were breaking the core loop.
 const INLINE_BUDGET = 0;
 
-
 export type UploadFileInput = {
   name: string;
   content: string;
@@ -90,7 +89,7 @@ export function previewUpload(files: UploadFileInput[]): UploadPreview[] {
 export async function processBulkUpload(
   supabase: any,
   userId: string,
-  files: UploadFileInput[]
+  files: UploadFileInput[],
 ): Promise<{ results: UploadResult[]; queued: QueuedJob[] }> {
   const inline = files.slice(0, INLINE_BUDGET);
   const overflow = files.slice(INLINE_BUDGET);
@@ -107,7 +106,9 @@ export async function processBulkUpload(
       out.injection = {
         severity: guard.severity,
         findings: guard.findings.map((g) => ({
-          pattern: g.pattern, category: g.category, severity: g.severity,
+          pattern: g.pattern,
+          category: g.category,
+          severity: g.severity,
         })),
       };
       if (guard.severity !== "none") {
@@ -122,7 +123,9 @@ export async function processBulkUpload(
             findings: guard.findings,
             content_sample: f.content.slice(0, 1024),
           });
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
       if (guard.rejected) {
         out.error = guard.reason;
@@ -187,7 +190,9 @@ export async function processBulkUpload(
           injection: {
             severity: guard.severity,
             findings: guard.findings.map((g) => ({
-              pattern: g.pattern, category: g.category, severity: g.severity,
+              pattern: g.pattern,
+              category: g.category,
+              severity: g.severity,
             })),
           },
         });
@@ -215,7 +220,12 @@ export async function processBulkUpload(
         const msg = e?.message ?? "enqueue failed";
         console.error(`[uploads.processBulkUpload] enqueue failed user=${userId}: ${msg}`);
         for (const f of enqueueable) {
-          results.push({ name: f.name, ok: false, status: "failed", error: `queue unavailable: ${msg}` });
+          results.push({
+            name: f.name,
+            ok: false,
+            status: "failed",
+            error: `queue unavailable: ${msg}`,
+          });
         }
       }
     }

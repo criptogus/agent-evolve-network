@@ -16,7 +16,10 @@ export const Route = createFileRoute("/packs/$slug")({
   head: ({ params }) => ({
     meta: [
       { title: `Pack — ${params.slug}` },
-      { name: "description", content: "A themed bundle of skills, playbooks and souls. Customizable to your niche." },
+      {
+        name: "description",
+        content: "A themed bundle of skills, playbooks and souls. Customizable to your niche.",
+      },
     ],
   }),
 });
@@ -29,7 +32,10 @@ function PackDetail() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  const { data, isLoading } = useQuery({ queryKey: ["pack", slug], queryFn: () => fn({ data: { slug } }) });
+  const { data, isLoading } = useQuery({
+    queryKey: ["pack", slug],
+    queryFn: () => fn({ data: { slug } }),
+  });
 
   const buy = useMutation({
     mutationFn: () => buyFn({ data: { pack_id: data!.pack.id } }),
@@ -42,8 +48,18 @@ function PackDetail() {
     onError: (e: any) => toast.error(String(e?.message || e)),
   });
 
-  if (isLoading) return <Shell><p className="text-muted-foreground">Loading…</p></Shell>;
-  if (!data) return <Shell><p>Pack not found.</p></Shell>;
+  if (isLoading)
+    return (
+      <Shell>
+        <p className="text-muted-foreground">Loading…</p>
+      </Shell>
+    );
+  if (!data)
+    return (
+      <Shell>
+        <p>Pack not found.</p>
+      </Shell>
+    );
 
   const { pack, items, owned } = data;
 
@@ -51,15 +67,21 @@ function PackDetail() {
     <Shell>
       <header className="mb-8 flex flex-wrap items-start justify-between gap-6">
         <div className="max-w-2xl">
-          <Link to="/packs" className="text-sm text-muted-foreground hover:underline">← All packs</Link>
+          <Link to="/packs" className="text-sm text-muted-foreground hover:underline">
+            ← All packs
+          </Link>
           <div className="mt-3 flex items-center gap-3">
             <span className="text-5xl">{pack.cover_emoji}</span>
             <h1 className="text-3xl font-bold tracking-tight">{pack.name}</h1>
-            <Badge variant="outline" className="ml-2">{pack.theme}</Badge>
+            <Badge variant="outline" className="ml-2">
+              {pack.theme}
+            </Badge>
           </div>
           <p className="mt-3 text-muted-foreground">{pack.description}</p>
           {pack.long_description && (
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{pack.long_description}</p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              {pack.long_description}
+            </p>
           )}
           <div className="mt-4">
             <ShareOnXButton
@@ -76,15 +98,21 @@ function PackDetail() {
             <div className="text-2xl font-bold">
               {pack.price_credits === 0 ? "Free" : `${pack.price_credits} credits`}
             </div>
-            <p className="text-xs text-muted-foreground">{items.length} items • v{pack.latest_version}</p>
+            <p className="text-xs text-muted-foreground">
+              {items.length} items • v{pack.latest_version}
+            </p>
           </CardHeader>
           <CardContent>
             {!user && (
-              <Button asChild className="w-full"><Link to="/login">Sign in to buy</Link></Button>
+              <Button asChild className="w-full">
+                <Link to="/login">Sign in to buy</Link>
+              </Button>
             )}
             {user && owned && (
               <Button asChild className="w-full">
-                <Link to="/packs/$slug/customize" params={{ slug }}>Customize this pack</Link>
+                <Link to="/packs/$slug/customize" params={{ slug }}>
+                  Customize this pack
+                </Link>
               </Button>
             )}
             {user && !owned && (
@@ -93,8 +121,8 @@ function PackDetail() {
               </Button>
             )}
             <p className="mt-3 text-xs text-muted-foreground">
-              After purchase you can customize the entire pack to your niche before download. The customizer always
-              anchors on the state of the art.
+              After purchase you can customize the entire pack to your niche before download. The
+              customizer always anchors on the state of the art.
             </p>
           </CardContent>
         </Card>

@@ -1,7 +1,16 @@
 import { generateText, Output } from "ai";
 import { getGatewayModel, describeGatewayConfig } from "@/lib/ai-gateway";
-import { PackageDraftSchema, PackageDraftMinimalSchema, type PackageDraft, type PackageDraftMinimal } from "@/lib/skills/schemas";
-import { PackageDraftLooseSchema, repairMinimalDraft, draftFromDocument } from "@/lib/skills/draft-repair";
+import {
+  PackageDraftSchema,
+  PackageDraftMinimalSchema,
+  type PackageDraft,
+  type PackageDraftMinimal,
+} from "@/lib/skills/schemas";
+import {
+  PackageDraftLooseSchema,
+  repairMinimalDraft,
+  draftFromDocument,
+} from "@/lib/skills/draft-repair";
 
 const META_SYSTEM = `You are SkillForge Author, a proprietary meta-agent that designs production-grade agent packages.
 Return STRICT JSON matching the requested schema. Keep it minimal but substantive:
@@ -46,27 +55,32 @@ function hydrateDraftFromMinimal(
 ): PackageDraft {
   // Duplicate the first example when the model returned only one; the full
   // schema requires 2+ but we accept 1 from the LLM for reliability.
-  const examples = min.examples.length >= 2
-    ? min.examples
-    : [
-        ...min.examples,
-        {
-          title: "Edge case",
-          input: min.examples[0]?.input ?? "Unusual/edge input",
-          expected_output: min.examples[0]?.expected_output ?? "Handle gracefully; escalate or refuse if outside scope.",
-        },
-      ];
+  const examples =
+    min.examples.length >= 2
+      ? min.examples
+      : [
+          ...min.examples,
+          {
+            title: "Edge case",
+            input: min.examples[0]?.input ?? "Unusual/edge input",
+            expected_output:
+              min.examples[0]?.expected_output ??
+              "Handle gracefully; escalate or refuse if outside scope.",
+          },
+        ];
   const hydrated: PackageDraft = {
     slug: min.slug,
     name: min.name,
     type,
     description: min.description,
-    long_description: min.long_description.length >= 80
-      ? min.long_description
-      : `${min.long_description}\n\nUse it when: your workflow needs a repeatable ${type} that produces consistent output. This draft can be refined further with the SuperAgentSkill review engine.`,
-    system_prompt: min.system_prompt.length >= 120
-      ? min.system_prompt
-      : `${min.system_prompt}\n\nReasoning:\n1. Confirm you understood the request.\n2. Apply the ${type} logic above.\n3. Return the result in the format the caller expects.`,
+    long_description:
+      min.long_description.length >= 80
+        ? min.long_description
+        : `${min.long_description}\n\nUse it when: your workflow needs a repeatable ${type} that produces consistent output. This draft can be refined further with the SuperAgentSkill review engine.`,
+    system_prompt:
+      min.system_prompt.length >= 120
+        ? min.system_prompt
+        : `${min.system_prompt}\n\nReasoning:\n1. Confirm you understood the request.\n2. Apply the ${type} logic above.\n3. Return the result in the format the caller expects.`,
     rules: {
       input_schema: {},
       output_schema: {},
@@ -87,7 +101,10 @@ function hydrateDraftFromMinimal(
     // schema. If it fails, surface the mismatch so it's fixable, don't
     // silently insert something malformed.
     throw new Error(
-      `hydrateDraftFromMinimal produced invalid draft: ${parsed.error.issues.slice(0, 3).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}`,
+      `hydrateDraftFromMinimal produced invalid draft: ${parsed.error.issues
+        .slice(0, 3)
+        .map((i) => `${i.path.join(".")}: ${i.message}`)
+        .join("; ")}`,
     );
   }
   return parsed.data;
@@ -203,7 +220,10 @@ export async function generateDraftWithMeta(
     return { draft, generation_path: "text", attempts: attempts.map(fmtAttempt) };
   } catch (e: any) {
     attempts.push({ model: "text-fallback", error: describeAttemptError(e) });
-    console.error(`[skillforge.author] text fallback failed:`, attempts[attempts.length - 1]?.error);
+    console.error(
+      `[skillforge.author] text fallback failed:`,
+      attempts[attempts.length - 1]?.error,
+    );
   }
 
   // Last resort: build the draft from the uploaded document itself. No model
@@ -227,8 +247,6 @@ function fmtAttempt(a: { model: string; error: string }): string {
   return `${a.model}: ${a.error}`;
 }
 
-
-
 // AI SDK errors hide the upstream body inside `e.text` (NoObjectGeneratedError),
 // `e.responseBody` (HTTP errors), or `e.cause`. Bare `e.message` strips all of
 // that and leaves operators chasing "Bad Request" with no context.
@@ -249,7 +267,11 @@ function describeAttemptError(e: any): string {
 function extractJsonObject(text: string): unknown {
   const stripped = text.trim();
   const tryParse = (s: string) => {
-    try { return JSON.parse(s); } catch { return undefined; }
+    try {
+      return JSON.parse(s);
+    } catch {
+      return undefined;
+    }
   };
   const direct = tryParse(stripped);
   if (direct !== undefined) return direct;
@@ -282,7 +304,7 @@ export async function insertDraftPackage(
   supabase: any,
   userId: string,
   draft: any,
-  meta: { source_kind: "github" | "markdown" | "request" | "wizard"; source_ref: string }
+  meta: { source_kind: "github" | "markdown" | "request" | "wizard"; source_ref: string },
 ) {
   const baseSlug = draft.slug;
   let slug = baseSlug;
@@ -340,10 +362,14 @@ export async function insertDraftPackage(
   return pkg;
 }
 
-export function inferType(path: string, content: string): "skill" | "playbook" | "soul" | "guardrail" {
+export function inferType(
+  path: string,
+  content: string,
+): "skill" | "playbook" | "soul" | "guardrail" {
   const p = path.toLowerCase();
   const c = content.slice(0, 1000).toLowerCase();
-  if (p.includes("guardrail") || c.includes("guardrail") || c.includes("policy")) return "guardrail";
+  if (p.includes("guardrail") || c.includes("guardrail") || c.includes("policy"))
+    return "guardrail";
   if (p.includes("playbook") || c.includes("step 1") || c.includes("workflow")) return "playbook";
   if (p.includes("soul") || c.includes("persona") || c.includes("tone of voice")) return "soul";
   return "skill";

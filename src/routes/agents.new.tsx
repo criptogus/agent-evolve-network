@@ -27,7 +27,8 @@ export const Route = createFileRoute("/agents/new")({
       { property: "og:title", content: "Agent Factory — build your own corporate agent" },
       {
         property: "og:description",
-        content: "One brief in, a full agent out: soul, skills, playbooks and guardrails at the state of the art.",
+        content:
+          "One brief in, a full agent out: soul, skills, playbooks and guardrails at the state of the art.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -74,11 +75,16 @@ function Stepper({ step }: { step: number }) {
                 >
                   {s.title}
                 </span>
-                <span className="hidden truncate text-xs text-muted-foreground sm:block">{s.hint}</span>
+                <span className="hidden truncate text-xs text-muted-foreground sm:block">
+                  {s.hint}
+                </span>
               </span>
             </div>
             {i < STEPS.length - 1 ? (
-              <span className={`h-px flex-1 ${step > s.n ? "bg-primary" : "bg-border"}`} aria-hidden />
+              <span
+                className={`h-px flex-1 ${step > s.n ? "bg-primary" : "bg-border"}`}
+                aria-hidden
+              />
             ) : null}
           </li>
         );
@@ -161,8 +167,8 @@ function NewAgent() {
             Describe a role. Get a working agent.
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground">
-            Three steps, about five minutes. We write the operating soul, the skills, the playbooks and the guardrails —
-            then score and repair it until it clears grade A.
+            Three steps, about five minutes. We write the operating soul, the skills, the playbooks
+            and the guardrails — then score and repair it until it clears grade A.
           </p>
         </header>
 
@@ -173,7 +179,8 @@ function NewAgent() {
             <div className="rounded-xl border border-primary/40 bg-primary/5 p-4">
               <p className="text-sm font-medium">Building agents is part of Agent Pass</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Unlimited builds, the full Agent Store, and install straight into Claude, Hermes or ChatGPT over MCP.
+                Unlimited builds, the full Agent Store, and install straight into Claude, Hermes or
+                ChatGPT over MCP.
               </p>
               <div className="mt-3 flex flex-wrap gap-3">
                 <Button asChild>
@@ -202,7 +209,9 @@ function NewAgent() {
                     onChange={set("role")}
                     autoFocus
                   />
-                  <p className="text-xs text-muted-foreground">One line is enough. Pick an example to start:</p>
+                  <p className="text-xs text-muted-foreground">
+                    One line is enough. Pick an example to start:
+                  </p>
                   <div className="flex flex-wrap gap-2 pt-1">
                     {EXAMPLES.map((ex) => (
                       <button
@@ -240,7 +249,9 @@ function NewAgent() {
                       value={form.constraints}
                       onChange={set("constraints")}
                     />
-                    <p className="text-xs text-muted-foreground">These become enforceable guardrails.</p>
+                    <p className="text-xs text-muted-foreground">
+                      These become enforceable guardrails.
+                    </p>
                   </div>
                   <details className="group rounded-xl border border-border bg-surface/40 px-4 py-3">
                     <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium">
@@ -254,20 +265,42 @@ function NewAgent() {
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                           <Label htmlFor="industry">Industry</Label>
-                          <Input id="industry" placeholder="healthcare, fintech…" value={form.industry} onChange={set("industry")} />
+                          <Input
+                            id="industry"
+                            placeholder="healthcare, fintech…"
+                            value={form.industry}
+                            onChange={set("industry")}
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="tone">Tone / voice</Label>
-                          <Input id="tone" placeholder="direct, no hedging" value={form.tone} onChange={set("tone")} />
+                          <Input
+                            id="tone"
+                            placeholder="direct, no hedging"
+                            value={form.tone}
+                            onChange={set("tone")}
+                          />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="outcomes">What is it accountable for?</Label>
-                        <Textarea id="outcomes" rows={3} placeholder="The results you'd fire a human over." value={form.outcomes} onChange={set("outcomes")} />
+                        <Textarea
+                          id="outcomes"
+                          rows={3}
+                          placeholder="The results you'd fire a human over."
+                          value={form.outcomes}
+                          onChange={set("outcomes")}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="context">Existing docs to inherit</Label>
-                        <Textarea id="context" rows={4} placeholder="Paste your playbook, ICP, pricing rules or style guide." value={form.context} onChange={set("context")} />
+                        <Textarea
+                          id="context"
+                          rows={4}
+                          placeholder="Paste your playbook, ICP, pricing rules or style guide."
+                          value={form.context}
+                          onChange={set("context")}
+                        />
                       </div>
                     </div>
                   </details>
@@ -290,7 +323,8 @@ function NewAgent() {
                     <Row label="Inherited docs" value={form.context} />
                   </dl>
                   <p className="mt-3 text-xs text-muted-foreground">
-                    We'll generate the soul, skills, playbooks and guardrails, then score and repair until grade A.
+                    We'll generate the soul, skills, playbooks and guardrails, then score and repair
+                    until grade A.
                   </p>
                 </div>
               ) : null}
@@ -309,7 +343,9 @@ function NewAgent() {
                   </Button>
                 ) : (
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-xs text-muted-foreground">~5 min. You can leave and come back.</span>
+                    <span className="text-xs text-muted-foreground">
+                      ~5 min. You can leave and come back.
+                    </span>
                     <Button onClick={submit} disabled={busy} size="lg">
                       {busy ? "Starting…" : "Build my agent"}
                     </Button>

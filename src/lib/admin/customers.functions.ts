@@ -23,9 +23,24 @@ function rangeToSeconds(r: z.infer<typeof RangeInput>): number {
 }
 
 const ZERO_DECIMAL = new Set([
-  "bif","clp","djf","gnf","jpy","kmf","krw","mga","pyg","rwf","ugx","vnd","vuv","xaf","xof","xpf",
+  "bif",
+  "clp",
+  "djf",
+  "gnf",
+  "jpy",
+  "kmf",
+  "krw",
+  "mga",
+  "pyg",
+  "rwf",
+  "ugx",
+  "vnd",
+  "vuv",
+  "xaf",
+  "xof",
+  "xpf",
 ]);
-const THREE_DECIMAL = new Set(["bhd","jod","kwd","omr","tnd"]);
+const THREE_DECIMAL = new Set(["bhd", "jod", "kwd", "omr", "tnd"]);
 
 function toMajor(amount: number, currency: string): number {
   const c = (currency ?? "usd").toLowerCase();
@@ -58,12 +73,14 @@ export type CustomerRow = {
 export const getCustomerMetrics = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) =>
-    z.object({
-      environment: StripeEnvInput.default("live"),
-      range: RangeInput.default("30d"),
-      search: z.string().trim().max(120).optional(),
-      limit: z.number().int().min(10).max(500).default(200),
-    }).parse(d ?? {}),
+    z
+      .object({
+        environment: StripeEnvInput.default("live"),
+        range: RangeInput.default("30d"),
+        search: z.string().trim().max(120).optional(),
+        limit: z.number().int().min(10).max(500).default(200),
+      })
+      .parse(d ?? {}),
   )
   .handler(async ({ data }) => {
     const env: StripeEnv = data.environment;
@@ -75,9 +92,7 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(data.limit);
     if (data.search) {
-      pq = pq.or(
-        `handle.ilike.%${data.search}%,display_name.ilike.%${data.search}%`,
-      );
+      pq = pq.or(`handle.ilike.%${data.search}%,display_name.ilike.%${data.search}%`);
     }
     const { data: profiles, error: pErr } = await pq;
     if (pErr) throw new Response(pErr.message, { status: 500 });
@@ -105,21 +120,17 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
       ids.length
         ? supabaseAdmin
             .from("subscriptions")
-            .select("user_id, plan_slug, status, current_period_end, price_cents, currency, stripe_customer_id, environment")
+            .select(
+              "user_id, plan_slug, status, current_period_end, price_cents, currency, stripe_customer_id, environment",
+            )
             .in("user_id", ids)
             .eq("environment", env)
         : Promise.resolve({ data: [] as any[] }),
       ids.length
-        ? supabaseAdmin
-            .from("runs")
-            .select("user_id, started_at")
-            .in("user_id", ids)
+        ? supabaseAdmin.from("runs").select("user_id, started_at").in("user_id", ids)
         : Promise.resolve({ data: [] as any[] }),
       ids.length
-        ? supabaseAdmin
-            .from("credit_ledger")
-            .select("user_id, delta")
-            .in("user_id", ids)
+        ? supabaseAdmin.from("credit_ledger").select("user_id, delta").in("user_id", ids)
         : Promise.resolve({ data: [] as any[] }),
     ]);
 
@@ -249,10 +260,7 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
 
       const successfulCharges = charges.data.filter((c: any) => c.paid && !c.refunded).length;
       const refundedCount = refunds.data.length;
-      const refundedMinor = refunds.data.reduce(
-        (acc: number, r: any) => acc + (r.amount ?? 0),
-        0,
-      );
+      const refundedMinor = refunds.data.reduce((acc: number, r: any) => acc + (r.amount ?? 0), 0);
 
       const balanceAvailable = (balance.available ?? []).reduce(
         (acc: number, b: any) => acc + (b.amount ?? 0),
@@ -279,8 +287,7 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
           pending: toMajor(balancePending, balanceCurrency),
           currency: balanceCurrency,
         },
-        truncated:
-          txns.has_more || charges.has_more || refunds.has_more,
+        truncated: txns.has_more || charges.has_more || refunds.has_more,
       };
     } catch (e: any) {
       stripe_error = e?.message ?? "Stripe call failed";
