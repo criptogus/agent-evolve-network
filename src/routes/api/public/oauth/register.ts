@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 import { corsPreflight, jsonResponse, oauthError } from "@/lib/oauth/mcp-oauth.server";
 
 // RFC 8252 (OAuth for Native Apps) permits three redirect_uri shapes:
@@ -65,8 +65,7 @@ export const Route = createFileRoute("/api/public/oauth/register")({
             parsed.error.issues.map((i) => i.message).join("; "),
           );
         }
-        const ip =
-          request.headers.get("x-forwarded-for") ?? request.headers.get("cf-connecting-ip") ?? null;
+        const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("cf-connecting-ip") ?? null;
         const { data, error } = await supabaseAdmin.rpc("mcp_oauth_register_client", {
           _client_name: parsed.data.client_name ?? "MCP Client",
           _redirect_uris: parsed.data.redirect_uris,

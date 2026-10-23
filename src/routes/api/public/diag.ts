@@ -32,8 +32,7 @@ function payload(request: Request) {
         user_agent: ua ?? null,
         ua_family: cls.family,
         ua_looks_like_bot: cls.isBot,
-        ip:
-          request.headers.get("cf-connecting-ip") ?? request.headers.get("x-forwarded-for") ?? null,
+        ip: request.headers.get("cf-connecting-ip") ?? request.headers.get("x-forwarded-for") ?? null,
         country: request.headers.get("cf-ipcountry") ?? null,
         accept: request.headers.get("accept") ?? null,
       },

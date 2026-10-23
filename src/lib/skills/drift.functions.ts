@@ -9,7 +9,7 @@ import { z } from "zod";
 import { createServerFn } from "@tanstack/react-start";
 import { requireAdmin } from "@/lib/admin/middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 import { getGatewayModel } from "@/lib/ai-gateway";
 
 const MIN_RECENT_RUNS = 50;
@@ -73,7 +73,7 @@ export const detectSkillDrift = createServerFn({ method: "POST" })
       const { data: drift } = await supabaseAdmin.rpc("compute_skill_drift", {
         _package_id: pkg.id,
         _window_days: window_days,
-      });
+      } as any);
       const d = drift as {
         recent_runs: number;
         recent_rate: number | null;
@@ -96,10 +96,7 @@ export const detectSkillDrift = createServerFn({ method: "POST" })
         .eq("success", false)
         .gt("created_at", new Date(Date.now() - window_days * 86400_000).toISOString())
         .limit(500);
-      const counts = new Map<
-        string,
-        { model: string | null; error_kind: string | null; count: number }
-      >();
+      const counts = new Map<string, { model: string | null; error_kind: string | null; count: number }>();
       for (const f of fails ?? []) {
         const k = `${f.model ?? "?"}|${f.error_kind ?? "?"}`;
         const e = counts.get(k) ?? { model: f.model, error_kind: f.error_kind, count: 0 };

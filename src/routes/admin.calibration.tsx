@@ -13,7 +13,10 @@ import {
 
 export const Route = createFileRoute("/admin/calibration")({
   head: () => ({
-    meta: [{ title: "Judge calibration — Admin" }, { name: "robots", content: "noindex" }],
+    meta: [
+      { title: "Judge calibration — Admin" },
+      { name: "robots", content: "noindex" },
+    ],
   }),
   component: AdminCalibrationPage,
 });
@@ -50,7 +53,7 @@ function AdminCalibrationPage() {
       );
       q.refetch();
     },
-    onError: (e) => toast.error(e?.message ?? "Run failed"),
+    onError: (e: any) => toast.error(e?.message ?? "Run failed"),
   });
 
   const recal = useMutation({
@@ -61,7 +64,7 @@ function AdminCalibrationPage() {
           r.calibration.agreement * 100,
         )}% · ${r.calibration.false_pass} false-pass`,
       ),
-    onError: (e) => toast.error(e?.message ?? "Recalibration failed"),
+    onError: (e: any) => toast.error(e?.message ?? "Recalibration failed"),
   });
 
   const rows = (q.data?.rows ?? []) as JudgeCalibrationRow[];
@@ -70,13 +73,11 @@ function AdminCalibrationPage() {
     <SitePage>
       <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
         <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">Admin</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
-          Judge calibration
-        </h1>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">Judge calibration</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Cohen's κ between the LLM judge and the deterministic grader, per package, over the last{" "}
-          {days} days. A falling κ means the two are diverging — the judge likely needs
-          recalibration against golden labels. Lowest κ is listed first.
+          {days} days. A falling κ means the two are diverging — the judge likely needs recalibration
+          against golden labels. Lowest κ is listed first.
         </p>
 
         <div className="mt-6 flex flex-wrap items-center gap-2">
@@ -85,9 +86,7 @@ function AdminCalibrationPage() {
               key={d}
               onClick={() => setDays(d)}
               className={`rounded-md border px-3 py-1.5 text-xs ${
-                days === d
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-card hover:bg-accent"
+                days === d ? "border-primary bg-primary/10 text-primary" : "border-border bg-card hover:bg-accent"
               }`}
             >
               Last {d}d
@@ -132,24 +131,15 @@ function AdminCalibrationPage() {
             </thead>
             <tbody>
               {q.isLoading && (
-                <tr>
-                  <td className="px-4 py-3 text-muted-foreground" colSpan={6}>
-                    Loading…
-                  </td>
-                </tr>
+                <tr><td className="px-4 py-3 text-muted-foreground" colSpan={6}>Loading…</td></tr>
               )}
               {q.isError && (
-                <tr>
-                  <td className="px-4 py-3 text-destructive" colSpan={6}>
-                    Failed to load.
-                  </td>
-                </tr>
+                <tr><td className="px-4 py-3 text-destructive" colSpan={6}>Failed to load.</td></tr>
               )}
               {!q.isLoading && rows.length === 0 && (
                 <tr>
                   <td className="px-4 py-6 text-center text-muted-foreground" colSpan={6}>
-                    No judged runs yet. Enter a package slug above and run a judged eval to populate
-                    this.
+                    No judged runs yet. Enter a package slug above and run a judged eval to populate this.
                   </td>
                 </tr>
               )}
@@ -162,26 +152,17 @@ function AdminCalibrationPage() {
                       <div className="text-[11px] text-muted-foreground">{r.type}</div>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className={`font-mono ${tone.cls}`}>
-                        {r.latest_kappa?.toFixed(2) ?? "—"}
-                      </span>
+                      <span className={`font-mono ${tone.cls}`}>{r.latest_kappa?.toFixed(2) ?? "—"}</span>
                       <div className={`text-[10px] ${tone.cls}`}>{tone.label}</div>
                     </td>
                     <td className="px-4 py-3 text-right font-mono text-xs">
-                      {r.latest_agreement != null
-                        ? `${Math.round(r.latest_agreement * 100)}%`
-                        : "—"}
+                      {r.latest_agreement != null ? `${Math.round(r.latest_agreement * 100)}%` : "—"}
                     </td>
                     <td className="px-4 py-3 text-right font-mono text-xs">
-                      {r.latest_overrides ?? 0}
-                      {r.latest_cases ? `/${r.latest_cases}` : ""}
+                      {r.latest_overrides ?? 0}{r.latest_cases ? `/${r.latest_cases}` : ""}
                     </td>
-                    <td className="px-4 py-3">
-                      <Sparkline values={r.kappa_history} />
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono text-xs text-muted-foreground">
-                      {r.runs}
-                    </td>
+                    <td className="px-4 py-3"><Sparkline values={r.kappa_history} /></td>
+                    <td className="px-4 py-3 text-right font-mono text-xs text-muted-foreground">{r.runs}</td>
                   </tr>
                 );
               })}
@@ -200,12 +181,7 @@ function Sparkline({ values }: { values: number[] }) {
     <div className="flex h-6 items-end gap-0.5">
       {values.map((v, i) => {
         const clamped = Math.max(0, Math.min(1, v));
-        const tone =
-          clamped >= 0.6
-            ? "bg-emerald-500/70"
-            : clamped >= 0.4
-              ? "bg-amber-500/70"
-              : "bg-red-500/70";
+        const tone = clamped >= 0.6 ? "bg-emerald-500/70" : clamped >= 0.4 ? "bg-amber-500/70" : "bg-red-500/70";
         return (
           <div
             key={i}

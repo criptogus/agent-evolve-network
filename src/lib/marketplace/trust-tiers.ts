@@ -8,19 +8,17 @@
 // (MIN_ADVERSARIAL_RUNS_FOR_VERIFIED / MIN_ADVERSARIAL_CASES_FOR_VERIFIED in
 // @/lib/trust/scoring). Pure module — safe to import from client code.
 
-import { badgeColor } from "../trust/score.ts";
+import { badgeColor } from "@/lib/trust/score";
 
-export type TrustTier = "verified" | "high" | "baseline" | "low" | "unscored" | "insufficient";
+export type TrustTier = "verified" | "high" | "baseline" | "low" | "unscored";
 
-export function trustTier(
-  score: number | null | undefined,
-  verified: boolean,
-  confidence?: number | null,
-): TrustTier {
-  if (confidence == null || !Number.isFinite(confidence) || confidence <= 0) return "unscored";
+export function trustTier(score: number | null | undefined, verified: boolean): TrustTier {
   if (score == null || Number.isNaN(score)) return "unscored";
-  if (!verified) return "insufficient";
-  return badgeColor(score) === "red" ? "low" : "verified";
+  if (verified) return "verified";
+  const color = badgeColor(score);
+  if (color === "green" || color === "yellow") return "high"; // >= 0.70
+  if (color === "orange") return "baseline"; // >= 0.50
+  return "low"; // < 0.50
 }
 
 export const TRUST_TIER_LABELS: Record<TrustTier, string> = {
@@ -28,8 +26,7 @@ export const TRUST_TIER_LABELS: Record<TrustTier, string> = {
   high: "High trust",
   baseline: "Baseline",
   low: "Low trust",
-  unscored: "Not evaluated",
-  insufficient: "Insufficient evidence",
+  unscored: "Unscored",
 };
 
 // Lower = better. Used by the "Trust score" sort and by ranking demotion.
@@ -38,8 +35,7 @@ export const TRUST_TIER_RANK: Record<TrustTier, number> = {
   high: 1,
   baseline: 2,
   low: 3,
-  unscored: 5,
-  insufficient: 4,
+  unscored: 4,
 };
 
 /**
@@ -48,5 +44,5 @@ export const TRUST_TIER_RANK: Record<TrustTier, number> = {
  * Nothing is hidden — demoted packages simply sort after scored ones.
  */
 export function isTrustDemoted(tier: TrustTier): boolean {
-  return tier === "low" || tier === "unscored" || tier === "insufficient";
+  return tier === "low" || tier === "unscored";
 }

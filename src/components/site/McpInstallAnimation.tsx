@@ -328,8 +328,8 @@ export function McpInstallAnimation() {
             </div>
             {reveal >= FIXES.length && (
               <div className="mt-4 animate-fade-in rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-pretty text-primary">
-                You get the rewritten SKILL.md as a diff — every change cites the rubric line and
-                the evidence in your own text.
+                You get the rewritten SKILL.md as a diff — every change cites the rubric line and the
+                evidence in your own text.
               </div>
             )}
           </div>
@@ -356,9 +356,7 @@ export function McpInstallAnimation() {
                     {grade === "A" ? "· certifiable, signed release" : "· re-running rubric…"}
                   </span>
                 </div>
-                <div className="text-[11px] text-white/50">
-                  Same task, same model — better skill
-                </div>
+                <div className="text-[11px] text-white/50">Same task, same model — better skill</div>
               </div>
             </div>
             <div className="mt-4 grid gap-2">

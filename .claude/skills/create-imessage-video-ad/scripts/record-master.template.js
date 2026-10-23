@@ -16,17 +16,18 @@
  *   ./master-chat.sfx.json  (deterministic cue list)
  */
 
-const fs = require("fs");
-const path = require("path");
-const { execSync } = require("child_process");
-const { chromium } = require("playwright");
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+const { chromium } = require('playwright');
 // The create-imessage-mockup skill provides the framed-chat renderer (generate.js).
 // In the local/BYOA flow it's a SIBLING skill, not a fixed repo path — resolve it
 // from MOCKUP_DIR (point it at wherever you fetched/installed create-imessage-mockup;
 // run with NODE_PATH=$MOCKUP_DIR/node_modules so Playwright resolves too). Falls back
 // to a sibling `create-imessage-mockup/` dir next to this script.
-const MOCKUP_DIR = process.env.MOCKUP_DIR || path.resolve(__dirname, "create-imessage-mockup");
-const { renderHTML } = require(path.join(MOCKUP_DIR, "generate.js"));
+const MOCKUP_DIR =
+  process.env.MOCKUP_DIR || path.resolve(__dirname, 'create-imessage-mockup');
+const { renderHTML } = require(path.join(MOCKUP_DIR, 'generate.js'));
 
 const VIEW_W = 720;
 const VIEW_H = 1280;
@@ -34,12 +35,12 @@ const VIEW_H = 1280;
 // Inline image attachments as data: URIs (same helper as build-scenes.js).
 function inlineAttachments(thread, baseDir) {
   for (const m of thread.messages || []) {
-    if (m.type === "attachment" && m.src && !m.src.startsWith("data:")) {
+    if (m.type === 'attachment' && m.src && !m.src.startsWith('data:')) {
       const abs = path.resolve(baseDir, m.src);
       const buf = fs.readFileSync(abs);
       const ext = path.extname(abs).slice(1).toLowerCase();
-      const mime = ext === "jpg" ? "image/jpeg" : `image/${ext}`;
-      m.src = `data:${mime};base64,${buf.toString("base64")}`;
+      const mime = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
+      m.src = `data:${mime};base64,${buf.toString('base64')}`;
     }
   }
   return thread;
@@ -59,55 +60,55 @@ function inlineAttachments(thread, baseDir) {
 // =============================================================================
 
 const TIMELINE = [
-  { t: 0.4, kind: "pop", id: "m01-attach", sfx: null },
-  { t: 1.1, kind: "pop", id: "m02-yo", sfx: "send" },
-  { t: 1.2, kind: "scroll", dur: 350 },
+  { t: 0.40,  kind: 'pop',          id: 'm01-attach', sfx: null },
+  { t: 1.10,  kind: 'pop',          id: 'm02-yo',     sfx: 'send' },
+  { t: 1.20,  kind: 'scroll',       dur: 350 },
 
-  { t: 1.95, kind: "typing-pop", id: "m03-typ", sfx: null },
-  { t: 2.05, kind: "scroll", dur: 280 },
-  { t: 2.85, kind: "typing-swap", id: "m03-typ", toId: "m04-no", sfx: "receive" },
-  { t: 2.95, kind: "scroll", dur: 250 },
-  { t: 3.3, kind: "pop", id: "m05-app", sfx: "receive" },
-  { t: 3.4, kind: "scroll", dur: 220 },
+  { t: 1.95,  kind: 'typing-pop',   id: 'm03-typ',    sfx: null },
+  { t: 2.05,  kind: 'scroll',       dur: 280 },
+  { t: 2.85,  kind: 'typing-swap',  id: 'm03-typ', toId: 'm04-no',    sfx: 'receive' },
+  { t: 2.95,  kind: 'scroll',       dur: 250 },
+  { t: 3.30,  kind: 'pop',          id: 'm05-app',    sfx: 'receive' },
+  { t: 3.40,  kind: 'scroll',       dur: 220 },
 
-  { t: 4.05, kind: "pop", id: "m06-yeah", sfx: "send" },
-  { t: 4.15, kind: "scroll", dur: 250 },
+  { t: 4.05,  kind: 'pop',          id: 'm06-yeah',   sfx: 'send' },
+  { t: 4.15,  kind: 'scroll',       dur: 250 },
 
-  { t: 4.85, kind: "typing-pop", id: "m07-typ", sfx: null },
-  { t: 4.95, kind: "scroll", dur: 250 },
-  { t: 5.7, kind: "typing-swap", id: "m07-typ", toId: "m08-what", sfx: "receive" },
-  { t: 5.8, kind: "scroll", dur: 250 },
+  { t: 4.85,  kind: 'typing-pop',   id: 'm07-typ',    sfx: null },
+  { t: 4.95,  kind: 'scroll',       dur: 250 },
+  { t: 5.70,  kind: 'typing-swap',  id: 'm07-typ', toId: 'm08-what',  sfx: 'receive' },
+  { t: 5.80,  kind: 'scroll',       dur: 250 },
 
-  { t: 6.4, kind: "composer", text: "cat", dur: 0.3 },
-  { t: 6.85, kind: "pop", id: "m09-cb", sfx: "send" },
-  { t: 6.85, kind: "composer-clear" },
-  { t: 6.95, kind: "scroll", dur: 250 },
+  { t: 6.40,  kind: 'composer',     text: 'cat', dur: 0.30 },
+  { t: 6.85,  kind: 'pop',          id: 'm09-cb',     sfx: 'send' },
+  { t: 6.85,  kind: 'composer-clear' },
+  { t: 6.95,  kind: 'scroll',       dur: 250 },
 
-  { t: 7.55, kind: "composer", text: "you can build your own", dur: 1.5 },
-  { t: 9.2, kind: "pop", id: "m10-build", sfx: "send" },
-  { t: 9.2, kind: "composer-clear" },
-  { t: 9.3, kind: "scroll", dur: 300 },
+  { t: 7.55,  kind: 'composer',     text: 'you can build your own', dur: 1.50 },
+  { t: 9.20,  kind: 'pop',          id: 'm10-build',  sfx: 'send' },
+  { t: 9.20,  kind: 'composer-clear' },
+  { t: 9.30,  kind: 'scroll',       dur: 300 },
 
-  { t: 10.05, kind: "composer", text: "then u can", dur: 0.6 },
-  { t: 10.85, kind: "pop", id: "m11-ship", sfx: "send" },
-  { t: 10.85, kind: "composer-clear" },
-  { t: 10.95, kind: "scroll", dur: 300 },
+  { t: 10.05, kind: 'composer',     text: 'then u can', dur: 0.60 },
+  { t: 10.85, kind: 'pop',          id: 'm11-ship',   sfx: 'send' },
+  { t: 10.85, kind: 'composer-clear' },
+  { t: 10.95, kind: 'scroll',       dur: 300 },
 
-  { t: 11.65, kind: "typing-pop", id: "m12-typ", sfx: null },
-  { t: 11.75, kind: "scroll", dur: 250 },
-  { t: 12.65, kind: "typing-swap", id: "m12-typ", toId: "m13-ins", sfx: "receive" },
-  { t: 12.75, kind: "scroll", dur: 250 },
+  { t: 11.65, kind: 'typing-pop',   id: 'm12-typ',    sfx: null },
+  { t: 11.75, kind: 'scroll',       dur: 250 },
+  { t: 12.65, kind: 'typing-swap',  id: 'm12-typ', toId: 'm13-ins',   sfx: 'receive' },
+  { t: 12.75, kind: 'scroll',       dur: 250 },
 
-  { t: 13.55, kind: "composer", text: "ya use code FREEPA", dur: 1.4 },
-  { t: 15.1, kind: "pop", id: "m14-code", sfx: "send" },
-  { t: 15.1, kind: "composer-clear" },
-  { t: 15.2, kind: "scroll", dur: 350 },
+  { t: 13.55, kind: 'composer',     text: 'ya use code FREEPA', dur: 1.40 },
+  { t: 15.10, kind: 'pop',          id: 'm14-code',   sfx: 'send' },
+  { t: 15.10, kind: 'composer-clear' },
+  { t: 15.20, kind: 'scroll',       dur: 350 },
 
-  { t: 15.95, kind: "pop", id: "m15-bet", sfx: "receive" },
-  { t: 16.05, kind: "scroll", dur: 250 },
+  { t: 15.95, kind: 'pop',          id: 'm15-bet',    sfx: 'receive' },
+  { t: 16.05, kind: 'scroll',       dur: 250 },
 
   // Tail: hold for a beat before cutting to the end card.
-  { t: 17.0, kind: "noop" },
+  { t: 17.00, kind: 'noop' },
 ];
 
 const TOTAL_DURATION = 17.4; // seconds; end-card is appended downstream
@@ -118,18 +119,18 @@ const TOTAL_DURATION = 17.4; // seconds; end-card is appended downstream
 // =============================================================================
 
 function buildFullThread() {
-  const fullPath = path.join(__dirname, "..", "threads", "full-thread.json");
-  const thread = JSON.parse(fs.readFileSync(fullPath, "utf-8"));
+  const fullPath = path.join(__dirname, '..', 'threads', 'full-thread.json');
+  const thread = JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
   inlineAttachments(thread, path.dirname(fullPath));
   // Mark every message except the first attachment as pop-pending. The driver
   // unhides them on schedule. The first attachment is also pop-pending (for
   // the 0.4s entrance fade) but conceptually paired with m02-yo as the hook.
   for (const m of thread.messages) {
-    if (m.type === "text" || m.type === "typing" || m.type === "attachment") {
-      m.popState = "pending";
+    if (m.type === 'text' || m.type === 'typing' || m.type === 'attachment') {
+      m.popState = 'pending';
     }
   }
-  thread.composer = { text: "" };
+  thread.composer = { text: '' };
   return thread;
 }
 
@@ -259,10 +260,10 @@ function buildCueList() {
 // =============================================================================
 
 async function main() {
-  const tmpDir = fs.mkdtempSync(path.join(require("os").tmpdir(), "imessage-master-"));
+  const tmpDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'imessage-master-'));
   const thread = buildFullThread();
-  const html = renderHTML(thread, { mode: "with-keyboard" });
-  const driverHtml = html.replace("</body>", makeDriverScript() + "\n</body>");
+  const html = renderHTML(thread, { mode: 'with-keyboard' });
+  const driverHtml = html.replace('</body>', makeDriverScript() + '\n</body>');
 
   // Pin the keyboard so it doesn't scroll out of view as the conversation grows.
   // Do this with an extra <style> tag rather than touching the shared CSS.
@@ -298,7 +299,7 @@ async function main() {
       html { scroll-behavior: auto; }
     </style>
   `;
-  const finalHtml = driverHtml.replace("</head>", styleOverride + "\n</head>");
+  const finalHtml = driverHtml.replace('</head>', styleOverride + '\n</head>');
 
   const browser = await chromium.launch();
   const ctx = await browser.newContext({
@@ -307,7 +308,7 @@ async function main() {
     recordVideo: { dir: tmpDir, size: { width: VIEW_W, height: VIEW_H } },
   });
   const page = await ctx.newPage();
-  await page.setContent(finalHtml, { waitUntil: "load" });
+  await page.setContent(finalHtml, { waitUntil: 'load' });
   await page.waitForFunction(() => window.__driverReady === true, { timeout: 5000 });
   // Kick off the timeline NOW; the page-video has already started.
   await page.evaluate(() => window.__startDriver());
@@ -317,19 +318,16 @@ async function main() {
   await browser.close();
 
   // Convert webm → mp4 at 30fps yuv420p.
-  const outMp4 = path.join(__dirname, "master-chat.mp4");
+  const outMp4 = path.join(__dirname, 'master-chat.mp4');
   execSync(
     `ffmpeg -y -i "${videoPath}" -t ${TOTAL_DURATION} -r 30 ` +
-      `-vf "scale=${VIEW_W}:${VIEW_H}" -c:v libx264 -pix_fmt yuv420p -movflags +faststart "${outMp4}"`,
-    { stdio: "pipe" },
+    `-vf "scale=${VIEW_W}:${VIEW_H}" -c:v libx264 -pix_fmt yuv420p -movflags +faststart "${outMp4}"`,
+    { stdio: 'pipe' }
   );
-  fs.writeFileSync(outMp4.replace(/\.mp4$/, ".sfx.json"), JSON.stringify(buildCueList(), null, 2));
+  fs.writeFileSync(outMp4.replace(/\.mp4$/, '.sfx.json'), JSON.stringify(buildCueList(), null, 2));
   fs.rmSync(tmpDir, { recursive: true, force: true });
   console.log(`mp4  → ${path.relative(process.cwd(), outMp4)}`);
   console.log(`sfx  → ${buildCueList().length} cues`);
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+main().catch(e => { console.error(e); process.exit(1); });

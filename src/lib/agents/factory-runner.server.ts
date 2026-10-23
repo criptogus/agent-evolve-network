@@ -1,11 +1,9 @@
-import { decodeAgentBuild, encodeAgentBuildPatch, type AgentBuildPatch } from "./build-data";
-import { errorField } from "@/lib/errors";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import * as factory from "./factory.server";
 import type { AgentBrief, AgentResearch, AgentScore } from "./factory.server";
 import { gradeLetter } from "@/lib/skills/impact-projection";
 
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 
 /**
  * Budget-aware Agent Factory runner.
@@ -26,13 +24,8 @@ export async function runBuildPipeline(
   for (let i = 0; i < 12; i++) {
     if (Date.now() - started > budgetMs - stepBudget) break;
 
-    const { data: rawRow } = await supabaseAdmin
-      .from("agent_builds")
-      .select("*")
-      .eq("id", buildId)
-      .maybeSingle();
-    if (!rawRow) return { status: "error", error: "Build not found" };
-    const row = decodeAgentBuild(rawRow);
+    const { data: row } = await supabaseAdmin.from("agent_builds").select("*").eq("id", buildId).maybeSingle();
+    if (!row) return { status: "error", error: "Build not found" };
     if (row.status === "ready" || row.status === "error") {
       return { status: row.status, step: row.step, error: row.error };
     }
@@ -41,10 +34,9 @@ export async function runBuildPipeline(
     const research: AgentResearch = {
       summary: row.research_summary ?? "",
       principles: (row.report?.principles as string[]) ?? [],
-      sources: row.research_sources ?? [],
+      sources: (row.research_sources as any[]) ?? [],
     };
-    const patch = (p: AgentBuildPatch) =>
-      supabaseAdmin.from("agent_builds").update(encodeAgentBuildPatch(p)).eq("id", buildId);
+    const patch = (p: Record<string, unknown>) => supabaseAdmin.from("agent_builds").update(p).eq("id", buildId);
 
     try {
       switch (row.status as string) {
@@ -78,27 +70,13 @@ export async function runBuildPipeline(
           break;
         }
         case "skills": {
-          const playbooks = await factory.generateDocs(
-            "playbook",
-            brief,
-            research,
-            row.soul ?? "",
-            3,
-          );
-          await patch({
-            status: "playbooks",
-            step: `${playbooks.length} playbooks authored`,
-            playbooks,
-          });
+          const playbooks = await factory.generateDocs("playbook", brief, research, row.soul ?? "", 3);
+          await patch({ status: "playbooks", step: `${playbooks.length} playbooks authored`, playbooks });
           break;
         }
         case "playbooks": {
           const guardrails = await factory.generateGuardrails(brief, research);
-          await patch({
-            status: "guardrails",
-            step: `${guardrails.length} guardrails attached`,
-            guardrails,
-          });
+          await patch({ status: "guardrails", step: `${guardrails.length} guardrails attached`, guardrails });
           break;
         }
         case "guardrails": {
@@ -139,19 +117,15 @@ export async function runBuildPipeline(
             soul,
             score,
             grade: gradeLetter(score),
-            report: {
-              ...(row.report ?? {}),
-              final_pass: final,
-              repaired: soul !== (row.soul ?? ""),
-            },
+            report: { ...(row.report ?? {}), final_pass: final, repaired: soul !== (row.soul ?? "") },
           });
           return { status: "ready", step: "Agent ready" };
         }
         default:
           return { status: row.status, step: row.step };
       }
-    } catch (e) {
-      const msg = String(errorField(e, "message") || e).slice(0, 500);
+    } catch (e: any) {
+      const msg = String(e?.message || e).slice(0, 500);
       await patch({ status: "error", error: msg });
       return { status: "error", error: msg };
     }

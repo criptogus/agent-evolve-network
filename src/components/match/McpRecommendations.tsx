@@ -84,14 +84,13 @@ export function McpRecommendations({
   const runMut = useMutation({
     mutationFn: (vars: { registry_id: string; prompt: string; package_slugs: string[] }) =>
       run({ data: vars }) as Promise<{ run_id: string }>,
-    onSuccess: (d) =>
-      setRunMessage(`Run started — ${d.run_id.slice(0, 8)} · check Activity for live logs.`),
+    onSuccess: (d) => setRunMessage(`Run started — ${d.run_id.slice(0, 8)} · check Activity for live logs.`),
   });
 
   if (!recommended || recommended.length === 0) return null;
 
   const byId = new Map<string, RegistryEntry>(
-    ((registry.data ?? []) as RegistryEntry[]).map((e) => [e.id, e]),
+    ((registry.data ?? []) as RegistryEntry[]).map((e) => [e.id, e])
   );
 
   return (
@@ -214,20 +213,18 @@ export function McpRecommendations({
                         <span className="font-medium">
                           {f.label}
                           {f.required && <span className="text-destructive"> *</span>}
-                          <span className="ml-1 font-mono text-[10px] text-muted-foreground">
-                            {f.key}
-                          </span>
+                          <span className="ml-1 font-mono text-[10px] text-muted-foreground">{f.key}</span>
                         </span>
                         <input
                           type={f.secret ? "password" : "text"}
                           value={envValues[f.key] ?? ""}
-                          onChange={(e) => setEnvValues((p) => ({ ...p, [f.key]: e.target.value }))}
+                          onChange={(e) =>
+                            setEnvValues((p) => ({ ...p, [f.key]: e.target.value }))
+                          }
                           className="rounded-md border border-border bg-background px-2 py-1.5 outline-none focus:ring-2 focus:ring-primary/30"
                           placeholder={f.helper ?? (f.secret ? "••••••••" : "")}
                         />
-                        {f.helper && (
-                          <span className="text-[10px] text-muted-foreground">{f.helper}</span>
-                        )}
+                        {f.helper && <span className="text-[10px] text-muted-foreground">{f.helper}</span>}
                       </label>
                     ))}
                   </div>

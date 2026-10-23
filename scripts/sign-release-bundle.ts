@@ -36,35 +36,21 @@ for (const entry of readdirSync(dir)) {
   console.log(`✓ signed ${entry}`);
 }
 
-writeFileSync(
-  join(dir, "SIGNATURES.json"),
-  JSON.stringify(
-    {
-      signed_at: new Date().toISOString(),
-      signing_key_id: keyId,
-      algorithm: "ed25519",
-      files: sigs,
-    },
-    null,
-    2,
-  ),
-);
+writeFileSync(join(dir, "SIGNATURES.json"), JSON.stringify({
+  signed_at: new Date().toISOString(),
+  signing_key_id: keyId,
+  algorithm: "ed25519",
+  files: sigs,
+}, null, 2));
 writeFileSync(join(dir, "SIGNING_PUBLIC_KEY.pem"), SIGNING_PUBLIC_KEY);
-console.log(
-  `\nWrote ${sigs.length} signature(s) + SIGNATURES.json + SIGNING_PUBLIC_KEY.pem (key_id=${keyId})`,
-);
+console.log(`\nWrote ${sigs.length} signature(s) + SIGNATURES.json + SIGNING_PUBLIC_KEY.pem (key_id=${keyId})`);
 
 function parse(argv) {
   const o = {};
   for (let i = 0; i < argv.length; i++) {
     if (!argv[i].startsWith("--")) continue;
-    const k = argv[i].slice(2),
-      n = argv[i + 1];
-    if (!n || n.startsWith("--")) o[k] = true;
-    else {
-      o[k] = n;
-      i++;
-    }
+    const k = argv[i].slice(2), n = argv[i + 1];
+    if (!n || n.startsWith("--")) o[k] = true; else { o[k] = n; i++; }
   }
   return o;
 }

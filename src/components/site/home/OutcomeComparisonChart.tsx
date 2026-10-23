@@ -115,10 +115,7 @@ export function MetricTip({ label, tip }: { label: React.ReactNode; tip: string 
             <Info className="h-3 w-3 text-muted-foreground/70" aria-hidden />
           </span>
         </TooltipTrigger>
-        <TooltipContent
-          side="top"
-          className="max-w-xs text-balance bg-popover text-popover-foreground border-border shadow-elevated"
-        >
+        <TooltipContent side="top" className="max-w-xs text-balance bg-popover text-popover-foreground border-border shadow-elevated">
           {tip}
         </TooltipContent>
       </UiTooltip>
@@ -166,30 +163,10 @@ export function OutcomeComparisonChart() {
               badge: "F · no proof",
               tone: "baseline",
               rows: [
-                {
-                  k: "Completion rate",
-                  v: "42%",
-                  s: "of runs finish the task",
-                  tip: "Percentage of production executions that reached the stated end-state without crashing or giving up.",
-                },
-                {
-                  k: "Human intervention",
-                  v: "49%",
-                  s: "of runs need a rescue",
-                  tip: "Runs where a human had to rewrite the prompt, correct output, or restart the agent.",
-                },
-                {
-                  k: "Latency saved",
-                  v: "0s",
-                  s: "vs. workspace baseline",
-                  tip: "Difference between the skill's p95 latency and the workspace's own baseline for the same task.",
-                },
-                {
-                  k: "Tokens saved",
-                  v: "0",
-                  s: "18,400 avg. per task",
-                  tip: "Average input + output tokens consumed to complete one task.",
-                },
+                { k: "Completion rate", v: "42%", s: "of runs finish the task", tip: "Percentage of production executions that reached the stated end-state without crashing or giving up." },
+                { k: "Human intervention", v: "49%", s: "of runs need a rescue", tip: "Runs where a human had to rewrite the prompt, correct output, or restart the agent." },
+                { k: "Latency saved", v: "0s", s: "vs. workspace baseline", tip: "Difference between the skill's p95 latency and the workspace's own baseline for the same task." },
+                { k: "Tokens saved", v: "0", s: "18,400 avg. per task", tip: "Average input + output tokens consumed to complete one task." },
               ],
             },
             {
@@ -198,30 +175,10 @@ export function OutcomeComparisonChart() {
               badge: "A · certified",
               tone: "sak",
               rows: [
-                {
-                  k: "Completion rate",
-                  v: "94%",
-                  s: "of runs finish the task",
-                  tip: "Percentage of production executions that reached the stated end-state without crashing or giving up.",
-                },
-                {
-                  k: "Human intervention",
-                  v: "4%",
-                  s: "of runs need a rescue",
-                  tip: "Runs where a human had to rewrite the prompt, correct output, or restart the agent.",
-                },
-                {
-                  k: "Latency saved",
-                  v: "−35.2s",
-                  s: "p95 42s → 6.8s",
-                  tip: "Difference between the skill's p95 latency and the workspace's own baseline for the same task.",
-                },
-                {
-                  k: "Tokens saved",
-                  v: "−14,300",
-                  s: "4,100 avg. per task",
-                  tip: "Average input + output tokens consumed to complete one task.",
-                },
+                { k: "Completion rate", v: "94%", s: "of runs finish the task", tip: "Percentage of production executions that reached the stated end-state without crashing or giving up." },
+                { k: "Human intervention", v: "4%", s: "of runs need a rescue", tip: "Runs where a human had to rewrite the prompt, correct output, or restart the agent." },
+                { k: "Latency saved", v: "−35.2s", s: "p95 42s → 6.8s", tip: "Difference between the skill's p95 latency and the workspace's own baseline for the same task." },
+                { k: "Tokens saved", v: "−14,300", s: "4,100 avg. per task", tip: "Average input + output tokens consumed to complete one task." },
               ],
             },
           ] as const
@@ -353,15 +310,15 @@ export function OutcomeComparisonChart() {
           <li className="flex gap-2">
             <span className="font-mono text-primary">01</span>
             <span>
-              <strong className="text-foreground">Same task.</strong> Identical prompt, toolset and
-              success criteria for both skills.
+              <strong className="text-foreground">Same task.</strong> Identical prompt, toolset
+              and success criteria for both skills.
             </span>
           </li>
           <li className="flex gap-2">
             <span className="font-mono text-primary">02</span>
             <span>
-              <strong className="text-foreground">Per-execution.</strong> Outcomes are recorded on
-              every run, not sampled or inferred.
+              <strong className="text-foreground">Per-execution.</strong> Outcomes are recorded
+              on every run, not sampled or inferred.
             </span>
           </li>
           <li className="flex gap-2">

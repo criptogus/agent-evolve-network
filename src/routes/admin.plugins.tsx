@@ -67,8 +67,7 @@ function ChecksCard({ report }: { report: Report }) {
       <CardContent className="space-y-2">
         <div className="text-xs text-muted-foreground">
           Plugin: <code>{report.plugin_name ?? "unknown"}</code>
-          {report.plugin_version ? ` · v${report.plugin_version}` : ""} · {report.skills.length}{" "}
-          skill component(s)
+          {report.plugin_version ? ` · v${report.plugin_version}` : ""} · {report.skills.length} skill component(s)
         </div>
         <ul className="divide-y rounded-md border">
           {report.checks.map((c) => (
@@ -134,9 +133,9 @@ function AdminPlugins() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Publish Agent Plugins</h1>
         <p className="text-sm text-muted-foreground">
-          Upload an Agent Plugins v1 package (<code>.zip</code> with a root <code>plugin.json</code>
-          , optional <code>mcp.json</code> and <code>skills/&lt;name&gt;/SKILL.md</code>). The
-          conformance suite runs before anything is written, and only a conformant package can reach{" "}
+          Upload an Agent Plugins v1 package (<code>.zip</code> with a root <code>plugin.json</code>,
+          optional <code>mcp.json</code> and <code>skills/&lt;name&gt;/SKILL.md</code>). The conformance
+          suite runs before anything is written, and only a conformant package can reach{" "}
           <code>/api/public/plugins.json</code>.
         </p>
       </div>
@@ -181,8 +180,7 @@ function AdminPlugins() {
           <CardContent className="space-y-3">
             {!report.conformant && (
               <div className="text-xs text-destructive">
-                Publishing is blocked until every required check passes. Fix the package and
-                re-upload.
+                Publishing is blocked until every required check passes. Fix the package and re-upload.
               </div>
             )}
             <div className="flex flex-wrap gap-2">

@@ -21,7 +21,13 @@ type Frame = {
  * That keeps the visual weight of a screenshot gallery without inventing
  * marketing imagery.
  */
-export function PackageGallery({ pkg, gatewayUrl }: { pkg: Package; gatewayUrl: string }) {
+export function PackageGallery({
+  pkg,
+  gatewayUrl,
+}: {
+  pkg: Package;
+  gatewayUrl: string;
+}) {
   const frames: Frame[] = [
     {
       id: "install",

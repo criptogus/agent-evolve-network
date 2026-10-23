@@ -68,7 +68,7 @@ function CreatorPage() {
   const normalized = handle.replace(/^@/, "").toLowerCase();
   const items = useMemo(() => {
     return (data?.items ?? []).filter(
-      (p) => p.author_handle.replace(/^@/, "").toLowerCase() === normalized,
+      (p) => p.author_handle.replace(/^@/, "").toLowerCase() === normalized
     );
   }, [data, normalized]);
 

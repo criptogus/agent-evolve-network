@@ -1,4 +1,3 @@
-import { recordOf, isRecord } from "@/lib/json";
 import { generateText } from "ai";
 import { getGatewayModel } from "@/lib/ai-gateway";
 
@@ -45,7 +44,7 @@ export type GeneratedGuardrail = {
 
 export type AgentIdentity = { name: string; role: string; emoji: string; tagline: string };
 
-function parseJsonLoose(text: string): unknown {
+function parseJsonLoose(text: string): any {
   const cleaned = text
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/```\s*$/i, "")
@@ -89,21 +88,11 @@ Return STRICT JSON:
 }
 No markdown, no prose outside JSON.`,
   });
-  const r = recordOf(parseJsonLoose(text));
+  const r = parseJsonLoose(text) as AgentResearch;
   return {
-    summary: typeof r.summary === "string" ? r.summary : "",
-    principles: Array.isArray(r.principles)
-      ? r.principles.filter((p): p is string => typeof p === "string").slice(0, 10)
-      : [],
-    sources: Array.isArray(r.sources)
-      ? r.sources
-          .filter(isRecord)
-          .filter(
-            (s): s is { title: string; ref: string } =>
-              typeof s.title === "string" && typeof s.ref === "string",
-          )
-          .slice(0, 10)
-      : [],
+    summary: r.summary || "",
+    principles: Array.isArray(r.principles) ? r.principles.slice(0, 10) : [],
+    sources: Array.isArray(r.sources) ? r.sources.slice(0, 10) : [],
   };
 }
 
@@ -139,7 +128,7 @@ Return STRICT JSON:
   "soul": "<the full markdown soul>"
 }`,
   });
-  const p = recordOf(parseJsonLoose(text));
+  const p = parseJsonLoose(text);
   return {
     identity: {
       name: String(p.name || brief.role).slice(0, 80),
@@ -184,19 +173,16 @@ Return STRICT JSON array:
 [{"slug":"kebab-case","title":"Title Case","summary":"one line, <= 140 chars","body":"full markdown body"}]`,
   });
   const arr = parseJsonLoose(text);
-  const candidate = Array.isArray(arr) ? arr : recordOf(arr)[kind + "s"];
-  const list: GeneratedDoc[] = (Array.isArray(candidate) ? candidate.filter(isRecord) : []).map(
-    (d, i: number) => ({
-      slug: String(d.slug || `${kind}-${i + 1}`)
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "")
-        .slice(0, 60),
-      title: String(d.title || `${kind} ${i + 1}`).slice(0, 120),
-      summary: String(d.summary || "").slice(0, 200),
-      body: String(d.body || ""),
-    }),
-  );
+  const list: GeneratedDoc[] = (Array.isArray(arr) ? arr : arr?.[kind + "s"] || []).map((d: any, i: number) => ({
+    slug: String(d.slug || `${kind}-${i + 1}`)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 60),
+    title: String(d.title || `${kind} ${i + 1}`).slice(0, 120),
+    summary: String(d.summary || "").slice(0, 200),
+    body: String(d.body || ""),
+  }));
   return list.filter((d) => d.body.length > 200).slice(0, count);
 }
 
@@ -219,7 +205,7 @@ Return STRICT JSON array:
 [{"slug":"kebab-case","title":"Short name","rule":"the enforceable sentence","why":"one line on the risk it prevents","blocked_example":"a realistic user request, in quotes-free plain text, that this rule blocks","instead":"what the agent does instead when it hits this rule (one line)"}]`,
   });
   const arr = parseJsonLoose(text);
-  return (Array.isArray(arr) ? arr.filter(isRecord) : []).slice(0, 10).map((g, i: number) => ({
+  return (Array.isArray(arr) ? arr : []).slice(0, 10).map((g: any, i: number) => ({
     slug: String(g.slug || `guardrail-${i + 1}`)
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
@@ -269,17 +255,17 @@ Return STRICT JSON:
   "verdict": "<= 3 lines"
 }`,
   });
-  const p = recordOf(parseJsonLoose(text));
-  const axes = (Array.isArray(p.axes) ? p.axes.filter(isRecord) : []).map((a) => ({
+  const p = parseJsonLoose(text);
+  const axes = (Array.isArray(p.axes) ? p.axes : []).map((a: any) => ({
     name: String(a.name || "axis").slice(0, 60),
     score: Math.max(0, Math.min(100, Number(a.score) || 0)),
     note: String(a.note || "").slice(0, 400),
   }));
-  const score = axes.length ? Math.round(axes.reduce((s, a) => s + a.score, 0) / axes.length) : 0;
+  const score = axes.length ? Math.round(axes.reduce((s: number, a: any) => s + a.score, 0) / axes.length) : 0;
   return {
     score,
     axes,
-    weaknesses: (Array.isArray(p.weaknesses) ? p.weaknesses : []).slice(0, 8).map((w) => String(w)),
+    weaknesses: (Array.isArray(p.weaknesses) ? p.weaknesses : []).slice(0, 8).map((w: any) => String(w)),
     verdict: String(p.verdict || "").slice(0, 600),
   };
 }
@@ -304,9 +290,6 @@ CURRENT SOUL:
 ${input.soul}
 """`,
   });
-  const out = text
-    .replace(/^```(?:markdown)?\s*/i, "")
-    .replace(/```\s*$/i, "")
-    .trim();
+  const out = text.replace(/^```(?:markdown)?\s*/i, "").replace(/```\s*$/i, "").trim();
   return out.length > input.soul.length * 0.6 ? out : input.soul;
 }

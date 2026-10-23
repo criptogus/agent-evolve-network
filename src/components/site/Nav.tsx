@@ -63,6 +63,7 @@ const SIMPLE: NavItem[] = [
   { to: "/how-it-works", label: "How it works" },
   { to: "/pricing", label: "Pricing" },
   { to: "/docs", label: "Docs" },
+
 ];
 
 function NavDropdown({ label, items }: { label: string; items: NavItem[] }) {
@@ -220,6 +221,7 @@ export function Nav() {
                   Connect
                 </Link>
               )}
+
             </>
           ) : (
             <>
@@ -236,6 +238,7 @@ export function Nav() {
                 <span className="hidden sm:inline">Try with my agent</span>
                 <span className="sm:hidden">Try it</span>
               </Link>
+
             </>
           )}
           <Sheet open={open} onOpenChange={setOpen}>
@@ -255,11 +258,7 @@ export function Nav() {
                 </SheetTitle>
               </SheetHeader>
               <nav className="mt-6 flex flex-col gap-4">
-                <MobileSection
-                  title="Agents"
-                  items={AGENTS_MENU}
-                  onNavigate={() => setOpen(false)}
-                />
+                <MobileSection title="Agents" items={AGENTS_MENU} onNavigate={() => setOpen(false)} />
                 <MobileSection title="Skills" items={SKILLS} onNavigate={() => setOpen(false)} />
                 {user ? (
                   <MobileSection
@@ -269,6 +268,7 @@ export function Nav() {
                   />
                 ) : null}
                 <MobileSection title="More" items={SIMPLE} onNavigate={() => setOpen(false)} />
+
 
                 <div className="mt-2 border-t border-border pt-4">
                   {user ? (
@@ -301,6 +301,7 @@ export function Nav() {
                         Encryption (BYOK)
                       </MobileLink>
                       {isAdmin && (
+
                         <MobileLink to="/admin" onNavigate={() => setOpen(false)}>
                           Admin
                         </MobileLink>

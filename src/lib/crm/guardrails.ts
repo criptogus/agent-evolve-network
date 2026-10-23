@@ -27,68 +27,29 @@ export const GUARDRAILS = {
 
 /** Plain-language list of what the CRM may and may not do on its own. */
 export const AUTONOMY_RULES: Array<{ allowed: boolean; rule: string }> = [
-  {
-    allowed: true,
-    rule: "Pick the copy variant and the send hour with the best measured outcome.",
-  },
+  { allowed: true, rule: "Pick the copy variant and the send hour with the best measured outcome." },
   { allowed: true, rule: "Pause a variant once it is statistically behind the leader." },
-  {
-    allowed: true,
-    rule: "Write a replacement variant and publish it when it passes every copy check.",
-  },
-  {
-    allowed: true,
-    rule: "Rank triggers by measured business value and back off for unengaged customers.",
-  },
-  {
-    allowed: false,
-    rule: "Send more than 2 emails per customer per 7 days, or closer than 48 hours apart.",
-  },
+  { allowed: true, rule: "Write a replacement variant and publish it when it passes every copy check." },
+  { allowed: true, rule: "Rank triggers by measured business value and back off for unengaged customers." },
+  { allowed: false, rule: "Send more than 2 emails per customer per 7 days, or closer than 48 hours apart." },
   { allowed: false, rule: "Email a suppressed, unsubscribed or bounced address." },
-  {
-    allowed: false,
-    rule: "Publish copy with invented metrics, guarantees, urgency pressure or discounts.",
-  },
+  { allowed: false, rule: "Publish copy with invented metrics, guarantees, urgency pressure or discounts." },
   { allowed: false, rule: "Publish copy in a language other than English, or with emojis." },
-  {
-    allowed: false,
-    rule: "Leave a trigger without a working variant, or run more than 4 live variants.",
-  },
+  { allowed: false, rule: "Leave a trigger without a working variant, or run more than 4 live variants." },
   { allowed: false, rule: "Change cadence caps, suppression rules or the unsubscribe footer." },
 ];
 
 /** Claims and pressure tactics the CRM is not allowed to make on its own. */
 const BANNED_PATTERNS: Array<{ re: RegExp; reason: string }> = [
-  {
-    re: /\b(guarantee[ds]?|guaranteed results|risk[- ]free)\b/i,
-    reason: "promises a guaranteed result",
-  },
-  {
-    re: /\b(\d{2,3}\s?%\s?(more|less|faster|cheaper|increase|boost))/i,
-    reason: "invents a performance metric",
-  },
+  { re: /\b(guarantee[ds]?|guaranteed results|risk[- ]free)\b/i, reason: "promises a guaranteed result" },
+  { re: /\b(\d{2,3}\s?%\s?(more|less|faster|cheaper|increase|boost))/i, reason: "invents a performance metric" },
   { re: /\b(\d+x)\s+(faster|better|more|cheaper)\b/i, reason: "invents a multiplier claim" },
-  {
-    re: /\b(act now|last chance|final warning|hurry|expires? (today|tonight)|only \d+ (spots|hours) left)\b/i,
-    reason: "uses urgency pressure",
-  },
-  {
-    re: /\b(free money|no strings|cash back|\d+\s?% off|discount code|coupon)\b/i,
-    reason: "offers pricing terms the CRM cannot authorise",
-  },
-  {
-    re: /\b(refund|chargeback|invoice|credit card|password|api key|token)\b/i,
-    reason: "touches billing or credential topics",
-  },
-  {
-    re: /\b(you must|you have to|failure to (act|respond)|legal action)\b/i,
-    reason: "uses coercive language",
-  },
+  { re: /\b(act now|last chance|final warning|hurry|expires? (today|tonight)|only \d+ (spots|hours) left)\b/i, reason: "uses urgency pressure" },
+  { re: /\b(free money|no strings|cash back|\d+\s?% off|discount code|coupon)\b/i, reason: "offers pricing terms the CRM cannot authorise" },
+  { re: /\b(refund|chargeback|invoice|credit card|password|api key|token)\b/i, reason: "touches billing or credential topics" },
+  { re: /\b(you must|you have to|failure to (act|respond)|legal action)\b/i, reason: "uses coercive language" },
   { re: /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u, reason: "contains emojis" },
-  {
-    re: /\b(garantia|clique aqui|voc[êe]|gr[áa]tis|obrigado|aqui est[áa])\b/i,
-    reason: "is not written in English",
-  },
+  { re: /\b(garantia|clique aqui|voc[êe]|gr[áa]tis|obrigado|aqui est[áa])\b/i, reason: "is not written in English" },
   { re: /\{\{|\}\}|\[insert|TODO|lorem ipsum/i, reason: "contains unfilled placeholders" },
 ];
 

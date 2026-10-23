@@ -7,7 +7,7 @@ import {
   SAK_SITE,
 } from "@/lib/plugins/agent-plugins";
 
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -43,10 +43,10 @@ export const Route = createFileRoute("/api/public/plugins.json")({
           .from("package_trust_scores")
           .select("package_id,score");
         const scoreByPackage = new Map<string, number>(
-          (scores ?? []).map((s) => [s.package_id as string, s.score as number]),
+          (scores ?? []).map((s: any) => [s.package_id as string, s.score as number]),
         );
 
-        const plugins = (data ?? []).map((p) => ({
+        const plugins = (data ?? []).map((p: any) => ({
           name: p.slug,
           title: p.name,
           type: p.type,

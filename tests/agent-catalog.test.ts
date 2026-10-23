@@ -1,27 +1,12 @@
 import assert from "node:assert";
-import {
-  AGENTS,
-  AGENT_CATALOG_VERSION,
-  listAgentSummaries,
-  findAgent,
-} from "../src/lib/agents/catalog.ts";
+import { AGENTS, AGENT_CATALOG_VERSION, listAgentSummaries, findAgent } from "../src/lib/agents/catalog.ts";
 
 // Slugs that existed before the v1.1.0 expansion; they are held to a lighter bar.
 const LEGACY_SLUGS = new Set([
-  "ceo",
-  "coo",
-  "cto",
-  "cmo",
-  "cfo",
-  "chro",
-  "agent-architect",
-  "board-advisor",
-  "corporate-finance",
-  "google-ads",
-  "meta-ads",
-  "newsletter-writer",
-  "linkedin-writer",
-  "x-writer",
+  "ceo", "coo", "cto", "cmo", "cfo", "chro",
+  "agent-architect", "board-advisor", "corporate-finance",
+  "google-ads", "meta-ads",
+  "newsletter-writer", "linkedin-writer", "x-writer",
 ]);
 
 const REQUIRED_SOUL_SECTIONS = ["## Identity", "## How you think", "## Hard rules"];
@@ -43,18 +28,7 @@ for (const agent of AGENTS) {
   slugs.add(agent.slug);
 
   // required top-level fields
-  for (const field of [
-    "slug",
-    "name",
-    "role",
-    "emoji",
-    "tagline",
-    "description",
-    "tags",
-    "soul",
-    "skills",
-    "playbooks",
-  ]) {
+  for (const field of ["slug", "name", "role", "emoji", "tagline", "description", "tags", "soul", "skills", "playbooks"]) {
     if (!(field in agent) || agent[field] == null) {
       errors.push(`${agent.slug}: missing field "${field}"`);
     }
@@ -64,9 +38,7 @@ for (const agent of AGENTS) {
   if (!agent.soul?.title || !agent.soul?.body) {
     errors.push(`${agent.slug}: soul must have title and body`);
   } else {
-    const requiredSections = isLegacy
-      ? REQUIRED_SOUL_SECTIONS
-      : [...REQUIRED_SOUL_SECTIONS, ...STRICT_SOUL_SECTIONS];
+    const requiredSections = isLegacy ? REQUIRED_SOUL_SECTIONS : [...REQUIRED_SOUL_SECTIONS, ...STRICT_SOUL_SECTIONS];
     for (const section of requiredSections) {
       if (!agent.soul.body.includes(section)) {
         errors.push(`${agent.slug}: soul missing section "${section}"`);
@@ -77,9 +49,7 @@ for (const agent of AGENTS) {
   // skills
   const minSkills = isLegacy ? 2 : 3;
   if (!Array.isArray(agent.skills) || agent.skills.length < minSkills) {
-    errors.push(
-      `${agent.slug}: must have at least ${minSkills} skills (has ${agent.skills?.length ?? 0})`,
-    );
+    errors.push(`${agent.slug}: must have at least ${minSkills} skills (has ${agent.skills?.length ?? 0})`);
   }
   for (const skill of agent.skills ?? []) {
     for (const field of REQUIRED_SKILL_FIELDS) {
@@ -92,9 +62,7 @@ for (const agent of AGENTS) {
   // playbooks
   const minPlaybooks = isLegacy ? 1 : 2;
   if (!Array.isArray(agent.playbooks) || agent.playbooks.length < minPlaybooks) {
-    errors.push(
-      `${agent.slug}: must have at least ${minPlaybooks} playbooks (has ${agent.playbooks?.length ?? 0})`,
-    );
+    errors.push(`${agent.slug}: must have at least ${minPlaybooks} playbooks (has ${agent.playbooks?.length ?? 0})`);
   }
   for (const playbook of agent.playbooks ?? []) {
     for (const field of REQUIRED_PLAYBOOK_FIELDS) {

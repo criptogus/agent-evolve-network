@@ -33,9 +33,7 @@ export function SoulDisclaimerBadge({
           </span>
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
-          <p className="font-semibold">
-            {name ? `${name} — Fictional AI persona` : "Fictional AI persona"}
-          </p>
+          <p className="font-semibold">{name ? `${name} — Fictional AI persona` : "Fictional AI persona"}</p>
           <p className="mt-1">{SOUL_DISCLAIMER_TEXT}</p>
           <p className="mt-2">
             <Link to="/legal/disclaimers" className="underline">
@@ -49,6 +47,7 @@ export function SoulDisclaimerBadge({
 }
 
 const DISCLAIMER_TITLE = "Persona fictícia / Fictional persona";
+
 
 export function SoulDisclaimer({ name }: { name?: string }) {
   return (

@@ -45,9 +45,7 @@ export const proveImprovementTool = defineTool({
       .min(100)
       .max(10_000_000)
       .default(10_000)
-      .describe(
-        "monthly execution volume for the money framing — ask the user for their real number",
-      ),
+      .describe("monthly execution volume for the money framing — ask the user for their real number"),
     actions_applied: z
       .number()
       .int()
@@ -56,10 +54,7 @@ export const proveImprovementTool = defineTool({
       .optional()
       .describe("how many top_actions were actually applied (raises confidence)"),
   }),
-  execute: async (
-    { name, type, before_score, after_score, runs_per_month, actions_applied },
-    ctx,
-  ) => {
+  execute: async ({ name, type, before_score, after_score, runs_per_month, actions_applied }, ctx) => {
     const userId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
     const key = docKey(name, type);
     const history = userId ? await loadReviewHistory(userId, key) : null;
@@ -68,13 +63,13 @@ export const proveImprovementTool = defineTool({
     const newest = history?.runs[0] ?? null;
     const oldest = history?.runs[history.runs.length - 1] ?? null;
 
-    const after = typeof after_score === "number" ? after_score : (newest?.overall_score ?? null);
+    const after = typeof after_score === "number" ? after_score : newest?.overall_score ?? null;
     const before =
       typeof before_score === "number"
         ? before_score
         : history && history.runs.length > 1
           ? history.runs[1]!.overall_score
-          : (oldest?.overall_score ?? null);
+          : oldest?.overall_score ?? null;
 
     if (typeof before !== "number" || typeof after !== "number") {
       return json({
@@ -108,10 +103,7 @@ export const proveImprovementTool = defineTool({
 
     return json({
       ...proof,
-      source:
-        typeof before_score === "number" || typeof after_score === "number"
-          ? "caller"
-          : "server_history",
+      source: typeof before_score === "number" || typeof after_score === "number" ? "caller" : "server_history",
       review_runs_recorded: history?.runs.length ?? 0,
       agent_instructions: [
         "Show `human_report` to the user as-is (markdown). Do not summarise the table away — the before/after numbers are the value.",

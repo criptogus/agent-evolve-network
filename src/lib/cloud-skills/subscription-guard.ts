@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const requirePaidSubscription = createMiddleware({ type: "function" })
   .middleware([requireSupabaseAuth])
   .server(async ({ next, context }) => {
-    const { supabase, userId } = context;
+    const { supabase, userId } = context as any;
 
     const { data: sub } = await supabase
       .from("subscriptions")
@@ -16,7 +16,8 @@ export const requirePaidSubscription = createMiddleware({ type: "function" })
       .maybeSingle();
 
     const isActive =
-      !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+      !!sub &&
+      (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
 
     if (!isActive) {
       throw new Response(

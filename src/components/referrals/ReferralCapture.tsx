@@ -31,6 +31,7 @@ export function ReferralCapture() {
     }).catch(() => {});
   }, [trackClick]);
 
+
   // Once logged in, attempt to claim a stored ref. Server enforces idempotency.
   useEffect(() => {
     if (loading || !user) return;
@@ -46,10 +47,7 @@ export function ReferralCapture() {
             package_slug: null,
           },
         });
-        if (
-          !cancelled &&
-          (res?.ok || res?.reason === "ALREADY_CLAIMED" || res?.reason === "SELF_REFERRAL")
-        ) {
+        if (!cancelled && (res?.ok || res?.reason === "ALREADY_CLAIMED" || res?.reason === "SELF_REFERRAL")) {
           clearStoredRef();
         }
       } catch {

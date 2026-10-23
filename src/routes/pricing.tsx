@@ -19,6 +19,7 @@ import {
 const TITLE = "Pricing — one plan, everything included | Super Agent Skill";
 const DESCRIPTION = `Public capabilities are free forever. Pro is ${PRICE_YEARLY}/year (${PRO_YEARLY_DISCOUNT_PCT}% off ${PRICE_YEARLY_LIST}) or ${PRICE_MONTHLY}/month and includes the Agent Factory, Agent Store, University and unlimited tested reviews.`;
 
+
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
@@ -90,8 +91,8 @@ function Pricing() {
             One plan. Everything included.
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-pretty text-muted-foreground">
-            No tiers to compare, no add-ons, no credit packs to reason about. Public capabilities
-            stay free forever. Pro is for when you want your own capabilities tested, built and kept
+            No tiers to compare, no add-ons, no credit packs to reason about. Public capabilities stay
+            free forever. Pro is for when you want your own capabilities tested, built and kept
             current.
           </p>
         </div>

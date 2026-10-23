@@ -1,10 +1,9 @@
-import type { ToolExecutionContext } from "mcp-tanstack-start";
 import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { hashToken } from "@/lib/account/tokens.server";
 
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 
 async function resolveUserFromToken(token: string): Promise<string | null> {
@@ -14,23 +13,18 @@ async function resolveUserFromToken(token: string): Promise<string | null> {
     .eq("token_hash", hashToken(token))
     .maybeSingle();
   if (!data) return null;
-  await supabaseAdmin
-    .from("mcp_tokens")
-    .update({ last_used_at: new Date().toISOString() })
-    .eq("id", data.id);
+  await supabaseAdmin.from("mcp_tokens").update({ last_used_at: new Date().toISOString() }).eq("id", data.id);
   return data.user_id;
 }
 
-export async function requirePaidUser(ctx: ToolExecutionContext): Promise<string> {
+export async function requirePaidUser(ctx: any): Promise<string> {
   const sessionUserId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
   const userId = sessionUserId;
   if (!userId) {
-    throw new Error(
-      json({
-        error: "unauthorized",
-        hint: "Connect via OAuth to use Cloud Skill Manager.",
-      }),
-    );
+    throw new Error(json({
+      error: "unauthorized",
+      hint: "Connect via OAuth to use Cloud Skill Manager.",
+    }));
   }
 
   const { data: sub } = await supabaseAdmin
@@ -42,16 +36,12 @@ export async function requirePaidUser(ctx: ToolExecutionContext): Promise<string
     .limit(1)
     .maybeSingle();
 
-  const isActive =
-    !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+  const isActive = !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
   if (!isActive) {
-    throw new Error(
-      json({
-        error: "subscription_required",
-        message:
-          "Cloud Skill Manager requires Agent Pass or Enterprise. Upgrade at superagentskill.com/pricing.",
-      }),
-    );
+    throw new Error(json({
+      error: "subscription_required",
+      message: "Cloud Skill Manager requires Agent Pass or Enterprise. Upgrade at superagentskill.com/pricing.",
+    }));
   }
 
   return userId;
@@ -117,11 +107,7 @@ export const cloudSkillsSaveTool = defineTool({
   description:
     "[CLOUD] Save a skill to your cloud library. Creates or updates by slug. Requires OAuth + paid subscription. Use this to save a local skill to the cloud for reuse across projects.",
   parameters: z.object({
-    slug: z
-      .string()
-      .min(2)
-      .max(64)
-      .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/),
+    slug: z.string().min(2).max(64).regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/),
     name: z.string().min(2).max(120),
     content: z.string().min(10).max(200_000),
     description: z.string().max(500).optional(),
@@ -206,7 +192,8 @@ export const cloudSkillsSaveTool = defineTool({
 
 export const cloudSkillsDeleteTool = defineTool({
   name: "cloud_skills_delete",
-  description: "[CLOUD] Delete a cloud skill by slug. Requires OAuth + paid subscription.",
+  description:
+    "[CLOUD] Delete a cloud skill by slug. Requires OAuth + paid subscription.",
   parameters: z.object({
     slug: z.string().min(1),
   }),
@@ -250,9 +237,7 @@ export const cloudSkillsExportTool = defineTool({
       skill.tags.length ? `tags: ${skill.tags.join(", ")}` : null,
       `version: ${skill.version}`,
       "---",
-    ]
-      .filter(Boolean)
-      .join("\n");
+    ].filter(Boolean).join("\n");
 
     return `${frontmatter}\n\n${skill.content}`;
   },
@@ -270,7 +255,7 @@ export const cloudSkillsImportTool = defineTool({
     const userId = await requirePaidUser(ctx);
 
     const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
-    const meta: Record<string, string> = {};
+    let meta: Record<string, string> = {};
     let body = content;
 
     if (frontmatterMatch) {
@@ -284,13 +269,12 @@ export const cloudSkillsImportTool = defineTool({
     }
 
     const baseName = filename.replace(/\.(md|yaml|yml|json|txt|skill)$/i, "");
-    const slug =
-      (meta.slug ?? baseName)
-        .toLowerCase()
-        .replace(/[^a-z0-9-]/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$/g, "")
-        .slice(0, 64) || "imported-skill";
+    const slug = (meta.slug ?? baseName)
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 64) || "imported-skill";
 
     let finalSlug = slug;
     let n = 1;
@@ -307,12 +291,7 @@ export const cloudSkillsImportTool = defineTool({
       if (n > 50) break;
     }
 
-    const tags = meta.tags
-      ? meta.tags
-          .split(",")
-          .map((t: string) => t.trim())
-          .filter(Boolean)
-      : [];
+    const tags = meta.tags ? meta.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [];
 
     const { data: skill, error } = await supabaseAdmin
       .from("cloud_skills")

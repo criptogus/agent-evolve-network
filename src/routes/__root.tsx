@@ -30,6 +30,7 @@ function NotFoundComponent() {
         <div className="mt-6">
           <Link
             to="/"
+           
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Go home
@@ -40,7 +41,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
 
@@ -81,29 +82,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Super Agent Skill — Signed Skills for AI Agents" },
-      {
-        name: "description",
-        content:
-          "Super Agent Skill turns AI agents into continuously evolving specialists via MCP.",
-      },
+      { name: "description", content: "Super Agent Skill turns AI agents into continuously evolving specialists via MCP." },
       { name: "author", content: "Super Agent Skill" },
       { name: "google-site-verification", content: "_XaKwKLlTaHmSy8DgH5RB4dmOTlyKH0HYjcRylGuacQ" },
       { property: "og:site_name", content: "Super Agent Skill" },
       { property: "og:title", content: "Super Agent Skill" },
-      {
-        property: "og:description",
-        content:
-          "Super Agent Skill turns AI agents into continuously evolving specialists via MCP.",
-      },
+      { property: "og:description", content: "Super Agent Skill turns AI agents into continuously evolving specialists via MCP." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@superagentskill" },
       { name: "twitter:title", content: "Super Agent Skill" },
-      {
-        name: "twitter:description",
-        content:
-          "Super Agent Skill turns AI agents into continuously evolving specialists via MCP.",
-      },
+      { name: "twitter:description", content: "Super Agent Skill turns AI agents into continuously evolving specialists via MCP." },
       // LinkedIn/Facebook only re-scrape when the image URL itself changes,
       // and some scrapers drop query strings — so version the filename.
       { property: "og:image", content: "https://superagentskill.com/og-2026-07-31.jpg" },
@@ -111,15 +100,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image:type", content: "image/jpeg" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "640" },
-      {
-        property: "og:image:alt",
-        content: "Super Agent Skill — signed, tested skills for AI agents",
-      },
+      { property: "og:image:alt", content: "Super Agent Skill — signed, tested skills for AI agents" },
       { name: "twitter:image", content: "https://superagentskill.com/og-2026-07-31.jpg" },
-      {
-        name: "twitter:image:alt",
-        content: "Super Agent Skill — signed, tested skills for AI agents",
-      },
+      { name: "twitter:image:alt", content: "Super Agent Skill — signed, tested skills for AI agents" },
+
     ],
     links: [
       {
@@ -159,9 +143,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ReferralCapture />
-      <a href="#main" className="skip-link">
-        Skip to main content
-      </a>
+      <a href="#main" className="skip-link">Skip to main content</a>
       <div id="main">
         <Outlet />
       </div>

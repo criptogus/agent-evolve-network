@@ -151,12 +151,7 @@ export const OUTCOMES: Record<TriggerId, OutcomeDef> = {
     weight: 1.2,
     label: "Another measured action",
   },
-  value_digest: {
-    kind: "install_or_review",
-    windowHours: 72,
-    weight: 1.0,
-    label: "Review or install",
-  },
+  value_digest: { kind: "install_or_review", windowHours: 72, weight: 1.0, label: "Review or install" },
   opportunity_nudge: {
     kind: "any_value_action",
     windowHours: 72,

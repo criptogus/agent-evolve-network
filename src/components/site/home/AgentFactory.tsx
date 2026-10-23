@@ -43,16 +43,13 @@ export function AgentFactory() {
     <section className="border-b border-border bg-surface/40 py-16 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <header className="max-w-3xl">
-          <p className="text-xs font-medium uppercase tracking-wider text-primary">
-            Corporate Agent Factory
-          </p>
+          <p className="text-xs font-medium uppercase tracking-wider text-primary">Corporate Agent Factory</p>
           <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
             A whole org chart of agents — installed, not prompted.
           </h2>
           <p className="mt-4 text-pretty text-base leading-relaxed text-muted-foreground lg:text-lg">
-            Download a curated executive or specialist agent, or describe a role you cannot hire
-            fast enough and the factory builds it for you — always anchored on the current state of
-            the art, always scored before delivery.
+            Download a curated executive or specialist agent, or describe a role you cannot hire fast enough and the
+            factory builds it for you — always anchored on the current state of the art, always scored before delivery.
           </p>
         </header>
 
@@ -72,9 +69,7 @@ export function AgentFactory() {
                   className="group rounded-xl border border-border bg-background p-3 transition-colors hover:border-primary/50 hover:bg-accent"
                 >
                   <AgentIcon slug={a.slug} size="sm" />
-                  <p className="mt-2 truncate text-sm font-medium group-hover:text-primary">
-                    {a.name}
-                  </p>
+                  <p className="mt-2 truncate text-sm font-medium group-hover:text-primary">{a.name}</p>
                   <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">
                     1 soul · {a.skill_count} skills · {a.playbook_count} playbooks
                   </p>
@@ -109,26 +104,22 @@ export function AgentFactory() {
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link
                 to="/agents/new"
-                onClick={() =>
-                  track("cta_clicked", { cta: "home_factory_primary", to: "/agents/new" })
-                }
+                onClick={() => track("cta_clicked", { cta: "home_factory_primary", to: "/agents/new" })}
                 className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-6 text-sm font-semibold text-primary-foreground transition-all hover:scale-[1.02] hover:opacity-95 sm:w-auto"
               >
                 Build my agent →
               </Link>
               <Link
                 to="/pricing"
-                onClick={() =>
-                  track("cta_clicked", { cta: "home_factory_pricing", to: "/pricing" })
-                }
+                onClick={() => track("cta_clicked", { cta: "home_factory_pricing", to: "/pricing" })}
                 className="inline-flex h-11 w-full items-center justify-center rounded-md border border-border px-5 text-sm font-medium transition-colors hover:bg-accent sm:w-auto"
               >
                 See Agent Pass
               </Link>
             </div>
             <p className="mt-3 text-xs text-muted-foreground">
-              Custom agents are included in Agent Pass. Download as ZIP, single markdown file, or
-              install straight into your agent over MCP.
+              Custom agents are included in Agent Pass. Download as ZIP, single markdown file, or install straight into
+              your agent over MCP.
             </p>
           </div>
         </div>

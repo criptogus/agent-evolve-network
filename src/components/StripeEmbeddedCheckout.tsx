@@ -1,4 +1,3 @@
-import { errorField } from "@/lib/errors";
 import { useCallback, useState } from "react";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
@@ -26,8 +25,8 @@ export function StripeEmbeddedCheckout({ priceId, quantity, returnUrl }: Props) 
       if ("error" in result) throw new Error(result.error);
       setError(null);
       return result.clientSecret;
-    } catch (e) {
-      const message = errorField(e, "message") ?? "Could not create checkout session";
+    } catch (e: any) {
+      const message = e?.message ?? "Could not create checkout session";
       setError(message);
       throw new Error(message);
     }

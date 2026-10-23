@@ -107,10 +107,4 @@ export function agentPluginMcpUrl(slug: string) {
 }
 
 /** Agents / clients that read the Agent Plugins format. */
-export const AGENT_PLUGINS_STEWARDS = [
-  "Amazon",
-  "Cursor",
-  "Microsoft",
-  "OpenAI",
-  "Vercel",
-] as const;
+export const AGENT_PLUGINS_STEWARDS = ["Amazon", "Cursor", "Microsoft", "OpenAI", "Vercel"] as const;

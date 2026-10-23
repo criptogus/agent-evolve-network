@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react'
 import {
   Body,
   Container,
@@ -8,11 +8,11 @@ import {
   Preview,
   Section,
   Text,
-} from "@react-email/components";
-import { BRAND, styles } from "./_brand";
+} from '@react-email/components'
+import { BRAND, styles } from './_brand'
 
 interface ReauthenticationEmailProps {
-  token: string;
+  token: string
 }
 
 export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
@@ -28,16 +28,16 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
           </Section>
           <Heading style={styles.h1}>Confirm it's you</Heading>
           <Text style={styles.text}>
-            Enter this verification code in {BRAND.name} to confirm your identity. It expires
-            shortly.
+            Enter this verification code in {BRAND.name} to confirm your
+            identity. It expires shortly.
           </Text>
           <Text style={styles.code}>{token}</Text>
-          <Text style={{ ...styles.text, fontSize: "13px", margin: 0 }}>
+          <Text style={{ ...styles.text, fontSize: '13px', margin: 0 }}>
             Didn't request this? You can safely ignore this email.
           </Text>
         </Section>
         <Text style={styles.footer}>
-          Sent by {BRAND.name} ·{" "}
+          Sent by {BRAND.name} ·{' '}
           <a href={BRAND.url} style={styles.footerLink}>
             superagentskill.com
           </a>
@@ -45,6 +45,6 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
       </Container>
     </Body>
   </Html>
-);
+)
 
-export default ReauthenticationEmail;
+export default ReauthenticationEmail

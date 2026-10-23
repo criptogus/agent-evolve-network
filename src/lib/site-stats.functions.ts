@@ -1,9 +1,8 @@
-import type { Row } from "@/integrations/supabase/database";
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { SITE_STATS, TOTAL_PACKAGES } from "@/lib/site-stats";
 
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 
 export type LiveSiteStats = {
   skills: number;
@@ -24,7 +23,7 @@ export const FALLBACK_SITE_STATS: LiveSiteStats = {
   live: false,
 };
 
-async function countByType(type: Row<"packages">["type"]): Promise<number | null> {
+async function countByType(type: string): Promise<number | null> {
   const { count, error } = await supabaseAdmin
     .from("packages")
     .select("id", { count: "exact", head: true })

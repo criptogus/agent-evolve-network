@@ -11,7 +11,9 @@ export type StripeEnv = "sandbox" | "live";
 const GATEWAY_STRIPE_BASE = "https://connector-gateway.lovable.dev/stripe";
 
 export function getConnectionApiKey(env: StripeEnv): string {
-  return env === "sandbox" ? getEnv("STRIPE_SANDBOX_API_KEY") : getEnv("STRIPE_LIVE_API_KEY");
+  return env === "sandbox"
+    ? getEnv("STRIPE_SANDBOX_API_KEY")
+    : getEnv("STRIPE_LIVE_API_KEY");
 }
 
 export function createStripeClient(env: StripeEnv): Stripe {
@@ -19,27 +21,25 @@ export function createStripeClient(env: StripeEnv): Stripe {
   const lovableApiKey = getEnv("LOVABLE_API_KEY");
 
   return new Stripe(connectionApiKey, {
-    // Preserve the gateway wire contract; Stripe SDK accepts only its latest literal.
-    apiVersion: "2026-03-25.dahlia" as NonNullable<
-      NonNullable<ConstructorParameters<typeof Stripe>[1]>["apiVersion"]
-    >,
-    httpClient: Stripe.createFetchHttpClient(
-      (input: Parameters<typeof fetch>[0], init?: RequestInit) => {
-        const gatewayUrl = input.toString().replace("https://api.stripe.com", GATEWAY_STRIPE_BASE);
-        return fetch(gatewayUrl, {
-          ...init,
-          headers: {
-            ...Object.fromEntries(new Headers(init?.headers).entries()),
-            "X-Connection-Api-Key": connectionApiKey,
-            "Lovable-API-Key": lovableApiKey,
-          },
-        });
-      },
-    ),
+    apiVersion: "2026-03-25.dahlia" as any,
+    httpClient: Stripe.createFetchHttpClient(((input: any, init?: RequestInit) => {
+      const gatewayUrl = input.toString().replace("https://api.stripe.com", GATEWAY_STRIPE_BASE);
+      return fetch(gatewayUrl, {
+        ...init,
+        headers: {
+          ...Object.fromEntries(new Headers(init?.headers).entries()),
+          "X-Connection-Api-Key": connectionApiKey,
+          "Lovable-API-Key": lovableApiKey,
+        },
+      });
+    }) as any),
   });
 }
 
-export async function verifyWebhook(req: Request, env: StripeEnv): Promise<Stripe.Event> {
+export async function verifyWebhook(
+  req: Request,
+  env: StripeEnv,
+): Promise<{ type: string; data: { object: any } }> {
   const signature = req.headers.get("stripe-signature");
   const body = await req.text();
   const secret =
@@ -59,7 +59,7 @@ export async function verifyWebhook(req: Request, env: StripeEnv): Promise<Strip
   if (!timestamp || v1Signatures.length === 0) throw new Error("Invalid signature format");
 
   const age = Math.abs(Date.now() / 1000 - Number(timestamp));
-  if (!Number.isFinite(age) || age > 300) throw new Error("Webhook timestamp too old");
+  if (age > 300) throw new Error("Webhook timestamp too old");
 
   const key = await crypto.subtle.importKey(
     "raw",
@@ -76,20 +76,7 @@ export async function verifyWebhook(req: Request, env: StripeEnv): Promise<Strip
   const expected = Buffer.from(new Uint8Array(signed)).toString("hex");
   if (!v1Signatures.includes(expected)) throw new Error("Invalid webhook signature");
 
-  const event: unknown = JSON.parse(body);
-  if (
-    !event ||
-    typeof event !== "object" ||
-    !("type" in event) ||
-    typeof event.type !== "string" ||
-    !("data" in event) ||
-    !event.data ||
-    typeof event.data !== "object" ||
-    !("object" in event.data)
-  )
-    throw new Error("Invalid webhook event");
-  // Authenticated Stripe payload. The event discriminator selects its SDK object type.
-  return event as Stripe.Event;
+  return JSON.parse(body);
 }
 
 /**
@@ -106,13 +93,7 @@ export function getStripeErrorMessage(error: unknown): string {
       decline_code?: string;
       param?: string;
       requestId?: string;
-      raw?: {
-        message?: string;
-        type?: string;
-        code?: string;
-        decline_code?: string;
-        param?: string;
-      };
+      raw?: { message?: string; type?: string; code?: string; decline_code?: string; param?: string };
     };
     const message = e.raw?.message ?? e.message;
     if (message) {

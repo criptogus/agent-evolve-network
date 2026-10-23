@@ -41,9 +41,9 @@ function CommunityPage() {
             Build the open registry for agent intelligence.
           </h1>
           <p className="mt-5 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">
-            Every skill, playbook, soul and guardrail in our network starts as a YAML file in a
-            public GitHub repo. Download what you need. Fork what's almost right. Ship what's
-            missing — and it lands in front of every agent on the platform.
+            Every skill, playbook, soul and guardrail in our network starts as a YAML file in a public
+            GitHub repo. Download what you need. Fork what's almost right. Ship what's missing — and
+            it lands in front of every agent on the platform.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a
@@ -69,12 +69,8 @@ function CommunityPage() {
 
       <section className="border-b border-border bg-surface/40 py-20">
         <div className="mx-auto max-w-5xl px-6">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
-            How to contribute
-          </span>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
-            Four steps from idea to merged PR.
-          </h2>
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">How to contribute</span>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">Four steps from idea to merged PR.</h2>
           <ol className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-2">
             {STEPS.map((s) => (
               <li key={s.n} className="bg-background p-7">
@@ -94,12 +90,8 @@ function CommunityPage() {
 
       <section className="border-b border-border py-20">
         <div className="mx-auto max-w-5xl px-6">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
-            Package types
-          </span>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
-            Pick what fits — split if it doesn't.
-          </h2>
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Package types</span>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">Pick what fits — split if it doesn't.</h2>
           <div className="mt-10 grid gap-4 md:grid-cols-2">
             {KINDS.map((k) => (
               <a
@@ -127,41 +119,28 @@ function CommunityPage() {
 
       <section className="border-b border-border bg-surface/40 py-20">
         <div className="mx-auto max-w-5xl px-6">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
-            Quality bar
-          </span>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
-            A package is accepted when it…
-          </h2>
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Quality bar</span>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">A package is accepted when it…</h2>
           <ul className="mt-8 grid gap-3 md:grid-cols-2">
             {BAR.map((b) => (
-              <li
-                key={b}
-                className="flex items-start gap-3 rounded-md border border-border bg-background p-4 text-sm text-muted-foreground"
-              >
+              <li key={b} className="flex items-start gap-3 rounded-md border border-border bg-background p-4 text-sm text-muted-foreground">
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 <span>{b}</span>
               </li>
             ))}
           </ul>
           <p className="mt-8 text-sm text-muted-foreground">
-            Validate locally with{" "}
-            <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-foreground">
-              bun run validate:content
-            </code>{" "}
-            before opening a PR. CI runs the same script.
+            Validate locally with <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-foreground">bun run validate:content</code> before opening a PR. CI runs the same script.
           </p>
         </div>
       </section>
 
       <section className="py-20">
         <div className="mx-auto max-w-5xl px-6 text-center">
-          <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-            Ready to ship something?
-          </h2>
+          <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">Ready to ship something?</h2>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Open a PR or start a discussion. Maintainers review for quality, safety and overlap,
-            then your package is imported into the live registry on the next sync.
+            Open a PR or start a discussion. Maintainers review for quality, safety and overlap, then your
+            package is imported into the live registry on the next sync.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
@@ -218,34 +197,10 @@ const STEPS = [
 ];
 
 const KINDS = [
-  {
-    slug: "skills",
-    folder: "skills",
-    name: "Skills",
-    icon: Sparkles,
-    body: "Single sharply-scoped capabilities with an input → output contract. The atomic unit.",
-  },
-  {
-    slug: "playbooks",
-    folder: "playbooks",
-    name: "Playbooks",
-    icon: BookOpen,
-    body: "Multi-step decision graphs that orchestrate skills and tools for a recurring scenario.",
-  },
-  {
-    slug: "souls",
-    folder: "souls",
-    name: "Souls",
-    icon: Sparkles,
-    body: "Personality and value layers that bias an agent's tone, taste and trade-offs.",
-  },
-  {
-    slug: "guardrails",
-    folder: "guardrails",
-    name: "Guardrails",
-    icon: ShieldCheck,
-    body: "Refusal, safety and compliance policies enforced before a response leaves the agent.",
-  },
+  { slug: "skills", folder: "skills", name: "Skills", icon: Sparkles, body: "Single sharply-scoped capabilities with an input → output contract. The atomic unit." },
+  { slug: "playbooks", folder: "playbooks", name: "Playbooks", icon: BookOpen, body: "Multi-step decision graphs that orchestrate skills and tools for a recurring scenario." },
+  { slug: "souls", folder: "souls", name: "Souls", icon: Sparkles, body: "Personality and value layers that bias an agent's tone, taste and trade-offs." },
+  { slug: "guardrails", folder: "guardrails", name: "Guardrails", icon: ShieldCheck, body: "Refusal, safety and compliance policies enforced before a response leaves the agent." },
 ];
 
 const BAR = [

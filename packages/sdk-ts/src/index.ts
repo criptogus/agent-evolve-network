@@ -1,4 +1,3 @@
-import { parseEnvelope, type RpcEnvelope } from "./protocol";
 /**
  * @superagentskill/sdk — typed client for the Super Agent Skill MCP server.
  *
@@ -76,7 +75,8 @@ export class SuperAgentSkill {
     this.maxRetries = opts.maxRetries ?? 3;
     this.backoffMs = opts.backoffMs ?? 500;
     this.userAgent =
-      `@superagentskill/sdk/${VERSION}` + (opts.userAgentSuffix ? ` ${opts.userAgentSuffix}` : "");
+      `@superagentskill/sdk/${VERSION}` +
+      (opts.userAgentSuffix ? ` ${opts.userAgentSuffix}` : "");
   }
 
   /**
@@ -111,7 +111,10 @@ export class SuperAgentSkill {
 
   /** List every tool the server exposes (with JSON schemas). */
   async listTools(init: { signal?: AbortSignal } = {}): Promise<unknown> {
-    const r = await this.rawRequest({ jsonrpc: "2.0", id: cryptoId(), method: "tools/list" }, init);
+    const r = await this.rawRequest(
+      { jsonrpc: "2.0", id: cryptoId(), method: "tools/list" },
+      init,
+    );
     return r?.result;
   }
 
@@ -145,7 +148,7 @@ export class SuperAgentSkill {
   private async rawRequest(
     body: unknown,
     init: { signal?: AbortSignal },
-  ): Promise<RpcEnvelope | null> {
+  ): Promise<any> {
     let attempt = 0;
     let lastErr: unknown = null;
     while (attempt <= this.maxRetries) {
@@ -160,7 +163,10 @@ export class SuperAgentSkill {
 
         if (res.status === 401) {
           const data = await safeJson(res);
-          throw new MCPUnauthorizedError(data?.error?.message ?? "Unauthorized", data?.error?.data);
+          throw new MCPUnauthorizedError(
+            data?.error?.message ?? "Unauthorized",
+            data?.error?.data,
+          );
         }
         if (res.status === 429) {
           const retryAfter = parseRetryAfter(res);
@@ -266,15 +272,20 @@ function parseRetryAfter(res: Response): number {
   return 1;
 }
 
-async function safeJson(res: Response): Promise<RpcEnvelope | null> {
+async function safeJson(res: Response): Promise<any> {
   try {
-    return parseEnvelope(await res.text());
+    return await res.json();
   } catch {
     return null;
   }
 }
-function tryParse(text: string): RpcEnvelope | null {
-  return parseEnvelope(text);
+
+function tryParse(text: string): any {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
 }
 
 /**

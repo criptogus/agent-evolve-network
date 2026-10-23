@@ -42,9 +42,7 @@ const contentSha256 = createHash("sha256").update(pkgBytes).digest("hex");
 // eval report. Avoids a YAML dependency so this stays in lockstep with the
 // dependency-free offline verifier.
 function topScalar(key) {
-  const m = pkgText.match(
-    new RegExp(`^${key}:[ \\t]*["']?([^"'\\n#]+?)["']?[ \\t]*(?:#.*)?$`, "m"),
-  );
+  const m = pkgText.match(new RegExp(`^${key}:[ \\t]*["']?([^"'\\n#]+?)["']?[ \\t]*(?:#.*)?$`, "m"));
   return m ? m[1].trim() : undefined;
 }
 const pkgSlug = topScalar("slug");
@@ -91,13 +89,9 @@ const outPath = args.out ?? `${payload.package.slug ?? "package"}.trust.json`;
 writeFileSync(outPath, `${JSON.stringify(attestation, null, 2)}\n`);
 
 console.log(`✓ trust attestation written: ${outPath}`);
-console.log(
-  `  package:   ${payload.package.type}:${payload.package.slug}@${payload.package.version}`,
-);
+console.log(`  package:   ${payload.package.type}:${payload.package.slug}@${payload.package.version}`);
 console.log(`  content:   sha256:${contentSha256.slice(0, 16)}…`);
-console.log(
-  `  adversarial: ${payload.adversarial.passed}/${payload.adversarial.total} cases, score ${(payload.adversarial.severity_weighted_score * 100).toFixed(1)}%`,
-);
+console.log(`  adversarial: ${payload.adversarial.passed}/${payload.adversarial.total} cases, score ${(payload.adversarial.severity_weighted_score * 100).toFixed(1)}%`);
 console.log(`  signed by:  key_id=${keyId}`);
 
 // Deterministic JSON: object keys sorted recursively so the signed bytes are
@@ -117,13 +111,9 @@ function parse(argv) {
   const o = {};
   for (let i = 0; i < argv.length; i++) {
     if (!argv[i].startsWith("--")) continue;
-    const k = argv[i].slice(2),
-      n = argv[i + 1];
+    const k = argv[i].slice(2), n = argv[i + 1];
     if (!n || n.startsWith("--")) o[k] = true;
-    else {
-      o[k] = n;
-      i++;
-    }
+    else { o[k] = n; i++; }
   }
   return o;
 }

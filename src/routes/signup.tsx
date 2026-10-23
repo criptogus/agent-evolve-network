@@ -6,7 +6,6 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Logo } from "@/components/site/Logo";
 import { toast } from "sonner";
-import { signupDestination, signupError } from "@/lib/auth/signup";
 import { captureRefFromUrl, getStoredRef, clearStoredRef } from "@/lib/referrals/capture";
 import { claimReferral } from "@/lib/referrals/referrals.functions";
 import { useTrack, useTrackOnce } from "@/lib/telemetry/use-track";
@@ -51,9 +50,6 @@ function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [formError, setFormError] = useState("");
-  const destination = signupDestination(next);
   const track = useTrack();
   useTrackOnce("signup_viewed", { next: next ?? null });
 
@@ -61,7 +57,7 @@ function SignupPage() {
     // First-touch referral capture from ?ref=CODE on landing.
     captureRefFromUrl();
 
-    const target = destination;
+    const target = next || "/home";
     const tryClaim = async () => {
       const code = getStoredRef();
       if (!code) return;
@@ -75,64 +71,52 @@ function SignupPage() {
     supabase.auth.getSession().then(async ({ data }) => {
       if (data.session) {
         await tryClaim();
-        window.location.assign(target);
+        navigate({ to: target, replace: true });
       }
     });
     const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
       if (s) {
         await tryClaim();
-        window.location.assign(target);
+        navigate({ to: target, replace: true });
       }
     });
     return () => sub.subscription.unsubscribe();
-  }, [navigate, destination]);
+  }, [navigate, next]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (busy) return;
-    setFormError("");
     setBusy(true);
     track("signup_started", { method: "email" });
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/login?next=${encodeURIComponent(destination)}`,
-          data: {
-            full_name: name,
-            accepted_terms_at: new Date().toISOString(),
-            accepted_ip_assignment: true,
-          },
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: {
+          full_name: name,
+          accepted_terms_at: new Date().toISOString(),
+          accepted_ip_assignment: true,
         },
-      });
-      if (error) {
-        track("signup_failed", { method: "email", reason: error.message.slice(0, 120) });
-        setFormError(signupError(error.message));
-        return;
-      }
-      track("signup_completed", { method: "email" });
-      toast.success("Check your inbox to confirm your email");
-      navigate({ to: "/login", search: { next: destination } });
-    } catch {
-      setFormError("Could not reach the signup service. Please try again.");
-      track("signup_failed", { method: "email", reason: "network_error" });
-    } finally {
-      setBusy(false);
+      },
+    });
+    setBusy(false);
+    if (error) {
+      track("signup_failed", { method: "email", reason: error.message.slice(0, 120) });
+      return toast.error(error.message);
     }
+    track("signup_completed", { method: "email" });
+    toast.success("Check your inbox to confirm your email");
+    navigate({ to: "/login", search: { next } });
   };
 
   const onGoogle = async () => {
     setBusy(true);
     track("signup_started", { method: "google" });
     const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}${destination}`,
+      redirect_uri: `${window.location.origin}${next || "/account/billing"}`,
     });
     if (error) {
-      track("signup_failed", {
-        method: "google",
-        reason: (error.message ?? "unknown").slice(0, 120),
-      });
+      track("signup_failed", { method: "google", reason: (error.message ?? "unknown").slice(0, 120) });
       toast.error(error.message ?? "Could not sign up with Google");
       setBusy(false);
     }
@@ -144,18 +128,16 @@ function SignupPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: `${window.location.origin}${destination}`,
+        redirectTo: `${window.location.origin}${next || "/account/billing"}`,
       },
     });
     if (error) {
-      track("signup_failed", {
-        method: "github",
-        reason: (error.message ?? "unknown").slice(0, 120),
-      });
+      track("signup_failed", { method: "github", reason: (error.message ?? "unknown").slice(0, 120) });
       toast.error(error.message ?? "Could not sign up with GitHub");
       setBusy(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -196,8 +178,6 @@ function SignupPage() {
           <form onSubmit={onSubmit} className="space-y-3">
             <input
               required
-              aria-label="Full name"
-              autoComplete="name"
               placeholder="Full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -206,54 +186,20 @@ function SignupPage() {
             <input
               type="email"
               required
-              aria-label="Email"
-              autoComplete="email"
               placeholder="you@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
             />
-            <div>
-              <label htmlFor="signup-password" className="mb-1 block text-sm font-medium">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="signup-password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  required
-                  minLength={8}
-                  placeholder="Create a unique passphrase"
-                  value={password}
-                  aria-describedby={formError ? "password-help signup-error" : "password-help"}
-                  aria-invalid={Boolean(formError)}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setFormError("");
-                  }}
-                  className="h-10 w-full rounded-md border border-border bg-background px-3 pr-32 text-sm outline-none focus:border-primary"
-                />
-                <button
-                  type="button"
-                  aria-controls="signup-password"
-                  aria-pressed={showPassword}
-                  onClick={() => setShowPassword((shown) => !shown)}
-                  className="absolute inset-y-0 right-0 px-3 text-xs underline"
-                >
-                  {showPassword ? "Hide" : "Show"} password
-                </button>
-              </div>
-              <p id="password-help" className="mt-1 text-xs text-muted-foreground">
-                Use at least 8 characters. Prefer a long, unique passphrase or a password manager.
-                Common or breached passwords are rejected even when long enough.
-              </p>
-              {formError && (
-                <p id="signup-error" role="alert" className="mt-2 text-sm text-destructive">
-                  {formError}
-                </p>
-              )}
-            </div>
+            <input
+              type="password"
+              required
+              minLength={8}
+              placeholder="Password (8+ chars)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+            />
             <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-xs text-foreground/90">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <span className="font-mono uppercase tracking-wider text-primary">

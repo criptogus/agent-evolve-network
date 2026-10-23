@@ -1,8 +1,8 @@
-import { telemetrySink } from "@/lib/trust/telemetry-sink.server";
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 import { ExecutionEventSchema, ingestExecution } from "@/lib/trust/telemetry";
+import { createHash } from "node:crypto";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -42,7 +42,41 @@ export const Route = createFileRoute("/api/public/telemetry")({
         const model = typeof extra?.model === "string" ? (extra.model as string) : undefined;
 
         try {
-          const row = await ingestExecution(event, telemetrySink(supabaseAdmin, model));
+          const row = await ingestExecution(
+            event,
+            supabaseAdmin.from("skill_executions") as any,
+          );
+          // Stable per-workspace fingerprint for trust RPC rate limiting.
+          const agentFp =
+            row.workspace_hash ??
+            createHash("sha256")
+              .update(`${event.runtime ?? "cli"}:${event.workspace_id ?? "anon"}`)
+              .digest("hex")
+              .slice(0, 32);
+          // Best-effort: never fail the request if the RPC is missing/limited.
+          await supabaseAdmin
+            .rpc("report_skill_execution", {
+              _slug: event.package_slug,
+              _success: event.success,
+              _model: model,
+              _version: event.package_version,
+              _latency_ms: event.latency_ms,
+              _tokens_in: null,
+              _tokens_out: null,
+              _error_kind: event.error_class ?? null,
+              _agent_fp: agentFp,
+              _arm: event.arm ?? null,
+              _experiment_key: event.experiment_key ?? null,
+              _task_completed: event.task_completed ?? null,
+              _human_intervention: event.human_intervention ?? null,
+              _user_rating: event.user_rating ?? null,
+              _baseline_latency_ms: event.baseline_latency_ms ?? null,
+              _baseline_tokens: event.baseline_tokens ?? null,
+              _workspace_hash: row.workspace_hash,
+            } as any)
+
+            .then(() => {})
+            .catch(() => {});
           return new Response(
             JSON.stringify({ ok: true, anonymized_workspace: row.workspace_hash }),
             { status: 200, headers: { "Content-Type": "application/json", ...CORS } },

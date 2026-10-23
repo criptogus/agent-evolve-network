@@ -51,9 +51,7 @@ function AccountEarningsPage() {
         {q.isError && (
           <div className="mt-8 text-sm">
             <span className="text-destructive">Sign in to see your earnings.</span>{" "}
-            <Link to="/login" className="text-primary">
-              Sign in →
-            </Link>
+            <Link to="/login" className="text-primary">Sign in →</Link>
           </div>
         )}
 
@@ -75,10 +73,7 @@ function AccountEarningsPage() {
           <>
             {/* Totals */}
             <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <StatTile
-                label="Sale earnings"
-                value={`${d.total_sale_credits.toLocaleString()} cr`}
-              />
+              <StatTile label="Sale earnings" value={`${d.total_sale_credits.toLocaleString()} cr`} />
               <StatTile label="Purchases" value={d.total_purchases.toLocaleString()} />
               <StatTile label="Tips" value={usd(d.total_tips_cents)} />
               <StatTile label="Revenue-share payouts" value={usd(d.total_payout_cents)} />
@@ -90,9 +85,7 @@ function AccountEarningsPage() {
                 Per-package breakdown
               </div>
               {d.packages.length === 0 ? (
-                <div className="p-5 text-sm text-muted-foreground">
-                  No per-package activity yet.
-                </div>
+                <div className="p-5 text-sm text-muted-foreground">No per-package activity yet.</div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -112,9 +105,7 @@ function AccountEarningsPage() {
                           <td className="px-5 py-3">
                             <span className="font-medium">{p.name ?? p.slug ?? p.package_id}</span>
                             {p.slug && (
-                              <div className="font-mono text-xs text-muted-foreground">
-                                {p.slug}
-                              </div>
+                              <div className="font-mono text-xs text-muted-foreground">{p.slug}</div>
                             )}
                           </td>
                           <td className="px-3 py-3 text-right">{p.purchases}</td>
@@ -155,16 +146,15 @@ function AccountEarningsPage() {
               ) : (
                 <ul className="divide-y divide-border/60">
                   {d.payouts.map((r) => (
-                    <li
-                      key={r.id}
-                      className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm"
-                    >
+                    <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
                       <div className="min-w-0">
                         <span className="font-medium">{KIND_LABEL[r.kind] ?? r.kind}</span>
                         {r.package_name && (
                           <span className="text-muted-foreground"> · {r.package_name}</span>
                         )}
-                        {r.notes && <div className="text-xs text-muted-foreground">{r.notes}</div>}
+                        {r.notes && (
+                          <div className="text-xs text-muted-foreground">{r.notes}</div>
+                        )}
                         <div className="font-mono text-xs text-muted-foreground">
                           {new Date(r.created_at).toLocaleDateString()}
                         </div>
@@ -178,10 +168,8 @@ function AccountEarningsPage() {
 
             <p className="mt-6 text-xs text-muted-foreground">
               Sale earnings are credited to your credit balance automatically — see{" "}
-              <Link to="/account/credits" className="text-primary hover:underline">
-                Credits
-              </Link>
-              . Tips and revenue-share payouts are settled in USD via your payment provider.
+              <Link to="/account/credits" className="text-primary hover:underline">Credits</Link>.
+              Tips and revenue-share payouts are settled in USD via your payment provider.
             </p>
           </>
         )}
@@ -193,9 +181,7 @@ function AccountEarningsPage() {
 function StatTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-4">
-      <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
+      <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="mt-1 text-xl font-semibold tabular-nums">{value}</div>
     </div>
   );

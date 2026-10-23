@@ -1,6 +1,5 @@
-import { signupDestination } from "@/lib/auth/signup";
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { Nav } from "@/components/site/Nav";
@@ -36,8 +35,8 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const goNext = useCallback(() => {
-    const target = signupDestination(next);
+  const goNext = (fallback = "/home") => {
+    const target = next || fallback;
     // If `next` includes a query string (e.g. /oauth/authorize?...), TanStack
     // Router's typed navigate({ to }) treats it as a literal pathname and 404s.
     // Use a real browser navigation so the destination route's validateSearch runs.
@@ -46,7 +45,7 @@ function LoginPage() {
     } else {
       navigate({ to: target, replace: true });
     }
-  }, [navigate, next]);
+  };
 
   useEffect(() => {
     captureRefFromUrl();
@@ -73,7 +72,7 @@ function LoginPage() {
       }
     });
     return () => sub.subscription.unsubscribe();
-  }, [goNext]);
+  }, [navigate, next]);
 
   const onEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +91,7 @@ function LoginPage() {
   const onGoogle = async () => {
     setBusy(true);
     const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}${signupDestination(next)}`,
+      redirect_uri: `${window.location.origin}${next || "/account/billing"}`,
     });
     if (error) {
       toast.error(error.message ?? "Could not sign in with Google");
@@ -105,7 +104,7 @@ function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: `${window.location.origin}${signupDestination(next)}`,
+        redirectTo: `${window.location.origin}${next || "/account/billing"}`,
       },
     });
     if (error) {

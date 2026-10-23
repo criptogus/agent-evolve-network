@@ -32,7 +32,7 @@ export const publishPluginUpload = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => PublishInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { supabase, userId } = context as { supabase: any; userId: string };
     const { validateZipPayload, pluginToDraft } = await import("./upload.server");
     const { insertDraftPackage } = await import("@/lib/admin/author.server");
     const { runPluginConformance } = await import("./conformance");
@@ -41,12 +41,7 @@ export const publishPluginUpload = createServerFn({ method: "POST" })
     const fileMap = new Map(Object.entries(files));
     const report = runPluginConformance(fileMap);
     if (!report.conformant) {
-      return {
-        ok: false as const,
-        report: serializeReport(report),
-        package: null,
-        published: false,
-      };
+      return { ok: false as const, report: serializeReport(report), package: null, published: false };
     }
 
     const draft = pluginToDraft(fileMap, report);

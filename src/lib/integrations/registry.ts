@@ -57,11 +57,7 @@ export function loadIntegrations(dir?: string): Map<string, Integration> {
   if (cache) return cache;
   const out = new Map<string, Integration>();
   let entries: string[] = [];
-  try {
-    entries = readdirSync(dir);
-  } catch {
-    /* no dir yet */
-  }
+  try { entries = readdirSync(dir); } catch { /* no dir yet */ }
   for (const entry of entries) {
     if (!/\.ya?ml$/i.test(entry) || entry.startsWith("_")) continue;
     const full = join(dir, entry);
@@ -115,11 +111,7 @@ export async function executeAction(args: {
   options?: ExecuteOptions;
 }): Promise<{ status: number; body: unknown; side_effect: SideEffect }> {
   const integ = getIntegration(args.install.integration_slug);
-  if (!integ)
-    throw new IntegrationError(
-      `integration not found: ${args.install.integration_slug}`,
-      "NOT_FOUND",
-    );
+  if (!integ) throw new IntegrationError(`integration not found: ${args.install.integration_slug}`, "NOT_FOUND");
   const action = integ.actions.find((a) => a.id === args.action_id);
   if (!action) throw new IntegrationError(`action not found: ${args.action_id}`, "NOT_FOUND");
 
@@ -146,10 +138,7 @@ export async function executeAction(args: {
 
   const base = action.base_url ?? "";
   const url = base + interpolatePath(action.path, args.inputs);
-  const headers: Record<string, string> = {
-    "content-type": "application/json",
-    accept: "application/json",
-  };
+  const headers: Record<string, string> = { "content-type": "application/json", accept: "application/json" };
 
   if (integ.auth.kind === "oauth2" || integ.auth.kind === "bearer") {
     const tok = args.install.credentials.access_token;
@@ -170,17 +159,10 @@ export async function executeAction(args: {
 
   const res = await f(url, init);
   let body: unknown;
-  try {
-    body = await res.json();
-  } catch {
-    body = await res.text();
-  }
+  try { body = await res.json(); } catch { body = await res.text(); }
   if (!res.ok) {
-    throw new IntegrationError(
-      `HTTP ${res.status} from ${args.install.integration_slug}.${args.action_id}`,
-      "HTTP_ERROR",
-      { status: res.status, body },
-    );
+    throw new IntegrationError(`HTTP ${res.status} from ${args.install.integration_slug}.${args.action_id}`,
+      "HTTP_ERROR", { status: res.status, body });
   }
   return { status: res.status, body, side_effect };
 }
@@ -188,18 +170,14 @@ export async function executeAction(args: {
 function interpolatePath(path: string, inputs: Record<string, unknown>): string {
   return path.replace(/\{([^}]+)\}/g, (_, k) => {
     const v = inputs[k];
-    if (v === undefined || v === null)
-      throw new IntegrationError(`missing path param: ${k}`, "MISSING_PARAM");
+    if (v === undefined || v === null) throw new IntegrationError(`missing path param: ${k}`, "MISSING_PARAM");
     return encodeURIComponent(String(v));
   });
 }
 
 function stripPathInputs(inputs: Record<string, unknown>, path: string): Record<string, unknown> {
   const used = new Set<string>();
-  path.replace(/\{([^}]+)\}/g, (_, k) => {
-    used.add(k);
-    return _;
-  });
+  path.replace(/\{([^}]+)\}/g, (_, k) => { used.add(k); return _; });
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(inputs)) if (!used.has(k)) out[k] = v;
   return out;

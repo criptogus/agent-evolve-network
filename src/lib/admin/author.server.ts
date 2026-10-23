@@ -1,19 +1,7 @@
-import { toJson } from "@/lib/json";
-import { recordOf } from "@/lib/json";
-import type { AppDatabaseClient } from "@/integrations/supabase/database";
 import { generateText, Output } from "ai";
 import { getGatewayModel, describeGatewayConfig } from "@/lib/ai-gateway";
-import {
-  PackageDraftSchema,
-  PackageDraftMinimalSchema,
-  type PackageDraft,
-  type PackageDraftMinimal,
-} from "@/lib/skills/schemas";
-import {
-  PackageDraftLooseSchema,
-  repairMinimalDraft,
-  draftFromDocument,
-} from "@/lib/skills/draft-repair";
+import { PackageDraftSchema, PackageDraftMinimalSchema, type PackageDraft, type PackageDraftMinimal } from "@/lib/skills/schemas";
+import { PackageDraftLooseSchema, repairMinimalDraft, draftFromDocument } from "@/lib/skills/draft-repair";
 
 const META_SYSTEM = `You are SkillForge Author, a proprietary meta-agent that designs production-grade agent packages.
 Return STRICT JSON matching the requested schema. Keep it minimal but substantive:
@@ -58,32 +46,27 @@ function hydrateDraftFromMinimal(
 ): PackageDraft {
   // Duplicate the first example when the model returned only one; the full
   // schema requires 2+ but we accept 1 from the LLM for reliability.
-  const examples =
-    min.examples.length >= 2
-      ? min.examples
-      : [
-          ...min.examples,
-          {
-            title: "Edge case",
-            input: min.examples[0]?.input ?? "Unusual/edge input",
-            expected_output:
-              min.examples[0]?.expected_output ??
-              "Handle gracefully; escalate or refuse if outside scope.",
-          },
-        ];
+  const examples = min.examples.length >= 2
+    ? min.examples
+    : [
+        ...min.examples,
+        {
+          title: "Edge case",
+          input: min.examples[0]?.input ?? "Unusual/edge input",
+          expected_output: min.examples[0]?.expected_output ?? "Handle gracefully; escalate or refuse if outside scope.",
+        },
+      ];
   const hydrated: PackageDraft = {
     slug: min.slug,
     name: min.name,
     type,
     description: min.description,
-    long_description:
-      min.long_description.length >= 80
-        ? min.long_description
-        : `${min.long_description}\n\nUse it when: your workflow needs a repeatable ${type} that produces consistent output. This draft can be refined further with the SuperAgentSkill review engine.`,
-    system_prompt:
-      min.system_prompt.length >= 120
-        ? min.system_prompt
-        : `${min.system_prompt}\n\nReasoning:\n1. Confirm you understood the request.\n2. Apply the ${type} logic above.\n3. Return the result in the format the caller expects.`,
+    long_description: min.long_description.length >= 80
+      ? min.long_description
+      : `${min.long_description}\n\nUse it when: your workflow needs a repeatable ${type} that produces consistent output. This draft can be refined further with the SuperAgentSkill review engine.`,
+    system_prompt: min.system_prompt.length >= 120
+      ? min.system_prompt
+      : `${min.system_prompt}\n\nReasoning:\n1. Confirm you understood the request.\n2. Apply the ${type} logic above.\n3. Return the result in the format the caller expects.`,
     rules: {
       input_schema: {},
       output_schema: {},
@@ -104,10 +87,7 @@ function hydrateDraftFromMinimal(
     // schema. If it fails, surface the mismatch so it's fixable, don't
     // silently insert something malformed.
     throw new Error(
-      `hydrateDraftFromMinimal produced invalid draft: ${parsed.error.issues
-        .slice(0, 3)
-        .map((i) => `${i.path.join(".")}: ${i.message}`)
-        .join("; ")}`,
+      `hydrateDraftFromMinimal produced invalid draft: ${parsed.error.issues.slice(0, 3).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}`,
     );
   }
   return parsed.data;
@@ -193,7 +173,7 @@ export async function generateDraftWithMeta(
         );
       }
       return { draft, generation_path: "structured", attempts: attempts.map(fmtAttempt) };
-    } catch (e) {
+    } catch (e: any) {
       const msg = describeAttemptError(e);
       attempts.push({ model: modelId, error: msg });
       console.error(`[skillforge.author] ${modelId} structured failed:`, msg);
@@ -221,12 +201,9 @@ export async function generateDraftWithMeta(
       attempts,
     );
     return { draft, generation_path: "text", attempts: attempts.map(fmtAttempt) };
-  } catch (e) {
+  } catch (e: any) {
     attempts.push({ model: "text-fallback", error: describeAttemptError(e) });
-    console.error(
-      `[skillforge.author] text fallback failed:`,
-      attempts[attempts.length - 1]?.error,
-    );
+    console.error(`[skillforge.author] text fallback failed:`, attempts[attempts.length - 1]?.error);
   }
 
   // Last resort: build the draft from the uploaded document itself. No model
@@ -250,19 +227,20 @@ function fmtAttempt(a: { model: string; error: string }): string {
   return `${a.model}: ${a.error}`;
 }
 
+
+
 // AI SDK errors hide the upstream body inside `e.text` (NoObjectGeneratedError),
 // `e.responseBody` (HTTP errors), or `e.cause`. Bare `e.message` strips all of
 // that and leaves operators chasing "Bad Request" with no context.
-function describeAttemptError(error: unknown): string {
-  const e = recordOf(error);
+function describeAttemptError(e: any): string {
   const parts: string[] = [];
   if (e?.message) parts.push(String(e.message));
-  if (e?.name && !parts[0]?.includes(String(e.name))) parts.unshift(String(e.name));
+  if (e?.name && !parts[0]?.includes(e.name)) parts.unshift(String(e.name));
   if (e?.text && typeof e.text === "string") parts.push(`text=${e.text.slice(0, 400)}`);
   if (e?.responseBody && typeof e.responseBody === "string")
     parts.push(`body=${e.responseBody.slice(0, 400)}`);
-  if (recordOf(e.cause).message && recordOf(e.cause).message !== e?.message)
-    parts.push(`cause=${String(recordOf(e.cause).message).slice(0, 200)}`);
+  if (e?.cause?.message && e.cause.message !== e?.message)
+    parts.push(`cause=${String(e.cause.message).slice(0, 200)}`);
   return parts.join(" | ") || String(e);
 }
 
@@ -271,11 +249,7 @@ function describeAttemptError(error: unknown): string {
 function extractJsonObject(text: string): unknown {
   const stripped = text.trim();
   const tryParse = (s: string) => {
-    try {
-      return JSON.parse(s);
-    } catch {
-      return undefined;
-    }
+    try { return JSON.parse(s); } catch { return undefined; }
   };
   const direct = tryParse(stripped);
   if (direct !== undefined) return direct;
@@ -305,13 +279,10 @@ function extractJsonObject(text: string): unknown {
 }
 
 export async function insertDraftPackage(
-  supabase: AppDatabaseClient,
+  supabase: any,
   userId: string,
-  draft: Pick<
-    PackageDraft,
-    "slug" | "name" | "type" | "description" | "long_description" | "system_prompt"
-  > & { rules: unknown; examples: unknown; compatibility: unknown; scopes: unknown[] },
-  meta: { source_kind: "github" | "markdown" | "request" | "wizard"; source_ref: string },
+  draft: any,
+  meta: { source_kind: "github" | "markdown" | "request" | "wizard"; source_ref: string }
 ) {
   const baseSlug = draft.slug;
   let slug = baseSlug;
@@ -346,7 +317,7 @@ export async function insertDraftPackage(
       is_published: false,
       review_status: "draft",
       latest_version: "0.1.0",
-      scopes: draft.scopes.filter((scope): scope is string => typeof scope === "string"),
+      scopes: draft.scopes,
       source_kind: meta.source_kind,
       source_ref: meta.source_ref,
     })
@@ -360,24 +331,19 @@ export async function insertDraftPackage(
     status: "beta",
     notes: `Source: ${meta.source_kind} (${meta.source_ref})`,
     system_prompt: draft.system_prompt,
-    rules: toJson(draft.rules),
-    examples: toJson(draft.examples),
-    compatibility: toJson(draft.compatibility),
+    rules: draft.rules,
+    examples: draft.examples,
+    compatibility: draft.compatibility,
   });
   if (verErr) throw new Response(`Insert version failed: ${verErr.message}`, { status: 500 });
 
-  const { search_vector: _searchVector, ...publicPackage } = pkg;
-  return publicPackage;
+  return pkg;
 }
 
-export function inferType(
-  path: string,
-  content: string,
-): "skill" | "playbook" | "soul" | "guardrail" {
+export function inferType(path: string, content: string): "skill" | "playbook" | "soul" | "guardrail" {
   const p = path.toLowerCase();
   const c = content.slice(0, 1000).toLowerCase();
-  if (p.includes("guardrail") || c.includes("guardrail") || c.includes("policy"))
-    return "guardrail";
+  if (p.includes("guardrail") || c.includes("guardrail") || c.includes("policy")) return "guardrail";
   if (p.includes("playbook") || c.includes("step 1") || c.includes("workflow")) return "playbook";
   if (p.includes("soul") || c.includes("persona") || c.includes("tone of voice")) return "soul";
   return "skill";

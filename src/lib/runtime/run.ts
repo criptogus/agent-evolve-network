@@ -13,19 +13,13 @@ import { evaluateCondition, interpolate } from "./expr.ts";
 const inMemoryMemory = (): MemoryStore => {
   const store = new Map<string, unknown>();
   return {
-    async get(k) {
-      return store.has(k) ? store.get(k) : null;
-    },
-    async set(k, v) {
-      store.set(k, v);
-    },
+    async get(k) { return store.has(k) ? store.get(k) : null; },
+    async set(k, v) { store.set(k, v); },
   };
 };
 
 const noopTracer: Tracer = {
-  async span(_n, _a, fn) {
-    return fn();
-  },
+  async span(_n, _a, fn) { return fn(); },
   event() {},
 };
 
@@ -89,34 +83,24 @@ export async function runPlaybook(
     if (step.when && !evaluateCondition(step.when, ctx)) {
       ctx.steps[step.id] = { status: "skipped" };
       outcomes.push({
-        step_id: step.id,
-        status: "skipped",
-        attempts: 0,
-        duration_ms: 0,
-        guardrails_triggered: [],
+        step_id: step.id, status: "skipped", attempts: 0,
+        duration_ms: 0, guardrails_triggered: [],
       });
       continue;
     }
 
     const interpolatedArgs = interpolate(
-      step.action.kind === "instruction" ? step.action.prompt : (step.action.with ?? {}),
+      step.action.kind === "instruction" ? step.action.prompt : step.action.with ?? {},
       ctx,
     );
 
     // Pre-guardrails
     const pre = await runGuardrails(playbook.guardrails, guardrails, {
-      step_id: step.id,
-      phase: "pre",
-      payload: interpolatedArgs,
-      context: ctx,
+      step_id: step.id, phase: "pre", payload: interpolatedArgs, context: ctx,
     });
-    pre.triggered.forEach((g) => {
-      triggered.push(g);
-      allGuardrailsTriggered.add(g);
-    });
+    pre.triggered.forEach((g) => { triggered.push(g); allGuardrailsTriggered.add(g); });
     if (!pre.pass) {
-      error = pre.reason;
-      status = "error";
+      error = pre.reason; status = "error";
     } else {
       const payload = pre.payload;
       const maxAttempts = step.retry ? step.retry.max + 1 : 1;
@@ -160,21 +144,11 @@ export async function runPlaybook(
     // Post-guardrails
     if (status !== "error" && output !== undefined) {
       const post = await runGuardrails(playbook.guardrails, guardrails, {
-        step_id: step.id,
-        phase: "post",
-        payload: output,
-        context: ctx,
+        step_id: step.id, phase: "post", payload: output, context: ctx,
       });
-      post.triggered.forEach((g) => {
-        triggered.push(g);
-        allGuardrailsTriggered.add(g);
-      });
-      if (!post.pass) {
-        status = "error";
-        error = post.reason;
-      } else {
-        output = post.payload;
-      }
+      post.triggered.forEach((g) => { triggered.push(g); allGuardrailsTriggered.add(g); });
+      if (!post.pass) { status = "error"; error = post.reason; }
+      else { output = post.payload; }
     }
 
     ctx.steps[step.id] = { output, status };
@@ -184,13 +158,8 @@ export async function runPlaybook(
         overall = overall === "error" ? "error" : "partial";
       } else {
         outcomes.push({
-          step_id: step.id,
-          status,
-          error,
-          attempts,
-          duration_ms: Date.now() - stepT0,
-          output,
-          guardrails_triggered: triggered,
+          step_id: step.id, status, error, attempts,
+          duration_ms: Date.now() - stepT0, output, guardrails_triggered: triggered,
         });
         overall = "error";
         break;
@@ -198,13 +167,8 @@ export async function runPlaybook(
     }
 
     outcomes.push({
-      step_id: step.id,
-      status,
-      error,
-      attempts,
-      duration_ms: Date.now() - stepT0,
-      output,
-      guardrails_triggered: triggered,
+      step_id: step.id, status, error, attempts,
+      duration_ms: Date.now() - stepT0, output, guardrails_triggered: triggered,
     });
   }
 

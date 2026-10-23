@@ -6,13 +6,7 @@ export function Logo({ className = "h-6 w-6" }: { className?: string }) {
       <circle cx="15.5" cy="9" r="1.7" fill="white" />
       <circle cx="8.5" cy="15.5" r="1.7" fill="white" />
       <circle cx="15.5" cy="15.5" r="1.7" fill="white" />
-      <path
-        d="M8.5 9 L15.5 15.5 M15.5 9 L8.5 15.5"
-        stroke="white"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        opacity=".8"
-      />
+      <path d="M8.5 9 L15.5 15.5 M15.5 9 L8.5 15.5" stroke="white" strokeWidth="1.2" strokeLinecap="round" opacity=".8" />
     </svg>
   );
 }

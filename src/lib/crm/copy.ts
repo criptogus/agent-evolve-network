@@ -58,7 +58,8 @@ function usageMetrics(s: CrmSnapshot): CrmMetric[] {
   if (u.installs) out.push({ label: "Skills installed", value: num(u.installs) });
   if (u.residencies) out.push({ label: "Residencies", value: num(u.residencies) });
   if (u.published) out.push({ label: "Skills published", value: num(u.published) });
-  if (u.executions_30d) out.push({ label: "Executions (30 days)", value: num(u.executions_30d) });
+  if (u.executions_30d)
+    out.push({ label: "Executions (30 days)", value: num(u.executions_30d) });
   return out;
 }
 
@@ -162,9 +163,7 @@ export function buildMessage(trigger: TriggerId, s: CrmSnapshot): CrmMessage {
     case "opportunity_nudge":
       return {
         trigger,
-        subject: first
-          ? `Unused on your account: ${first.title}`
-          : "One capability you have not used yet",
+        subject: first ? `Unused on your account: ${first.title}` : "One capability you have not used yet",
         preheader: first?.why ?? "There is value sitting unused in your account.",
         heading: first?.title ?? "One thing worth 10 minutes",
         intro: [
@@ -195,11 +194,7 @@ export function buildMessage(trigger: TriggerId, s: CrmSnapshot): CrmMessage {
         ],
         metrics: [
           { label: "Pro monthly", value: "$19/month" },
-          {
-            label: "Pro yearly",
-            value: "$140/year",
-            note: "auto-renews at the same discounted rate",
-          },
+          { label: "Pro yearly", value: "$140/year", note: "auto-renews at the same discounted rate" },
           ...roiMetrics(s).slice(0, 2),
         ],
         bullets: [
@@ -223,9 +218,7 @@ export function buildMessage(trigger: TriggerId, s: CrmSnapshot): CrmMessage {
         preheader: tool.id
           ? `A private library that syncs straight into ${tool.label}.`
           : "A private library that syncs into every agent tool you use.",
-        heading: tool.id
-          ? `One library, and ${tool.label} reads it`
-          : "One library, every agent tool",
+        heading: tool.id ? `One library, and ${tool.label} reads it` : "One library, every agent tool",
         intro: [
           patternHook(s.pattern, tool),
           tool.pain,
@@ -256,9 +249,7 @@ export function buildMessage(trigger: TriggerId, s: CrmSnapshot): CrmMessage {
         intro: [
           `Your last activity was about ${Math.round(s.usage.days_idle)} days ago. When runs stop reporting, drift goes unnoticed and regressions ship silently.`,
           ...(best
-            ? [
-                `Your best result so far: ${best.name} at grade ${best.grade_after} (${best.after}).`,
-              ]
+            ? [`Your best result so far: ${best.name} at grade ${best.grade_after} (${best.after}).`]
             : []),
         ],
         metrics: roiMetrics(s).slice(0, 3),

@@ -38,19 +38,21 @@ export function Hero() {
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
               </span>
               <span className="min-w-0 truncate sm:whitespace-normal">
-                Open registry · {SKILLS_LABEL} skills
+                Adversarially tested &amp; signed · {SKILLS_LABEL} skills
               </span>
             </div>
 
             <h1 className="mt-6 text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-[4rem]">
-              Discover &amp; evaluate <span className="text-primary">AI agent skills</span>,
-              installed in one command.
+              Tested &amp; signed{" "}
+              <span className="text-primary">AI agent skills</span>
+              , installed in one command.
             </h1>
 
+
             <p className="mx-auto mt-5 max-w-xl text-pretty text-base leading-relaxed text-deep-muted lg:mx-0 lg:text-lg">
-              Connect Claude, Codex, Cursor or ChatGPT once. Browse skills, playbooks and agents,
-              inspect available evaluation evidence, and check each version’s trust report before
-              installing. Packages without evidence are clearly marked as not evaluated.
+              Connect Claude, Codex, Cursor or ChatGPT once. Every skill, playbook and agent you
+              install is scored on format and substance, probed with jailbreaks and shipped with the
+              report attached. No code, no fine-tuning, reversible in one command.
             </p>
 
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
@@ -64,9 +66,7 @@ export function Hero() {
               </Link>
               <Link
                 to="/agents"
-                onClick={() =>
-                  track("cta_clicked", { cta: "hero_secondary_agents", to: "/agents" })
-                }
+                onClick={() => track("cta_clicked", { cta: "hero_secondary_agents", to: "/agents" })}
                 className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-deep-border bg-deep-elevated px-6 text-[15px] font-medium text-deep-foreground transition-colors hover:bg-deep-elevated/70 sm:w-auto"
               >
                 Browse ready-made agents
@@ -123,7 +123,7 @@ export function Hero() {
                 />
               </a>
               <span className="text-xs text-deep-muted">
-                Check each version’s evidence before installing
+                Every package adversarially tested before publish
               </span>
             </div>
           </div>

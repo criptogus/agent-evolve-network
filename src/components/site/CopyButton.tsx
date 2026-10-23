@@ -30,9 +30,7 @@ export function CopyButton({ value, label = "copy", shortLabel, className = "" }
       }
     >
       {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-      <span className={shortLabel ? "hidden sm:inline" : undefined}>
-        {copied ? "Copied" : label}
-      </span>
+      <span className={shortLabel ? "hidden sm:inline" : undefined}>{copied ? "Copied" : label}</span>
       {shortLabel && <span className="sm:hidden">{copied ? "Copied" : shortLabel}</span>}
     </button>
   );
@@ -54,12 +52,7 @@ export function CodeBlockCopy({ code, label, className = "" }: CodeBlockCopyProp
     >
       <span className="text-primary">$</span>
       <code className="min-w-0 flex-1 truncate">{code}</code>
-      <CopyButton
-        value={code}
-        label={label ?? "copy"}
-        shortLabel="copy"
-        className="shrink-0 border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-      />
+      <CopyButton value={code} label={label ?? "copy"} shortLabel="copy" className="shrink-0 border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white" />
     </div>
   );
 }

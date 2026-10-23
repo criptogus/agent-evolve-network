@@ -43,9 +43,7 @@ function MatchPage() {
       <Nav />
       <main className="mx-auto max-w-6xl px-4 py-10 md:py-14">
         <header className="mb-8">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-            Agent Match Evaluator
-          </p>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Agent Match Evaluator</p>
           <h1 className="mt-2 text-3xl font-semibold md:text-4xl">
             Describe the agent. We pick the kit.
           </h1>
@@ -136,21 +134,9 @@ function ResultPanel({ data }: { data: FullResult }) {
     accent: string;
   }> = [
     { key: "skills", label: "Skills", accent: "bg-primary/10 text-primary" },
-    {
-      key: "playbooks",
-      label: "Playbooks",
-      accent: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    },
-    {
-      key: "souls",
-      label: "Souls",
-      accent: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
-    },
-    {
-      key: "guardrails",
-      label: "Guardrails",
-      accent: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-    },
+    { key: "playbooks", label: "Playbooks", accent: "bg-amber-500/10 text-amber-600 dark:text-amber-400" },
+    { key: "souls", label: "Souls", accent: "bg-violet-500/10 text-violet-600 dark:text-violet-400" },
+    { key: "guardrails", label: "Guardrails", accent: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
   ];
 
   const fit = Math.round(data.coverage.overall_fit_score);
@@ -172,8 +158,7 @@ function ResultPanel({ data }: { data: FullResult }) {
         <div className="grid gap-2 text-sm">
           <p className="font-medium">{data.agent_summary.one_liner}</p>
           <p className="text-muted-foreground">
-            <span className="font-medium text-foreground">For:</span>{" "}
-            {data.agent_summary.target_user}
+            <span className="font-medium text-foreground">For:</span> {data.agent_summary.target_user}
           </p>
           <p className="text-muted-foreground">
             <span className="font-medium text-foreground">Success metric:</span>{" "}
@@ -181,10 +166,7 @@ function ResultPanel({ data }: { data: FullResult }) {
           </p>
           <div className="mt-1 flex flex-wrap gap-1.5">
             {data.agent_summary.primary_jobs.map((j) => (
-              <span
-                key={j}
-                className="rounded-md border border-border bg-background px-2 py-0.5 text-xs"
-              >
+              <span key={j} className="rounded-md border border-border bg-background px-2 py-0.5 text-xs">
                 {j}
               </span>
             ))}
@@ -211,10 +193,7 @@ function ResultPanel({ data }: { data: FullResult }) {
               ) : (
                 <ul className="grid gap-3">
                   {items.map((it) => (
-                    <li
-                      key={it.slug}
-                      className="rounded-xl border border-border/70 bg-background/50 p-3"
-                    >
+                    <li key={it.slug} className="rounded-xl border border-border/70 bg-background/50 p-3">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <Link
@@ -269,16 +248,16 @@ function ResultPanel({ data }: { data: FullResult }) {
         <div className="rounded-2xl border border-dashed border-border bg-card p-5">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold">Capability gaps to author</h3>
-            <Link to="/forge" className="text-xs font-medium text-primary hover:underline">
+            <Link
+              to="/forge"
+              className="text-xs font-medium text-primary hover:underline"
+            >
               Open SkillForge →
             </Link>
           </div>
           <ul className="grid gap-3 md:grid-cols-2">
             {data.gaps.map((g) => (
-              <li
-                key={g.capability}
-                className="rounded-xl border border-border/70 bg-background/50 p-3"
-              >
+              <li key={g.capability} className="rounded-xl border border-border/70 bg-background/50 p-3">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium">{g.capability}</p>
                   <span className="rounded-md border border-border px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">

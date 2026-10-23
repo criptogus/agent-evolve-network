@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { CORS_HEADERS } from "@/lib/oauth/mcp-oauth.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 
 // Public health endpoint for the MCP service. Returns 200 with a JSON
 // payload describing service status (db reachable + reported latency)

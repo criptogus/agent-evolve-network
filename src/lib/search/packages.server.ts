@@ -1,7 +1,6 @@
-import { packageTypeEnum } from "@/lib/skills/schemas";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 
 export type PackageSearchResult = {
   slug: string;
@@ -33,13 +32,13 @@ export async function searchPackages(params: PackageSearchParams): Promise<Packa
 
   const { data, error } = await supabaseAdmin.rpc("search_packages", {
     query: q,
-    package_type: type || undefined,
+    package_type: type || null,
     limit_count: limit,
     offset_count: offset,
   });
 
   if (!error) {
-    return (data ?? []).map((r) => ({
+    return ((data ?? []) as any[]).map((r) => ({
       slug: r.slug,
       type: r.type,
       score: typeof r.rank === "number" ? r.rank : (r.install_count ?? 0),
@@ -67,12 +66,12 @@ export async function searchPackages(params: PackageSearchParams): Promise<Packa
     )
     .order("install_count", { ascending: false })
     .range(offset, offset + limit - 1);
-  if (type) query = query.eq("type", packageTypeEnum.parse(type));
+  if (type) query = query.eq("type", type);
 
   const { data: rows, error: fbError } = await query;
   if (fbError) throw new Error(`package search fallback failed: ${fbError.message}`);
 
-  return (rows ?? []).map((r) => ({
+  return ((rows ?? []) as any[]).map((r) => ({
     slug: r.slug,
     type: r.type,
     score: r.install_count ?? 0,

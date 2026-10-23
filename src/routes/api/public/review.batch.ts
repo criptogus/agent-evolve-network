@@ -107,13 +107,12 @@ export const Route = createFileRoute("/api/public/review/batch")({
             max_total_content_chars: MAX_TOTAL_CONTENT,
             budget_ms: TOTAL_BUDGET_MS,
             concurrency: CONCURRENCY,
-            note: 'Items the request budget could not reach return status "skipped" — resubmit only those. Set semantic_check:false for a much faster, format-only batch.',
+            note: "Items the request budget could not reach return status \"skipped\" — resubmit only those. Set semantic_check:false for a much faster, format-only batch.",
           },
           body_schema: {
             items: `array (1-${MAX_ITEMS}) of { name, type?, content, doc_class?, semantic_check?, language? } — same fields as the single-document endpoint`,
             semantic_check: "boolean (optional) — default for every item that does not set its own",
-            language:
-              "en | pt | es | fr | de | it (optional) — default for every item that does not set its own",
+            language: "en | pt | es | fr | de | it (optional) — default for every item that does not set its own",
           },
           response_schema: {
             ok: "boolean",
@@ -121,10 +120,8 @@ export const Route = createFileRoute("/api/public/review/batch")({
             scored: "number scored in this request",
             failed: "number that errored",
             skipped: "number the budget could not reach",
-            results:
-              "array, one row per input item, ordered by `index`: { index, name, status: done|failed|skipped, error, ...same body as the single-document response }",
-            summary:
-              "{ average_overall_score, average_format_score, average_substance_score, best, worst } across scored items",
+            results: "array, one row per input item, ordered by `index`: { index, name, status: done|failed|skipped, error, ...same body as the single-document response }",
+            summary: "{ average_overall_score, average_format_score, average_substance_score, best, worst } across scored items",
           },
           example: {
             curl: `curl -sS https://superagentskill.com/api/public/review/batch -H 'Authorization: Bearer $SAK_TOKEN' -H 'Content-Type: application/json' -d '{"items":[{"name":"a.md","content":"..."},{"name":"b.md","content":"..."}]}'`,
@@ -152,30 +149,16 @@ export const Route = createFileRoute("/api/public/review/batch")({
         try {
           body = (await request.json()) as Record<string, unknown>;
         } catch {
-          return json(
-            { ok: false, error: "invalid_json", message: "Body must be valid JSON." },
-            400,
-          );
+          return json({ ok: false, error: "invalid_json", message: "Body must be valid JSON." }, 400);
         }
         if (!body || typeof body !== "object" || Array.isArray(body)) {
-          return json(
-            {
-              ok: false,
-              error: "invalid_body",
-              message: "Body must be a JSON object with an `items` array.",
-            },
-            400,
-          );
+          return json({ ok: false, error: "invalid_body", message: "Body must be a JSON object with an `items` array." }, 400);
         }
 
         const rawItems = Array.isArray(body.items) ? body.items : null;
         if (!rawItems || rawItems.length === 0) {
           return json(
-            {
-              ok: false,
-              error: "items_required",
-              message: "`items` must be a non-empty array of documents.",
-            },
+            { ok: false, error: "items_required", message: "`items` must be a non-empty array of documents." },
             400,
           );
         }
@@ -192,9 +175,7 @@ export const Route = createFileRoute("/api/public/review/batch")({
 
         const defaultSemantic = body.semantic_check === false ? false : true;
         const defaultLanguage =
-          typeof body.language === "string" && LANGS.has(body.language)
-            ? (body.language as Item["language"])
-            : undefined;
+          typeof body.language === "string" && LANGS.has(body.language) ? (body.language as Item["language"]) : undefined;
 
         // Validate everything up front so a single bad document never leaves
         // the caller guessing which row broke — invalid rows come back as
@@ -206,26 +187,18 @@ export const Route = createFileRoute("/api/public/review/batch")({
         rawItems.forEach((raw: unknown, index: number) => {
           const row = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
           const name =
-            typeof row.name === "string" && row.name.trim()
-              ? row.name.trim().slice(0, 200)
-              : `untitled-${index + 1}`;
+            typeof row.name === "string" && row.name.trim() ? row.name.trim().slice(0, 200) : `untitled-${index + 1}`;
           const content = typeof row.content === "string" ? row.content : "";
 
           const fail = (error: string, message: string) =>
             results.set(index, { index, name, status: "failed", error, message });
 
           if (content.trim().length < 20) {
-            fail(
-              "content_too_short",
-              "`content` must be at least 20 characters of verbatim file text.",
-            );
+            fail("content_too_short", "`content` must be at least 20 characters of verbatim file text.");
             return;
           }
           if (content.length > MAX_CONTENT) {
-            fail(
-              "content_too_long",
-              `\`content\` exceeds ${MAX_CONTENT} characters. Split the file.`,
-            );
+            fail("content_too_long", `\`content\` exceeds ${MAX_CONTENT} characters. Split the file.`);
             return;
           }
           totalChars += content.length;
@@ -240,21 +213,13 @@ export const Route = createFileRoute("/api/public/review/batch")({
           queue.push({
             index,
             name,
-            type:
-              typeof row.type === "string" && TYPES.has(row.type)
-                ? (row.type as Item["type"])
-                : "skill",
+            type: typeof row.type === "string" && TYPES.has(row.type) ? (row.type as Item["type"]) : "skill",
             content,
             doc_class:
               typeof row.doc_class === "string" && DOC_CLASSES.has(row.doc_class)
                 ? (row.doc_class as Item["doc_class"])
                 : "auto",
-            semantic_check:
-              row.semantic_check === false
-                ? false
-                : row.semantic_check === true
-                  ? true
-                  : defaultSemantic,
+            semantic_check: row.semantic_check === false ? false : row.semantic_check === true ? true : defaultSemantic,
             language:
               typeof row.language === "string" && LANGS.has(row.language)
                 ? (row.language as Item["language"])
@@ -311,14 +276,7 @@ export const Route = createFileRoute("/api/public/review/batch")({
           (a, b) => ((b.overall_score as number) ?? 0) - ((a.overall_score as number) ?? 0),
         );
         const brief = (r: Record<string, unknown> | undefined) =>
-          r
-            ? {
-                index: r.index,
-                name: r.name,
-                overall_score: r.overall_score ?? null,
-                grade: r.grade ?? null,
-              }
-            : null;
+          r ? { index: r.index, name: r.name, overall_score: r.overall_score ?? null, grade: r.grade ?? null } : null;
 
         return json({
           ok: true,

@@ -19,7 +19,7 @@ import {
   type CrmCustomerRow,
 } from "@/lib/crm/segments";
 
-const admin = _admin;
+const admin = _admin as any;
 
 export type { CrmRoi, CrmSnapshot, CrmUsage } from "@/lib/crm/types";
 
@@ -144,7 +144,7 @@ export async function loadClientNames(userId: string): Promise<string[]> {
       .select("client_id, mcp_oauth_clients(client_name)")
       .eq("user_id", userId)
       .limit(50);
-    for (const t of data ?? []) {
+    for (const t of (data ?? []) as any[]) {
       const nested = t.mcp_oauth_clients;
       const label = Array.isArray(nested) ? nested[0]?.client_name : nested?.client_name;
       if (label) names.push(String(label));
@@ -154,8 +154,12 @@ export async function loadClientNames(userId: string): Promise<string[]> {
     /* optional signal */
   }
   try {
-    const { data } = await admin.from("mcp_tokens").select("name").eq("user_id", userId).limit(50);
-    for (const t of data ?? []) if (t.name) names.push(String(t.name));
+    const { data } = await admin
+      .from("mcp_tokens")
+      .select("name")
+      .eq("user_id", userId)
+      .limit(50);
+    for (const t of (data ?? []) as any[]) if (t.name) names.push(String(t.name));
   } catch {
     /* optional signal */
   }
@@ -217,7 +221,7 @@ export async function loadCustomerRows(
   const { data, error } = await admin.rpc("crm_customers", {
     _limit: limit,
     _offset: offset,
-    _user_id: userId ?? undefined,
+    _user_id: userId,
   });
   if (error) throw new Error(error.message);
   return (data ?? []) as CrmCustomerRow[];

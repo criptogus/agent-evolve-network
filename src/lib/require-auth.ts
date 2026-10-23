@@ -14,7 +14,9 @@ export function useRequireAuth() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
-  return function requireAuth(action: string = "continue"): boolean {
+  return function requireAuth(
+    action: string = "continue",
+  ): boolean {
     if (loading) return false;
     if (user) return true;
     toast.message("Create a free account", {

@@ -1,4 +1,3 @@
-import { errorField } from "@/lib/errors";
 // Server-side delta tracking for review_skill.
 //
 // Before this, `delta_vs_previous` only existed when the CALLER remembered to
@@ -8,7 +7,7 @@ import { errorField } from "@/lib/errors";
 // history are computed server-side.
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 
 export type ReviewRunRow = {
   overall_score: number;
@@ -41,9 +40,7 @@ export async function loadReviewHistory(
   try {
     const { data } = await supabaseAdmin
       .from("skill_review_runs")
-      .select(
-        "overall_score, verdict_score, format_score, substance_score, grade, doc_hash, created_at",
-      )
+      .select("overall_score, verdict_score, format_score, substance_score, grade, doc_hash, created_at")
       .eq("user_id", userId)
       .eq("doc_key", key)
       .order("created_at", { ascending: false })
@@ -90,7 +87,7 @@ export async function recordReviewRun(input: {
       substance_score: input.substance ?? null,
       grade: input.grade ?? null,
     });
-  } catch (e) {
-    console.error(`[review-history] insert failed: ${errorField(e, "message") ?? e}`);
+  } catch (e: any) {
+    console.error(`[review-history] insert failed: ${e?.message ?? e}`);
   }
 }

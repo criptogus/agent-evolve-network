@@ -49,7 +49,10 @@ test("stats pill wraps and keeps counts on a single line at mobile widths", () =
   assert.match(block, /flex-wrap/, "stats pill must use flex-wrap");
   // Each count uses whitespace-nowrap so "24 skills" never breaks mid-token.
   const nowrapCount = (block.match(/whitespace-nowrap/g) ?? []).length;
-  assert.ok(nowrapCount >= 4, `expected ≥4 whitespace-nowrap counts in pill, got ${nowrapCount}`);
+  assert.ok(
+    nowrapCount >= 4,
+    `expected ≥4 whitespace-nowrap counts in pill, got ${nowrapCount}`,
+  );
   // Refresh button is pushed to the end and never shrinks.
   assert.match(block, /ml-auto[^"]*shrink-0/, "refresh button must be ml-auto + shrink-0");
 });

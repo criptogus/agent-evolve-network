@@ -8,13 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/admin/packages/new")({
@@ -76,9 +70,7 @@ function WizardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">
-            Step {step + 1} · {steps[step]}
-          </CardTitle>
+          <CardTitle className="text-sm">Step {step + 1} · {steps[step]}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {step === 0 && (
@@ -88,9 +80,7 @@ function WizardPage() {
                   key={t}
                   onClick={() => setType(t)}
                   className={`rounded-md border p-4 text-left transition-colors ${
-                    type === t
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:bg-secondary/50"
+                    type === t ? "border-primary bg-primary/5" : "border-border hover:bg-secondary/50"
                   }`}
                 >
                   <div className="font-medium capitalize">{t}</div>
@@ -109,27 +99,15 @@ function WizardPage() {
             <div className="grid gap-3 md:grid-cols-3">
               <div>
                 <Label className="text-xs">Industry</Label>
-                <Input
-                  placeholder="e.g. Healthcare"
-                  value={industry}
-                  onChange={(e) => setIndustry(e.target.value)}
-                />
+                <Input placeholder="e.g. Healthcare" value={industry} onChange={(e) => setIndustry(e.target.value)} />
               </div>
               <div>
                 <Label className="text-xs">Technology</Label>
-                <Input
-                  placeholder="e.g. SQL, FHIR, React"
-                  value={tech}
-                  onChange={(e) => setTech(e.target.value)}
-                />
+                <Input placeholder="e.g. SQL, FHIR, React" value={tech} onChange={(e) => setTech(e.target.value)} />
               </div>
               <div>
                 <Label className="text-xs">Business area</Label>
-                <Input
-                  placeholder="e.g. Customer support"
-                  value={biz}
-                  onChange={(e) => setBiz(e.target.value)}
-                />
+                <Input placeholder="e.g. Customer support" value={biz} onChange={(e) => setBiz(e.target.value)} />
               </div>
             </div>
           )}
@@ -150,20 +128,13 @@ function WizardPage() {
           {step === 3 && (
             <div className="space-y-3">
               <div className="rounded-md border bg-muted/40 p-3 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Type:</span> {type}
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Domain:</span>{" "}
-                  {[industry, tech, biz].filter(Boolean).join(" / ") || "—"}
-                </div>
+                <div><span className="text-muted-foreground">Type:</span> {type}</div>
+                <div><span className="text-muted-foreground">Domain:</span> {[industry, tech, biz].filter(Boolean).join(" / ") || "—"}</div>
                 <div className="mt-2 text-xs text-muted-foreground line-clamp-3">{brief}</div>
               </div>
               <div className="flex items-center gap-2">
                 <Switch checked={publish} onCheckedChange={setPublish} id="pub" />
-                <Label htmlFor="pub" className="text-sm">
-                  Publish immediately
-                </Label>
+                <Label htmlFor="pub" className="text-sm">Publish immediately</Label>
               </div>
               {m.isError && (
                 <div className="text-xs text-destructive">{(m.error as Error)?.message}</div>
@@ -182,7 +153,7 @@ function WizardPage() {
             {step < 3 ? (
               <Button
                 onClick={() => setStep((s) => s + 1)}
-                disabled={step === 2 && brief.length < 20}
+                disabled={(step === 2 && brief.length < 20)}
               >
                 Next
               </Button>

@@ -14,7 +14,8 @@ export const Route = createFileRoute("/agents/md")({
           status: 301,
           headers: { Location: "/agents.md", "Cache-Control": "public, max-age=3600" },
         }),
-      HEAD: async () => new Response(null, { status: 301, headers: { Location: "/agents.md" } }),
+      HEAD: async () =>
+        new Response(null, { status: 301, headers: { Location: "/agents.md" } }),
     },
   },
 });

@@ -1,9 +1,7 @@
-import { packageTypeEnum } from "@/lib/skills/schemas";
-import type { AppDatabaseClient } from "@/integrations/supabase/database";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 
 export type ReviewStatus = "draft" | "pending" | "approved" | "paused" | "rejected";
 
@@ -25,7 +23,7 @@ export type ReviewQueueItem = {
   created_at: string;
 };
 
-async function assertAdmin(supabase: AppDatabaseClient, userId: string) {
+async function assertAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase
     .from("user_roles")
     .select("role")
@@ -40,10 +38,7 @@ export const listReviewQueue = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => {
     const t = (data as { type?: unknown })?.type;
-    const type =
-      typeof t === "string" && ["soul", "skill", "playbook", "guardrail", "all"].includes(t)
-        ? (t as string)
-        : "soul";
+    const type = typeof t === "string" && ["soul", "skill", "playbook", "guardrail", "all"].includes(t) ? (t as string) : "soul";
     return { type };
   })
   .handler(async ({ context, data }): Promise<{ items: ReviewQueueItem[] }> => {
@@ -51,12 +46,12 @@ export const listReviewQueue = createServerFn({ method: "GET" })
     let q = supabaseAdmin
       .from("packages")
       .select(
-        "id, slug, name, type, description, author_handle, author_id, latest_version, is_published, review_status, review_notes, reviewed_at, submitted_at, updated_at, created_at",
+        "id, slug, name, type, description, author_handle, author_id, latest_version, is_published, review_status, review_notes, reviewed_at, submitted_at, updated_at, created_at"
       )
       .order("review_status", { ascending: true })
       .order("updated_at", { ascending: false })
       .limit(500);
-    if (data.type !== "all") q = q.eq("type", packageTypeEnum.parse(data.type));
+    if (data.type !== "all") q = q.eq("type", data.type as any);
     const { data: rows, error } = await q;
     if (error) throw new Response(error.message, { status: 500 });
     return { items: (rows ?? []) as ReviewQueueItem[] };
@@ -70,13 +65,9 @@ export const submitForReview = createServerFn({ method: "POST" })
     return { slug };
   })
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx, userId } = context;
-    const supabase = _sbCtx;
-    const { data: pkg } = await supabase
-      .from("packages")
-      .select("id, author_id")
-      .eq("slug", data.slug)
-      .maybeSingle();
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
+    const { data: pkg } = await supabase.from("packages").select("id, author_id").eq("slug", data.slug).maybeSingle();
     if (!pkg) throw new Response("Not found", { status: 404 });
     if (pkg.author_id !== userId) {
       // admins can also submit
@@ -84,11 +75,7 @@ export const submitForReview = createServerFn({ method: "POST" })
     }
     const { error } = await supabaseAdmin
       .from("packages")
-      .update({
-        review_status: "pending",
-        submitted_at: new Date().toISOString(),
-        is_published: false,
-      })
+      .update({ review_status: "pending", submitted_at: new Date().toISOString(), is_published: false })
       .eq("id", pkg.id);
     if (error) throw new Response(error.message, { status: 500 });
     return { ok: true };
@@ -168,9 +155,7 @@ async function assertAdversarialGate(slug: string): Promise<GateResult> {
   // does not count — the published content must itself have been tested.
   const { data: run } = await supabaseAdmin
     .from("adversarial_runs")
-    .select(
-      "id, total, passed, failed, pass_rate, severity_weighted_score, by_severity, created_at",
-    )
+    .select("id, total, passed, failed, pass_rate, severity_weighted_score, by_severity, created_at")
     .eq("package_id", pkg.id)
     .eq("version_id", ver.id)
     .order("created_at", { ascending: false })
@@ -185,37 +170,21 @@ async function assertAdversarialGate(slug: string): Promise<GateResult> {
     };
   }
   if ((run.total ?? 0) === 0) {
-    return {
-      ok: false,
-      reason: "adversarial run has zero cases — nothing was actually tested",
-      run,
-    };
+    return { ok: false, reason: "adversarial run has zero cases — nothing was actually tested", run };
   }
 
   const bySev = (run.by_severity ?? {}) as Record<string, { total?: number; passed?: number }>;
   for (const sev of ["critical", "high"]) {
     const b = bySev[sev];
     if (b && (b.total ?? 0) > 0 && (b.passed ?? 0) < (b.total ?? 0)) {
-      return {
-        ok: false,
-        reason: `${(b.total ?? 0) - (b.passed ?? 0)} ${sev}-severity adversarial case(s) failed — zero tolerance for approval`,
-        run,
-      };
+      return { ok: false, reason: `${(b.total ?? 0) - (b.passed ?? 0)} ${sev}-severity adversarial case(s) failed — zero tolerance for approval`, run };
     }
   }
   if (Number(run.severity_weighted_score ?? 0) < MIN_SEVERITY_WEIGHTED_SCORE) {
-    return {
-      ok: false,
-      reason: `severity-weighted score ${(Number(run.severity_weighted_score) * 100).toFixed(1)}% is below the ${MIN_SEVERITY_WEIGHTED_SCORE * 100}% approval bar`,
-      run,
-    };
+    return { ok: false, reason: `severity-weighted score ${(Number(run.severity_weighted_score) * 100).toFixed(1)}% is below the ${MIN_SEVERITY_WEIGHTED_SCORE * 100}% approval bar`, run };
   }
   if (Number(run.pass_rate ?? 0) < MIN_PASS_RATE) {
-    return {
-      ok: false,
-      reason: `pass rate ${(Number(run.pass_rate) * 100).toFixed(1)}% is below the ${MIN_PASS_RATE * 100}% approval bar`,
-      run,
-    };
+    return { ok: false, reason: `pass rate ${(Number(run.pass_rate) * 100).toFixed(1)}% is below the ${MIN_PASS_RATE * 100}% approval bar`, run };
   }
   return { ok: true, run };
 }

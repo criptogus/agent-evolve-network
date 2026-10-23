@@ -52,10 +52,8 @@ export const Route = createFileRoute("/api/public/review")({
             note: "Several documents in one request, same per-item payload plus a batch summary. Requires `Authorization: Bearer <token>` and an Agent Pass / Enterprise subscription. GET that URL for its contract.",
           },
           axes: {
-            format_score:
-              "0-100, deterministic structure detectors (alias of structural_score). Format only.",
-            substance_score:
-              "0-100, LLM-judged content quality with format explicitly ignored. Null when the judge did not run.",
+            format_score: "0-100, deterministic structure detectors (alias of structural_score). Format only.",
+            substance_score: "0-100, LLM-judged content quality with format explicitly ignored. Null when the judge did not run.",
             substance:
               "{ judged, score, grade, judged_by, rationale, pillars[{ pillar, score, rationale, evidence[{ line, quote, verified }] }] } — the written justification plus the verbatim file excerpts that sustain each pillar score. `verified: false` means the quote was not found verbatim in the submitted file.",
           },
@@ -77,49 +75,30 @@ export const Route = createFileRoute("/api/public/review")({
         try {
           body = (await request.json()) as Record<string, unknown>;
         } catch {
-          return json(
-            { ok: false, error: "invalid_json", message: "Body must be valid JSON." },
-            400,
-          );
+          return json({ ok: false, error: "invalid_json", message: "Body must be valid JSON." }, 400);
         }
         if (!body || typeof body !== "object") {
-          return json(
-            { ok: false, error: "invalid_body", message: "Body must be a JSON object." },
-            400,
-          );
+          return json({ ok: false, error: "invalid_body", message: "Body must be a JSON object." }, 400);
         }
 
         const content = typeof body.content === "string" ? body.content : "";
         if (content.trim().length < 20) {
           return json(
-            {
-              ok: false,
-              error: "content_too_short",
-              message: "`content` must be at least 20 characters of verbatim file text.",
-            },
+            { ok: false, error: "content_too_short", message: "`content` must be at least 20 characters of verbatim file text." },
             400,
           );
         }
         if (content.length > 120_000) {
           return json(
-            {
-              ok: false,
-              error: "content_too_long",
-              message: "`content` exceeds 120000 characters. Split the file.",
-            },
+            { ok: false, error: "content_too_long", message: "`content` exceeds 120000 characters. Split the file." },
             413,
           );
         }
 
-        const name =
-          typeof body.name === "string" && body.name.trim()
-            ? body.name.trim().slice(0, 200)
-            : "untitled";
+        const name = typeof body.name === "string" && body.name.trim() ? body.name.trim().slice(0, 200) : "untitled";
         const type = typeof body.type === "string" && TYPES.has(body.type) ? body.type : "skill";
         const docClass =
-          typeof body.doc_class === "string" && DOC_CLASSES.has(body.doc_class)
-            ? body.doc_class
-            : "auto";
+          typeof body.doc_class === "string" && DOC_CLASSES.has(body.doc_class) ? body.doc_class : "auto";
         const semanticCheck = body.semantic_check === false ? false : true;
         const language =
           typeof body.language === "string" && LANGS.has(body.language) ? body.language : undefined;
@@ -129,14 +108,12 @@ export const Route = createFileRoute("/api/public/review")({
             name,
             type: type as "skill" | "playbook" | "soul" | "guardrail",
             content,
-            doc_class: docClass as
-              "skill" | "governance" | "playbook-ops" | "guardrail-ops" | "auto",
+            doc_class: docClass as "skill" | "governance" | "playbook-ops" | "guardrail-ops" | "auto",
             semantic_check: semanticCheck,
             language: language as "en" | "pt" | "es" | "fr" | "de" | "it" | undefined,
           });
 
-          const ceiling = (core.doc_class as { expected_ceiling?: number } | undefined)
-            ?.expected_ceiling;
+          const ceiling = (core.doc_class as { expected_ceiling?: number } | undefined)?.expected_ceiling;
           const impact = projectImpact({
             score: core.verdict_score as number,
             targetScore: typeof ceiling === "number" ? ceiling : undefined,
@@ -157,12 +134,7 @@ export const Route = createFileRoute("/api/public/review")({
         } catch (err) {
           console.error("[api/public/review] failed", err);
           return json(
-            {
-              ok: false,
-              error: "review_failed",
-              message:
-                "The engine could not score this document. Retry once; if it persists the content may be malformed.",
-            },
+            { ok: false, error: "review_failed", message: "The engine could not score this document. Retry once; if it persists the content may be malformed." },
             500,
           );
         }

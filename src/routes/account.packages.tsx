@@ -4,7 +4,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SitePage } from "@/components/site/SitePage";
-import { listMyAuthoredPackages, setMyPackagePublished } from "@/lib/account/packages.functions";
+import {
+  listMyAuthoredPackages,
+  setMyPackagePublished,
+} from "@/lib/account/packages.functions";
 import {
   Dialog,
   DialogContent,
@@ -59,10 +62,8 @@ function AccountPackagesPage() {
     queryFn: () => list(),
     // Poll while there are jobs in flight so users watch the queue drain.
     refetchInterval: (query) => {
-      const d = query.state.data;
-      const inflight = (d?.jobs ?? []).some(
-        (j) => j.status === "queued" || j.status === "processing",
-      );
+      const d: any = query.state.data;
+      const inflight = (d?.jobs ?? []).some((j: any) => j.status === "queued" || j.status === "processing");
       return inflight ? 5_000 : false;
     },
   });
@@ -86,7 +87,7 @@ function AccountPackagesPage() {
       confirm_phrase?: string;
       price_credits?: number;
     }) => setPub({ data: input }),
-    onSuccess: (r) => {
+    onSuccess: (r: any) => {
       if (r.submitted_for_review) {
         toast.success(
           "Submitted for review. An admin will approve before it appears on the marketplace.",
@@ -99,7 +100,7 @@ function AccountPackagesPage() {
       qc.invalidateQueries({ queryKey: ["account", "my-packages"] });
       closeDialog();
     },
-    onError: (e) => toast.error(e?.message ?? "Action failed"),
+    onError: (e: any) => toast.error(e?.message ?? "Action failed"),
   });
 
   const expectedPhrase = target ? `PUBLISH ${target.name}` : "";
@@ -120,31 +121,17 @@ function AccountPackagesPage() {
           admin then approves it after the adversarial gate passes. You can unpublish anytime.
         </p>
 
-        {q.data && q.data.jobs && q.data.jobs.length > 0 && (
+        {q.data && (q.data as any).jobs && (q.data as any).jobs.length > 0 && (
           <div className="mt-8 rounded-2xl border border-border bg-surface">
             <div className="border-b border-border/60 px-5 py-3 font-mono text-xs uppercase tracking-wider text-muted-foreground">
               Upload queue
             </div>
             <ul className="divide-y divide-border/60">
-              {(
-                q.data.jobs as Array<{
-                  id: string;
-                  filename: string;
-                  inferred_type: string;
-                  status: string;
-                  error: string | null;
-                  slug: string | null;
-                }>
-              ).map((j) => (
-                <li
-                  key={j.id}
-                  className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm"
-                >
+              {((q.data as any).jobs as Array<{ id: string; filename: string; inferred_type: string; status: string; error: string | null; slug: string | null }>).map((j) => (
+                <li key={j.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
                   <div className="min-w-0">
                     <span className="font-medium">{j.filename}</span>{" "}
-                    <Badge variant="secondary" className="ml-1">
-                      {j.inferred_type}
-                    </Badge>
+                    <Badge variant="secondary" className="ml-1">{j.inferred_type}</Badge>
                   </div>
                   <div className="shrink-0">
                     {j.status === "queued" && <Badge variant="outline">Queued</Badge>}
@@ -173,18 +160,14 @@ function AccountPackagesPage() {
           {q.isError && (
             <div className="p-5 text-sm">
               <span className="text-destructive">Sign in to manage your packages.</span>{" "}
-              <Link to="/login" className="text-primary">
-                Sign in →
-              </Link>
+              <Link to="/login" className="text-primary">Sign in →</Link>
             </div>
           )}
           {q.data && q.data.packages.length === 0 && (
             <div className="p-5 text-sm text-muted-foreground">
               No packages yet. Upload via{" "}
-              <Link to="/upload" className="text-primary hover:underline">
-                /upload
-              </Link>{" "}
-              or your MCP agent.
+              <Link to="/upload" className="text-primary hover:underline">/upload</Link> or your MCP
+              agent.
             </div>
           )}
           {q.data && q.data.packages.length > 0 && (
@@ -238,11 +221,9 @@ function AccountPackagesPage() {
                         {p.reviewed_at && (
                           <>Reviewed {new Date(p.reviewed_at).toLocaleDateString()} · </>
                         )}
-                        {p.review_notes ? (
-                          <>Reason: {p.review_notes}</>
-                        ) : (
-                          "Rejected by review — resubmit after addressing admin feedback."
-                        )}
+                        {p.review_notes
+                          ? <>Reason: {p.review_notes}</>
+                          : "Rejected by review — resubmit after addressing admin feedback."}
                       </p>
                     )}
                   </div>
@@ -252,7 +233,9 @@ function AccountPackagesPage() {
                         size="sm"
                         variant="outline"
                         disabled={pubMut.isPending}
-                        onClick={() => pubMut.mutate({ id: p.id, publish: false })}
+                        onClick={() =>
+                          pubMut.mutate({ id: p.id, publish: false })
+                        }
                       >
                         Unpublish
                       </Button>
@@ -287,10 +270,11 @@ function AccountPackagesPage() {
         </p>
 
         <p className="mt-3 text-xs text-muted-foreground">
-          Publishing to the marketplace requires admin approval. From here you submit a draft for
-          review; an admin runs the adversarial gate and either approves it (making it public) or
-          sends it back with notes. Agents (Claude, Cursor, Codex…) cannot list a skill publicly
-          through MCP — only you, from this page, can submit, and only an admin can approve.
+          Publishing to the marketplace requires admin approval. From here you submit a
+          draft for review; an admin runs the adversarial gate and either approves it
+          (making it public) or sends it back with notes. Agents (Claude, Cursor, Codex…)
+          cannot list a skill publicly through MCP — only you, from this page, can
+          submit, and only an admin can approve.
         </p>
       </main>
 
@@ -328,10 +312,7 @@ function AccountPackagesPage() {
               />
               <span className="text-muted-foreground">
                 I understand this skill will be public on the marketplace and accept the{" "}
-                <Link to="/terms" className="text-primary hover:underline">
-                  terms
-                </Link>
-                .
+                <Link to="/terms" className="text-primary hover:underline">terms</Link>.
               </span>
             </label>
 

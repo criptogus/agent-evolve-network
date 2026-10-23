@@ -30,12 +30,7 @@ function goodPackage(overrides = {}) {
       "mcp.json",
       JSON.stringify({
         $schema: MCP_SCHEMA_URL,
-        mcpServers: {
-          superagentskill: {
-            type: "streamable-http",
-            url: "https://superagentskill.com/api/public/mcp",
-          },
-        },
+        mcpServers: { superagentskill: { type: "streamable-http", url: "https://superagentskill.com/api/public/mcp" } },
       }),
     ],
     ["skills/deploy-checker/SKILL.md", SKILL_MD],
@@ -77,9 +72,7 @@ test("invalid mcp.json blocks publishing", () => {
 });
 
 test("committed secrets block publishing", () => {
-  const r = runPluginConformance(
-    goodPackage({ "README.md": "key: sk-abcdefghijklmnopqrstuvwxyz012345" }),
-  );
+  const r = runPluginConformance(goodPackage({ "README.md": "key: sk-abcdefghijklmnopqrstuvwxyz012345" }));
   assert.equal(r.conformant, false);
   assert.equal(r.checks.find((c) => c.id === "security.no-secrets").status, "fail");
 });
@@ -91,9 +84,7 @@ test("path traversal and binaries are rejected", () => {
 });
 
 test("SKILL.md without frontmatter description fails", () => {
-  const r = runPluginConformance(
-    goodPackage({ "skills/deploy-checker/SKILL.md": "# no frontmatter\nshort" }),
-  );
+  const r = runPluginConformance(goodPackage({ "skills/deploy-checker/SKILL.md": "# no frontmatter\nshort" }));
   assert.equal(r.conformant, false);
   assert.equal(r.checks.find((c) => c.id === "skills.frontmatter").status, "fail");
 });

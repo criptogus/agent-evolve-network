@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type EvalRow = {
@@ -60,7 +60,7 @@ export const getEvaluationData = createServerFn({ method: "GET" }).handler(
       void lifetime;
     }
     return { rows };
-  },
+  }
 );
 
 export type ForgeData = {
@@ -95,9 +95,7 @@ export const getSkillForgeData = createServerFn({ method: "GET" })
 
     const { data: rawInstalls } = await supabaseAdmin
       .from("package_installs")
-      .select(
-        "package_id, installed_at, version, packages!inner(id, slug, name, type, latest_version)",
-      )
+      .select("package_id, installed_at, version, packages!inner(id, slug, name, type, latest_version)")
       .eq("user_id", userId);
 
     const installedIds = (rawInstalls ?? []).map((r) => r.package_id);
@@ -105,12 +103,7 @@ export const getSkillForgeData = createServerFn({ method: "GET" })
     const installed = [] as ForgeData["installed"];
     const trustValues: number[] = [];
     for (const r of rawInstalls ?? []) {
-      const pkg = r.packages as unknown as {
-        slug: string;
-        name: string;
-        type: string;
-        latest_version: string;
-      };
+      const pkg = r.packages as unknown as { slug: string; name: string; type: string; latest_version: string };
       const { data: trust } = await supabaseAdmin.rpc("get_skill_trust", { _slug: pkg.slug });
       const t = (trust ?? {}) as Record<string, unknown>;
       const w30 = (t.window_30d ?? {}) as Record<string, unknown>;
@@ -143,9 +136,7 @@ export const getSkillForgeData = createServerFn({ method: "GET" })
 
     const recommended: ForgeData["recommended"] = [];
     for (const p of recPkgs ?? []) {
-      const { data: ratings } = await supabaseAdmin.rpc("get_package_ratings", {
-        _package_id: p.id,
-      });
+      const { data: ratings } = await supabaseAdmin.rpc("get_package_ratings", { _package_id: p.id });
       const rg = (ratings ?? {}) as Record<string, number>;
       recommended.push({
         slug: p.slug,
@@ -196,7 +187,7 @@ export const installPackageBySlug = createServerFn({ method: "POST" })
       .from("package_installs")
       .upsert(
         { user_id: userId, package_id: pkg.id, version, updated_at: new Date().toISOString() },
-        { onConflict: "user_id,package_id" },
+        { onConflict: "user_id,package_id" }
       );
     if (error) throw new Response(error.message, { status: 500 });
 
@@ -300,3 +291,4 @@ export const getInstallStatus = createServerFn({ method: "GET" })
       outdated: installed && version !== null && version !== pkg.latest_version,
     };
   });
+

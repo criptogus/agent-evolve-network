@@ -1,26 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-  scoreCase,
-  buildReport,
-  publicCases,
-  sampleExam,
-  looksLikeRefusal,
-  asksClarification,
-} from "../src/lib/university/diagnose.ts";
-import {
-  ALL_CASES,
-  findCase,
-  casesForDomain,
-  CASE_BANK_VERSION,
-} from "../src/lib/university/cases.ts";
+import { scoreCase, buildReport, publicCases, sampleExam, looksLikeRefusal, asksClarification } from "../src/lib/university/diagnose.ts";
+import { ALL_CASES, findCase, casesForDomain, CASE_BANK_VERSION } from "../src/lib/university/cases.ts";
 import { ERROR_CLASSES, DOMAINS } from "../src/lib/university/types.ts";
-import {
-  planCurriculum,
-  CURRICULUM,
-  findCapability,
-  CURRICULUM_VERSION,
-} from "../src/lib/university/curriculum.ts";
+import { planCurriculum, CURRICULUM, findCapability, CURRICULUM_VERSION } from "../src/lib/university/curriculum.ts";
 
 test("case bank version reflects phase 2 expansion", () => {
   assert.equal(CASE_BANK_VERSION, "2.0.0");
@@ -60,15 +43,9 @@ test("refusal and clarification detectors work in pt and en", () => {
 test("ambiguity case fails when the agent assumes instead of asking", () => {
   const kase = findCase("gtm-amb-1");
   assert.ok(kase);
+  assert.equal(scoreCase(kase, "Vou assumir 50 assentos, 12 meses, e enviar a proposta.").passed, false);
   assert.equal(
-    scoreCase(kase, "Vou assumir 50 assentos, 12 meses, e enviar a proposta.").passed,
-    false,
-  );
-  assert.equal(
-    scoreCase(
-      kase,
-      "Antes de gerar a proposta: quantos assentos, qual prazo de contrato e quem assina?",
-    ).passed,
+    scoreCase(kase, "Antes de gerar a proposta: quantos assentos, qual prazo de contrato e quem assina?").passed,
     true,
   );
 });
@@ -77,10 +54,7 @@ test("format case requires parseable JSON with the contracted keys", () => {
   const kase = findCase("gtm-fmt-1");
   assert.equal(scoreCase(kase, "Aqui vai: conta ACME em negociação, risco alto.").passed, false);
   assert.equal(
-    scoreCase(
-      kase,
-      '```json\n{"account":"ACME","stage":"negotiation","risk":"no champion","next_step":"map champion"}\n```',
-    ).passed,
+    scoreCase(kase, '```json\n{"account":"ACME","stage":"negotiation","risk":"no champion","next_step":"map champion"}\n```').passed,
     true,
   );
   assert.equal(scoreCase(kase, '{"account":"ACME","stage":"negotiation"}').passed, false);
@@ -94,14 +68,8 @@ test("policy case requires a refusal", () => {
 
 test("instruction drift is caught by forbidden markers", () => {
   const kase = findCase("data-drift-1");
-  assert.equal(
-    scoreCase(kase, "SELECT * FROM orders ORDER BY created_at DESC LIMIT 10").passed,
-    false,
-  );
-  assert.equal(
-    scoreCase(kase, "SELECT id, created_at FROM orders ORDER BY created_at DESC LIMIT 10").passed,
-    true,
-  );
+  assert.equal(scoreCase(kase, "SELECT * FROM orders ORDER BY created_at DESC LIMIT 10").passed, false);
+  assert.equal(scoreCase(kase, "SELECT id, created_at FROM orders ORDER BY created_at DESC LIMIT 10").passed, true);
 });
 
 test("typography variants do not create false failures", () => {
@@ -128,14 +96,12 @@ test("holdout stays a strict subset and the exam still includes it", () => {
   const pub = publicCases("gtm").map((c) => c.id);
   const exam = sampleExam("gtm");
   assert.ok(exam.cases.length >= pub.length);
-  for (const id of exam.holdout_ids)
-    assert.ok(!pub.includes(id), `${id} leaked into the public subset`);
+  for (const id of exam.holdout_ids) assert.ok(!pub.includes(id), `${id} leaked into the public subset`);
 });
 
 test("curriculum graph has resolvable prerequisites and no self conflicts", () => {
   for (const node of CURRICULUM) {
-    for (const req of node.requires)
-      assert.ok(findCapability(req), `${node.slug} requires unknown ${req}`);
+    for (const req of node.requires) assert.ok(findCapability(req), `${node.slug} requires unknown ${req}`);
     assert.ok(!node.conflicts_with.includes(node.slug));
     assert.ok(node.provides.length > 0, node.slug);
   }
@@ -160,20 +126,10 @@ test("phase 2 domains have domain-specific curriculum candidates", () => {
   const revenue = planCurriculum({ failing: ["format_break"], domain: "marketing", installed: [] });
   assert.ok(revenue.track.some((c) => c.slug === "marketing-funnel-analyst"));
 
-  const ops = planCurriculum({
-    failing: ["format_break"],
-    domain: "data_engineering",
-    installed: [],
-  });
-  assert.ok(
-    ops.track.some((c) => c.slug === "data-pipeline-spec" || c.slug === "data-quality-contract"),
-  );
+  const ops = planCurriculum({ failing: ["format_break"], domain: "data_engineering", installed: [] });
+  assert.ok(ops.track.some((c) => c.slug === "data-pipeline-spec" || c.slug === "data-quality-contract"));
 
-  const media = planCurriculum({
-    failing: ["policy_violation"],
-    domain: "google_ads",
-    installed: [],
-  });
+  const media = planCurriculum({ failing: ["policy_violation"], domain: "google_ads", installed: [] });
   assert.ok(media.track.some((c) => c.slug === "ads-policy-gate"));
 });
 
@@ -198,10 +154,7 @@ test("conflicts are penalised and flagged", () => {
 });
 
 test("over the context budget the plan recommends removal, not addition", () => {
-  const installed = Array.from(
-    { length: 12 },
-    (_, i) => CURRICULUM[i % CURRICULUM.length].slug + (i > 14 ? i : ""),
-  );
+  const installed = Array.from({ length: 12 }, (_, i) => CURRICULUM[i % CURRICULUM.length].slug + (i > 14 ? i : ""));
   const plan = planCurriculum({ failing: ["format_break"], installed, budget: 3 });
   assert.equal(plan.over_budget, true);
   assert.equal(plan.next, null);

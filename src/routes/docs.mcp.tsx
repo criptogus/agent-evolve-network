@@ -92,9 +92,7 @@ function McpDocs() {
       <Nav />
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-10 sm:px-6 md:grid-cols-[220px_1fr] md:py-12">
         <aside className="md:sticky md:top-20 md:self-start">
-          <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-            MCP Reference
-          </div>
+          <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">MCP Reference</div>
           <nav className="mt-4 space-y-1 text-sm">
             {SECTIONS.map((s) => (
               <a
@@ -106,10 +104,7 @@ function McpDocs() {
               </a>
             ))}
             <div className="mt-4 border-t border-border pt-3">
-              <Link
-                to="/docs"
-                className="block rounded px-2.5 py-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
+              <Link to="/docs" className="block rounded px-2.5 py-1.5 text-muted-foreground hover:bg-accent hover:text-foreground">
                 ← Back to Docs
               </Link>
             </div>
@@ -117,35 +112,24 @@ function McpDocs() {
         </aside>
 
         <article className="prose prose-neutral max-w-none">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
-            MCP Reference
-          </span>
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">MCP Reference</span>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-5xl">
             Everything an agent can do over MCP.
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Super Agent Skill exposes its registry, its forge pipeline, and its continuous evolution
-            loop through a single MCP endpoint. Any MCP-compatible runtime can connect — no SDK, no
-            glue code.
+            Super Agent Skill exposes its registry, its forge pipeline, and its continuous evolution loop through
+            a single MCP endpoint. Any MCP-compatible runtime can connect — no SDK, no glue code.
           </p>
 
           {/* Endpoint */}
-          <h2 id="endpoint" className="mt-12 text-2xl font-semibold tracking-tight">
-            Endpoint
-          </h2>
+          <h2 id="endpoint" className="mt-12 text-2xl font-semibold tracking-tight">Endpoint</h2>
           <div className="mt-3 rounded-lg border border-border bg-surface p-4 text-sm">
-            <div className="font-mono text-foreground">
-              POST/GET/DELETE https://superagentskill.com/api/public/mcp
-            </div>
-            <div className="mt-1 text-muted-foreground">
-              Single endpoint, JSON-RPC 2.0 framed by the MCP Streamable HTTP spec.
-            </div>
+            <div className="font-mono text-foreground">POST/GET/DELETE  https://superagentskill.com/api/public/mcp</div>
+            <div className="mt-1 text-muted-foreground">Single endpoint, JSON-RPC 2.0 framed by the MCP Streamable HTTP spec.</div>
           </div>
 
           {/* Transport */}
-          <h2 id="transport" className="mt-12 text-2xl font-semibold tracking-tight">
-            Transport
-          </h2>
+          <h2 id="transport" className="mt-12 text-2xl font-semibold tracking-tight">Transport</h2>
           <p className="mt-2 text-muted-foreground">
             HTTP Streamable. Every request must include both <code>application/json</code> and
             <code> text/event-stream</code> in <code>Accept</code>, otherwise the server returns
@@ -168,8 +152,8 @@ function McpDocs() {
           <div className="mt-4 rounded-lg border border-border bg-surface p-4 text-sm text-muted-foreground">
             <strong className="text-foreground">Custom scripts: send a real User-Agent.</strong>{" "}
             Native MCP clients are fine. Raw HTTP clients that default to a generic agent —{" "}
-            <code>Python-urllib</code>, <code>Go-http-client</code>, <code>node-fetch</code> — can
-            be rejected with <code>403</code> by the edge firewall before reaching us. Set{" "}
+            <code>Python-urllib</code>, <code>Go-http-client</code>, <code>node-fetch</code> — can be
+            rejected with <code>403</code> by the edge firewall before reaching us. Set{" "}
             <code>User-Agent: Mozilla/5.0</code> (or shell out to <code>curl</code>) and the call
             goes through normally.
           </div>
@@ -188,23 +172,23 @@ function McpDocs() {
             </div>
           </div>
 
+
+
+
           {/* Auth */}
-          <h2 id="auth" className="mt-12 text-2xl font-semibold tracking-tight">
-            Authentication
-          </h2>
+          <h2 id="auth" className="mt-12 text-2xl font-semibold tracking-tight">Authentication</h2>
           <p className="mt-2 text-muted-foreground">
-            Read tools (<code>list_packages</code>, <code>search_registry</code>,{" "}
-            <code>get_package</code>, <code>overview</code>, <code>get_methodology</code>,{" "}
-            <code>review_skill</code>) work anonymously. Write tools (<code>upload_packages</code>,{" "}
-            <code>request_primitive</code>, <code>report_execution</code>) require an OAuth bearer
-            token.
+            Read tools (<code>list_packages</code>, <code>search_registry</code>, <code>get_package</code>,{" "}
+            <code>overview</code>, <code>get_methodology</code>, <code>review_skill</code>) work anonymously.
+            Write tools (<code>upload_packages</code>, <code>request_primitive</code>,{" "}
+            <code>report_execution</code>) require an OAuth bearer token.
           </p>
           <p className="mt-3 text-muted-foreground">
             We implement the full MCP authorization spec: <strong>OAuth 2.1</strong> with PKCE
             (S256), <strong>RFC 7591</strong> dynamic client registration, <strong>RFC 8414</strong>{" "}
-            authorization-server metadata and <strong>RFC 9728</strong> protected-resource metadata
-            — including the <em>path-aware</em> well-known location that current Claude, Cursor, VS
-            Code and Codex builds probe:
+            authorization-server metadata and <strong>RFC 9728</strong> protected-resource metadata —
+            including the <em>path-aware</em> well-known location that current Claude, Cursor,
+            VS Code and Codex builds probe:
           </p>
           <CodeBlock
             filename="discovery (served with CORS, path-aware)"
@@ -221,13 +205,13 @@ WWW-Authenticate: Bearer resource_metadata="https://superagentskill.com/.well-kn
           />
           <p className="mt-3 text-muted-foreground">
             Compliant clients run the browser consent flow automatically. After you click
-            <strong> Authorize</strong>, we route you to <code>/oauth/success</code> — a friendly
-            confirmation page that delivers the auth code to your client (loopback listener or
-            private-use URI scheme like <code>cursor://</code>, <code>vscode://</code>,
+            <strong> Authorize</strong>, we route you to <code>/oauth/success</code> — a
+            friendly confirmation page that delivers the auth code to your client (loopback
+            listener or private-use URI scheme like <code>cursor://</code>, <code>vscode://</code>,
             <code> claude://</code>, <code>codex://</code>, <code>lovable://</code>,
-            <code> hermes://</code>, <code>openclaw://</code>) and falls back to a copy-pasteable
-            code if your local listener already closed. No more browser "site can't be reached"
-            dead-ends.
+            <code> hermes://</code>, <code>openclaw://</code>) and falls back to a
+            copy-pasteable code if your local listener already closed. No more browser
+            "site can't be reached" dead-ends.
           </p>
           <p className="mt-3 text-muted-foreground">
             The fastest path on any client is the CLI below — it does the whole dance for you.
@@ -238,10 +222,10 @@ WWW-Authenticate: Bearer resource_metadata="https://superagentskill.com/.well-kn
             CLI — plug and play
           </h2>
           <p className="mt-2 text-muted-foreground">
-            <code>npx super-agent connect</code> performs dynamic client registration, the loopback
-            PKCE OAuth flow, stores the token in <code>~/.superagentskill/credentials.json</code>{" "}
-            (chmod 600, auto-refreshed), and writes/patches your client's MCP config — no
-            hand-edited JSON.
+            <code>npx super-agent connect</code> performs dynamic client registration, the
+            loopback PKCE OAuth flow, stores the token in{" "}
+            <code>~/.superagentskill/credentials.json</code> (chmod 600, auto-refreshed), and
+            writes/patches your client's MCP config — no hand-edited JSON.
           </p>
           <CodeBlock
             filename="terminal"
@@ -255,9 +239,9 @@ npx -y super-agent logout    # revoke + forget
 npx -y super-agent setup cursor   # (re)write a client config from saved creds`}
           />
           <p className="mt-3 text-muted-foreground">
-            For stdio-only clients (or builds with flaky MCP OAuth), the CLI also ships a local
-            bridge that proxies stdio ⇄ the remote Streamable HTTP endpoint and injects the token
-            transparently:
+            For stdio-only clients (or builds with flaky MCP OAuth), the CLI also ships a
+            local bridge that proxies stdio ⇄ the remote Streamable HTTP endpoint and injects
+            the token transparently:
           </p>
           <CodeBlock
             filename="any stdio MCP client"
@@ -270,21 +254,14 @@ npx -y super-agent setup cursor   # (re)write a client config from saved creds`}
           />
 
           {/* Tools */}
-          <h2 id="tools" className="mt-12 text-2xl font-semibold tracking-tight">
-            Tools
-          </h2>
+          <h2 id="tools" className="mt-12 text-2xl font-semibold tracking-tight">Tools</h2>
           <p className="mt-2 text-muted-foreground">
-            Discover tools at runtime with <code>tools/list</code>. Below is the canonical
-            reference.
+            Discover tools at runtime with <code>tools/list</code>. Below is the canonical reference.
           </p>
 
           <div className="mt-6 space-y-6">
             {TOOLS.map((t) => (
-              <div
-                key={t.name}
-                id={`tool-${t.name}`}
-                className="rounded-xl border border-border bg-surface p-5"
-              >
+              <div key={t.name} id={`tool-${t.name}`} className="rounded-xl border border-border bg-surface p-5">
                 <div className="flex flex-wrap items-center gap-2">
                   <code className="rounded bg-background px-2 py-0.5 font-mono text-sm font-semibold text-primary">
                     {t.name}
@@ -294,20 +271,12 @@ npx -y super-agent setup cursor   # (re)write a client config from saved creds`}
                 <p className="mt-2 text-sm text-foreground/90">{t.desc}</p>
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <div>
-                    <div className="mb-1 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                      Input
-                    </div>
-                    <pre className="overflow-x-auto rounded border border-border bg-background p-3 text-xs">
-                      <code>{t.input}</code>
-                    </pre>
+                    <div className="mb-1 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Input</div>
+                    <pre className="overflow-x-auto rounded border border-border bg-background p-3 text-xs"><code>{t.input}</code></pre>
                   </div>
                   <div>
-                    <div className="mb-1 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                      Output
-                    </div>
-                    <pre className="overflow-x-auto rounded border border-border bg-background p-3 text-xs">
-                      <code>{t.output}</code>
-                    </pre>
+                    <div className="mb-1 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">Output</div>
+                    <pre className="overflow-x-auto rounded border border-border bg-background p-3 text-xs"><code>{t.output}</code></pre>
                   </div>
                 </div>
               </div>
@@ -328,17 +297,15 @@ npx -y super-agent setup cursor   # (re)write a client config from saved creds`}
           />
 
           {/* Configs */}
-          <h2 id="configs" className="mt-12 text-2xl font-semibold tracking-tight">
-            Client configs
-          </h2>
+          <h2 id="configs" className="mt-12 text-2xl font-semibold tracking-tight">Client configs</h2>
 
           <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-5">
             <p className="font-mono text-[11px] uppercase tracking-wider text-primary">
               One-click install
             </p>
             <p className="mt-1 text-sm text-foreground/90">
-              Skip the JSON for Cursor and VS Code — the buttons below hand off to the app with the
-              server pre-configured.
+              Skip the JSON for Cursor and VS Code — the buttons below hand off to the app
+              with the server pre-configured.
             </p>
             <div className="mt-4">
               <InstallButtons />
@@ -384,62 +351,37 @@ npx -y super-agent setup cursor   # (re)write a client config from saved creds`}
 }`}
           />
 
-          <h3 className="mt-6 text-lg font-semibold">
-            Hermes / Grok / OpenClaw / any custom runtime
-          </h3>
+          <h3 className="mt-6 text-lg font-semibold">Hermes / Grok / OpenClaw / any custom runtime</h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            Any client that implements MCP Streamable HTTP can connect. Point it at the endpoint and
-            use standard <code>initialize</code> → <code>tools/list</code> → <code>tools/call</code>{" "}
-            flow.
+            Any client that implements MCP Streamable HTTP can connect. Point it at the endpoint and use
+            standard <code>initialize</code> → <code>tools/list</code> → <code>tools/call</code> flow.
           </p>
 
           {/* Errors */}
-          <h2 id="errors" className="mt-12 text-2xl font-semibold tracking-tight">
-            Errors & limits
-          </h2>
+          <h2 id="errors" className="mt-12 text-2xl font-semibold tracking-tight">Errors & limits</h2>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            <li>
-              <code>406 Not Acceptable</code> — missing{" "}
-              <code>Accept: application/json, text/event-stream</code>
-            </li>
-            <li>
-              <code>401 Unauthorized</code> — mutating tool called without a valid bearer token
-            </li>
-            <li>
-              <code>429 Too Many Requests</code> — per-plan monthly limit reached (see{" "}
-              <Link to="/pricing">Pricing</Link>)
-            </li>
-            <li>
-              <code>{'{ error: "not_found" }'}</code> — slug not in registry; try{" "}
-              <code>search_registry</code> or <code>request_primitive</code>
-            </li>
+            <li><code>406 Not Acceptable</code> — missing <code>Accept: application/json, text/event-stream</code></li>
+            <li><code>401 Unauthorized</code> — mutating tool called without a valid bearer token</li>
+            <li><code>429 Too Many Requests</code> — per-plan monthly limit reached (see <Link to="/pricing">Pricing</Link>)</li>
+            <li><code>{"{ error: \"not_found\" }"}</code> — slug not in registry; try <code>search_registry</code> or <code>request_primitive</code></li>
           </ul>
 
           {/* For agents */}
-          <h2 id="agents" className="mt-12 text-2xl font-semibold tracking-tight">
-            Made for AI agents
-          </h2>
+          <h2 id="agents" className="mt-12 text-2xl font-semibold tracking-tight">Made for AI agents</h2>
           <p className="mt-2 text-muted-foreground">
             We publish two machine-readable specs that any LLM can ingest at startup:
           </p>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <a
-              href="/llms.txt"
-              className="rounded-xl border border-border bg-surface p-5 transition-colors hover:bg-accent"
-            >
+            <a href="/llms.txt" className="rounded-xl border border-border bg-surface p-5 transition-colors hover:bg-accent">
               <div className="font-mono text-sm font-semibold text-primary">/llms.txt</div>
               <div className="mt-1 text-sm text-muted-foreground">
                 Compact one-pager following the llms.txt convention. Drop it in your system prompt.
               </div>
             </a>
-            <a
-              href="/agents.md"
-              className="rounded-xl border border-border bg-surface p-5 transition-colors hover:bg-accent"
-            >
+            <a href="/agents.md" className="rounded-xl border border-border bg-surface p-5 transition-colors hover:bg-accent">
               <div className="font-mono text-sm font-semibold text-primary">/agents.md</div>
               <div className="mt-1 text-sm text-muted-foreground">
-                Long-form Markdown manual: every tool, schema, error, and decision rule for
-                autonomous agents.
+                Long-form Markdown manual: every tool, schema, error, and decision rule for autonomous agents.
               </div>
             </a>
           </div>
@@ -449,11 +391,7 @@ npx -y super-agent setup cursor   # (re)write a client config from saved creds`}
             <p className="mt-2 text-sm text-foreground/90">
               Want to test right now? Run <code>npx -y super-agent connect --client claude</code>,
               restart Claude, and ask:
-              <em>
-                {" "}
-                "Use the super-agent-skill MCP server to find a cardiology skill and show me its
-                system prompt."
-              </em>
+              <em> "Use the super-agent-skill MCP server to find a cardiology skill and show me its system prompt."</em>
             </p>
           </div>
         </article>

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 
 // GET /api/og/skill-of-the-week.svg
 //
@@ -15,38 +15,28 @@ export const Route = createFileRoute("/api/og/skill-of-the-week/svg")({
       GET: async () => {
         const { data } = await supabaseAdmin
           .from("skill_of_the_week")
-          .select(
-            "week_starting,trust_score,adversarial_pass_rate,installs_7d,packages(slug,name,description)",
-          )
+          .select("week_starting,trust_score,adversarial_pass_rate,installs_7d,packages(slug,name,description)")
           .order("week_starting", { ascending: false })
           .limit(1)
           .maybeSingle();
 
-        const winner = data as {
-          week_starting: string;
-          trust_score: number | null;
-          adversarial_pass_rate: number | null;
-          installs_7d: number | null;
-          packages: { slug: string; name: string; description: string | null } | null;
-        } | null;
+        const winner = data as
+          | {
+              week_starting: string;
+              trust_score: number | null;
+              adversarial_pass_rate: number | null;
+              installs_7d: number | null;
+              packages: { slug: string; name: string; description: string | null } | null;
+            }
+          | null;
 
         const title = winner?.packages?.name ?? "Skill of the Week";
-        const subtitle =
-          winner?.packages?.description?.slice(0, 110) ??
-          "Picked weekly from signed, adversarially tested skills.";
-        const trust =
-          winner?.trust_score != null ? `${Math.round(Number(winner.trust_score) * 100)}%` : "—";
-        const adv =
-          winner?.adversarial_pass_rate != null
-            ? `${Math.round(Number(winner.adversarial_pass_rate) * 100)}%`
-            : "—";
+        const subtitle = winner?.packages?.description?.slice(0, 110) ?? "Picked weekly from signed, adversarially tested skills.";
+        const trust = winner?.trust_score != null ? `${Math.round(Number(winner.trust_score) * 100)}%` : "—";
+        const adv = winner?.adversarial_pass_rate != null ? `${Math.round(Number(winner.adversarial_pass_rate) * 100)}%` : "—";
         const installs = winner?.installs_7d?.toLocaleString() ?? "—";
         const week = winner?.week_starting
-          ? new Date(winner.week_starting).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })
+          ? new Date(winner.week_starting).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
           : "";
 
         const svg = renderOg({ title, subtitle, trust, adv, installs, week });
@@ -63,20 +53,10 @@ export const Route = createFileRoute("/api/og/skill-of-the-week/svg")({
 });
 
 function esc(s: string): string {
-  return s.replace(
-    /[&<>"]/g,
-    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!,
-  );
+  return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
 }
 
-function renderOg(o: {
-  title: string;
-  subtitle: string;
-  trust: string;
-  adv: string;
-  installs: string;
-  week: string;
-}) {
+function renderOg(o: { title: string; subtitle: string; trust: string; adv: string; installs: string; week: string }) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
 <defs>
   <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">

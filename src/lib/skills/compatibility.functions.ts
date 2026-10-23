@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/middleware";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 import { COMPAT_MODELS, probeCompatibility } from "./compatibility.server";
 
 const SweepInput = z.object({
@@ -39,12 +39,7 @@ export const runCompatibilitySweep = createServerFn({ method: "POST" })
     }
 
     const models = (data.models?.length ? data.models : COMPAT_MODELS) as string[];
-    const results = [] as Array<{
-      model: string;
-      status: string;
-      pass_rate: number;
-      judge_score: number;
-    }>;
+    const results = [] as Array<{ model: string; status: string; pass_rate: number; judge_score: number }>;
 
     for (const model of models) {
       const r = await probeCompatibility({
@@ -53,23 +48,25 @@ export const runCompatibilitySweep = createServerFn({ method: "POST" })
         model,
         maxCases: data.max_cases,
       });
-      await supabaseAdmin.from("skill_compatibility").upsert(
-        {
-          package_id: pkg.id,
-          package_slug: pkg.slug,
-          version: ver.version,
-          model,
-          pass_rate: Number(r.pass_rate.toFixed(3)),
-          total_cases: r.total,
-          passed_cases: r.passed,
-          judge_score: r.judge_score,
-          status: r.status,
-          notes: r.notes,
-          sample: r.sample,
-          evaluated_at: new Date().toISOString(),
-        },
-        { onConflict: "package_id,model" },
-      );
+      await supabaseAdmin
+        .from("skill_compatibility")
+        .upsert(
+          {
+            package_id: pkg.id,
+            package_slug: pkg.slug,
+            version: ver.version,
+            model,
+            pass_rate: Number(r.pass_rate.toFixed(3)),
+            total_cases: r.total,
+            passed_cases: r.passed,
+            judge_score: r.judge_score,
+            status: r.status,
+            notes: r.notes,
+            sample: r.sample,
+            evaluated_at: new Date().toISOString(),
+          },
+          { onConflict: "package_id,model" },
+        );
       results.push({
         model,
         status: r.status,
@@ -86,9 +83,7 @@ export const getCompatibility = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const { data: rows } = await supabaseAdmin
       .from("skill_compatibility")
-      .select(
-        "model,pass_rate,total_cases,passed_cases,judge_score,status,notes,version,evaluated_at",
-      )
+      .select("model,pass_rate,total_cases,passed_cases,judge_score,status,notes,version,evaluated_at")
       .eq("package_slug", data.slug)
       .order("judge_score", { ascending: false });
     return { rows: rows ?? [] };
@@ -97,9 +92,12 @@ export const getCompatibility = createServerFn({ method: "GET" })
 export const listMyDriftAlerts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase: _sbCtx, userId } = context;
-    const supabase = _sbCtx;
-    const { data: pkgs } = await supabase.from("packages").select("id").eq("author_id", userId);
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
+    const { data: pkgs } = await supabase
+      .from("packages")
+      .select("id")
+      .eq("author_id", userId);
     const ids = (pkgs ?? []).map((p: { id: string }) => p.id);
     if (ids.length === 0) return { alerts: [] };
     const { data } = await supabase

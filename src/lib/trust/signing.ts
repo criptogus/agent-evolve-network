@@ -19,16 +19,12 @@ export function keyFingerprint(publicKeyPem: string): string {
 
 export interface SignedRelease {
   content_hash: string;
-  signature: string; // base64
-  signing_key_id: string; // 16-char fingerprint
+  signature: string;          // base64
+  signing_key_id: string;     // 16-char fingerprint
   algorithm: "ed25519";
 }
 
-export function signRelease(
-  payload: unknown,
-  privateKeyPem: string,
-  publicKeyPem: string,
-): SignedRelease {
+export function signRelease(payload: unknown, privateKeyPem: string, publicKeyPem: string): SignedRelease {
   const hash = contentHash(payload);
   const key = createPrivateKey(privateKeyPem);
   // Ed25519 signs the data directly (no separate hash function arg).
@@ -41,18 +37,9 @@ export function signRelease(
   };
 }
 
-export function verifyRelease(
-  payload: unknown,
-  release: SignedRelease,
-  publicKeyPem: string,
-): boolean {
+export function verifyRelease(payload: unknown, release: SignedRelease, publicKeyPem: string): boolean {
   const hash = contentHash(payload);
   if (hash !== release.content_hash) return false;
   if (keyFingerprint(publicKeyPem) !== release.signing_key_id) return false;
-  return verify(
-    null,
-    Buffer.from(hash),
-    createPublicKey(publicKeyPem),
-    Buffer.from(release.signature, "base64"),
-  );
+  return verify(null, Buffer.from(hash), createPublicKey(publicKeyPem), Buffer.from(release.signature, "base64"));
 }

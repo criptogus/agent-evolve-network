@@ -41,8 +41,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "clarify-before-acting",
     title: "Clarify before acting",
-    summary:
-      "Input contract: identifies the missing field and asks ONE unblocking question instead of assuming.",
+    summary: "Input contract: identifies the missing field and asks ONE unblocking question instead of assuming.",
     provides: ["ambiguity_abandon"],
     requires: [],
     conflicts_with: ["autonomous-no-questions"],
@@ -53,8 +52,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "gtm-discovery-call-coach",
     title: "Discovery call coach",
-    summary:
-      "Qualification questions and decision-maker mapping — resolves ambiguity in a sales context.",
+    summary: "Qualification questions and decision-maker mapping — resolves ambiguity in a sales context.",
     provides: ["ambiguity_abandon"],
     requires: ["clarify-before-acting"],
     conflicts_with: [],
@@ -65,8 +63,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "grounded-answers",
     title: "Grounded answers",
-    summary:
-      "States only what is in the input; the unknown becomes a declared gap, with the exact missing data point.",
+    summary: "States only what is in the input; the unknown becomes a declared gap, with the exact missing data point.",
     provides: ["hallucination"],
     requires: [],
     conflicts_with: [],
@@ -77,8 +74,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "web-research",
     title: "Web research",
-    summary:
-      "Searches and cites a source before stating a claim — reduces hallucination when the answer depends on an external fact.",
+    summary: "Searches and cites a source before stating a claim — reduces hallucination when the answer depends on an external fact.",
     provides: ["hallucination"],
     requires: ["grounded-answers"],
     conflicts_with: [],
@@ -89,8 +85,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "output-contract",
     title: "Output contract",
-    summary:
-      "Format as contract: JSON/sections/limits validated before responding, with self-correction.",
+    summary: "Format as contract: JSON/sections/limits validated before responding, with self-correction.",
     provides: ["format_break"],
     requires: [],
     conflicts_with: ["freeform-prose"],
@@ -101,8 +96,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "sql-translator",
     title: "SQL translator",
-    summary:
-      "Translates a business request into SQL with explicit assumptions and a stable output contract.",
+    summary: "Translates a business request into SQL with explicit assumptions and a stable output contract.",
     provides: ["format_break", "hallucination"],
     requires: ["output-contract"],
     conflicts_with: [],
@@ -113,8 +107,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "finish-the-task",
     title: "Finish the task",
-    summary:
-      "Completion checklist: counts the promised items and never delivers partially without saying what is missing.",
+    summary: "Completion checklist: counts the promised items and never delivers partially without saying what is missing.",
     provides: ["task_abandon"],
     requires: [],
     conflicts_with: [],
@@ -125,8 +118,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "gtm-mutual-action-plan-author",
     title: "Mutual action plan author",
-    summary:
-      "Plan with milestones, owners, and dates — closes the partial-delivery gap in long cycles.",
+    summary: "Plan with milestones, owners, and dates — closes the partial-delivery gap in long cycles.",
     provides: ["task_abandon"],
     requires: ["finish-the-task"],
     conflicts_with: [],
@@ -137,8 +129,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "incident-response-triage",
     title: "Incident response triage",
-    summary:
-      "Incident procedure with a per-step abort criterion — avoids abandonment mid-response.",
+    summary: "Incident procedure with a per-step abort criterion — avoids abandonment mid-response.",
     provides: ["task_abandon", "tool_misuse"],
     requires: ["finish-the-task"],
     conflicts_with: [],
@@ -149,8 +140,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "no-pii-in-output",
     title: "No PII in output",
-    summary:
-      "Guardrail: blocks PII, secrets, and card data in the output, with a safe alternative.",
+    summary: "Guardrail: blocks PII, secrets, and card data in the output, with a safe alternative.",
     provides: ["policy_violation"],
     requires: [],
     conflicts_with: [],
@@ -161,8 +151,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "fintech-compliance",
     title: "Fintech compliance soul",
-    summary:
-      "Refuses and escalates requests for investment recommendations and unsubstantiated contract interpretation.",
+    summary: "Refuses and escalates requests for investment recommendations and unsubstantiated contract interpretation.",
     provides: ["policy_violation"],
     requires: ["no-pii-in-output"],
     conflicts_with: ["healthcare-hipaa"],
@@ -173,8 +162,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "destructive-action-gate",
     title: "Destructive action gate",
-    summary:
-      "Every irreversible action goes through simulation/explicit confirmation before executing.",
+    summary: "Every irreversible action goes through simulation/explicit confirmation before executing.",
     provides: ["tool_misuse"],
     requires: [],
     conflicts_with: [],
@@ -185,8 +173,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "code-reviewer",
     title: "Code reviewer",
-    summary:
-      "Review with severity, findings, and patch — and no destructive action without a gate.",
+    summary: "Review with severity, findings, and patch — and no destructive action without a gate.",
     provides: ["tool_misuse", "format_break"],
     requires: ["destructive-action-gate"],
     conflicts_with: [],
@@ -197,8 +184,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "constraint-memory",
     title: "Constraint memory",
-    summary:
-      "Repeats and verifies the conversation constraints before every response — kills instruction drift.",
+    summary: "Repeats and verifies the conversation constraints before every response — kills instruction drift.",
     provides: ["instruction_drift"],
     requires: [],
     conflicts_with: [],
@@ -224,8 +210,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "marketing-funnel-analyst",
     title: "Marketing funnel analyst",
-    summary:
-      "Reads the funnel and returns JSON with stage, rate, bottleneck, and action — without inventing numbers.",
+    summary: "Reads the funnel and returns JSON with stage, rate, bottleneck, and action — without inventing numbers.",
     provides: ["format_break", "hallucination"],
     requires: ["output-contract", "grounded-answers"],
     conflicts_with: [],
@@ -269,8 +254,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "churn-rescue-playbook",
     title: "Churn rescue playbook",
-    summary:
-      "Classifies churn risk and proposes a playbook with an owner, without promising a result.",
+    summary: "Classifies churn risk and proposes a playbook with an owner, without promising a result.",
     provides: ["task_abandon", "policy_violation"],
     requires: ["finish-the-task", "no-pii-in-output"],
     conflicts_with: [],
@@ -395,8 +379,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "lgpd-checklist",
     title: "LGPD checklist",
-    summary:
-      "Blocks data flows without a legal basis and requires a 'this is not legal advice' disclaimer.",
+    summary: "Blocks data flows without a legal basis and requires a 'this is not legal advice' disclaimer.",
     provides: ["policy_violation", "instruction_drift"],
     requires: ["no-pii-in-output", "constraint-memory"],
     conflicts_with: [],
@@ -411,8 +394,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "financial-model-template",
     title: "Financial model template",
-    summary:
-      "Builds a financial projection in JSON with metric, value, assumption, and confidence.",
+    summary: "Builds a financial projection in JSON with metric, value, assumption, and confidence.",
     provides: ["format_break", "hallucination"],
     requires: ["output-contract", "grounded-answers"],
     conflicts_with: [],
@@ -526,8 +508,7 @@ export const CURRICULUM: CapabilityNode[] = [
   {
     slug: "search-ads-structurer",
     title: "Search ads structurer",
-    summary:
-      "Structures a Search campaign in JSON with campaign, group, keywords, match type, and budget.",
+    summary: "Structures a Search campaign in JSON with campaign, group, keywords, match type, and budget.",
     provides: ["format_break", "task_abandon"],
     requires: ["output-contract", "finish-the-task"],
     conflicts_with: [],
@@ -698,10 +679,7 @@ export type CurriculumPlan = {
 
 type Weight = { error_class: ErrorClass; fail_rate: number };
 
-function weightsFromProfile(
-  profile: ErrorProfileEntry[] | undefined,
-  failing: ErrorClass[],
-): Weight[] {
+function weightsFromProfile(profile: ErrorProfileEntry[] | undefined, failing: ErrorClass[]): Weight[] {
   if (profile?.length) {
     return profile
       .filter((p) => p.failed > 0)
@@ -828,10 +806,7 @@ export function prescribeFor(
         40,
         Math.round(
           c.fixes.reduce(
-            (sum, ec) =>
-              sum +
-              (profile?.find((p) => p.error_class === ec)?.fail_rate ?? 0) /
-                Math.max(1, c.fixes.length),
+            (sum, ec) => sum + (profile?.find((p) => p.error_class === ec)?.fail_rate ?? 0) / Math.max(1, c.fixes.length),
             0,
           ) * 0.6,
         ),

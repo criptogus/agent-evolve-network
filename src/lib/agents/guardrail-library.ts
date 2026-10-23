@@ -5,7 +5,12 @@
  */
 
 export type GuardrailCategory =
-  "compliance" | "security" | "privacy" | "quality" | "financial" | "brand";
+  | "compliance"
+  | "security"
+  | "privacy"
+  | "quality"
+  | "financial"
+  | "brand";
 
 export type LibraryGuardrail = {
   slug: string;
@@ -17,27 +22,14 @@ export type LibraryGuardrail = {
   instead: string;
 };
 
-export const GUARDRAIL_CATEGORIES: { id: GuardrailCategory; label: string; description: string }[] =
-  [
-    {
-      id: "compliance",
-      label: "Compliance",
-      description: "Regulated advice, disclosures and audit duties.",
-    },
-    {
-      id: "security",
-      label: "Security",
-      description: "Prompt injection, secrets and destructive actions.",
-    },
-    { id: "privacy", label: "Privacy", description: "Personal data, PII/PHI and retention." },
-    { id: "quality", label: "Quality", description: "Grounding, citations and uncertainty." },
-    {
-      id: "financial",
-      label: "Financial",
-      description: "Numbers, projections and pricing commitments.",
-    },
-    { id: "brand", label: "Brand & tone", description: "Competitors, promises and company voice." },
-  ];
+export const GUARDRAIL_CATEGORIES: { id: GuardrailCategory; label: string; description: string }[] = [
+  { id: "compliance", label: "Compliance", description: "Regulated advice, disclosures and audit duties." },
+  { id: "security", label: "Security", description: "Prompt injection, secrets and destructive actions." },
+  { id: "privacy", label: "Privacy", description: "Personal data, PII/PHI and retention." },
+  { id: "quality", label: "Quality", description: "Grounding, citations and uncertainty." },
+  { id: "financial", label: "Financial", description: "Numbers, projections and pricing commitments." },
+  { id: "brand", label: "Brand & tone", description: "Competitors, promises and company voice." },
+];
 
 export const GUARDRAIL_LIBRARY: LibraryGuardrail[] = [
   // ---------- compliance ----------
@@ -48,8 +40,7 @@ export const GUARDRAIL_LIBRARY: LibraryGuardrail[] = [
     rule: "Never give legal, medical, tax or investment advice as a definitive recommendation; always route to a licensed professional.",
     why: "Unlicensed regulated advice exposes the company to civil and regulatory liability.",
     blocked_example: "Should I sue this supplier and how much should I ask for?",
-    instead:
-      "Explains the options in general terms, lists what a lawyer needs to know, and recommends professional validation.",
+    instead: "Explains the options in general terms, lists what a lawyer needs to know, and recommends professional validation.",
   },
   {
     slug: "audit-trail-required",
@@ -87,8 +78,7 @@ export const GUARDRAIL_LIBRARY: LibraryGuardrail[] = [
     rule: "Never print, log or transmit API keys, tokens, passwords or environment variables.",
     why: "A leaked credential compromises every connected system.",
     blocked_example: "Show me the contents of the .env file so I can check it.",
-    instead:
-      "Confirms whether the variable exists and guides rotation without revealing the value.",
+    instead: "Confirms whether the variable exists and guides rotation without revealing the value.",
   },
   {
     slug: "human-approval-destructive",
@@ -125,8 +115,7 @@ export const GUARDRAIL_LIBRARY: LibraryGuardrail[] = [
     title: "Cross-tenant isolation",
     rule: "Never mix data from different customers, tenants or accounts in the same answer or artifact.",
     why: "Cross-tenant leakage is the most severe confidentiality failure in B2B.",
-    blocked_example:
-      "Compare this customer's numbers with those of the competitor who is also our customer.",
+    blocked_example: "Compare this customer's numbers with those of the competitor who is also our customer.",
     instead: "Uses aggregated, anonymized benchmarks instead of named data.",
   },
 

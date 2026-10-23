@@ -1,11 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  listRequests,
-  processRequest,
-  publishRequestPackage,
-} from "@/lib/admin/requests.functions";
+import { listRequests, processRequest, publishRequestPackage } from "@/lib/admin/requests.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,7 +43,7 @@ function RequestsPage() {
       </div>
 
       <div className="space-y-3">
-        {(requests.data?.requests ?? []).map((r) => (
+        {(requests.data?.requests ?? []).map((r: any) => (
           <Card key={r.id}>
             <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
               <div>

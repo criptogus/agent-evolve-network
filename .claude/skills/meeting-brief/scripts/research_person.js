@@ -2,17 +2,17 @@
 /**
  * Research a person for meeting brief
  * This generates a research prompt for OpenClaw to execute
- *
+ * 
  * Usage: node research_person.js <name> <email> <company> <research_depth>
  */
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
-const [, , name, email, company, researchDepth = "standard"] = process.argv;
+const [,, name, email, company, researchDepth = 'standard'] = process.argv;
 
 if (!name) {
-  console.error("Usage: node research_person.js <name> <email> <company> <research_depth>");
+  console.error('Usage: node research_person.js <name> <email> <company> <research_depth>');
   process.exit(1);
 }
 
@@ -20,48 +20,36 @@ if (!name) {
 const prompt = `Research this person for a meeting brief:
 
 **Person:** ${name}
-**Email:** ${email || "Unknown"}
-**Company:** ${company || "Unknown"}
+**Email:** ${email || 'Unknown'}
+**Company:** ${company || 'Unknown'}
 **Research Depth:** ${researchDepth}
 
 Execute the following research steps and return structured JSON:
 
-${
-  researchDepth === "quick"
-    ? `
+${researchDepth === 'quick' ? `
 1. Web search for LinkedIn profile: "${name} ${company} LinkedIn"
 2. Web search for company info: "${company}"
-`
-    : ""
-}
+` : ''}
 
-${
-  researchDepth === "standard" || researchDepth === "deep"
-    ? `
+${researchDepth === 'standard' || researchDepth === 'deep' ? `
 1. Web search for LinkedIn profile: "${name} ${company} LinkedIn"
 2. Web search for company info: "${company}"
 3. GitHub search: Try to find GitHub profile (search by name/email if available)
 4. Web search for recent news: "${name} ${company} news"
-`
-    : ""
-}
+` : ''}
 
-${
-  researchDepth === "deep"
-    ? `
+${researchDepth === 'deep' ? `
 5. Memory search: Search MEMORY.md and daily notes for past interactions with "${name}"
 6. Web search for professional background: "${name} background career"
-`
-    : ""
-}
+` : ''}
 
 **Output format (JSON):**
 \`\`\`json
 {
   "person": {
     "name": "${name}",
-    "email": "${email || ""}",
-    "company": "${company || ""}",
+    "email": "${email || ''}",
+    "company": "${company || ''}",
     "title": "extracted from LinkedIn or web search"
   },
   "linkedin": {
@@ -84,7 +72,7 @@ ${
     ]
   },
   "company": {
-    "name": "${company || ""}",
+    "name": "${company || ''}",
     "industry": "Industry from web search",
     "description": "What the company does",
     "recent_news": ["Recent news item 1", "Recent news item 2"]

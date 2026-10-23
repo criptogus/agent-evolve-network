@@ -1,10 +1,3 @@
-import type Stripe from "stripe";
-import { recordOf } from "@/lib/json";
-type Subscription = Stripe.Subscription & {
-  current_period_start?: number;
-  current_period_end?: number;
-};
-import { toJson } from "@/lib/json";
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
@@ -21,11 +14,11 @@ function getSupabase(): SupabaseClient<Database> {
   return _supabase;
 }
 
-function planFromPrice(price: Stripe.Price | undefined): string | null {
+function planFromPrice(price: any): string | null {
   return price?.lookup_key ?? price?.metadata?.lovable_external_id ?? price?.id ?? null;
 }
 
-async function handleSubscriptionCreated(subscription: Subscription, env: StripeEnv) {
+async function handleSubscriptionCreated(subscription: any, env: StripeEnv) {
   const userId = subscription.metadata?.userId;
   if (!userId) {
     console.error("No userId in subscription metadata");
@@ -33,37 +26,31 @@ async function handleSubscriptionCreated(subscription: Subscription, env: Stripe
   }
   const item = subscription.items?.data?.[0];
   const priceId = planFromPrice(item?.price);
-  const product = item?.price?.product;
-  const productId = typeof product === "string" ? product : product?.id;
+  const productId = item?.price?.product;
   const periodStart = item?.current_period_start ?? subscription.current_period_start;
   const periodEnd = item?.current_period_end ?? subscription.current_period_end;
   const unitAmount = item?.price?.unit_amount;
   const currency = item?.price?.currency ?? "usd";
 
-  await getSupabase()
-    .from("subscriptions")
-    .upsert(
-      {
-        user_id: userId,
-        plan_slug: priceId ?? "unknown",
-        stripe_subscription_id: subscription.id,
-        stripe_customer_id:
-          typeof subscription.customer === "string"
-            ? subscription.customer
-            : subscription.customer.id,
-        product_id: productId ?? null,
-        price_id: priceId,
-        status: subscription.status,
-        current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
-        current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
-        cancel_at_period_end: subscription.cancel_at_period_end ?? false,
-        price_cents: typeof unitAmount === "number" ? unitAmount : null,
-        currency: (currency as string).toUpperCase(),
-        environment: env,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "stripe_subscription_id" },
-    );
+  await getSupabase().from("subscriptions").upsert(
+    {
+      user_id: userId,
+      plan_slug: priceId ?? "unknown",
+      stripe_subscription_id: subscription.id,
+      stripe_customer_id: subscription.customer,
+      product_id: productId ?? null,
+      price_id: priceId,
+      status: subscription.status,
+      current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
+      current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+      cancel_at_period_end: subscription.cancel_at_period_end ?? false,
+      price_cents: typeof unitAmount === "number" ? unitAmount : null,
+      currency: (currency as string).toUpperCase(),
+      environment: env,
+      updated_at: new Date().toISOString(),
+    } as any,
+    { onConflict: "stripe_subscription_id" },
+  );
 
   // Award referral subscription bonus (idempotent server-side).
   try {
@@ -74,11 +61,10 @@ async function handleSubscriptionCreated(subscription: Subscription, env: Stripe
   }
 }
 
-async function handleSubscriptionUpdated(subscription: Subscription, env: StripeEnv) {
+async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
   const item = subscription.items?.data?.[0];
   const priceId = planFromPrice(item?.price);
-  const product = item?.price?.product;
-  const productId = typeof product === "string" ? product : product?.id;
+  const productId = item?.price?.product;
   const periodStart = item?.current_period_start ?? subscription.current_period_start;
   const periodEnd = item?.current_period_end ?? subscription.current_period_end;
 
@@ -92,19 +78,19 @@ async function handleSubscriptionUpdated(subscription: Subscription, env: Stripe
       current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
       cancel_at_period_end: subscription.cancel_at_period_end ?? false,
       updated_at: new Date().toISOString(),
-    })
+    } as any)
     .eq("stripe_subscription_id", subscription.id)
     .eq("environment", env);
 }
 
-async function handleSubscriptionDeleted(subscription: Subscription, env: StripeEnv) {
+async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
   await getSupabase()
     .from("subscriptions")
     .update({
       status: "canceled",
       canceled_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    })
+    } as any)
     .eq("stripe_subscription_id", subscription.id)
     .eq("environment", env);
 }
@@ -113,30 +99,27 @@ async function handleSubscriptionDeleted(subscription: Subscription, env: Stripe
  * Persist every verified event so payments are auditable. The unique index on
  * `event_id` makes replays (Stripe retries for up to 3 days) idempotent.
  */
-async function logEvent(event: Stripe.Event, env: StripeEnv) {
-  const obj = recordOf(event.data.object);
+async function logEvent(event: any, env: StripeEnv) {
+  const obj = event?.data?.object ?? {};
   const userId: string | null =
-    [
-      recordOf(obj.metadata).userId,
-      recordOf(recordOf(obj.subscription_details).metadata).userId,
-    ].find((id): id is string => typeof id === "string") ?? null;
+    obj?.metadata?.userId ?? obj?.subscription_details?.metadata?.userId ?? null;
   const { error } = await getSupabase()
     .from("payment_events")
     .insert({
       event_id: event.id ?? `${event.type}:${Date.now()}`,
       event_type: event.type,
       env,
-      payload: toJson(event),
+      payload: event as any,
       user_id: /^[0-9a-f-]{36}$/i.test(userId ?? "") ? userId : null,
-    });
+    } as any);
   // 23505 = duplicate event_id (Stripe retry) — expected, not an error.
-  if (error && error.code !== "23505") {
+  if (error && (error as any).code !== "23505") {
     console.error("payment_events insert failed", error);
   }
 }
 
 async function handleWebhook(req: Request, env: StripeEnv) {
-  const event = await verifyWebhook(req, env);
+  const event: any = await verifyWebhook(req, env);
   await logEvent(event, env);
 
   switch (event.type) {
@@ -169,17 +152,13 @@ async function handleWebhook(req: Request, env: StripeEnv) {
       console.warn("async payment failed", event.data.object?.id);
       break;
     case "invoice.paid":
-      console.log(
-        "invoice paid",
-        event.data.object?.id,
-        recordOf(event.data.object).subscription ?? null,
-      );
+      console.log("invoice paid", event.data.object?.id, event.data.object?.subscription ?? null);
       break;
     case "invoice.payment_failed":
       console.warn(
         "invoice payment failed",
         event.data.object?.id,
-        recordOf(event.data.object).subscription ?? null,
+        event.data.object?.subscription ?? null,
       );
       break;
     default:

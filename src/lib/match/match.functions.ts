@@ -3,7 +3,7 @@ import { z } from "zod";
 import { generateText, Output } from "ai";
 import { getGatewayModel } from "@/lib/ai-gateway";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 import { MCP_REGISTRY, compactMcpCatalogForLLM, getMcpById } from "./mcp-registry";
 
 const Input = z.object({
@@ -50,7 +50,7 @@ const MatchSchema = z.object({
         capability: z.string().max(160),
         suggestion: z.string().max(240),
         recommended_type: z.enum(["skill", "playbook", "soul", "guardrail"]),
-      }),
+      })
     )
     .max(8),
   recommended_mcps: z
@@ -59,11 +59,8 @@ const MatchSchema = z.object({
         id: z.string(),
         score: z.number().min(0).max(10),
         why: z.string().max(280),
-        pairs_with: z
-          .array(z.string())
-          .max(8)
-          .describe("slugs from the kit that this MCP empowers"),
-      }),
+        pairs_with: z.array(z.string()).max(8).describe("slugs from the kit that this MCP empowers"),
+      })
     )
     .max(6)
     .default([]),
@@ -98,10 +95,7 @@ export const matchAgentToPackages = createServerFn({ method: "POST" })
 
     const validSlugs = new Set(catalog.map((p) => p.slug));
     const slugByType: Record<string, Set<string>> = {
-      skill: new Set(),
-      playbook: new Set(),
-      soul: new Set(),
-      guardrail: new Set(),
+      skill: new Set(), playbook: new Set(), soul: new Set(), guardrail: new Set(),
     };
     for (const p of catalog) slugByType[p.type].add(p.slug);
 
@@ -142,20 +136,7 @@ ${compactMcpCatalogForLLM()}`;
 
     // sanitize: drop any hallucinated slugs / wrong types
     const clean = (arr: typeof output.recommended_kit.skills, type: keyof typeof slugByType) =>
-      arr
-        .filter((x) => slugByType[type].has(x.slug))
-        .slice(
-          0,
-          data.desired[
-            type === "skill"
-              ? "skills"
-              : type === "playbook"
-                ? "playbooks"
-                : type === "soul"
-                  ? "souls"
-                  : "guardrails"
-          ] + 1,
-        );
+      arr.filter((x) => slugByType[type].has(x.slug)).slice(0, data.desired[type === "skill" ? "skills" : type === "playbook" ? "playbooks" : type === "soul" ? "souls" : "guardrails"] + 1);
 
     output.recommended_kit.skills = clean(output.recommended_kit.skills, "skill");
     output.recommended_kit.playbooks = clean(output.recommended_kit.playbooks, "playbook");
@@ -181,18 +162,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const listMcpRegistry = createServerFn({ method: "GET" }).handler(async () => {
   return MCP_REGISTRY.map((m) => ({
-    id: m.id,
-    name: m.name,
-    vendor: m.vendor,
-    category: m.category,
-    description: m.description,
-    transport: m.transport,
-    url: m.url,
-    command: m.command,
-    args: m.args,
-    scopes: m.scopes,
-    env: m.env,
-    homepage: m.homepage,
+    id: m.id, name: m.name, vendor: m.vendor, category: m.category,
+    description: m.description, transport: m.transport, url: m.url,
+    command: m.command, args: m.args, scopes: m.scopes, env: m.env, homepage: m.homepage,
   }));
 });
 
@@ -220,9 +192,7 @@ export const connectMcp = createServerFn({ method: "POST" })
     if (!entry) throw new Response("Unknown MCP", { status: 404 });
     const missing = entry.env.filter((f) => f.required && !data.env[f.key]?.trim());
     if (missing.length) {
-      throw new Response(`Missing required env: ${missing.map((m) => m.key).join(", ")}`, {
-        status: 400,
-      });
+      throw new Response(`Missing required env: ${missing.map((m) => m.key).join(", ")}`, { status: 400 });
     }
     // Persist only the env KEYS supplied (never the secret values).
     const provided: Record<string, boolean> = {};
@@ -232,18 +202,12 @@ export const connectMcp = createServerFn({ method: "POST" })
       .from("user_mcp_connections")
       .upsert(
         {
-          user_id: context.userId,
-          registry_id: entry.id,
-          name: entry.name,
-          transport: entry.transport,
-          url: entry.url ?? null,
-          command: entry.command ?? null,
-          args: entry.args ?? [],
-          env_provided: provided,
-          scopes: entry.scopes,
-          status: "connected",
+          user_id: context.userId, registry_id: entry.id, name: entry.name,
+          transport: entry.transport, url: entry.url ?? null,
+          command: entry.command ?? null, args: entry.args ?? [],
+          env_provided: provided, scopes: entry.scopes, status: "connected",
         },
-        { onConflict: "user_id,registry_id" },
+        { onConflict: "user_id,registry_id" }
       )
       .select("id,registry_id,name,status")
       .single();
@@ -301,10 +265,8 @@ export const runMcpWithKit = createServerFn({ method: "POST" })
       run_id: run.id,
       kind: "mcp.attached",
       payload: {
-        registry_id: entry.id,
-        name: entry.name,
-        transport: entry.transport,
-        scopes: entry.scopes,
+        registry_id: entry.id, name: entry.name,
+        transport: entry.transport, scopes: entry.scopes,
       },
     });
     await supabaseAdmin

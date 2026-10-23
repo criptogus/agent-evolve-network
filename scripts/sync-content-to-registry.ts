@@ -30,11 +30,7 @@ const packages = [];
 for (const type of TYPES) {
   const dir = join(ROOT, "content", FOLDER[type]);
   let entries;
-  try {
-    entries = readdirSync(dir);
-  } catch {
-    continue;
-  }
+  try { entries = readdirSync(dir); } catch { continue; }
   for (const entry of entries) {
     const full = join(dir, entry);
     if (!statSync(full).isFile()) continue;
@@ -59,17 +55,13 @@ for (const type of TYPES) {
 
 console.log(`Syncing ${packages.length} package(s)…`);
 
-let ok = 0,
-  fail = 0;
+let ok = 0, fail = 0;
 for (const p of packages) {
-  const { error } = await supabase.from("packages").upsert(p, { onConflict: "slug" });
-  if (error) {
-    console.error(`✗ ${p.slug}: ${error.message}`);
-    fail++;
-  } else {
-    console.log(`✓ ${p.type}/${p.slug}`);
-    ok++;
-  }
+  const { error } = await supabase
+    .from("packages")
+    .upsert(p, { onConflict: "slug" });
+  if (error) { console.error(`✗ ${p.slug}: ${error.message}`); fail++; }
+  else { console.log(`✓ ${p.type}/${p.slug}`); ok++; }
 }
 
 console.log(`\nDone — ${ok} synced, ${fail} failed.`);

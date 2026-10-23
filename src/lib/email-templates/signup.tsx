@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react'
 import {
   Body,
   Button,
@@ -11,17 +11,20 @@ import {
   Preview,
   Section,
   Text,
-} from "@react-email/components";
-import { BRAND, styles } from "./_brand";
+} from '@react-email/components'
+import { BRAND, styles } from './_brand'
 
 interface SignupEmailProps {
-  siteName: string;
-  siteUrl: string;
-  recipient: string;
-  confirmationUrl: string;
+  siteName: string
+  siteUrl: string
+  recipient: string
+  confirmationUrl: string
 }
 
-export const SignupEmail = ({ recipient, confirmationUrl }: SignupEmailProps) => (
+export const SignupEmail = ({
+  recipient,
+  confirmationUrl,
+}: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Confirm your email to activate your {BRAND.name} account</Preview>
@@ -34,17 +37,17 @@ export const SignupEmail = ({ recipient, confirmationUrl }: SignupEmailProps) =>
           </Section>
           <Heading style={styles.h1}>Confirm your email</Heading>
           <Text style={styles.text}>
-            Welcome to {BRAND.name} — {BRAND.tagline.toLowerCase()}. Confirm{" "}
+            Welcome to {BRAND.name} — {BRAND.tagline.toLowerCase()}. Confirm{' '}
             <Link href={`mailto:${recipient}`} style={styles.link}>
               {recipient}
-            </Link>{" "}
+            </Link>{' '}
             to activate your account and start shipping verified skills.
           </Text>
           <Button style={styles.button} href={confirmationUrl}>
             Verify email
           </Button>
           <Hr style={styles.divider} />
-          <Text style={{ ...styles.text, fontSize: "13px", margin: 0 }}>
+          <Text style={{ ...styles.text, fontSize: '13px', margin: 0 }}>
             If the button doesn't work, paste this link into your browser:
             <br />
             <Link href={confirmationUrl} style={styles.link}>
@@ -62,6 +65,6 @@ export const SignupEmail = ({ recipient, confirmationUrl }: SignupEmailProps) =>
       </Container>
     </Body>
   </Html>
-);
+)
 
-export default SignupEmail;
+export default SignupEmail

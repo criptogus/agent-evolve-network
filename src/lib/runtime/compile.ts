@@ -34,10 +34,9 @@ export function compilePlaybook(yaml: YamlPlaybook): CompiledPlaybook {
       action: parseAction(s.action, s.with),
       when: s.when,
       on_error: s.on_error ?? "abort",
-      retry:
-        s.on_error === "retry"
-          ? { max: s.retry?.max ?? 2, backoff_ms: s.retry?.backoff_ms ?? 500 }
-          : undefined,
+      retry: s.on_error === "retry"
+        ? { max: s.retry?.max ?? 2, backoff_ms: s.retry?.backoff_ms ?? 500 }
+        : undefined,
     };
   });
   return {

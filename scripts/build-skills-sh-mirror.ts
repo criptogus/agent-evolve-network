@@ -31,9 +31,7 @@ function validSlug(slug) {
 
 /** Frontmatter descriptions must carry WHAT + WHEN, be <=1024 chars and have no angle brackets. */
 function buildDescription(skill) {
-  const base = String(skill.description ?? "")
-    .replace(/[<>]/g, "")
-    .trim();
+  const base = String(skill.description ?? "").replace(/[<>]/g, "").trim();
   const hasTrigger =
     /\b(use when|use this when|when (the )?user|trigger|asks? (to|for)|mentions?|invoke when)\b/i.test(
       base,

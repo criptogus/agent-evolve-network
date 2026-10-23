@@ -54,12 +54,10 @@ export function verifyPkceS256(verifier: string, challenge: string): boolean {
 export const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, Mcp-Session-Id, Mcp-Protocol-Version",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, Mcp-Session-Id, Mcp-Protocol-Version",
   // Browser MCP clients (Claude.ai web connectors) can only read the OAuth
   // challenge if WWW-Authenticate is explicitly exposed.
-  "Access-Control-Expose-Headers":
-    "WWW-Authenticate, Mcp-Session-Id, X-MCP-Auth, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-RateLimit-Window",
+  "Access-Control-Expose-Headers": "WWW-Authenticate, Mcp-Session-Id, X-MCP-Auth, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-RateLimit-Window",
   "Access-Control-Max-Age": "86400",
 };
 
@@ -109,11 +107,7 @@ export function discoveryResponse(body: unknown) {
   });
 }
 
-export function jsonResponse(
-  body: unknown,
-  status = 200,
-  extraHeaders: Record<string, string> = {},
-) {
+export function jsonResponse(body: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {

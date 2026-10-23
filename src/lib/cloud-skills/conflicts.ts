@@ -99,9 +99,7 @@ export function detectConflict(args: {
 
   if (!localHash) {
     const sameVersion =
-      local.version !== undefined &&
-      args.cloudVersion != null &&
-      local.version === args.cloudVersion;
+      local.version !== undefined && args.cloudVersion != null && local.version === args.cloudVersion;
     return {
       slug,
       path,
@@ -113,12 +111,7 @@ export function detectConflict(args: {
   }
 
   if (localHash === incomingHash) {
-    return {
-      slug,
-      path,
-      kind: "identical",
-      detail: "Local file already matches the cloud version.",
-    };
+    return { slug, path, kind: "identical", detail: "Local file already matches the cloud version." };
   }
 
   const localBody = local.content ? normalize(local.content) : "";

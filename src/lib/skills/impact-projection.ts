@@ -215,10 +215,12 @@ export function projectImpact(input: ImpactInput): ImpactProjection {
   const success = rows.find((r) => r.id === "task_success_rate")!;
   const tokens = rows.find((r) => r.id === "avg_tokens")!;
 
-  const monthlyUsd = ((cost.currentValue - cost.projectedValue) * runsPerMonth) / 1000;
+  const monthlyUsd =
+    ((cost.currentValue - cost.projectedValue) * runsPerMonth) / 1000;
   const rescuedRunsPerMonth =
     ((success.projectedValue - success.currentValue) / 100) * runsPerMonth;
-  const tokensSavedPerMonth = (tokens.currentValue - tokens.projectedValue) * runsPerMonth;
+  const tokensSavedPerMonth =
+    (tokens.currentValue - tokens.projectedValue) * runsPerMonth;
 
   const confidence: ImpactProjection["confidence"] =
     input.semanticPass && (input.actionsCount ?? 0) >= 2

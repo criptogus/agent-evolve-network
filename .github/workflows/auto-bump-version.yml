@@ -29,8 +29,6 @@ jobs:
         with:
           node-version: "22"
 
-      - run: npm ci
-
       - name: Compute and apply bump
         id: bump
         run: |
@@ -46,19 +44,13 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Refresh generated version metadata
-        if: steps.bump.outputs.changed == 'true'
-        run: |
-          node --experimental-strip-types scripts/build-agent-plugin.ts
-          node --experimental-strip-types scripts/build-skills-sh-mirror.ts
-
       - name: Commit, tag, and push
         if: steps.bump.outputs.changed == 'true'
         run: |
           set -euo pipefail
           git config user.name  "lovable-version-bot"
           git config user.email "bot@superagentskill.com"
-          git add src/lib/version.ts package.json CHANGELOG.md plugin.json mcp.json skills/
+          git add src/lib/version.ts package.json CHANGELOG.md
           git commit -m "chore: bump platform version ${{ steps.bump.outputs.before }} -> ${{ steps.bump.outputs.after }}"
           git tag "v${{ steps.bump.outputs.after }}"
           git push origin HEAD:main --follow-tags

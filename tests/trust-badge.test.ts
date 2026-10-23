@@ -1,8 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-const { renderTrustBadge, renderAdversarialBadge } =
-  await import("../src/lib/badges/trust-badge.ts");
+const { renderTrustBadge, renderAdversarialBadge } = await import("../src/lib/badges/trust-badge.ts");
 
 test("renders SVG with score percentage", () => {
   const svg = renderTrustBadge({ slug: "code-reviewer", score: 0.87 });

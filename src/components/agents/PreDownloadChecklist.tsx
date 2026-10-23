@@ -54,13 +54,7 @@ export function PreDownloadChecklist({
   const contracts = useMemo(() => {
     const out: { key: string; kind: string; title: string; body: string }[] = [];
     const soulContract = section(soul ?? undefined, "Output contract");
-    if (soulContract)
-      out.push({
-        key: "soul",
-        kind: "Soul",
-        title: "Every response",
-        body: firstLines(soulContract, 8),
-      });
+    if (soulContract) out.push({ key: "soul", kind: "Soul", title: "Every response", body: firstLines(soulContract, 8) });
     for (const d of [...(skills ?? []), ...(playbooks ?? [])]) {
       const fmt = section(d.body, "Output format") ?? section(d.body, "Output contract");
       if (fmt) {
@@ -84,8 +78,9 @@ export function PreDownloadChecklist({
       <CardHeader>
         <CardTitle>Validate before you download</CardTitle>
         <CardDescription>
-          What this agent will refuse, and exactly what it hands back. Tick each rule you're happy
-          with — {ackedCount}/{rails.length} reviewed.
+          What this agent will refuse, and exactly what it hands back. Tick each rule you're happy with —
+          {" "}
+          {ackedCount}/{rails.length} reviewed.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
@@ -125,18 +120,13 @@ export function PreDownloadChecklist({
                           <div className="mt-3 space-y-2 rounded-md border bg-muted/40 p-3 text-xs">
                             {g.blocked_example && (
                               <p>
-                                <span className="font-medium text-destructive">
-                                  Blocked example:{" "}
-                                </span>
+                                <span className="font-medium text-destructive">Blocked example: </span>
                                 <span className="text-muted-foreground">“{g.blocked_example}”</span>
                               </p>
                             )}
                             {g.instead && (
                               <p className="flex items-start gap-1.5">
-                                <ArrowRight
-                                  className="mt-0.5 h-3 w-3 shrink-0 text-primary"
-                                  aria-hidden
-                                />
+                                <ArrowRight className="mt-0.5 h-3 w-3 shrink-0 text-primary" aria-hidden />
                                 <span>
                                   <span className="font-medium">Instead: </span>
                                   <span className="text-muted-foreground">{g.instead}</span>

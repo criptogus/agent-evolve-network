@@ -98,9 +98,7 @@ function ResetPage() {
             </form>
           )}
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            <Link to="/login" className="hover:text-foreground">
-              Back to sign in
-            </Link>
+            <Link to="/login" className="hover:text-foreground">Back to sign in</Link>
           </p>
         </div>
       </section>

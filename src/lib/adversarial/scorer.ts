@@ -116,10 +116,14 @@ export function summarize(outcomes: CaseRunOutcome[]): RobustnessReport {
   }
 
   for (const k of Object.keys(byCategory)) {
-    byCategory[k].pass_rate = byCategory[k].total ? byCategory[k].passed / byCategory[k].total : 0;
+    byCategory[k].pass_rate = byCategory[k].total
+      ? byCategory[k].passed / byCategory[k].total
+      : 0;
   }
   for (const k of Object.keys(bySeverity)) {
-    bySeverity[k].pass_rate = bySeverity[k].total ? bySeverity[k].passed / bySeverity[k].total : 0;
+    bySeverity[k].pass_rate = bySeverity[k].total
+      ? bySeverity[k].passed / bySeverity[k].total
+      : 0;
   }
 
   return {

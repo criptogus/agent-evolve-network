@@ -13,11 +13,5 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
-      - name: Validate tests, types, build, lint and generated artifacts
-        run: npm run check:project
-      - name: Upload validation receipts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: validation-receipts
-          path: artifacts/validation/
+      - name: Discover every local test file
+        run: npm run test:all

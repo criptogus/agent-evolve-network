@@ -28,7 +28,7 @@ export const Route = createFileRoute("/api/public/mcp/health")({
             tools: TOOLS,
             ts: new Date().toISOString(),
           }),
-          { headers },
+          { headers }
         ),
     },
   },

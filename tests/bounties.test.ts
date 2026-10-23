@@ -4,70 +4,41 @@ import assert from "node:assert/strict";
 const { checkEligibility, rankLeaderboard } = await import("../src/lib/growth/bounties.ts");
 
 const openBounty = {
-  status: "open",
-  required_trust_score: 0.85,
-  required_adversarial_pass: 0.8,
-  vertical: "security",
-  deadline: null,
+  status: "open", required_trust_score: 0.85, required_adversarial_pass: 0.8,
+  vertical: "security", deadline: null,
 };
 
 test("accepts a submission that meets thresholds", () => {
   assert.equal(
-    checkEligibility(openBounty, {
-      trust_score: 0.9,
-      adversarial_pass_rate: 0.85,
-      package_tags: ["security"],
-    }),
+    checkEligibility(openBounty, { trust_score: 0.9, adversarial_pass_rate: 0.85, package_tags: ["security"] }),
     "OK",
   );
 });
 
 test("rejects when trust below threshold", () => {
   assert.equal(
-    checkEligibility(openBounty, {
-      trust_score: 0.7,
-      adversarial_pass_rate: 0.85,
-      package_tags: ["security"],
-    }),
+    checkEligibility(openBounty, { trust_score: 0.7, adversarial_pass_rate: 0.85, package_tags: ["security"] }),
     "TRUST_BELOW_THRESHOLD",
   );
 });
 
 test("rejects when adversarial below threshold", () => {
   assert.equal(
-    checkEligibility(openBounty, {
-      trust_score: 0.9,
-      adversarial_pass_rate: 0.5,
-      package_tags: ["security"],
-    }),
+    checkEligibility(openBounty, { trust_score: 0.9, adversarial_pass_rate: 0.5, package_tags: ["security"] }),
     "ADVERSARIAL_BELOW_THRESHOLD",
   );
 });
 
 test("rejects when bounty closed or past deadline", () => {
-  assert.equal(
-    checkEligibility(
-      { ...openBounty, status: "paid" },
-      { trust_score: 1, adversarial_pass_rate: 1, package_tags: ["security"] },
-    ),
-    "BOUNTY_NOT_OPEN",
-  );
-  assert.equal(
-    checkEligibility(
-      { ...openBounty, deadline: new Date(Date.now() - 1000).toISOString() },
-      { trust_score: 1, adversarial_pass_rate: 1, package_tags: ["security"] },
-    ),
-    "DEADLINE_PASSED",
-  );
+  assert.equal(checkEligibility({ ...openBounty, status: "paid" }, { trust_score: 1, adversarial_pass_rate: 1, package_tags: ["security"] }),
+    "BOUNTY_NOT_OPEN");
+  assert.equal(checkEligibility({ ...openBounty, deadline: new Date(Date.now() - 1000).toISOString() }, { trust_score: 1, adversarial_pass_rate: 1, package_tags: ["security"] }),
+    "DEADLINE_PASSED");
 });
 
 test("rejects when package_tags miss the required vertical", () => {
   assert.equal(
-    checkEligibility(openBounty, {
-      trust_score: 1,
-      adversarial_pass_rate: 1,
-      package_tags: ["fintech"],
-    }),
+    checkEligibility(openBounty, { trust_score: 1, adversarial_pass_rate: 1, package_tags: ["fintech"] }),
     "VERTICAL_MISMATCH",
   );
 });
@@ -87,9 +58,7 @@ test("leaderboard ranks by activations * earnings, breaking ties by earnings", (
 
 test("leaderboard respects topN", () => {
   const rows = Array.from({ length: 100 }, (_, i) => ({
-    referrer_user_id: `u${i}`,
-    activated_referrals: i + 1,
-    referral_earnings_cents: (i + 1) * 100,
+    referrer_user_id: `u${i}`, activated_referrals: i + 1, referral_earnings_cents: (i + 1) * 100,
   }));
   assert.equal(rankLeaderboard(rows, 10).length, 10);
 });

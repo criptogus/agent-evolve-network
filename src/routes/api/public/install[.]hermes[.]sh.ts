@@ -117,3 +117,4 @@ export const Route = createFileRoute("/api/public/install.hermes.sh")({
     },
   },
 });
+

@@ -116,8 +116,7 @@ export function projectFitScore(
   if (!projectType) return 0;
   const spec = PROJECT_TYPES.find((t) => t.value === projectType);
   if (!spec) return 0;
-  const text =
-    `${item.name} ${item.description} ${item.vertical ?? ""} ${item.type ?? ""}`.toLowerCase();
+  const text = `${item.name} ${item.description} ${item.vertical ?? ""} ${item.type ?? ""}`.toLowerCase();
   let hits = 0;
   for (const kw of spec.keywords) if (text.includes(kw)) hits++;
   if (hits === 0) return 0;

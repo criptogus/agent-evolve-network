@@ -1,4 +1,3 @@
-import { errorField } from "@/lib/errors";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -65,11 +64,7 @@ function EncryptionPage() {
   const [newKey, setNewKey] = useState("");
   const [ref, setRef] = useState("");
   const [content, setContent] = useState("");
-  const [decrypted, setDecrypted] = useState<{
-    ref: string;
-    content: string;
-    integrityOk: boolean;
-  } | null>(null);
+  const [decrypted, setDecrypted] = useState<{ ref: string; content: string; integrityOk: boolean } | null>(null);
 
   const statusQ = useQuery({ queryKey: ["tenant-encryption"], queryFn: () => status() });
   const objectsQ = useQuery({
@@ -82,8 +77,7 @@ function EncryptionPage() {
     qc.invalidateQueries({ queryKey: ["tenant-encryption"] });
     qc.invalidateQueries({ queryKey: ["tenant-encrypted-objects"] });
   };
-  const fail = (e: unknown) =>
-    toast.error(String(errorField(e) ?? "Failed").replace(/^Error:\s*/, ""));
+  const fail = (e: any) => toast.error(String(e?.message ?? "Failed").replace(/^Error:\s*/, ""));
 
   const enableMut = useMutation({
     mutationFn: () => enable({ data: { rootKey: rootKey.trim() } }),
@@ -94,8 +88,7 @@ function EncryptionPage() {
     onError: fail,
   });
   const rotateMut = useMutation({
-    mutationFn: () =>
-      rotate({ data: { currentRootKey: rootKey.trim(), newRootKey: newKey.trim() } }),
+    mutationFn: () => rotate({ data: { currentRootKey: rootKey.trim(), newRootKey: newKey.trim() } }),
     onSuccess: (r) => {
       toast.success(`Key rotated · ${r.fingerprint}…`);
       setRootKey(newKey.trim());
@@ -113,8 +106,7 @@ function EncryptionPage() {
     onError: fail,
   });
   const putMut = useMutation({
-    mutationFn: () =>
-      put({ data: { rootKey: rootKey.trim(), kind: "skill", ref: ref.trim(), content } }),
+    mutationFn: () => put({ data: { rootKey: rootKey.trim(), kind: "skill", ref: ref.trim(), content } }),
     onSuccess: (r) => {
       toast.success(`Encrypted · sha256 ${r.sha256.slice(0, 12)}…`);
       setContent("");
@@ -149,24 +141,15 @@ function EncryptionPage() {
         </h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
           AES-256-GCM envelope encryption: you generate the root key (CMK), we store only the
-          fingerprint, the derivation salt, and the <em>wrapped</em> data key. Without your root
-          key, neither the platform nor an operator with database access can read the content.
+          fingerprint, the derivation salt, and the <em>wrapped</em> data key. Without your
+          root key, neither the platform nor an operator with database access can read the content.
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           {[
-            [
-              "Zero-knowledge",
-              "The root key is never persisted — it only exists in memory during the operation.",
-            ],
-            [
-              "Rotation without reprocessing",
-              "Rotating re-wraps the data key; the encrypted content is not touched.",
-            ],
-            [
-              "Crypto-shredding",
-              "Revoking deletes the data key: the ciphertext becomes unrecoverable.",
-            ],
+            ["Zero-knowledge", "The root key is never persisted — it only exists in memory during the operation."],
+            ["Rotation without reprocessing", "Rotating re-wraps the data key; the encrypted content is not touched."],
+            ["Crypto-shredding", "Revoking deletes the data key: the ciphertext becomes unrecoverable."],
           ].map(([t, d]) => (
             <div key={t} className="rounded-xl border border-border/60 bg-card p-4">
               <div className="text-sm font-semibold">{t}</div>
@@ -178,8 +161,8 @@ function EncryptionPage() {
         <section className="mt-10 rounded-xl border border-border/60 bg-card p-5">
           <h2 className="text-lg font-semibold">1. Your root key (32 bytes, base64)</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Generated in your browser. Store it in a password manager or your own KMS — if you lose
-            it, the encrypted content is unrecoverable by design.
+            Generated in your browser. Store it in a password manager or your own KMS — if you
+            lose it, the encrypted content is unrecoverable by design.
           </p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
             <Input
@@ -278,10 +261,7 @@ function EncryptionPage() {
               {objectsQ.data?.length ? (
                 <ul className="mt-3 divide-y divide-border/60">
                   {objectsQ.data.map((o) => (
-                    <li
-                      key={o.id}
-                      className="flex flex-wrap items-center justify-between gap-2 py-3"
-                    >
+                    <li key={o.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
                       <div className="min-w-0">
                         <div className="truncate text-sm font-medium">{o.ref}</div>
                         <div className="font-mono text-xs text-muted-foreground">
@@ -330,11 +310,7 @@ function EncryptionPage() {
                   autoComplete="off"
                   spellCheck={false}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setNewKey(generateRootKey())}
-                >
+                <Button type="button" variant="outline" onClick={() => setNewKey(generateRootKey())}>
                   Generate new
                 </Button>
                 <Button
@@ -364,8 +340,7 @@ function EncryptionPage() {
                     size="sm"
                     variant="destructive"
                     onClick={() => {
-                      if (confirm("Destroy key AND delete all encrypted objects?"))
-                        revokeMut.mutate(true);
+                      if (confirm("Destroy key AND delete all encrypted objects?")) revokeMut.mutate(true);
                     }}
                   >
                     Destroy key + objects

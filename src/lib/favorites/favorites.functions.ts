@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type StarState = {
@@ -20,7 +20,9 @@ export type StarredPackage = {
   starred_at: string;
 };
 
-async function packageBySlug(slug: string): Promise<{ id: string; star_count: number } | null> {
+async function packageBySlug(
+  slug: string,
+): Promise<{ id: string; star_count: number } | null> {
   const { data } = await supabaseAdmin
     .from("packages")
     .select("id, star_count")
@@ -41,7 +43,7 @@ export const toggleStar = createServerFn({ method: "POST" })
     const pkg = await packageBySlug(data.slug);
     if (!pkg) throw new Response("PACKAGE_NOT_FOUND", { status: 404 });
 
-    const db = context.supabase;
+    const db = context.supabase as any;
     const { data: existing } = await db
       .from("package_stars")
       .select("package_id")
@@ -85,7 +87,7 @@ export const isStarred = createServerFn({ method: "GET" })
   .handler(async ({ data, context }): Promise<StarState> => {
     const pkg = await packageBySlug(data.slug);
     if (!pkg) return { packageId: null, starred: false, star_count: 0 };
-    const db = context.supabase;
+    const db = context.supabase as any;
     const { data: row } = await db
       .from("package_stars")
       .select("package_id")
@@ -99,7 +101,7 @@ export const isStarred = createServerFn({ method: "GET" })
 export const getMyStars = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<{ packages: StarredPackage[] }> => {
-    const db = context.supabase;
+    const db = context.supabase as any;
     const { data: stars, error } = await db
       .from("package_stars")
       .select("package_id, created_at")
@@ -113,10 +115,7 @@ export const getMyStars = createServerFn({ method: "GET" })
     const { data: pkgs, error: pkgErr } = await supabaseAdmin
       .from("packages")
       .select("id, slug, name, type, description, latest_version, star_count")
-      .in(
-        "id",
-        rows.map((r) => r.package_id),
-      );
+      .in("id", rows.map((r) => r.package_id));
     if (pkgErr) throw new Response(pkgErr.message, { status: 500 });
 
     const map = new Map(

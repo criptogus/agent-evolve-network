@@ -2,29 +2,29 @@
 /**
  * Generate AI brief for a person based on research data
  * This generates a prompt for OpenClaw to execute
- *
+ * 
  * Usage: node generate_brief.js <research_json_file> <meeting_context_json>
  */
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
-const [, , researchFile, meetingFile] = process.argv;
+const [,, researchFile, meetingFile] = process.argv;
 
 if (!researchFile || !meetingFile) {
-  console.error("Usage: node generate_brief.js <research_json_file> <meeting_context_json>");
+  console.error('Usage: node generate_brief.js <research_json_file> <meeting_context_json>');
   process.exit(1);
 }
 
-const research = JSON.parse(fs.readFileSync(researchFile, "utf8"));
-const meeting = JSON.parse(fs.readFileSync(meetingFile, "utf8"));
+const research = JSON.parse(fs.readFileSync(researchFile, 'utf8'));
+const meeting = JSON.parse(fs.readFileSync(meetingFile, 'utf8'));
 
 const prompt = `Generate a personalized meeting brief email based on this research and meeting context.
 
 **Meeting Context:**
 - Title: ${meeting.title}
 - Date/Time: ${meeting.start_date} ${meeting.start_time}
-- Location: ${meeting.location || "Not specified"}
+- Location: ${meeting.location || 'Not specified'}
 
 **Person Research:**
 ${JSON.stringify(research, null, 2)}

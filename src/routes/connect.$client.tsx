@@ -62,7 +62,8 @@ const PROFILES: Record<string, Profile> = {
         notes: "Verify with `claude mcp list`.",
       },
     ],
-    test_prompt: 'Call the super-agent-skill MCP tool `search_registry` with query "code review".',
+    test_prompt:
+      "Call the super-agent-skill MCP tool `search_registry` with query \"code review\".",
   },
   cursor: {
     id: "cursor",
@@ -124,7 +125,7 @@ transport = "http"`,
       { kind: "cli", command: "npx -y super-agent connect --client codex" },
     ],
     test_prompt:
-      'Use the super-agent-skill MCP server to call `list_packages` with type="skill" and limit=5.',
+      "Use the super-agent-skill MCP server to call `list_packages` with type=\"skill\" and limit=5.",
   },
   lovable: {
     id: "lovable",
@@ -175,7 +176,7 @@ transport = "http"`,
       },
     ],
     test_prompt:
-      'Use the Super Agent Skill MCP server to call `search_registry` with query "security".',
+      "Use the Super Agent Skill MCP server to call `search_registry` with query \"security\".",
   },
 };
 
@@ -217,9 +218,7 @@ function CopyButton({ value }: { value: string }) {
           await navigator.clipboard.writeText(value);
           setCopied(true);
           setTimeout(() => setCopied(false), 1500);
-        } catch {
-          /* Best-effort browser storage or navigation. */
-        }
+        } catch {}
       }}
       className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium hover:bg-accent"
     >
@@ -305,7 +304,9 @@ function ConnectClientPage() {
           <p className="font-mono text-[11px] uppercase tracking-wider text-primary">
             Verify it works
           </p>
-          <p className="mt-2 text-sm">Paste this in your {profile.name} chat:</p>
+          <p className="mt-2 text-sm">
+            Paste this in your {profile.name} chat:
+          </p>
           <div className="mt-3">
             <CodeBlock filename={`${profile.name} chat`} lang="txt" code={profile.test_prompt} />
           </div>

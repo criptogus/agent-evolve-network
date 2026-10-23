@@ -32,10 +32,10 @@ export function FounderLetter() {
             <span className="text-foreground">
               Super Agent Skill exists to turn that into evidence.
             </span>{" "}
-            The evaluation workflow can grade format and substance, run adversarial cases, and
-            record improvements across versions. Coverage is still growing: being published in the
-            registry does not mean a capability is tested or signed. Check the evidence for the
-            exact version you install.
+            Every capability that enters the registry is graded on format and substance separately,
+            run against adversarial cases, repaired where it fails, and re-scored. Each attempt is
+            kept as a version with its delta. Only the version that passes gets published — and the
+            score travels with it, so anyone installing it can see what it was measured on.
           </p>
           <p>
             That is also how we build agents. You describe the role; the factory assembles the soul,
@@ -63,7 +63,10 @@ export function FounderLetter() {
               </a>
             </div>
           </div>
-          <Link to="/how-it-works" className="text-sm font-medium text-primary hover:underline">
+          <Link
+            to="/how-it-works"
+            className="text-sm font-medium text-primary hover:underline"
+          >
             How the scoring works →
           </Link>
         </div>

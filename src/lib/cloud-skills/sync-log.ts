@@ -108,8 +108,7 @@ export function summarizeSyncEvent(row: {
   const tool = row.provider_label ?? row.provider;
   const parts = [`${row.written_count} written`];
   if (row.skipped_count) parts.push(`${row.skipped_count} skipped`);
-  if (row.conflict_count)
-    parts.push(`${row.conflict_count} conflict${row.conflict_count === 1 ? "" : "s"}`);
+  if (row.conflict_count) parts.push(`${row.conflict_count} conflict${row.conflict_count === 1 ? "" : "s"}`);
   if (row.unresolved_count) parts.push(`${row.unresolved_count} unresolved`);
   return `${tool} (${row.scope}): ${parts.join(", ")}`;
 }

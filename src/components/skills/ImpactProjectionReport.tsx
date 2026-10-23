@@ -68,9 +68,7 @@ export function ImpactProjectionReport({
                     <div className="text-xs text-muted-foreground">{r.detail}</div>
                   </td>
                   <td className="px-4 py-3 font-mono text-muted-foreground">{r.current}</td>
-                  <td className="px-4 py-3 font-mono font-semibold text-foreground">
-                    {r.projected}
-                  </td>
+                  <td className="px-4 py-3 font-mono font-semibold text-foreground">{r.projected}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-flex items-center gap-1 font-mono text-xs font-medium ${
@@ -106,9 +104,7 @@ export function ImpactProjectionReport({
 function Kpi({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
     <div className="rounded-lg border border-border bg-surface p-4">
-      <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
+      <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="mt-1 text-2xl font-semibold tracking-tight">{value}</div>
       <div className="text-xs text-muted-foreground">{sub}</div>
     </div>

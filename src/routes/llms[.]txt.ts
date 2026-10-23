@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 
 const BODY = `# Super Agent Skill
 > The MCP infrastructure layer for AI agents. Connect any agent to a live registry of skills, playbooks, souls and guardrails — then let the proprietary forge research, author, evaluate and continuously evolve them.

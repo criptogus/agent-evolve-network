@@ -18,10 +18,7 @@ export const Route = createFileRoute("/api/integrations/$slug/install")({
         const workspaceId = url.searchParams.get("workspace_id");
         const redirectUri = url.searchParams.get("redirect_uri");
         if (!workspaceId || !redirectUri) {
-          return Response.json(
-            { error: "workspace_id and redirect_uri required" },
-            { status: 400 },
-          );
+          return Response.json({ error: "workspace_id and redirect_uri required" }, { status: 400 });
         }
 
         if (integ.auth.kind === "oauth2" && integ.auth.oauth2) {

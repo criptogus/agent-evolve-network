@@ -26,10 +26,9 @@ const ITEMS: { q: string; a: React.ReactNode }[] = [
       <>
         We score format and substance separately. Format is deterministic: structure, output
         contract, token budget, truncation. Substance is judged against the job the skill claims to
-        do, with the exact excerpts that justify the score. The evaluation workflow can also run a
-        fixed adversarial harness — jailbreaks, role-play, data-exfiltration probes — and the block
-        rate is recorded. The report shows available results; catalog publication alone does not
-        establish testing or verification.
+        do, with the exact excerpts that justify the score. On top of that, every skill runs through
+        a fixed adversarial harness — jailbreaks, role-play, data-exfiltration probes — and the block
+        rate is recorded. The combined result is the Trust Score.
       </>
     ),
   },
@@ -47,9 +46,9 @@ const ITEMS: { q: string; a: React.ReactNode }[] = [
     q: "Can I bring a skill I already use?",
     a: (
       <>
-        Yes. Upload it and you get a graded report with the exact failures and a repaired draft.
-        Your source is evaluated in isolation, never used to train shared models, and never shown to
-        other users.{" "}
+        Yes. Upload it and you get a graded report with the exact failures and a repaired draft. Your
+        source is evaluated in isolation, never used to train shared models, and never shown to other
+        users.{" "}
         <Link to="/nda" className="text-primary hover:underline">
           See the mutual NDA
         </Link>
@@ -62,8 +61,8 @@ const ITEMS: { q: string; a: React.ReactNode }[] = [
     a: (
       <>
         Anything that speaks MCP: Claude, Hermes, ChatGPT, Codex, Cursor, Cline, Continue and custom
-        agents. Paste one URL. Some clients need it in a config file plus one restart the first time
-        — after that nothing changes.{" "}
+        agents. Paste one URL. Some clients need it in a config file plus one restart the first time —
+        after that nothing changes.{" "}
         <Link to="/connect" className="text-primary hover:underline">
           Setup per client
         </Link>
@@ -75,8 +74,8 @@ const ITEMS: { q: string; a: React.ReactNode }[] = [
     q: "Do I need to retrain or change my code?",
     a: (
       <>
-        No retraining and no code changes. Capabilities install at runtime through MCP, every
-        install is reversible, and every install is logged.
+        No retraining and no code changes. Capabilities install at runtime through MCP, every install
+        is reversible, and every install is logged.
       </>
     ),
   },

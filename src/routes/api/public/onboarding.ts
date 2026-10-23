@@ -1,5 +1,3 @@
-import { toJson } from "@/lib/json";
-import { errorField } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 import { createHash, randomUUID } from "crypto";
 import { z } from "zod";
@@ -49,21 +47,9 @@ function hashSession(session: string) {
 
 function stageSummary() {
   return [
-    {
-      stage: "know",
-      goal: "Understand the primitives and pick the right tool.",
-      read: "https://superagentskill.com/agents.md",
-    },
-    {
-      stage: "connect",
-      goal: "Handshake, discover a capability, inspect it before adopting.",
-      steps: STEPS.filter((s) => s.stage === "connect").map((s) => s.id),
-    },
-    {
-      stage: "evolve",
-      goal: "Evaluate, publish an improvement, diagnose and keep learning.",
-      steps: STEPS.filter((s) => s.stage === "evolve").map((s) => s.id),
-    },
+    { stage: "know", goal: "Understand the primitives and pick the right tool.", read: "https://superagentskill.com/agents.md" },
+    { stage: "connect", goal: "Handshake, discover a capability, inspect it before adopting.", steps: STEPS.filter((s) => s.stage === "connect").map((s) => s.id) },
+    { stage: "evolve", goal: "Evaluate, publish an improvement, diagnose and keep learning.", steps: STEPS.filter((s) => s.stage === "evolve").map((s) => s.id) },
   ];
 }
 
@@ -79,7 +65,7 @@ export const Route = createFileRoute("/api/public/onboarding")({
         let completed: string[] = [];
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const { data } = await supabaseAdmin
+          const { data } = await (supabaseAdmin as any)
             .from("agent_onboarding_steps")
             .select("step_id")
             .eq("session_hash", hashSession(session));
@@ -95,13 +81,7 @@ export const Route = createFileRoute("/api/public/onboarding")({
           checklist: publicChecklist(),
           completed,
           next_step: next
-            ? {
-                step_id: next.id,
-                stage: next.stage,
-                title: next.title,
-                action: next.action,
-                evidence_shape: next.evidence,
-              }
+            ? { step_id: next.id, stage: next.stage, title: next.title, action: next.action, evidence_shape: next.evidence }
             : null,
           done: next === null,
           submit: {
@@ -121,25 +101,16 @@ export const Route = createFileRoute("/api/public/onboarding")({
         }
         const parsed = bodySchema.safeParse(raw);
         if (!parsed.success) {
-          return json(
-            { ok: false, error: "invalid_body", details: parsed.error.issues.slice(0, 5) },
-            400,
-          );
+          return json({ ok: false, error: "invalid_body", details: parsed.error.issues.slice(0, 5) }, 400);
         }
         const { session, step_id, evidence, client_name } = parsed.data;
         if (!isStepId(step_id)) {
-          return json(
-            { ok: false, error: "unknown_step", valid_steps: STEPS.map((s) => s.id) },
-            400,
-          );
+          return json({ ok: false, error: "unknown_step", valid_steps: STEPS.map((s) => s.id) }, 400);
         }
 
         const check = checkEvidence(step_id, evidence);
         if (!check.ok) {
-          return json(
-            { ok: false, error: "evidence_rejected", step_id, reason: check.reason },
-            422,
-          );
+          return json({ ok: false, error: "evidence_rejected", step_id, reason: check.reason }, 422);
         }
 
         const ua = request.headers.get("user-agent");
@@ -148,7 +119,7 @@ export const Route = createFileRoute("/api/public/onboarding")({
 
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const db = supabaseAdmin;
+          const db = supabaseAdmin as any;
 
           if (check.needsDb?.kind === "package") {
             const { data: pkg } = await db
@@ -158,12 +129,7 @@ export const Route = createFileRoute("/api/public/onboarding")({
               .maybeSingle();
             if (!pkg) {
               return json(
-                {
-                  ok: false,
-                  error: "evidence_rejected",
-                  step_id,
-                  reason: `no package with slug "${check.needsDb.slug}" — use a slug returned by search_registry`,
-                },
+                { ok: false, error: "evidence_rejected", step_id, reason: `no package with slug "${check.needsDb.slug}" — use a slug returned by search_registry` },
                 422,
               );
             }
@@ -178,7 +144,7 @@ export const Route = createFileRoute("/api/public/onboarding")({
               client_name: client_name ?? null,
               ua_family: cls.family,
               is_bot: cls.isBot,
-              evidence: toJson(evidence ?? {}),
+              evidence: (evidence ?? {}) as Record<string, unknown>,
             },
             { onConflict: "session_hash,step_id" },
           );
@@ -197,13 +163,7 @@ export const Route = createFileRoute("/api/public/onboarding")({
             completed,
             progress: `${completed.length}/${STEPS.length}`,
             next_step: next
-              ? {
-                  step_id: next.id,
-                  stage: next.stage,
-                  title: next.title,
-                  action: next.action,
-                  evidence_shape: next.evidence,
-                }
+              ? { step_id: next.id, stage: next.stage, title: next.title, action: next.action, evidence_shape: next.evidence }
               : null,
             done: next === null,
             message: next
@@ -211,14 +171,7 @@ export const Route = createFileRoute("/api/public/onboarding")({
               : "Onboarding complete — you are connected, publishing and learning. Keep reporting outcomes with report_execution.",
           });
         } catch (err) {
-          return json(
-            {
-              ok: false,
-              error: "server_error",
-              message: err instanceof Error ? errorField(err, "message") : "unknown",
-            },
-            500,
-          );
+          return json({ ok: false, error: "server_error", message: err instanceof Error ? err.message : "unknown" }, 500);
         }
       },
     },

@@ -29,7 +29,7 @@ const items = [
   {
     Icon: FileKey,
     title: "Signed, verifiable releases",
-    body: "Ed25519 signature support lets you verify signed releases. Check the version’s trust report for available signatures and evaluation evidence; publication alone does not imply verification.",
+    body: "Every published artifact is Ed25519-signed. Buyers see metadata and Trust Score — not your source — unless you explicitly open-source it.",
   },
   {
     Icon: Fingerprint,
@@ -100,9 +100,9 @@ export function SecurityPromise() {
 
         <div className="mx-auto mt-10 flex max-w-2xl flex-col items-center gap-4 rounded-xl border border-border bg-background/60 p-5 text-center text-sm text-muted-foreground chart-fade chart-delay-900">
           <p>
-            <span className="font-medium text-foreground">Need a private registry?</span> Enterprise
-            teams keep every skill inside their own workspace with SSO, audit logs and a custom
-            DPA/NDA.
+            <span className="font-medium text-foreground">Need a private registry?</span>{" "}
+            Enterprise teams keep every skill inside their own workspace with SSO, audit logs and a
+            custom DPA/NDA.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2">
             <Link

@@ -1,22 +1,17 @@
-import { decodeAgentBuild } from "@/lib/agents/build-data";
-import type { ToolExecutionContext } from "mcp-tanstack-start";
 import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { findAgent, listAgentSummaries } from "@/lib/agents/catalog";
 import { agentSystemPrompt, agentFiles } from "@/lib/agents/bundle";
 
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 
-async function requirePaidUser(ctx: ToolExecutionContext): Promise<string> {
+async function requirePaidUser(ctx: any): Promise<string> {
   const userId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
   if (!userId) {
     throw new Error(
-      json({
-        error: "unauthorized",
-        hint: "Connect via OAuth (or paste a personal access token) to install agents.",
-      }),
+      json({ error: "unauthorized", hint: "Connect via OAuth (or paste a personal access token) to install agents." }),
     );
   }
   const { data: sub } = await supabaseAdmin
@@ -27,14 +22,12 @@ async function requirePaidUser(ctx: ToolExecutionContext): Promise<string> {
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
-  const active =
-    !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+  const active = !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
   if (!active) {
     throw new Error(
       json({
         error: "subscription_required",
-        message:
-          "The Agent Store requires Agent Pass or Enterprise. Upgrade at superagentskill.com/pricing.",
+        message: "The Agent Store requires Agent Pass or Enterprise. Upgrade at superagentskill.com/pricing.",
       }),
     );
   }
@@ -76,11 +69,9 @@ export const installAgentTool = defineTool({
     if (!agent) return json({ error: "not_found", hint: "Call list_agents for valid slugs." });
 
     try {
-      await supabaseAdmin.from("mcp_funnel_events").insert({
-        event: "agent_install_mcp",
-        user_id: userId,
-        props: { slug: agent.slug, format: input.format },
-      });
+      await supabaseAdmin
+        .from("mcp_funnel_events")
+        .insert({ event: "agent_install_mcp", user_id: userId, props: { slug: agent.slug, format: input.format } });
     } catch {
       /* best-effort */
     }
@@ -115,14 +106,8 @@ export const createAgentTool = defineTool({
     industry: z.string().optional(),
     outcomes: z.string().optional().describe("What this agent is accountable for."),
     tone: z.string().optional(),
-    constraints: z
-      .string()
-      .optional()
-      .describe("Hard constraints — these become enforceable guardrails."),
-    context: z
-      .string()
-      .optional()
-      .describe("Existing docs to inherit (playbooks, ICP, style guide)."),
+    constraints: z.string().optional().describe("Hard constraints — these become enforceable guardrails."),
+    context: z.string().optional().describe("Existing docs to inherit (playbooks, ICP, style guide)."),
   }),
   execute: async (input, ctx) => {
     const userId = await requirePaidUser(ctx);
@@ -225,14 +210,7 @@ export const getMyAgentTool = defineTool({
     if (row.status !== "ready" && row.status !== "error") {
       const { runBuildPipeline } = await import("@/lib/agents/factory-runner.server");
       const result = await runBuildPipeline(row.id, { budgetMs: 55_000 });
-      return json({
-        ...row,
-        status: result.status,
-        next_step:
-          result.status === "ready"
-            ? `install_my_agent { slug: "${row.slug}" }`
-            : "Call get_my_agent again to resume.",
-      });
+      return json({ ...row, status: result.status, next_step: result.status === "ready" ? `install_my_agent { slug: "${row.slug}" }` : "Call get_my_agent again to resume." });
     }
     return json(row);
   },
@@ -255,35 +233,23 @@ export const installMyAgentTool = defineTool({
       .eq("slug", input.slug)
       .maybeSingle();
     if (!row) return json({ error: "not_found", hint: "Call list_my_agents for valid slugs." });
-    if (row.status !== "ready")
-      return json({
-        error: "not_ready",
-        status: row.status,
-        hint: "Call get_my_agent to resume the build.",
-      });
+    if (row.status !== "ready") return json({ error: "not_ready", status: row.status, hint: "Call get_my_agent to resume the build." });
 
     const { buildFiles, buildSystemPrompt } = await import("@/lib/agents/factory-adapt");
 
     try {
-      await supabaseAdmin.from("mcp_funnel_events").insert({
-        event: "agent_build_download",
-        user_id: userId,
-        props: { slug: row.slug, via: "mcp" },
-      });
+      await supabaseAdmin
+        .from("mcp_funnel_events")
+        .insert({ event: "agent_build_download", user_id: userId, props: { slug: row.slug, via: "mcp" } });
     } catch {
       /* best-effort */
     }
 
     if (input.format === "system_prompt") {
-      return json({
-        slug: row.slug,
-        name: row.name,
-        grade: row.grade,
-        system_prompt: buildSystemPrompt(decodeAgentBuild(row)),
-      });
+      return json({ slug: row.slug, name: row.name, grade: row.grade, system_prompt: buildSystemPrompt(row) });
     }
 
-    const files = buildFiles(decodeAgentBuild(row));
+    const files = buildFiles(row);
     return json({
       slug: row.slug,
       name: row.name,

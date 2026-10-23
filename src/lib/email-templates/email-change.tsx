@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react'
 import {
   Body,
   Button,
@@ -11,15 +11,15 @@ import {
   Preview,
   Section,
   Text,
-} from "@react-email/components";
-import { BRAND, styles } from "./_brand";
+} from '@react-email/components'
+import { BRAND, styles } from './_brand'
 
 interface EmailChangeEmailProps {
-  siteName: string;
-  oldEmail: string;
-  email: string;
-  newEmail: string;
-  confirmationUrl: string;
+  siteName: string
+  oldEmail: string
+  email: string
+  newEmail: string
+  confirmationUrl: string
 }
 
 export const EmailChangeEmail = ({
@@ -39,11 +39,11 @@ export const EmailChangeEmail = ({
           </Section>
           <Heading style={styles.h1}>Confirm your new email</Heading>
           <Text style={styles.text}>
-            You requested to change your {BRAND.name} email from{" "}
+            You requested to change your {BRAND.name} email from{' '}
             <Link href={`mailto:${oldEmail}`} style={styles.link}>
               {oldEmail}
-            </Link>{" "}
-            to{" "}
+            </Link>{' '}
+            to{' '}
             <Link href={`mailto:${newEmail}`} style={styles.link}>
               {newEmail}
             </Link>
@@ -53,7 +53,7 @@ export const EmailChangeEmail = ({
             Confirm email change
           </Button>
           <Hr style={styles.divider} />
-          <Text style={{ ...styles.text, fontSize: "13px", margin: 0 }}>
+          <Text style={{ ...styles.text, fontSize: '13px', margin: 0 }}>
             Or paste this link into your browser:
             <br />
             <Link href={confirmationUrl} style={styles.link}>
@@ -62,7 +62,7 @@ export const EmailChangeEmail = ({
           </Text>
         </Section>
         <Text style={styles.footer}>
-          Didn't request this change? Secure your account immediately at{" "}
+          Didn't request this change? Secure your account immediately at{' '}
           <Link href={BRAND.url} style={styles.footerLink}>
             superagentskill.com
           </Link>
@@ -71,6 +71,6 @@ export const EmailChangeEmail = ({
       </Container>
     </Body>
   </Html>
-);
+)
 
-export default EmailChangeEmail;
+export default EmailChangeEmail

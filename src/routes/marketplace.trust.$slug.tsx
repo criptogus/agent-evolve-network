@@ -3,12 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import {
-  getSkillTrust,
-  type Finding,
-  type Compat,
-  type TrustV2,
-} from "@/lib/marketplace/trust.functions";
+import { getSkillTrust, type Finding, type Compat, type TrustV2 } from "@/lib/marketplace/trust.functions";
 
 export const Route = createFileRoute("/marketplace/trust/$slug")({
   loader: async ({ params }) => {
@@ -22,7 +17,7 @@ export const Route = createFileRoute("/marketplace/trust/$slug")({
           { title: `Trust Report: ${loaderData.package.name} — Super Agent Skill` },
           {
             name: "description",
-            content: `Public trust score, model heatmap and CVE-style robustness findings for ${loaderData.package.name}. Evaluation availability is shown explicitly.`,
+            content: `Public trust score, model heatmap and CVE-style robustness findings for ${loaderData.package.name}. Battle-tested skills only.`,
           },
           { property: "og:title", content: `Trust Report: ${loaderData.package.name}` },
           {
@@ -38,10 +33,7 @@ export const Route = createFileRoute("/marketplace/trust/$slug")({
       <div className="mx-auto max-w-3xl px-6 py-24 text-center">
         <h1 className="text-3xl font-semibold tracking-tight">No trust report</h1>
         <p className="mt-2 text-muted-foreground">This package has no public trust data yet.</p>
-        <Link
-          to="/marketplace"
-          className="mt-6 inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
-        >
+        <Link to="/marketplace" className="mt-6 inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
           Back to marketplace
         </Link>
       </div>
@@ -70,8 +62,8 @@ function TrustPage() {
   if (!data?.ok) return null;
   const t = data.trust;
   const score = t?.trust_score ?? null;
+  const battle = t?.battle_tested;
   const v2 = data.trust_v2 ?? null;
-  const battle = Boolean(v2?.verified && data.version_evidence.runs.length);
 
   return (
     <div className="min-h-screen bg-background">
@@ -79,17 +71,11 @@ function TrustPage() {
 
       <section className="border-b border-border bg-surface/40">
         <div className="mx-auto max-w-6xl px-6 py-10">
-          <Link to="/marketplace" className="text-xs text-muted-foreground hover:text-foreground">
-            ← Marketplace
-          </Link>
+          <Link to="/marketplace" className="text-xs text-muted-foreground hover:text-foreground">← Marketplace</Link>
           <div className="mt-3 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                Trust Report
-              </p>
-              <h1 className="mt-1 font-mono text-3xl font-semibold tracking-tight md:text-4xl">
-                {data.package.name}
-              </h1>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Trust Report</p>
+              <h1 className="mt-1 font-mono text-3xl font-semibold tracking-tight md:text-4xl">{data.package.name}</h1>
               <p className="mt-2 text-sm text-muted-foreground">
                 v{data.package.latest_version} · {data.package.type} · {data.package.author_handle}
               </p>
@@ -105,13 +91,11 @@ function TrustPage() {
                   title="Not enough adversarial evidence yet to publish a verified score."
                   className="rounded-md border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 font-mono text-[11px] uppercase tracking-widest text-amber-500"
                 >
-                  {v2.confidence ? "Insufficient evidence" : "Not evaluated"}
+                  Unverified
                 </span>
               )}
               <div className="rounded-md border border-border bg-surface px-4 py-3 text-right">
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Trust score
-                </div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Trust score</div>
                 {v2 && !v2.verified ? (
                   <div className="font-mono text-3xl font-semibold text-muted-foreground">—</div>
                 ) : (
@@ -127,136 +111,40 @@ function TrustPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-10">
-        <div className="mb-6 rounded-lg border border-border bg-surface/40 p-5">
-          <h2 className="font-mono text-sm">Evidence for v{data.package.latest_version}</h2>
-          {!data.version_evidence.available && (
-            <p role="status" className="mt-2 text-sm text-muted-foreground">
-              Version evidence is temporarily unavailable. Do not infer a pass, failure or missing
-              signature.
-            </p>
-          )}
-          {data.version_evidence.available && (
-            <>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {data.version_evidence.release
-                  ? "Signature metadata recorded. Verify the downloaded artifact against the public key before trusting it."
-                  : "No signed release recorded for this version."}
-              </p>
-              {data.version_evidence.release && (
-                <dl className="mt-3 break-all text-xs">
-                  <dt>Content hash</dt>
-                  <dd>{data.version_evidence.release.content_hash}</dd>
-                  <dt>Signing key ID</dt>
-                  <dd>{data.version_evidence.release.signing_key_id}</dd>
-                  <dt>Signed at</dt>
-                  <dd>{data.version_evidence.release.signed_at}</dd>
-                </dl>
-              )}
-              {!data.version_evidence.runs.length ? (
-                <p className="mt-2 text-sm text-muted-foreground">
-                  No adversarial runs recorded for this version. No pass or failure is implied.
-                </p>
-              ) : (
-                <ul className="mt-3 space-y-2 text-sm">
-                  {data.version_evidence.runs.map(
-                    (
-                      run: {
-                        created_at: string;
-                        total: number;
-                        passed: number;
-                        failed: number;
-                        model: string | null;
-                      },
-                      index: number,
-                    ) => (
-                      <li key={`${run.created_at}-${index}`}>
-                        {run.created_at} · {run.model} · {run.passed}/{run.total} passed ·{" "}
-                        {run.failed} failed
-                      </li>
-                    ),
-                  )}
-                </ul>
-              )}
-            </>
-          )}
-          <p className="mt-3 text-xs text-muted-foreground">
-            The aggregate trust score and usage below can include other versions. Missing evidence
-            is not a failing test.
-          </p>
-        </div>
-
         <div className="grid gap-4 md:grid-cols-3">
-          <Stat
-            label="Last 7 days"
-            value={t?.window_7d?.runs ?? 0}
-            sub={fmtPct(t?.window_7d?.success_rate)}
-          />
-          <Stat
-            label="Last 30 days"
-            value={t?.window_30d?.runs ?? 0}
-            sub={fmtPct(t?.window_30d?.success_rate)}
-          />
-          <Stat
-            label="Lifetime"
-            value={t?.lifetime?.runs ?? 0}
-            sub={fmtPct(t?.lifetime?.success_rate)}
-          />
+          <Stat label="Last 7 days" value={t?.window_7d?.runs ?? 0} sub={fmtPct(t?.window_7d?.success_rate)} />
+          <Stat label="Last 30 days" value={t?.window_30d?.runs ?? 0} sub={fmtPct(t?.window_30d?.success_rate)} />
+          <Stat label="Lifetime" value={t?.lifetime?.runs ?? 0} sub={fmtPct(t?.lifetime?.success_rate)} />
         </div>
 
         {v2 && <TrustVector v2={v2} />}
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <div className="rounded-lg border border-border bg-surface/40 p-5">
-            <h2 className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
-              Latency (30d)
-            </h2>
+            <h2 className="font-mono text-sm uppercase tracking-widest text-muted-foreground">Latency (30d)</h2>
             <div className="mt-3 flex gap-6">
-              <Metric
-                label="p50"
-                value={
-                  t?.window_30d?.p50_latency_ms
-                    ? `${Math.round(t.window_30d.p50_latency_ms)}ms`
-                    : "—"
-                }
-              />
-              <Metric
-                label="p95"
-                value={
-                  t?.window_30d?.p95_latency_ms
-                    ? `${Math.round(t.window_30d.p95_latency_ms)}ms`
-                    : "—"
-                }
-              />
+              <Metric label="p50" value={t?.window_30d?.p50_latency_ms ? `${Math.round(t.window_30d.p50_latency_ms)}ms` : "—"} />
+              <Metric label="p95" value={t?.window_30d?.p95_latency_ms ? `${Math.round(t.window_30d.p95_latency_ms)}ms` : "—"} />
             </div>
           </div>
           <div className="rounded-lg border border-border bg-surface/40 p-5">
-            <h2 className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
-              Robustness
-            </h2>
+            <h2 className="font-mono text-sm uppercase tracking-widest text-muted-foreground">Robustness</h2>
             <div className="mt-3 flex gap-6">
               <Metric label="Public findings" value={String(t?.findings_public ?? 0)} />
-              <Metric
-                label="Critical"
-                value={String(t?.findings_critical ?? 0)}
-                tone={t?.findings_critical ? "danger" : undefined}
-              />
+              <Metric label="Critical" value={String(t?.findings_critical ?? 0)} tone={t?.findings_critical ? "danger" : undefined} />
             </div>
           </div>
         </div>
 
         <div className="mt-8 rounded-lg border border-border bg-surface/40 p-5">
-          <h2 className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
-            Model heatmap (30d)
-          </h2>
+          <h2 className="font-mono text-sm uppercase tracking-widest text-muted-foreground">Model heatmap (30d)</h2>
           {!t?.models?.length ? (
             <p className="mt-3 text-sm text-muted-foreground">
-              No telemetry yet. Connected agents can call{" "}
-              <code className="font-mono text-xs">report_execution</code> via MCP after using this
-              skill.
+              No telemetry yet. Connected agents can call <code className="font-mono text-xs">report_execution</code> via MCP after using this skill.
             </p>
           ) : (
             <div className="mt-4 grid gap-2">
-              {t.models.map((m: { model: string | null; runs: number; success_rate: number }) => (
+              {t.models.map((m: { model: string; runs: number; success_rate: number }) => (
                 <div key={m.model} className="flex items-center gap-3">
                   <div className="w-44 truncate font-mono text-xs">{m.model}</div>
                   <div className="h-2 flex-1 rounded bg-border/40">
@@ -275,28 +163,20 @@ function TrustPage() {
         </div>
 
         <div className="mt-8">
-          <h2 className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
-            Robustness findings
-          </h2>
+          <h2 className="font-mono text-sm uppercase tracking-widest text-muted-foreground">Robustness findings</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            CVE-style report of adversarial failures discovered by the SkillForge red-team pipeline.
-            Public by default — we publish what we find so you can trust what you ship.
+            CVE-style report of adversarial failures discovered by the SkillForge red-team pipeline. Public by default — we
+            publish what we find so you can trust what you ship.
           </p>
           {data.findings.length === 0 ? (
             <div className="mt-4 rounded-lg border border-dashed border-border bg-surface/40 p-6 text-sm text-muted-foreground">
-              No public findings recorded. This does not establish that adversarial tests were run
-              or passed.
+              No public findings. The skill either passed every adversarial probe so far or is still being audited.
             </div>
           ) : (
             <ul className="mt-4 divide-y divide-border rounded-lg border border-border bg-surface/40">
               {(data.findings as Finding[]).map((f) => (
-                <li
-                  key={f.code}
-                  className="flex flex-col gap-1 p-4 md:flex-row md:items-center md:gap-4"
-                >
-                  <span
-                    className={`inline-flex w-fit shrink-0 rounded border px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest ${SEV_BADGE[f.severity]}`}
-                  >
+                <li key={f.code} className="flex flex-col gap-1 p-4 md:flex-row md:items-center md:gap-4">
+                  <span className={`inline-flex w-fit shrink-0 rounded border px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest ${SEV_BADGE[f.severity]}`}>
                     {f.severity}
                   </span>
                   <span className="font-mono text-xs text-muted-foreground md:w-36">{f.code}</span>
@@ -311,35 +191,26 @@ function TrustPage() {
         </div>
 
         <div className="mt-8">
-          <h2 className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
-            Compatibility matrix
-          </h2>
+          <h2 className="font-mono text-sm uppercase tracking-widest text-muted-foreground">Compatibility matrix</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Independent cross-model probe — runs every published example on each major frontier
-            model and lets a neutral judge score the outcome. Updated by the SkillForge
-            compatibility sweep.
+            Independent cross-model probe — runs every published example on each major frontier model and lets a neutral
+            judge score the outcome. Updated by the SkillForge compatibility sweep.
           </p>
           {data.compat.length === 0 ? (
             <div className="mt-4 rounded-lg border border-dashed border-border bg-surface/40 p-6 text-sm text-muted-foreground">
-              No compatibility runs yet. The next sweep will populate Claude, GPT and Gemini results
-              here.
+              No compatibility runs yet. The next sweep will populate Claude, GPT and Gemini results here.
             </div>
           ) : (
             <ul className="mt-4 grid gap-2 md:grid-cols-2">
               {(data.compat as Compat[]).map((c) => (
-                <li
-                  key={c.model}
-                  className="flex items-center gap-3 rounded-lg border border-border bg-surface/40 p-3"
-                >
-                  <span
-                    className={`inline-flex w-14 shrink-0 justify-center rounded border px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest ${
-                      c.status === "pass"
-                        ? "border-emerald-500/40 text-emerald-400"
-                        : c.status === "warn"
-                          ? "border-yellow-500/40 text-yellow-400"
-                          : "border-red-500/50 text-red-400"
-                    }`}
-                  >
+                <li key={c.model} className="flex items-center gap-3 rounded-lg border border-border bg-surface/40 p-3">
+                  <span className={`inline-flex w-14 shrink-0 justify-center rounded border px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest ${
+                    c.status === "pass"
+                      ? "border-emerald-500/40 text-emerald-400"
+                      : c.status === "warn"
+                        ? "border-yellow-500/40 text-yellow-400"
+                        : "border-red-500/50 text-red-400"
+                  }`}>
                     {c.status}
                   </span>
                   <div className="min-w-0 flex-1">
@@ -366,19 +237,16 @@ function TrustPage() {
         </div>
 
         <div className="mt-10 rounded-lg border border-border bg-surface/40 p-5 text-sm text-muted-foreground">
-          <h3 className="font-mono text-xs uppercase tracking-widest text-foreground">
-            How this trust score is computed
-          </h3>
+          <h3 className="font-mono text-xs uppercase tracking-widest text-foreground">How this trust score is computed</h3>
           <p className="mt-2">
             <span className="font-medium text-foreground">Trust Score v2</span> is evidence-gated:
             published score = quality × confidence, where quality is a weighted blend of four
             dimensions (safety, competence, freshness, coverage). Pass and success rates use the{" "}
             <span className="text-foreground">Wilson lower confidence bound</span>, so large samples
             beat a handful of lucky runs, and an untested package shows <em>Unverified</em> rather
-            than a default number. Real-world signals come from agent executions reported via the
-            MCP <code className="font-mono text-xs">report_execution</code> tool. The formula is
-            pure and reproducible offline — see{" "}
-            <code className="font-mono text-xs">src/lib/trust/scoring.ts</code>.
+            than a default number. Real-world signals come from agent executions reported via the MCP{" "}
+            <code className="font-mono text-xs">report_execution</code> tool. The formula is pure and
+            reproducible offline — see <code className="font-mono text-xs">src/lib/trust/scoring.ts</code>.
           </p>
         </div>
       </section>
@@ -389,11 +257,7 @@ function TrustPage() {
 }
 
 const DIMENSIONS: { key: keyof TrustV2["dimensions"]; label: string; hint: string }[] = [
-  {
-    key: "safety",
-    label: "Safety",
-    hint: "Adversarial robustness (lower-bounded + severity-weighted)",
-  },
+  { key: "safety", label: "Safety", hint: "Adversarial robustness (lower-bounded + severity-weighted)" },
   { key: "competence", label: "Competence", hint: "Real-world success rate (Wilson lower bound)" },
   { key: "freshness", label: "Freshness", hint: "Recent verification + signed releases" },
   { key: "coverage", label: "Coverage", hint: "How much evidence backs the score" },
@@ -403,9 +267,7 @@ function TrustVector({ v2 }: { v2: TrustV2 }) {
   return (
     <div className="mt-6 rounded-lg border border-border bg-surface/40 p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
-          Trust vector
-        </h2>
+        <h2 className="font-mono text-sm uppercase tracking-widest text-muted-foreground">Trust vector</h2>
         <div className="flex items-center gap-2">
           <span className="rounded border border-border bg-surface px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
             v{v2.version ?? "2"}
@@ -438,9 +300,7 @@ function TrustVector({ v2 }: { v2: TrustV2 }) {
 
       <div className="mt-5 border-t border-border pt-4">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-mono uppercase tracking-widest text-muted-foreground">
-            Confidence
-          </span>
+          <span className="font-mono uppercase tracking-widest text-muted-foreground">Confidence</span>
           <span className="font-mono text-muted-foreground">{pct01(v2.confidence)}</span>
         </div>
         <div className="mt-2 h-2 rounded bg-border/40">
@@ -450,8 +310,8 @@ function TrustVector({ v2 }: { v2: TrustV2 }) {
           />
         </div>
         <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-          Published score = quality × confidence. More adversarial runs, case coverage and
-          real-world executions raise confidence — so a few lucky runs can't earn a high score.
+          Published score = quality × confidence. More adversarial runs, case coverage and real-world
+          executions raise confidence — so a few lucky runs can't earn a high score.
         </p>
       </div>
     </div>
@@ -465,9 +325,7 @@ function Bar({ label, hint, value }: { label: string; hint: string; value: numbe
     <div className="flex items-center gap-3">
       <div className="w-28 shrink-0">
         <div className="font-mono text-xs">{label}</div>
-        <div className="truncate text-[10px] text-muted-foreground" title={hint}>
-          {hint}
-        </div>
+        <div className="truncate text-[10px] text-muted-foreground" title={hint}>{hint}</div>
       </div>
       <div className="h-2 flex-1 rounded bg-border/40">
         <div className={`h-2 rounded ${tone}`} style={{ width: `${Math.round(v * 100)}%` }} />
@@ -486,10 +344,7 @@ function Stat({ label, value, sub }: { label: string; value: number; sub?: strin
   return (
     <div className="rounded-lg border border-border bg-surface/40 p-5">
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className="mt-1 font-mono text-2xl font-semibold">
-        {value.toLocaleString()}
-        <span className="ml-1 text-xs text-muted-foreground">runs</span>
-      </div>
+      <div className="mt-1 font-mono text-2xl font-semibold">{value.toLocaleString()}<span className="ml-1 text-xs text-muted-foreground">runs</span></div>
       {sub && <div className="mt-1 font-mono text-xs text-muted-foreground">{sub} success</div>}
     </div>
   );
@@ -499,11 +354,7 @@ function Metric({ label, value, tone }: { label: string; value: string; tone?: "
   return (
     <div>
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div
-        className={`font-mono text-2xl font-semibold ${tone === "danger" ? "text-red-400" : ""}`}
-      >
-        {value}
-      </div>
+      <div className={`font-mono text-2xl font-semibold ${tone === "danger" ? "text-red-400" : ""}`}>{value}</div>
     </div>
   );
 }

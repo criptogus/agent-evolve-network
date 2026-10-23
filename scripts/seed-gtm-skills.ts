@@ -150,11 +150,7 @@ const rulesJson = JSON.stringify({
   must_not: ["Invent facts, customers, or competitor claims not grounded in the input."],
 });
 const examplesJson = JSON.stringify([
-  {
-    title: "Typical request",
-    input: "<fill with a realistic GTM scenario>",
-    expected_output: "<structured response per system prompt>",
-  },
+  { title: "Typical request", input: "<fill with a realistic GTM scenario>", expected_output: "<structured response per system prompt>" },
 ]);
 const compatJson = JSON.stringify([
   { runtime: "claude", status: "supported" },
@@ -162,9 +158,7 @@ const compatJson = JSON.stringify([
   { runtime: "gemini", status: "supported" },
 ]);
 
-const blocks = skills
-  .map(
-    (s) => `WITH up AS (
+const blocks = skills.map((s) => `WITH up AS (
   INSERT INTO public.packages (slug, name, type, description, long_description, author_handle, is_published, latest_version, scopes, source_kind, source_ref, review_status)
   VALUES ('${s.slug}', '${sqlEsc(s.name)}', 'skill', '${sqlEsc(s.desc)}', '${sqlEsc(s.long)}', '@superagentskill', true, '0.1.0', ARRAY['agent:upgrade','registry:read'], 'github', 'content/skills/${s.slug}.yaml', 'approved')
   ON CONFLICT (slug) DO UPDATE SET name=EXCLUDED.name, description=EXCLUDED.description, long_description=EXCLUDED.long_description, is_published=true, review_status='approved', updated_at=now()
@@ -173,9 +167,7 @@ const blocks = skills
 INSERT INTO public.package_versions (package_id, version, status, notes, system_prompt, rules, examples, compatibility)
 SELECT id, '0.1.0', 'stable', 'Seeded from gtm-agents-inspired batch', '${sqlEsc(s.sp)}', '${sqlEsc(rulesJson)}'::jsonb, '${sqlEsc(examplesJson)}'::jsonb, '${sqlEsc(compatJson)}'::jsonb FROM up
 ON CONFLICT (package_id, version) DO UPDATE SET system_prompt=EXCLUDED.system_prompt, rules=EXCLUDED.rules, examples=EXCLUDED.examples, compatibility=EXCLUDED.compatibility;
-`,
-  )
-  .join("\n");
+`).join("\n");
 
 const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
 const migPath = path.join(root, `supabase/migrations/${ts}_seed_gtm_agents_skills.sql`);

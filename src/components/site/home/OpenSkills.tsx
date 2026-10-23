@@ -25,7 +25,7 @@ const ROUTES = [
   {
     icon: ShieldCheck,
     title: "Trust Score on top",
-    body: "Evaluated skills can carry format, substance and adversarial results. Check each version’s report; packages without evidence are marked not evaluated.",
+    body: "Every skill carries a public grade: format, substance and adversarial testing, with the evidence attached.",
   },
 ];
 
@@ -46,9 +46,8 @@ export function OpenSkills() {
             Works with the open agent skills ecosystem
           </h2>
           <p className="mt-3 text-pretty text-sm leading-relaxed text-muted-foreground md:text-base">
-            Our catalog ships in the standard{" "}
-            <code className="font-mono text-foreground">SKILL.md</code> format, so you can install
-            it with the open{" "}
+            Our catalog ships in the standard <code className="font-mono text-foreground">SKILL.md</code>{" "}
+            format, so you can install it with the open{" "}
             <a
               href={OPEN_SKILLS_SITE}
               target="_blank"

@@ -36,10 +36,7 @@ export const Route = createFileRoute("/admin/customers")({
   head: () => ({
     meta: [
       { title: "Customers — Admin" },
-      {
-        name: "description",
-        content: "Customer base, paying customers, usage averages and Stripe finance.",
-      },
+      { name: "description", content: "Customer base, paying customers, usage averages and Stripe finance." },
     ],
   }),
   component: CustomersAdminPage,
@@ -65,8 +62,8 @@ function CustomersAdminPage() {
     const items = (data?.customers ?? []).filter((c) => (onlyPaying ? c.is_paying : true));
     const dir = sortDir === "asc" ? 1 : -1;
     return [...items].sort((a, b) => {
-      const av = a[sortKey];
-      const bv = b[sortKey];
+      const av: any = (a as any)[sortKey];
+      const bv: any = (b as any)[sortKey];
       if (av === bv) return 0;
       if (av == null) return 1;
       if (bv == null) return -1;
@@ -75,26 +72,14 @@ function CustomersAdminPage() {
   }, [data?.customers, sortKey, sortDir, onlyPaying]);
 
   const fmtMoney = (v: number, ccy: string) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: (ccy || "usd").toUpperCase(),
-    }).format(v);
+    new Intl.NumberFormat("en-US", { style: "currency", currency: (ccy || "usd").toUpperCase() }).format(v);
   const fmtNum = (n: number) => n.toLocaleString();
   const fmtDate = (iso: string | null) =>
-    iso
-      ? new Date(iso).toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })
-      : "—";
+    iso ? new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—";
 
   const onSort = (k: SortKey) => {
     if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else {
-      setSortKey(k);
-      setSortDir("desc");
-    }
+    else { setSortKey(k); setSortDir("desc"); }
   };
 
   return (
@@ -103,32 +88,19 @@ function CustomersAdminPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Customers & Revenue</h1>
           <p className="text-sm text-muted-foreground">
-            Who is registered, who is paying, how much they use the product, and Stripe finance for
-            the selected window.
+            Who is registered, who is paying, how much they use the product, and Stripe finance for the selected window.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Select
-            value={environment}
-            onValueChange={(v) => setEnvironment(v as "live" | "sandbox")}
-          >
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
+          <Select value={environment} onValueChange={(v) => setEnvironment(v as "live" | "sandbox")}>
+            <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="live">Live</SelectItem>
               <SelectItem value="sandbox">Sandbox</SelectItem>
             </SelectContent>
           </Select>
-          <Select
-            value={range}
-            onValueChange={(v) => {
-              if (v === "7d" || v === "30d" || v === "90d" || v === "365d") setRange(v);
-            }}
-          >
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
+          <Select value={range} onValueChange={(v) => setRange(v as any)}>
+            <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="7d">Last 7 days</SelectItem>
               <SelectItem value="30d">Last 30 days</SelectItem>
@@ -157,15 +129,17 @@ function CustomersAdminPage() {
         <Stat label="Free" value={fmtNum(data?.summary.free_customers ?? 0)} />
         <Stat
           label="MRR"
-          value={data?.summary ? fmtMoney(data.summary.mrr, data.summary.mrr_currency) : "—"}
+          value={
+            data?.summary
+              ? fmtMoney(data.summary.mrr, data.summary.mrr_currency)
+              : "—"
+          }
         />
         <Stat label="Runs (lifetime)" value={fmtNum(data?.summary.total_runs ?? 0)} />
         <Stat label="Runs (30d)" value={fmtNum(data?.summary.runs_last_30d ?? 0)} />
         <Stat
           label="Avg runs / customer"
-          value={(data?.summary.avg_runs_per_customer ?? 0).toLocaleString(undefined, {
-            maximumFractionDigits: 2,
-          })}
+          value={(data?.summary.avg_runs_per_customer ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
         />
         <Stat label="Subscriptions" value={fmtNum(data?.summary.total_subscriptions ?? 0)} />
       </div>
@@ -176,9 +150,7 @@ function CustomersAdminPage() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm">Stripe finance · {range}</CardTitle>
             {data?.stripe ? (
-              <Badge variant="outline" className="uppercase">
-                {data.stripe.environment}
-              </Badge>
+              <Badge variant="outline" className="uppercase">{data.stripe.environment}</Badge>
             ) : null}
           </div>
         </CardHeader>
@@ -187,16 +159,9 @@ function CustomersAdminPage() {
             <p className="text-sm text-destructive">Stripe error: {data.stripe_error}</p>
           ) : data?.stripe ? (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              <FinanceCell
-                label="Gross"
-                value={fmtMoney(data.stripe.gross, data.stripe.currency)}
-              />
+              <FinanceCell label="Gross" value={fmtMoney(data.stripe.gross, data.stripe.currency)} />
               <FinanceCell label="Fees" value={fmtMoney(data.stripe.fees, data.stripe.currency)} />
-              <FinanceCell
-                label="Net"
-                value={fmtMoney(data.stripe.net, data.stripe.currency)}
-                accent
-              />
+              <FinanceCell label="Net" value={fmtMoney(data.stripe.net, data.stripe.currency)} accent />
               <FinanceCell label="Charges" value={fmtNum(data.stripe.successful_charges)} />
               <FinanceCell
                 label="Refunds"
@@ -248,154 +213,66 @@ function CustomersAdminPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <Th
-                  sortable
-                  onClick={() => onSort("display_name")}
-                  active={sortKey === "display_name"}
-                  dir={sortDir}
-                >
-                  Customer
-                </Th>
+                <Th sortable onClick={() => onSort("display_name")} active={sortKey === "display_name"} dir={sortDir}>Customer</Th>
                 <Th>Email</Th>
                 <Th>Plan / Status</Th>
-                <Th
-                  sortable
-                  onClick={() => onSort("price_cents")}
-                  active={sortKey === "price_cents"}
-                  dir={sortDir}
-                  align="right"
-                >
-                  Price
-                </Th>
-                <Th
-                  sortable
-                  onClick={() => onSort("run_count")}
-                  active={sortKey === "run_count"}
-                  dir={sortDir}
-                  align="right"
-                >
-                  Runs
-                </Th>
-                <Th
-                  sortable
-                  onClick={() => onSort("last_run_at")}
-                  active={sortKey === "last_run_at"}
-                  dir={sortDir}
-                >
-                  Last run
-                </Th>
-                <Th
-                  sortable
-                  onClick={() => onSort("credits_spent")}
-                  active={sortKey === "credits_spent"}
-                  dir={sortDir}
-                  align="right"
-                >
-                  Credits spent
-                </Th>
-                <Th
-                  sortable
-                  onClick={() => onSort("credit_balance")}
-                  active={sortKey === "credit_balance"}
-                  dir={sortDir}
-                  align="right"
-                >
-                  Balance
-                </Th>
-                <Th
-                  sortable
-                  onClick={() => onSort("created_at")}
-                  active={sortKey === "created_at"}
-                  dir={sortDir}
-                >
-                  Joined
-                </Th>
+                <Th sortable onClick={() => onSort("price_cents")} active={sortKey === "price_cents"} dir={sortDir} align="right">Price</Th>
+                <Th sortable onClick={() => onSort("run_count")} active={sortKey === "run_count"} dir={sortDir} align="right">Runs</Th>
+                <Th sortable onClick={() => onSort("last_run_at")} active={sortKey === "last_run_at"} dir={sortDir}>Last run</Th>
+                <Th sortable onClick={() => onSort("credits_spent")} active={sortKey === "credits_spent"} dir={sortDir} align="right">Credits spent</Th>
+                <Th sortable onClick={() => onSort("credit_balance")} active={sortKey === "credit_balance"} dir={sortDir} align="right">Balance</Th>
+                <Th sortable onClick={() => onSort("created_at")} active={sortKey === "created_at"} dir={sortDir}>Joined</Th>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="py-6 text-center text-muted-foreground">
-                    Loading…
-                  </TableCell>
-                </TableRow>
+                <TableRow><TableCell colSpan={9} className="py-6 text-center text-muted-foreground">Loading…</TableCell></TableRow>
               ) : filteredSorted.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="py-6 text-center text-muted-foreground">
-                    No customers match.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredSorted.map((c) => (
-                  <TableRow key={c.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {c.avatar_url ? (
-                          <img
-                            src={c.avatar_url}
-                            alt=""
-                            className="h-7 w-7 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="h-7 w-7 rounded-full bg-secondary" />
-                        )}
-                        <div className="min-w-0">
-                          <div className="truncate font-medium">
-                            {c.display_name || c.handle || "—"}
-                          </div>
-                          <div className="truncate text-xs text-muted-foreground">
-                            @{c.handle ?? "—"}
-                          </div>
-                        </div>
-                        {c.roles.includes("admin") && (
-                          <Badge variant="outline" className="ml-1">
-                            admin
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {c.email ?? "—"}
-                    </TableCell>
-                    <TableCell>
-                      {c.plan ? (
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-sm">{c.plan}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {c.subscription_status}
-                          </span>
-                        </div>
+                <TableRow><TableCell colSpan={9} className="py-6 text-center text-muted-foreground">No customers match.</TableCell></TableRow>
+              ) : filteredSorted.map((c) => (
+                <TableRow key={c.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {c.avatar_url ? (
+                        <img src={c.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />
                       ) : (
-                        <span className="text-xs text-muted-foreground">Free</span>
+                        <div className="h-7 w-7 rounded-full bg-secondary" />
                       )}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {c.price_cents != null && c.currency
-                        ? fmtMoney(c.price_cents / 100, c.currency)
-                        : "—"}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">{fmtNum(c.run_count)}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {fmtDate(c.last_run_at)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {fmtNum(c.credits_spent)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {fmtNum(c.credit_balance)}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {fmtDate(c.created_at)}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+                      <div className="min-w-0">
+                        <div className="truncate font-medium">{c.display_name || c.handle || "—"}</div>
+                        <div className="truncate text-xs text-muted-foreground">@{c.handle ?? "—"}</div>
+                      </div>
+                      {c.roles.includes("admin") && <Badge variant="outline" className="ml-1">admin</Badge>}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{c.email ?? "—"}</TableCell>
+                  <TableCell>
+                    {c.plan ? (
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-sm">{c.plan}</span>
+                        <span className="text-xs text-muted-foreground">{c.subscription_status}</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Free</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {c.price_cents != null && c.currency
+                      ? fmtMoney(c.price_cents / 100, c.currency)
+                      : "—"}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{fmtNum(c.run_count)}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{fmtDate(c.last_run_at)}</TableCell>
+                  <TableCell className="text-right tabular-nums">{fmtNum(c.credits_spent)}</TableCell>
+                  <TableCell className="text-right tabular-nums">{fmtNum(c.credit_balance)}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{fmtDate(c.created_at)}</TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
           {data ? (
             <div className="mt-3 text-xs text-muted-foreground">
-              Showing {filteredSorted.length} of {data.customers_returned} loaded (table page cap
-              200). Adjust search to narrow.
+              Showing {filteredSorted.length} of {data.customers_returned} loaded (table page cap 200). Adjust search to narrow.
             </div>
           ) : null}
         </CardContent>
@@ -429,12 +306,7 @@ function FinanceCell({ label, value, accent }: { label: string; value: string; a
 }
 
 function Th({
-  children,
-  sortable,
-  active,
-  dir,
-  onClick,
-  align,
+  children, sortable, active, dir, onClick, align,
 }: {
   children: React.ReactNode;
   sortable?: boolean;

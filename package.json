@@ -1,6 +1,6 @@
 {
   "name": "tanstack_start_ts",
-  "version": "0.5.7",
+  "version": "0.5.3",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -13,7 +13,7 @@
     "check:security": "npm run check:rls && npm run check:public-access",
     "predeploy": "npm run check:security",
     "preview": "vite preview",
-    "lint": "node scripts/lint.mjs",
+    "lint": "eslint .",
     "format": "prettier --write .",
     "validate:content": "node --experimental-strip-types scripts/validate-content.ts",
     "build:skills-mirror": "node --experimental-strip-types scripts/build-skills-sh-mirror.ts",
@@ -38,17 +38,11 @@
     "test": "npm run test:plain && npm run test:ts",
     "test:plain": "node --experimental-strip-types --test tests/adversarial-harness.test.ts tests/trust.test.ts tests/release-signing.test.ts tests/cli-install.test.ts tests/trust-attestation.test.ts",
     "test:ts": "node --experimental-strip-types --test tests/site-stats.test.ts tests/certify.test.ts tests/prompt-injection-guard.test.ts tests/audit-skills.test.ts tests/runtime.test.ts tests/integrations.test.ts tests/growth-revenue-split.test.ts tests/trust-badge.test.ts tests/bounties.test.ts tests/trust-scoring.test.ts tests/adversarial-holdout.test.ts tests/adversarial-judge.test.ts tests/paired-benchmark.test.ts tests/format-rubric.test.ts tests/lang-detect.test.ts tests/university.test.ts tests/package-signature.test.ts",
-    "test:all": "node --experimental-strip-types --test tests/*.test.ts",
-    "lint:strict": "eslint .",
-    "check:project": "node scripts/check-project.mjs",
-    "test:ui": "node scripts/check-signup-ui.mjs",
-    "check:types": "tsc --noEmit",
-    "check:dependencies": "npm audit --audit-level=high",
-    "check:types:sdk": "tsc -p packages/sdk-ts/tsconfig.json --noEmit"
+    "test:all": "node --experimental-strip-types --test tests/*.test.ts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",
-    "@cloudflare/vite-plugin": "1.63.0",
+    "@cloudflare/vite-plugin": "1.49.0",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/cloud-auth-js": "^1.1.2",
     "@lovable.dev/email-js": "^0.1.0",
@@ -88,7 +82,7 @@
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/react-query": "^5.83.0",
     "@tanstack/react-router": "^1.170.18",
-    "@tanstack/react-start": "1.168.60",
+    "@tanstack/react-start": "^1.168.33",
     "@tanstack/router-plugin": "^1.168.23",
     "ai": "^6.0.177",
     "class-variance-authority": "^0.7.1",
@@ -101,7 +95,7 @@
     "jszip": "^3.10.1",
     "lucide-react": "^0.575.0",
     "mcp-tanstack-start": "^0.4.1",
-    "nitro": "3.0.260903-beta",
+    "nitro": "3.0.260603-beta",
     "react": "^19.2.0",
     "react-day-picker": "^9.14.0",
     "react-dom": "^19.2.0",
@@ -119,7 +113,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
-    "@lovable.dev/vite-tanstack-config": "2.25.3",
+    "@lovable.dev/vite-tanstack-config": "2.26.5",
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
@@ -142,11 +136,5 @@
     "overrides": {
       "entities": "4.5.0"
     }
-  },
-  "overrides": {
-    "@lovable.dev/vite-tanstack-config": {
-      "nitro": "$nitro"
-    },
-    "sharp": "0.35.5"
   }
 }

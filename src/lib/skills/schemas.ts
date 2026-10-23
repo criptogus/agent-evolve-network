@@ -3,11 +3,7 @@ import { z } from "zod";
 export const packageTypeEnum = z.enum(["skill", "playbook", "soul", "guardrail"]);
 
 export const PackageDraftSchema = z.object({
-  slug: z
-    .string()
-    .min(2)
-    .max(64)
-    .regex(/^[a-z0-9-]+$/, "lowercase, hyphens, numbers"),
+  slug: z.string().min(2).max(64).regex(/^[a-z0-9-]+$/, "lowercase, hyphens, numbers"),
   name: z.string().min(2).max(120),
   type: packageTypeEnum,
   description: z.string().min(20).max(280),
@@ -26,66 +22,45 @@ export const PackageDraftSchema = z.object({
     // gate (not the model) is what blocks the attack.
     enforcement: z.enum(["prompt", "deterministic_gate", "hybrid"]).default("prompt"),
   }),
-  examples: z
-    .array(
-      z.object({
-        title: z.string(),
-        input: z.string(),
-        expected_output: z.string(),
-        rationale: z.string().optional(),
-      }),
-    )
-    .min(2)
-    .max(8),
-  compatibility: z
-    .array(
-      z.object({
-        runtime: z.string(),
-        status: z.enum(["supported", "partial", "unsupported"]),
-        detail: z.string().optional(),
-      }),
-    )
-    .default([]),
+  examples: z.array(z.object({
+    title: z.string(),
+    input: z.string(),
+    expected_output: z.string(),
+    rationale: z.string().optional(),
+  })).min(2).max(8),
+  compatibility: z.array(z.object({
+    runtime: z.string(),
+    status: z.enum(["supported", "partial", "unsupported"]),
+    detail: z.string().optional(),
+  })).default([]),
   scopes: z.array(z.string()).default(["agent:upgrade", "registry:read"]),
 
   // Optional real-world dependencies a recipe may declare
-  mcp_servers: z
-    .array(
-      z.object({
-        name: z.string().min(1),
-        transport: z.enum(["http", "stdio", "sse"]).default("http"),
-        url: z.string().url().optional(),
-        command: z.string().optional(),
-        args: z.array(z.string()).default([]),
-        env: z.array(z.string()).default([]),
-        scopes: z.array(z.string()).default([]),
-        required: z.boolean().default(true),
-        description: z.string().optional(),
-      }),
-    )
-    .default([]),
+  mcp_servers: z.array(z.object({
+    name: z.string().min(1),
+    transport: z.enum(["http", "stdio", "sse"]).default("http"),
+    url: z.string().url().optional(),
+    command: z.string().optional(),
+    args: z.array(z.string()).default([]),
+    env: z.array(z.string()).default([]),
+    scopes: z.array(z.string()).default([]),
+    required: z.boolean().default(true),
+    description: z.string().optional(),
+  })).default([]),
 
-  permissions: z
-    .array(
-      z.object({
-        scope: z.string().min(1),
-        reason: z.string().optional(),
-        required: z.boolean().default(true),
-      }),
-    )
-    .default([]),
+  permissions: z.array(z.object({
+    scope: z.string().min(1),
+    reason: z.string().optional(),
+    required: z.boolean().default(true),
+  })).default([]),
 
-  live_resources: z
-    .array(
-      z.object({
-        uri: z.string().min(1),
-        kind: z.enum(["mcp", "http", "db"]).default("mcp"),
-        purpose: z.string().optional(),
-        refresh: z.enum(["on_call", "cached"]).default("on_call"),
-        required: z.boolean().default(true),
-      }),
-    )
-    .default([]),
+  live_resources: z.array(z.object({
+    uri: z.string().min(1),
+    kind: z.enum(["mcp", "http", "db"]).default("mcp"),
+    purpose: z.string().optional(),
+    refresh: z.enum(["on_call", "cached"]).default("on_call"),
+    required: z.boolean().default(true),
+  })).default([]),
 });
 
 export type PackageDraft = z.infer<typeof PackageDraftSchema>;
@@ -104,26 +79,17 @@ export type PackageDraft = z.infer<typeof PackageDraftSchema>;
  * validates against the full `PackageDraftSchema`.
  */
 export const PackageDraftMinimalSchema = z.object({
-  slug: z
-    .string()
-    .min(2)
-    .max(64)
-    .regex(/^[a-z0-9-]+$/, "lowercase, hyphens, numbers"),
+  slug: z.string().min(2).max(64).regex(/^[a-z0-9-]+$/, "lowercase, hyphens, numbers"),
   name: z.string().min(2).max(120),
   type: packageTypeEnum,
   description: z.string().min(20).max(280),
   long_description: z.string().min(40).max(4000),
   system_prompt: z.string().min(60),
-  examples: z
-    .array(
-      z.object({
-        title: z.string(),
-        input: z.string(),
-        expected_output: z.string(),
-      }),
-    )
-    .min(1)
-    .max(6),
+  examples: z.array(z.object({
+    title: z.string(),
+    input: z.string(),
+    expected_output: z.string(),
+  })).min(1).max(6),
 });
 export type PackageDraftMinimal = z.infer<typeof PackageDraftMinimalSchema>;
 
@@ -133,15 +99,13 @@ export const EvaluationSchema = z.object({
   health: z.number().min(0).max(100),
   hallucination_rate: z.number().min(0).max(100),
   safety: z.number().min(0).max(100),
-  example_results: z.array(
-    z.object({
-      title: z.string(),
-      pass: z.boolean(),
-      actual_output: z.string(),
-      score: z.number().min(0).max(100),
-      rationale: z.string(),
-    }),
-  ),
+  example_results: z.array(z.object({
+    title: z.string(),
+    pass: z.boolean(),
+    actual_output: z.string(),
+    score: z.number().min(0).max(100),
+    rationale: z.string(),
+  })),
   strengths: z.array(z.string()),
   weaknesses: z.array(z.string()),
   improvement_actions: z.array(z.string()),
@@ -160,15 +124,11 @@ export const PatchSchema = z.object({
     must: z.array(z.string()).optional(),
     must_not: z.array(z.string()).optional(),
   }),
-  new_examples: z
-    .array(
-      z.object({
-        title: z.string(),
-        input: z.string(),
-        expected_output: z.string(),
-      }),
-    )
-    .default([]),
+  new_examples: z.array(z.object({
+    title: z.string(),
+    input: z.string(),
+    expected_output: z.string(),
+  })).default([]),
   next_version: z.string().regex(/^\d+\.\d+\.\d+$/),
   confidence: z.number().min(0).max(100),
 });

@@ -13,7 +13,11 @@ import {
   type ReviewItem,
   type ReviewSort,
 } from "@/lib/reviews/reviews.functions";
-import { reportReview, REPORT_REASONS, type ReportReason } from "@/lib/reviews/reports.functions";
+import {
+  reportReview,
+  REPORT_REASONS,
+  type ReportReason,
+} from "@/lib/reviews/reports.functions";
 import { Stars, StarPicker } from "./Stars";
 
 const PAGE_SIZE = 10;
@@ -81,7 +85,10 @@ export function ReviewsSection({ slug }: { slug: string }) {
   const hasMore = reviewsQ.data?.hasMore ?? false;
   const elig = eligQ.data;
 
-  const sortLabel = useMemo(() => REVIEW_SORTS.find((s) => s.value === sort)?.label ?? "", [sort]);
+  const sortLabel = useMemo(
+    () => REVIEW_SORTS.find((s) => s.value === sort)?.label ?? "",
+    [sort],
+  );
 
   return (
     <section className="rounded-xl border border-border bg-background p-6">
@@ -123,10 +130,7 @@ export function ReviewsSection({ slug }: { slug: string }) {
       <div className="mt-6 rounded-lg border border-border bg-surface/40 p-4">
         {authed === false && (
           <p className="text-xs text-muted-foreground">
-            <Link to="/login" className="text-primary hover:underline">
-              Sign in
-            </Link>{" "}
-            to leave a rating.
+            <Link to="/login" className="text-primary hover:underline">Sign in</Link> to leave a rating.
           </p>
         )}
         {authed && elig && !elig.can_review && (
@@ -198,7 +202,11 @@ export function ReviewsSection({ slug }: { slug: string }) {
           </div>
         )}
         {reviews.map((r) => (
-          <ReviewRow key={r.id} review={r} canReport={!!authed && currentUserId !== r.user_id} />
+          <ReviewRow
+            key={r.id}
+            review={r}
+            canReport={!!authed && currentUserId !== r.user_id}
+          />
         ))}
 
         {(hasMore || page > 0) && (
@@ -211,7 +219,9 @@ export function ReviewsSection({ slug }: { slug: string }) {
             >
               ← Previous
             </button>
-            <span className="font-mono text-[11px] text-muted-foreground">Page {page + 1}</span>
+            <span className="font-mono text-[11px] text-muted-foreground">
+              Page {page + 1}
+            </span>
             <button
               type="button"
               disabled={!hasMore || reviewsQ.isFetching}
@@ -245,9 +255,7 @@ function BreakdownCard({
           <span className="mr-1.5">{icon}</span>
           {label}
         </span>
-        <span className="font-mono text-[11px] text-muted-foreground">
-          {count} rating{count === 1 ? "" : "s"}
-        </span>
+        <span className="font-mono text-[11px] text-muted-foreground">{count} rating{count === 1 ? "" : "s"}</span>
       </div>
       <div className="mt-2 flex items-center gap-2">
         <Stars value={avg} size={14} />
@@ -274,14 +282,11 @@ function SubmitForm({
   error?: string;
   onSubmit: (v: { rating: number; body: string; raterKind: RaterKind }) => void;
 }) {
-  const [raterKind, setRaterKind] = useState<RaterKind>(
-    initialAgent === "agent" && !reviewedHuman ? "agent" : "human",
-  );
+  const [raterKind, setRaterKind] = useState<RaterKind>(initialAgent === "agent" && !reviewedHuman ? "agent" : "human");
   const [rating, setRating] = useState(0);
   const [body, setBody] = useState("");
 
-  const alreadyDone =
-    (raterKind === "human" && reviewedHuman) || (raterKind === "agent" && reviewedAgent);
+  const alreadyDone = (raterKind === "human" && reviewedHuman) || (raterKind === "agent" && reviewedAgent);
 
   return (
     <form
@@ -339,9 +344,7 @@ function SubmitForm({
 
       <div className="mt-3 flex items-center justify-between gap-3">
         <p className="text-[11px] text-muted-foreground">
-          {alreadyDone
-            ? "You can update your existing rating."
-            : "Public review attached to your profile."}
+          {alreadyDone ? "You can update your existing rating." : "Public review attached to your profile."}
         </p>
         <button
           type="submit"
@@ -386,9 +389,7 @@ function ReviewRow({ review, canReport }: { review: ReviewItem; canReport: boole
         <Stars value={review.rating} size={13} />
         <span className="font-mono text-xs">{review.rating}/5</span>
       </div>
-      {review.body && (
-        <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{review.body}</p>
-      )}
+      {review.body && <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{review.body}</p>}
       <footer className="mt-3 flex justify-end">
         {canReport ? (
           <button
@@ -405,7 +406,9 @@ function ReviewRow({ review, canReport }: { review: ReviewItem; canReport: boole
           </span>
         )}
       </footer>
-      {open && <ReportDialog reviewId={review.id} onClose={() => setOpen(false)} />}
+      {open && (
+        <ReportDialog reviewId={review.id} onClose={() => setOpen(false)} />
+      )}
     </article>
   );
 }

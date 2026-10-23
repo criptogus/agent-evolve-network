@@ -47,14 +47,7 @@ export const MCP_REGISTRY: McpRegistryEntry[] = [
     category: "ads",
     description:
       "Manage Facebook & Instagram ad accounts: campaigns, ad sets, creatives, insights and budget pacing — all from your agent.",
-    tags: [
-      "meta",
-      "facebook",
-      "instagram",
-      "paid social",
-      "performance marketing",
-      "campaign optimization",
-    ],
+    tags: ["meta", "facebook", "instagram", "paid social", "performance marketing", "campaign optimization"],
     transport: "stdio",
     command: "uvx",
     args: ["meta-ads-mcp"],
@@ -62,13 +55,7 @@ export const MCP_REGISTRY: McpRegistryEntry[] = [
     env: [
       { key: "META_APP_ID", label: "Meta App ID", required: true },
       { key: "META_APP_SECRET", label: "Meta App Secret", required: true, secret: true },
-      {
-        key: "META_ACCESS_TOKEN",
-        label: "Long-lived Access Token",
-        required: true,
-        secret: true,
-        helper: "Generate at developers.facebook.com → Tools → Access Token Tool",
-      },
+      { key: "META_ACCESS_TOKEN", label: "Long-lived Access Token", required: true, secret: true, helper: "Generate at developers.facebook.com → Tools → Access Token Tool" },
     ],
     homepage: "https://github.com/mikusnuz/meta-ads-mcp",
     pairs_well_with: ["skill", "playbook"],
@@ -88,12 +75,7 @@ export const MCP_REGISTRY: McpRegistryEntry[] = [
     env: [
       { key: "GOOGLE_ADS_DEVELOPER_TOKEN", label: "Developer Token", required: true, secret: true },
       { key: "GOOGLE_ADS_CLIENT_ID", label: "OAuth Client ID", required: true },
-      {
-        key: "GOOGLE_ADS_CLIENT_SECRET",
-        label: "OAuth Client Secret",
-        required: true,
-        secret: true,
-      },
+      { key: "GOOGLE_ADS_CLIENT_SECRET", label: "OAuth Client Secret", required: true, secret: true },
       { key: "GOOGLE_ADS_REFRESH_TOKEN", label: "Refresh Token", required: true, secret: true },
       { key: "GOOGLE_ADS_LOGIN_CUSTOMER_ID", label: "MCC Customer ID", required: false },
     ],
@@ -110,20 +92,9 @@ export const MCP_REGISTRY: McpRegistryEntry[] = [
     tags: ["crm", "hubspot", "sdr", "sales", "pipeline", "contacts", "deals"],
     transport: "http",
     url: "https://mcp.hubspot.com/v1/sse",
-    scopes: [
-      "crm.objects.contacts.read",
-      "crm.objects.contacts.write",
-      "crm.objects.deals.read",
-      "crm.objects.deals.write",
-    ],
+    scopes: ["crm.objects.contacts.read", "crm.objects.contacts.write", "crm.objects.deals.read", "crm.objects.deals.write"],
     env: [
-      {
-        key: "HUBSPOT_PRIVATE_APP_TOKEN",
-        label: "Private App Access Token",
-        required: true,
-        secret: true,
-        helper: "HubSpot → Settings → Integrations → Private Apps",
-      },
+      { key: "HUBSPOT_PRIVATE_APP_TOKEN", label: "Private App Access Token", required: true, secret: true, helper: "HubSpot → Settings → Integrations → Private Apps" },
     ],
     homepage: "https://developers.hubspot.com/mcp",
     pairs_well_with: ["skill", "playbook", "guardrail"],
@@ -152,14 +123,7 @@ export const MCP_REGISTRY: McpRegistryEntry[] = [
     transport: "http",
     url: "https://api.githubcopilot.com/mcp/",
     scopes: ["repo", "read:user", "workflow"],
-    env: [
-      {
-        key: "GITHUB_PERSONAL_ACCESS_TOKEN",
-        label: "GitHub PAT (fine-grained)",
-        required: true,
-        secret: true,
-      },
-    ],
+    env: [{ key: "GITHUB_PERSONAL_ACCESS_TOKEN", label: "GitHub PAT (fine-grained)", required: true, secret: true }],
     homepage: "https://github.com/github/github-mcp-server",
     pairs_well_with: ["skill", "playbook"],
   },
@@ -173,9 +137,7 @@ export const MCP_REGISTRY: McpRegistryEntry[] = [
     transport: "http",
     url: "https://mcp.notion.com/sse",
     scopes: ["read_content", "update_content", "insert_content"],
-    env: [
-      { key: "NOTION_TOKEN", label: "Internal Integration Token", required: true, secret: true },
-    ],
+    env: [{ key: "NOTION_TOKEN", label: "Internal Integration Token", required: true, secret: true }],
     homepage: "https://developers.notion.com/docs/mcp",
     pairs_well_with: ["skill", "playbook"],
   },
@@ -184,8 +146,7 @@ export const MCP_REGISTRY: McpRegistryEntry[] = [
     name: "Slack MCP",
     vendor: "slack",
     category: "comms",
-    description:
-      "Post messages, read channels, react and thread — useful for handoffs and human-in-the-loop.",
+    description: "Post messages, read channels, react and thread — useful for handoffs and human-in-the-loop.",
     tags: ["chat", "notifications", "handoff", "slack", "ops"],
     transport: "stdio",
     command: "npx",
@@ -208,9 +169,7 @@ export const MCP_REGISTRY: McpRegistryEntry[] = [
     transport: "http",
     url: "https://mcp.posthog.com/sse",
     scopes: ["read:insight", "read:event", "write:feature_flag"],
-    env: [
-      { key: "POSTHOG_PERSONAL_API_KEY", label: "Personal API Key", required: true, secret: true },
-    ],
+    env: [{ key: "POSTHOG_PERSONAL_API_KEY", label: "Personal API Key", required: true, secret: true }],
     homepage: "https://posthog.com/docs/ai/mcp",
     pairs_well_with: ["skill", "playbook"],
   },
@@ -219,8 +178,7 @@ export const MCP_REGISTRY: McpRegistryEntry[] = [
     name: "Stripe MCP",
     vendor: "stripe",
     category: "data",
-    description:
-      "Look up customers, subscriptions, invoices and revenue. Refunds gated by guardrails.",
+    description: "Look up customers, subscriptions, invoices and revenue. Refunds gated by guardrails.",
     tags: ["billing", "payments", "revenue", "subscriptions", "stripe"],
     transport: "stdio",
     command: "npx",
@@ -270,6 +228,6 @@ export function getMcpById(id: string) {
 export function compactMcpCatalogForLLM() {
   return MCP_REGISTRY.map(
     (m) =>
-      `- [${m.category}] ${m.id} :: ${m.name} (${m.vendor}) — ${m.description} | tags: ${m.tags.join(", ")}`,
+      `- [${m.category}] ${m.id} :: ${m.name} (${m.vendor}) — ${m.description} | tags: ${m.tags.join(", ")}`
   ).join("\n");
 }

@@ -25,29 +25,17 @@ export function validateAnthropicSpec(d: {
   if (!/^[a-z0-9-]{2,64}$/.test(d.slug))
     errs.push({ field: "slug", message: "Use kebab-case lowercase (a-z, 0-9, -), 2–64 chars." });
   if (RESERVED.some((r) => d.slug.toLowerCase().includes(r)))
-    errs.push({
-      field: "slug",
-      message: `Slug cannot contain reserved name (${RESERVED.join(", ")}).`,
-    });
+    errs.push({ field: "slug", message: `Slug cannot contain reserved name (${RESERVED.join(", ")}).` });
 
   // name
   if (RESERVED.some((r) => d.name.toLowerCase().includes(r)))
-    errs.push({
-      field: "name",
-      message: `Name cannot contain reserved word (${RESERVED.join(", ")}).`,
-    });
+    errs.push({ field: "name", message: `Name cannot contain reserved word (${RESERVED.join(", ")}).` });
 
   // description
   if (d.description.length > 1024)
-    errs.push({
-      field: "description",
-      message: "Description must be ≤ 1024 chars (Anthropic spec).",
-    });
+    errs.push({ field: "description", message: "Description must be ≤ 1024 chars (Anthropic spec)." });
   if (/[<>]/.test(d.description))
-    errs.push({
-      field: "description",
-      message: "Description must not contain `<` or `>` (prompt-injection guard).",
-    });
+    errs.push({ field: "description", message: "Description must not contain `<` or `>` (prompt-injection guard)." });
   if (!TRIGGER_HINTS.test(d.description))
     errs.push({
       field: "description",
@@ -55,10 +43,7 @@ export function validateAnthropicSpec(d: {
         'Description must include trigger phrases (e.g. "Use when user asks…", "Trigger on…"). Anthropic spec requires WHAT + WHEN.',
     });
   if (d.description.length < 30)
-    errs.push({
-      field: "description",
-      message: "Description too short to convey purpose + triggers.",
-    });
+    errs.push({ field: "description", message: "Description too short to convey purpose + triggers." });
 
   return errs;
 }
@@ -82,12 +67,7 @@ export function buildSkillMd(input: {
   description: string;
   long_description?: string | null;
   system_prompt: string;
-  rules: {
-    must?: string[];
-    must_not?: string[];
-    input_schema?: unknown;
-    output_schema?: unknown;
-  } | null;
+  rules: { must?: string[]; must_not?: string[]; input_schema?: unknown; output_schema?: unknown } | null;
   examples: Array<{ title: string; input: string; expected_output: string; rationale?: string }>;
   compatibility?: Array<{ runtime: string; status: string; detail?: string }>;
   license?: string | null;
@@ -96,9 +76,7 @@ export function buildSkillMd(input: {
 }): string {
   const compatString =
     input.compatibility && input.compatibility.length
-      ? input.compatibility
-          .map((c) => `${c.runtime}:${c.status}${c.detail ? ` (${c.detail})` : ""}`)
-          .join("; ")
+      ? input.compatibility.map((c) => `${c.runtime}:${c.status}${c.detail ? ` (${c.detail})` : ""}`).join("; ")
       : undefined;
 
   const fm: string[] = [
@@ -149,7 +127,7 @@ export function buildSkillMd(input: {
 }
 
 export function buildExamplesMd(
-  examples: Array<{ title: string; input: string; expected_output: string; rationale?: string }>,
+  examples: Array<{ title: string; input: string; expected_output: string; rationale?: string }>
 ): string {
   return [
     "# Examples",
@@ -179,15 +157,12 @@ export function buildExamplesMd(
 function escapeYamlString(s: string): string {
   // single-line strings with quotes if they contain : # or start with special chars
   const safe = s.replace(/\r?\n/g, " ").replace(/"/g, '\\"');
-  if (/[:#&*?[\]{}|>!%@`]/.test(s) || /^[ \-?]/.test(s)) return `"${safe}"`;
+  if (/[:#&*?\[\]{}|>!%@`]/.test(s) || /^[ \-?]/.test(s)) return `"${safe}"`;
   return safe;
 }
 
 /** Convenience that runs both checks AND returns an Anthropic-compliant SKILL.md. */
-export function buildAndValidate(
-  draft: PackageDraft,
-  extras?: { author_handle?: string; version?: string },
-) {
+export function buildAndValidate(draft: PackageDraft, extras?: { author_handle?: string; version?: string }) {
   assertAnthropicSpec({ slug: draft.slug, name: draft.name, description: draft.description });
   return buildSkillMd({
     slug: draft.slug,

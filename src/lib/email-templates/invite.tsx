@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react'
 import {
   Body,
   Button,
@@ -11,13 +11,13 @@ import {
   Preview,
   Section,
   Text,
-} from "@react-email/components";
-import { BRAND, styles } from "./_brand";
+} from '@react-email/components'
+import { BRAND, styles } from './_brand'
 
 interface InviteEmailProps {
-  siteName: string;
-  siteUrl: string;
-  confirmationUrl: string;
+  siteName: string
+  siteUrl: string
+  confirmationUrl: string
 }
 
 export const InviteEmail = ({ confirmationUrl }: InviteEmailProps) => (
@@ -33,13 +33,14 @@ export const InviteEmail = ({ confirmationUrl }: InviteEmailProps) => (
           </Section>
           <Heading style={styles.h1}>You're invited to {BRAND.name}</Heading>
           <Text style={styles.text}>
-            {BRAND.tagline}. Accept the invitation to create your account and start collaborating.
+            {BRAND.tagline}. Accept the invitation to create your account and
+            start collaborating.
           </Text>
           <Button style={styles.button} href={confirmationUrl}>
             Accept invitation
           </Button>
           <Hr style={styles.divider} />
-          <Text style={{ ...styles.text, fontSize: "13px", margin: 0 }}>
+          <Text style={{ ...styles.text, fontSize: '13px', margin: 0 }}>
             Or paste this link into your browser:
             <br />
             <Link href={confirmationUrl} style={styles.link}>
@@ -57,6 +58,6 @@ export const InviteEmail = ({ confirmationUrl }: InviteEmailProps) => (
       </Container>
     </Body>
   </Html>
-);
+)
 
-export default InviteEmail;
+export default InviteEmail

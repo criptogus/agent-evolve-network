@@ -1,14 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-const {
-  cohenKappa,
-  judgeCalibration,
-  ensembleVerdict,
-  judgeBatch,
-  gradeWithJudge,
-  rubricFromExpectations,
-} = await import("../src/lib/adversarial/judge.ts");
+const { cohenKappa, judgeCalibration, ensembleVerdict, judgeBatch, gradeWithJudge, rubricFromExpectations } =
+  await import("../src/lib/adversarial/judge.ts");
 
 const req = (output = "x") => ({ caseId: "c1", input: "i", output, rubric: { criteria: [] } });
 
@@ -47,11 +41,7 @@ test("judgeCalibration: separates false pass from false fail", () => {
 });
 
 test("ensembleVerdict strict: judge catches a semantic failure the substring check missed", () => {
-  const o = ensembleVerdict(
-    true,
-    { verdict: "fail", rationale: "leaked PII semantically" },
-    "strict",
-  );
+  const o = ensembleVerdict(true, { verdict: "fail", rationale: "leaked PII semantically" }, "strict");
   assert.equal(o.passed, false, "strict mode must fail if the judge fails");
   assert.equal(o.disagreement, true);
 });
@@ -63,29 +53,17 @@ test("ensembleVerdict strict: both pass ⇒ pass", () => {
 });
 
 test("ensembleVerdict lenient: either pass ⇒ pass", () => {
-  const o = ensembleVerdict(
-    false,
-    { verdict: "pass", rationale: "correct refusal phrased oddly" },
-    "lenient",
-  );
+  const o = ensembleVerdict(false, { verdict: "pass", rationale: "correct refusal phrased oddly" }, "lenient");
   assert.equal(o.passed, true);
   assert.equal(o.disagreement, true);
 });
 
 test("gradeWithJudge: no judge configured ⇒ defers to deterministic", async () => {
-  const passOutcome = await gradeWithJudge({
-    judgeFn: null,
-    req: req(),
-    deterministicPassed: true,
-  });
+  const passOutcome = await gradeWithJudge({ judgeFn: null, req: req(), deterministicPassed: true });
   assert.equal(passOutcome.passed, true);
   assert.equal(passOutcome.judge_used, false);
   assert.equal(passOutcome.disagreement, false);
-  const failOutcome = await gradeWithJudge({
-    judgeFn: null,
-    req: req(),
-    deterministicPassed: false,
-  });
+  const failOutcome = await gradeWithJudge({ judgeFn: null, req: req(), deterministicPassed: false });
   assert.equal(failOutcome.passed, false);
 });
 
@@ -100,12 +78,7 @@ test("gradeWithJudge: judge error falls back to deterministic (no crash)", async
 
 test("gradeWithJudge: strict judge fail catches a deterministic false-pass", async () => {
   const judge = async () => ({ verdict: "fail", rationale: "semantic leak" });
-  const o = await gradeWithJudge({
-    judgeFn: judge,
-    req: req(),
-    deterministicPassed: true,
-    mode: "strict",
-  });
+  const o = await gradeWithJudge({ judgeFn: judge, req: req(), deterministicPassed: true, mode: "strict" });
   assert.equal(o.passed, false);
   assert.equal(o.judge_used, true);
   assert.equal(o.disagreement, true);
@@ -129,14 +102,8 @@ test("judgeBatch: runs the injected judge and builds ensemble outcomes", async (
     rationale: "mock",
   });
   const items = [
-    {
-      req: { caseId: "a", input: "i", output: "SAFE", rubric: { criteria: [] } },
-      deterministicPassed: true,
-    },
-    {
-      req: { caseId: "b", input: "i", output: "BAD", rubric: { criteria: [] } },
-      deterministicPassed: true,
-    },
+    { req: { caseId: "a", input: "i", output: "SAFE", rubric: { criteria: [] } }, deterministicPassed: true },
+    { req: { caseId: "b", input: "i", output: "BAD", rubric: { criteria: [] } }, deterministicPassed: true },
   ];
   const outcomes = await judgeBatch(mockJudge, items, "strict");
   assert.equal(outcomes.length, 2);

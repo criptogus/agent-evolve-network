@@ -1,16 +1,10 @@
-import { errorField } from "@/lib/errors";
 /**
  * Server-only helpers for the admin plugin upload panel: unzip an uploaded
  * Agent Plugins v1 package, run the conformance suite, and only then land it
  * in the registry so it becomes reachable through /plugins.
  */
 import JSZip from "jszip";
-import {
-  runPluginConformance,
-  MAX_FILES,
-  MAX_FILE_BYTES,
-  type ConformanceReport,
-} from "./conformance";
+import { runPluginConformance, MAX_FILES, MAX_FILE_BYTES, type ConformanceReport } from "./conformance";
 import { normalizePluginName } from "./agent-plugins";
 import { readFrontmatter } from "./conformance";
 
@@ -31,16 +25,12 @@ export async function readPluginZip(base64: string): Promise<Map<string, string>
   try {
     zip = await JSZip.loadAsync(bytes);
   } catch (e) {
-    throw new Response(
-      `Not a readable .zip archive: ${e instanceof Error ? errorField(e, "message") : String(e)}`,
-      {
-        status: 400,
-      },
-    );
+    throw new Response(`Not a readable .zip archive: ${e instanceof Error ? e.message : String(e)}`, {
+      status: 400,
+    });
   }
   const files = Object.values(zip.files).filter((f) => !f.dir);
-  if (files.length > MAX_FILES)
-    throw new Response(`Archive has more than ${MAX_FILES} files`, { status: 400 });
+  if (files.length > MAX_FILES) throw new Response(`Archive has more than ${MAX_FILES} files`, { status: 400 });
 
   const entries: Array<[string, string]> = [];
   for (const f of files) {
@@ -49,10 +39,7 @@ export async function readPluginZip(base64: string): Promise<Map<string, string>
     if (buf.byteLength > MAX_FILE_BYTES * 4) {
       throw new Response(`${f.name} is too large to inspect`, { status: 400 });
     }
-    entries.push([
-      f.name.replace(/^\.\//, ""),
-      new TextDecoder("utf-8", { fatal: false }).decode(buf),
-    ]);
+    entries.push([f.name.replace(/^\.\//, ""), new TextDecoder("utf-8", { fatal: false }).decode(buf)]);
   }
   return new Map(stripCommonRoot(entries));
 }
@@ -76,12 +63,7 @@ export function pluginToDraft(files: Map<string, string>, report: ConformanceRep
   const skillMd = files.get(`skills/${primary.dir}/SKILL.md`) ?? "";
   const fm = readFrontmatter(skillMd);
   const body = skillMd.replace(/^---[\s\S]*?---/, "").trim();
-  const description = (
-    manifest.description ||
-    primary.description ||
-    fm["description"] ||
-    ""
-  ).slice(0, 400);
+  const description = (manifest.description || primary.description || fm["description"] || "").slice(0, 400);
   return {
     slug,
     name: (fm["name"] || manifest.name).slice(0, 120),

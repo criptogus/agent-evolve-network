@@ -1,6 +1,3 @@
-import { toJson } from "@/lib/json";
-import { errorField } from "@/lib/errors";
-import type { AppDatabaseClient } from "@/integrations/supabase/database";
 // Shared bulk-upload pipeline used by both the UI server fn and the MCP tool.
 import { generateDraft, insertDraftPackage, inferType } from "@/lib/admin/author.server";
 import { inspectContent } from "@/lib/security/prompt-injection-guard";
@@ -15,6 +12,7 @@ import { enqueueUploadJobs, type QueuedJob } from "@/lib/uploads/queue.server";
 // does the heavy lifting. This eliminated the "response did not match
 // schema" and timeout errors that were breaking the core loop.
 const INLINE_BUDGET = 0;
+
 
 export type UploadFileInput = {
   name: string;
@@ -90,9 +88,9 @@ export function previewUpload(files: UploadFileInput[]): UploadPreview[] {
  * publish later from /admin or via the forge loop.
  */
 export async function processBulkUpload(
-  supabase: AppDatabaseClient,
+  supabase: any,
   userId: string,
-  files: UploadFileInput[],
+  files: UploadFileInput[]
 ): Promise<{ results: UploadResult[]; queued: QueuedJob[] }> {
   const inline = files.slice(0, INLINE_BUDGET);
   const overflow = files.slice(INLINE_BUDGET);
@@ -109,26 +107,22 @@ export async function processBulkUpload(
       out.injection = {
         severity: guard.severity,
         findings: guard.findings.map((g) => ({
-          pattern: g.pattern,
-          category: g.category,
-          severity: g.severity,
+          pattern: g.pattern, category: g.category, severity: g.severity,
         })),
       };
       if (guard.severity !== "none") {
         // Best-effort audit; never block on logging failures.
         try {
-          await supabaseAdmin.from("upload_injection_audit").insert({
+          await (supabaseAdmin as any).from("upload_injection_audit").insert({
             user_id: userId,
             filename: f.name,
             inferred_type: inferred,
             severity: guard.severity,
             rejected: guard.rejected,
-            findings: toJson(guard.findings),
+            findings: guard.findings,
             content_sample: f.content.slice(0, 1024),
           });
-        } catch {
-          /* ignore */
-        }
+        } catch { /* ignore */ }
       }
       if (guard.rejected) {
         out.error = guard.reason;
@@ -158,8 +152,8 @@ export async function processBulkUpload(
       out.slug = pkg.slug;
       out.type = inferred;
       out.forge_report_url = `/forge/report/${pkg.slug}`;
-    } catch (e) {
-      const msg = errorField(e, "message") ?? "failed";
+    } catch (e: any) {
+      const msg = e?.message ?? "failed";
       out.error = msg;
       out.status = "failed";
       // Server-side visibility — without this the MCP caller sees a
@@ -193,9 +187,7 @@ export async function processBulkUpload(
           injection: {
             severity: guard.severity,
             findings: guard.findings.map((g) => ({
-              pattern: g.pattern,
-              category: g.category,
-              severity: g.severity,
+              pattern: g.pattern, category: g.category, severity: g.severity,
             })),
           },
         });
@@ -217,18 +209,13 @@ export async function processBulkUpload(
             type: job?.inferred_type ?? f.type ?? inferType(f.name, f.content),
           });
         }
-      } catch (e) {
+      } catch (e: any) {
         // If the queue itself is unavailable, fall back to per-file failure
         // records so the caller knows the overflow didn't silently disappear.
-        const msg = errorField(e, "message") ?? "enqueue failed";
+        const msg = e?.message ?? "enqueue failed";
         console.error(`[uploads.processBulkUpload] enqueue failed user=${userId}: ${msg}`);
         for (const f of enqueueable) {
-          results.push({
-            name: f.name,
-            ok: false,
-            status: "failed",
-            error: `queue unavailable: ${msg}`,
-          });
+          results.push({ name: f.name, ok: false, status: "failed", error: `queue unavailable: ${msg}` });
         }
       }
     }

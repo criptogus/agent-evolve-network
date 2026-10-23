@@ -36,6 +36,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Local validation receipts
-artifacts/validation/

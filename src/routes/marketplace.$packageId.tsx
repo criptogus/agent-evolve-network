@@ -1,4 +1,3 @@
-import { errorField } from "@/lib/errors";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Nav } from "@/components/site/Nav";
@@ -247,7 +246,10 @@ function PackageDetail() {
                       : "border-border bg-background text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <Star className="h-3.5 w-3.5" fill={star?.starred ? "currentColor" : "none"} />
+                  <Star
+                    className="h-3.5 w-3.5"
+                    fill={star?.starred ? "currentColor" : "none"}
+                  />
                   {star?.starred ? "Saved" : "Save"}
                   {star != null && (
                     <span className="font-mono text-[11px] opacity-70">{star.star_count}</span>
@@ -262,6 +264,7 @@ function PackageDetail() {
                 />
               </div>
             </div>
+
           </div>
         </div>
       </section>
@@ -373,121 +376,126 @@ function PackageDetail() {
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
-          <div className="rounded-xl border border-border bg-background p-5 shadow-elevated">
-            {/* Primary: no-signup MCP path */}
-            <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
-              Install — no account needed
-            </div>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Use the open skills CLI, our CLI, or add the MCP gateway URL to Claude or Cursor. No
-              signup required.
-            </p>
-            <div className="mt-3 space-y-2">
-              <CodeBlockCopy code={openSkillsInstallOne(pkg.id)} label="open skills CLI command" />
-              <CodeBlockCopy code={`npx super-agent install ${pkg.id}`} label="install command" />
-              <CodeBlockCopy code={MCP_GATEWAY_URL} label="gateway URL" />
-            </div>
-
-            <div className="mt-5 flex items-center gap-3">
-              <span className="h-px flex-1 bg-border" />
-              <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                or with an account
-              </span>
-              <span className="h-px flex-1 bg-border" />
-            </div>
-
-            <label className="mt-4 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-              Version
-            </label>
-            <select
-              value={selectedVersion}
-              onChange={(e) => setSelectedVersion(e.target.value)}
-              className="mt-2 h-10 w-full rounded-md border border-border bg-background px-3 font-mono text-sm outline-none focus:border-primary"
-            >
-              {pkg.versions.map((v: Package["versions"][number]) => (
-                <option key={v.version} value={v.version}>
-                  {v.version} · {v.status}
-                </option>
-              ))}
-            </select>
-
-            {installed && (
-              <div className="mt-3 rounded-md border border-border bg-surface px-3 py-2 font-mono text-[11px]">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">installed</span>
-                  <span className="text-foreground">v{installed}</span>
-                </div>
-                {isOutdated ? (
-                  <div className="mt-1 flex items-center justify-between text-amber-600 dark:text-amber-400">
-                    <span>update available</span>
-                    <span>v{pkg.latest}</span>
-                  </div>
-                ) : (
-                  <div className="mt-1 flex items-center justify-between text-signal">
-                    <span>up to date</span>
-                    <span>✓</span>
-                  </div>
-                )}
+            <div className="rounded-xl border border-border bg-background p-5 shadow-elevated">
+              {/* Primary: no-signup MCP path */}
+              <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
+                Install — no account needed
               </div>
-            )}
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Use the open skills CLI, our CLI, or add the MCP gateway URL to Claude or Cursor.
+                No signup required.
+              </p>
+              <div className="mt-3 space-y-2">
+                <CodeBlockCopy
+                  code={openSkillsInstallOne(pkg.id)}
+                  label="open skills CLI command"
+                />
+                <CodeBlockCopy code={`npx super-agent install ${pkg.id}`} label="install command" />
+                <CodeBlockCopy code={MCP_GATEWAY_URL} label="gateway URL" />
+              </div>
 
-            {isOutdated && (
+
+              <div className="mt-5 flex items-center gap-3">
+                <span className="h-px flex-1 bg-border" />
+                <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  or with an account
+                </span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+
+              <label className="mt-4 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                Version
+              </label>
+              <select
+                value={selectedVersion}
+                onChange={(e) => setSelectedVersion(e.target.value)}
+                className="mt-2 h-10 w-full rounded-md border border-border bg-background px-3 font-mono text-sm outline-none focus:border-primary"
+              >
+                {pkg.versions.map((v: Package["versions"][number]) => (
+                  <option key={v.version} value={v.version}>
+                    {v.version} · {v.status}
+                  </option>
+                ))}
+              </select>
+
+              {installed && (
+                <div className="mt-3 rounded-md border border-border bg-surface px-3 py-2 font-mono text-[11px]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">installed</span>
+                    <span className="text-foreground">v{installed}</span>
+                  </div>
+                  {isOutdated ? (
+                    <div className="mt-1 flex items-center justify-between text-amber-600 dark:text-amber-400">
+                      <span>update available</span>
+                      <span>v{pkg.latest}</span>
+                    </div>
+                  ) : (
+                    <div className="mt-1 flex items-center justify-between text-signal">
+                      <span>up to date</span>
+                      <span>✓</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {isOutdated && (
+                <button
+                  onClick={() => {
+                    if (requireAuth("update this package")) handleUpdateToLatest();
+                  }}
+                  disabled={updating}
+                  className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-95 disabled:opacity-60"
+                >
+                  {updating ? "Updating…" : `Update to v${pkg.latest}`}
+                </button>
+              )}
+
               <button
                 onClick={() => {
-                  if (requireAuth("update this package")) handleUpdateToLatest();
+                  if (requireAuth("install this package")) setInstallOpen(true);
                 }}
-                disabled={updating}
-                className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-95 disabled:opacity-60"
+                className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background text-sm font-semibold text-foreground transition-all hover:bg-accent"
               >
-                {updating ? "Updating…" : `Update to v${pkg.latest}`}
+                {isUpgrade
+                  ? `Upgrade → v${selectedVersion}`
+                  : installed
+                    ? `Reinstall v${selectedVersion}`
+                    : `Install v${selectedVersion}`}
               </button>
-            )}
 
-            <button
-              onClick={() => {
-                if (requireAuth("install this package")) setInstallOpen(true);
-              }}
-              className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background text-sm font-semibold text-foreground transition-all hover:bg-accent"
-            >
-              {isUpgrade
-                ? `Upgrade → v${selectedVersion}`
-                : installed
-                  ? `Reinstall v${selectedVersion}`
-                  : `Install v${selectedVersion}`}
-            </button>
-
-            {installed && (
-              <button
-                onClick={handleUninstall}
-                disabled={uninstalling}
-                className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-destructive/30 bg-background text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
-              >
-                {uninstalling ? "Uninstalling…" : "Uninstall"}
-              </button>
-            )}
-
-            <Link
-              to="/play"
-              search={{ tool: "get_package", slug: pkg.id }}
-              className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-border bg-background text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-            >
-              ▶ Test drive in the playground — no install
-            </Link>
-
-            <div className="mt-3 text-center text-[11px] text-muted-foreground">
-              {user ? (
-                <>
-                  via MCP · scoped <span className="font-mono text-foreground">agent:upgrade</span>
-                </>
-              ) : (
-                <Link to="/login" className="text-primary underline-offset-2 hover:underline">
-                  Sign in to install
-                </Link>
+              {installed && (
+                <button
+                  onClick={handleUninstall}
+                  disabled={uninstalling}
+                  className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-destructive/30 bg-background text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+                >
+                  {uninstalling ? "Uninstalling…" : "Uninstall"}
+                </button>
               )}
-            </div>
 
-            <CompatibilitySummary checks={pkg.compatibility} />
-          </div>
+              <Link
+                to="/play"
+                search={{ tool: "get_package", slug: pkg.id }}
+                className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-border bg-background text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+              >
+                ▶ Test drive in the playground — no install
+              </Link>
+
+              <div className="mt-3 text-center text-[11px] text-muted-foreground">
+                {user ? (
+                  <>
+                    via MCP · scoped{" "}
+                    <span className="font-mono text-foreground">agent:upgrade</span>
+                  </>
+                ) : (
+                  <Link to="/login" className="text-primary underline-offset-2 hover:underline">
+                    Sign in to install
+                  </Link>
+                )}
+              </div>
+
+              <CompatibilitySummary checks={pkg.compatibility} />
+            </div>
           <DetailsPanel pkg={pkg} />
           <TrustPanel pkg={pkg} />
         </aside>
@@ -606,9 +614,7 @@ function StatsSection({ pkg }: { pkg: Package }) {
           Performance
         </div>
         {pkg.metrics.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">
-            No published performance metrics yet.
-          </p>
+          <p className="mt-3 text-sm text-muted-foreground">No published performance metrics yet.</p>
         ) : (
           <div className="mt-3 space-y-1.5">
             {pkg.metrics.map((m) => (
@@ -756,9 +762,7 @@ function InstallInstructions({ pkg }: { pkg: Package }) {
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-semibold text-primary">
             2
           </span>
-          <h3 className="text-sm font-semibold">
-            Agent Plugin endpoints — /plugin.json + /mcp.json
-          </h3>
+          <h3 className="text-sm font-semibold">Agent Plugin endpoints — /plugin.json + /mcp.json</h3>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
           Load this skill as a portable{" "}
@@ -774,7 +778,10 @@ function InstallInstructions({ pkg }: { pkg: Package }) {
           skill's tools.
         </p>
         <div className="mt-3 space-y-2">
-          <CodeBlockCopy code={agentPluginManifestUrl(pkg.id)} label="plugin.json endpoint" />
+          <CodeBlockCopy
+            code={agentPluginManifestUrl(pkg.id)}
+            label="plugin.json endpoint"
+          />
           <CodeBlockCopy code={agentPluginMcpUrl(pkg.id)} label="mcp.json endpoint" />
         </div>
         <ol className="mt-4 list-decimal space-y-1.5 pl-4 text-xs text-muted-foreground">
@@ -783,8 +790,9 @@ function InstallInstructions({ pkg }: { pkg: Package }) {
             <code className="font-mono text-foreground">{agentPluginManifestUrl(pkg.id)}</code>.
           </li>
           <li>
-            The agent fetches <code className="font-mono text-foreground">/mcp.json</code> to
-            discover the MCP server URL.
+            The agent fetches{" "}
+            <code className="font-mono text-foreground">/mcp.json</code> to discover the MCP server
+            URL.
           </li>
           <li>
             It loads the skill from{" "}

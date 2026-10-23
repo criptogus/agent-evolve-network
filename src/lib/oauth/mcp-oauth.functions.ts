@@ -2,8 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
-import { CODE_TTL_SECONDS, generateAuthCode, sha256 } from "@/lib/oauth/mcp-oauth.server";
+const supabaseAdmin = _supabaseAdmin as any;
+import {
+  CODE_TTL_SECONDS,
+  generateAuthCode,
+  sha256,
+} from "@/lib/oauth/mcp-oauth.server";
 
 /** Fetch the public client metadata for the consent screen. */
 export const getOauthClient = createServerFn({ method: "POST" })
@@ -40,8 +44,8 @@ export const issueOauthCode = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx } = context;
-    const supabase = _sbCtx;
+    const { supabase: _sbCtx } = context as any;
+    const supabase = _sbCtx as any;
     const code = generateAuthCode();
     const { error } = await supabase.rpc("mcp_oauth_issue_code", {
       _client_id: data.client_id,

@@ -15,12 +15,7 @@ interface ClientOnlyProps {
  * scrolls within ~600px of the viewport. Use this around heavy, decorative
  * sections that don't need to be in the SSR HTML for SEO.
  */
-export function ClientOnly({
-  children,
-  minHeight = 400,
-  eager = false,
-  className,
-}: ClientOnlyProps) {
+export function ClientOnly({ children, minHeight = 400, eager = false, className }: ClientOnlyProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -52,11 +47,7 @@ export function ClientOnly({
     <div
       ref={ref}
       className={className}
-      style={
-        mounted
-          ? undefined
-          : { minHeight: typeof minHeight === "number" ? `${minHeight}px` : minHeight }
-      }
+      style={mounted ? undefined : { minHeight: typeof minHeight === "number" ? `${minHeight}px` : minHeight }}
     >
       {mounted ? children : null}
     </div>

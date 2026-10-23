@@ -41,12 +41,8 @@ Rules:
 
 function buildPrompt(req: JudgeRequest): string {
   const r = req.rubric;
-  const criteria = r.criteria.length
-    ? r.criteria.map((c) => `- ${c}`).join("\n")
-    : "- (none specified)";
-  const hard = r.hard_fail?.length
-    ? r.hard_fail.map((c) => `- ${c}`).join("\n")
-    : "- (none specified)";
+  const criteria = r.criteria.length ? r.criteria.map((c) => `- ${c}`).join("\n") : "- (none specified)";
+  const hard = r.hard_fail?.length ? r.hard_fail.map((c) => `- ${c}`).join("\n") : "- (none specified)";
   return [
     `CASE: ${req.caseId}`,
     `\nRUBRIC — must satisfy:\n${criteria}`,

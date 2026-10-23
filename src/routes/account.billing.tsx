@@ -1,4 +1,3 @@
-import { errorField } from "@/lib/errors";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Nav } from "@/components/site/Nav";
@@ -70,8 +69,8 @@ function BillingPage() {
       });
       if ("error" in result) throw new Error(result.error);
       window.open(result.url, "_blank");
-    } catch (e) {
-      toast.error(errorField(e, "message") ?? "Could not open portal");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not open portal");
     }
   };
 

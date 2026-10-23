@@ -52,15 +52,8 @@ function CreditsPage() {
 
       <section className="mx-auto max-w-5xl px-6 py-10">
         <div className="grid gap-4 md:grid-cols-3">
-          <Stat
-            label="Current balance"
-            value={isLoading ? "…" : (data?.balance ?? 0).toLocaleString()}
-            accent
-          />
-          <Stat
-            label="Total earned"
-            value={isLoading ? "…" : `+${(data?.total_earned ?? 0).toLocaleString()}`}
-          />
+          <Stat label="Current balance" value={isLoading ? "…" : (data?.balance ?? 0).toLocaleString()} accent />
+          <Stat label="Total earned" value={isLoading ? "…" : `+${(data?.total_earned ?? 0).toLocaleString()}`} />
           <Stat
             label="Total spent"
             value={isLoading ? "…" : `−${(data?.total_spent ?? 0).toLocaleString()}`}
@@ -70,43 +63,33 @@ function CreditsPage() {
                 : undefined
             }
           />
+
         </div>
 
         <div className="mt-6 rounded-xl border border-primary/30 bg-primary/5 p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="text-sm font-semibold">Earn credits by sharing</div>
-              <div className="text-xs text-muted-foreground">
-                Invite others and earn up to 200 credits per new subscriber + 5% on their purchases.
-              </div>
+              <div className="text-xs text-muted-foreground">Invite others and earn up to 200 credits per new subscriber + 5% on their purchases.</div>
             </div>
-            <Link
-              to="/account/referrals"
-              className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-95"
-            >
+            <Link to="/account/referrals" className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-95">
               Get my referral link →
             </Link>
           </div>
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-2">
-          <InfoCard
-            title="How you earn"
-            items={[
-              "Sign-up bonus (one-time): +100 credits",
-              "Monthly subscription grant on Pro / Enterprise",
-              "Sales of your packages: 70% of price goes to you",
-              "Referral bonuses: +20 signup, +200 subscriber, 5% on buys",
-            ]}
-          />
-          <InfoCard
-            title="What you spend on"
-            items={[
-              "Buying paid packages from the marketplace",
-              "Forge runs: authoring, evaluating and auto-learn",
-              "On-demand creation when a primitive is missing",
-            ]}
-          />
+          <InfoCard title="How you earn" items={[
+            "Sign-up bonus (one-time): +100 credits",
+            "Monthly subscription grant on Pro / Enterprise",
+            "Sales of your packages: 70% of price goes to you",
+            "Referral bonuses: +20 signup, +200 subscriber, 5% on buys",
+          ]} />
+          <InfoCard title="What you spend on" items={[
+            "Buying paid packages from the marketplace",
+            "Forge runs: authoring, evaluating and auto-learn",
+            "On-demand creation when a primitive is missing",
+          ]} />
         </div>
 
         <div className="mt-10">
@@ -130,23 +113,14 @@ function CreditsPage() {
               </thead>
               <tbody>
                 {isLoading && (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
-                      Loading…
-                    </td>
-                  </tr>
+                  <tr><td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">Loading…</td></tr>
                 )}
                 {!isLoading && (data?.recent ?? []).length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
-                      No activity yet. Your sign-up bonus appears as soon as you complete
-                      onboarding.
-                    </td>
-                  </tr>
+                  <tr><td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
+                    No activity yet. Your sign-up bonus appears as soon as you complete onboarding.
+                  </td></tr>
                 )}
-                {(data?.recent ?? []).map((e) => (
-                  <Row key={e.id} e={e} />
-                ))}
+                {(data?.recent ?? []).map((e) => <Row key={e.id} e={e} />)}
               </tbody>
             </table>
           </div>
@@ -157,29 +131,16 @@ function CreditsPage() {
   );
 }
 
-function Stat({
-  label,
-  value,
-  accent,
-  hint,
-}: {
-  label: string;
-  value: string;
-  accent?: boolean;
-  hint?: string;
-}) {
+function Stat({ label, value, accent, hint }: { label: string; value: string; accent?: boolean; hint?: string }) {
   return (
-    <div
-      className={`rounded-xl border p-5 ${accent ? "border-primary/30 bg-primary/5" : "border-border bg-background"}`}
-    >
+    <div className={`rounded-xl border p-5 ${accent ? "border-primary/30 bg-primary/5" : "border-border bg-background"}`}>
       <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className={`mt-1.5 font-mono text-3xl font-semibold ${accent ? "text-primary" : ""}`}>
-        {value}
-      </div>
+      <div className={`mt-1.5 font-mono text-3xl font-semibold ${accent ? "text-primary" : ""}`}>{value}</div>
       {hint && <div className="mt-2 text-xs leading-relaxed text-muted-foreground">{hint}</div>}
     </div>
   );
 }
+
 
 function InfoCard({ title, items }: { title: string; items: string[] }) {
   return (
@@ -187,10 +148,7 @@ function InfoCard({ title, items }: { title: string; items: string[] }) {
       <div className="text-sm font-semibold">{title}</div>
       <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
         {items.map((i) => (
-          <li key={i} className="flex gap-2">
-            <span className="text-primary">·</span>
-            <span>{i}</span>
-          </li>
+          <li key={i} className="flex gap-2"><span className="text-primary">·</span><span>{i}</span></li>
         ))}
       </ul>
     </div>
@@ -210,11 +168,8 @@ function Row({ e }: { e: LedgerEntry }) {
         </span>
       </td>
       <td className="px-4 py-2.5 text-muted-foreground">{e.description ?? "—"}</td>
-      <td
-        className={`px-4 py-2.5 text-right font-mono ${positive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}
-      >
-        {positive ? "+" : ""}
-        {e.delta.toLocaleString()}
+      <td className={`px-4 py-2.5 text-right font-mono ${positive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+        {positive ? "+" : ""}{e.delta.toLocaleString()}
       </td>
       <td className="px-4 py-2.5 text-right font-mono">{e.balance_after.toLocaleString()}</td>
     </tr>

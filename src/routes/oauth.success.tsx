@@ -20,7 +20,10 @@ type Handoff = {
 
 export const Route = createFileRoute("/oauth/success")({
   head: () => ({
-    meta: [{ title: "Connected — Super Agent Skill" }, { name: "robots", content: "noindex" }],
+    meta: [
+      { title: "Connected — Super Agent Skill" },
+      { name: "robots", content: "noindex" },
+    ],
   }),
   component: SuccessPage,
 });
@@ -50,6 +53,7 @@ function classifyRedirect(uri: string): "loopback" | "private-scheme" | "https" 
 
 // The product is English-only; the language switcher was removed on purpose.
 
+
 function SuccessPage() {
   const [handoff, setHandoff] = useState<Handoff | null>(null);
   const [copied, setCopied] = useState(false);
@@ -68,7 +72,10 @@ function SuccessPage() {
     }
   }, [track]);
 
-  const kind = useMemo(() => (handoff ? classifyRedirect(handoff.redirect_uri) : null), [handoff]);
+  const kind = useMemo(
+    () => (handoff ? classifyRedirect(handoff.redirect_uri) : null),
+    [handoff],
+  );
 
   useEffect(() => {
     if (!handoff || !kind || deliveredRef.current) return;
@@ -84,9 +91,11 @@ function SuccessPage() {
       // when the listener had already closed. With no-cors we don't get
       // to read the response, but the listener typically only needs to
       // see the request hit /callback?code=… to complete the flow.
-      fetch(handoff.redirect_to, { mode: "no-cors", cache: "no-store" }).catch(() => {
-        /* swallow; the manual-paste fallback below covers this */
-      });
+      fetch(handoff.redirect_to, { mode: "no-cors", cache: "no-store" }).catch(
+        () => {
+          /* swallow; the manual-paste fallback below covers this */
+        },
+      );
       return;
     }
     if (kind === "private-scheme") {
@@ -105,7 +114,7 @@ function SuccessPage() {
     }
     // https: a normal remote callback — let the browser handle it.
     window.location.replace(handoff.redirect_to);
-  }, [handoff, kind, track]);
+  }, [handoff, kind]);
 
   async function copyCode() {
     if (!handoff) return;

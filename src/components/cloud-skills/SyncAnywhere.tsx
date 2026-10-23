@@ -50,8 +50,8 @@ export function SyncAnywhere({ sampleSlug = "my-skill" }: { sampleSlug?: string 
         <Badge variant="secondary">Private to your account</Badge>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
-        Your skills stay encrypted in your private library and are never shared with other users.
-        Pick a tool and your agent writes them at the exact path that tool reads.
+        Your skills stay encrypted in your private library and are never shared with other
+        users. Pick a tool and your agent writes them at the exact path that tool reads.
       </p>
 
       <div className="mt-5">
@@ -130,8 +130,8 @@ export function SyncAnywhere({ sampleSlug = "my-skill" }: { sampleSlug?: string 
 
       <p className="mt-4 text-xs text-muted-foreground">
         Paste the prompt in {provider.label}. It calls{" "}
-        <code className="font-mono">cloud_skills_sync</code> over MCP, skips skills that are already
-        up to date and never deletes local files.
+        <code className="font-mono">cloud_skills_sync</code> over MCP, skips skills that are
+        already up to date and never deletes local files.
       </p>
     </section>
   );

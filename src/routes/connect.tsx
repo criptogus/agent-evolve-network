@@ -2,18 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { recordFunnelEvent } from "@/lib/telemetry/funnel.functions";
-import {
-  ArrowRight,
-  Check,
-  Copy,
-  Plug,
-  Sparkles,
-  Search,
-  Upload,
-  Terminal,
-  Zap,
-  Star,
-} from "lucide-react";
+import { ArrowRight, Check, Copy, Plug, Sparkles, Search, Upload, Terminal, Zap, Star } from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
 import { CodeBlock } from "@/components/site/CodeBlock";
 import { McpTester } from "@/components/site/McpTester";
@@ -278,7 +267,8 @@ transport = "http"`,
     name: "n8n",
     short: "Workflow agent",
     badge: "MCP Client node",
-    blurb: "Use the MCP Client node inside any AI Agent workflow. Tools become callable steps.",
+    blurb:
+      "Use the MCP Client node inside any AI Agent workflow. Tools become callable steps.",
     steps: [
       "Add the MCP Client node to your AI Agent.",
       "Set transport to HTTP and paste the URL.",
@@ -487,9 +477,7 @@ function CopyInline({ value }: { value: string }) {
           await navigator.clipboard.writeText(value);
           setCopied(true);
           setTimeout(() => setCopied(false), 1500);
-        } catch {
-          /* Best-effort browser storage or navigation. */
-        }
+        } catch {}
       }}
       className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-accent"
       aria-label="Copy endpoint"
@@ -560,10 +548,9 @@ function ConnectPage() {
               <span className="text-muted-foreground">Every coding agent — Hermes first.</span>
             </h1>
             <p className="mt-4 max-w-xl text-base text-muted-foreground">
-              Hermes is our featured runtime — one{" "}
-              <code className="rounded bg-muted px-1 py-0.5 font-mono text-[13px]">curl</code> and
-              you're wired. Claude, Cursor, Codex, VS Code, Zed, n8n and every other MCP-compatible
-              client just below. Read tools are anonymous; write tools take a token.
+              Hermes is our featured runtime — one <code className="rounded bg-muted px-1 py-0.5 font-mono text-[13px]">curl</code> and
+              you're wired. Claude, Cursor, Codex, VS Code, Zed, n8n and every other
+              MCP-compatible client just below. Read tools are anonymous; write tools take a token.
             </p>
           </div>
 
@@ -605,33 +592,21 @@ function ConnectPage() {
                 Hermes × Super Agent Skill
               </h2>
               <p className="mt-3 max-w-lg text-sm text-muted-foreground md:text-base">
-                Hermes is our reference agent runtime. It picks up new skills every session, proxies
-                OAuth for write tools, and the installer below is idempotent — safe to re-run any
-                time. If you're deciding what to try first, start here.
+                Hermes is our reference agent runtime. It picks up new skills every session,
+                proxies OAuth for write tools, and the installer below is idempotent — safe to
+                re-run any time. If you're deciding what to try first, start here.
               </p>
               <ul className="mt-5 grid gap-2 text-sm text-muted-foreground">
-                <li className="flex gap-2">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-signal" /> One command · zero JSON
-                  · backs up your existing config.
-                </li>
-                <li className="flex gap-2">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-signal" /> Auto-refreshes the skill
-                  catalog on every session start.
-                </li>
-                <li className="flex gap-2">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-signal" /> OAuth-ready for{" "}
-                  <code className="rounded bg-muted px-1 text-[11px]">upload_packages</code> and
-                  other write tools.
-                </li>
+                <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-signal" /> One command · zero JSON · backs up your existing config.</li>
+                <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-signal" /> Auto-refreshes the skill catalog on every session start.</li>
+                <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-signal" /> OAuth-ready for <code className="rounded bg-muted px-1 text-[11px]">upload_packages</code> and other write tools.</li>
               </ul>
               <div className="mt-6 flex flex-wrap gap-3">
                 <button
                   type="button"
                   onClick={() => {
                     setActiveClient("hermes");
-                    document
-                      .getElementById("clients")
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    document.getElementById("clients")?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
                   className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-95"
                 >
@@ -656,13 +631,13 @@ function ConnectPage() {
                 <CodeBlock filename="terminal — safe to re-run" lang="bash" code={HERMES_INSTALL} />
               </div>
               <p className="mt-3 text-[11px] text-muted-foreground">
-                Prefers offline verification? Read the script first — it's a signed{" "}
-                <code className="font-mono">.sh</code> served from{" "}
-                <code className="font-mono">/api/public/</code>, no external redirects.
+                Prefers offline verification? Read the script first — it's a signed <code className="font-mono">.sh</code> served
+                from <code className="font-mono">/api/public/</code>, no external redirects.
               </p>
             </div>
           </div>
         </section>
+
 
         {/* ============ ONE-CLICK INSTALL ============ */}
         <section className="mt-10 rounded-2xl border border-border bg-surface p-6">
@@ -676,9 +651,9 @@ function ConnectPage() {
             Install in your editor with a single click
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            These buttons use the editor's own deep-link install scheme — the app opens with the
-            Super Agent Skill MCP server already configured. Don't see your client? Use the
-            copy-paste configs below or the CLI.
+            These buttons use the editor's own deep-link install scheme — the
+            app opens with the Super Agent Skill MCP server already configured.
+            Don't see your client? Use the copy-paste configs below or the CLI.
           </p>
           <div className="mt-5">
             <InstallButtons />
@@ -689,8 +664,8 @@ function ConnectPage() {
               /account/tokens
             </Link>{" "}
             and drop it into any client that supports a static{" "}
-            <code className="font-mono">Authorization: Bearer …</code> header — useful for Hermes,
-            OpenClaw, Grok, n8n, or any runtime where the OAuth dance is flaky.
+            <code className="font-mono">Authorization: Bearer …</code> header — useful for
+            Hermes, OpenClaw, Grok, n8n, or any runtime where the OAuth dance is flaky.
           </p>
         </section>
 
@@ -747,10 +722,7 @@ function ConnectPage() {
             For write tools (
             <code className="rounded bg-muted px-1 py-0.5 text-[11px]">upload_packages</code>,{" "}
             <code className="rounded bg-muted px-1 py-0.5 text-[11px]">request_primitive</code>),
-            append{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
-              Authorization: Bearer &lt;token&gt;
-            </code>{" "}
+            append <code className="rounded bg-muted px-1 py-0.5 text-[11px]">Authorization: Bearer &lt;token&gt;</code>{" "}
             from{" "}
             <Link to="/account/tokens" className="text-primary hover:underline">
               Account → Tokens
@@ -776,8 +748,7 @@ function ConnectPage() {
               Or hit the public health endpoint from your terminal
             </summary>
             <p className="mt-2 text-sm text-muted-foreground">
-              Confirms reachability from your network and enumerates the live tool catalog — no
-              auth.
+              Confirms reachability from your network and enumerates the live tool catalog — no auth.
             </p>
             <div className="mt-3">
               <CodeBlock

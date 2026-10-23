@@ -1,4 +1,3 @@
-import { errorField } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
@@ -26,15 +25,15 @@ export const Route = createFileRoute("/api/public/crm/run")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        if (!authorized(request)) return Response.json({ error: "Unauthorized" }, { status: 401 });
+        if (!authorized(request))
+          return Response.json({ error: "Unauthorized" }, { status: 401 });
 
         let dryRun = false;
         let maxSends = 200;
         try {
           const body = (await request.json()) as { dry_run?: boolean; max_sends?: number };
           dryRun = !!body?.dry_run;
-          if (typeof body?.max_sends === "number")
-            maxSends = Math.min(500, Math.max(1, body.max_sends));
+          if (typeof body?.max_sends === "number") maxSends = Math.min(500, Math.max(1, body.max_sends));
         } catch {
           /* empty body is fine */
         }
@@ -46,7 +45,7 @@ export const Route = createFileRoute("/api/public/crm/run")({
         } catch (err) {
           console.error("CRM cadence run failed", err);
           return Response.json(
-            { ok: false, error: err instanceof Error ? errorField(err, "message") : "unknown" },
+            { ok: false, error: err instanceof Error ? err.message : "unknown" },
             { status: 500 },
           );
         }

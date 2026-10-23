@@ -20,17 +20,16 @@ export const createTipIntent = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ context, data }) => {
     const { supabase: _sb, userId } = context;
-    const supabase = _sb;
+    const supabase = _sb as any;
 
     const { data: pkg, error } = await supabase
       .from("packages")
-      .select("id,slug,author_id,is_published")
+      .select("id,slug,owner_id,is_published")
       .eq("slug", data.package_slug)
       .maybeSingle();
     if (error || !pkg) throw new Response("package not found", { status: 404 });
-    if (!pkg.author_id) throw new Response("package has no author", { status: 422 });
     if (!pkg.is_published) throw new Response("cannot tip on unpublished package", { status: 403 });
-    if (pkg.author_id === userId) throw new Response("cannot tip yourself", { status: 400 });
+    if (pkg.owner_id === userId) throw new Response("cannot tip yourself", { status: 400 });
 
     // Caller-side fetch to Stripe is performed by the Stripe wrapper this app
     // already vends elsewhere; here we just record the intent row so the
@@ -40,7 +39,7 @@ export const createTipIntent = createServerFn({ method: "POST" })
       .insert({
         package_id: pkg.id,
         payer_user_id: userId,
-        recipient_user_id: pkg.author_id,
+        recipient_user_id: pkg.owner_id,
         amount_cents: data.amount_cents,
         currency: "usd",
         message: data.message ?? null,
@@ -50,8 +49,7 @@ export const createTipIntent = createServerFn({ method: "POST" })
       })
       .select("id")
       .single();
-    if (insErr || !row)
-      throw new Response(insErr?.message ?? "intent insert failed", { status: 500 });
+    if (insErr || !row) throw new Response(insErr?.message ?? "intent insert failed", { status: 500 });
 
     return { ok: true, intent_id: row.id, amount_cents: data.amount_cents };
   });

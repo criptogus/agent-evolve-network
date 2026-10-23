@@ -32,8 +32,8 @@ export type UsageSnapshot = {
 export const getMyUsage = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<UsageSnapshot> => {
-    const { supabase: _sbCtx, userId } = context;
-    const supabase = _sbCtx;
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
     const now = new Date();
     const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
     const monthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
@@ -91,10 +91,7 @@ export const getMyUsage = createServerFn({ method: "GET" })
 
     return {
       plan,
-      period: {
-        month_start: monthStart.toISOString(),
-        month_end_exclusive: monthEnd.toISOString(),
-      },
+      period: { month_start: monthStart.toISOString(), month_end_exclusive: monthEnd.toISOString() },
       runs: {
         used: runsUsed,
         limit: runsLimit,

@@ -1,19 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 
 export type TrustSummary = {
   slug: string;
   trust_score: number | null;
   battle_tested: boolean;
   lifetime: { runs: number; success_rate: number | null };
-  window_30d: {
-    runs: number;
-    success_rate: number | null;
-    p50_latency_ms: number | null;
-    p95_latency_ms: number | null;
-  };
+  window_30d: { runs: number; success_rate: number | null; p50_latency_ms: number | null; p95_latency_ms: number | null };
   window_7d: { runs: number; success_rate: number | null };
   models: Array<{ model: string; runs: number; success_rate: number }>;
   findings_public: number;
@@ -62,16 +57,14 @@ export const getSkillTrust = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const { data: pkg } = await supabaseAdmin
       .from("packages")
-      .select(
-        "id,slug,name,type,description,latest_version,author_handle,is_published,review_status",
-      )
+      .select("id,slug,name,type,description,latest_version,author_handle,is_published,review_status")
       .eq("slug", data.slug)
       .maybeSingle();
     if (!pkg || !pkg.is_published || pkg.review_status !== "approved") {
       return { ok: false as const, error: "not_found" };
     }
 
-    const { data: trust } = await supabaseAdmin.rpc("get_skill_trust", { _slug: data.slug });
+    const { data: trust } = await supabaseAdmin.rpc("get_skill_trust", { _slug: data.slug } as any);
     const { data: findings } = await supabaseAdmin
       .from("skill_robustness_findings")
       .select("code,severity,category,summary,fixed_in_version,published_at")
@@ -81,9 +74,7 @@ export const getSkillTrust = createServerFn({ method: "GET" })
       .limit(50);
     const { data: compat } = await supabaseAdmin
       .from("skill_compatibility")
-      .select(
-        "model,pass_rate,total_cases,passed_cases,judge_score,status,notes,version,evaluated_at",
-      )
+      .select("model,pass_rate,total_cases,passed_cases,judge_score,status,notes,version,evaluated_at")
       .eq("package_slug", data.slug)
       .order("judge_score", { ascending: false });
 
@@ -112,35 +103,8 @@ export const getSkillTrust = createServerFn({ method: "GET" })
         }
       : null;
 
-    const { data: currentVersion, error: versionError } = await supabaseAdmin
-      .from("package_versions")
-      .select("id")
-      .eq("package_id", pkg.id)
-      .eq("version", pkg.latest_version)
-      .maybeSingle();
-    const { data: releases, error: releaseError } = await supabaseAdmin
-      .from("package_releases")
-      .select("version,content_hash,signing_key_id,signed_at")
-      .eq("package_id", pkg.id)
-      .eq("version", pkg.latest_version)
-      .order("signed_at", { ascending: false })
-      .limit(1);
-    const { data: runs, error: runError } = currentVersion
-      ? await supabaseAdmin
-          .from("adversarial_runs")
-          .select("total,passed,failed,model,created_at")
-          .eq("version_id", currentVersion.id)
-          .eq("package_id", pkg.id)
-          .order("created_at", { ascending: false })
-          .limit(5)
-      : { data: [], error: null };
     return {
       ok: true as const,
-      version_evidence: {
-        available: !versionError && !releaseError && !runError,
-        release: releases?.[0] ?? null,
-        runs: runs ?? [],
-      },
       package: pkg,
       trust: (trust as unknown as TrustSummary) ?? null,
       trust_v2,

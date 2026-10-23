@@ -181,9 +181,7 @@ ${openSkillsUpdate}`}
                     <td className="px-4 py-3 text-muted-foreground">
                       {r.trustScore ? "Included" : "—"}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {r.telemetry ? "Yes" : "No"}
-                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{r.telemetry ? "Yes" : "No"}</td>
                     <td className="px-4 py-3 text-muted-foreground">{r.note}</td>
                   </tr>
                 ))}
@@ -204,10 +202,10 @@ ${openSkillsUpdate}`}
             >
               Agent Plugins
             </a>{" "}
-            package — the vendor-neutral format stewarded by {AGENT_PLUGINS_STEWARDS.join(", ")}.
-            One manifest, the standard <code className="font-mono text-foreground">SKILL.md</code>{" "}
-            component and our MCP server in one directory, so a conformant client loads the graded
-            skill with no account.
+            package — the vendor-neutral format stewarded by{" "}
+            {AGENT_PLUGINS_STEWARDS.join(", ")}. One manifest, the standard{" "}
+            <code className="font-mono text-foreground">SKILL.md</code> component and our MCP server
+            in one directory, so a conformant client loads the graded skill with no account.
           </p>
           <div className="mt-4">
             <CodeBlock
@@ -362,6 +360,8 @@ node scripts/verify-package-signature.mjs <slug>-agent-plugin.zip signature.json
             />
           </div>
 
+
+
           <h2 id="skills" className="mt-12 text-2xl font-semibold tracking-tight">
             2. Trigger the upgrade
           </h2>
@@ -456,8 +456,9 @@ node scripts/verify-package-signature.mjs <slug>-agent-plugin.zip signature.json
           </p>
           <p className="mt-3 text-muted-foreground">
             <span className="font-medium text-foreground">Data flow:</span> your agent calls the
-            gateway over HTTPS; the gateway returns signed package content from the public registry.
-            Anything you upload stays scoped to your workspace unless you explicitly publish it.
+            gateway over HTTPS; the gateway returns signed package content from the public
+            registry. Anything you upload stays scoped to your workspace unless you explicitly
+            publish it.
           </p>
           <p className="mt-3 text-muted-foreground">
             <span className="font-medium text-foreground">Telemetry opt-out:</span> the CLI sends
@@ -466,14 +467,13 @@ node scripts/verify-package-signature.mjs <slug>-agent-plugin.zip signature.json
           </p>
           <p className="mt-3 text-muted-foreground">
             Verify packages yourself on each package's Trust page (
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">
-              /marketplace/trust/&lt;slug&gt;
-            </code>
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">/marketplace/trust/&lt;slug&gt;</code>
             , linked from every{" "}
             <Link to="/marketplace" className="text-primary hover:underline">
               marketplace
             </Link>{" "}
-            listing) and report vulnerabilities via{" "}
+            listing){" "}
+            and report vulnerabilities via{" "}
             <a
               href="https://github.com/criptogus/agent-evolve-network/blob/main/SECURITY.md"
               target="_blank"

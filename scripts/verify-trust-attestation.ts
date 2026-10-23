@@ -22,7 +22,9 @@ if (!args.attestation || !args.pkg) {
 }
 
 const att = JSON.parse(readFileSync(args.attestation, "utf8"));
-const pubPem = args.pubkey ? readFileSync(args.pubkey, "utf8") : process.env.SIGNING_PUBLIC_KEY;
+const pubPem = args.pubkey
+  ? readFileSync(args.pubkey, "utf8")
+  : process.env.SIGNING_PUBLIC_KEY;
 if (!pubPem) {
   console.error("Provide --pubkey <pem> or SIGNING_PUBLIC_KEY env (PEM contents).");
   process.exit(1);
@@ -34,9 +36,7 @@ const fingerprint = createHash("sha256").update(pubDer).digest("hex").slice(0, 1
 let failed = 0;
 
 if (fingerprint !== att.signing_key_id) {
-  console.error(
-    `✗ public key fingerprint mismatch: attestation=${att.signing_key_id} key=${fingerprint}`,
-  );
+  console.error(`✗ public key fingerprint mismatch: attestation=${att.signing_key_id} key=${fingerprint}`);
   failed++;
 }
 
@@ -69,9 +69,7 @@ console.log(`✓ trust attestation VERIFIED`);
 console.log(`  package:     ${att.package?.type}:${att.package?.slug}@${att.package?.version}`);
 console.log(`  content:     sha256:${contentSha256} (matches)`);
 console.log(`  attested at: ${att.attested_at}`);
-console.log(
-  `  adversarial: ${a.passed}/${a.total} cases passed, severity-weighted ${((a.severity_weighted_score ?? 0) * 100).toFixed(1)}%`,
-);
+console.log(`  adversarial: ${a.passed}/${a.total} cases passed, severity-weighted ${(((a.severity_weighted_score) ?? 0) * 100).toFixed(1)}%`);
 console.log(`  signed by:   key_id=${fingerprint}`);
 
 function stableStringify(value) {
@@ -89,13 +87,9 @@ function parse(argv) {
   const o = {};
   for (let i = 0; i < argv.length; i++) {
     if (!argv[i].startsWith("--")) continue;
-    const k = argv[i].slice(2),
-      n = argv[i + 1];
+    const k = argv[i].slice(2), n = argv[i + 1];
     if (!n || n.startsWith("--")) o[k] = true;
-    else {
-      o[k] = n;
-      i++;
-    }
+    else { o[k] = n; i++; }
   }
   return o;
 }

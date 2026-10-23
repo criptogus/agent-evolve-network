@@ -28,10 +28,7 @@ import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { createInterface } from "node:readline";
 
-const REGISTRY = (process.env.SUPER_AGENT_REGISTRY ?? "https://superagentskill.com").replace(
-  /\/+$/,
-  "",
-);
+const REGISTRY = (process.env.SUPER_AGENT_REGISTRY ?? "https://superagentskill.com").replace(/\/+$/, "");
 const TELEMETRY = process.env.SUPER_AGENT_TELEMETRY !== "0";
 const MCP_ENDPOINT = `${REGISTRY}/api/mcp`;
 const CRED_DIR = join(homedir(), ".superagentskill");
@@ -139,9 +136,7 @@ async function cmdInstall(args) {
 
   console.log(`→ fetching ${slug} from ${REGISTRY}`);
   const info = await getJson(`/api/public/packages/${slug}`);
-  const skillMd = await getText(`/api/skills/${slug}/export.md`).catch(async () =>
-    synthesizeSkillMd(info),
-  );
+  const skillMd = await getText(`/api/skills/${slug}/export.md`).catch(async () => synthesizeSkillMd(info));
 
   const targets = target === "all" ? ["claude", "cursor", "continue", "cline"] : [target];
   for (const t of targets) writeForTarget(t, slug, skillMd);
@@ -172,9 +167,7 @@ function writeForTarget(target, slug, skillMd) {
 async function cmdList(args) {
   const { flags } = parseFlags(args);
   const q = flags.query ?? "";
-  const list = await getJson(
-    `/api/public/packages?type=skill${q ? `&q=${encodeURIComponent(q)}` : ""}`,
-  );
+  const list = await getJson(`/api/public/packages?type=skill${q ? `&q=${encodeURIComponent(q)}` : ""}`);
   for (const p of list.items ?? list) console.log(`${p.slug.padEnd(36)} ${p.name ?? ""}`);
 }
 
@@ -182,9 +175,7 @@ async function cmdSearch(args) {
   if (!args[0]) throw new Error("search requires a query");
   const res = await getJson(`/api/public/search?q=${encodeURIComponent(args.join(" "))}`);
   for (const r of res.results ?? [])
-    console.log(
-      `${r.type.padEnd(10)} ${r.slug.padEnd(32)} ${r.score?.toFixed?.(2) ?? ""}  ${r.snippet ?? ""}`,
-    );
+    console.log(`${r.type.padEnd(10)} ${r.slug.padEnd(32)} ${r.score?.toFixed?.(2) ?? ""}  ${r.snippet ?? ""}`);
 }
 
 async function cmdInfo(args) {
@@ -231,17 +222,14 @@ async function cmdPublish(args) {
   const slug = args[0];
   if (!slug) throw new Error("publish requires <slug>");
   const creds = await ensureToken();
-  if (!creds?.access_token)
-    throw new Error("publish requires login. Run `super-agent login` first.");
+  if (!creds?.access_token) throw new Error("publish requires login. Run `super-agent login` first.");
 
   const file = `${slug}.yaml`;
   if (!existsSync(file)) throw new Error(`Could not find ${file} in current directory.`);
 
   console.log(`→ Publishing ${slug}... (not fully implemented in backend yet, scaffold only)`);
   // Scaffold: this would read the yaml and POST to the registry API using creds.access_token
-  console.log(
-    `✓ Publish scaffold reached. Ensure backend API is ready to accept POST /api/public/packages`,
-  );
+  console.log(`✓ Publish scaffold reached. Ensure backend API is ready to accept POST /api/public/packages`);
 }
 
 function synthesizeSkillMd(info) {
@@ -282,9 +270,7 @@ function reportTelemetry(event) {
 function hashCwd() {
   try {
     const cwd = process.cwd();
-    const pkg = existsSync("package.json")
-      ? JSON.parse(readFileSync("package.json", "utf8"))?.name
-      : "";
+    const pkg = existsSync("package.json") ? JSON.parse(readFileSync("package.json", "utf8"))?.name : "";
     return `${pkg || "anon"}:${cwd.split("/").slice(-2).join("/")}`;
   } catch {
     return "anon";
@@ -400,8 +386,7 @@ async function oauthLogin() {
       software_id: "super-agent-cli",
     }),
   });
-  if (!reg.ok)
-    throw new Error(`client registration failed: HTTP ${reg.status} ${await reg.text()}`);
+  if (!reg.ok) throw new Error(`client registration failed: HTTP ${reg.status} ${await reg.text()}`);
   const client = await reg.json();
   if (!client.client_id) throw new Error("registration response missing client_id");
 
@@ -497,9 +482,7 @@ async function cmdStatus() {
   const expired = Date.now() >= creds.expires_at;
   console.log(`Logged in (${REGISTRY})`);
   console.log(`  scope:      ${creds.scope}`);
-  console.log(
-    `  access:     ${expired ? "expired" : "valid"}${creds.refresh_token ? " (auto-refresh on)" : ""}`,
-  );
+  console.log(`  access:     ${expired ? "expired" : "valid"}${creds.refresh_token ? " (auto-refresh on)" : ""}`);
   console.log(`  expires_at: ${new Date(creds.expires_at).toISOString()}`);
   console.log(`  file:       ${CRED_FILE}`);
 }
@@ -538,9 +521,7 @@ async function cmdConnect(args) {
   }
   const client = (flags.client ?? "claude-code").toLowerCase();
   await writeClientConfig(client);
-  console.log(
-    `\nDone. Restart ${client} and the Super Agent Skill tools (incl. write tools) will be available.`,
-  );
+  console.log(`\nDone. Restart ${client} and the Super Agent Skill tools (incl. write tools) will be available.`);
   process.exit(0);
 }
 
@@ -589,10 +570,7 @@ async function writeClientConfig(client) {
         platform() === "darwin"
           ? join(home, "Library/Application Support/Claude/claude_desktop_config.json")
           : platform() === "win32"
-            ? join(
-                process.env.APPDATA ?? join(home, "AppData/Roaming"),
-                "Claude/claude_desktop_config.json",
-              )
+            ? join(process.env.APPDATA ?? join(home, "AppData/Roaming"), "Claude/claude_desktop_config.json")
             : join(home, ".config/Claude/claude_desktop_config.json");
       patchJsonFile(file, (j) => {
         j.mcpServers = j.mcpServers ?? {};
@@ -652,8 +630,7 @@ async function writeClientConfig(client) {
 
 async function cmdSetup(args) {
   const client = (args[0] ?? "").toLowerCase();
-  if (!client)
-    throw new Error("setup requires <client> (claude-code|claude|cursor|codex|vscode|windsurf)");
+  if (!client) throw new Error("setup requires <client> (claude-code|claude|cursor|codex|vscode|windsurf)");
   if (!loadCreds()?.access_token)
     console.log('! not logged in — run "super-agent login" first for write-tool access.');
   await writeClientConfig(client);
@@ -688,11 +665,7 @@ async function cmdMcpBridge() {
     try {
       res = await fetch(MCP_ENDPOINT, { method: "POST", headers, body: trimmed });
     } catch (e) {
-      emit({
-        jsonrpc: "2.0",
-        id: safeId(trimmed),
-        error: { code: -32000, message: `bridge fetch failed: ${e.message}` },
-      });
+      emit({ jsonrpc: "2.0", id: safeId(trimmed), error: { code: -32000, message: `bridge fetch failed: ${e.message}` } });
       continue;
     }
     const sid = res.headers.get("mcp-session-id");
@@ -702,10 +675,7 @@ async function cmdMcpBridge() {
       emit({
         jsonrpc: "2.0",
         id: safeId(trimmed),
-        error: {
-          code: -32001,
-          message: "unauthorized — run `super-agent login` to enable write tools",
-        },
+        error: { code: -32001, message: "unauthorized — run `super-agent login` to enable write tools" },
       });
       continue;
     }

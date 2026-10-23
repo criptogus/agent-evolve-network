@@ -58,9 +58,7 @@ export function FeedbackPrompt({
   };
 
   return (
-    <div
-      className={`rounded-md border border-border bg-surface p-3 ${compact ? "space-y-2" : "space-y-3"}`}
-    >
+    <div className={`rounded-md border border-border bg-surface p-3 ${compact ? "space-y-2" : "space-y-3"}`}>
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-medium">{request.prompt ?? "How did this turn out?"}</p>
         <div className="flex items-center gap-1">

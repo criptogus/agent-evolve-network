@@ -20,17 +20,9 @@ const Input = z.object({
 export const bulkUploadPackages = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
-  .handler(
-    async ({
-      data,
-      context,
-    }): Promise<{
-      results: UploadResult[];
-      queued: Array<{ id: string; filename: string; inferred_type: string }>;
-    }> => {
-      const { supabase: _sbCtx, userId } = context;
-      const supabase = _sbCtx;
-      const { results, queued } = await processBulkUpload(supabase, userId, data.files);
-      return { results, queued };
-    },
-  );
+  .handler(async ({ data, context }): Promise<{ results: UploadResult[]; queued: Array<{ id: string; filename: string; inferred_type: string }> }> => {
+    const { supabase: _sbCtx, userId  } = context as any;
+    const supabase = _sbCtx as any;
+    const { results, queued } = await processBulkUpload(supabase as any, userId, data.files);
+    return { results, queued };
+  });

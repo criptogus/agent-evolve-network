@@ -1,12 +1,6 @@
-import type { ToolExecutionContext } from "mcp-tanstack-start";
-import type { ErrorProfileEntry, Prescription } from "@/lib/university/types";
 import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
-import {
-  startExam,
-  submitExam,
-  getDiagnosisForCurriculum,
-} from "@/lib/university/university.server";
+import { startExam, submitExam, getDiagnosisForCurriculum } from "@/lib/university/university.server";
 import { planCurriculum } from "@/lib/university/curriculum";
 import { DOMAINS, type DomainId, type ErrorClass } from "@/lib/university/types";
 
@@ -49,7 +43,7 @@ const ErrorClassEnum = z.enum([
   "instruction_drift",
 ]);
 
-function userIdOf(ctx: ToolExecutionContext): string | null {
+function userIdOf(ctx: any): string | null {
   return (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
 }
 
@@ -58,19 +52,9 @@ export const diagnoseStartTool = defineTool({
   description:
     "[UNIVERSITY] Admission exam, step 1. Returns a fixed bank of up to 168 domain tasks across 21 corporate domains for YOU (the calling agent) to execute on your own host. No skill is installed and nothing is scored yet. Then post the transcript to `diagnose_submit` to get a per-error-class report and a prescription. Free and anonymous; history is kept when a bearer is present.",
   parameters: z.object({
-    domain: DomainEnum.describe(
-      "gtm | engineering | support | finance | data | marketing | b2b_sales | customer_success | pricing | strategy | project_management | people_ops | legal_compliance | corporate_finance | agentic_crm | supply_chain | data_engineering | social_media | google_ads | meta_ads | linkedin_ads | digital_product | complex_software | tools_mcp | cybersecurity",
-    ),
-    installed_skills: z
-      .array(z.string())
-      .max(64)
-      .default([])
-      .describe("Slugs the agent already carries — used for marginal-gain ranking."),
-    agent_fp: z
-      .string()
-      .max(120)
-      .optional()
-      .describe("Stable agent fingerprint, so score deltas can be tracked over time."),
+    domain: DomainEnum.describe("gtm | engineering | support | finance | data | marketing | b2b_sales | customer_success | pricing | strategy | project_management | people_ops | legal_compliance | corporate_finance | agentic_crm | supply_chain | data_engineering | social_media | google_ads | meta_ads | linkedin_ads | digital_product | complex_software | tools_mcp | cybersecurity"),
+    installed_skills: z.array(z.string()).max(64).default([]).describe("Slugs the agent already carries — used for marginal-gain ranking."),
+    agent_fp: z.string().max(120).optional().describe("Stable agent fingerprint, so score deltas can be tracked over time."),
     limit: z.number().int().min(1).max(40).default(40),
   }),
   execute: async (input, ctx) => {
@@ -97,10 +81,7 @@ export const diagnoseSubmitTool = defineTool({
   description:
     "[UNIVERSITY] Admission exam, step 2. Send the answers produced for `diagnose_start` and get a deterministic transcript: score per ERROR CLASS (ambiguity, hallucination, format, abandonment, policy, tool misuse, instruction drift), the dominant bottleneck in plain language, observed cost, and a 1-3 item prescription. Unanswered cases count as failures.",
   parameters: z.object({
-    diagnosis_id: z
-      .string()
-      .optional()
-      .describe("From diagnose_start. Omit for a stateless scoring run."),
+    diagnosis_id: z.string().optional().describe("From diagnose_start. Omit for a stateless scoring run."),
     domain: DomainEnum.optional().describe("Required when diagnosis_id is omitted."),
     installed_skills: z.array(z.string()).max(64).default([]),
     answers: z
@@ -135,16 +116,10 @@ export const curriculumNextTool = defineTool({
     domain: DomainEnum.optional(),
     failing: z.array(ErrorClassEnum).default([]),
     installed_skills: z.array(z.string()).max(64).default([]),
-    budget: z
-      .number()
-      .int()
-      .min(1)
-      .max(60)
-      .optional()
-      .describe("Max capabilities this agent should carry (default 14)."),
+    budget: z.number().int().min(1).max(60).optional().describe("Max capabilities this agent should carry (default 14)."),
   }),
   execute: async (input) => {
-    let profile: ErrorProfileEntry[] | undefined;
+    let profile: any[] | undefined;
     let installed = input.installed_skills;
     let domain = input.domain as DomainId | undefined;
     if (input.diagnosis_id) {
@@ -155,10 +130,9 @@ export const curriculumNextTool = defineTool({
         if (!installed.length) installed = d.installed_skills;
       }
     }
-    const failing = (profile ?? [])
+    const failing = ((profile ?? [])
       .filter((p) => (p?.failed ?? 0) > 0)
-      .map((p) => p.error_class as ErrorClass)
-      .concat(input.failing as ErrorClass[]);
+      .map((p) => p.error_class as ErrorClass)).concat(input.failing as ErrorClass[]);
 
     if (!failing.length) {
       return json({
@@ -169,8 +143,7 @@ export const curriculumNextTool = defineTool({
     const plan = planCurriculum({ failing, profile, installed, domain, budget: input.budget });
     return json({
       ...plan,
-      how_to_install:
-        "Use `get_package { slug }` (or `install_agent`) for items with in_registry: true.",
+      how_to_install: "Use `get_package { slug }` (or `install_agent`) for items with in_registry: true.",
     });
   },
 });

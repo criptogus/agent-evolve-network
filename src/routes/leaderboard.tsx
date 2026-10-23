@@ -3,7 +3,7 @@ import { Users } from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
 import { EmptyState } from "@/components/site/EmptyState";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 import { rankLeaderboard } from "@/lib/growth/bounties";
 
 type Row = {
@@ -17,14 +17,14 @@ export const Route = createFileRoute("/leaderboard")({
   loader: async () => {
     const { data } = await supabaseAdmin
       .from("affiliate_leaderboard_30d")
-      .select("referrer_user_id:referrer_id,activated_referrals,referral_earnings_cents")
+      .select("referrer_user_id,activated_referrals,referral_earnings_cents")
       .limit(200);
     const rows = (data ?? []) as Row[];
     const ranked = rankLeaderboard(rows, 50);
     // Best-effort handle lookup; falls back to abbreviated user id.
     const ids = ranked.map((r) => r.referrer_user_id);
     const { data: handles } = ids.length
-      ? await supabaseAdmin.from("profiles").select("user_id:id,handle").in("id", ids)
+      ? await supabaseAdmin.from("profiles").select("user_id,handle").in("user_id", ids)
       : { data: [] };
     const handleMap = new Map<string, string>(
       ((handles ?? []) as { user_id: string; handle: string }[]).map((h) => [h.user_id, h.handle]),

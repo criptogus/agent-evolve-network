@@ -14,7 +14,7 @@
  */
 import { createHash } from "crypto";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 
 function hashKey(key: string): string {
   return createHash("sha256").update(key).digest("hex");

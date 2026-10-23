@@ -1,7 +1,7 @@
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { extractBearer, verifyBearerDetailed } from "@/lib/auth/bearer.server";
 
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 
 export type PaidCheck =
   | { ok: true; userId: string; source: "oauth" | "pat" }
@@ -48,8 +48,7 @@ export async function requirePaidBearer(request: Request): Promise<PaidCheck> {
     .limit(1)
     .maybeSingle();
 
-  const isActive =
-    !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+  const isActive = !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
   if (!isActive) {
     return {
       ok: false,

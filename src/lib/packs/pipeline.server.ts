@@ -109,10 +109,7 @@ Return STRICT JSON:
     prompt: user,
     temperature: 0.4,
   });
-  const parsed = parseJsonLoose(text) as Omit<
-    CustomizedItem,
-    "package_id" | "slug" | "name" | "type" | "role"
-  >;
+  const parsed = parseJsonLoose(text) as Omit<CustomizedItem, "package_id" | "slug" | "name" | "type" | "role">;
   return {
     package_id: item.package_id,
     slug: item.slug,
@@ -127,10 +124,7 @@ Return STRICT JSON:
 }
 
 function parseJsonLoose(text: string): unknown {
-  const cleaned = text
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/```$/i, "")
-    .trim();
+  const cleaned = text.replace(/^```(?:json)?\s*/i, "").replace(/```$/i, "").trim();
   try {
     return JSON.parse(cleaned);
   } catch {

@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react'
 import {
   Body,
   Button,
@@ -11,12 +11,12 @@ import {
   Preview,
   Section,
   Text,
-} from "@react-email/components";
-import { BRAND, styles } from "./_brand";
+} from '@react-email/components'
+import { BRAND, styles } from './_brand'
 
 interface MagicLinkEmailProps {
-  siteName: string;
-  confirmationUrl: string;
+  siteName: string
+  confirmationUrl: string
 }
 
 export const MagicLinkEmail = ({ confirmationUrl }: MagicLinkEmailProps) => (
@@ -32,13 +32,14 @@ export const MagicLinkEmail = ({ confirmationUrl }: MagicLinkEmailProps) => (
           </Section>
           <Heading style={styles.h1}>Sign in to {BRAND.name}</Heading>
           <Text style={styles.text}>
-            Click the button below to sign in. This link expires shortly and can only be used once.
+            Click the button below to sign in. This link expires shortly and
+            can only be used once.
           </Text>
           <Button style={styles.button} href={confirmationUrl}>
             Sign in
           </Button>
           <Hr style={styles.divider} />
-          <Text style={{ ...styles.text, fontSize: "13px", margin: 0 }}>
+          <Text style={{ ...styles.text, fontSize: '13px', margin: 0 }}>
             Or paste this link into your browser:
             <br />
             <Link href={confirmationUrl} style={styles.link}>
@@ -56,6 +57,6 @@ export const MagicLinkEmail = ({ confirmationUrl }: MagicLinkEmailProps) => (
       </Container>
     </Body>
   </Html>
-);
+)
 
-export default MagicLinkEmail;
+export default MagicLinkEmail

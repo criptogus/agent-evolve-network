@@ -1,15 +1,8 @@
-import { recordOf } from "@/lib/json";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/middleware";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import {
-  STAGE_LABELS,
-  TRIGGERS,
-  classifyStage,
-  type CrmStage,
-  type TriggerId,
-} from "@/lib/crm/segments";
+import { STAGE_LABELS, TRIGGERS, classifyStage, type CrmStage, type TriggerId } from "@/lib/crm/segments";
 
 export type CrmOverviewRow = {
   user_id: string;
@@ -65,7 +58,7 @@ export const getCrmOverview = createServerFn({ method: "POST" })
     const { loadSentSummary } = await import("@/lib/crm/mailer.server");
     const { decideTrigger } = await import("@/lib/crm/segments");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const admin = supabaseAdmin;
+    const admin = supabaseAdmin as any;
 
     const customers = await loadCustomerRows(500, 0);
     const rows: CrmOverviewRow[] = [];
@@ -187,13 +180,7 @@ export type CrmCustomerDetail = {
   roi: Record<string, number | string | null>;
   opportunities: Array<{ id: string; title: string; why: string; cta: string; href: string }>;
   messages: Array<{ trigger: string; subject: string | null; created_at: string; status: string }>;
-  preview: {
-    subject: string;
-    heading: string;
-    intro: string[];
-    bullets: string[];
-    metrics: Array<{ label: string; value: string; note?: string }>;
-  } | null;
+  preview: { subject: string; heading: string; intro: string[]; bullets: string[]; metrics: Array<{ label: string; value: string; note?: string }> } | null;
   next_trigger: string;
 };
 
@@ -208,7 +195,7 @@ export const getCrmCustomer = createServerFn({ method: "POST" })
     const { decideTrigger, STAGE_LABELS: LABELS } = await import("@/lib/crm/segments");
     const { buildMessage } = await import("@/lib/crm/copy");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const admin = supabaseAdmin;
+    const admin = supabaseAdmin as any;
 
     const rows = await loadCustomerRows(1, 0, data.userId);
     const row = rows[0] ?? null;
@@ -224,7 +211,7 @@ export const getCrmCustomer = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(30);
 
-    const ids = (msgs ?? []).map((m) => m.message_id).filter(Boolean);
+    const ids = ((msgs ?? []) as any[]).map((m) => m.message_id).filter(Boolean);
     const statuses = new Map<string, string>();
     if (ids.length) {
       const { data: logs } = await admin
@@ -236,8 +223,7 @@ export const getCrmCustomer = createServerFn({ method: "POST" })
         statuses.set(l.message_id, l.status);
     }
 
-    const previewTrigger =
-      (data.trigger as TriggerId | undefined) ??
+    const previewTrigger = (data.trigger as TriggerId | undefined) ??
       (decision.send ? decision.trigger : "value_digest");
     const preview = buildMessage(previewTrigger as TriggerId, snapshot);
 
@@ -271,14 +257,11 @@ export const getCrmCustomer = createServerFn({ method: "POST" })
         best_after: snapshot.roi.best?.after ?? null,
       },
       opportunities: snapshot.opportunities,
-      messages: (msgs ?? []).map((m) => ({
+      messages: ((msgs ?? []) as any[]).map((m) => ({
         trigger: m.trigger,
-        subject:
-          typeof recordOf(m.roi_snapshot).subject === "string"
-            ? String(recordOf(m.roi_snapshot).subject)
-            : null,
+        subject: m.roi_snapshot?.subject ?? null,
         created_at: m.created_at,
-        status: (m.message_id ? statuses.get(m.message_id) : undefined) ?? "unknown",
+        status: statuses.get(m.message_id) ?? "unknown",
       })),
       preview: {
         subject: preview.subject,
@@ -444,16 +427,18 @@ export type CrmEffectiveness = {
   }>;
 };
 
+
 export const getCrmEffectiveness = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .handler(async (): Promise<CrmEffectiveness> => {
     const { loadLearningState } = await import("@/lib/crm/learning.server");
     const { AUTONOMY_RULES } = await import("@/lib/crm/guardrails");
 
-    const { OUTCOMES, VARIANTS, armKey, estimatedRate, EMPTY_ARM } =
-      await import("@/lib/crm/learning");
+    const { OUTCOMES, VARIANTS, armKey, estimatedRate, EMPTY_ARM } = await import(
+      "@/lib/crm/learning"
+    );
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const admin = supabaseAdmin;
+    const admin = supabaseAdmin as any;
 
     const state = await loadLearningState();
 
@@ -463,7 +448,7 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
       let opened = 0;
       let clicked = 0;
       let converted = 0;
-      const unsubscribed = 0;
+      let unsubscribed = 0;
       for (const a of arms) {
         const s = state.stats[armKey(t, a.variant)] ?? EMPTY_ARM;
         sent += s.sent;
@@ -488,8 +473,7 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
     const variants: CrmEffectiveness["variants"] = [];
     for (const t of Object.keys(VARIANTS) as TriggerId[]) {
       const all = [...VARIANTS[t]];
-      for (const a of state.arms[t] ?? [])
-        if (!all.some((x) => x.variant === a.variant)) all.push(a);
+      for (const a of state.arms[t] ?? []) if (!all.some((x) => x.variant === a.variant)) all.push(a);
       const active = new Set((state.arms[t] ?? []).map((a) => a.variant));
       let leader = "";
       let leaderRate = -1;
@@ -528,6 +512,7 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(20);
 
+
     const { data: changelog } = await admin
       .from("crm_tuning_log")
       .select("action, trigger, variant, reason, created_at")
@@ -540,14 +525,9 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
       triggers,
       variants,
       hours: Object.entries(state.hours)
-        .map(([h, s]) => ({
-          hour: Number(h),
-          sent: s.sent,
-          engaged: s.engaged,
-          converted: s.converted,
-        }))
+        .map(([h, s]) => ({ hour: Number(h), sent: s.sent, engaged: s.engaged, converted: s.converted }))
         .sort((a, b) => a.hour - b.hour),
-      pending: (pending ?? []).map((p) => ({
+      pending: ((pending ?? []) as any[]).map((p) => ({
         id: p.id,
         trigger: p.trigger,
         variant: p.variant,
@@ -560,7 +540,7 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
       })),
       guardrails: AUTONOMY_RULES,
 
-      changelog: (changelog ?? []).map((c) => ({
+      changelog: ((changelog ?? []) as any[]).map((c) => ({
         action: c.action,
         trigger: c.trigger,
         variant: c.variant,
@@ -575,15 +555,13 @@ export const setCrmLearning = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ enabled: z.boolean() }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const admin = supabaseAdmin;
-    await admin.from("crm_settings").upsert(
-      {
-        key: "learning",
-        value: { enabled: data.enabled, min_samples: 20 },
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "key" },
-    );
+    const admin = supabaseAdmin as any;
+    await admin
+      .from("crm_settings")
+      .upsert(
+        { key: "learning", value: { enabled: data.enabled, min_samples: 20 }, updated_at: new Date().toISOString() },
+        { onConflict: "key" },
+      );
     await admin.from("crm_tuning_log").insert({
       action: data.enabled ? "learning_enabled" : "learning_paused",
       reason: "Changed by an admin from the CRM dashboard",
@@ -598,7 +576,7 @@ export const reviewCrmVariant = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const admin = supabaseAdmin;
+    const admin = supabaseAdmin as any;
     const status = data.decision === "approve" ? "active" : "rejected";
     const { data: row } = await admin
       .from("crm_copy_variants")
@@ -635,4 +613,5 @@ export const runCrmLearningNow = createServerFn({ method: "POST" })
       blocked: r.blocked.length,
       leaders: r.leaders,
     };
+
   });

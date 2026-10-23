@@ -1,8 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { evaluateRateLimit, logAuditAttempt, REPORT_RATE_RULES } from "./anti-fraud.server";
+import {
+  evaluateRateLimit,
+  logAuditAttempt,
+  REPORT_RATE_RULES,
+} from "./anti-fraud.server";
 
 export const REPORT_REASONS = [
   { value: "spam", label: "Spam or promotional" },
@@ -38,12 +42,7 @@ export type ReportRow = {
 
 const REASONS = REPORT_REASONS.map((r) => r.value) as ReportReason[];
 // Generated types don't yet know the new RPCs; cast through any for the call.
-type AnyRpc = {
-  rpc: (
-    name: string,
-    args: Record<string, unknown>,
-  ) => Promise<{ data: unknown; error: { message: string } | null }>;
-};
+type AnyRpc = { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> };
 
 export const reportReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -77,14 +76,11 @@ export const reportReview = createServerFn({ method: "POST" })
       throw new Response(`RATE_LIMITED:${blocked.reason}`, { status: 429 });
     }
 
-    const { data: rid, error } = await (context.supabase as unknown as AnyRpc).rpc(
-      "report_review",
-      {
-        _review_id: data.reviewId,
-        _reason: data.reason,
-        _details: data.details,
-      },
-    );
+    const { data: rid, error } = await (context.supabase as unknown as AnyRpc).rpc("report_review", {
+      _review_id: data.reviewId,
+      _reason: data.reason,
+      _details: data.details,
+    });
     if (error) {
       await logAuditAttempt({
         userId: context.userId,
@@ -117,13 +113,7 @@ async function assertAdmin(userId: string) {
   if (!data) throw new Response("Forbidden", { status: 403 });
 }
 
-type RawReview = {
-  id: string;
-  rating: number;
-  body: string | null;
-  is_hidden: boolean;
-  user_id: string;
-};
+type RawReview = { id: string; rating: number; body: string | null; is_hidden: boolean; user_id: string };
 type RawPackage = { id: string; name: string; slug: string };
 type RawProfile = { id: string; display_name: string | null };
 
@@ -150,10 +140,7 @@ export const listReviewReports = createServerFn({ method: "GET" })
     const reporterIds = list.map((r) => r.reporter_id);
 
     const [revsRes, pkgsRes] = await Promise.all([
-      supabaseAdmin
-        .from("reviews")
-        .select("id, rating, body, is_hidden, user_id")
-        .in("id", reviewIds),
+      supabaseAdmin.from("reviews").select("id, rating, body, is_hidden, user_id").in("id", reviewIds),
       supabaseAdmin.from("packages").select("id, name, slug").in("id", pkgIds),
     ]);
     const revs = (revsRes.data ?? []) as RawReview[];
@@ -188,7 +175,7 @@ export const listReviewReports = createServerFn({ method: "GET" })
         package_slug: pk?.slug ?? null,
         review_rating: rv?.rating ?? null,
         review_body: rv?.body ?? null,
-        review_user_name: rv ? (profMap.get(rv.user_id) ?? null) : null,
+        review_user_name: rv ? profMap.get(rv.user_id) ?? null : null,
         review_is_hidden: !!rv?.is_hidden,
       };
     });

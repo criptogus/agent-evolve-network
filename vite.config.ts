@@ -13,8 +13,7 @@ const env = loadEnv(process.env.NODE_ENV || "production", process.cwd(), "");
 // Populate process.env for server routes (needs non-VITE_ vars like SUPABASE_SERVICE_ROLE_KEY)
 Object.assign(process.env, env);
 
-const SUPABASE_URL =
-  env.VITE_SUPABASE_URL || env.SUPABASE_URL || "https://ynxuotbjfxkcrfvkrltr.supabase.co";
+const SUPABASE_URL = env.VITE_SUPABASE_URL || env.SUPABASE_URL || "https://ynxuotbjfxkcrfvkrltr.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY =
   env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   env.SUPABASE_PUBLISHABLE_KEY ||
@@ -36,7 +35,7 @@ export default defineConfig({
       alias: {
         "entities/lib/decode.js": path.resolve(__dirname, "node_modules/entities/lib/decode.js"),
         "entities/lib/encode.js": path.resolve(__dirname, "node_modules/entities/lib/encode.js"),
-        entities: path.resolve(__dirname, "node_modules/entities"),
+        "entities": path.resolve(__dirname, "node_modules/entities"),
       },
     },
   },

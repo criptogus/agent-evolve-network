@@ -3,10 +3,10 @@
 
 export interface TrustInputs {
   schema_valid: boolean;
-  adversarial_pass_rate?: number; // 0..1
-  adversarial_weighted_score?: number; // 0..1, severity-weighted
-  real_world_success_rate?: number; // 0..1
-  signed_releases: number; // count
+  adversarial_pass_rate?: number;          // 0..1
+  adversarial_weighted_score?: number;     // 0..1, severity-weighted
+  real_world_success_rate?: number;        // 0..1
+  signed_releases: number;                 // count
   age_days?: number;
   has_owner_2fa?: boolean;
   contributor_count?: number;
@@ -32,16 +32,11 @@ const UNPROVEN_PRIOR = 0.3;
 // 0 and this it decays linearly from measured value toward UNPROVEN_PRIOR.
 const EVIDENCE_HALFLIFE_DAYS = 180;
 
-function clamp01(n: number) {
-  return Math.max(0, Math.min(1, n));
-}
+function clamp01(n: number) { return Math.max(0, Math.min(1, n)); }
 
 // Blend a measured value toward the conservative prior based on staleness.
 // Fresh (age 0) → measured value; stale (>= halflife) → prior.
-function decayed(
-  value: number | undefined,
-  ageDays: number | undefined,
-): { value: number; measured: boolean } {
+function decayed(value: number | undefined, ageDays: number | undefined): { value: number; measured: boolean } {
   if (value == null) return { value: UNPROVEN_PRIOR, measured: false };
   if (ageDays == null) return { value, measured: true };
   const staleness = clamp01(ageDays / EVIDENCE_HALFLIFE_DAYS);
@@ -49,14 +44,14 @@ function decayed(
 }
 
 const WEIGHTS = {
-  schema: 0.1,
-  adv_pass: 0.2,
-  adv_weighted: 0.25,
-  real_world: 0.2,
-  signed: 0.1,
-  age: 0.05,
-  ownership: 0.05,
-  contributors: 0.05,
+  schema:          0.10,
+  adv_pass:        0.20,
+  adv_weighted:    0.25,
+  real_world:      0.20,
+  signed:          0.10,
+  age:             0.05,
+  ownership:       0.05,
+  contributors:    0.05,
 } as const;
 
 export function computeTrustScore(inputs: TrustInputs): TrustBreakdown {
@@ -65,13 +60,13 @@ export function computeTrustScore(inputs: TrustInputs): TrustBreakdown {
   const realWorld = decayed(inputs.real_world_success_rate, inputs.real_world_age_days);
 
   const v = {
-    schema: inputs.schema_valid ? 1 : 0,
-    adv_pass: advPass.value,
+    schema:       inputs.schema_valid ? 1 : 0,
+    adv_pass:     advPass.value,
     adv_weighted: advWeighted.value,
-    real_world: realWorld.value,
-    signed: inputs.signed_releases > 0 ? Math.min(1, inputs.signed_releases / 3) : 0,
-    age: inputs.age_days ? clamp01(Math.log10(inputs.age_days + 1) / 2.5) : 0,
-    ownership: inputs.has_owner_2fa ? 1 : 0,
+    real_world:   realWorld.value,
+    signed:       inputs.signed_releases > 0 ? Math.min(1, inputs.signed_releases / 3) : 0,
+    age:          inputs.age_days ? clamp01(Math.log10(inputs.age_days + 1) / 2.5) : 0,
+    ownership:    inputs.has_owner_2fa ? 1 : 0,
     contributors: clamp01((inputs.contributor_count ?? 0) / 5),
   };
 
@@ -99,7 +94,7 @@ export function computeTrustScore(inputs: TrustInputs): TrustBreakdown {
 
 export function badgeColor(score: number): "green" | "yellow" | "orange" | "red" {
   if (score >= 0.85) return "green";
-  if (score >= 0.7) return "yellow";
-  if (score >= 0.5) return "orange";
+  if (score >= 0.70) return "yellow";
+  if (score >= 0.50) return "orange";
   return "red";
 }

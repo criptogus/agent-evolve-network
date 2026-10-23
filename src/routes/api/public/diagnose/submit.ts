@@ -1,4 +1,3 @@
-import { errorField } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 import { submitExam } from "@/lib/university/university.server";
 import { ERROR_CLASSES, ERROR_CLASS_LABEL, type DomainId } from "@/lib/university/types";
@@ -31,8 +30,7 @@ export const Route = createFileRoute("/api/public/diagnose/submit")({
           method: "POST",
           body_schema: {
             diagnosis_id: "string (optional) — from /diagnose/start; omit for a stateless score",
-            domain:
-              "gtm | engineering | support | finance | data | marketing | b2b_sales | customer_success | pricing | strategy | project_management | people_ops | legal_compliance | corporate_finance | agentic_crm | supply_chain | data_engineering | social_media | google_ads | meta_ads | linkedin_ads | digital_product | complex_software | tools_mcp | cybersecurity (optional when diagnosis_id is set)",
+            domain: "gtm | engineering | support | finance | data | marketing | b2b_sales | customer_success | pricing | strategy | project_management | people_ops | legal_compliance | corporate_finance | agentic_crm | supply_chain | data_engineering | social_media | google_ads | meta_ads | linkedin_ads | digital_product | complex_software | tools_mcp | cybersecurity (optional when diagnosis_id is set)",
             installed_skills: "string[] (optional)",
             answers: "[{ case_id, answer, latency_ms?, tokens? }] — 1 to 80 items",
           },
@@ -47,7 +45,7 @@ export const Route = createFileRoute("/api/public/diagnose/submit")({
         } catch {
           return json({ ok: false, error: "invalid_json" }, 400);
         }
-        const raw = Array.isArray(body.answers) ? body.answers : [];
+        const raw = Array.isArray(body.answers) ? (body.answers as any[]) : [];
         if (!raw.length) return json({ ok: false, error: "answers_required" }, 400);
         if (raw.length > 80) return json({ ok: false, error: "too_many_answers", max: 80 }, 400);
 
@@ -72,14 +70,10 @@ export const Route = createFileRoute("/api/public/diagnose/submit")({
           });
           return json({ ok: true, ...report });
         } catch (err) {
-          const msg = err instanceof Error ? errorField(err, "message") : "error";
+          const msg = err instanceof Error ? err.message : "error";
           if (msg === "unknown_domain") {
             return json(
-              {
-                ok: false,
-                error: "unknown_domain",
-                message: "Provide `domain` or `diagnosis_id`, plus valid case_ids.",
-              },
+              { ok: false, error: "unknown_domain", message: "Provide `domain` or `diagnosis_id`, plus valid case_ids." },
               400,
             );
           }

@@ -11,13 +11,7 @@ export const META_ADS_MCP = {
   command: "npx",
   args: ["-y", "meta-ads-mcp"],
   env: ["META_ACCESS_TOKEN", "META_AD_ACCOUNT_ID", "META_BUSINESS_ID", "META_PIXEL_ID"],
-  scopes: [
-    "ads_management",
-    "ads_read",
-    "business_management",
-    "leads_retrieval",
-    "catalog_management",
-  ],
+  scopes: ["ads_management", "ads_read", "business_management", "leads_retrieval", "catalog_management"],
   description: "Meta Marketing API v25.0 — campaigns, audiences, creatives, insights, catalogs.",
   repo: "https://github.com/mikusnuz/meta-ads-mcp",
 };
@@ -64,10 +58,7 @@ export const META_ADS_CATEGORIES: ToolCategory[] = [
       { name: "create_creative", description: "Create a new ad creative" },
       { name: "update_creative", description: "Update an ad creative" },
       { name: "create_dynamic_creative", description: "Create a dynamic creative" },
-      {
-        name: "generate_preview",
-        description: "Preview from creative spec without an existing ad",
-      },
+      { name: "generate_preview", description: "Preview from creative spec without an existing ad" },
     ],
   },
   {
@@ -152,10 +143,7 @@ export const META_ADS_CATEGORIES: ToolCategory[] = [
       { name: "create_feed", description: "Create a data feed" },
       { name: "upload_feed", description: "Upload data to a feed" },
       { name: "get_feed_uploads", description: "Get feed upload history" },
-      {
-        name: "batch_products",
-        description: "Batch create/update/delete products (up to 5,000/req)",
-      },
+      { name: "batch_products", description: "Batch create/update/delete products (up to 5,000/req)" },
       { name: "get_batch_status", description: "Check status of a catalog batch operation" },
     ],
   },
@@ -232,10 +220,7 @@ export const META_ADS_CATEGORIES: ToolCategory[] = [
       { name: "add_business_user", description: "Add a user to a business" },
       { name: "remove_business_user", description: "Remove a user from a business" },
       { name: "list_business_pages", description: "List Facebook Pages owned by a business" },
-      {
-        name: "list_business_instagram_accounts",
-        description: "List Instagram accounts in a business",
-      },
+      { name: "list_business_instagram_accounts", description: "List Instagram accounts in a business" },
       { name: "list_system_users", description: "List system users for a business" },
       { name: "create_system_user", description: "Create a system user" },
     ],
@@ -252,9 +237,7 @@ export const META_ADS_CATEGORIES: ToolCategory[] = [
   {
     key: "ad-library",
     title: "Ad Library",
-    tools: [
-      { name: "search_ad_library", description: "Search Meta Ad Library for public ad data" },
-    ],
+    tools: [{ name: "search_ad_library", description: "Search Meta Ad Library for public ad data" }],
   },
 ];
 
@@ -289,13 +272,7 @@ export const BLUEPRINTS: Blueprint[] = [
     type: "playbook",
     brief:
       "End-to-end launch flow: brief → audience definition → creative spec → adset configuration → preview & delivery estimate → human approval → activation. Must use audience, creative, campaign and insights tools. Always run get_delivery_estimate and get_reach_estimate before activation; never skip approval gate for spend > €100/day.",
-    category_keys: [
-      "audiences-targeting",
-      "creatives",
-      "campaign-management",
-      "insights-reporting",
-      "budget-planning",
-    ],
+    category_keys: ["audiences-targeting", "creatives", "campaign-management", "insights-reporting", "budget-planning"],
   },
   {
     id: "playbook-optimize",
@@ -304,12 +281,7 @@ export const BLUEPRINTS: Blueprint[] = [
     type: "playbook",
     brief:
       "Daily/weekly optimization loop: pull insights → diagnose underperformers (CPA, CTR, frequency, audience saturation) → decide pause/scale/iterate → apply update_adset / update_ad / create_rule → log decisions with metrics. Always cite the tool call IDs that backed each decision.",
-    category_keys: [
-      "insights-reporting",
-      "automation-rules",
-      "campaign-management",
-      "audiences-targeting",
-    ],
+    category_keys: ["insights-reporting", "automation-rules", "campaign-management", "audiences-targeting"],
   },
   {
     id: "playbook-creative-iteration",
@@ -370,9 +342,7 @@ export function buildGroundingForBlueprint(bp: Blueprint): string {
   const cats = bp.category_keys.map(categoryByKey).filter(Boolean) as ToolCategory[];
   const lines: string[] = [];
   lines.push(`MCP server: ${META_ADS_MCP.name} (${META_ADS_MCP.repo})`);
-  lines.push(
-    `Transport: ${META_ADS_MCP.transport}, command: ${META_ADS_MCP.command} ${META_ADS_MCP.args.join(" ")}`,
-  );
+  lines.push(`Transport: ${META_ADS_MCP.transport}, command: ${META_ADS_MCP.command} ${META_ADS_MCP.args.join(" ")}`);
   lines.push(`Required env: ${META_ADS_MCP.env.join(", ")}`);
   lines.push(`Required scopes: ${META_ADS_MCP.scopes.join(", ")}`);
   lines.push("");

@@ -26,47 +26,27 @@ function keys() {
 test("sign + verify round-trips a bundle", () => {
   const dir = makeBundle();
   const { pub, priv } = keys();
-  const sign = spawnSync(
-    "node",
-    ["--experimental-strip-types", "scripts/sign-release-bundle.ts", "--dir", dir],
-    {
-      cwd: ROOT,
-      encoding: "utf8",
-      env: { ...process.env, SIGNING_PRIVATE_KEY: priv, SIGNING_PUBLIC_KEY: pub },
-    },
-  );
+  const sign = spawnSync("node", ["--experimental-strip-types", "scripts/sign-release-bundle.ts", "--dir", dir], {
+    cwd: ROOT, encoding: "utf8",
+    env: { ...process.env, SIGNING_PRIVATE_KEY: priv, SIGNING_PUBLIC_KEY: pub },
+  });
   assert.equal(sign.status, 0, sign.stderr);
-  const verify = spawnSync(
-    "node",
-    ["--experimental-strip-types", "scripts/verify-release-bundle.ts", "--dir", dir],
-    {
-      cwd: ROOT,
-      encoding: "utf8",
-    },
-  );
+  const verify = spawnSync("node", ["--experimental-strip-types", "scripts/verify-release-bundle.ts", "--dir", dir], {
+    cwd: ROOT, encoding: "utf8",
+  });
   assert.equal(verify.status, 0, verify.stderr);
 });
 
 test("tampered file fails verification", () => {
   const dir = makeBundle();
   const { pub, priv } = keys();
-  spawnSync(
-    "node",
-    ["--experimental-strip-types", "scripts/sign-release-bundle.ts", "--dir", dir],
-    {
-      cwd: ROOT,
-      env: { ...process.env, SIGNING_PRIVATE_KEY: priv, SIGNING_PUBLIC_KEY: pub },
-    },
-  );
+  spawnSync("node", ["--experimental-strip-types", "scripts/sign-release-bundle.ts", "--dir", dir], {
+    cwd: ROOT, env: { ...process.env, SIGNING_PRIVATE_KEY: priv, SIGNING_PUBLIC_KEY: pub },
+  });
   appendFileSync(join(dir, "skills-v1.0.0.zip"), "TAMPERED");
-  const verify = spawnSync(
-    "node",
-    ["--experimental-strip-types", "scripts/verify-release-bundle.ts", "--dir", dir],
-    {
-      cwd: ROOT,
-      encoding: "utf8",
-    },
-  );
+  const verify = spawnSync("node", ["--experimental-strip-types", "scripts/verify-release-bundle.ts", "--dir", dir], {
+    cwd: ROOT, encoding: "utf8",
+  });
   assert.notEqual(verify.status, 0);
   assert.match(verify.stderr, /sha256 mismatch/);
 });
@@ -75,23 +55,13 @@ test("wrong public key is rejected by fingerprint check", () => {
   const dir = makeBundle();
   const { pub, priv } = keys();
   const { pub: pub2 } = keys();
-  spawnSync(
-    "node",
-    ["--experimental-strip-types", "scripts/sign-release-bundle.ts", "--dir", dir],
-    {
-      cwd: ROOT,
-      env: { ...process.env, SIGNING_PRIVATE_KEY: priv, SIGNING_PUBLIC_KEY: pub },
-    },
-  );
+  spawnSync("node", ["--experimental-strip-types", "scripts/sign-release-bundle.ts", "--dir", dir], {
+    cwd: ROOT, env: { ...process.env, SIGNING_PRIVATE_KEY: priv, SIGNING_PUBLIC_KEY: pub },
+  });
   writeFileSync(join(dir, "SIGNING_PUBLIC_KEY.pem"), pub2);
-  const verify = spawnSync(
-    "node",
-    ["--experimental-strip-types", "scripts/verify-release-bundle.ts", "--dir", dir],
-    {
-      cwd: ROOT,
-      encoding: "utf8",
-    },
-  );
+  const verify = spawnSync("node", ["--experimental-strip-types", "scripts/verify-release-bundle.ts", "--dir", dir], {
+    cwd: ROOT, encoding: "utf8",
+  });
   assert.notEqual(verify.status, 0);
   assert.match(verify.stderr, /fingerprint mismatch/);
 });

@@ -22,7 +22,8 @@ export const Route = createFileRoute("/about")({
       { property: "og:title", content: "About & Changelog — Super Agent Skill" },
       {
         property: "og:description",
-        content: "How the platform evolves — versioning policy, current stage, and recent updates.",
+        content:
+          "How the platform evolves — versioning policy, current stage, and recent updates.",
       },
       { property: "og:url", content: `${SITE_URL}/about` },
     ],
@@ -49,10 +50,12 @@ function AboutPage() {
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
             Constantly evolving
           </div>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight">About Super Agent Skill</h1>
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight">
+            About Super Agent Skill
+          </h1>
           <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
-            We ship in the open. Every deploy bumps the platform version, and every version leaves a
-            trace here.
+            We ship in the open. Every deploy bumps the platform version, and
+            every version leaves a trace here.
           </p>
 
           <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -61,12 +64,16 @@ function AboutPage() {
             <Stat label="Codename" value={PLATFORM_CODENAME} />
             <Stat label="Last build" value={PLATFORM_BUILD_DATE} />
           </div>
-          <p className="mt-3 font-mono text-xs text-muted-foreground">{formatVersionLabel()}</p>
+          <p className="mt-3 font-mono text-xs text-muted-foreground">
+            {formatVersionLabel()}
+          </p>
         </header>
 
         {/* Evolution policy */}
         <section className="mt-14">
-          <h2 className="text-2xl font-semibold tracking-tight">How we evolve</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">
+            How we evolve
+          </h2>
           <p className="mt-3 text-muted-foreground">
             Super Agent Skill follows{" "}
             <a
@@ -77,8 +84,8 @@ function AboutPage() {
             >
               Semantic Versioning
             </a>
-            . While we're pre-1.0 we iterate quickly — no long-term stability promises yet, but
-            every change is recorded and traceable.
+            . While we're pre-1.0 we iterate quickly — no long-term stability
+            promises yet, but every change is recorded and traceable.
           </p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
@@ -101,14 +108,15 @@ function AboutPage() {
 
           <div className="mt-6 rounded-lg border border-border bg-surface/40 p-5 text-sm text-muted-foreground">
             <p>
-              <strong className="text-foreground">Codenames.</strong> Every minor line ships under a
-              codename (currently <em className="text-foreground">{PLATFORM_CODENAME}</em>). Small
+              <strong className="text-foreground">Codenames.</strong> Every minor
+              line ships under a codename (currently{" "}
+              <em className="text-foreground">{PLATFORM_CODENAME}</em>). Small
               signal, big momentum.
             </p>
             <p className="mt-2">
-              <strong className="text-foreground">Automation.</strong> A CI job inspects each merge,
-              decides patch/minor/major, and prepends the entry below. Nothing ships without a
-              version bump.
+              <strong className="text-foreground">Automation.</strong> A CI job
+              inspects each merge, decides patch/minor/major, and prepends the
+              entry below. Nothing ships without a version bump.
             </p>
             <p className="mt-2">
               Machine-readable version:{" "}
@@ -125,7 +133,9 @@ function AboutPage() {
         {/* Changelog */}
         <section className="mt-16">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-2xl font-semibold tracking-tight">Recent releases</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Recent releases
+            </h2>
             <a
               href="https://github.com/criptogus/agent-evolve-network/blob/main/CHANGELOG.md"
               target="_blank"
@@ -138,7 +148,10 @@ function AboutPage() {
 
           <ol className="mt-6 space-y-6">
             {recent.map((entry) => (
-              <li key={entry.version} className="rounded-lg border border-border bg-surface/40 p-5">
+              <li
+                key={entry.version}
+                className="rounded-lg border border-border bg-surface/40 p-5"
+              >
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono text-sm font-semibold text-foreground">
                     v{entry.version}
@@ -151,9 +164,13 @@ function AboutPage() {
                   >
                     {entry.kind}
                   </span>
-                  <span className="text-xs text-muted-foreground">{entry.date}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {entry.date}
+                  </span>
                 </div>
-                <h3 className="mt-2 text-base font-semibold text-foreground">{entry.title}</h3>
+                <h3 className="mt-2 text-base font-semibold text-foreground">
+                  {entry.title}
+                </h3>
                 {entry.highlights.length > 0 && (
                   <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
                     {entry.highlights.map((h, i) => (
@@ -170,7 +187,10 @@ function AboutPage() {
         <section className="mt-16 border-t border-border pt-10 text-sm text-muted-foreground">
           <p>
             Want to shape what ships next? Head to{" "}
-            <Link to="/community" className="underline underline-offset-4 hover:text-foreground">
+            <Link
+              to="/community"
+              className="underline underline-offset-4 hover:text-foreground"
+            >
               community
             </Link>{" "}
             or open an issue on{" "}
@@ -196,7 +216,9 @@ function Stat({ label, value }: { label: string; value: string }) {
       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </div>
-      <div className="mt-1 font-mono text-sm font-semibold text-foreground">{value}</div>
+      <div className="mt-1 font-mono text-sm font-semibold text-foreground">
+        {value}
+      </div>
     </div>
   );
 }

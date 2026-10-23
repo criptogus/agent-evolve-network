@@ -50,18 +50,14 @@ function MarkdownImport() {
           {files.length > 0 && (
             <ul className="text-xs text-muted-foreground">
               {files.map((f) => (
-                <li key={f.name}>
-                  · {f.name} ({f.content.length} chars)
-                </li>
+                <li key={f.name}>· {f.name} ({f.content.length} chars)</li>
               ))}
             </ul>
           )}
           <Button onClick={() => m.mutate()} disabled={files.length === 0 || m.isPending}>
             {m.isPending ? "Processing…" : `Analyse ${files.length || ""} file(s)`}
           </Button>
-          {m.isError && (
-            <div className="text-xs text-destructive">{(m.error as Error).message}</div>
-          )}
+          {m.isError && <div className="text-xs text-destructive">{(m.error as Error).message}</div>}
         </CardContent>
       </Card>
 
@@ -72,16 +68,9 @@ function MarkdownImport() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             {m.data.staged.map((s, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between rounded-md border px-3 py-2"
-              >
+              <div key={i} className="flex items-center justify-between rounded-md border px-3 py-2">
                 <span className="truncate">{s.name}</span>
-                {s.error ? (
-                  <Badge variant="destructive">{s.error.slice(0, 40)}</Badge>
-                ) : (
-                  <Badge variant="secondary">drafted</Badge>
-                )}
+                {s.error ? <Badge variant="destructive">{s.error.slice(0, 40)}</Badge> : <Badge variant="secondary">drafted</Badge>}
               </div>
             ))}
           </CardContent>

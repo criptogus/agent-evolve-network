@@ -2,7 +2,7 @@ import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.
 import { sha256 } from "@/lib/oauth/mcp-oauth.server";
 import { hashToken } from "@/lib/account/tokens.server";
 
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 
 export type BearerAuth = { user_id: string; source: "oauth" | "pat" };
 
@@ -16,9 +16,15 @@ export type BearerAuth = { user_id: string; source: "oauth" | "pat" };
  *                       instead of an access token
  *  - unsupported      : non-empty bearer that we don't recognise
  */
-export type BearerRejection = "oauth-rejected" | "pat-rejected" | "refresh-or-code" | "unsupported";
+export type BearerRejection =
+  | "oauth-rejected"
+  | "pat-rejected"
+  | "refresh-or-code"
+  | "unsupported";
 
-export type BearerResult = { ok: true; auth: BearerAuth } | { ok: false; reason: BearerRejection };
+export type BearerResult =
+  | { ok: true; auth: BearerAuth }
+  | { ok: false; reason: BearerRejection };
 
 /** OAuth access token first, then legacy personal MCP token (`sas_...`). */
 export async function verifyBearerDetailed(token: string): Promise<BearerResult> {

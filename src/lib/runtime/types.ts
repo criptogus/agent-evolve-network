@@ -11,7 +11,7 @@ export type StepAction =
 export interface CompiledStep {
   id: string;
   action: StepAction;
-  when?: string; // expression: "${steps.foo.output contains 'x'}"
+  when?: string;                    // expression: "${steps.foo.output contains 'x'}"
   on_error: "abort" | "continue" | "retry";
   retry?: { max: number; backoff_ms: number };
 }
@@ -65,7 +65,10 @@ export type ToolInvoker = (args: {
   context: RunContext;
 }) => Promise<unknown>;
 
-export type InstructionInvoker = (args: { prompt: string; context: RunContext }) => Promise<string>;
+export type InstructionInvoker = (args: {
+  prompt: string;
+  context: RunContext;
+}) => Promise<string>;
 
 export type GuardrailFn = (args: {
   step_id: string;

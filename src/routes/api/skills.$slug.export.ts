@@ -9,7 +9,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import JSZip from "jszip";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 import { buildSkillMd, buildExamplesMd, validateAnthropicSpec } from "@/lib/skills/anthropic-spec";
 import {
   signBytes,
@@ -25,9 +25,7 @@ export const Route = createFileRoute("/api/skills/$slug/export")({
         const slug = params.slug;
         const { data: pkg, error } = await supabaseAdmin
           .from("packages")
-          .select(
-            "id,slug,name,type,description,long_description,license,author_handle,latest_version,is_published,review_status",
-          )
+          .select("id,slug,name,type,description,long_description,license,author_handle,latest_version,is_published,review_status")
           .eq("slug", slug)
           .maybeSingle();
         if (error || !pkg) return new Response("not found", { status: 404 });
@@ -67,12 +65,7 @@ export const Route = createFileRoute("/api/skills/$slug/export")({
         });
 
         const examplesMd = buildExamplesMd(
-          (ver.examples as Array<{
-            title: string;
-            input: string;
-            expected_output: string;
-            rationale?: string;
-          }>) ?? [],
+          (ver.examples as Array<{ title: string; input: string; expected_output: string; rationale?: string }>) ?? []
         );
 
         const zip = new JSZip();
@@ -83,12 +76,8 @@ export const Route = createFileRoute("/api/skills/$slug/export")({
         if (violations.length) {
           folder.file(
             "ANTHROPIC_SPEC_WARNINGS.md",
-            [
-              "# Anthropic spec warnings",
-              "",
-              ...violations.map((v) => `- **${v.field}**: ${v.message}`),
-            ].join("\n"),
-            epoch,
+            ["# Anthropic spec warnings", "", ...violations.map((v) => `- **${v.field}**: ${v.message}`)].join("\n"),
+            epoch
           );
         }
 

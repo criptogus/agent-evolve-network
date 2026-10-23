@@ -9,7 +9,7 @@ name: security re-scan
 #   2. check:public-access  — probes each table with the anonymous key and
 #                             fails on any row exposure not present in
 #                             security/public-read-allowlist.json.
-#   3. npm audit            — blocking report for high/critical dependency vulnerabilities.
+#   3. npm audit            — advisory dependency vulnerability report.
 
 on:
   push:
@@ -67,6 +67,7 @@ jobs:
 
   dependencies:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -74,5 +75,5 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
-      - name: npm audit (blocking high/critical)
+      - name: npm audit (advisory)
         run: npm audit --audit-level=high

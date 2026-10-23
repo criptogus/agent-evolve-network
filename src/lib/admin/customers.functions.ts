@@ -1,11 +1,10 @@
-import { errorField } from "@/lib/errors";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAdmin } from "./middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { createStripeClient, type StripeEnv } from "@/lib/stripe.server";
 
-const supabaseAdmin = _supabaseAdmin;
+const supabaseAdmin = _supabaseAdmin as any;
 
 // ---------------------------------------------------------------------------
 // Customers + finance dashboard server functions. Admin-only.
@@ -24,24 +23,9 @@ function rangeToSeconds(r: z.infer<typeof RangeInput>): number {
 }
 
 const ZERO_DECIMAL = new Set([
-  "bif",
-  "clp",
-  "djf",
-  "gnf",
-  "jpy",
-  "kmf",
-  "krw",
-  "mga",
-  "pyg",
-  "rwf",
-  "ugx",
-  "vnd",
-  "vuv",
-  "xaf",
-  "xof",
-  "xpf",
+  "bif","clp","djf","gnf","jpy","kmf","krw","mga","pyg","rwf","ugx","vnd","vuv","xaf","xof","xpf",
 ]);
-const THREE_DECIMAL = new Set(["bhd", "jod", "kwd", "omr", "tnd"]);
+const THREE_DECIMAL = new Set(["bhd","jod","kwd","omr","tnd"]);
 
 function toMajor(amount: number, currency: string): number {
   const c = (currency ?? "usd").toLowerCase();
@@ -74,14 +58,12 @@ export type CustomerRow = {
 export const getCustomerMetrics = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) =>
-    z
-      .object({
-        environment: StripeEnvInput.default("live"),
-        range: RangeInput.default("30d"),
-        search: z.string().trim().max(120).optional(),
-        limit: z.number().int().min(10).max(500).default(200),
-      })
-      .parse(d ?? {}),
+    z.object({
+      environment: StripeEnvInput.default("live"),
+      range: RangeInput.default("30d"),
+      search: z.string().trim().max(120).optional(),
+      limit: z.number().int().min(10).max(500).default(200),
+    }).parse(d ?? {}),
   )
   .handler(async ({ data }) => {
     const env: StripeEnv = data.environment;
@@ -93,11 +75,13 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(data.limit);
     if (data.search) {
-      pq = pq.or(`handle.ilike.%${data.search}%,display_name.ilike.%${data.search}%`);
+      pq = pq.or(
+        `handle.ilike.%${data.search}%,display_name.ilike.%${data.search}%`,
+      );
     }
     const { data: profiles, error: pErr } = await pq;
     if (pErr) throw new Response(pErr.message, { status: 500 });
-    const ids: string[] = (profiles ?? []).map((p) => p.id);
+    const ids: string[] = (profiles ?? []).map((p: any) => p.id);
 
     // ---- 2. Auth emails (admin-only via service role) ----------------------
     const emailById = new Map<string, string | null>();
@@ -117,22 +101,26 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
     const [rolesQ, subsQ, runsQ, ledgerQ] = await Promise.all([
       ids.length
         ? supabaseAdmin.from("user_roles").select("user_id, role").in("user_id", ids)
-        : Promise.resolve({ data: [] }),
+        : Promise.resolve({ data: [] as any[] }),
       ids.length
         ? supabaseAdmin
             .from("subscriptions")
-            .select(
-              "user_id, plan_slug, status, current_period_end, price_cents, currency, stripe_customer_id, environment",
-            )
+            .select("user_id, plan_slug, status, current_period_end, price_cents, currency, stripe_customer_id, environment")
             .in("user_id", ids)
             .eq("environment", env)
-        : Promise.resolve({ data: [] }),
+        : Promise.resolve({ data: [] as any[] }),
       ids.length
-        ? supabaseAdmin.from("runs").select("user_id, started_at").in("user_id", ids)
-        : Promise.resolve({ data: [] }),
+        ? supabaseAdmin
+            .from("runs")
+            .select("user_id, started_at")
+            .in("user_id", ids)
+        : Promise.resolve({ data: [] as any[] }),
       ids.length
-        ? supabaseAdmin.from("credit_ledger").select("user_id, delta").in("user_id", ids)
-        : Promise.resolve({ data: [] }),
+        ? supabaseAdmin
+            .from("credit_ledger")
+            .select("user_id, delta")
+            .in("user_id", ids)
+        : Promise.resolve({ data: [] as any[] }),
     ]);
 
     const rolesByUser = new Map<string, string[]>();
@@ -142,7 +130,7 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
       rolesByUser.set(r.user_id, arr);
     }
 
-    const subByUser = new Map<string, NonNullable<typeof subsQ.data>[number]>();
+    const subByUser = new Map<string, any>();
     for (const s of subsQ.data ?? []) {
       const prev = subByUser.get(s.user_id);
       const isActive = s.status === "active" || s.status === "trialing" || s.status === "past_due";
@@ -167,7 +155,7 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
       creditAgg.set(e.user_id, cur);
     }
 
-    const rows: CustomerRow[] = (profiles ?? []).map((p): CustomerRow => {
+    const rows: CustomerRow[] = (profiles ?? []).map((p: any): CustomerRow => {
       const sub = subByUser.get(p.id);
       const isPaying = sub && ["active", "trialing", "past_due"].includes(sub.status);
       const rs = runStats.get(p.id);
@@ -220,7 +208,7 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
 
     let mrrUsdCents = 0;
     let mrrCurrency = "usd";
-    for (const s of mrrQ.data ?? []) {
+    for (const s of (mrrQ.data ?? []) as any[]) {
       if (typeof s.price_cents === "number") {
         mrrUsdCents += s.price_cents;
         if (s.currency) mrrCurrency = s.currency;
@@ -235,19 +223,7 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
     const avgRunsPerCustomer = totalProfiles ? totalRuns / totalProfiles : 0;
 
     // ---- 5. Stripe finance (range-windowed) -------------------------------
-    let stripe: {
-      environment: StripeEnv;
-      range: string;
-      currency: string;
-      gross: number;
-      fees: number;
-      net: number;
-      successful_charges: number;
-      refunded_count: number;
-      refunded_amount: number;
-      balance: { available: number; pending: number; currency: string };
-      truncated: boolean;
-    } | null = null;
+    let stripe: any = null;
     let stripe_error: string | null = null;
     try {
       const client = createStripeClient(env);
@@ -271,15 +247,21 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
         netMinor += t.net ?? 0;
       }
 
-      const successfulCharges = charges.data.filter((c) => c.paid && !c.refunded).length;
+      const successfulCharges = charges.data.filter((c: any) => c.paid && !c.refunded).length;
       const refundedCount = refunds.data.length;
-      const refundedMinor = refunds.data.reduce((acc, r) => acc + (r.amount ?? 0), 0);
-
-      const balanceAvailable = (balance.available ?? []).reduce(
-        (acc, b) => acc + (b.amount ?? 0),
+      const refundedMinor = refunds.data.reduce(
+        (acc: number, r: any) => acc + (r.amount ?? 0),
         0,
       );
-      const balancePending = (balance.pending ?? []).reduce((acc, b) => acc + (b.amount ?? 0), 0);
+
+      const balanceAvailable = (balance.available ?? []).reduce(
+        (acc: number, b: any) => acc + (b.amount ?? 0),
+        0,
+      );
+      const balancePending = (balance.pending ?? []).reduce(
+        (acc: number, b: any) => acc + (b.amount ?? 0),
+        0,
+      );
       const balanceCurrency = balance.available?.[0]?.currency ?? "usd";
 
       stripe = {
@@ -297,10 +279,11 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
           pending: toMajor(balancePending, balanceCurrency),
           currency: balanceCurrency,
         },
-        truncated: txns.has_more || charges.has_more || refunds.has_more,
+        truncated:
+          txns.has_more || charges.has_more || refunds.has_more,
       };
-    } catch (e) {
-      stripe_error = errorField(e, "message") ?? "Stripe call failed";
+    } catch (e: any) {
+      stripe_error = e?.message ?? "Stripe call failed";
     }
 
     return {

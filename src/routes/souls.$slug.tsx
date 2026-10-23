@@ -1,7 +1,3 @@
-import { JsonSchema } from "@/lib/json-schema";
-import { z } from "zod";
-const SoulStatus = z.enum(["stable", "beta", "candidate", "deprecated"]);
-import { errorField } from "@/lib/errors";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -86,8 +82,7 @@ function SoulPage() {
 
   const ownership = useQuery({
     queryKey: ["soul-ownership", slug],
-    queryFn: () =>
-      ownershipFn({ data: { slug } }).catch(() => ({ is_owner: false, is_admin: false })),
+    queryFn: () => ownershipFn({ data: { slug } }).catch(() => ({ is_owner: false, is_admin: false })),
     staleTime: 60_000,
     retry: false,
   });
@@ -197,13 +192,10 @@ function SoulView({
                   </Badge>
                 )}
               </div>
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
-                {soul.name}
-              </h1>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">{soul.name}</h1>
               <p className="mt-2 max-w-2xl text-muted-foreground">{soul.description}</p>
               <p className="mt-2 text-xs text-muted-foreground">
-                {soul.author_handle} · {soul.install_count.toLocaleString()} installs ·{" "}
-                {soul.license}
+                {soul.author_handle} · {soul.install_count.toLocaleString()} installs · {soul.license}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -300,27 +292,27 @@ function SoulView({
                   <Card key={i} className="p-5">
                     <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       Example {i + 1}
-                      {typeof ex.title === "string" && (
-                        <span className="ml-2 text-foreground">— {ex.title}</span>
+                      {typeof (ex as any).title === "string" && (
+                        <span className="ml-2 text-foreground">— {(ex as any).title}</span>
                       )}
                     </div>
-                    {typeof ex.input === "string" && (
+                    {typeof (ex as any).input === "string" && (
                       <div className="mt-3">
                         <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
                           Input
                         </div>
                         <pre className="mt-1 overflow-x-auto rounded-md border border-border bg-muted/40 p-3 text-xs">
-                          {ex.input}
+                          {(ex as any).input}
                         </pre>
                       </div>
                     )}
-                    {typeof ex.expected_output === "string" && (
+                    {typeof (ex as any).expected_output === "string" && (
                       <div className="mt-3">
                         <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
                           Expected output
                         </div>
                         <pre className="mt-1 whitespace-pre-wrap rounded-md border border-border bg-muted/40 p-3 text-xs">
-                          {ex.expected_output}
+                          {(ex as any).expected_output}
                         </pre>
                       </div>
                     )}
@@ -378,19 +370,17 @@ function VersionsList({ soul, isOwner }: { soul: SoulDetail; isOwner: boolean })
       qc.invalidateQueries({ queryKey: ["soul", soul.slug] });
       setPendingRollback(null);
     },
-    onError: (e) => toast.error(e?.message ?? "Rollback failed"),
+    onError: (e: any) => toast.error(e?.message ?? "Rollback failed"),
   });
 
   const changeStatus = useMutation({
     mutationFn: (vars: { version: string; status: string }) =>
-      statusFn({
-        data: { slug: soul.slug, version: vars.version, status: SoulStatus.parse(vars.status) },
-      }),
+      statusFn({ data: { slug: soul.slug, version: vars.version, status: vars.status as any } }),
     onSuccess: () => {
       toast.success("Status updated");
       qc.invalidateQueries({ queryKey: ["soul", soul.slug] });
     },
-    onError: (e) => toast.error(e?.message ?? "Update failed"),
+    onError: (e: any) => toast.error(e?.message ?? "Update failed"),
   });
 
   return (
@@ -412,7 +402,9 @@ function VersionsList({ soul, isOwner }: { soul: SoulDetail; isOwner: boolean })
               <span className="text-xs text-muted-foreground">
                 {new Date(v.created_at).toLocaleString()}
               </span>
-              {v.notes && <span className="text-xs italic text-muted-foreground">— {v.notes}</span>}
+              {v.notes && (
+                <span className="text-xs italic text-muted-foreground">— {v.notes}</span>
+              )}
             </div>
             {isOwner && (
               <div className="flex flex-wrap items-center gap-2">
@@ -444,7 +436,10 @@ function VersionsList({ soul, isOwner }: { soul: SoulDetail; isOwner: boolean })
         ))}
       </Card>
 
-      <AlertDialog open={!!pendingRollback} onOpenChange={(o) => !o && setPendingRollback(null)}>
+      <AlertDialog
+        open={!!pendingRollback}
+        onOpenChange={(o) => !o && setPendingRollback(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Rollback to v{pendingRollback}?</AlertDialogTitle>
@@ -455,7 +450,9 @@ function VersionsList({ soul, isOwner }: { soul: SoulDetail; isOwner: boolean })
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => pendingRollback && rollback.mutate(pendingRollback)}>
+            <AlertDialogAction
+              onClick={() => pendingRollback && rollback.mutate(pendingRollback)}
+            >
               Confirm rollback
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -472,11 +469,12 @@ function ManagePanel({ soul }: { soul: SoulDetail }) {
 
   const suggested = useMemo(() => {
     const versions = soul.versions.map((v) => v.version);
-    const max = versions
-      .map((v) => v.match(/^(\d+)\.(\d+)\.(\d+)$/))
-      .filter(Boolean)
-      .map((m) => [+m![1], +m![2], +m![3]] as [number, number, number])
-      .sort((a, b) => b[0] - a[0] || b[1] - a[1] || b[2] - a[2])[0] ?? [0, 0, 0];
+    const max =
+      versions
+        .map((v) => v.match(/^(\d+)\.(\d+)\.(\d+)$/))
+        .filter(Boolean)
+        .map((m) => [+m![1], +m![2], +m![3]] as [number, number, number])
+        .sort((a, b) => b[0] - a[0] || b[1] - a[1] || b[2] - a[2])[0] ?? [0, 0, 0];
     return `${max[0]}.${max[1]}.${max[2] + 1}`;
   }, [soul.versions]);
 
@@ -492,18 +490,18 @@ function ManagePanel({ soul }: { soul: SoulDetail }) {
 
   const create = useMutation({
     mutationFn: async () => {
-      let rules: z.infer<typeof JsonSchema>;
-      let examples: z.infer<typeof JsonSchema>[];
+      let rules: any;
+      let examples: any;
       try {
-        rules = JsonSchema.parse(JSON.parse(rulesText || "{}"));
+        rules = JSON.parse(rulesText || "{}");
       } catch {
         throw new Error("Rules must be valid JSON");
       }
       try {
-        examples = z.array(JsonSchema).parse(JSON.parse(examplesText || "[]"));
+        examples = JSON.parse(examplesText || "[]");
         if (!Array.isArray(examples)) throw new Error("Examples must be a JSON array");
-      } catch (e) {
-        throw new Error(errorField(e, "message") ?? "Examples must be a JSON array");
+      } catch (e: any) {
+        throw new Error(e?.message ?? "Examples must be a JSON array");
       }
       return createFn({
         data: {
@@ -523,7 +521,7 @@ function ManagePanel({ soul }: { soul: SoulDetail }) {
       qc.invalidateQueries({ queryKey: ["soul", soul.slug] });
       setNotes("");
     },
-    onError: (e) => toast.error(e?.message ?? "Release failed"),
+    onError: (e: any) => toast.error(e?.message ?? "Release failed"),
   });
 
   const bump = (kind: "patch" | "minor" | "major") => {
@@ -573,7 +571,7 @@ function ManagePanel({ soul }: { soul: SoulDetail }) {
         </div>
         <div>
           <Label htmlFor="status">Status</Label>
-          <Select value={status} onValueChange={(v) => setStatus(SoulStatus.parse(v))}>
+          <Select value={status} onValueChange={(v) => setStatus(v as any)}>
             <SelectTrigger id="status" className="mt-1">
               <SelectValue />
             </SelectTrigger>
@@ -724,7 +722,7 @@ function buildSoulMarkdown(soul: SoulDetail): string {
   ];
   if (Array.isArray(c?.examples) && c!.examples.length) {
     sections.push("", "## Examples", "");
-    c!.examples.forEach((ex, i: number) => {
+    c!.examples.forEach((ex: any, i: number) => {
       sections.push(`### Example ${i + 1}${ex.title ? ` — ${ex.title}` : ""}`);
       if (ex.input) sections.push("", "**Input:**", "", "```", String(ex.input), "```");
       if (ex.expected_output)

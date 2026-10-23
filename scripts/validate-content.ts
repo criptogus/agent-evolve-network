@@ -13,20 +13,11 @@ import { inspectContent } from "../src/lib/security/prompt-injection-guard.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const TYPES = ["skill", "playbook", "soul", "guardrail", "integration"];
-const FOLDER = {
-  skill: "skills",
-  playbook: "playbooks",
-  soul: "souls",
-  guardrail: "guardrails",
-  integration: "integrations",
-};
+const FOLDER = { skill: "skills", playbook: "playbooks", soul: "souls", guardrail: "guardrails", integration: "integrations" };
 
 const ajv = new Ajv({ allErrors: true, strict: false });
 const schemas = Object.fromEntries(
-  TYPES.map((t) => [
-    t,
-    JSON.parse(readFileSync(join(ROOT, `content/schemas/${t}.schema.json`), "utf8")),
-  ]),
+  TYPES.map((t) => [t, JSON.parse(readFileSync(join(ROOT, `content/schemas/${t}.schema.json`), "utf8"))]),
 );
 const validators = Object.fromEntries(TYPES.map((t) => [t, ajv.compile(schemas[t])]));
 
@@ -43,11 +34,7 @@ const adversarialIds = new Map(); // id -> file
 for (const type of TYPES) {
   const dir = join(ROOT, "content", FOLDER[type]);
   let entries;
-  try {
-    entries = readdirSync(dir);
-  } catch {
-    continue;
-  }
+  try { entries = readdirSync(dir); } catch { continue; }
   for (const entry of entries) {
     const full = join(dir, entry);
     if (!statSync(full).isFile()) continue;
@@ -55,12 +42,8 @@ for (const type of TYPES) {
     if (basename(entry).startsWith("_")) continue; // skip _template.yaml
 
     let pkg;
-    try {
-      pkg = parseYaml(readFileSync(full, "utf8"));
-    } catch (e) {
-      fail(full, `YAML parse error: ${e.message}`);
-      continue;
-    }
+    try { pkg = parseYaml(readFileSync(full, "utf8")); }
+    catch (e) { fail(full, `YAML parse error: ${e.message}`); continue; }
 
     if (!pkg || pkg.type !== type) {
       fail(full, `'type' must be "${type}" (got ${JSON.stringify(pkg?.type)})`);
@@ -94,21 +77,9 @@ for (const type of TYPES) {
     // out of the warning.
     const guard = inspectContent(readFileSync(full, "utf8"), { fence: false });
     if (guard.severity === "critical") {
-      fail(
-        full,
-        `prompt-injection: critical signal(s) — ${guard.findings
-          .filter((g) => g.severity === "critical")
-          .map((g) => g.pattern)
-          .join("; ")}`,
-      );
-    } else if (
-      (guard.severity === "high" || guard.severity === "medium") &&
-      pkg.x_security_research !== true
-    ) {
-      warn(
-        full,
-        `prompt-injection: ${guard.severity} signal(s) — ${guard.findings.map((g) => g.pattern).join("; ")} (set x_security_research: true if intentional)`,
-      );
+      fail(full, `prompt-injection: critical signal(s) — ${guard.findings.filter((g) => g.severity === "critical").map((g) => g.pattern).join("; ")}`);
+    } else if ((guard.severity === "high" || guard.severity === "medium") && pkg.x_security_research !== true) {
+      warn(full, `prompt-injection: ${guard.severity} signal(s) — ${guard.findings.map((g) => g.pattern).join("; ")} (set x_security_research: true if intentional)`);
     }
   }
 }
@@ -126,12 +97,8 @@ try {
       if (basename(entry).startsWith("_")) continue;
 
       let kase;
-      try {
-        kase = parseYaml(readFileSync(full, "utf8"));
-      } catch (e) {
-        fail(full, `YAML parse error: ${e.message}`);
-        continue;
-      }
+      try { kase = parseYaml(readFileSync(full, "utf8")); }
+      catch (e) { fail(full, `YAML parse error: ${e.message}`); continue; }
 
       if (!kase || kase.type !== "adversarial_case") {
         fail(full, `'type' must be "adversarial_case" (got ${JSON.stringify(kase?.type)})`);
@@ -151,18 +118,13 @@ try {
         fail(full, `filename must match id "${kase.id}.yaml"`);
       }
       if (adversarialIds.has(kase.id)) {
-        fail(
-          full,
-          `duplicate adversarial id "${kase.id}" — also in ${adversarialIds.get(kase.id)}`,
-        );
+        fail(full, `duplicate adversarial id "${kase.id}" — also in ${adversarialIds.get(kase.id)}`);
       } else {
         adversarialIds.set(kase.id, full);
       }
     }
   }
-} catch {
-  /* no adversarial dir yet */
-}
+} catch { /* no adversarial dir yet */ }
 
 function fail(file, msg) {
   errors++;
