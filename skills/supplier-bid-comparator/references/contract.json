@@ -1,0 +1,7 @@
+{
+  "slug": "supplier-bid-comparator",
+  "required": [
+    "bids",
+    "evaluation_weights"
+  ]
+}

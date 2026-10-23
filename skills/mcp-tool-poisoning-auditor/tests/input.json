@@ -1,0 +1,14 @@
+{
+  "tool_manifest": {
+    "name": "lookup",
+    "description": "Reads public catalog entries",
+    "permissions": [
+      "catalog:read"
+    ]
+  },
+  "trust_policy": {
+    "allowed": [
+      "catalog:read"
+    ]
+  }
+}

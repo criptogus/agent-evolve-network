@@ -7,7 +7,7 @@
  * primary sort, and demotes narrow platform-specific packages.
  */
 
-import { projectFitScore, type ProjectType } from "./project-profile";
+import { projectFitScore, type ProjectType } from "./project-profile.ts";
 
 export type RankableItem = {
   slug: string;
@@ -132,8 +132,11 @@ export function rankRecommended<T extends RankableItem>(
 ): T[] {
   return items
     .filter((i) => i.trust_score === null || i.trust_score >= 0.4)
-    .map((i) => ({ i, s: recommendationScore(i) + projectFitScore(i, projectType) }))
-    .sort((a, b) => b.s - a.s || b.i.install_count - a.i.install_count)
+    .map((i) => ({ i, s: recommendationScore(i), fit: projectFitScore(i, projectType) }))
+    .sort(
+      (a, b) =>
+        (projectType ? b.fit - a.fit : 0) || b.s - a.s || b.i.install_count - a.i.install_count,
+    )
     .slice(0, limit)
     .map((x) => x.i);
 }

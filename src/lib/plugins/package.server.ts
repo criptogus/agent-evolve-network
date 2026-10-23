@@ -1,3 +1,4 @@
+import { verifyArtifact } from "./artifacts";
 /**
  * Builds an Agent Plugins v1 portable package for a published catalog item.
  * Server-only: reads the live registry and reuses the SKILL.md serializer.
@@ -25,7 +26,10 @@ export type PluginPackage = {
 };
 
 /** Returns null when the package does not exist or is not publicly available. */
-export async function loadPluginPackage(slug: string): Promise<PluginPackage | null> {
+export async function loadPluginPackage(
+  slug: string,
+  pinnedVersionId?: string,
+): Promise<PluginPackage | null> {
   const { data: pkg, error } = await supabaseAdmin
     .from("packages")
     .select(
@@ -34,17 +38,46 @@ export async function loadPluginPackage(slug: string): Promise<PluginPackage | n
     .eq("slug", slug)
     .eq("is_published", true)
     .eq("review_status", "approved")
+    .eq("price_credits", 0)
     .maybeSingle();
   if (error || !pkg) return null;
 
-  const { data: ver } = await supabaseAdmin
+  let versionQuery = supabaseAdmin
     .from("package_versions")
-    .select("version,system_prompt,rules,examples,compatibility")
-    .eq("package_id", pkg.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .select("id,version,system_prompt,rules,examples,compatibility")
+    .eq("package_id", pkg.id);
+  versionQuery = pinnedVersionId
+    ? versionQuery.eq("id", pinnedVersionId)
+    : versionQuery.eq("version", pkg.latest_version);
+  const { data: ver } = await versionQuery.limit(1).maybeSingle();
   if (!ver) return null;
+
+  const { data: artifact, error: artifactError } = await supabaseAdmin
+    .from("package_artifacts")
+    .select("files,sha256")
+    .eq("version_id", ver.id)
+    .maybeSingle();
+  if (artifactError) throw new Error("Unable to verify package bundle");
+  if (artifact) {
+    const files = new Map(Object.entries(verifyArtifact(artifact.files, artifact.sha256)));
+    const { runPluginConformance } = await import("./conformance");
+    const report = runPluginConformance(files);
+    if (
+      !report.conformant ||
+      !report.manifest ||
+      (report.manifest.version ?? "0.1.0") !== ver.version
+    )
+      throw new Error("Stored package failed conformance");
+    return {
+      slug: pkg.slug,
+      pluginName: report.manifest.name,
+      manifest: report.manifest,
+      mcp: files.has("mcp.json")
+        ? (JSON.parse(files.get("mcp.json")!) as McpConfig)
+        : buildMcpConfig(),
+      files,
+    };
+  }
 
   const { data: trust } = await supabaseAdmin
     .from("package_trust_scores")

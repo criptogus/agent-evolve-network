@@ -149,18 +149,17 @@ type GateResult = { ok: true; run: unknown } | { ok: false; reason: string; run:
 async function assertAdversarialGate(slug: string): Promise<GateResult> {
   const { data: pkg } = await supabaseAdmin
     .from("packages")
-    .select("id")
+    .select("id, latest_version")
     .eq("slug", slug)
     .maybeSingle();
   if (!pkg) return { ok: false, reason: "package not found", run: null };
 
-  // The version whose content is actually live (most recent version row).
+  // Evaluate the exact version that downloads and MCP will serve.
   const { data: ver } = await supabaseAdmin
     .from("package_versions")
     .select("id, version")
     .eq("package_id", pkg.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
+    .eq("version", pkg.latest_version)
     .maybeSingle();
   if (!ver) return { ok: false, reason: "no package version to evaluate", run: null };
 

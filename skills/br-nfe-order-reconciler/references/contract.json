@@ -1,0 +1,7 @@
+{
+  "slug": "br-nfe-order-reconciler",
+  "required": [
+    "xml_documents",
+    "orders"
+  ]
+}

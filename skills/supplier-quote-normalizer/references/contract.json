@@ -1,0 +1,7 @@
+{
+  "slug": "supplier-quote-normalizer",
+  "required": [
+    "quotes",
+    "target_schema"
+  ]
+}

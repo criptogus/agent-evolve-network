@@ -1,0 +1,7 @@
+{
+  "planned_seconds": 3600,
+  "downtime_seconds": 600,
+  "ideal_cycle_seconds": 2,
+  "total_units": 1200,
+  "good_units": 1140
+}

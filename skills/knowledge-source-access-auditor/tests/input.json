@@ -1,0 +1,18 @@
+{
+  "principals": [
+    "user-A",
+    "user-B"
+  ],
+  "source_acls": {
+    "private_doc": [
+      "user-A"
+    ]
+  },
+  "retrieval_tests": [
+    {
+      "principal": "user-B",
+      "source": "private_doc",
+      "expected": "deny"
+    }
+  ]
+}

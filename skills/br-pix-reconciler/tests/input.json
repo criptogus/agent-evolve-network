@@ -1,0 +1,16 @@
+{
+  "expected": [
+    {
+      "reference": "TX-1",
+      "amount_cents": 5000,
+      "currency": "BRL"
+    }
+  ],
+  "observed": [
+    {
+      "reference": "TX-1",
+      "amount_cents": 5000,
+      "currency": "BRL"
+    }
+  ]
+}

@@ -42,6 +42,12 @@ const SKILLS: NavItem[] = [
   { to: "/marketplace", label: "Marketplace", hint: "Top skills, ranked by Trust Score" },
   { to: "/discover", label: "Discover", hint: "Search everything" },
   { to: "/packs", label: "Packs", hint: "Curated bundles" },
+  {
+    to: "/solutions",
+    label: "Business solutions",
+    hint: "Workflows, new categories and complete bundles",
+  },
+  { to: "/evidence", label: "Task evidence", hint: "Measured outcomes by version and model" },
   { to: "/match", label: "Match", hint: "Pair skills to a goal" },
 ];
 
@@ -169,6 +175,9 @@ export function Nav() {
                     <Link to="/account/library">My library</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link to="/account/teams">Team workspaces</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/account/earnings">Earnings</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -278,6 +287,9 @@ export function Nav() {
                       </MobileLink>
                       <MobileLink to="/account/packages" onNavigate={() => setOpen(false)}>
                         My packages
+                      </MobileLink>
+                      <MobileLink to="/account/teams" onNavigate={() => setOpen(false)}>
+                        Team workspaces
                       </MobileLink>
                       <MobileLink to="/account/library" onNavigate={() => setOpen(false)}>
                         My library

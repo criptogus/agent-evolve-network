@@ -1,0 +1,8 @@
+{
+  "slug": "industrial-fmea-facilitator",
+  "required": [
+    "failure_modes",
+    "scoring_rubric"
+  ],
+  "calculation": "fmea"
+}

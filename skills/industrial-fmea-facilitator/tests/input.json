@@ -1,0 +1,11 @@
+{
+  "failure_modes": [
+    {
+      "id": "F1",
+      "severity": 9,
+      "occurrence": 3,
+      "detection": 4
+    }
+  ],
+  "scoring_rubric": "Approved 1–10 factors"
+}

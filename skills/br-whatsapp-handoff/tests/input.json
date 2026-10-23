@@ -1,0 +1,11 @@
+{
+  "conversation": "Customer asks to speak to a person about order 104.",
+  "consent_record": {
+    "purpose": "order support",
+    "source": "conversation"
+  },
+  "routing_policy": {
+    "owner": "support",
+    "hours": "09:00-18:00"
+  }
+}

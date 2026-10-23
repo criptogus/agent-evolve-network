@@ -1,0 +1,17 @@
+{
+  "quotes": [
+    {
+      "id": "Q1",
+      "item": "pack of 10",
+      "quantity": 2,
+      "total": 100,
+      "currency": "BRL"
+    }
+  ],
+  "target_schema": [
+    "unit_quantity",
+    "unit_price",
+    "currency",
+    "source"
+  ]
+}

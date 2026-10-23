@@ -1,0 +1,9 @@
+{
+  "slug": "game-frame-time-profiler",
+  "required": [
+    "frame_ms",
+    "budget_ms",
+    "capture_context"
+  ],
+  "calculation": "frame_times"
+}

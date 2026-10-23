@@ -1,0 +1,20 @@
+{
+  "bids": [
+    {
+      "supplier": "A",
+      "price": 100,
+      "currency": "BRL",
+      "lead_days": 5
+    },
+    {
+      "supplier": "B",
+      "price": 95,
+      "currency": "BRL",
+      "lead_days": 12
+    }
+  ],
+  "evaluation_weights": {
+    "price": 0.6,
+    "lead_time": 0.4
+  }
+}

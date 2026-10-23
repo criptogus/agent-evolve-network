@@ -1,0 +1,12 @@
+{
+  "deviation": {
+    "id": "D1",
+    "measurement": 12,
+    "spec_max": 10
+  },
+  "lot_trace": {
+    "lot": "L1",
+    "instrument": "I1"
+  },
+  "quality_procedure": "Contain and investigate before disposition"
+}

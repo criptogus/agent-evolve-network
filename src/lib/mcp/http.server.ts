@@ -1,3 +1,4 @@
+import { listSolutionsTool, compareTaskEvidenceTool } from "@/lib/mcp/tools/solutions";
 import { z } from "zod";
 const QuotaSchema = z.object({
   allowed: z.boolean().optional(),
@@ -150,6 +151,8 @@ const mcp = createMcpServer({
   ].join("\n"),
   tools: [
     overviewTool,
+    listSolutionsTool,
+    compareTaskEvidenceTool,
     getMethodologyTool,
     reviewSkillTool,
     reviewSkillsBatchTool,

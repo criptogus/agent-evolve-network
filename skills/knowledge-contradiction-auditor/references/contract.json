@@ -1,0 +1,7 @@
+{
+  "slug": "knowledge-contradiction-auditor",
+  "required": [
+    "source_extracts",
+    "scope"
+  ]
+}

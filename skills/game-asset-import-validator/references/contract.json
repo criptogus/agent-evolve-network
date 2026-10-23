@@ -1,0 +1,7 @@
+{
+  "slug": "game-asset-import-validator",
+  "required": [
+    "asset_manifest",
+    "engine_settings"
+  ]
+}

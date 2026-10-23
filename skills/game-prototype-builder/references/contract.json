@@ -1,0 +1,8 @@
+{
+  "slug": "game-prototype-builder",
+  "required": [
+    "engine",
+    "core_loop",
+    "constraints"
+  ]
+}

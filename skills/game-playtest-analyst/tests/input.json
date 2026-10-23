@@ -1,0 +1,12 @@
+{
+  "sessions": [
+    {
+      "participant": "P1",
+      "timestamp": "00:40",
+      "observation": "Could not find restart",
+      "completed": false
+    }
+  ],
+  "research_question": "Can new players restart without help?",
+  "consent_scope": "Anonymized research notes only"
+}

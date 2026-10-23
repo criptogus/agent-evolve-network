@@ -87,6 +87,9 @@ function ReviewPage() {
             <span className="font-mono text-foreground">review</span>
           </div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">Review queue</h1>
+          <Link to="/admin/curation" className="mt-3 inline-block text-sm underline">
+            Review catalog overlap
+          </Link>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
             Approve, pause or reject submitted packages before they appear in the public
             marketplace. Approving sets{" "}

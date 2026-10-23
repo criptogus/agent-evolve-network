@@ -44,6 +44,11 @@ export const overviewTool = defineTool({
       version: "1.6.0",
       tagline:
         "Battle-tested toolkit for designing, auditing and shipping AI primitives — skills, playbooks, souls, guardrails.",
+      business_workflows: {
+        tools: ["list_solutions", "compare_task_evidence"],
+        url: "https://superagentskill.com/solutions",
+        execution: "manual; respects approval and explicit context budgets",
+      },
       first_connection: {
         description:
           "Call whoami before reporting any auth or quota problem — it returns tier, quota, write access and the exact next step. Free.",

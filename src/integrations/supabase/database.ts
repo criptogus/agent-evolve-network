@@ -1,9 +1,11 @@
+import type { PlatformTables, PlatformFunctions } from "./platform-schema";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database as GeneratedDatabase } from "./types";
 import type { OptionalTables, OptionalViews } from "./optional-schema";
 export type Database = Omit<GeneratedDatabase, "public"> & {
-  public: Omit<GeneratedDatabase["public"], "Tables" | "Views"> & {
-    Tables: GeneratedDatabase["public"]["Tables"] & OptionalTables;
+  public: Omit<GeneratedDatabase["public"], "Tables" | "Views" | "Functions"> & {
+    Tables: GeneratedDatabase["public"]["Tables"] & OptionalTables & PlatformTables;
+    Functions: GeneratedDatabase["public"]["Functions"] & PlatformFunctions;
     Views: GeneratedDatabase["public"]["Views"] & OptionalViews;
   };
 };

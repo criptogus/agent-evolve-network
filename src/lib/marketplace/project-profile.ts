@@ -2,7 +2,7 @@
  * Project profile: a one-question onboarding answer ("what are you building?")
  * used to rank packages by fit instead of by niche stack keywords.
  *
- * Deliberately coarse — four buckets that cover almost every project, so a new
+ * Technical and business profiles share one persisted selection, so a new
  * user never has to know what "Expo EAS pipeline" or "OAuth flow auditor" is.
  */
 
@@ -90,6 +90,87 @@ export const PROJECT_TYPES = [
       "etl",
       "pipeline",
     ],
+  },
+  {
+    value: "brazil_ops",
+    label: "Brazil operations",
+    description: "NF-e, Pix and WhatsApp operations",
+    keywords: ["operações brasil", "nf-e", "pix", "whatsapp", "reconciliação", "reconciliation"],
+  },
+  {
+    value: "agent_security",
+    label: "Agent security",
+    description: "MCP, permissions and tool safety",
+    keywords: [
+      "segurança de agentes",
+      "tool poisoning",
+      "exfiltration",
+      "permission policy",
+      "prompt injection",
+    ],
+  },
+  {
+    value: "procurement",
+    label: "Procurement & suppliers",
+    description: "Bids, sourcing, contracts and supplier risk",
+    keywords: [
+      "compras e fornecedores",
+      "supplier",
+      "procurement",
+      "quotation",
+      "sourcing",
+      "bid comparison",
+    ],
+  },
+  {
+    value: "industrial_ops",
+    label: "Industrial operations",
+    description: "OEE, maintenance, FMEA and quality",
+    keywords: [
+      "indústria e manutenção",
+      "manufacturing",
+      "maintenance",
+      "oee",
+      "fmea",
+      "quality deviation",
+    ],
+  },
+  {
+    value: "corporate_knowledge",
+    label: "Corporate knowledge",
+    description: "Source access, freshness and reliable retrieval",
+    keywords: [
+      "conhecimento corporativo",
+      "knowledge",
+      "rag",
+      "retrieval",
+      "source access",
+      "document freshness",
+    ],
+  },
+  {
+    value: "game_dev",
+    label: "Game development",
+    description: "Playable prototypes, assets and playtests",
+    keywords: ["desenvolvimento de jogos", "godot", "unity", "game", "playtest", "frame-time"],
+  },
+  {
+    value: "sales_growth",
+    label: "Sales & growth",
+    description: "Pipeline, campaigns and customer acquisition",
+    keywords: ["sales", "marketing", "gtm", "campaign", "pipeline", "outbound"],
+  },
+  {
+    value: "finance_ops",
+    label: "Finance operations",
+    description: "Cash flow, reconciliation and reporting",
+    keywords: ["finance", "cash flow", "invoice", "reconciliation", "financial", "budget variance"],
+  },
+  {
+    value: "people_ops",
+    label: "People operations",
+    description: "Hiring, onboarding and team development",
+    keywords: ["hiring", "people ops", "interview", "employee", "onboarding", "performance review"],
   },
 ] as const;
 

@@ -1,0 +1,13 @@
+{
+  "supplier": "Example supplier",
+  "evidence": [
+    {
+      "source": "certificate-1",
+      "date": "2026-01-01",
+      "claim": "certificate expires 2026-12-31"
+    }
+  ],
+  "risk_rubric": {
+    "expiry": "request renewal before expiration"
+  }
+}

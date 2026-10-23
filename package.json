@@ -41,10 +41,12 @@
     "test:all": "node --experimental-strip-types --test tests/*.test.ts",
     "lint:strict": "eslint .",
     "check:project": "node scripts/check-project.mjs",
-    "test:ui": "node scripts/check-signup-ui.mjs",
+    "test:ui": "node scripts/check-signup-ui.mjs && node --experimental-strip-types scripts/check-business-ui.mjs",
     "check:types": "tsc --noEmit",
     "check:dependencies": "npm audit --audit-level=high",
-    "check:types:sdk": "tsc -p packages/sdk-ts/tsconfig.json --noEmit"
+    "check:types:sdk": "tsc -p packages/sdk-ts/tsconfig.json --noEmit",
+    "build:business-skills": "node --experimental-strip-types scripts/build-business-skills.mjs",
+    "check:business-skills": "node --experimental-strip-types scripts/build-business-skills.mjs --check && node scripts/check-business-skills.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",

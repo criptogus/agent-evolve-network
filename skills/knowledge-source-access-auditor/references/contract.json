@@ -1,0 +1,8 @@
+{
+  "slug": "knowledge-source-access-auditor",
+  "required": [
+    "principals",
+    "source_acls",
+    "retrieval_tests"
+  ]
+}

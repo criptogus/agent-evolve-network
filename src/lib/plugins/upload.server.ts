@@ -1,4 +1,4 @@
-import { errorField } from "@/lib/errors";
+import { errorField } from "../errors.ts";
 /**
  * Server-only helpers for the admin plugin upload panel: unzip an uploaded
  * Agent Plugins v1 package, run the conformance suite, and only then land it
@@ -10,9 +10,9 @@ import {
   MAX_FILES,
   MAX_FILE_BYTES,
   type ConformanceReport,
-} from "./conformance";
-import { normalizePluginName } from "./agent-plugins";
-import { readFrontmatter } from "./conformance";
+} from "./conformance.ts";
+import { normalizePluginName } from "./agent-plugins.ts";
+import { readFrontmatter } from "./conformance.ts";
 
 /** Strip a single wrapping directory so both `plugin.json` layouts work. */
 function stripCommonRoot(entries: Array<[string, string]>): Array<[string, string]> {
@@ -44,6 +44,16 @@ export async function readPluginZip(base64: string): Promise<Map<string, string>
 
   const entries: Array<[string, string]> = [];
   for (const f of files) {
+    const original = f.unsafeOriginalName ?? f.name;
+    if (
+      original.startsWith("/") ||
+      original.includes("\\") ||
+      original.split("/").some((p) => p === ".." || p === ".") ||
+      /^[a-z]:/i.test(original)
+    )
+      throw new Response("Unsafe archive path", { status: 400 });
+    if (typeof f.unixPermissions === "number" && (f.unixPermissions & 0xf000) === 0xa000)
+      throw new Response("Archive symlinks are not supported", { status: 400 });
     if (/(^|\/)(__MACOSX|\.DS_Store)(\/|$)/.test(f.name)) continue;
     const buf = await f.async("uint8array");
     if (buf.byteLength > MAX_FILE_BYTES * 4) {
@@ -51,7 +61,7 @@ export async function readPluginZip(base64: string): Promise<Map<string, string>
     }
     entries.push([
       f.name.replace(/^\.\//, ""),
-      new TextDecoder("utf-8", { fatal: false }).decode(buf),
+      new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(buf),
     ]);
   }
   return new Map(stripCommonRoot(entries));

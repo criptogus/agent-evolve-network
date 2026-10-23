@@ -15,7 +15,7 @@ export const Route = createFileRoute("/admin/plugins")({
       {
         name: "description",
         content:
-          "Upload an Agent Plugins v1 .zip, run the conformance suite, and publish only conformant packages to /plugins.",
+          "Upload an Agent Plugins v1 .zip, run the conformance suite, and preserve complete conformant packages and submit them for version-specific review.",
       },
     ],
   }),
@@ -190,7 +190,9 @@ function AdminPlugins() {
                 onClick={() => publishing.mutate(true)}
                 disabled={!report.conformant || !payload || publishing.isPending}
               >
-                {publishing.isPending ? "Working…" : "Validate again and publish live"}
+                {publishing.isPending
+                  ? "Working…"
+                  : "Validate, preserve files and submit for review"}
               </Button>
               <Button
                 variant="outline"

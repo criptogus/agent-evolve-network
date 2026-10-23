@@ -1,0 +1,8 @@
+{
+  "slug": "knowledge-freshness-reviewer",
+  "required": [
+    "documents",
+    "freshness_policy",
+    "as_of"
+  ]
+}

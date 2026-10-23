@@ -1,0 +1,60 @@
+slug: solution-monthly-finance-close
+name: Close the financial month
+type: playbook
+version: 0.1.0
+description: A reconciled ledger, explained variances and an owner-reviewed closing pack.
+trigger: When the user requests close the financial month and provides authorized source inputs.
+inputs:
+  source_1:
+    type: string
+    description: Invoice and transaction exports
+  source_2:
+    type: string
+    description: Chart of accounts and reporting period
+  source_3:
+    type: string
+    description: Approved budget and accounting policy
+outputs:
+  deliverable:
+    type: string
+    description: Unmatched entries have owners; Variance bridge reconciles to source totals; Controller
+      approves the closing pack
+steps:
+  - id: extract
+    action: instruction
+    with:
+      prompt: "Normalize source records. Produce: Source-linked invoice and ledger table. Requires
+        completed steps: none. Preserve source evidence, permissions and owner approval. Never infer
+        completion from input validation."
+  - id: reconcile
+    action: instruction
+    with:
+      prompt: "Reconcile balances and exceptions. Produce: Reconciliation with unresolved items and
+        owners. Requires completed steps: extract. Preserve source evidence, permissions and owner
+        approval. Never infer completion from input validation."
+  - id: analyze
+    action: instruction
+    with:
+      prompt: "Explain variances and cash impact. Produce: Variance bridge and cash projection with
+        assumptions. Requires completed steps: reconcile. Preserve source evidence, permissions and
+        owner approval. Never infer completion from input validation."
+  - id: approve
+    action: instruction
+    with:
+      prompt: "Controller review. Produce: Signed-off closing pack; no automatic posting or payment.
+        Requires completed steps: analyze. Preserve source evidence, permissions and owner approval.
+        Never infer completion from input validation."
+tags:
+  - Finance operations
+  - business-solution
+  - candidate
+license: CC-BY-SA-4.0
+authors:
+  - Super Agent Skill
+x_solution_id: monthly-finance-close
+x_context_budget: 4
+x_package_dependencies:
+  - invoice-parser
+  - budget-variance-analyst
+  - cash-flow-forecaster
+  - guardrail-accounting-audit-integrity

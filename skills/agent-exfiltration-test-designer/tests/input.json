@@ -1,0 +1,9 @@
+{
+  "authorized_scope": "offline fixtures only",
+  "data_classes": [
+    "synthetic credentials"
+  ],
+  "mock_tools": [
+    "mock_fetch"
+  ]
+}

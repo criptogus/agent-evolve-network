@@ -9,6 +9,7 @@ const checks = [
   "build",
   "lint",
   "validate:content",
+  "check:business-skills",
   "check:skills-mirror",
   "check:agent-plugin",
 ];

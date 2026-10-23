@@ -1,0 +1,12 @@
+{
+  "xml_documents": [
+    "<nfe><key>fixture-1</key><xPed>PO-1</xPed><vNF>120.00</vNF></nfe>"
+  ],
+  "orders": [
+    {
+      "reference": "PO-1",
+      "amount_cents": 12000,
+      "currency": "BRL"
+    }
+  ]
+}

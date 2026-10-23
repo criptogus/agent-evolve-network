@@ -1,0 +1,17 @@
+{
+  "asset_register": [
+    {
+      "id": "P1",
+      "manual": "M1"
+    }
+  ],
+  "maintenance_history": [
+    {
+      "asset": "P1",
+      "event": "inspection due"
+    }
+  ],
+  "manufacturer_constraints": {
+    "P1": "Qualified technician; scheduled shutdown"
+  }
+}

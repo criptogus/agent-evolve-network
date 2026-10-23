@@ -311,8 +311,15 @@ export async function insertDraftPackage(
     PackageDraft,
     "slug" | "name" | "type" | "description" | "long_description" | "system_prompt"
   > & { rules: unknown; examples: unknown; compatibility: unknown; scopes: unknown[] },
-  meta: { source_kind: "github" | "markdown" | "request" | "wizard"; source_ref: string },
+  meta: {
+    source_kind: "github" | "markdown" | "request" | "wizard";
+    source_ref: string;
+    version?: string;
+  },
 ) {
+  const version = meta.version ?? "0.1.0";
+  if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(version))
+    throw new Error("Invalid package version");
   const baseSlug = draft.slug;
   let slug = baseSlug;
   let n = 1;
@@ -345,7 +352,7 @@ export async function insertDraftPackage(
       author_verified: false,
       is_published: false,
       review_status: "draft",
-      latest_version: "0.1.0",
+      latest_version: version,
       scopes: draft.scopes.filter((scope): scope is string => typeof scope === "string"),
       source_kind: meta.source_kind,
       source_ref: meta.source_ref,
@@ -356,7 +363,7 @@ export async function insertDraftPackage(
 
   const { error: verErr } = await supabase.from("package_versions").insert({
     package_id: pkg.id,
-    version: "0.1.0",
+    version,
     status: "beta",
     notes: `Source: ${meta.source_kind} (${meta.source_ref})`,
     system_prompt: draft.system_prompt,

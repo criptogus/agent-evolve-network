@@ -1,0 +1,8 @@
+{
+  "slug": "industrial-maintenance-planner",
+  "required": [
+    "asset_register",
+    "maintenance_history",
+    "manufacturer_constraints"
+  ]
+}
