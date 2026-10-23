@@ -54,4 +54,4 @@ node scripts/compare-business-adversarial.mjs \
   artifacts/adversarial-business/run-0.1.2/comparison.json
 ```
 
-The comparison fails on changed conditions, altered cases or rubrics, missing/duplicate subjects, unchanged source versions or mismatched report bindings. Its report records actual before/after counts and remaining high/critical failures. An improved score alone never grants approval; only the unchanged complete-evidence gate can qualify a version for publication.
+The comparison fails on changed conditions, runtime versions or weight fingerprints, altered cases or rubrics, missing/duplicate subjects, unchanged source versions or mismatched report bindings. Its report records actual before/after counts and remaining high/critical failures. An improved score alone never grants approval; only the unchanged complete-evidence gate can qualify a version for publication.

@@ -6,7 +6,10 @@ import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 
-function compare(mutate?: (plan: Record<string, unknown>) => void) {
+function compare(
+  mutate?: (plan: Record<string, unknown>) => void,
+  mutateRuntime?: (runtime: Record<string, string>) => void,
+) {
   const root = mkdtempSync(join(tmpdir(), "sas-comparison-"));
   try {
     for (const side of ["before", "after"]) {
@@ -37,6 +40,14 @@ function compare(mutate?: (plan: Record<string, unknown>) => void) {
       writeFileSync(
         join(dir, "report.json"),
         JSON.stringify({
+          runtime: {
+            architecture: "test",
+            python: "test",
+            mlx_vlm: "test",
+            mlx: "test",
+            model_snapshot: "fixed",
+            weights_sha256: "a".repeat(64),
+          },
           plan_sha256: createHash("sha256").update(text).digest("hex"),
           reports: subjects.map((s) => ({
             ...s,
@@ -47,6 +58,12 @@ function compare(mutate?: (plan: Record<string, unknown>) => void) {
           })),
         }),
       );
+    }
+    if (mutateRuntime) {
+      const path = join(root, "after", "report.json");
+      const report = JSON.parse(readFileSync(path, "utf8"));
+      mutateRuntime(report.runtime);
+      writeFileSync(path, JSON.stringify(report));
     }
     const output = join(root, "comparison.json");
     const run = spawnSync(
@@ -102,6 +119,27 @@ test("comparison rejects an omitted skill and unchanged prompt version", () => {
   assert.notEqual(
     compare((p) => {
       (p.subjects as { version: string }[])[0].version = "0.1.1";
+    }).status,
+    0,
+  );
+});
+
+test("comparison rejects changed or missing runtime and weight fingerprints", () => {
+  assert.notEqual(
+    compare(undefined, (runtime) => {
+      runtime.mlx = "different";
+    }).status,
+    0,
+  );
+  assert.notEqual(
+    compare(undefined, (runtime) => {
+      runtime.weights_sha256 = "b".repeat(64);
+    }).status,
+    0,
+  );
+  assert.notEqual(
+    compare(undefined, (runtime) => {
+      delete runtime.weights_sha256;
     }).status,
     0,
   );

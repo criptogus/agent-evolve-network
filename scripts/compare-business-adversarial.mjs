@@ -23,6 +23,22 @@ for (const [plan, report, dir] of [
   if (report.plan_sha256 !== hash || plan.subjects.length !== 21 || report.reports.length !== 21)
     throw new Error("Incomplete or unbound cohort report");
 }
+for (const key of ["architecture", "python", "mlx_vlm", "mlx", "model_snapshot"])
+  if (!before.runtime?.[key] || before.runtime[key] !== after.runtime?.[key])
+    throw new Error(`Changed or missing runtime fingerprint: ${key}`);
+const weightHashes = (runtime) => {
+  const values = runtime.weights_sha256
+    ? [runtime.weights_sha256]
+    : Object.values(runtime.weight_fingerprints ?? {});
+  if (
+    !values.length ||
+    values.some((hash) => typeof hash !== "string" || !/^[a-f0-9]{64}$/.test(hash))
+  )
+    throw new Error("Missing real weight fingerprint");
+  return values.sort();
+};
+if (!equal(weightHashes(before.runtime), weightHashes(after.runtime)))
+  throw new Error("Changed model weights");
 const changes = beforePlan.subjects.map((previous) => {
   const current = afterPlan.subjects.find((s) => s.slug === previous.slug);
   const oldResult = before.reports.find((r) => r.slug === previous.slug);
