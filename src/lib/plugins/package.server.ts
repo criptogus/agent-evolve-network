@@ -62,11 +62,7 @@ export async function loadPluginPackage(
     const files = new Map(Object.entries(verifyArtifact(artifact.files, artifact.sha256)));
     const { runPluginConformance } = await import("./conformance");
     const report = runPluginConformance(files);
-    if (
-      !report.conformant ||
-      !report.manifest ||
-      (report.manifest.version ?? "0.1.0") !== ver.version
-    )
+    if (!report.conformant || !report.manifest)
       throw new Error("Stored package failed conformance");
     return {
       slug: pkg.slug,

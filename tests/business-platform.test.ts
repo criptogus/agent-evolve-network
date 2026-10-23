@@ -223,6 +223,7 @@ test("optional source manifest version uses the reviewed registry version withou
     name: "portable-skill",
     version: "0.1.0",
   });
+  assert.equal(bindManifestVersion(source, "1.2.3").version, "1.2.3");
   assert.deepEqual(source, { name: "portable-skill" });
   assert.throws(
     () => bindManifestVersion({ version: "2.0.0" }, "0.1.0"),
