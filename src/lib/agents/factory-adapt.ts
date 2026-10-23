@@ -24,7 +24,12 @@ export type AgentBuildRow = {
 };
 
 export function guardrailsMarkdown(g: GeneratedGuardrail[]): string {
-  const lines = ["# Guardrails", "", "Hard, checkable constraints. These override every other instruction.", ""];
+  const lines = [
+    "# Guardrails",
+    "",
+    "Hard, checkable constraints. These override every other instruction.",
+    "",
+  ];
   g.forEach((x, i) => {
     lines.push(`## ${i + 1}. ${x.title}`);
     lines.push("");
@@ -38,7 +43,9 @@ export function guardrailsMarkdown(g: GeneratedGuardrail[]): string {
 function soulWithGuardrails(row: AgentBuildRow): string {
   const g = row.guardrails ?? [];
   if (!g.length) return row.soul ?? "";
-  const block = ["", "## Guardrails (non-negotiable)", "", ...g.map((x) => `- ${x.rule}`), ""].join("\n");
+  const block = ["", "## Guardrails (non-negotiable)", "", ...g.map((x) => `- ${x.rule}`), ""].join(
+    "\n",
+  );
   return `${row.soul ?? ""}\n${block}`;
 }
 
@@ -67,7 +74,9 @@ export function buildFiles(row: AgentBuildRow): Record<string, string> {
 
 export function buildMarkdown(row: AgentBuildRow): string {
   const base = agentMarkdownBundle(buildToAgentDef(row));
-  return (row.guardrails ?? []).length ? `${base}\n\n---\n\n${guardrailsMarkdown(row.guardrails!)}\n` : base;
+  return (row.guardrails ?? []).length
+    ? `${base}\n\n---\n\n${guardrailsMarkdown(row.guardrails!)}\n`
+    : base;
 }
 
 export function buildSystemPrompt(row: AgentBuildRow): string {

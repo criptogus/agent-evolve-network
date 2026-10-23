@@ -27,8 +27,10 @@ async function authorize(authHeader: string | null) {
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
-  const active = !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
-  if (!active) return { ok: false as const, status: 402, msg: "A paid plan is required to download agents." };
+  const active =
+    !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+  if (!active)
+    return { ok: false as const, status: 402, msg: "A paid plan is required to download agents." };
   return { ok: true as const, userId };
 }
 
@@ -46,16 +48,15 @@ export const Route = createFileRoute("/api/agents/build/$id/download/$ext")({
           .eq("user_id", auth.userId)
           .maybeSingle();
         if (!row) return new Response("Agent not found", { status: 404 });
-        if (row.status !== "ready") return new Response("This agent is still building.", { status: 409 });
+        if (row.status !== "ready")
+          return new Response("This agent is still building.", { status: 409 });
 
         try {
-          await supabaseAdmin
-            .from("mcp_funnel_events")
-            .insert({
-              event: "agent_build_download",
-              user_id: auth.userId,
-              props: { slug: row.slug, ext: params.ext },
-            });
+          await supabaseAdmin.from("mcp_funnel_events").insert({
+            event: "agent_build_download",
+            user_id: auth.userId,
+            props: { slug: row.slug, ext: params.ext },
+          });
         } catch {
           /* ignore */
         }

@@ -24,10 +24,15 @@ export const Route = createFileRoute("/api/badges/trust/$slug/svg")({
             .maybeSingle();
           if (pkg?.id) {
             const { data: t } = await supabaseAdmin
-              .from("package_trust_scores").select("score").eq("package_id", pkg.id).maybeSingle();
+              .from("package_trust_scores")
+              .select("score")
+              .eq("package_id", pkg.id)
+              .maybeSingle();
             if (t?.score !== undefined) score = Number(t.score);
           }
-        } catch { /* render gray "—" badge on any error */ }
+        } catch {
+          /* render gray "—" badge on any error */
+        }
 
         const svg = renderTrustBadge({ slug, score });
         return new Response(svg, {

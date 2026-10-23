@@ -30,7 +30,10 @@ export const Route = createFileRoute("/api/public/packages")({
           .order("name", { ascending: true })
           .limit(limit);
         if (type) query = query.eq("type", type);
-        if (q) query = query.or(`name.ilike.%${q}%,description.ilike.%${q}%,long_description.ilike.%${q}%`);
+        if (q)
+          query = query.or(
+            `name.ilike.%${q}%,description.ilike.%${q}%,long_description.ilike.%${q}%`,
+          );
 
         const { data, error } = await query;
         if (error) {

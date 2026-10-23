@@ -128,8 +128,7 @@ function CloudSkillsPage() {
   });
 
   const importMut = useMutation({
-    mutationFn: (input: { filename: string; content: string }) =>
-      importFn({ data: input }),
+    mutationFn: (input: { filename: string; content: string }) => importFn({ data: input }),
     onSuccess: (r: any) => {
       toast.success(`Imported as "${r.skill.slug}"`);
       qc.invalidateQueries({ queryKey: ["cloud-skills"] });
@@ -172,7 +171,9 @@ function CloudSkillsPage() {
   async function handleExport(skill: CloudSkill) {
     try {
       const result = await exportFn({ data: { id: skill.id, format: "markdown" } });
-      await navigator.clipboard.writeText(typeof result.data === "string" ? result.data : JSON.stringify(result.data, null, 2));
+      await navigator.clipboard.writeText(
+        typeof result.data === "string" ? result.data : JSON.stringify(result.data, null, 2),
+      );
       toast.success("Copied to clipboard as SKILL.md");
     } catch (e: any) {
       toast.error(e?.message ?? "Export failed");
@@ -231,15 +232,18 @@ function CloudSkillsPage() {
             Cloud Skill Manager
           </h1>
           <p className="mt-4 max-w-2xl text-muted-foreground">
-            Save, sync and reuse your AI skills across projects, CLIs and devices.
-            Cloud Skill Manager is available on <strong>Agent Pass</strong> and{" "}
-            <strong>Enterprise</strong> plans.
+            Save, sync and reuse your AI skills across projects, CLIs and devices. Cloud Skill
+            Manager is available on <strong>Agent Pass</strong> and <strong>Enterprise</strong>{" "}
+            plans.
           </p>
           <div className="mt-8 rounded-2xl border border-border bg-surface p-6">
             <h2 className="text-lg font-semibold">What you get</h2>
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
               <li>Private, per-account storage — never shared with other users</li>
-              <li>One-call sync into Hermes, Claude Code, Codex, Cursor, Lovable, OpenClaw and 9 more tools</li>
+              <li>
+                One-call sync into Hermes, Claude Code, Codex, Cursor, Lovable, OpenClaw and 9 more
+                tools
+              </li>
               <li>Version history with changelog for every update</li>
               <li>Import/export in SKILL.md format (compatible with 60+ agents)</li>
               <li>Template variables for reusable, customizable skills</li>
@@ -262,15 +266,13 @@ function CloudSkillsPage() {
   return (
     <SitePage>
       <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 md:py-12">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
-          Account
-        </span>
+        <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Account</span>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
           Cloud Skill Manager
         </h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">
-          Your personal cloud library. Save skills here and reuse them in any
-          project, on any device, from any CLI.
+          Your personal cloud library. Save skills here and reuse them in any project, on any
+          device, from any CLI.
         </p>
 
         {/* Actions bar */}
@@ -297,14 +299,10 @@ function CloudSkillsPage() {
         <div className="mt-8 rounded-2xl border border-border bg-surface">
           <div className="border-b border-border/60 px-5 py-3 font-mono text-xs uppercase tracking-wider text-muted-foreground">
             Your cloud skills
-            {q.data && (
-              <span className="ml-2 text-foreground">{q.data.total}</span>
-            )}
+            {q.data && <span className="ml-2 text-foreground">{q.data.total}</span>}
           </div>
 
-          {q.isLoading && (
-            <div className="p-5 text-sm text-muted-foreground">Loading...</div>
-          )}
+          {q.isLoading && <div className="p-5 text-sm text-muted-foreground">Loading...</div>}
 
           {q.isError && (
             <div className="p-5 text-sm text-destructive">
@@ -336,9 +334,7 @@ function CloudSkillsPage() {
                       )}
                       <Badge variant="outline">v{s.version}</Badge>
                     </div>
-                    <div className="mt-1 font-mono text-xs text-muted-foreground">
-                      {s.slug}
-                    </div>
+                    <div className="mt-1 font-mono text-xs text-muted-foreground">{s.slug}</div>
                     {s.description && (
                       <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
                         {s.description}
@@ -381,11 +377,9 @@ function CloudSkillsPage() {
 
         <p className="mt-6 text-xs text-muted-foreground">
           Cloud skills are also accessible via the MCP API. Use{" "}
-          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
-            cloud_skills_save
-          </code>{" "}
-          from Claude Code, Cursor, Codex or any MCP-compatible agent to push
-          skills directly from your terminal.
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">cloud_skills_save</code>{" "}
+          from Claude Code, Cursor, Codex or any MCP-compatible agent to push skills directly from
+          your terminal.
         </p>
       </main>
 
@@ -394,9 +388,7 @@ function CloudSkillsPage() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>New cloud skill</DialogTitle>
-            <DialogDescription>
-              Create a new skill in your cloud library.
-            </DialogDescription>
+            <DialogDescription>Create a new skill in your cloud library.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
             <div className="grid grid-cols-2 gap-4">
@@ -494,8 +486,8 @@ function CloudSkillsPage() {
           <DialogHeader>
             <DialogTitle>Import skill</DialogTitle>
             <DialogDescription>
-              Paste a SKILL.md file (Markdown with optional YAML frontmatter).
-              Name, category and tags are auto-detected from frontmatter.
+              Paste a SKILL.md file (Markdown with optional YAML frontmatter). Name, category and
+              tags are auto-detected from frontmatter.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -512,7 +504,9 @@ function CloudSkillsPage() {
               <Label htmlFor="import-content">Content</Label>
               <Textarea
                 id="import-content"
-                placeholder={"---\nname: My Skill\ncategory: coding\ntags: review, quality\n---\n\nYour skill content here..."}
+                placeholder={
+                  "---\nname: My Skill\ncategory: coding\ntags: review, quality\n---\n\nYour skill content here..."
+                }
                 value={importContent}
                 onChange={(e) => setImportContent(e.target.value)}
                 rows={16}
@@ -552,32 +546,20 @@ function CloudSkillsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Name</Label>
-                <Input
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                />
+                <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Category</Label>
-                <Input
-                  value={editCategory}
-                  onChange={(e) => setEditCategory(e.target.value)}
-                />
+                <Input value={editCategory} onChange={(e) => setEditCategory(e.target.value)} />
               </div>
             </div>
             <div className="space-y-2">
               <Label>Description</Label>
-              <Input
-                value={editDesc}
-                onChange={(e) => setEditDesc(e.target.value)}
-              />
+              <Input value={editDesc} onChange={(e) => setEditDesc(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Tags (comma-separated)</Label>
-              <Input
-                value={editTags}
-                onChange={(e) => setEditTags(e.target.value)}
-              />
+              <Input value={editTags} onChange={(e) => setEditTags(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Content</Label>
@@ -626,17 +608,13 @@ function CloudSkillsPage() {
       </Dialog>
 
       {/* Delete confirm */}
-      <Dialog
-        open={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-      >
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete skill?</DialogTitle>
             <DialogDescription>
-              This will permanently delete{" "}
-              <strong>{deleteTarget?.name}</strong> and all its version history.
-              This cannot be undone.
+              This will permanently delete <strong>{deleteTarget?.name}</strong> and all its version
+              history. This cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

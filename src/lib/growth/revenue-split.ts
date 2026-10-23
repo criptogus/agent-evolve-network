@@ -54,8 +54,11 @@ export function splitRevenue(sale: SaleInput): PayoutLine[] {
 
   // Referral (12-month window from sign-up).
   let referralAmt = 0;
-  if (sale.referral && new Date(sale.referral.expires_at).getTime() > Date.now()
-      && sale.referral.referrer_user_id !== sale.author_user_id) {
+  if (
+    sale.referral &&
+    new Date(sale.referral.expires_at).getTime() > Date.now() &&
+    sale.referral.referrer_user_id !== sale.author_user_id
+  ) {
     referralAmt = bps(sale.amount_cents, sale.referral.rev_share_bps);
     lines.push({
       payee_user_id: sale.referral.referrer_user_id,

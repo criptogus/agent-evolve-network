@@ -32,25 +32,27 @@ async function handleSubscriptionCreated(subscription: any, env: StripeEnv) {
   const unitAmount = item?.price?.unit_amount;
   const currency = item?.price?.currency ?? "usd";
 
-  await getSupabase().from("subscriptions").upsert(
-    {
-      user_id: userId,
-      plan_slug: priceId ?? "unknown",
-      stripe_subscription_id: subscription.id,
-      stripe_customer_id: subscription.customer,
-      product_id: productId ?? null,
-      price_id: priceId,
-      status: subscription.status,
-      current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
-      current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
-      cancel_at_period_end: subscription.cancel_at_period_end ?? false,
-      price_cents: typeof unitAmount === "number" ? unitAmount : null,
-      currency: (currency as string).toUpperCase(),
-      environment: env,
-      updated_at: new Date().toISOString(),
-    } as any,
-    { onConflict: "stripe_subscription_id" },
-  );
+  await getSupabase()
+    .from("subscriptions")
+    .upsert(
+      {
+        user_id: userId,
+        plan_slug: priceId ?? "unknown",
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: subscription.customer,
+        product_id: productId ?? null,
+        price_id: priceId,
+        status: subscription.status,
+        current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
+        current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+        cancel_at_period_end: subscription.cancel_at_period_end ?? false,
+        price_cents: typeof unitAmount === "number" ? unitAmount : null,
+        currency: (currency as string).toUpperCase(),
+        environment: env,
+        updated_at: new Date().toISOString(),
+      } as any,
+      { onConflict: "stripe_subscription_id" },
+    );
 
   // Award referral subscription bonus (idempotent server-side).
   try {

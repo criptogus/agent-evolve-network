@@ -35,17 +35,35 @@ export const Route = createFileRoute("/use-case/$vertical/$task")({
           .select("package_id,score,adversarial_pass_rate")
           .in("package_id", ids)
       : { data: [] };
-    const trustMap = new Map((trust ?? []).map((t: { package_id: string; score: number; adversarial_pass_rate: number }) => [t.package_id, t]));
+    const trustMap = new Map(
+      (trust ?? []).map(
+        (t: { package_id: string; score: number; adversarial_pass_rate: number }) => [
+          t.package_id,
+          t,
+        ],
+      ),
+    );
 
     const skills: SkillRow[] = (pkgs ?? [])
-      .map((p: { id: string; slug: string; name: string; description: string | null; tags: string[] | null }) => {
-        const t = trustMap.get(p.id) as any;
-        return {
-          slug: p.slug, name: p.name, description: p.description, tags: p.tags,
-          trust_score: t ? Number(t.score) : null,
-          adversarial_pass_rate: t ? Number(t.adversarial_pass_rate) : null,
-        };
-      })
+      .map(
+        (p: {
+          id: string;
+          slug: string;
+          name: string;
+          description: string | null;
+          tags: string[] | null;
+        }) => {
+          const t = trustMap.get(p.id) as any;
+          return {
+            slug: p.slug,
+            name: p.name,
+            description: p.description,
+            tags: p.tags,
+            trust_score: t ? Number(t.score) : null,
+            adversarial_pass_rate: t ? Number(t.adversarial_pass_rate) : null,
+          };
+        },
+      )
       .sort((a, b) => (b.trust_score ?? 0) - (a.trust_score ?? 0))
       .slice(0, 10);
 
@@ -69,72 +87,82 @@ function UseCasePage() {
   const { useCase, skills } = Route.useLoaderData();
   return (
     <SitePage>
-    <main className="mx-auto max-w-3xl p-6">
-      <div className="text-sm uppercase tracking-wide text-muted-foreground mb-2">
-        {useCase.vertical}
-      </div>
-      <h1 className="text-3xl font-bold mb-2">{useCase.title}</h1>
-      <p className="text-muted-foreground mb-8">{useCase.intent}</p>
+      <main className="mx-auto max-w-3xl p-6">
+        <div className="text-sm uppercase tracking-wide text-muted-foreground mb-2">
+          {useCase.vertical}
+        </div>
+        <h1 className="text-3xl font-bold mb-2">{useCase.title}</h1>
+        <p className="text-muted-foreground mb-8">{useCase.intent}</p>
 
-      <h2 className="text-xl font-semibold mb-3">Top skills for this use case</h2>
-      {skills.length === 0 && (
-        <EmptyState
-          icon={Sparkles}
-          title="No published skills for this use case — yet"
-          body="Be the first to build it, or post a bounty so authors compete to ship one."
-          cta={{ label: "Post a bounty", href: "/bounties/new" }}
-        />
-      )}
-      <ol className="space-y-3">
-        {skills.map((s, i) => (
-          <li key={s.slug} className="border rounded p-4">
-            <div className="flex justify-between items-baseline">
-              <h3 className="font-semibold">
-                <span className="text-muted-foreground mr-2">{i + 1}.</span>
-                <a href={`/packs/${s.slug}`} className="underline">{s.name}</a>
-              </h3>
-              <div className="text-sm">
-                trust {pct(s.trust_score)} · adv {pct(s.adversarial_pass_rate)}
+        <h2 className="text-xl font-semibold mb-3">Top skills for this use case</h2>
+        {skills.length === 0 && (
+          <EmptyState
+            icon={Sparkles}
+            title="No published skills for this use case — yet"
+            body="Be the first to build it, or post a bounty so authors compete to ship one."
+            cta={{ label: "Post a bounty", href: "/bounties/new" }}
+          />
+        )}
+        <ol className="space-y-3">
+          {skills.map((s, i) => (
+            <li key={s.slug} className="border rounded p-4">
+              <div className="flex justify-between items-baseline">
+                <h3 className="font-semibold">
+                  <span className="text-muted-foreground mr-2">{i + 1}.</span>
+                  <a href={`/packs/${s.slug}`} className="underline">
+                    {s.name}
+                  </a>
+                </h3>
+                <div className="text-sm">
+                  trust {pct(s.trust_score)} · adv {pct(s.adversarial_pass_rate)}
+                </div>
               </div>
-            </div>
-            <p className="text-sm mt-1 text-muted-foreground">{s.description}</p>
-          </li>
-        ))}
-      </ol>
+              <p className="text-sm mt-1 text-muted-foreground">{s.description}</p>
+            </li>
+          ))}
+        </ol>
 
-      {(useCase.recommended_souls?.length || useCase.recommended_integrations?.length) ? (
-        <section className="mt-10 border-t pt-6">
-          <h2 className="text-xl font-semibold mb-3">Recommended companions</h2>
-          {useCase.recommended_souls?.length ? (
-            <p className="text-sm mb-2">
-              Souls:{" "}
-              {useCase.recommended_souls.map((slug, i) => (
-                <span key={slug}>
-                  {i > 0 && ", "}<a href={`/packs/${slug}`} className="underline">{slug}</a>
-                </span>
-              ))}
-            </p>
-          ) : null}
-          {useCase.recommended_integrations?.length ? (
-            <p className="text-sm">
-              Integrations:{" "}
-              {useCase.recommended_integrations.map((slug, i) => (
-                <span key={slug}>
-                  {i > 0 && ", "}<a href={`/packs/${slug}`} className="underline">{slug}</a>
-                </span>
-              ))}
-            </p>
-          ) : null}
+        {useCase.recommended_souls?.length || useCase.recommended_integrations?.length ? (
+          <section className="mt-10 border-t pt-6">
+            <h2 className="text-xl font-semibold mb-3">Recommended companions</h2>
+            {useCase.recommended_souls?.length ? (
+              <p className="text-sm mb-2">
+                Souls:{" "}
+                {useCase.recommended_souls.map((slug, i) => (
+                  <span key={slug}>
+                    {i > 0 && ", "}
+                    <a href={`/packs/${slug}`} className="underline">
+                      {slug}
+                    </a>
+                  </span>
+                ))}
+              </p>
+            ) : null}
+            {useCase.recommended_integrations?.length ? (
+              <p className="text-sm">
+                Integrations:{" "}
+                {useCase.recommended_integrations.map((slug, i) => (
+                  <span key={slug}>
+                    {i > 0 && ", "}
+                    <a href={`/packs/${slug}`} className="underline">
+                      {slug}
+                    </a>
+                  </span>
+                ))}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
+
+        <section className="mt-10 border-t pt-6 text-sm">
+          <p>
+            Install any of these in one line:
+            <code className="block mt-2 p-2 bg-muted rounded">
+              npx super-agent install &lt;slug&gt;
+            </code>
+          </p>
         </section>
-      ) : null}
-
-      <section className="mt-10 border-t pt-6 text-sm">
-        <p>
-          Install any of these in one line:
-          <code className="block mt-2 p-2 bg-muted rounded">npx super-agent install &lt;slug&gt;</code>
-        </p>
-      </section>
-    </main>
+      </main>
     </SitePage>
   );
 }

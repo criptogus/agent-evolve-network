@@ -6,7 +6,12 @@
  * a usage pattern. Copy uses this to say "your Cursor rules" instead of "your
  * tools", which is the difference between a generic upsell and a relevant one.
  */
-import { PROVIDERS, getProvider, targetPath, type ProviderScope } from "@/lib/cloud-skills/providers";
+import {
+  PROVIDERS,
+  getProvider,
+  targetPath,
+  type ProviderScope,
+} from "@/lib/cloud-skills/providers";
 
 export type ToolAngle = {
   /** Provider id from the registry, or null when we cannot tell. */
@@ -151,10 +156,9 @@ export function patternHook(pattern: UsagePattern, tool: ToolAngle): string {
 
 /** Bullets tuned to the tool + pattern, always 3 items. */
 export function personalizedBullets(pattern: UsagePattern, tool: ToolAngle): string[] {
-  const first =
-    tool.id
-      ? `One call writes every skill straight to \`${tool.path}\` for ${tool.label}`
-      : "One call writes every skill at the exact path your tool reads";
+  const first = tool.id
+    ? `One call writes every skill straight to \`${tool.path}\` for ${tool.label}`
+    : "One call writes every skill at the exact path your tool reads";
   const second =
     pattern === "author" || pattern === "builder"
       ? "Version history and changelog per skill, so you can roll back a bad edit"

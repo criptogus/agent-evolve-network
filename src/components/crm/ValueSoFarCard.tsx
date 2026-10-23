@@ -52,9 +52,7 @@ export function ValueSoFarCard() {
                   {m.label}
                 </dt>
                 <dd className="mt-1 text-xl font-semibold text-foreground">{m.value}</dd>
-                {m.note ? (
-                  <dd className="mt-1 text-xs text-muted-foreground">{m.note}</dd>
-                ) : null}
+                {m.note ? <dd className="mt-1 text-xs text-muted-foreground">{m.note}</dd> : null}
               </div>
             ))}
           </dl>

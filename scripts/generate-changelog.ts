@@ -46,14 +46,7 @@ const repoUrl = repo ? `https://github.com/${repo}` : null;
 if (!FROM) {
   // Last reachable content-v* tag before TO (excluding TO itself if it's a tag).
   try {
-    FROM = git([
-      "describe",
-      "--tags",
-      "--match",
-      "content-v*",
-      "--abbrev=0",
-      `${TO}^`,
-    ]).trim();
+    FROM = git(["describe", "--tags", "--match", "content-v*", "--abbrev=0", `${TO}^`]).trim();
   } catch {
     // No previous tag — use root commit so we get the full history.
     FROM = git(["rev-list", "--max-parents=0", TO]).trim().split("\n")[0];
@@ -91,11 +84,7 @@ for (const c of commits) {
     else if (f.startsWith("content/souls/")) buckets.add("Souls");
     else if (f.startsWith("content/guardrails/")) buckets.add("Guardrails");
     else if (f.startsWith("content/schemas/")) buckets.add("Schemas");
-    else if (
-      f.startsWith("scripts/") ||
-      f.startsWith(".github/workflows/") ||
-      f === "package.json"
-    )
+    else if (f.startsWith("scripts/") || f.startsWith(".github/workflows/") || f === "package.json")
       buckets.add("Tooling");
   }
   if (buckets.size === 0) buckets.add("Other");
@@ -152,7 +141,10 @@ function parseLog(raw) {
     const subject = lines[2] ?? "";
     // Files are everything after the subject line (git log --name-only output),
     // separated from the next commit by a blank line.
-    const files = lines.slice(3).map((s) => s.trim()).filter(Boolean);
+    const files = lines
+      .slice(3)
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (!hash) continue;
     out.push({ hash, author, subject, files });
   }

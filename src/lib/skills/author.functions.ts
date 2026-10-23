@@ -15,7 +15,7 @@ export const authorPackage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
     const { draft, research, stages } = await authorPipeline({
       brief: data.brief,
@@ -27,7 +27,11 @@ export const authorPackage = createServerFn({ method: "POST" })
     let slug = draft.slug;
     let n = 1;
     while (true) {
-      const { data: existing } = await supabase.from("packages").select("id").eq("slug", slug).maybeSingle();
+      const { data: existing } = await supabase
+        .from("packages")
+        .select("id")
+        .eq("slug", slug)
+        .maybeSingle();
       if (!existing) break;
       n += 1;
       slug = `${draft.slug}-${n}`;

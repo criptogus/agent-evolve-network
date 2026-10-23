@@ -57,9 +57,13 @@ const FILE_VERSION = VERSION.replace(/^content-/, "");
 console.log(`▸ Building release bundles for ${VERSION}`);
 
 // 1) Validate first — abort on any failure.
-const validate = spawnSync(process.execPath, ["--experimental-strip-types", join(ROOT, "scripts/validate-content.ts")], {
-  stdio: "inherit",
-});
+const validate = spawnSync(
+  process.execPath,
+  ["--experimental-strip-types", join(ROOT, "scripts/validate-content.ts")],
+  {
+    stdio: "inherit",
+  },
+);
 if (validate.status !== 0) {
   console.error("✗ Validation failed — aborting release build.");
   process.exit(validate.status ?? 1);

@@ -19,7 +19,7 @@ const BodySchema = z.object({
         name: z.string().min(1).max(200),
         content: z.string().min(1).max(200_000),
         type: z.enum(["skill", "playbook", "soul", "guardrail"]).optional(),
-      })
+      }),
     )
     .min(1)
     .max(10),
@@ -49,15 +49,18 @@ async function handle(request: Request): Promise<Response> {
   const token = extractBearer(request);
   if (!token) {
     return json(
-      { error: "unauthorized", hint: "Send Authorization: Bearer <sas_… token from /account/tokens>." },
-      { status: 401, headers: { "WWW-Authenticate": "Bearer" } }
+      {
+        error: "unauthorized",
+        hint: "Send Authorization: Bearer <sas_… token from /account/tokens>.",
+      },
+      { status: 401, headers: { "WWW-Authenticate": "Bearer" } },
     );
   }
   const auth = await verifyBearer(token);
   if (!auth) {
     return json(
       { error: "unauthorized", hint: "Token rejected. Mint a fresh one at /account/tokens." },
-      { status: 401, headers: { "WWW-Authenticate": "Bearer" } }
+      { status: 401, headers: { "WWW-Authenticate": "Bearer" } },
     );
   }
 
@@ -70,10 +73,7 @@ async function handle(request: Request): Promise<Response> {
 
   const parsed = BodySchema.safeParse(body);
   if (!parsed.success) {
-    return json(
-      { error: "bad_request", issues: parsed.error.issues },
-      { status: 400 }
-    );
+    return json({ error: "bad_request", issues: parsed.error.issues }, { status: 400 });
   }
 
   const { files, publish } = parsed.data;
@@ -91,7 +91,10 @@ async function handle(request: Request): Promise<Response> {
       queued_count: queuedCount,
       failed,
       visibility: "private_draft",
-      publish_ignored: publish === true ? "Public listing requires admin review — submit from /account/packages." : null,
+      publish_ignored:
+        publish === true
+          ? "Public listing requires admin review — submit from /account/packages."
+          : null,
       results: results.map((r) => ({
         name: r.name,
         status: r.status,

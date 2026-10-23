@@ -29,7 +29,8 @@ async function authorize(authHeader: string | null) {
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
-  const active = !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+  const active =
+    !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
   if (!active) {
     return { ok: false as const, status: 402, msg: "A paid plan is required to download agents." };
   }
@@ -48,9 +49,11 @@ export const Route = createFileRoute("/api/agents/$slug/download/$ext")({
 
         // best-effort usage log; never blocks the download
         try {
-          await supabaseAdmin
-            .from("mcp_funnel_events")
-            .insert({ event: "agent_download", user_id: auth.userId, props: { slug: agent.slug, ext: params.ext } });
+          await supabaseAdmin.from("mcp_funnel_events").insert({
+            event: "agent_download",
+            user_id: auth.userId,
+            props: { slug: agent.slug, ext: params.ext },
+          });
         } catch {
           /* ignore */
         }

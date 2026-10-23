@@ -8,7 +8,7 @@ import { requireAdmin } from "./middleware";
 export const getMyAdminStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
     const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
     return { isAdmin: !!data, userId };
@@ -41,7 +41,7 @@ export const claimAdminBootstrap = createServerFn({ method: "POST" })
 export const listAccounts = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) =>
-    z.object({ search: z.string().max(120).optional() }).parse(d ?? {})
+    z.object({ search: z.string().max(120).optional() }).parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
     const { supabase: _sbCtx } = context as any;
@@ -74,7 +74,9 @@ export const listAccounts = createServerFn({ method: "GET" })
 
     const planById = new Map((plans ?? []).map((p: any) => [p.id, p]));
     const accounts = (profiles ?? []).map((p: any) => {
-      const userRoles = (roles ?? []).filter((r: any) => r.user_id === p.id).map((r: any) => r.role);
+      const userRoles = (roles ?? [])
+        .filter((r: any) => r.user_id === p.id)
+        .map((r: any) => r.role);
       const ap = (aps ?? []).find((a: any) => a.user_id === p.id);
       const plan = ap ? planById.get(ap.plan_id) : null;
       const runCount = (runs ?? []).filter((r: any) => r.user_id === p.id).length;
@@ -92,7 +94,7 @@ export const setUserRole = createServerFn({ method: "POST" })
         role: z.enum(["admin", "publisher", "user"]),
         grant: z.boolean(),
       })
-      .parse(d)
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase: _sbCtx } = context as any;
@@ -118,17 +120,20 @@ export const setUserRole = createServerFn({ method: "POST" })
 export const setUserPlan = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) =>
-    z.object({ userId: z.string().uuid(), planId: z.string().uuid() }).parse(d)
+    z.object({ userId: z.string().uuid(), planId: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase: _sbCtx } = context as any;
     const supabase = _sbCtx as any;
-    const { error } = await supabase
-      .from("account_plans")
-      .upsert(
-        { user_id: data.userId, plan_id: data.planId, status: "active", updated_at: new Date().toISOString() },
-        { onConflict: "user_id" }
-      );
+    const { error } = await supabase.from("account_plans").upsert(
+      {
+        user_id: data.userId,
+        plan_id: data.planId,
+        status: "active",
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    );
     if (error) throw new Response(error.message, { status: 500 });
     return { ok: true };
   });

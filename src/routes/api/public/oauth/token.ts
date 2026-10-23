@@ -57,14 +57,19 @@ export const Route = createFileRoute("/api/public/oauth/token")({
         if (body.grant_type === "authorization_code") {
           const parsed = CodeExchangeSchema.safeParse(body);
           if (!parsed.success) {
-            return oauthError("invalid_request", parsed.error.issues.map((i) => i.message).join("; "));
+            return oauthError(
+              "invalid_request",
+              parsed.error.issues.map((i) => i.message).join("; "),
+            );
           }
           const code_hash = sha256(parsed.data.code);
 
           // Look up the auth code, verify PKCE before committing the exchange.
           const { data: row, error: lookupErr } = await supabaseAdmin
             .from("mcp_oauth_authorizations")
-            .select("client_id,redirect_uri,code_challenge,code_challenge_method,used_at,expires_at")
+            .select(
+              "client_id,redirect_uri,code_challenge,code_challenge_method,used_at,expires_at",
+            )
             .eq("code_hash", code_hash)
             .maybeSingle();
           if (lookupErr) return oauthError("server_error", lookupErr.message, 500);
@@ -111,7 +116,10 @@ export const Route = createFileRoute("/api/public/oauth/token")({
         if (body.grant_type === "refresh_token") {
           const parsed = RefreshSchema.safeParse(body);
           if (!parsed.success) {
-            return oauthError("invalid_request", parsed.error.issues.map((i) => i.message).join("; "));
+            return oauthError(
+              "invalid_request",
+              parsed.error.issues.map((i) => i.message).join("; "),
+            );
           }
           const newAccess = generateAccessToken();
           const newRefresh = generateRefreshToken();

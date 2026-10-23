@@ -8,8 +8,8 @@
  *   node validate-tokens.cjs --dir src/ --fix
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 /**
  * Parse command line arguments
@@ -19,17 +19,17 @@ function parseArgs() {
   const options = {
     dir: null,
     fix: false,
-    ignore: ['node_modules', '.git', 'dist', 'build', '.next']
+    ignore: ["node_modules", ".git", "dist", "build", ".next"],
   };
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--dir' || args[i] === '-d') {
+    if (args[i] === "--dir" || args[i] === "-d") {
       options.dir = args[++i];
-    } else if (args[i] === '--fix') {
+    } else if (args[i] === "--fix") {
       options.fix = true;
-    } else if (args[i] === '--ignore' || args[i] === '-i') {
+    } else if (args[i] === "--ignore" || args[i] === "-i") {
       options.ignore.push(args[++i]);
-    } else if (args[i] === '--help' || args[i] === '-h') {
+    } else if (args[i] === "--help" || args[i] === "-h") {
       console.log(`
 Usage: node validate-tokens.cjs [options]
 
@@ -57,30 +57,30 @@ Checks for:
 const patterns = {
   hexColor: {
     regex: /#([0-9A-Fa-f]{3}){1,2}\b/g,
-    message: 'Hardcoded hex color',
-    suggestion: 'Use var(--color-*) token'
+    message: "Hardcoded hex color",
+    suggestion: "Use var(--color-*) token",
   },
   rgbColor: {
     regex: /rgb\s*\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)/gi,
-    message: 'Hardcoded RGB color',
-    suggestion: 'Use var(--color-*) token'
+    message: "Hardcoded RGB color",
+    suggestion: "Use var(--color-*) token",
   },
   pixelValue: {
     regex: /:\s*(\d{2,})px/g, // 2+ digit px values
-    message: 'Hardcoded pixel value',
-    suggestion: 'Use var(--space-*) or var(--radius-*) token'
+    message: "Hardcoded pixel value",
+    suggestion: "Use var(--space-*) or var(--radius-*) token",
   },
   remValue: {
     regex: /:\s*\d+\.?\d*rem(?![^{]*\$value)/g, // rem not in token definition
-    message: 'Hardcoded rem value',
-    suggestion: 'Use var(--space-*) or var(--font-size-*) token'
-  }
+    message: "Hardcoded rem value",
+    suggestion: "Use var(--space-*) or var(--font-size-*) token",
+  },
 };
 
 /**
  * File extensions to scan
  */
-const extensions = ['.css', '.scss', '.tsx', '.jsx', '.ts', '.js', '.vue', '.svelte'];
+const extensions = [".css", ".scss", ".tsx", ".jsx", ".ts", ".js", ".vue", ".svelte"];
 
 /**
  * Files/patterns to skip
@@ -89,7 +89,7 @@ const skipPatterns = [
   /\.min\.(css|js)$/,
   /tailwind\.config/,
   /globals\.css/, // Token definitions
-  /tokens\.(css|json)/
+  /tokens\.(css|json)/,
 ];
 
 /**
@@ -120,29 +120,32 @@ function getFiles(dir, ignore, files = []) {
  * Check if file should be skipped
  */
 function shouldSkip(filePath) {
-  return skipPatterns.some(pattern => pattern.test(filePath));
+  return skipPatterns.some((pattern) => pattern.test(filePath));
 }
 
 /**
  * Scan file for violations
  */
 function scanFile(filePath) {
-  const content = fs.readFileSync(filePath, 'utf-8');
-  const lines = content.split('\n');
+  const content = fs.readFileSync(filePath, "utf-8");
+  const lines = content.split("\n");
   const violations = [];
 
   lines.forEach((line, index) => {
     // Skip comments
-    if (line.trim().startsWith('//') || line.trim().startsWith('/*')) {
+    if (line.trim().startsWith("//") || line.trim().startsWith("/*")) {
       return;
     }
 
     for (const [name, pattern] of Object.entries(patterns)) {
       const matches = line.match(pattern.regex);
       if (matches) {
-        matches.forEach(match => {
+        matches.forEach((match) => {
           // Skip common exceptions
-          if (name === 'hexColor' && ['#000', '#fff', '#FFF', '#000000', '#FFFFFF'].includes(match.toUpperCase())) {
+          if (
+            name === "hexColor" &&
+            ["#000", "#fff", "#FFF", "#000000", "#FFFFFF"].includes(match.toUpperCase())
+          ) {
             return; // Skip black/white, often intentional
           }
 
@@ -154,7 +157,7 @@ function scanFile(filePath) {
             type: name,
             message: pattern.message,
             suggestion: pattern.suggestion,
-            context: line.trim().substring(0, 80)
+            context: line.trim().substring(0, 80),
           });
         });
       }
@@ -169,21 +172,21 @@ function scanFile(filePath) {
  */
 function formatReport(violations) {
   if (violations.length === 0) {
-    return '✅ No token violations found';
+    return "✅ No token violations found";
   }
 
   let report = `⚠️  Found ${violations.length} potential token violations:\n\n`;
 
   // Group by file
   const byFile = {};
-  violations.forEach(v => {
+  violations.forEach((v) => {
     if (!byFile[v.file]) byFile[v.file] = [];
     byFile[v.file].push(v);
   });
 
   for (const [file, fileViolations] of Object.entries(byFile)) {
     report += `📁 ${file}\n`;
-    fileViolations.forEach(v => {
+    fileViolations.forEach((v) => {
       report += `   Line ${v.line}: ${v.message}\n`;
       report += `   Found: ${v.value}\n`;
       report += `   Suggestion: ${v.suggestion}\n`;
@@ -193,7 +196,7 @@ function formatReport(violations) {
 
   // Summary
   const byType = {};
-  violations.forEach(v => {
+  violations.forEach((v) => {
     byType[v.type] = (byType[v.type] || 0) + 1;
   });
 
@@ -212,7 +215,7 @@ function main() {
   const options = parseArgs();
 
   if (!options.dir) {
-    console.error('Error: --dir is required');
+    console.error("Error: --dir is required");
     process.exit(1);
   }
 

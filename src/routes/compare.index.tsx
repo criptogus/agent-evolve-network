@@ -47,7 +47,10 @@ function CompareIndexPage() {
         <ul className="space-y-4">
           {COMPARISONS.map((c) => (
             <li key={c.slug}>
-              <a href={`/compare/${c.slug}`} className="block border rounded-lg p-5 hover:bg-accent">
+              <a
+                href={`/compare/${c.slug}`}
+                className="block border rounded-lg p-5 hover:bg-accent"
+              >
                 <div className="font-semibold mb-1">{c.title}</div>
                 <p className="text-sm text-muted-foreground">{c.metaDescription}</p>
               </a>
@@ -57,11 +60,15 @@ function CompareIndexPage() {
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
           <a href="/marketplace" className="border rounded-lg p-5 hover:bg-accent">
             <div className="font-semibold mb-1">Browse verified skills →</div>
-            <p className="text-sm text-muted-foreground">Trust Scores and adversarial pass rates on every listing.</p>
+            <p className="text-sm text-muted-foreground">
+              Trust Scores and adversarial pass rates on every listing.
+            </p>
           </a>
           <a href="/connect" className="border rounded-lg p-5 hover:bg-accent">
             <div className="font-semibold mb-1">Connect via MCP →</div>
-            <p className="text-sm text-muted-foreground">One URL installs the marketplace into any MCP-capable agent.</p>
+            <p className="text-sm text-muted-foreground">
+              One URL installs the marketplace into any MCP-capable agent.
+            </p>
           </a>
         </div>
       </main>

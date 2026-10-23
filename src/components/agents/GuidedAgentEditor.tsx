@@ -2,7 +2,15 @@ import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { AlertTriangle, Check, ChevronLeft, ChevronRight, Library, Plus, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Library,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { updateAgentBuildDraft } from "@/lib/agents/factory.functions";
 import {
   GUARDRAIL_CATEGORIES,
@@ -16,7 +24,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-
 
 type Guardrail = {
   slug?: string;
@@ -74,14 +81,22 @@ function guardrailIssues(g: Guardrail): string[] {
   return out;
 }
 
-export function GuidedAgentEditor({ buildId, initialSoul, initialTagline, initialGuardrails, onDone }: Props) {
+export function GuidedAgentEditor({
+  buildId,
+  initialSoul,
+  initialTagline,
+  initialGuardrails,
+  onDone,
+}: Props) {
   const saveFn = useServerFn(updateAgentBuildDraft);
   const qc = useQueryClient();
   const [step, setStep] = useState(0);
   const [soul, setSoul] = useState(initialSoul);
   const [tagline, setTagline] = useState(initialTagline ?? "");
   const [guardrails, setGuardrails] = useState<Guardrail[]>(
-    initialGuardrails.length ? initialGuardrails.map((g) => ({ ...g })) : [{ title: "", rule: "", why: "" }],
+    initialGuardrails.length
+      ? initialGuardrails.map((g) => ({ ...g }))
+      : [{ title: "", rule: "", why: "" }],
   );
   const [rescore, setRescore] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -113,10 +128,11 @@ export function GuidedAgentEditor({ buildId, initialSoul, initialTagline, initia
     });
   }
 
-
   const soulChecks = useMemo(() => SOUL_CHECKS.map((c) => ({ ...c, ok: c.test(soul) })), [soul]);
   const soulReady = soul.trim().length >= 200;
-  const guardrailsReady = guardrails.every((g) => g.title.trim().length >= 3 && g.rule.trim().length >= 12);
+  const guardrailsReady = guardrails.every(
+    (g) => g.title.trim().length >= 3 && g.rule.trim().length >= 12,
+  );
   const openIssues = guardrails.reduce((n, g) => n + guardrailIssues(g).length, 0);
 
   function update(i: number, patch: Partial<Guardrail>) {
@@ -144,7 +160,9 @@ export function GuidedAgentEditor({ buildId, initialSoul, initialTagline, initia
       });
       await qc.invalidateQueries({ queryKey: ["agent-build", buildId] });
       toast.success(
-        res?.score != null ? `Saved. New score: ${res.score}/100 (grade ${res.grade}).` : "Changes saved.",
+        res?.score != null
+          ? `Saved. New score: ${res.score}/100 (grade ${res.grade}).`
+          : "Changes saved.",
       );
       onDone?.();
     } catch (e: any) {
@@ -161,8 +179,8 @@ export function GuidedAgentEditor({ buildId, initialSoul, initialTagline, initia
       <CardHeader>
         <CardTitle>Guided editor</CardTitle>
         <CardDescription>
-          Tune the soul and the guardrail rules before you publish. Each step tells you exactly what a
-          production-grade agent needs.
+          Tune the soul and the guardrail rules before you publish. Each step tells you exactly what
+          a production-grade agent needs.
         </CardDescription>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           {steps.map((s, i) => (
@@ -203,7 +221,9 @@ export function GuidedAgentEditor({ buildId, initialSoul, initialTagline, initia
                 rows={18}
                 className="font-mono text-xs"
               />
-              <p className="text-xs text-muted-foreground">{soul.trim().length} characters — minimum 200.</p>
+              <p className="text-xs text-muted-foreground">
+                {soul.trim().length} characters — minimum 200.
+              </p>
             </div>
             <div className="rounded-lg border bg-muted/40 p-4">
               <p className="text-sm font-medium">Coverage checklist</p>
@@ -217,7 +237,9 @@ export function GuidedAgentEditor({ buildId, initialSoul, initialTagline, initia
                     )}
                     <span>
                       <span className={c.ok ? "" : "text-muted-foreground"}>{c.label}</span>
-                      {!c.ok && <span className="block text-xs text-muted-foreground">{c.hint}</span>}
+                      {!c.ok && (
+                        <span className="block text-xs text-muted-foreground">{c.hint}</span>
+                      )}
                     </span>
                   </li>
                 ))}
@@ -380,23 +402,41 @@ export function GuidedAgentEditor({ buildId, initialSoul, initialTagline, initia
                   Runs the same quality judge used in the build, so your edits get an honest grade.
                 </p>
               </div>
-              <Switch checked={rescore} onCheckedChange={setRescore} aria-label="Re-score after saving" />
+              <Switch
+                checked={rescore}
+                onCheckedChange={setRescore}
+                aria-label="Re-score after saving"
+              />
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
               <Button onClick={save} disabled={saving || !soulReady || !guardrailsReady}>
-                {saving ? (rescore ? "Saving and scoring…" : "Saving…") : "Save and publish changes"}
+                {saving
+                  ? rescore
+                    ? "Saving and scoring…"
+                    : "Saving…"
+                  : "Save and publish changes"}
               </Button>
-              {openIssues > 0 && <Badge variant="secondary">{openIssues} optional improvements left</Badge>}
+              {openIssues > 0 && (
+                <Badge variant="secondary">{openIssues} optional improvements left</Badge>
+              )}
             </div>
           </div>
         )}
 
         <div className="flex justify-between border-t pt-4">
-          <Button variant="ghost" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>
+          <Button
+            variant="ghost"
+            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            disabled={step === 0}
+          >
             <ChevronLeft className="mr-1 h-4 w-4" /> Back
           </Button>
-          <Button variant="ghost" onClick={() => setStep((s) => Math.min(2, s + 1))} disabled={step === 2}>
+          <Button
+            variant="ghost"
+            onClick={() => setStep((s) => Math.min(2, s + 1))}
+            disabled={step === 2}
+          >
             Next <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         </div>

@@ -29,7 +29,8 @@ async function buildExecutionSignal(supabase: any, packageId: string) {
     .eq("package_id", packageId)
     .gte("created_at", since)
     .limit(2000);
-  const execs = (rows as Array<{ success: boolean; error_kind: string | null; model: string | null }>) || [];
+  const execs =
+    (rows as Array<{ success: boolean; error_kind: string | null; model: string | null }>) || [];
   if (execs.length === 0) return null;
   const failures = execs.filter((e) => !e.success).length;
   const errorCounts = new Map<string, number>();
@@ -62,10 +63,14 @@ export const runForgeLoop = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => LoopInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
 
-    const { data: pkg } = await supabase.from("packages").select("*").eq("slug", data.package_slug).single();
+    const { data: pkg } = await supabase
+      .from("packages")
+      .select("*")
+      .eq("slug", data.package_slug)
+      .single();
     if (!pkg) throw new Response("Package not found", { status: 404 });
 
     const { data: ver } = await supabase
@@ -86,7 +91,13 @@ export const runForgeLoop = createServerFn({ method: "POST" })
       .order("id", { ascending: true })
       .limit(20);
     const goldenCases =
-      (goldenRows as Array<{ title: string; input: string; expected_output: string; label_pass: boolean; label_source: string }>) || [];
+      (goldenRows as Array<{
+        title: string;
+        input: string;
+        expected_output: string;
+        label_pass: boolean;
+        label_source: string;
+      }>) || [];
 
     // Shared learning signals (fetched once for the whole training run).
     const { data: metrics } = await supabase
@@ -115,7 +126,8 @@ export const runForgeLoop = createServerFn({ method: "POST" })
       version: {
         system_prompt: ver.system_prompt,
         rules: ver.rules,
-        examples: (ver.examples as Array<{ title: string; input: string; expected_output: string }>) || [],
+        examples:
+          (ver.examples as Array<{ title: string; input: string; expected_output: string }>) || [],
       },
       goldenCases,
     });
@@ -165,7 +177,9 @@ export const runForgeLoop = createServerFn({ method: "POST" })
       if (goldenCases.length === 0) return [];
       const start = (epoch * batchSize) % goldenCases.length;
       const slice = goldenCases.slice(start, start + batchSize);
-      return slice.length >= batchSize ? slice : [...slice, ...goldenCases.slice(0, batchSize - slice.length)];
+      return slice.length >= batchSize
+        ? slice
+        : [...slice, ...goldenCases.slice(0, batchSize - slice.length)];
     };
 
     // Auto-learn proposal is generated fresh each epoch from the running
@@ -227,13 +241,19 @@ export const runForgeLoop = createServerFn({ method: "POST" })
 
       // Form the candidate and validate it on this epoch's mini-batch.
       const mergedRules = JSON.parse(
-        JSON.stringify({ ...(best.rules as object), ...(learn.patch.patched_rules as object) })
+        JSON.stringify({ ...(best.rules as object), ...(learn.patch.patched_rules as object) }),
       );
-      const mergedExamples = JSON.parse(JSON.stringify([...best.examples, ...learn.patch.new_examples]));
+      const mergedExamples = JSON.parse(
+        JSON.stringify([...best.examples, ...learn.patch.new_examples]),
+      );
       const batch = miniBatch(epoch);
       const candEval = await evaluatorPipeline({
         pkg: { name: pkg.name, type: pkg.type },
-        version: { system_prompt: learn.patch.patched_system_prompt, rules: mergedRules, examples: mergedExamples },
+        version: {
+          system_prompt: learn.patch.patched_system_prompt,
+          rules: mergedRules,
+          examples: mergedExamples,
+        },
         goldenCases: batch.length > 0 ? batch : undefined,
       });
       const candScore = candEval.evaluation.overall_score;
@@ -272,7 +292,15 @@ export const runForgeLoop = createServerFn({ method: "POST" })
       // Final validation on the full golden set before persisting.
       after = await evaluatorPipeline({
         pkg: { name: pkg.name, type: pkg.type },
-        version: { system_prompt: best.system_prompt, rules: best.rules, examples: best.examples as Array<{ title: string; input: string; expected_output: string }> },
+        version: {
+          system_prompt: best.system_prompt,
+          rules: best.rules,
+          examples: best.examples as Array<{
+            title: string;
+            input: string;
+            expected_output: string;
+          }>,
+        },
         goldenCases,
       });
       // Hard gate: never deploy a champion that regresses on the full set.
@@ -332,7 +360,11 @@ export const runForgeLoop = createServerFn({ method: "POST" })
       versionId: newVersion?.id ?? ver.id,
       sourceUserId: userId,
       source: "ui",
-      context: { hotswapped: !!newVersion, before_score: before.evaluation.overall_score, after_score: after?.evaluation.overall_score ?? null },
+      context: {
+        hotswapped: !!newVersion,
+        before_score: before.evaluation.overall_score,
+        after_score: after?.evaluation.overall_score ?? null,
+      },
     });
 
     return {
@@ -376,7 +408,7 @@ export const autoCreateMissing = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => CreateInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
 
     // Log the request first
@@ -409,7 +441,11 @@ export const autoCreateMissing = createServerFn({ method: "POST" })
     let slug = draft.slug;
     let n = 1;
     while (true) {
-      const { data: existing } = await supabase.from("packages").select("id").eq("slug", slug).maybeSingle();
+      const { data: existing } = await supabase
+        .from("packages")
+        .select("id")
+        .eq("slug", slug)
+        .maybeSingle();
       if (!existing) break;
       n += 1;
       slug = `${draft.slug}-${n}`;

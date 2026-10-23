@@ -42,13 +42,11 @@ export function LineageCard({ packageId }: { packageId: string }) {
           .eq("parent_package_id", packageId),
       ]);
       if (cancel) return;
-      const parentRow = pq.data as
-        | {
-            fork_kind: string;
-            rev_share_bps: number;
-            packages: { slug: string; name: string } | null;
-          }
-        | null;
+      const parentRow = pq.data as {
+        fork_kind: string;
+        rev_share_bps: number;
+        packages: { slug: string; name: string } | null;
+      } | null;
       if (parentRow?.packages) {
         setParent({
           slug: parentRow.packages.slug,
@@ -101,7 +99,10 @@ export function LineageCard({ packageId }: { packageId: string }) {
               <GitFork className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
             </span>
             <p className="text-sm">
-              <a href={`/packs/${packageId}/forks`} className="font-medium text-primary underline-offset-4 hover:underline">
+              <a
+                href={`/packs/${packageId}/forks`}
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
                 {children.count} {children.count === 1 ? "fork" : "forks"}
               </a>{" "}
               downstream pay revenue back to this package.

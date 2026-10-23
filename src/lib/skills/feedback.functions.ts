@@ -46,10 +46,12 @@ export type FeedbackRequest = {
 const PROMPTS: Record<EnrichmentKind, string> = {
   author: "How did this newly authored package turn out? Rate 1-5 and add a comment.",
   autocreate: "We auto-created this package on demand. Was it usable? Rate 1-5 and add a comment.",
-  forge_loop: "The forge loop just evolved this package. Did the patch help? Rate 1-5 and add a comment.",
+  forge_loop:
+    "The forge loop just evolved this package. Did the patch help? Rate 1-5 and add a comment.",
   autolearn: "The auto-learner proposed/applied a patch. Was it the right call? Rate 1-5.",
   evaluate: "We just evaluated this package. Did the report match your experience? Rate 1-5.",
-  review_skill: "You just got a review of a local skill/playbook. Was the verdict accurate? Rate 1-5.",
+  review_skill:
+    "You just got a review of a local skill/playbook. Was the verdict accurate? Rate 1-5.",
   upload: "We normalised your uploaded primitive(s). Did the result preserve intent? Rate 1-5.",
   request_primitive: "Your request was queued. Was the brief captured correctly? Rate 1-5.",
 };

@@ -20,9 +20,7 @@ export type StarredPackage = {
   starred_at: string;
 };
 
-async function packageBySlug(
-  slug: string,
-): Promise<{ id: string; star_count: number } | null> {
+async function packageBySlug(slug: string): Promise<{ id: string; star_count: number } | null> {
   const { data } = await supabaseAdmin
     .from("packages")
     .select("id, star_count")
@@ -115,7 +113,10 @@ export const getMyStars = createServerFn({ method: "GET" })
     const { data: pkgs, error: pkgErr } = await supabaseAdmin
       .from("packages")
       .select("id, slug, name, type, description, latest_version, star_count")
-      .in("id", rows.map((r) => r.package_id));
+      .in(
+        "id",
+        rows.map((r) => r.package_id),
+      );
     if (pkgErr) throw new Response(pkgErr.message, { status: 500 });
 
     const map = new Map(

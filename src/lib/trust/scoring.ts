@@ -133,8 +133,7 @@ export function computeTrustScore(inputs: TrustInputs): TrustResult {
   const competence = wilsonLowerBound(inputs.realWorld.successes, inputs.realWorld.total);
 
   const freshness =
-    0.7 * freshnessScore(inputs.lastVerifiedDaysAgo) +
-    0.3 * Math.min(1, inputs.signedReleases / 3);
+    0.7 * freshnessScore(inputs.lastVerifiedDaysAgo) + 0.3 * Math.min(1, inputs.signedReleases / 3);
 
   const confidence = confidenceFactor(inputs);
 
@@ -147,8 +146,7 @@ export function computeTrustScore(inputs: TrustInputs): TrustResult {
 
   const schema = inputs.schemaValid ? 1 : 0;
   // Quality weights sum to 1.0. Safety dominates — this is a trust signal.
-  const rawQuality =
-    0.1 * schema + 0.45 * safety + 0.3 * competence + 0.15 * freshness;
+  const rawQuality = 0.1 * schema + 0.45 * safety + 0.3 * competence + 0.15 * freshness;
 
   const verified =
     inputs.adversarial.total >= MIN_ADVERSARIAL_RUNS_FOR_VERIFIED &&

@@ -27,7 +27,9 @@ export const Route = createFileRoute("/api/public/oauth/revoke")({
         const token = (body.token ?? "").trim();
         // Per RFC 7009 we always return 200 even on unknown tokens.
         if (token) {
-          await supabaseAdmin.rpc("mcp_oauth_revoke_token", { _token_hash: sha256(token) } as never);
+          await supabaseAdmin.rpc("mcp_oauth_revoke_token", {
+            _token_hash: sha256(token),
+          } as never);
         }
         return jsonResponse({ ok: true });
       },

@@ -2,7 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/middleware";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { STAGE_LABELS, TRIGGERS, classifyStage, type CrmStage, type TriggerId } from "@/lib/crm/segments";
+import {
+  STAGE_LABELS,
+  TRIGGERS,
+  classifyStage,
+  type CrmStage,
+  type TriggerId,
+} from "@/lib/crm/segments";
 
 export type CrmOverviewRow = {
   user_id: string;
@@ -180,7 +186,13 @@ export type CrmCustomerDetail = {
   roi: Record<string, number | string | null>;
   opportunities: Array<{ id: string; title: string; why: string; cta: string; href: string }>;
   messages: Array<{ trigger: string; subject: string | null; created_at: string; status: string }>;
-  preview: { subject: string; heading: string; intro: string[]; bullets: string[]; metrics: Array<{ label: string; value: string; note?: string }> } | null;
+  preview: {
+    subject: string;
+    heading: string;
+    intro: string[];
+    bullets: string[];
+    metrics: Array<{ label: string; value: string; note?: string }>;
+  } | null;
   next_trigger: string;
 };
 
@@ -223,7 +235,8 @@ export const getCrmCustomer = createServerFn({ method: "POST" })
         statuses.set(l.message_id, l.status);
     }
 
-    const previewTrigger = (data.trigger as TriggerId | undefined) ??
+    const previewTrigger =
+      (data.trigger as TriggerId | undefined) ??
       (decision.send ? decision.trigger : "value_digest");
     const preview = buildMessage(previewTrigger as TriggerId, snapshot);
 
@@ -427,16 +440,14 @@ export type CrmEffectiveness = {
   }>;
 };
 
-
 export const getCrmEffectiveness = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .handler(async (): Promise<CrmEffectiveness> => {
     const { loadLearningState } = await import("@/lib/crm/learning.server");
     const { AUTONOMY_RULES } = await import("@/lib/crm/guardrails");
 
-    const { OUTCOMES, VARIANTS, armKey, estimatedRate, EMPTY_ARM } = await import(
-      "@/lib/crm/learning"
-    );
+    const { OUTCOMES, VARIANTS, armKey, estimatedRate, EMPTY_ARM } =
+      await import("@/lib/crm/learning");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const admin = supabaseAdmin as any;
 
@@ -448,7 +459,7 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
       let opened = 0;
       let clicked = 0;
       let converted = 0;
-      let unsubscribed = 0;
+      const unsubscribed = 0;
       for (const a of arms) {
         const s = state.stats[armKey(t, a.variant)] ?? EMPTY_ARM;
         sent += s.sent;
@@ -473,7 +484,8 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
     const variants: CrmEffectiveness["variants"] = [];
     for (const t of Object.keys(VARIANTS) as TriggerId[]) {
       const all = [...VARIANTS[t]];
-      for (const a of state.arms[t] ?? []) if (!all.some((x) => x.variant === a.variant)) all.push(a);
+      for (const a of state.arms[t] ?? [])
+        if (!all.some((x) => x.variant === a.variant)) all.push(a);
       const active = new Set((state.arms[t] ?? []).map((a) => a.variant));
       let leader = "";
       let leaderRate = -1;
@@ -512,7 +524,6 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(20);
 
-
     const { data: changelog } = await admin
       .from("crm_tuning_log")
       .select("action, trigger, variant, reason, created_at")
@@ -525,7 +536,12 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
       triggers,
       variants,
       hours: Object.entries(state.hours)
-        .map(([h, s]) => ({ hour: Number(h), sent: s.sent, engaged: s.engaged, converted: s.converted }))
+        .map(([h, s]) => ({
+          hour: Number(h),
+          sent: s.sent,
+          engaged: s.engaged,
+          converted: s.converted,
+        }))
         .sort((a, b) => a.hour - b.hour),
       pending: ((pending ?? []) as any[]).map((p) => ({
         id: p.id,
@@ -556,12 +572,14 @@ export const setCrmLearning = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const admin = supabaseAdmin as any;
-    await admin
-      .from("crm_settings")
-      .upsert(
-        { key: "learning", value: { enabled: data.enabled, min_samples: 20 }, updated_at: new Date().toISOString() },
-        { onConflict: "key" },
-      );
+    await admin.from("crm_settings").upsert(
+      {
+        key: "learning",
+        value: { enabled: data.enabled, min_samples: 20 },
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "key" },
+    );
     await admin.from("crm_tuning_log").insert({
       action: data.enabled ? "learning_enabled" : "learning_paused",
       reason: "Changed by an admin from the CRM dashboard",
@@ -613,5 +631,4 @@ export const runCrmLearningNow = createServerFn({ method: "POST" })
       blocked: r.blocked.length,
       leaders: r.leaders,
     };
-
   });

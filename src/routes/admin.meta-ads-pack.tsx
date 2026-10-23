@@ -28,7 +28,10 @@ function MetaAdsPackPage() {
   const assemble = useServerFn(assembleMetaAdsPack);
   const qc = useQueryClient();
 
-  const q = useQuery({ queryKey: ["meta-ads-pack"], queryFn: () => list({ data: undefined as any }) });
+  const q = useQuery({
+    queryKey: ["meta-ads-pack"],
+    queryFn: () => list({ data: undefined as any }),
+  });
   const [busyId, setBusyId] = useState<string | null>(null);
   const [log, setLog] = useState<string[]>([]);
   const [overwrite, setOverwrite] = useState(false);
@@ -67,11 +70,18 @@ function MetaAdsPackPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Meta Ads Pack — automated build</h1>
         <p className="text-sm text-muted-foreground">
-          Generates 22 tool-grounded primitives (15 skills · 4 playbooks · 1 soul · 2 guardrails) from the{" "}
-          <a className="underline" href="https://github.com/mikusnuz/meta-ads-mcp" target="_blank" rel="noreferrer">
+          Generates 22 tool-grounded primitives (15 skills · 4 playbooks · 1 soul · 2 guardrails)
+          from the{" "}
+          <a
+            className="underline"
+            href="https://github.com/mikusnuz/meta-ads-mcp"
+            target="_blank"
+            rel="noreferrer"
+          >
             meta-ads-mcp
           </a>{" "}
-          catalog (135 tools, Meta Marketing API v25.0), then assembles them into a single sellable pack.
+          catalog (135 tools, Meta Marketing API v25.0), then assembles them into a single sellable
+          pack.
         </p>
       </div>
 
@@ -83,7 +93,11 @@ function MetaAdsPackPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <label className="flex items-center gap-2 text-xs">
-            <input type="checkbox" checked={overwrite} onChange={(e) => setOverwrite(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={overwrite}
+              onChange={(e) => setOverwrite(e.target.checked)}
+            />
             Overwrite existing primitives (regenerate)
           </label>
           <div className="flex flex-wrap gap-2">
@@ -151,7 +165,13 @@ function MetaAdsPackPage() {
                       await qc.invalidateQueries({ queryKey: ["meta-ads-pack"] });
                     }}
                   >
-                    {busyId === bp.id ? "…" : bp.existing ? (overwrite ? "Regenerate" : "Done") : "Generate"}
+                    {busyId === bp.id
+                      ? "…"
+                      : bp.existing
+                        ? overwrite
+                          ? "Regenerate"
+                          : "Done"
+                        : "Generate"}
                   </Button>
                 </div>
               </li>

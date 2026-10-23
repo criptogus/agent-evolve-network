@@ -2,11 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { requireAdmin } from "@/lib/admin/middleware";
-import {
-  twoProportionUplift,
-  formatUpliftClaim,
-  type UpliftResult,
-} from "./uplift";
+import { twoProportionUplift, formatUpliftClaim, type UpliftResult } from "./uplift";
 
 // ---------------------------------------------------------------------------
 // Customer-value proof surface:
@@ -51,7 +47,10 @@ export type SkillUplift = {
 export const getSkillUplift = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) =>
     z
-      .object({ slug: z.string().min(1).max(128), days: z.number().int().min(1).max(365).optional() })
+      .object({
+        slug: z.string().min(1).max(128),
+        days: z.number().int().min(1).max(365).optional(),
+      })
       .parse(d),
   )
   .handler(async ({ data }): Promise<SkillUplift> => {
@@ -61,10 +60,13 @@ export const getSkillUplift = createServerFn({ method: "GET" })
       { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
     );
     const days = data.days ?? 30;
-    const { data: raw, error } = await supabase.rpc("get_skill_uplift" as any, {
-      _slug: data.slug,
-      _days: days,
-    } as any);
+    const { data: raw, error } = await supabase.rpc(
+      "get_skill_uplift" as any,
+      {
+        _slug: data.slug,
+        _days: days,
+      } as any,
+    );
     if (error) throw new Error(`uplift lookup failed: ${error.message}`);
 
     const arms = ((raw as any)?.arms ?? {}) as Record<string, Partial<ArmAgg>>;
@@ -155,7 +157,14 @@ export const getWorkspaceRoi = createServerFn({ method: "POST" })
         acc.guardrail_blocks += w.guardrail_blocks;
         return acc;
       },
-      { executions: 0, completed: 0, interventions: 0, hours_saved: 0, tokens_saved: 0, guardrail_blocks: 0 },
+      {
+        executions: 0,
+        completed: 0,
+        interventions: 0,
+        hours_saved: 0,
+        tokens_saved: 0,
+        guardrail_blocks: 0,
+      },
     );
 
     return {
@@ -310,4 +319,3 @@ export const listExperiments = createServerFn({ method: "GET" })
     if (error) return { experiments: [] as any[], error: "unavailable" };
     return { experiments: (data ?? []) as any[], error: null as string | null };
   });
-

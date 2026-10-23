@@ -173,16 +173,18 @@ Return STRICT JSON array:
 [{"slug":"kebab-case","title":"Title Case","summary":"one line, <= 140 chars","body":"full markdown body"}]`,
   });
   const arr = parseJsonLoose(text);
-  const list: GeneratedDoc[] = (Array.isArray(arr) ? arr : arr?.[kind + "s"] || []).map((d: any, i: number) => ({
-    slug: String(d.slug || `${kind}-${i + 1}`)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 60),
-    title: String(d.title || `${kind} ${i + 1}`).slice(0, 120),
-    summary: String(d.summary || "").slice(0, 200),
-    body: String(d.body || ""),
-  }));
+  const list: GeneratedDoc[] = (Array.isArray(arr) ? arr : arr?.[kind + "s"] || []).map(
+    (d: any, i: number) => ({
+      slug: String(d.slug || `${kind}-${i + 1}`)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 60),
+      title: String(d.title || `${kind} ${i + 1}`).slice(0, 120),
+      summary: String(d.summary || "").slice(0, 200),
+      body: String(d.body || ""),
+    }),
+  );
   return list.filter((d) => d.body.length > 200).slice(0, count);
 }
 
@@ -261,11 +263,15 @@ Return STRICT JSON:
     score: Math.max(0, Math.min(100, Number(a.score) || 0)),
     note: String(a.note || "").slice(0, 400),
   }));
-  const score = axes.length ? Math.round(axes.reduce((s: number, a: any) => s + a.score, 0) / axes.length) : 0;
+  const score = axes.length
+    ? Math.round(axes.reduce((s: number, a: any) => s + a.score, 0) / axes.length)
+    : 0;
   return {
     score,
     axes,
-    weaknesses: (Array.isArray(p.weaknesses) ? p.weaknesses : []).slice(0, 8).map((w: any) => String(w)),
+    weaknesses: (Array.isArray(p.weaknesses) ? p.weaknesses : [])
+      .slice(0, 8)
+      .map((w: any) => String(w)),
     verdict: String(p.verdict || "").slice(0, 600),
   };
 }
@@ -290,6 +296,9 @@ CURRENT SOUL:
 ${input.soul}
 """`,
   });
-  const out = text.replace(/^```(?:markdown)?\s*/i, "").replace(/```\s*$/i, "").trim();
+  const out = text
+    .replace(/^```(?:markdown)?\s*/i, "")
+    .replace(/```\s*$/i, "")
+    .trim();
   return out.length > input.soul.length * 0.6 ? out : input.soul;
 }

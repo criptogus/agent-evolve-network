@@ -12,8 +12,7 @@ export const Route = createFileRoute("/refunds")({
       { title: "Refund Policy — Super Agent Skill" },
       {
         name: "description",
-        content:
-          "30-day money-back guarantee on Super Agent Skill paid plans.",
+        content: "30-day money-back guarantee on Super Agent Skill paid plans.",
       },
       { property: "og:title", content: "Refund Policy — Super Agent Skill" },
       {
@@ -51,9 +50,9 @@ function RefundsPage() {
               <a href={`mailto:${SUPPORT_EMAIL}`} className="text-primary hover:underline">
                 {SUPPORT_EMAIL}
               </a>{" "}
-              with your order ID and reason. We will review and process the refund to your
-              original payment method. Processing typically takes 5–10 business days depending
-              on your bank or card issuer.
+              with your order ID and reason. We will review and process the refund to your original
+              payment method. Processing typically takes 5–10 business days depending on your bank
+              or card issuer.
             </p>
           </section>
 
@@ -61,8 +60,10 @@ function RefundsPage() {
             <h2 className="text-lg font-semibold">Cancellations</h2>
             <p className="mt-2">
               You can cancel an active subscription at any time from your{" "}
-              <a href="/account/billing" className="text-primary hover:underline">billing page</a>.
-              Cancellation stops future renewals; access remains until the end of the paid period.
+              <a href="/account/billing" className="text-primary hover:underline">
+                billing page
+              </a>
+              . Cancellation stops future renewals; access remains until the end of the paid period.
             </p>
           </section>
 

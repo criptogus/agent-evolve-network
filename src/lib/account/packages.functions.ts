@@ -26,7 +26,7 @@ export const listMyAuthoredPackages = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("packages")
       .select(
-        "id, slug, name, type, description, latest_version, is_published, review_status, review_notes, submitted_at, reviewed_at, price_credits, install_count, created_at"
+        "id, slug, name, type, description, latest_version, is_published, review_status, review_notes, submitted_at, reviewed_at, price_credits, install_count, created_at",
       )
       .eq("author_id", userId)
       .order("created_at", { ascending: false });
@@ -84,10 +84,9 @@ export const setMyPackagePublished = createServerFn({ method: "POST" })
     if (data.publish) {
       const expected = `PUBLISH ${pkg.name}`;
       if ((data.confirm_phrase ?? "").trim() !== expected) {
-        throw new Response(
-          `Confirmation required. Type "${expected}" to submit for review.`,
-          { status: 400 }
-        );
+        throw new Response(`Confirmation required. Type "${expected}" to submit for review.`, {
+          status: 400,
+        });
       }
 
       const admin = await isAdmin(supabase, userId);

@@ -24,17 +24,20 @@ export const GLOSSARY: GlossaryTerm[] = [
   },
   {
     label: "OAuth",
-    plain: 'OAuth is the "Sign in with Google/GitHub" standard that lets apps use your account without your password.',
+    plain:
+      'OAuth is the "Sign in with Google/GitHub" standard that lets apps use your account without your password.',
     match: /\boauth2?\b/i,
   },
   {
     label: "Auditor",
-    plain: "An auditor skill reviews your code or config and reports problems instead of changing anything.",
+    plain:
+      "An auditor skill reviews your code or config and reports problems instead of changing anything.",
     match: /\bauditor|\baudits?\b/i,
   },
   {
     label: "SAML / SSO",
-    plain: "SAML and SSO are company login systems where one corporate account signs you into many tools.",
+    plain:
+      "SAML and SSO are company login systems where one corporate account signs you into many tools.",
     match: /\bsaml\b|\bsso\b/i,
   },
   {
@@ -44,17 +47,20 @@ export const GLOSSARY: GlossaryTerm[] = [
   },
   {
     label: "Terraform",
-    plain: "Terraform creates cloud infrastructure from code files instead of clicking in a console.",
+    plain:
+      "Terraform creates cloud infrastructure from code files instead of clicking in a console.",
     match: /\bterraform\b/i,
   },
   {
     label: "CI/CD",
-    plain: "CI/CD is the automation that tests your code and releases it whenever you push changes.",
+    plain:
+      "CI/CD is the automation that tests your code and releases it whenever you push changes.",
     match: /\bci\/cd\b|\bci cd\b|\bpipelines?\b/i,
   },
   {
     label: "RLS",
-    plain: "RLS (row-level security) are database rules deciding which rows each user is allowed to read or write.",
+    plain:
+      "RLS (row-level security) are database rules deciding which rows each user is allowed to read or write.",
     match: /\brls\b|row-level security/i,
   },
   {
@@ -64,7 +70,8 @@ export const GLOSSARY: GlossaryTerm[] = [
   },
   {
     label: "Guardrail",
-    plain: "A guardrail is a rule that blocks an agent from risky actions, like deleting data or leaking secrets.",
+    plain:
+      "A guardrail is a rule that blocks an agent from risky actions, like deleting data or leaking secrets.",
     match: /\bguardrails?\b/i,
   },
   {
@@ -99,7 +106,8 @@ export const GLOSSARY: GlossaryTerm[] = [
   },
   {
     label: "Observability",
-    plain: "Observability is the logs, metrics and traces you use to see what a running system is doing.",
+    plain:
+      "Observability is the logs, metrics and traces you use to see what a running system is doing.",
     match: /\bobservability\b|\btelemetry\b|\bopentelemetry\b/i,
   },
 ];

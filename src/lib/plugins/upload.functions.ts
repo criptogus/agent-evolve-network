@@ -41,7 +41,12 @@ export const publishPluginUpload = createServerFn({ method: "POST" })
     const fileMap = new Map(Object.entries(files));
     const report = runPluginConformance(fileMap);
     if (!report.conformant) {
-      return { ok: false as const, report: serializeReport(report), package: null, published: false };
+      return {
+        ok: false as const,
+        report: serializeReport(report),
+        package: null,
+        published: false,
+      };
     }
 
     const draft = pluginToDraft(fileMap, report);

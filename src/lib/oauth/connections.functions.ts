@@ -12,15 +12,17 @@ export const listOauthConnections = createServerFn({ method: "POST" })
     const supabase = _sbCtx as any;
     const { data, error } = await supabase.rpc("mcp_oauth_list_user_connections");
     if (error) throw new Error(error.message);
-    return { items: (data ?? []) as Array<{
-      client_id: string;
-      client_name: string;
-      scope: string;
-      active_access: number;
-      active_refresh: number;
-      first_granted: string;
-      last_used: string | null;
-    }> };
+    return {
+      items: (data ?? []) as Array<{
+        client_id: string;
+        client_name: string;
+        scope: string;
+        active_access: number;
+        active_refresh: number;
+        first_granted: string;
+        last_used: string | null;
+      }>,
+    };
   });
 
 /**
@@ -78,10 +80,9 @@ export const revokeOauthConnection = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase: _sbCtx } = context as any;
     const supabase = _sbCtx as any;
-    const { data: count, error } = await supabase.rpc(
-      "mcp_oauth_revoke_client_for_user",
-      { _client_id: data.client_id },
-    );
+    const { data: count, error } = await supabase.rpc("mcp_oauth_revoke_client_for_user", {
+      _client_id: data.client_id,
+    });
     if (error) throw new Error(error.message);
     return { revoked: count ?? 0 };
   });

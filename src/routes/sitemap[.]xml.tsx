@@ -134,7 +134,13 @@ export const Route = createFileRoute("/sitemap.xml")({
           fetchCollectionUrls().catch(() => [] as UrlEntry[]),
         ]);
 
-        const urls = [...staticUrls, ...compareUrls, ...useCaseUrls, ...packageUrls, ...collectionUrls];
+        const urls = [
+          ...staticUrls,
+          ...compareUrls,
+          ...useCaseUrls,
+          ...packageUrls,
+          ...collectionUrls,
+        ];
         return new Response(buildXml(urls), {
           headers: {
             "Content-Type": "application/xml; charset=utf-8",

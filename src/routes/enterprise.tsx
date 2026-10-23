@@ -17,14 +17,54 @@ export const Route = createFileRoute("/enterprise")({
 });
 
 const WEIGHTS: Array<{ key: string; label: string; weight: number; note: string }> = [
-  { key: "adv_weighted", label: "Adversarial severity-weighted score", weight: 0.25, note: "Failures on critical attack classes cost 8x more than low-severity ones." },
-  { key: "adv_pass", label: "Adversarial pass rate", weight: 0.20, note: "Share of curated attack cases (injection, exfiltration, policy bypass) the package refuses correctly." },
-  { key: "real_world", label: "Real-world success rate", weight: 0.20, note: "Anonymized execution telemetry from live agent runs over the last 30 days." },
-  { key: "schema", label: "Schema validity", weight: 0.10, note: "Package validates against the public content schema." },
-  { key: "signed", label: "Signed releases", weight: 0.10, note: "Ed25519-signed versions; full credit at 3+ signed releases." },
-  { key: "age", label: "Package age", weight: 0.05, note: "Logarithmic — longevity helps but cannot buy trust." },
-  { key: "ownership", label: "Owner 2FA", weight: 0.05, note: "Publisher account protected with two-factor authentication." },
-  { key: "contributors", label: "Contributor count", weight: 0.05, note: "More independent eyes on the package, capped at 5." },
+  {
+    key: "adv_weighted",
+    label: "Adversarial severity-weighted score",
+    weight: 0.25,
+    note: "Failures on critical attack classes cost 8x more than low-severity ones.",
+  },
+  {
+    key: "adv_pass",
+    label: "Adversarial pass rate",
+    weight: 0.2,
+    note: "Share of curated attack cases (injection, exfiltration, policy bypass) the package refuses correctly.",
+  },
+  {
+    key: "real_world",
+    label: "Real-world success rate",
+    weight: 0.2,
+    note: "Anonymized execution telemetry from live agent runs over the last 30 days.",
+  },
+  {
+    key: "schema",
+    label: "Schema validity",
+    weight: 0.1,
+    note: "Package validates against the public content schema.",
+  },
+  {
+    key: "signed",
+    label: "Signed releases",
+    weight: 0.1,
+    note: "Ed25519-signed versions; full credit at 3+ signed releases.",
+  },
+  {
+    key: "age",
+    label: "Package age",
+    weight: 0.05,
+    note: "Logarithmic — longevity helps but cannot buy trust.",
+  },
+  {
+    key: "ownership",
+    label: "Owner 2FA",
+    weight: 0.05,
+    note: "Publisher account protected with two-factor authentication.",
+  },
+  {
+    key: "contributors",
+    label: "Contributor count",
+    weight: 0.05,
+    note: "More independent eyes on the package, capped at 5.",
+  },
 ];
 
 function EnterprisePage() {
@@ -125,8 +165,8 @@ function EnterprisePage() {
             </table>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
-            Badge thresholds: green &ge; 0.85 · yellow &ge; 0.70 · orange &ge; 0.50 · red below.
-            The full implementation is open source in{" "}
+            Badge thresholds: green &ge; 0.85 · yellow &ge; 0.70 · orange &ge; 0.50 · red below. The
+            full implementation is open source in{" "}
             <code className="rounded bg-muted px-1 py-0.5">src/lib/trust/score.ts</code>.
           </p>
         </section>
@@ -160,7 +200,7 @@ function EnterprisePage() {
             <div className="rounded-lg border border-border bg-surface p-6">
               <h3 className="font-semibold">Verify offline</h3>
               <pre className="mt-3 overflow-x-auto rounded-md bg-muted p-4 font-mono text-xs leading-relaxed">
-{`# nothing but Node — no network, no registry trust
+                {`# nothing but Node — no network, no registry trust
 npm run trust:verify -- \\
   --attestation code-reviewer.trust.json \\
   --pkg code-reviewer.yaml \\
@@ -218,8 +258,10 @@ npm run trust:verify -- \\
                 Skill lookups go from your agent to the MCP gateway over HTTPS; the gateway returns
                 signed package content from the public registry. The CLI sends anonymized install
                 telemetry only — disable it entirely with{" "}
-                <code className="rounded bg-muted px-1 py-0.5 text-xs">SUPER_AGENT_TELEMETRY=0</code>.
-                Raw adversarial cases and telemetry never leave the platform; only aggregate
+                <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                  SUPER_AGENT_TELEMETRY=0
+                </code>
+                . Raw adversarial cases and telemetry never leave the platform; only aggregate
                 scores are published.
               </p>
             </div>
@@ -240,8 +282,8 @@ npm run trust:verify -- \\
             See the Trust Score on your own use case
           </h2>
           <p className="mt-2 max-w-2xl text-muted-foreground">
-            We&apos;ll walk your security team through the signing pipeline, the adversarial
-            harness and a live attestation verification — on a package relevant to your vertical.
+            We&apos;ll walk your security team through the signing pipeline, the adversarial harness
+            and a live attestation verification — on a package relevant to your vertical.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <a
@@ -269,7 +311,6 @@ npm run trust:verify -- \\
               Accept the online NDA
             </Link>
           </div>
-
         </section>
       </main>
       <Footer />

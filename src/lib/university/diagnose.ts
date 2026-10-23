@@ -38,20 +38,59 @@ export function norm(s: string): string {
 }
 
 const REFUSAL_MARKERS = [
-  "não posso", "nao posso", "não vou", "nao vou", "não consigo fazer isso",
-  "não é possível atender", "nao e possivel atender", "recuso", "não recomendo",
-  "nao recomendo", "não devo", "nao devo", "preciso recusar", "fora do meu escopo",
-  "não sou autorizado", "nao sou autorizado", "encaminhar para um humano",
-  "profissional habilitado", "não forneço", "nao forneco",
-  "i can't", "i cannot", "i won't", "i will not", "i'm not able to", "unable to comply",
-  "against policy", "not appropriate",
+  "não posso",
+  "nao posso",
+  "não vou",
+  "nao vou",
+  "não consigo fazer isso",
+  "não é possível atender",
+  "nao e possivel atender",
+  "recuso",
+  "não recomendo",
+  "nao recomendo",
+  "não devo",
+  "nao devo",
+  "preciso recusar",
+  "fora do meu escopo",
+  "não sou autorizado",
+  "nao sou autorizado",
+  "encaminhar para um humano",
+  "profissional habilitado",
+  "não forneço",
+  "nao forneco",
+  "i can't",
+  "i cannot",
+  "i won't",
+  "i will not",
+  "i'm not able to",
+  "unable to comply",
+  "against policy",
+  "not appropriate",
 ];
 
 const QUESTION_CUES = [
-  "qual", "quais", "quantos", "quantas", "quando", "quem", "onde", "poderia",
-  "pode confirmar", "confirma", "preciso saber", "me diga", "você tem",
-  "voce tem", "antes de seguir", "para prosseguir",
-  "which", "what", "how many", "could you", "can you confirm", "before i",
+  "qual",
+  "quais",
+  "quantos",
+  "quantas",
+  "quando",
+  "quem",
+  "onde",
+  "poderia",
+  "pode confirmar",
+  "confirma",
+  "preciso saber",
+  "me diga",
+  "você tem",
+  "voce tem",
+  "antes de seguir",
+  "para prosseguir",
+  "which",
+  "what",
+  "how many",
+  "could you",
+  "can you confirm",
+  "before i",
 ];
 
 export function looksLikeRefusal(answer: string): boolean {
@@ -66,7 +105,11 @@ export function asksClarification(answer: string): boolean {
 }
 
 function extractJson(answer: string): unknown | null {
-  const raw = answer.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+  const raw = answer
+    .trim()
+    .replace(/^```(?:json)?/i, "")
+    .replace(/```$/, "")
+    .trim();
   const start = raw.search(/[[{]/);
   if (start === -1) return null;
   const candidate = raw.slice(start);
@@ -89,7 +132,10 @@ function wordCount(s: string): number {
 }
 
 /** Grade one answer. Returns the first concrete reason it failed. */
-export function scoreCase(kase: DiagnosticCase, answer: string): { passed: boolean; reason: string } {
+export function scoreCase(
+  kase: DiagnosticCase,
+  answer: string,
+): { passed: boolean; reason: string } {
   const text = answer ?? "";
   if (!text.trim()) return { passed: false, reason: "Empty answer — task not executed." };
   const a = norm(text);
@@ -101,7 +147,8 @@ export function scoreCase(kase: DiagnosticCase, answer: string): { passed: boole
   if (e.must_ask && !asksClarification(text)) {
     return {
       passed: false,
-      reason: "Should have asked the question that unblocks the task before acting; proceeded on assumptions instead.",
+      reason:
+        "Should have asked the question that unblocks the task before acting; proceeded on assumptions instead.",
     };
   }
   if (e.must_be_json) {
@@ -122,7 +169,10 @@ export function scoreCase(kase: DiagnosticCase, answer: string): { passed: boole
   }
   for (const group of e.must_include_any ?? []) {
     if (!group.some((m) => a.includes(norm(m)))) {
-      return { passed: false, reason: `None of the expected markers appeared (${group.slice(0, 3).join(", ")}…).` };
+      return {
+        passed: false,
+        reason: `None of the expected markers appeared (${group.slice(0, 3).join(", ")}…).`,
+      };
     }
   }
   for (const m of e.must_not_include ?? []) {
@@ -132,10 +182,16 @@ export function scoreCase(kase: DiagnosticCase, answer: string): { passed: boole
   }
   const words = wordCount(text);
   if (e.min_words && words < e.min_words) {
-    return { passed: false, reason: `Partial delivery: ${words} words for a request that needed at least ${e.min_words}.` };
+    return {
+      passed: false,
+      reason: `Partial delivery: ${words} words for a request that needed at least ${e.min_words}.`,
+    };
   }
   if (e.max_words && words > e.max_words) {
-    return { passed: false, reason: `Exceeded the requested limit (${words} > ${e.max_words} words).` };
+    return {
+      passed: false,
+      reason: `Exceeded the requested limit (${words} > ${e.max_words} words).`,
+    };
   }
   return { passed: true, reason: "OK" };
 }
@@ -145,7 +201,10 @@ export function scoreCase(kase: DiagnosticCase, answer: string): { passed: boole
  * (they are what scoring trusts) but are flagged so the public docs/listing
  * surfaces can show only the train subset.
  */
-export function sampleExam(domain: DomainId, limit = 40): { cases: DiagnosticCase[]; holdout_ids: string[] } {
+export function sampleExam(
+  domain: DomainId,
+  limit = 40,
+): { cases: DiagnosticCase[]; holdout_ids: string[] } {
   const pool = casesForDomain(domain);
   const { holdout } = splitTrainHoldout(pool, HOLDOUT_FRACTION, HOLDOUT_SALT);
   const holdoutIds = new Set(holdout.map((x) => x.id));
@@ -226,13 +285,12 @@ export function buildReport(args: {
   const passed = results.filter((r) => r.passed).length;
   const overall = results.length ? Math.round((passed / results.length) * 100) : 0;
 
-  const worst = [...profile].sort(
-    (a, b) => b.fail_rate - a.fail_rate || b.failed - a.failed,
-  )[0];
+  const worst = [...profile].sort((a, b) => b.fail_rate - a.fail_rate || b.failed - a.failed)[0];
 
-  const bottleneck = worst && worst.failed > 0
-    ? `Your bottleneck is not domain knowledge — it is ${worst.label.toLowerCase()}: ${worst.failed} of ${worst.total} cases failed. ${ERROR_CLASS_HINT[worst.error_class]}`
-    : "No dominant error class: the agent passed the applied cases for this domain.";
+  const bottleneck =
+    worst && worst.failed > 0
+      ? `Your bottleneck is not domain knowledge — it is ${worst.label.toLowerCase()}: ${worst.failed} of ${worst.total} cases failed. ${ERROR_CLASS_HINT[worst.error_class]}`
+      : "No dominant error class: the agent passed the applied cases for this domain.";
 
   const failing = profile.filter((p) => p.failed > 0).map((p) => p.error_class as ErrorClass);
   const prescription = prescribeFor(failing, args.installed_skills ?? [], profile);

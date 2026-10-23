@@ -30,7 +30,8 @@ export const Route = createFileRoute("/api/public/diagnose/submit")({
           method: "POST",
           body_schema: {
             diagnosis_id: "string (optional) — from /diagnose/start; omit for a stateless score",
-            domain: "gtm | engineering | support | finance | data | marketing | b2b_sales | customer_success | pricing | strategy | project_management | people_ops | legal_compliance | corporate_finance | agentic_crm | supply_chain | data_engineering | social_media | google_ads | meta_ads | linkedin_ads | digital_product | complex_software | tools_mcp | cybersecurity (optional when diagnosis_id is set)",
+            domain:
+              "gtm | engineering | support | finance | data | marketing | b2b_sales | customer_success | pricing | strategy | project_management | people_ops | legal_compliance | corporate_finance | agentic_crm | supply_chain | data_engineering | social_media | google_ads | meta_ads | linkedin_ads | digital_product | complex_software | tools_mcp | cybersecurity (optional when diagnosis_id is set)",
             installed_skills: "string[] (optional)",
             answers: "[{ case_id, answer, latency_ms?, tokens? }] — 1 to 80 items",
           },
@@ -73,7 +74,11 @@ export const Route = createFileRoute("/api/public/diagnose/submit")({
           const msg = err instanceof Error ? err.message : "error";
           if (msg === "unknown_domain") {
             return json(
-              { ok: false, error: "unknown_domain", message: "Provide `domain` or `diagnosis_id`, plus valid case_ids." },
+              {
+                ok: false,
+                error: "unknown_domain",
+                message: "Provide `domain` or `diagnosis_id`, plus valid case_ids.",
+              },
               400,
             );
           }

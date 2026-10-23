@@ -1,70 +1,63 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
-export const Route = createFileRoute('/unsubscribe')({
+export const Route = createFileRoute("/unsubscribe")({
   head: () => ({
     meta: [
-      { title: 'Unsubscribe — SuperAgent Skill' },
-      { name: 'description', content: 'Manage your email preferences for SuperAgent Skill.' },
-      { name: 'robots', content: 'noindex, nofollow' },
+      { title: "Unsubscribe — SuperAgent Skill" },
+      { name: "description", content: "Manage your email preferences for SuperAgent Skill." },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: UnsubscribePage,
-})
+});
 
-type Status =
-  | 'loading'
-  | 'ready'
-  | 'already'
-  | 'invalid'
-  | 'submitting'
-  | 'done'
-  | 'error'
+type Status = "loading" | "ready" | "already" | "invalid" | "submitting" | "done" | "error";
 
 function UnsubscribePage() {
-  const [status, setStatus] = useState<Status>('loading')
-  const [error, setError] = useState<string | null>(null)
-  const [token, setToken] = useState<string | null>(null)
+  const [status, setStatus] = useState<Status>("loading");
+  const [error, setError] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const url = new URL(window.location.href)
-    const t = url.searchParams.get('token')
+    const url = new URL(window.location.href);
+    const t = url.searchParams.get("token");
     if (!t) {
-      setStatus('invalid')
-      return
+      setStatus("invalid");
+      return;
     }
-    setToken(t)
+    setToken(t);
     fetch(`/email/unsubscribe?token=${encodeURIComponent(t)}`)
       .then(async (r) => {
-        if (r.status === 404) return setStatus('invalid')
-        if (!r.ok) return setStatus('error')
-        const data = await r.json()
-        if (data.valid) setStatus('ready')
-        else if (data.reason === 'already_unsubscribed') setStatus('already')
-        else setStatus('invalid')
+        if (r.status === 404) return setStatus("invalid");
+        if (!r.ok) return setStatus("error");
+        const data = await r.json();
+        if (data.valid) setStatus("ready");
+        else if (data.reason === "already_unsubscribed") setStatus("already");
+        else setStatus("invalid");
       })
-      .catch(() => setStatus('error'))
-  }, [])
+      .catch(() => setStatus("error"));
+  }, []);
 
   async function confirm() {
-    if (!token) return
-    setStatus('submitting')
+    if (!token) return;
+    setStatus("submitting");
     try {
-      const r = await fetch('/email/unsubscribe', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
+      const r = await fetch("/email/unsubscribe", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({ token }),
-      })
-      const data = await r.json().catch(() => ({}))
-      if (r.ok && data.success) setStatus('done')
-      else if (data.reason === 'already_unsubscribed') setStatus('already')
+      });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok && data.success) setStatus("done");
+      else if (data.reason === "already_unsubscribed") setStatus("already");
       else {
-        setError(data.error || 'Something went wrong.')
-        setStatus('error')
+        setError(data.error || "Something went wrong.");
+        setStatus("error");
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Network error')
-      setStatus('error')
+      setError(e instanceof Error ? e.message : "Network error");
+      setStatus("error");
     }
   }
 
@@ -76,11 +69,11 @@ function UnsubscribePage() {
           <span className="text-sm font-semibold tracking-tight">SuperAgent Skill</span>
         </div>
 
-        {status === 'loading' && (
+        {status === "loading" && (
           <p className="text-sm text-muted-foreground">Checking your link…</p>
         )}
 
-        {status === 'ready' && (
+        {status === "ready" && (
           <>
             <h1 className="text-xl font-semibold tracking-tight">Unsubscribe from emails</h1>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -96,11 +89,9 @@ function UnsubscribePage() {
           </>
         )}
 
-        {status === 'submitting' && (
-          <p className="text-sm text-muted-foreground">Processing…</p>
-        )}
+        {status === "submitting" && <p className="text-sm text-muted-foreground">Processing…</p>}
 
-        {status === 'done' && (
+        {status === "done" && (
           <>
             <h1 className="text-xl font-semibold tracking-tight">You&apos;re unsubscribed</h1>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -109,7 +100,7 @@ function UnsubscribePage() {
           </>
         )}
 
-        {status === 'already' && (
+        {status === "already" && (
           <>
             <h1 className="text-xl font-semibold tracking-tight">Already unsubscribed</h1>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -118,25 +109,25 @@ function UnsubscribePage() {
           </>
         )}
 
-        {status === 'invalid' && (
+        {status === "invalid" && (
           <>
             <h1 className="text-xl font-semibold tracking-tight">Invalid link</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              This unsubscribe link is missing or has expired. Please use the link from a
-              recent email.
+              This unsubscribe link is missing or has expired. Please use the link from a recent
+              email.
             </p>
           </>
         )}
 
-        {status === 'error' && (
+        {status === "error" && (
           <>
             <h1 className="text-xl font-semibold tracking-tight">Something went wrong</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              {error || 'Please try again in a moment.'}
+              {error || "Please try again in a moment."}
             </p>
           </>
         )}
       </div>
     </div>
-  )
+  );
 }

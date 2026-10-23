@@ -136,10 +136,7 @@ export const getMyEarnings = createServerFn({ method: "GET" })
     const ids = [...byPkg.keys()];
     const nameById = new Map<string, { slug: string; name: string }>();
     if (ids.length > 0) {
-      const { data: pkgs } = await supabase
-        .from("packages")
-        .select("id, slug, name")
-        .in("id", ids);
+      const { data: pkgs } = await supabase.from("packages").select("id, slug, name").in("id", ids);
       for (const p of (pkgs ?? []) as Array<{ id: string; slug: string; name: string }>) {
         nameById.set(p.id, { slug: p.slug, name: p.name });
       }
@@ -154,13 +151,15 @@ export const getMyEarnings = createServerFn({ method: "GET" })
 
     const packages = [...byPkg.values()].sort(
       (a, b) =>
-        b.author_credits + b.tips_cents + b.payout_cents -
+        b.author_credits +
+        b.tips_cents +
+        b.payout_cents -
         (a.author_credits + a.tips_cents + a.payout_cents),
     );
 
     const payoutRows: PayoutRow[] = payouts.map((r) => ({
       ...r,
-      package_name: r.package_id ? nameById.get(r.package_id)?.name ?? null : null,
+      package_name: r.package_id ? (nameById.get(r.package_id)?.name ?? null) : null,
     }));
 
     const total_sale_credits = purchases.reduce((s, p) => s + (p.author_credits ?? 0), 0);

@@ -33,7 +33,8 @@ export const Route = createFileRoute("/api/public/curriculum/next")({
           method: "POST",
           body_schema: {
             diagnosis_id: "string (optional) — reads the error profile from the exam",
-            domain: "gtm | engineering | support | finance | data | marketing | b2b_sales | customer_success | pricing | strategy | project_management | people_ops | legal_compliance | corporate_finance | agentic_crm | supply_chain | data_engineering | social_media | google_ads | meta_ads | linkedin_ads | digital_product | complex_software | tools_mcp | cybersecurity (optional)",
+            domain:
+              "gtm | engineering | support | finance | data | marketing | b2b_sales | customer_success | pricing | strategy | project_management | people_ops | legal_compliance | corporate_finance | agentic_crm | supply_chain | data_engineering | social_media | google_ads | meta_ads | linkedin_ads | digital_product | complex_software | tools_mcp | cybersecurity (optional)",
             failing: `${ERROR_CLASSES.join(" | ")} (array, optional when diagnosis_id is set)`,
             installed_skills: "string[] — what the agent already carries",
             budget: "number (optional, default 14) — max capabilities this agent should carry",
@@ -68,9 +69,10 @@ export const Route = createFileRoute("/api/public/curriculum/next")({
         const manual = (Array.isArray(body.failing) ? (body.failing as unknown[]) : [])
           .map(String)
           .filter((x) => VALID_CLASSES.has(x)) as ErrorClass[];
-        const failing = ((profile ?? [])
+        const failing = (profile ?? [])
           .filter((p) => (p?.failed ?? 0) > 0)
-          .map((p) => p.error_class as ErrorClass)).concat(manual);
+          .map((p) => p.error_class as ErrorClass)
+          .concat(manual);
 
         if (!failing.length) {
           return json(
@@ -88,7 +90,10 @@ export const Route = createFileRoute("/api/public/curriculum/next")({
           ? Math.max(1, Math.min(60, Number(body.budget)))
           : undefined;
 
-        return json({ ok: true, ...planCurriculum({ failing, profile, installed, domain, budget }) });
+        return json({
+          ok: true,
+          ...planCurriculum({ failing, profile, installed, domain, budget }),
+        });
       },
     },
   },

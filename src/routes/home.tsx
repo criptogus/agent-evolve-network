@@ -139,7 +139,6 @@ function HomeDashboard() {
     [market.data, projectType],
   );
 
-
   // Signed-out visitors belong on the landing page, which sells the product.
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/", replace: true });
@@ -213,9 +212,7 @@ function HomeDashboard() {
                   <p className="mt-1 text-sm text-muted-foreground">
                     {connection.oauthClientCount + connection.tokenCount} active credential
                     {connection.oauthClientCount + connection.tokenCount === 1 ? "" : "s"}
-                    {connection.clientNames.length
-                      ? ` · ${connection.clientNames.join(", ")}`
-                      : ""}
+                    {connection.clientNames.length ? ` · ${connection.clientNames.join(", ")}` : ""}
                     {connection.lastUsedAt ? ` · last call ${timeAgo(connection.lastUsedAt)}` : ""}
                   </p>
                 </>
@@ -347,11 +344,13 @@ function HomeDashboard() {
               </div>
             )}
           </div>
-          <Link to="/marketplace" className="shrink-0 text-sm font-medium text-primary hover:underline">
+          <Link
+            to="/marketplace"
+            className="shrink-0 text-sm font-medium text-primary hover:underline"
+          >
             All skills →
           </Link>
         </div>
-
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {market.isLoading &&

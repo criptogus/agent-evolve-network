@@ -110,7 +110,11 @@ export function InstallButtons({ compact = false }: { compact?: boolean }) {
           ) : (
             <>
               <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background text-primary">
-                {clicked === b.id ? <Check className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
+                {clicked === b.id ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <ExternalLink className="h-4 w-4" />
+                )}
               </span>
               <span className="min-w-0">
                 <span className="block text-sm font-semibold">{b.label}</span>

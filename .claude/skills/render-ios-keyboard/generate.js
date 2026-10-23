@@ -3,24 +3,24 @@
  * generate.js — Static iOS QWERTY keyboard as inline HTML+CSS.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 const ROWS = {
-  'qwerty-lower': [
-    ['q','w','e','r','t','y','u','i','o','p'],
-    ['a','s','d','f','g','h','j','k','l'],
-    ['z','x','c','v','b','n','m'],
+  "qwerty-lower": [
+    ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
+    ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
+    ["z", "x", "c", "v", "b", "n", "m"],
   ],
-  'qwerty-upper': [
-    ['Q','W','E','R','T','Y','U','I','O','P'],
-    ['A','S','D','F','G','H','J','K','L'],
-    ['Z','X','C','V','B','N','M'],
+  "qwerty-upper": [
+    ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+    ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+    ["Z", "X", "C", "V", "B", "N", "M"],
   ],
-  'numbers': [
-    ['1','2','3','4','5','6','7','8','9','0'],
-    ['-','/',':',';','(',')','$','&','@','"'],
-    ['.',',','?','!',"'"],
+  numbers: [
+    ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
+    ["-", "/", ":", ";", "(", ")", "$", "&", "@", '"'],
+    [".", ",", "?", "!", "'"],
   ],
 };
 
@@ -33,45 +33,41 @@ const EMOJI_SVG = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" s
 
 function escapeHTML(s) {
   return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function renderKeyboardCSS() {
-  return fs.readFileSync(path.join(__dirname, 'templates', 'keyboard.css'), 'utf-8');
+  return fs.readFileSync(path.join(__dirname, "templates", "keyboard.css"), "utf-8");
 }
 
 function renderKeyboardHTML(opts = {}) {
-  const suggestions = opts.suggestions || ['I', 'The', "I'm"];
-  const layout = opts.layout || 'qwerty-lower';
-  const rows = ROWS[layout] || ROWS['qwerty-lower'];
+  const suggestions = opts.suggestions || ["I", "The", "I'm"];
+  const layout = opts.layout || "qwerty-lower";
+  const rows = ROWS[layout] || ROWS["qwerty-lower"];
 
   const sugHTML = suggestions
-    .map(s => `<span class="kb-suggestion">${escapeHTML(s)}</span>`)
-    .join('');
+    .map((s) => `<span class="kb-suggestion">${escapeHTML(s)}</span>`)
+    .join("");
 
   // Row 1 (10 keys), Row 2 (9 keys, indented by ~half-key), Row 3 (shift + 7 keys + backspace)
-  const row1 = rows[0]
-    .map(k => `<div class="kb-key">${escapeHTML(k)}</div>`)
-    .join('');
-  const row2 = rows[1]
-    .map(k => `<div class="kb-key">${escapeHTML(k)}</div>`)
-    .join('');
-  const row3Keys = rows[2]
-    .map(k => `<div class="kb-key">${escapeHTML(k)}</div>`)
-    .join('');
+  const row1 = rows[0].map((k) => `<div class="kb-key">${escapeHTML(k)}</div>`).join("");
+  const row2 = rows[1].map((k) => `<div class="kb-key">${escapeHTML(k)}</div>`).join("");
+  const row3Keys = rows[2].map((k) => `<div class="kb-key">${escapeHTML(k)}</div>`).join("");
 
-  const shiftKey = layout === 'numbers'
-    ? `<div class="kb-key modifier">#+=</div>`
-    : `<div class="kb-key modifier">${SHIFT_SVG}</div>`;
+  const shiftKey =
+    layout === "numbers"
+      ? `<div class="kb-key modifier">#+=</div>`
+      : `<div class="kb-key modifier">${SHIFT_SVG}</div>`;
   const backspaceKey = `<div class="kb-key modifier">${BACKSPACE_SVG}</div>`;
 
-  const switchKey = layout === 'numbers'
-    ? `<div class="kb-key special-123">ABC</div>`
-    : `<div class="kb-key special-123">123</div>`;
+  const switchKey =
+    layout === "numbers"
+      ? `<div class="kb-key special-123">ABC</div>`
+      : `<div class="kb-key special-123">123</div>`;
 
   return `<div class="ios-keyboard" data-layout="${layout}">
   <div class="kb-suggestions">${sugHTML}</div>

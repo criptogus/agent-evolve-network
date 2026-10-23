@@ -11,27 +11,47 @@
  * itself. The skill is deliberately deterministic and does not embed an LLM.
  */
 
-const fs = require('fs');
-const path = require('path');
-const { renderHTML } = require('./generate');
-const { capture } = require('./screenshot');
+const fs = require("fs");
+const path = require("path");
+const { renderHTML } = require("./generate");
+const { capture } = require("./screenshot");
 
 function parseArgs(argv) {
   const args = { mode: null, modeFlag: null };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     switch (a) {
-      case '--thread':       args.thread = argv[++i]; break;
-      case '--prompt':       args.prompt = argv[++i]; break;
-      case '--output':       args.output = argv[++i]; break;
-      case '--name':         args.name   = argv[++i]; break;
-      case '--minimal':            args.modeFlag = 'minimal'; break;
-      case '--with-keyboard':      args.modeFlag = 'with-keyboard'; break;
-      case '--with-iphone-frame':  args.modeFlag = 'with-iphone-frame'; break;
-      case '--dm':           args.forceMode = 'dm'; break;
-      case '--group':        args.forceMode = 'group'; break;
-      case '-h':
-      case '--help':         args.help = true; break;
+      case "--thread":
+        args.thread = argv[++i];
+        break;
+      case "--prompt":
+        args.prompt = argv[++i];
+        break;
+      case "--output":
+        args.output = argv[++i];
+        break;
+      case "--name":
+        args.name = argv[++i];
+        break;
+      case "--minimal":
+        args.modeFlag = "minimal";
+        break;
+      case "--with-keyboard":
+        args.modeFlag = "with-keyboard";
+        break;
+      case "--with-iphone-frame":
+        args.modeFlag = "with-iphone-frame";
+        break;
+      case "--dm":
+        args.forceMode = "dm";
+        break;
+      case "--group":
+        args.forceMode = "group";
+        break;
+      case "-h":
+      case "--help":
+        args.help = true;
+        break;
       default:
         // ignore unknown flags rather than failing the orchestration
         break;
@@ -82,15 +102,17 @@ Save it to a path and re-invoke with --thread <path>.
 `.trimStart();
 
 function slugify(s) {
-  return (s || 'mockup')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-    .slice(0, 40) || 'mockup';
+  return (
+    (s || "mockup")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")
+      .slice(0, 40) || "mockup"
+  );
 }
 
 function pickFirstText(thread) {
-  const t = (thread.messages || []).find(m => m.type === 'text');
+  const t = (thread.messages || []).find((m) => m.type === "text");
   return t ? t.text : null;
 }
 
@@ -104,8 +126,12 @@ async function main() {
 
   if (args.prompt && !args.thread) {
     console.error(SCHEMA_DOC);
-    console.error(`\nReceived --prompt: "${args.prompt.slice(0, 120)}${args.prompt.length > 120 ? '…' : ''}"`);
-    console.error(`Compose a thread.json matching the schema above, then re-run with --thread <path>.`);
+    console.error(
+      `\nReceived --prompt: "${args.prompt.slice(0, 120)}${args.prompt.length > 120 ? "…" : ""}"`,
+    );
+    console.error(
+      `Compose a thread.json matching the schema above, then re-run with --thread <path>.`,
+    );
     process.exit(2);
   }
 
@@ -119,27 +145,27 @@ async function main() {
     console.error(`Thread file not found: ${threadPath}`);
     process.exit(1);
   }
-  const thread = JSON.parse(fs.readFileSync(threadPath, 'utf-8'));
+  const thread = JSON.parse(fs.readFileSync(threadPath, "utf-8"));
 
   // Force mode if --dm or --group specified
   if (args.forceMode) thread.mode = args.forceMode;
   // Auto-detect mode if missing
   if (!thread.mode) {
-    const others = (thread.participants || []).filter(p => !p.self);
-    thread.mode = others.length > 1 ? 'group' : 'dm';
+    const others = (thread.participants || []).filter((p) => !p.self);
+    thread.mode = others.length > 1 ? "group" : "dm";
   }
 
-  const mode = args.modeFlag || 'with-keyboard';
+  const mode = args.modeFlag || "with-keyboard";
 
   const today = new Date().toISOString().slice(0, 10);
-  const slug = slugify(args.name || pickFirstText(thread) || 'mockup');
+  const slug = slugify(args.name || pickFirstText(thread) || "mockup");
   const outDir = args.output
     ? path.resolve(args.output, `${today}-${slug}`)
-    : path.resolve(process.cwd(), 'imessage-mockup-exports', `${today}-${slug}`);
+    : path.resolve(process.cwd(), "imessage-mockup-exports", `${today}-${slug}`);
 
   fs.mkdirSync(outDir, { recursive: true });
-  const htmlPath = path.join(outDir, 'index.html');
-  const pngPath = path.join(outDir, 'screenshot.png');
+  const htmlPath = path.join(outDir, "index.html");
+  const pngPath = path.join(outDir, "screenshot.png");
 
   const html = renderHTML(thread, { mode });
   fs.writeFileSync(htmlPath, html);
@@ -148,13 +174,13 @@ async function main() {
   await capture({ mode, input: htmlPath, output: pngPath, fontDelay: 600 });
 
   // Copy thread for reproducibility
-  fs.copyFileSync(threadPath, path.join(outDir, 'thread.json'));
+  fs.copyFileSync(threadPath, path.join(outDir, "thread.json"));
 
   console.log(`\n✓ ${pngPath}`);
 }
 
-main().catch(err => {
-  console.error('Render failed:', err.message);
+main().catch((err) => {
+  console.error("Render failed:", err.message);
   console.error(err.stack);
   process.exit(1);
 });

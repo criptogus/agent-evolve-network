@@ -87,7 +87,9 @@ export const getJudgeCalibration = createServerFn({ method: "GET" })
       .select("id, slug, name, type")
       .in("id", Array.from(byPkg.keys()));
     type PkgMeta = { id: string; slug: string; name: string; type: string };
-    const meta = new Map<string, PkgMeta>((pkgs ?? []).map((p: any) => [p.id as string, p as PkgMeta]));
+    const meta = new Map<string, PkgMeta>(
+      (pkgs ?? []).map((p: any) => [p.id as string, p as PkgMeta]),
+    );
 
     const rows: JudgeCalibrationRow[] = [];
     for (const [pkgId, list] of byPkg) {
@@ -240,7 +242,8 @@ export const runAdversarialWithJudge = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (!version?.system_prompt) throw new Response("package has no system prompt", { status: 422 });
+    if (!version?.system_prompt)
+      throw new Response("package has no system prompt", { status: 422 });
 
     const judge = getLlmJudgeOrNull();
     const t0 = Date.now();

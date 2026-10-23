@@ -81,10 +81,12 @@ export const autoLearnPackage = createServerFn({ method: "POST" })
     let createdVersion: { id: string; version: string; status: string } | null = null;
     if (data.apply && !result.regression) {
       const mergedRules = JSON.parse(
-        JSON.stringify({ ...(ver.rules as object), ...(result.patch.patched_rules as object) })
+        JSON.stringify({ ...(ver.rules as object), ...(result.patch.patched_rules as object) }),
       );
       const existingExamples = Array.isArray(ver.examples) ? (ver.examples as unknown[]) : [];
-      const mergedExamples = JSON.parse(JSON.stringify([...existingExamples, ...result.patch.new_examples]));
+      const mergedExamples = JSON.parse(
+        JSON.stringify([...existingExamples, ...result.patch.new_examples]),
+      );
       const { data: nv, error: nvErr } = await supabase
         .from("package_versions")
         .insert({
@@ -123,5 +125,11 @@ export const autoLearnPackage = createServerFn({ method: "POST" })
       },
     });
 
-    return { package: pkg, current_version: ver, ...result, applied: createdVersion, feedback_request };
+    return {
+      package: pkg,
+      current_version: ver,
+      ...result,
+      applied: createdVersion,
+      feedback_request,
+    };
   });

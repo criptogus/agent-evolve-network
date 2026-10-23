@@ -82,7 +82,8 @@ function SoulPage() {
 
   const ownership = useQuery({
     queryKey: ["soul-ownership", slug],
-    queryFn: () => ownershipFn({ data: { slug } }).catch(() => ({ is_owner: false, is_admin: false })),
+    queryFn: () =>
+      ownershipFn({ data: { slug } }).catch(() => ({ is_owner: false, is_admin: false })),
     staleTime: 60_000,
     retry: false,
   });
@@ -192,10 +193,13 @@ function SoulView({
                   </Badge>
                 )}
               </div>
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">{soul.name}</h1>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
+                {soul.name}
+              </h1>
               <p className="mt-2 max-w-2xl text-muted-foreground">{soul.description}</p>
               <p className="mt-2 text-xs text-muted-foreground">
-                {soul.author_handle} · {soul.install_count.toLocaleString()} installs · {soul.license}
+                {soul.author_handle} · {soul.install_count.toLocaleString()} installs ·{" "}
+                {soul.license}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -402,9 +406,7 @@ function VersionsList({ soul, isOwner }: { soul: SoulDetail; isOwner: boolean })
               <span className="text-xs text-muted-foreground">
                 {new Date(v.created_at).toLocaleString()}
               </span>
-              {v.notes && (
-                <span className="text-xs italic text-muted-foreground">— {v.notes}</span>
-              )}
+              {v.notes && <span className="text-xs italic text-muted-foreground">— {v.notes}</span>}
             </div>
             {isOwner && (
               <div className="flex flex-wrap items-center gap-2">
@@ -436,10 +438,7 @@ function VersionsList({ soul, isOwner }: { soul: SoulDetail; isOwner: boolean })
         ))}
       </Card>
 
-      <AlertDialog
-        open={!!pendingRollback}
-        onOpenChange={(o) => !o && setPendingRollback(null)}
-      >
+      <AlertDialog open={!!pendingRollback} onOpenChange={(o) => !o && setPendingRollback(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Rollback to v{pendingRollback}?</AlertDialogTitle>
@@ -450,9 +449,7 @@ function VersionsList({ soul, isOwner }: { soul: SoulDetail; isOwner: boolean })
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => pendingRollback && rollback.mutate(pendingRollback)}
-            >
+            <AlertDialogAction onClick={() => pendingRollback && rollback.mutate(pendingRollback)}>
               Confirm rollback
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -469,12 +466,11 @@ function ManagePanel({ soul }: { soul: SoulDetail }) {
 
   const suggested = useMemo(() => {
     const versions = soul.versions.map((v) => v.version);
-    const max =
-      versions
-        .map((v) => v.match(/^(\d+)\.(\d+)\.(\d+)$/))
-        .filter(Boolean)
-        .map((m) => [+m![1], +m![2], +m![3]] as [number, number, number])
-        .sort((a, b) => b[0] - a[0] || b[1] - a[1] || b[2] - a[2])[0] ?? [0, 0, 0];
+    const max = versions
+      .map((v) => v.match(/^(\d+)\.(\d+)\.(\d+)$/))
+      .filter(Boolean)
+      .map((m) => [+m![1], +m![2], +m![3]] as [number, number, number])
+      .sort((a, b) => b[0] - a[0] || b[1] - a[1] || b[2] - a[2])[0] ?? [0, 0, 0];
     return `${max[0]}.${max[1]}.${max[2] + 1}`;
   }, [soul.versions]);
 

@@ -30,7 +30,7 @@ const AgentSchema = z
   .max(120)
   .optional()
   .describe(
-    "Optional label of the agent/app running this sync (e.g. \"Claude Code\", \"Cursor\"). Stored in the user's sync history for auditing.",
+    'Optional label of the agent/app running this sync (e.g. "Claude Code", "Cursor"). Stored in the user\'s sync history for auditing.',
   );
 
 /** Per-file audit rows for one plan. */
@@ -138,7 +138,12 @@ function planFor(
       local,
     });
     const file = resolveConflict({ slug: s.slug, path, incoming, conflict, strategy, local });
-    return { ...file, version: s.version, cloud_hash: contentHash(incoming), conflict_detail: conflict };
+    return {
+      ...file,
+      version: s.version,
+      cloud_hash: contentHash(incoming),
+      conflict_detail: conflict,
+    };
   });
 
   const orphans = existing
@@ -163,7 +168,10 @@ export const cloudSkillsSyncTool = defineTool({
   description:
     "[CLOUD] Materialise your private cloud library for one agent tool. Returns the exact file paths and contents to write (SKILL.md folders, flat Markdown or Cursor .mdc). Detects conflicts when a different file already exists at the target path and resolves them with conflict_strategy: ask | overwrite | merge | keep_both. Requires OAuth + paid subscription. Nothing is ever deleted.",
   parameters: z.object({
-    tool: z.string().min(1).describe(`One of: ${PROVIDER_IDS.join(", ")}`),
+    tool: z
+      .string()
+      .min(1)
+      .describe(`One of: ${PROVIDER_IDS.join(", ")}`),
     scope: ScopeSchema,
     slugs: z.array(z.string()).max(200).optional().describe("Limit the sync to these slugs."),
     existing: ExistingSchema,

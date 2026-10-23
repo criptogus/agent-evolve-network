@@ -5,14 +5,18 @@ import { requireAdmin } from "./middleware";
 export const listAllPackages = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) =>
-    z.object({ search: z.string().max(120).optional(), kind: z.string().optional() }).parse(d ?? {})
+    z
+      .object({ search: z.string().max(120).optional(), kind: z.string().optional() })
+      .parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
     const { supabase: _sbCtx } = context as any;
     const supabase = _sbCtx as any;
     let q = supabase
       .from("packages")
-      .select("id, slug, name, type, description, is_published, install_count, latest_version, source_kind, source_ref, author_handle, created_at")
+      .select(
+        "id, slug, name, type, description, is_published, install_count, latest_version, source_kind, source_ref, author_handle, created_at",
+      )
       .order("created_at", { ascending: false })
       .limit(500);
     if (data.search) q = q.ilike("name", `%${data.search}%`);
@@ -25,7 +29,7 @@ export const listAllPackages = createServerFn({ method: "GET" })
 export const setPackagePublished = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) =>
-    z.object({ id: z.string().uuid(), published: z.boolean() }).parse(d)
+    z.object({ id: z.string().uuid(), published: z.boolean() }).parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase: _sbCtx } = context as any;

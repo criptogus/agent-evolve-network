@@ -37,10 +37,13 @@ function AuthorizePage() {
   const consent = useServerFn(issueOauthCode);
   const track = useServerFn(recordFunnelEvent);
 
-  const [client, setClient] = useState<
-    | { client_id: string; client_name: string; redirect_uris: string[]; scope: string; client_uri?: string | null }
-    | null
-  >(null);
+  const [client, setClient] = useState<{
+    client_id: string;
+    client_name: string;
+    redirect_uris: string[];
+    scope: string;
+    client_uri?: string | null;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
 
@@ -141,16 +144,17 @@ function AuthorizePage() {
       <Nav />
       <main className="mx-auto flex min-h-[80vh] max-w-xl items-center px-6 py-16">
         <div className="w-full rounded-2xl border border-border bg-card p-8 shadow-elevated">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Authorize MCP client</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            Authorize MCP client
+          </p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-            Connect{" "}
-            <span className="text-primary">{client?.client_name ?? "this MCP client"}</span>{" "}
+            Connect <span className="text-primary">{client?.client_name ?? "this MCP client"}</span>{" "}
             to Super Agent Skill?
           </h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            You're signed in as <span className="font-medium text-foreground">{user?.email}</span>. This
-            client will be able to call the Super Agent Skill MCP on your behalf with the scopes below.
-            You can revoke access anytime from{" "}
+            You're signed in as <span className="font-medium text-foreground">{user?.email}</span>.
+            This client will be able to call the Super Agent Skill MCP on your behalf with the
+            scopes below. You can revoke access anytime from{" "}
             <span className="font-mono text-xs">Account → Connections</span>.
           </p>
 

@@ -32,10 +32,7 @@ export const getConnectionStatus = createServerFn({ method: "GET" })
 
     try {
       const [tokensRes, oauthRes, installsRes] = await Promise.all([
-        supabase
-          .from("mcp_tokens")
-          .select("id,name,last_used_at")
-          .eq("user_id", userId),
+        supabase.from("mcp_tokens").select("id,name,last_used_at").eq("user_id", userId),
         supabase.rpc("mcp_oauth_list_user_connections"),
         supabase
           .from("package_installs")
@@ -56,9 +53,7 @@ export const getConnectionStatus = createServerFn({ method: "GET" })
         ...tokens.map((t) => t.last_used_at),
         ...oauth.map((o) => o.last_used),
       ].filter((s): s is string => !!s);
-      const lastUsedAt = stamps.length
-        ? stamps.sort((a, b) => (a < b ? 1 : -1))[0]!
-        : null;
+      const lastUsedAt = stamps.length ? stamps.sort((a, b) => (a < b ? 1 : -1))[0]! : null;
 
       const clientNames = Array.from(
         new Set([

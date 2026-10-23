@@ -12,7 +12,10 @@ export const listSyncEvents = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) =>
     z
       .object({
-        provider: z.string().refine((v) => PROVIDER_IDS.includes(v)).optional(),
+        provider: z
+          .string()
+          .refine((v) => PROVIDER_IDS.includes(v))
+          .optional(),
         scope: z.enum(["project", "global"]).optional(),
         status: z.enum(["ok", "partial", "pending_conflicts", "no_changes", "error"]).optional(),
         limit: z.number().int().min(1).max(100).default(20),
@@ -32,7 +35,11 @@ export const listSyncEvents = createServerFn({ method: "GET" })
     if (data.scope) q = q.eq("scope", data.scope);
     if (data.status) q = q.eq("status", data.status);
 
-    const { data: rows, error, count } = await q
+    const {
+      data: rows,
+      error,
+      count,
+    } = await q
       .order("created_at", { ascending: false })
       .range(data.offset, data.offset + data.limit - 1);
     if (error) throw new Response(error.message, { status: 500 });

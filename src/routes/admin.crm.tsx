@@ -38,7 +38,6 @@ import {
 import { TRIGGERS } from "@/lib/crm/segments";
 import { EffectivenessPanel } from "@/components/crm/EffectivenessPanel";
 
-
 export const Route = createFileRoute("/admin/crm")({
   head: () => ({
     meta: [
@@ -62,7 +61,13 @@ export const Route = createFileRoute("/admin/crm")({
 
 const usd = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 const fmtDate = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "—";
+  iso
+    ? new Date(iso).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "—";
 
 function CrmAdminPage() {
   const fetchOverview = useServerFn(getCrmOverview);
@@ -113,9 +118,7 @@ function CrmAdminPage() {
     return (overview.data?.rows ?? []).filter((r) => {
       if (stage !== "all" && r.stage !== stage) return false;
       if (!q) return true;
-      return (
-        (r.email ?? "").toLowerCase().includes(q) || (r.name ?? "").toLowerCase().includes(q)
-      );
+      return (r.email ?? "").toLowerCase().includes(q) || (r.name ?? "").toLowerCase().includes(q);
     });
   }, [overview.data?.rows, search, stage]);
 
@@ -127,8 +130,8 @@ function CrmAdminPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">CRM — value & lifecycle</h1>
           <p className="text-sm text-muted-foreground">
-            Who is using the product, what it is worth to them, and the automated communication
-            that proves it. Max 2 emails per customer per 7 days.
+            Who is using the product, what it is worth to them, and the automated communication that
+            proves it. Max 2 emails per customer per 7 days.
           </p>
         </div>
         <div className="flex gap-2">
@@ -156,7 +159,10 @@ function CrmAdminPage() {
           { label: "Paying", value: t ? `${t.paying} · ${usd(t.mrr_usd)} MRR` : "—" },
           { label: "Connected / activated", value: t ? `${t.connected} / ${t.activated}` : "—" },
           { label: "Avg. value actions", value: t ? String(t.avg_actions_per_customer) : "—" },
-          { label: "Realized ROI (all customers)", value: t ? `${usd(t.realized_monthly_usd)}/mo` : "—" },
+          {
+            label: "Realized ROI (all customers)",
+            value: t ? `${usd(t.realized_monthly_usd)}/mo` : "—",
+          },
           { label: "Headroom left on table", value: t ? `${usd(t.headroom_monthly_usd)}/mo` : "—" },
           { label: "CRM emails last 7 days", value: t ? String(t.emails_last_7d) : "—" },
           {
@@ -217,9 +223,7 @@ function CrmAdminPage() {
           {overview.isLoading ? (
             <p className="py-8 text-sm text-muted-foreground">Loading customers…</p>
           ) : overview.error ? (
-            <p className="py-8 text-sm text-destructive">
-              {(overview.error as Error).message}
-            </p>
+            <p className="py-8 text-sm text-destructive">{(overview.error as Error).message}</p>
           ) : rows.length === 0 ? (
             <p className="py-8 text-sm text-muted-foreground">No customers match this filter.</p>
           ) : (
@@ -306,7 +310,6 @@ function CrmAdminPage() {
 
       <EffectivenessPanel />
 
-
       <Sheet open={!!openUser} onOpenChange={(o) => !o && setOpenUser(null)}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
           <SheetHeader>
@@ -333,7 +336,6 @@ function CrmAdminPage() {
                   ))}
               </div>
 
-
               <section>
                 <h3 className="mb-2 text-sm font-semibold">Usage</h3>
                 <div className="grid grid-cols-2 gap-2 text-sm">
@@ -341,7 +343,13 @@ function CrmAdminPage() {
                     <div key={k} className="flex justify-between rounded border px-2 py-1">
                       <span className="text-muted-foreground">{k.replace(/_/g, " ")}</span>
                       <span className="font-medium">
-                        {typeof v === "boolean" ? (v ? "yes" : "no") : Number.isFinite(Number(v)) ? Number(v).toLocaleString() : String(v)}
+                        {typeof v === "boolean"
+                          ? v
+                            ? "yes"
+                            : "no"
+                          : Number.isFinite(Number(v))
+                            ? Number(v).toLocaleString()
+                            : String(v)}
                       </span>
                     </div>
                   ))}
@@ -370,7 +378,9 @@ function CrmAdminPage() {
                     </li>
                   ))}
                   {detail.data.opportunities.length === 0 && (
-                    <li className="text-muted-foreground">Using everything — upsell or advocacy.</li>
+                    <li className="text-muted-foreground">
+                      Using everything — upsell or advocacy.
+                    </li>
                   )}
                 </ul>
               </section>
@@ -432,7 +442,10 @@ function CrmAdminPage() {
                 <h3 className="mb-2 text-sm font-semibold">Message history</h3>
                 <ul className="space-y-1 text-sm">
                   {detail.data.messages.map((m, i) => (
-                    <li key={i} className="flex items-center justify-between gap-2 rounded border px-2 py-1">
+                    <li
+                      key={i}
+                      className="flex items-center justify-between gap-2 rounded border px-2 py-1"
+                    >
                       <span className="truncate">{m.subject ?? m.trigger}</span>
                       <span className="shrink-0 text-xs text-muted-foreground">
                         {m.status} · {fmtDate(m.created_at)}

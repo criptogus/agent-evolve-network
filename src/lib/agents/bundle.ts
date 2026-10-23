@@ -8,7 +8,9 @@ import type { AgentDef } from "./types";
 
 function frontmatter(fields: Record<string, string | string[]>): string {
   const lines = Object.entries(fields).map(([k, v]) =>
-    Array.isArray(v) ? `${k}: [${v.map((x) => JSON.stringify(x)).join(", ")}]` : `${k}: ${JSON.stringify(v)}`,
+    Array.isArray(v)
+      ? `${k}: [${v.map((x) => JSON.stringify(x)).join(", ")}]`
+      : `${k}: ${JSON.stringify(v)}`,
   );
   return ["---", ...lines, "---", ""].join("\n");
 }
@@ -23,7 +25,8 @@ export function soulMarkdown(a: AgentDef): string {
 export function docMarkdown(a: AgentDef, kind: "skill" | "playbook", i: number): string {
   const doc = kind === "skill" ? a.skills[i] : a.playbooks[i];
   return (
-    frontmatter({ name: doc.slug, type: kind, agent: a.slug, description: doc.summary }) + `${doc.body}\n`
+    frontmatter({ name: doc.slug, type: kind, agent: a.slug, description: doc.summary }) +
+    `${doc.body}\n`
   );
 }
 
@@ -37,7 +40,9 @@ export function agentReadme(a: AgentDef): string {
   lines.push("");
   lines.push("## What's inside");
   lines.push("");
-  lines.push(`- \`AGENT.md\` — the soul (identity, reasoning process, hard rules). Load this as the system prompt.`);
+  lines.push(
+    `- \`AGENT.md\` — the soul (identity, reasoning process, hard rules). Load this as the system prompt.`,
+  );
   lines.push(`- \`skills/\` — ${a.skills.length} bounded capabilities.`);
   lines.push(`- \`playbooks/\` — ${a.playbooks.length} step-by-step procedures.`);
   lines.push("");
@@ -49,11 +54,17 @@ export function agentReadme(a: AgentDef): string {
   lines.push("");
   lines.push("## How to install");
   lines.push("");
-  lines.push("**Claude Code / Hermes / Cursor** — drop this folder into your project (e.g. `.agents/`), then tell your agent: \"load AGENT.md as your operating soul and use the files in skills/ and playbooks/ when relevant\".");
+  lines.push(
+    '**Claude Code / Hermes / Cursor** — drop this folder into your project (e.g. `.agents/`), then tell your agent: "load AGENT.md as your operating soul and use the files in skills/ and playbooks/ when relevant".',
+  );
   lines.push("");
-  lines.push("**ChatGPT / Claude web** — paste `AGENT.md` as a custom instruction / project instruction, then paste individual skills when you need them.");
+  lines.push(
+    "**ChatGPT / Claude web** — paste `AGENT.md` as a custom instruction / project instruction, then paste individual skills when you need them.",
+  );
   lines.push("");
-  lines.push("**MCP** — with the SuperAgentSkill MCP connected, ask: `install the " + a.slug + " agent`.");
+  lines.push(
+    "**MCP** — with the SuperAgentSkill MCP connected, ask: `install the " + a.slug + " agent`.",
+  );
   lines.push("");
   lines.push("---");
   lines.push("");
@@ -76,7 +87,8 @@ export function agentFiles(a: AgentDef): Record<string, string> {
 export function agentMarkdownBundle(a: AgentDef): string {
   const parts: string[] = [agentReadme(a), "\n\n---\n\n", soulMarkdown(a)];
   for (let i = 0; i < a.skills.length; i++) parts.push("\n\n---\n\n", docMarkdown(a, "skill", i));
-  for (let i = 0; i < a.playbooks.length; i++) parts.push("\n\n---\n\n", docMarkdown(a, "playbook", i));
+  for (let i = 0; i < a.playbooks.length; i++)
+    parts.push("\n\n---\n\n", docMarkdown(a, "playbook", i));
   return parts.join("");
 }
 

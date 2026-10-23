@@ -229,12 +229,14 @@ export type CadenceRunResult = {
 };
 
 /** Hourly cadence pass over every customer. */
-export async function runCadence(opts: {
-  dryRun?: boolean;
-  limit?: number;
-  maxSends?: number;
-  ignoreSendWindow?: boolean;
-} = {}): Promise<CadenceRunResult> {
+export async function runCadence(
+  opts: {
+    dryRun?: boolean;
+    limit?: number;
+    maxSends?: number;
+    ignoreSendWindow?: boolean;
+  } = {},
+): Promise<CadenceRunResult> {
   const dryRun = !!opts.dryRun;
   const maxSends = opts.maxSends ?? 200;
   const rows = await loadCustomerRows(opts.limit ?? 1000, 0);
@@ -268,7 +270,8 @@ export async function runCadence(opts: {
         },
         { onConflict: "user_id" },
       );
-      if (reason) result.details.push({ email: redacted, stage: classifyStage(row), action: reason });
+      if (reason)
+        result.details.push({ email: redacted, stage: classifyStage(row), action: reason });
     };
 
     if (blocked || ranked.length === 0) {

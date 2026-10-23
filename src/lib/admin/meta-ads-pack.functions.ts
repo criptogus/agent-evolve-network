@@ -2,7 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAdmin } from "./middleware";
 import { generateDraft, insertDraftPackage } from "./author.server";
-import { BLUEPRINTS, META_ADS_MCP, buildGroundingForBlueprint, categoryByKey } from "./meta-ads-tools";
+import {
+  BLUEPRINTS,
+  META_ADS_MCP,
+  buildGroundingForBlueprint,
+  categoryByKey,
+} from "./meta-ads-tools";
 
 const PACK_SLUG = "meta-ads-pack";
 const PACK_NAME = "Meta Ads Pack — 135 Tool-Grounded Primitives";
@@ -46,7 +51,7 @@ export const generateMetaAdsBlueprint = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => GenInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
     const bp = BLUEPRINTS.find((b) => b.id === data.blueprint_id);
     if (!bp) throw new Response(`Unknown blueprint: ${data.blueprint_id}`, { status: 400 });
@@ -142,7 +147,7 @@ export const generateMetaAdsBlueprint = createServerFn({ method: "POST" })
 export const assembleMetaAdsPack = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
 
     // Load all generated packages by slug

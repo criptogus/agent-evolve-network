@@ -51,29 +51,33 @@ export type PackDetail = {
 const packsListCache = createTtlCache<{ packs: PackSummary[] }>(5 * 60 * 1000, { max: 4 });
 const packDetailCache = createTtlCache<PackDetail | null>(5 * 60 * 1000, { max: 500 });
 
-export const listPacks = createServerFn({ method: "GET" }).handler(async (): Promise<{ packs: PackSummary[] }> => {
-  return packsListCache.getOrLoad("all", async () => {
-    const { data: rows, error } = await supabaseAdmin
-      .from("packs")
-      .select("id,slug,name,theme,description,cover_emoji,price_credits,install_count, pack_items(count)")
-      .eq("is_published", true)
-      .eq("review_status", "approved")
-      .order("created_at", { ascending: false });
-    if (error) throw new Response(error.message, { status: 500 });
-    const packs = (rows ?? []).map((r: any) => ({
-      id: r.id,
-      slug: r.slug,
-      name: r.name,
-      theme: r.theme,
-      description: r.description,
-      cover_emoji: r.cover_emoji,
-      price_credits: r.price_credits,
-      install_count: r.install_count,
-      item_count: r.pack_items?.[0]?.count ?? 0,
-    }));
-    return { packs };
-  });
-});
+export const listPacks = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ packs: PackSummary[] }> => {
+    return packsListCache.getOrLoad("all", async () => {
+      const { data: rows, error } = await supabaseAdmin
+        .from("packs")
+        .select(
+          "id,slug,name,theme,description,cover_emoji,price_credits,install_count, pack_items(count)",
+        )
+        .eq("is_published", true)
+        .eq("review_status", "approved")
+        .order("created_at", { ascending: false });
+      if (error) throw new Response(error.message, { status: 500 });
+      const packs = (rows ?? []).map((r: any) => ({
+        id: r.id,
+        slug: r.slug,
+        name: r.name,
+        theme: r.theme,
+        description: r.description,
+        cover_emoji: r.cover_emoji,
+        price_credits: r.price_credits,
+        install_count: r.install_count,
+        item_count: r.pack_items?.[0]?.count ?? 0,
+      }));
+      return { packs };
+    });
+  },
+);
 
 const SlugInput = z.object({ slug: z.string().min(1) });
 
@@ -81,7 +85,9 @@ export const getPack = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => SlugInput.parse(d))
   .handler(async ({ data }): Promise<PackDetail | null> => {
     return packDetailCache.getOrLoad(data.slug, async () => {
-      const { data: row, error } = await supabaseAdmin.rpc("get_pack_with_items", { _slug: data.slug });
+      const { data: row, error } = await supabaseAdmin.rpc("get_pack_with_items", {
+        _slug: data.slug,
+      });
       if (error) throw new Response(error.message, { status: 500 });
       return (row as PackDetail | null) ?? null;
     });
@@ -123,7 +129,7 @@ export const startCustomization = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => CustomizeInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
     // Must own the pack
     const { data: owned } = await supabase
@@ -132,7 +138,8 @@ export const startCustomization = createServerFn({ method: "POST" })
       .eq("buyer_id", userId)
       .eq("pack_id", data.pack_id)
       .maybeSingle();
-    if (!owned) throw new Response("You must purchase this pack before customizing it.", { status: 403 });
+    if (!owned)
+      throw new Response("You must purchase this pack before customizing it.", { status: 403 });
 
     const { data: row, error } = await supabase
       .from("pack_customizations")
@@ -157,7 +164,7 @@ export const runCustomization = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => RunInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
     const { data: cust, error: cErr } = await supabase
       .from("pack_customizations")
@@ -169,12 +176,18 @@ export const runCustomization = createServerFn({ method: "POST" })
     if (cust.status === "ready") return { status: "ready" as const };
 
     // Load pack + items + latest version content
-    const { data: pack } = await supabaseAdmin.from("packs").select("*").eq("id", cust.pack_id).single();
+    const { data: pack } = await supabaseAdmin
+      .from("packs")
+      .select("*")
+      .eq("id", cust.pack_id)
+      .single();
     if (!pack) throw new Response("Pack not found", { status: 404 });
 
     const { data: items } = await supabaseAdmin
       .from("pack_items")
-      .select("role, sort_order, package:packages(id, slug, name, type, description, latest_version)")
+      .select(
+        "role, sort_order, package:packages(id, slug, name, type, description, latest_version)",
+      )
       .eq("pack_id", cust.pack_id)
       .order("sort_order", { ascending: true });
 
@@ -243,10 +256,7 @@ export const runCustomization = createServerFn({ method: "POST" })
           .eq("id", cust.id);
       }
 
-      await supabaseAdmin
-        .from("pack_customizations")
-        .update({ status: "ready" })
-        .eq("id", cust.id);
+      await supabaseAdmin.from("pack_customizations").update({ status: "ready" }).eq("id", cust.id);
 
       return { status: "ready" as const, count: customized.length };
     } catch (e: any) {
@@ -264,7 +274,7 @@ export const getCustomization = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => GetCustInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
     const { data: row, error } = await supabase
       .from("pack_customizations")
@@ -278,9 +288,11 @@ export const getCustomization = createServerFn({ method: "GET" })
 
 export const listMyCustomizations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ pack_id: z.string().uuid().optional() }).parse(d ?? {}))
+  .inputValidator((d: unknown) =>
+    z.object({ pack_id: z.string().uuid().optional() }).parse(d ?? {}),
+  )
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
     let q = supabase
       .from("pack_customizations")

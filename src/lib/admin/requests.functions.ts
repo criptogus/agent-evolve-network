@@ -15,10 +15,10 @@ export const requestMissingPrimitive = createServerFn({ method: "POST" })
         kind: z.enum(["skill", "playbook", "soul", "guardrail"]),
         industry: z.string().max(120).optional(),
       })
-      .parse(d)
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
     const { data: row, error } = await supabase
       .from("package_requests")
@@ -53,7 +53,7 @@ export const processRequest = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
+    const { supabase: _sbCtx, userId } = context as any;
     const supabase = _sbCtx as any;
 
     const { data: req, error: rErr } = await supabase
@@ -80,7 +80,9 @@ export const processRequest = createServerFn({ method: "POST" })
 
       const groundingText = [
         research.summary,
-        research.best_practices?.length ? `Best practices:\n- ${research.best_practices.join("\n- ")}` : "",
+        research.best_practices?.length
+          ? `Best practices:\n- ${research.best_practices.join("\n- ")}`
+          : "",
         research.sources?.length
           ? `Sources:\n- ${research.sources.map((s) => `${s.title}${s.url ? ` (${s.url})` : ""}`).join("\n- ")}`
           : "",
@@ -88,7 +90,12 @@ export const processRequest = createServerFn({ method: "POST" })
         .filter(Boolean)
         .join("\n\n");
 
-      const draft = await generateDraft(req.brief, req.kind, req.industry ?? undefined, groundingText);
+      const draft = await generateDraft(
+        req.brief,
+        req.kind,
+        req.industry ?? undefined,
+        groundingText,
+      );
 
       const pkg = await insertDraftPackage(supabase, userId, draft, {
         source_kind: "request",
@@ -122,7 +129,10 @@ export const publishRequestPackage = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .single();
     if (!req?.generated_package_id) throw new Response("No draft to publish", { status: 400 });
-    await supabase.from("packages").update({ is_published: true }).eq("id", req.generated_package_id);
+    await supabase
+      .from("packages")
+      .update({ is_published: true })
+      .eq("id", req.generated_package_id);
     await supabase.from("package_requests").update({ status: "published" }).eq("id", data.id);
     return { ok: true };
   });

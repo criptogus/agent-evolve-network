@@ -43,7 +43,11 @@ export type LearningState = {
 
 export async function loadSettings(): Promise<LearningSettings> {
   try {
-    const { data } = await admin.from("crm_settings").select("value").eq("key", "learning").maybeSingle();
+    const { data } = await admin
+      .from("crm_settings")
+      .select("value")
+      .eq("key", "learning")
+      .maybeSingle();
     const v = (data?.value ?? {}) as { enabled?: boolean; min_samples?: number };
     return { enabled: v.enabled !== false, minSamples: Math.max(5, v.min_samples ?? 20) };
   } catch {
@@ -91,7 +95,9 @@ export async function loadLearningState(): Promise<LearningState> {
   try {
     const { data } = await admin
       .from("crm_copy_variants")
-      .select("trigger, variant, label, framing, status, subject_override, heading_override, intro_override");
+      .select(
+        "trigger, variant, label, framing, status, subject_override, heading_override, intro_override",
+      );
     for (const row of (data ?? []) as any[]) {
       const list = arms[row.trigger] ?? [];
       if (row.status !== "active") {
@@ -150,7 +156,9 @@ export async function loadFatigue(userId: string): Promise<number> {
     const rows = (data ?? []) as any[];
     let engaged = 0;
     for (const r of rows) {
-      const o = Array.isArray(r.crm_message_outcomes) ? r.crm_message_outcomes[0] : r.crm_message_outcomes;
+      const o = Array.isArray(r.crm_message_outcomes)
+        ? r.crm_message_outcomes[0]
+        : r.crm_message_outcomes;
       if (o && (o.opened_at || o.clicked_at || o.converted_at)) engaged += 1;
     }
     return fatigueMultiplier({ messages: rows.length, engaged });
@@ -312,12 +320,17 @@ export type TuneResult = {
   leaders: Array<{ trigger: string; variant: string; rate: number; sent: number }>;
 };
 
-
 async function draftReplacement(
   trigger: string,
   leader: { variant: string; label: string },
   reason: string,
-): Promise<{ variant: string; label: string; subject: string; heading: string; intro: string } | null> {
+): Promise<{
+  variant: string;
+  label: string;
+  subject: string;
+  heading: string;
+  intro: string;
+} | null> {
   const key = process.env["LOVABLE_API_KEY"];
   if (!key) return null;
   const outcome = OUTCOMES[trigger as TriggerId];
@@ -329,7 +342,12 @@ async function draftReplacement(
     const { output } = await generateText({
       model: gateway("google/gemini-3.6-flash"),
       output: Output.object({
-        schema: z.object({ label: z.string(), subject: z.string(), heading: z.string(), intro: z.string() }),
+        schema: z.object({
+          label: z.string(),
+          subject: z.string(),
+          heading: z.string(),
+          intro: z.string(),
+        }),
       }),
       prompt: [
         "You write B2B lifecycle email copy for SuperAgent Skill, a platform that measures whether agent skills work and reports the result in dollars and engineer-hours.",
@@ -374,7 +392,9 @@ export async function runTuner(opts: { dryRun?: boolean } = {}): Promise<TuneRes
       def: d,
       stats: state.stats[armKey(trigger, d.variant)] ?? EMPTY_ARM,
     }));
-    const leader = scored.reduce((a, b) => (estimatedRate(b.stats) > estimatedRate(a.stats) ? b : a));
+    const leader = scored.reduce((a, b) =>
+      estimatedRate(b.stats) > estimatedRate(a.stats) ? b : a,
+    );
     result.leaders.push({
       trigger,
       variant: leader.def.variant,
@@ -389,7 +409,11 @@ export async function runTuner(opts: { dryRun?: boolean } = {}): Promise<TuneRes
 
       const pauseGate = canPause(activeCount, pausesThisRun);
       if (!pauseGate.ok) {
-        result.blocked.push({ trigger, variant: arm.def.variant, reason: pauseGate.violations.join("; ") });
+        result.blocked.push({
+          trigger,
+          variant: arm.def.variant,
+          reason: pauseGate.violations.join("; "),
+        });
         if (!opts.dryRun)
           await admin.from("crm_tuning_log").insert({
             action: "guardrail_blocked_pause",
@@ -437,7 +461,9 @@ export async function runTuner(opts: { dryRun?: boolean } = {}): Promise<TuneRes
       const violations = [
         ...copyGate.violations,
         ...slotGate.violations,
-        ...(overRun ? [`already published ${GUARDRAILS.maxAutoActivationsPerRun} new variants in this run`] : []),
+        ...(overRun
+          ? [`already published ${GUARDRAILS.maxAutoActivationsPerRun} new variants in this run`]
+          : []),
       ];
       const live = violations.length === 0;
 
@@ -480,5 +506,4 @@ export async function runTuner(opts: { dryRun?: boolean } = {}): Promise<TuneRes
     }
   }
   return result;
-
 }

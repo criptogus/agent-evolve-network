@@ -145,7 +145,9 @@ export function buildValueProof(input: {
     } a human rescue (~${Math.abs(hours)} engineer-hours)`,
     `- ${Math.abs(Math.round(tokens)).toLocaleString("en-US")} tokens/month ${improved ? "saved" : "wasted"}`,
     ...(successRow ? [`- Task success rate ${successRow.before} → ${successRow.after}`] : []),
-    ...(injectionRow ? [`- Prompt-injection resistance ${injectionRow.before} → ${injectionRow.after}`] : []),
+    ...(injectionRow
+      ? [`- Prompt-injection resistance ${injectionRow.before} → ${injectionRow.after}`]
+      : []),
     ...(costRow ? [`- Cost per 1,000 runs ${costRow.before} → ${costRow.after}`] : []),
     ...(input.timeline && input.timeline.length > 1
       ? [

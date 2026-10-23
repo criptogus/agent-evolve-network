@@ -5,7 +5,11 @@ import { requireAdmin } from "./middleware";
 
 const PlanInput = z.object({
   id: z.string().uuid().optional(),
-  slug: z.string().min(2).max(40).regex(/^[a-z0-9-]+$/),
+  slug: z
+    .string()
+    .min(2)
+    .max(40)
+    .regex(/^[a-z0-9-]+$/),
   name: z.string().min(1).max(80),
   monthly_runs_limit: z.number().int().min(0).max(10_000_000),
   max_installed_packages: z.number().int().min(0).max(100_000),

@@ -25,9 +25,7 @@ const SUPABASE_KEY =
   process.env.SUPABASE_ANON_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error(
-    "[check-public-access] Missing SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY env vars.",
-  );
+  console.error("[check-public-access] Missing SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY env vars.");
   process.exit(2);
 }
 
@@ -65,9 +63,7 @@ const allowedSeen = [];
 const emptyAllowed = [];
 
 for (const table of tables) {
-  const { count, error } = await supabase
-    .from(table)
-    .select("*", { head: true, count: "exact" });
+  const { count, error } = await supabase.from(table).select("*", { head: true, count: "exact" });
 
   // A denied policy returns 0 rows (or a permission error) — both are fine.
   if (error) continue;
@@ -79,9 +75,7 @@ for (const table of tables) {
   else if (isAllowed) emptyAllowed.push(table);
 }
 
-console.log(
-  `[check-public-access] Probed ${tables.length} public tables with the anon key.`,
-);
+console.log(`[check-public-access] Probed ${tables.length} public tables with the anon key.`);
 if (allowedSeen.length) {
   console.log(
     `[check-public-access] Intentionally public (allowlisted): ${allowedSeen.join(", ")}`,
@@ -95,9 +89,7 @@ for (const table of emptyAllowed) {
 
 const unknownAllowlisted = Object.keys(allowlist).filter((t) => !tables.includes(t));
 for (const table of unknownAllowlisted) {
-  console.log(
-    `[check-public-access] note: allowlisted table "${table}" no longer exists.`,
-  );
+  console.log(`[check-public-access] note: allowlisted table "${table}" no longer exists.`);
 }
 
 if (exposed.length === 0) {
