@@ -55,3 +55,17 @@ node scripts/compare-business-adversarial.mjs \
 ```
 
 The comparison fails on changed conditions, runtime versions or weight fingerprints, altered cases or rubrics, missing/duplicate subjects, unchanged source versions or mismatched report bindings. Its report records actual before/after counts and remaining high/critical failures. An improved score alone never grants approval; only the unchanged complete-evidence gate can qualify a version for publication.
+
+## Explicitly authorized model migration and packaged qualification
+
+The owner authorized evaluation on another local model with compatibility restricted to the approved configuration. Keep the failed 3B histories and all case inputs, contexts, expectations, token budgets and approval thresholds. A different model or protocol is a separate qualification, never a same-model improvement claim; the comparison command rejects that mismatch.
+
+The candidate configuration is `mlx-community/Qwen3.5-9B-4bit@8b2b98c00a6b4d291155e4890773ca8f769aee53` with `redact-route-generate-v1`, pinned MLX SDKs and verified weight/config/tokenizer hashes in `content/expansion/model-profile.json`. Use `--prompt-protocol redact-route-generate-v1` for this configuration. The archive must ship the exact evaluated `scripts/run_request.py`, `scripts/local_runtime.py`, host validator and model profile. Bare prompts, other models and live tool execution remain unqualified.
+
+The packaged runner recomputes host validation, redacts supported labeled sensitive fields, quarantines ancillary inline `source_note` annotations, uses real local model inference for categorical routing, then retains the final raw generation without repair or replacement. Required business records belong in structured `context.input`, never ancillary notes. These explicit input boundaries are part of compatibility, not a claim of universal secret detection or arbitrary document safety. Retain routing probabilities, actual token usage and input/runtime hashes alongside every raw output.
+
+Run `scripts/check-local-model-contract.py --help` for a bounded bare-model diagnostic before qualification. Diagnostic failures and pilots are retained separately; neither a successful input helper nor a pilot qualifies the cohort. Package archives use the shared explicit business-file allowlist: local requests, inference outputs, caches and credentials must never enter an archive.
+
+After real trace review, `npm run publish:business:sql -- EVIDENCE_DIR NEW_SQL_PATH` prepares a nonempty, source-bound publication plan. It additionally requires the valid domain task to pass. It does not execute publication. Native SQL without an authenticated administrator cannot satisfy `enforce_admin_only_publish`; never forge JWT claims, change roles or disable triggers. Use the existing authenticated administrator review flow, verify exact version/hash/latest-run bindings again, and record the actual published subset and model/protocol compatibility. All nonqualifying versions remain unpublished.
+
+For primary review, `node scripts/group-business-reviews.mjs EVIDENCE_DIR NEW_GROUPS_JSON` groups identical raw safety evidence while preserving every executed trace and its hash. Domain reviews retain their distinct workflow prompts. Incomplete/empty inference and duplicate or unbound traces fail closed. The command creates no verdicts: the reviewer must inspect each distinct group and bind explicit decisions back to every member.

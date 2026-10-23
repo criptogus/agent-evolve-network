@@ -15,6 +15,8 @@
 
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { createHash } from "node:crypto";
+import { z } from "zod";
 import { parse as parseYaml } from "yaml";
 
 const ROOT = new URL("..", import.meta.url).pathname;
@@ -23,6 +25,26 @@ const OUT = join(ROOT, "skills");
 const REPO = "criptogus/agent-evolve-network";
 const SITE = "https://superagentskill.com";
 const CHECK = process.argv.includes("--check");
+const HashesSchema = z
+  .record(z.string().regex(/^[a-f0-9]{64}$/))
+  .refine((hashes) => Object.keys(hashes).length > 0);
+const ModelProfileSchema = z
+  .object({
+    model: z.string().min(1),
+    revision: z.string().regex(/^[a-f0-9]{40}$/),
+    prompt_protocol: z.literal("redact-route-generate-v1"),
+    mlx_vlm: z.string().min(1),
+    mlx: z.string().min(1),
+    max_tokens: z.literal(768),
+    temperature: z.literal(0),
+    seed: z.literal(0),
+    weights_sha256: HashesSchema,
+    scope: z.string().min(1),
+    model_files_sha256: HashesSchema,
+    routing: z.object({ contract: z.string().min(1), max_tokens: z.literal(1) }),
+    input_boundary: z.record(z.string()),
+  })
+  .strict();
 
 /** kebab-case, 2-64 chars, no reserved vendor names (Anthropic SKILL.md spec). */
 function validSlug(slug) {
@@ -190,6 +212,45 @@ for (const file of files) {
     written.set(
       join(slug, "scripts/check_input.py"),
       readFileSync(join(ROOT, "content/expansion/check_input.py"), "utf8"),
+    );
+    const runtimeFiles = {
+      "scripts/check_input.py": readFileSync(
+        join(ROOT, "content/expansion/check_input.py"),
+        "utf8",
+      ),
+      "references/contract.json": JSON.stringify(skill.x_artifact_contract, null, 2) + "\n",
+      "scripts/local_runtime.py": readFileSync(
+        join(ROOT, "content/expansion/local_runtime.py"),
+        "utf8",
+      ),
+      "scripts/run_request.py": readFileSync(
+        join(ROOT, "content/expansion/run_request.py"),
+        "utf8",
+      ),
+      "references/system-prompt.txt": skill.system_prompt,
+    };
+    for (const [path, body] of Object.entries(runtimeFiles)) written.set(join(slug, path), body);
+    const profile = {
+      ...ModelProfileSchema.parse(
+        JSON.parse(readFileSync(join(ROOT, "content/expansion/model-profile.json"), "utf8")),
+      ),
+      package_slug: slug,
+      package_version: String(skill.version),
+      files_sha256: z.record(z.string()).parse({}),
+    };
+    profile.package_slug = slug;
+    profile.package_version = skill.version;
+    profile.files_sha256 = HashesSchema.parse(
+      Object.fromEntries(
+        Object.entries(runtimeFiles).map(([path, body]) => [
+          path,
+          createHash("sha256").update(body).digest("hex"),
+        ]),
+      ),
+    );
+    written.set(
+      join(slug, "references/model-profile.json"),
+      JSON.stringify(profile, null, 2) + "\n",
     );
     const example = JSON.parse(skill.examples[0].input);
     written.set(join(slug, "tests/input.json"), JSON.stringify(example, null, 2) + "\n");

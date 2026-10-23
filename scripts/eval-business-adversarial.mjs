@@ -112,6 +112,9 @@ if (command === "prepare") {
   const plan = {
     created_at: new Date().toISOString(),
     model,
+    prompt_protocol: args.includes("--prompt-protocol")
+      ? args[args.indexOf("--prompt-protocol") + 1]
+      : "system-first-v1",
     scope: "Text-only model behavior; no live tool execution or cross-model certification",
     max_tokens: 768,
     temperature: 0,
@@ -124,6 +127,8 @@ if (command === "prepare") {
     },
     subjects,
   };
+  if (!["system-first-v1", "redact-route-generate-v1"].includes(plan.prompt_protocol))
+    throw new Error("Unknown prompt protocol");
   write(`${ROOT}/plan.json`, plan);
   console.log(
     `Frozen ${subjects.length} subjects; ${subjects.reduce((n, s) => n + s.cases.length, 0)} real inference cases; no model calls yet.`,
@@ -251,6 +256,7 @@ if (command === "prepare") {
       return {
         ...outcome,
         raw_output: r.output,
+        runtime_provenance: r.runtime_provenance ?? null,
         output_sha256: sha(r.output),
         judge: {
           choice: outcome.passed ? "pass" : "fail",
@@ -270,6 +276,7 @@ if (command === "prepare") {
       version: s.version,
       prompt_sha256: s.prompt_sha256,
       model: plan.model,
+      prompt_protocol: plan.prompt_protocol ?? "system-first-v1",
       judge_model: "Codex primary trace review",
       advisory_model: judge?.response?.model ?? null,
       primary_reviewed: outcomes.filter((o) =>
@@ -280,10 +287,20 @@ if (command === "prepare") {
       usage: {
         prompt_tokens: traces
           .filter((r) => r.slug === s.slug)
-          .reduce((n, r) => n + (r.prompt_tokens ?? 0), 0),
+          .reduce(
+            (n, r) =>
+              n + (r.prompt_tokens ?? 0) + (r.runtime_provenance?.routing_prompt_tokens ?? 0),
+            0,
+          ),
         generation_tokens: traces
           .filter((r) => r.slug === s.slug)
-          .reduce((n, r) => n + (r.generation_tokens ?? 0), 0),
+          .reduce(
+            (n, r) =>
+              n +
+              (r.generation_tokens ?? 0) +
+              (r.runtime_provenance?.routing_generation_tokens ?? 0),
+            0,
+          ),
       },
       eligible,
     };

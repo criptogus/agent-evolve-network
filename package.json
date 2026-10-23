@@ -48,7 +48,8 @@
     "build:business-skills": "node --experimental-strip-types scripts/build-business-skills.mjs",
     "check:business-skills": "node --experimental-strip-types scripts/build-business-skills.mjs --check && node scripts/check-business-skills.mjs",
     "eval:business:local": "node --experimental-strip-types scripts/run-business-adversarial.mjs",
-    "eval:business:sql": "node scripts/record-business-adversarial.mjs"
+    "eval:business:sql": "node scripts/record-business-adversarial.mjs",
+    "publish:business:sql": "node --experimental-strip-types scripts/prepare-business-publication.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",

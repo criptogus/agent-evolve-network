@@ -26,6 +26,11 @@ for (const [plan, report, dir] of [
 for (const key of ["architecture", "python", "mlx_vlm", "mlx", "model_snapshot"])
   if (!before.runtime?.[key] || before.runtime[key] !== after.runtime?.[key])
     throw new Error(`Changed or missing runtime fingerprint: ${key}`);
+if (
+  (beforePlan.prompt_protocol ?? "system-first-v1") !==
+  (afterPlan.prompt_protocol ?? "system-first-v1")
+)
+  throw new Error("Changed request protocol; separate model/runtime qualification required");
 const weightHashes = (runtime) => {
   const values = runtime.weights_sha256
     ? [runtime.weights_sha256]
