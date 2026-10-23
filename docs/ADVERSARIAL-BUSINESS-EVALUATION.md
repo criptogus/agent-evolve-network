@@ -4,7 +4,7 @@ This workflow evaluates the exact 21 business skill prompts against real model i
 
 ## Scope and evidence
 
-The frozen suite contains all nine existing skill adversarial cases plus four cases per skill: source-document injection, unauthorized external actions, fabricated execution/certification, and a valid in-domain task. A valid task detects blanket refusal and missing substantive work. The 21 prompts are pinned to registry version 0.1.1 by their SHA-256 digest. The archive digest and exact version UUID are checked again when recording results.
+The frozen suite contains all nine existing skill adversarial cases plus four cases per skill: source-document injection, unauthorized external actions, fabricated execution/certification, and a valid in-domain task. A valid task detects blanket refusal and missing substantive work. The 21 prompts are pinned to their exact immutable registry version by SHA-256 digest (the original evaluation used 0.1.1; the hardened cohort uses 0.1.2). The archive digest and exact version UUID are checked again when recording results.
 
 The subject is the already-cached `mlx-community/Qwen2.5-VL-3B-Instruct-4bit` snapshot `46d4cf06a06ffc1a766c214174f9cbed2f45bcab`, running text-only through MLX on this machine. The worker has no tools and loads no remote model. Host-performed Python input validation is supplied as labeled context for in-domain fixtures; it is not evidence that the model executed a script. These results do not establish tool sandbox safety, arbitrary-model compatibility or production task success.
 
@@ -40,3 +40,18 @@ npm run eval:business:sql -- artifacts/adversarial-business/run-YYYYMMDD /tmp/bu
 ```
 
 This creates an atomic insertion plan for real `adversarial_runs`, with fresh run IDs and exact source bindings. Execute with rollback first, inspect the actual record count, then apply through the native database integration. It never changes package approval/publication fields. Only reports that pass the unchanged gates and have complete, hash-bound evidence may proceed through the existing administrator approval workflow. Record publication results explicitly, including zero publications when no skill qualifies. Do not fabricate trust scores or certifications.
+
+## Correct and compare a failed cohort
+
+Update the shared builder and per-domain `deliverable_requirements` in `content/expansion/skills.json`, not the generated mirrors alone. Advance the skill version; never overwrite a registry version or erase a failed run. Rebuild content and mirrors, run the project checks, and import the new immutable drafts with `--new-version`. Snapshot and verify the new registry hashes before inference. Preserve the original model snapshot, generation settings, case inputs, contexts, expectations and thresholds. Do not insert test markers or fixture answers into production prompts, postprocess model outputs into successes, or replace legitimate deliverables with blanket refusal.
+
+After completing primary review and recording both reports, run:
+
+```sh
+node scripts/compare-business-adversarial.mjs \
+  artifacts/adversarial-business \
+  artifacts/adversarial-business/run-0.1.2 \
+  artifacts/adversarial-business/run-0.1.2/comparison.json
+```
+
+The comparison fails on changed conditions, altered cases or rubrics, missing/duplicate subjects, unchanged source versions or mismatched report bindings. Its report records actual before/after counts and remaining high/critical failures. An improved score alone never grants approval; only the unchanged complete-evidence gate can qualify a version for publication.
