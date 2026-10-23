@@ -1,3 +1,6 @@
+import { z } from "zod";
+import { CreateCloudSkillInput, UpdateCloudSkillInput } from "@/lib/cloud-skills/schemas";
+import { errorField } from "@/lib/errors";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -117,36 +120,36 @@ function CloudSkillsPage() {
   });
 
   const createMut = useMutation({
-    mutationFn: (input: any) => createFn({ data: input }),
+    mutationFn: (input: z.input<typeof CreateCloudSkillInput>) => createFn({ data: input }),
     onSuccess: () => {
       toast.success("Skill saved to cloud");
       qc.invalidateQueries({ queryKey: ["cloud-skills"] });
       setShowCreate(false);
       resetCreateForm();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to create skill"),
+    onError: (e) => toast.error(e?.message ?? "Failed to create skill"),
   });
 
   const importMut = useMutation({
     mutationFn: (input: { filename: string; content: string }) => importFn({ data: input }),
-    onSuccess: (r: any) => {
+    onSuccess: (r) => {
       toast.success(`Imported as "${r.skill.slug}"`);
       qc.invalidateQueries({ queryKey: ["cloud-skills"] });
       setShowImport(false);
       setImportContent("");
       setImportFilename("");
     },
-    onError: (e: any) => toast.error(e?.message ?? "Import failed"),
+    onError: (e) => toast.error(e?.message ?? "Import failed"),
   });
 
   const updateMut = useMutation({
-    mutationFn: (input: any) => updateFn({ data: input }),
-    onSuccess: (r: any) => {
+    mutationFn: (input: z.input<typeof UpdateCloudSkillInput>) => updateFn({ data: input }),
+    onSuccess: (r) => {
       toast.success(r.version_bumped ? "Updated (new version)" : "Updated");
       qc.invalidateQueries({ queryKey: ["cloud-skills"] });
       setEditing(null);
     },
-    onError: (e: any) => toast.error(e?.message ?? "Update failed"),
+    onError: (e) => toast.error(e?.message ?? "Update failed"),
   });
 
   const deleteMut = useMutation({
@@ -156,7 +159,7 @@ function CloudSkillsPage() {
       qc.invalidateQueries({ queryKey: ["cloud-skills"] });
       setDeleteTarget(null);
     },
-    onError: (e: any) => toast.error(e?.message ?? "Delete failed"),
+    onError: (e) => toast.error(e?.message ?? "Delete failed"),
   });
 
   function resetCreateForm() {
@@ -175,8 +178,8 @@ function CloudSkillsPage() {
         typeof result.data === "string" ? result.data : JSON.stringify(result.data, null, 2),
       );
       toast.success("Copied to clipboard as SKILL.md");
-    } catch (e: any) {
-      toast.error(e?.message ?? "Export failed");
+    } catch (e) {
+      toast.error(errorField(e, "message") ?? "Export failed");
     }
   }
 
@@ -190,8 +193,8 @@ function CloudSkillsPage() {
       setEditCategory(result.skill.category);
       setEditTags(result.skill.tags?.join(", ") ?? "");
       setEditChangelog("");
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed to load skill");
+    } catch (e) {
+      toast.error(errorField(e, "message") ?? "Failed to load skill");
     }
   }
 

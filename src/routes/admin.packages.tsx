@@ -110,7 +110,7 @@ function PackagesPage() {
               </tr>
             </thead>
             <tbody>
-              {(pkgs.data?.packages ?? []).map((p: any) => (
+              {(pkgs.data?.packages ?? []).map((p) => (
                 <tr key={p.id} className="border-t">
                   <td className="px-4 py-3">
                     <div className="font-medium">{p.name}</div>

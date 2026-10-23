@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import * as React from "react";
 import { render } from "@react-email/render";
 import { createFileRoute } from "@tanstack/react-router";
@@ -72,7 +73,7 @@ export const Route = createFileRoute("/lovable/email/transactional/preview")({
               subject: "",
               html: "",
               status: "render_failed",
-              errorMessage: err instanceof Error ? err.message : String(err),
+              errorMessage: err instanceof Error ? errorField(err, "message") : String(err),
             });
           }
         }

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 export type TrustSummary = {
   slug: string;
@@ -71,7 +71,7 @@ export const getSkillTrust = createServerFn({ method: "GET" })
       return { ok: false as const, error: "not_found" };
     }
 
-    const { data: trust } = await supabaseAdmin.rpc("get_skill_trust", { _slug: data.slug } as any);
+    const { data: trust } = await supabaseAdmin.rpc("get_skill_trust", { _slug: data.slug });
     const { data: findings } = await supabaseAdmin
       .from("skill_robustness_findings")
       .select("code,severity,category,summary,fixed_in_version,published_at")

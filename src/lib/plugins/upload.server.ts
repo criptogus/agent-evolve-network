@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 /**
  * Server-only helpers for the admin plugin upload panel: unzip an uploaded
  * Agent Plugins v1 package, run the conformance suite, and only then land it
@@ -31,7 +32,7 @@ export async function readPluginZip(base64: string): Promise<Map<string, string>
     zip = await JSZip.loadAsync(bytes);
   } catch (e) {
     throw new Response(
-      `Not a readable .zip archive: ${e instanceof Error ? e.message : String(e)}`,
+      `Not a readable .zip archive: ${e instanceof Error ? errorField(e, "message") : String(e)}`,
       {
         status: 400,
       },

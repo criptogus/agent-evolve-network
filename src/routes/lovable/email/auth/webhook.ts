@@ -1,3 +1,15 @@
+import { AuthEmailDataSchema } from "@/lib/email-templates/auth-data";
+type AuthEmailProps = {
+  siteName: string;
+  siteUrl: string;
+  recipient: string;
+  confirmationUrl: string;
+  token: string;
+  email: string;
+  oldEmail: string;
+  newEmail: string;
+};
+import { errorField } from "@/lib/errors";
 import * as React from "react";
 import { render } from "@react-email/render";
 import { parseEmailWebhookPayload } from "@lovable.dev/email-js";
@@ -21,7 +33,7 @@ const EMAIL_SUBJECTS: Record<string, string> = {
 };
 
 // Template mapping
-const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
+const EMAIL_TEMPLATES: Record<string, React.ComponentType<AuthEmailProps>> = {
   signup: SignupEmail,
   invite: InviteEmail,
   magiclink: MagicLinkEmail,
@@ -55,7 +67,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         }
 
         // Verify signature + timestamp, then parse payload.
-        let payload: any;
+        let payload: ReturnType<typeof parseEmailWebhookPayload>;
         let run_id = "";
         try {
           const verified = await verifyWebhookRequest({
@@ -64,7 +76,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
             parser: parseEmailWebhookPayload,
           });
           payload = verified.payload;
-          run_id = payload.run_id;
+          run_id = payload.run_id ?? "";
         } catch (error) {
           if (error instanceof WebhookError) {
             switch (error.code) {
@@ -72,11 +84,11 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
               case "missing_timestamp":
               case "invalid_timestamp":
               case "stale_timestamp":
-                console.error("Invalid webhook signature", { error: error.message });
+                console.error("Invalid webhook signature", { error: errorField(error, "message") });
                 return Response.json({ error: "Invalid signature" }, { status: 401 });
               case "invalid_payload":
               case "invalid_json":
-                console.error("Invalid webhook payload", { error: error.message });
+                console.error("Invalid webhook payload", { error: errorField(error, "message") });
                 return Response.json({ error: "Invalid webhook payload" }, { status: 400 });
             }
           }
@@ -100,10 +112,14 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
 
         // The email action type is in payload.data.action_type (e.g., "signup", "recovery")
         // payload.type is the hook event type ("auth")
-        const emailType = payload.data.action_type;
+        const parsedData = AuthEmailDataSchema.safeParse(payload.data);
+        if (!parsedData.success)
+          return Response.json({ error: "Invalid auth email data" }, { status: 400 });
+        const authData = parsedData.data;
+        const emailType = authData.action_type;
         console.log("Received auth event", {
           emailType,
-          email_redacted: redactEmail(payload.data.email),
+          email_redacted: redactEmail(authData.email),
           run_id,
         });
 
@@ -117,12 +133,12 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         const templateProps = {
           siteName: SITE_NAME,
           siteUrl: `https://${ROOT_DOMAIN}`,
-          recipient: payload.data.email,
-          confirmationUrl: payload.data.url,
-          token: payload.data.token,
-          email: payload.data.email,
-          oldEmail: payload.data.old_email,
-          newEmail: payload.data.new_email,
+          recipient: authData.email,
+          confirmationUrl: authData.url ?? "",
+          token: authData.token ?? "",
+          email: authData.email,
+          oldEmail: typeof authData.old_email === "string" ? authData.old_email : "",
+          newEmail: authData.new_email ?? "",
         };
 
         // Render React Email to HTML and plain text
@@ -146,7 +162,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         await supabase.from("email_send_log").insert({
           message_id: messageId,
           template_name: emailType,
-          recipient_email: payload.data.email,
+          recipient_email: authData.email,
           status: "pending",
         });
 
@@ -155,7 +171,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           payload: {
             run_id,
             message_id: messageId,
-            to: payload.data.email,
+            to: authData.email,
             from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
             sender_domain: SENDER_DOMAIN,
             subject: EMAIL_SUBJECTS[emailType] || "Notification",
@@ -172,7 +188,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           await supabase.from("email_send_log").insert({
             message_id: messageId,
             template_name: emailType,
-            recipient_email: payload.data.email,
+            recipient_email: authData.email,
             status: "failed",
             error_message: "Failed to enqueue email",
           });
@@ -181,7 +197,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
 
         console.log("Auth email enqueued", {
           emailType,
-          email_redacted: redactEmail(payload.data.email),
+          email_redacted: redactEmail(authData.email),
           run_id,
         });
 

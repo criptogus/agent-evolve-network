@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { GitFork, GitBranch, Percent } from "lucide-react";
 import { supabase as _supabase } from "@/integrations/supabase/client";
 // Cast: types.ts is mid-regen for package_lineage; remove once types catch up.
-const supabase = _supabase as any;
+const supabase = _supabase;
 
 interface ParentInfo {
   slug: string;

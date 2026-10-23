@@ -13,7 +13,7 @@ import {
   type McpConfig,
 } from "./agent-plugins";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 export type PluginPackage = {
   slug: string;

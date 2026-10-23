@@ -32,7 +32,7 @@ export const publishPluginUpload = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => PublishInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as { supabase: any; userId: string };
+    const { supabase, userId } = context;
     const { validateZipPayload, pluginToDraft } = await import("./upload.server");
     const { insertDraftPackage } = await import("@/lib/admin/author.server");
     const { runPluginConformance } = await import("./conformance");

@@ -1,3 +1,4 @@
+import { publicPackage } from "@/lib/public-package";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -13,8 +14,8 @@ export const autoLearnPackage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
 
     const { data: pkg, error: pErr } = await supabase
       .from("packages")
@@ -126,7 +127,7 @@ export const autoLearnPackage = createServerFn({ method: "POST" })
     });
 
     return {
-      package: pkg,
+      package: publicPackage(pkg),
       current_version: ver,
       ...result,
       applied: createdVersion,

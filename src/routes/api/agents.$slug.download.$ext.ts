@@ -4,7 +4,7 @@ import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.
 import { findAgent } from "@/lib/agents/catalog";
 import { agentFiles, agentMarkdownBundle } from "@/lib/agents/bundle";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 /**
  * Pro-only agent bundle download.

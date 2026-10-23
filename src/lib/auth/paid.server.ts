@@ -1,7 +1,7 @@
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { extractBearer, verifyBearerDetailed } from "@/lib/auth/bearer.server";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 export type PaidCheck =
   | { ok: true; userId: string; source: "oauth" | "pat" }

@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -27,15 +28,19 @@ function MyAgents() {
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({ queryKey: ["my-agent-builds"], queryFn: () => listFn() });
-  const builds = (data as any)?.builds ?? [];
+  const builds = data?.builds ?? [];
 
   async function remove(id: string) {
     try {
       await delFn({ data: { build_id: id } });
       await qc.invalidateQueries({ queryKey: ["my-agent-builds"] });
       toast.success("Agent deleted.");
-    } catch (e: any) {
-      toast.error(typeof e?.message === "string" ? e.message : "Could not delete.");
+    } catch (e) {
+      toast.error(
+        typeof errorField(e, "message") === "string"
+          ? errorField(e, "message")
+          : "Could not delete.",
+      );
     }
   }
 
@@ -78,7 +83,7 @@ function MyAgents() {
         )}
 
         <div className="grid gap-4 md:grid-cols-2">
-          {builds.map((b: any) => (
+          {builds.map((b) => (
             <Card key={b.id}>
               <CardHeader>
                 <div className="flex items-start justify-between gap-3">

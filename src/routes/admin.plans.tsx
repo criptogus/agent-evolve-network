@@ -66,7 +66,7 @@ function PlansPage() {
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">
-        {(plans.data?.plans ?? []).map((p: any) => (
+        {(plans.data?.plans ?? []).map((p) => (
           <Card key={p.id}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">

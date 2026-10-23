@@ -1,3 +1,5 @@
+import type { ToolExecutionContext } from "mcp-tanstack-start";
+import type { ErrorProfileEntry, Prescription } from "@/lib/university/types";
 import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
 import {
@@ -47,7 +49,7 @@ const ErrorClassEnum = z.enum([
   "instruction_drift",
 ]);
 
-function userIdOf(ctx: any): string | null {
+function userIdOf(ctx: ToolExecutionContext): string | null {
   return (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
 }
 
@@ -142,7 +144,7 @@ export const curriculumNextTool = defineTool({
       .describe("Max capabilities this agent should carry (default 14)."),
   }),
   execute: async (input) => {
-    let profile: any[] | undefined;
+    let profile: ErrorProfileEntry[] | undefined;
     let installed = input.installed_skills;
     let domain = input.domain as DomainId | undefined;
     if (input.diagnosis_id) {

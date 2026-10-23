@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import type { Database } from "@/integrations/supabase/types";
 
 const ClaimInput = z.object({
@@ -17,8 +17,8 @@ export const claimReferral = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => ClaimInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx } = context;
+    const supabase = _sbCtx;
     const { data: result, error } = await supabase.rpc("claim_referral", {
       _code: data.code,
       _source_url: data.source_url ?? undefined,

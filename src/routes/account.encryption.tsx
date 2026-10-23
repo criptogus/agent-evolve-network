@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -81,7 +82,8 @@ function EncryptionPage() {
     qc.invalidateQueries({ queryKey: ["tenant-encryption"] });
     qc.invalidateQueries({ queryKey: ["tenant-encrypted-objects"] });
   };
-  const fail = (e: any) => toast.error(String(e?.message ?? "Failed").replace(/^Error:\s*/, ""));
+  const fail = (e: unknown) =>
+    toast.error(String(errorField(e) ?? "Failed").replace(/^Error:\s*/, ""));
 
   const enableMut = useMutation({
     mutationFn: () => enable({ data: { rootKey: rootKey.trim() } }),

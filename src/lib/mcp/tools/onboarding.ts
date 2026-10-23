@@ -1,3 +1,4 @@
+import type { ToolExecutionContext } from "mcp-tanstack-start";
 /**
  * First-run experience tools.
  *
@@ -28,11 +29,11 @@ function normalizeProjectType(value: string | undefined): ProjectType | null {
   return PROJECT_TYPE_ALIASES[value] ?? null;
 }
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 const ORIGIN = "https://superagentskill.com";
 
-function userIdOf(ctx: any): string | null {
+function userIdOf(ctx: ToolExecutionContext): string | null {
   return (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
 }
 
@@ -179,7 +180,7 @@ export const uploadStatusTool = defineTool({
 
     let q = supabaseAdmin
       .from("package_upload_jobs")
-      .select("id,filename,inferred_type,status,error,package_id,created_at,updated_at")
+      .select("id,filename,inferred_type,status,error,package_id,created_at,finished_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(job_id ? 1 : limit);
@@ -191,7 +192,9 @@ export const uploadStatusTool = defineTool({
       return json({ error: "not_found", hint: "That job id does not belong to this account." });
 
     // Resolve draft slugs for finished jobs so the agent can link the result.
-    const pkgIds = jobs.map((j: any) => j.package_id).filter(Boolean);
+    const pkgIds = jobs
+      .map((j) => j.package_id)
+      .filter((id): id is string => typeof id === "string");
     const slugById = new Map<string, string>();
     if (pkgIds.length) {
       const { data: pkgs } = await supabaseAdmin
@@ -201,7 +204,7 @@ export const uploadStatusTool = defineTool({
       for (const p of pkgs ?? []) slugById.set(p.id, p.slug);
     }
 
-    const items = jobs.map((j: any) => {
+    const items = jobs.map((j) => {
       const slug = j.package_id ? (slugById.get(j.package_id) ?? null) : null;
       return {
         job_id: j.id,
@@ -212,7 +215,7 @@ export const uploadStatusTool = defineTool({
         slug,
         forge_report_url: slug ? `${ORIGIN}/forge/report/${slug}` : null,
         created_at: j.created_at,
-        updated_at: j.updated_at ?? null,
+        updated_at: j.finished_at ?? null,
       };
     });
     const pending = items.filter((i) => i.status === "queued" || i.status === "processing").length;
@@ -266,7 +269,7 @@ export const recommendPackagesTool = defineTool({
     const { data: pkgs, error } = await q;
     if (error) return json({ error: error.message });
     const rows = pkgs ?? [];
-    const ids = rows.map((p: any) => p.id);
+    const ids = rows.map((p) => p.id);
 
     const rating = new Map<string, { sum: number; count: number }>();
     const trust = new Map<string, number | null>();
@@ -288,7 +291,7 @@ export const recommendPackagesTool = defineTool({
     }
 
     const rankable: (RankableItem & { latest_version: string; author_handle: string | null })[] =
-      rows.map((p: any) => {
+      rows.map((p) => {
         const rt = rating.get(p.id) ?? { sum: 0, count: 0 };
         return {
           slug: p.slug,

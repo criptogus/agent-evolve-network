@@ -10,7 +10,7 @@ MCP v2 emits attempted/succeeded/failed/unknown outcomes. HTTP errors, JSON-RPC 
 
 `npm run check:project` batches the existing tests, TypeScript, build, ESLint regression gate, content schema validation and generated mirrors/plugin checks. Add `--security` with existing publishable Supabase environment variables for the RLS/public-access probes; add `--ui` with a running local dev server for intercepted-auth desktop/mobile checks. Receipts live in ignored `artifacts/validation/`. Empty/incomplete batches fail. See `.agents/skills/validate-sas-release/SKILL.md`.
 
-The old lint had 11,965 errors: formatting dominated, with 612 existing explicit-any uses. Formatting and other blocking rules were repaired. Those 612 type-debt instances are **not fixed**: `lint` reports them against the frozen original per-file counts in `security/lint-legacy-any.json`, blocks increases and blocks every other error. `lint:strict` retains the original ESLint command and still fails on this debt. Do not increase the baseline. React development/export warnings remain advisory. This adds a practical regression gate to CI, which previously ran only tests; it is not a claim that all typing debt is gone.
+The earlier release recorded 612 explicit-any violations. The follow-up removes that allowance: both lint commands now block every ESLint error with zero explicit-any exceptions. The app and SDK have independent TypeScript checks. JSON boundaries validate agent builds, email queue messages and MCP envelopes, while database calls use the generated schema and optional migration contracts. React development/export warnings remain advisory.
 
 ## Prepublication evidence
 

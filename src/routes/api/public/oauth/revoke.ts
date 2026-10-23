@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { corsPreflight, jsonResponse, sha256 } from "@/lib/oauth/mcp-oauth.server";
 
 async function parseBody(request: Request): Promise<Record<string, string>> {

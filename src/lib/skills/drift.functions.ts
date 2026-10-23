@@ -9,7 +9,7 @@ import { z } from "zod";
 import { createServerFn } from "@tanstack/react-start";
 import { requireAdmin } from "@/lib/admin/middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { getGatewayModel } from "@/lib/ai-gateway";
 
 const MIN_RECENT_RUNS = 50;
@@ -73,7 +73,7 @@ export const detectSkillDrift = createServerFn({ method: "POST" })
       const { data: drift } = await supabaseAdmin.rpc("compute_skill_drift", {
         _package_id: pkg.id,
         _window_days: window_days,
-      } as any);
+      });
       const d = drift as {
         recent_runs: number;
         recent_rate: number | null;

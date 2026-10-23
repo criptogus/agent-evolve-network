@@ -1,3 +1,5 @@
+import { toJson } from "@/lib/json";
+import type { AppDatabaseClient } from "@/integrations/supabase/database";
 /**
  * Run the adversarial suite against a published package with the LLM judge
  * ensemble, and persist the result — including judge↔deterministic calibration
@@ -16,9 +18,9 @@ import { runAdversarialSuite, type ModelInvoker } from "./runner";
 import { judgeCalibration, type Verdict } from "./judge";
 import { getLlmJudgeOrNull, DEFAULT_JUDGE_MODEL } from "./judge.server";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
-async function assertAdmin(supabase: any, userId: string) {
+async function assertAdmin(supabase: AppDatabaseClient, userId: string) {
   const { data, error } = await supabase
     .from("user_roles")
     .select("role")
@@ -76,6 +78,7 @@ export const getJudgeCalibration = createServerFn({ method: "GET" })
 
     const byPkg = new Map<string, typeof runs>();
     for (const r of runs ?? []) {
+      if (!r.package_id) continue;
       const arr = byPkg.get(r.package_id) ?? [];
       arr.push(r);
       byPkg.set(r.package_id, arr);
@@ -87,9 +90,7 @@ export const getJudgeCalibration = createServerFn({ method: "GET" })
       .select("id, slug, name, type")
       .in("id", Array.from(byPkg.keys()));
     type PkgMeta = { id: string; slug: string; name: string; type: string };
-    const meta = new Map<string, PkgMeta>(
-      (pkgs ?? []).map((p: any) => [p.id as string, p as PkgMeta]),
-    );
+    const meta = new Map<string, PkgMeta>((pkgs ?? []).map((p) => [p.id as string, p as PkgMeta]));
 
     const rows: JudgeCalibrationRow[] = [];
     for (const [pkgId, list] of byPkg) {
@@ -229,7 +230,7 @@ export const runAdversarialWithJudge = createServerFn({ method: "POST" })
 
     const { data: pkg } = await supabaseAdmin
       .from("packages")
-      .select("id, slug, type, latest_version")
+      .select("id, slug, type, latest_version, tags")
       .eq("slug", data.slug)
       .maybeSingle();
     if (!pkg) throw new Response("package not found", { status: 404 });
@@ -237,7 +238,7 @@ export const runAdversarialWithJudge = createServerFn({ method: "POST" })
     // Latest version supplies the system prompt + tags for case selection.
     const { data: version } = await supabaseAdmin
       .from("package_versions")
-      .select("id, system_prompt, tags")
+      .select("id, system_prompt")
       .eq("package_id", pkg.id)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -252,7 +253,7 @@ export const runAdversarialWithJudge = createServerFn({ method: "POST" })
       invoke: skillInvoker,
       packageType: pkg.type,
       packageSlug: pkg.slug,
-      tags: (version.tags as string[]) ?? [],
+      tags: pkg.tags ?? [],
       judge,
       judgeMode: data.judgeMode,
     });
@@ -271,7 +272,7 @@ export const runAdversarialWithJudge = createServerFn({ method: "POST" })
       severity_weighted_score: report.severity_weighted_score,
       by_category: report.by_category,
       by_severity: report.by_severity,
-      outcomes: report.outcomes,
+      outcomes: toJson(report.outcomes),
       duration_ms,
       // The model that produced the outputs under test (skill-under-test runs
       // on the configured default), kept distinct from the judge model.

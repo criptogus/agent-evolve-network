@@ -43,7 +43,8 @@
     "check:project": "node scripts/check-project.mjs",
     "test:ui": "node scripts/check-signup-ui.mjs",
     "check:types": "tsc --noEmit",
-    "check:dependencies": "npm audit --audit-level=high"
+    "check:dependencies": "npm audit --audit-level=high",
+    "check:types:sdk": "tsc -p packages/sdk-ts/tsconfig.json --noEmit"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",

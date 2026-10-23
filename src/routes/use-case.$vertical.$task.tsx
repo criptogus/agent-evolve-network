@@ -3,7 +3,7 @@ import { Sparkles } from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
 import { EmptyState } from "@/components/site/EmptyState";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { findUseCase } from "@/lib/seo/use-cases";
 
 type SkillRow = {
@@ -37,7 +37,7 @@ export const Route = createFileRoute("/use-case/$vertical/$task")({
       : { data: [] };
     const trustMap = new Map(
       (trust ?? []).map(
-        (t: { package_id: string; score: number; adversarial_pass_rate: number }) => [
+        (t: { package_id: string; score: number; adversarial_pass_rate: number | null }) => [
           t.package_id,
           t,
         ],
@@ -53,7 +53,7 @@ export const Route = createFileRoute("/use-case/$vertical/$task")({
           description: string | null;
           tags: string[] | null;
         }) => {
-          const t = trustMap.get(p.id) as any;
+          const t = trustMap.get(p.id);
           return {
             slug: p.slug,
             name: p.name,

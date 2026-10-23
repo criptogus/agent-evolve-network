@@ -47,7 +47,7 @@ function RequestsPage() {
       </div>
 
       <div className="space-y-3">
-        {(requests.data?.requests ?? []).map((r: any) => (
+        {(requests.data?.requests ?? []).map((r) => (
           <Card key={r.id}>
             <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
               <div>

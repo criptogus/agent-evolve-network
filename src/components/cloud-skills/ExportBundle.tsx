@@ -62,7 +62,7 @@ export function ExportBundle({
         `${r.skill_count} skill${r.skill_count === 1 ? "" : "s"} exported for ${r.tool.label}`,
       );
     },
-    onError: (e: any) => toast.error(e?.message ?? "Export failed"),
+    onError: (e) => toast.error(e?.message ?? "Export failed"),
   });
 
   const toggle = (id: string) =>

@@ -1,3 +1,4 @@
+import { recordOf } from "@/lib/json";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/middleware";
@@ -64,7 +65,7 @@ export const getCrmOverview = createServerFn({ method: "POST" })
     const { loadSentSummary } = await import("@/lib/crm/mailer.server");
     const { decideTrigger } = await import("@/lib/crm/segments");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const admin = supabaseAdmin as any;
+    const admin = supabaseAdmin;
 
     const customers = await loadCustomerRows(500, 0);
     const rows: CrmOverviewRow[] = [];
@@ -207,7 +208,7 @@ export const getCrmCustomer = createServerFn({ method: "POST" })
     const { decideTrigger, STAGE_LABELS: LABELS } = await import("@/lib/crm/segments");
     const { buildMessage } = await import("@/lib/crm/copy");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const admin = supabaseAdmin as any;
+    const admin = supabaseAdmin;
 
     const rows = await loadCustomerRows(1, 0, data.userId);
     const row = rows[0] ?? null;
@@ -223,7 +224,7 @@ export const getCrmCustomer = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(30);
 
-    const ids = ((msgs ?? []) as any[]).map((m) => m.message_id).filter(Boolean);
+    const ids = (msgs ?? []).map((m) => m.message_id).filter(Boolean);
     const statuses = new Map<string, string>();
     if (ids.length) {
       const { data: logs } = await admin
@@ -270,11 +271,14 @@ export const getCrmCustomer = createServerFn({ method: "POST" })
         best_after: snapshot.roi.best?.after ?? null,
       },
       opportunities: snapshot.opportunities,
-      messages: ((msgs ?? []) as any[]).map((m) => ({
+      messages: (msgs ?? []).map((m) => ({
         trigger: m.trigger,
-        subject: m.roi_snapshot?.subject ?? null,
+        subject:
+          typeof recordOf(m.roi_snapshot).subject === "string"
+            ? String(recordOf(m.roi_snapshot).subject)
+            : null,
         created_at: m.created_at,
-        status: statuses.get(m.message_id) ?? "unknown",
+        status: (m.message_id ? statuses.get(m.message_id) : undefined) ?? "unknown",
       })),
       preview: {
         subject: preview.subject,
@@ -449,7 +453,7 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
     const { OUTCOMES, VARIANTS, armKey, estimatedRate, EMPTY_ARM } =
       await import("@/lib/crm/learning");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const admin = supabaseAdmin as any;
+    const admin = supabaseAdmin;
 
     const state = await loadLearningState();
 
@@ -543,7 +547,7 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
           converted: s.converted,
         }))
         .sort((a, b) => a.hour - b.hour),
-      pending: ((pending ?? []) as any[]).map((p) => ({
+      pending: (pending ?? []).map((p) => ({
         id: p.id,
         trigger: p.trigger,
         variant: p.variant,
@@ -556,7 +560,7 @@ export const getCrmEffectiveness = createServerFn({ method: "POST" })
       })),
       guardrails: AUTONOMY_RULES,
 
-      changelog: ((changelog ?? []) as any[]).map((c) => ({
+      changelog: (changelog ?? []).map((c) => ({
         action: c.action,
         trigger: c.trigger,
         variant: c.variant,
@@ -571,7 +575,7 @@ export const setCrmLearning = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ enabled: z.boolean() }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const admin = supabaseAdmin as any;
+    const admin = supabaseAdmin;
     await admin.from("crm_settings").upsert(
       {
         key: "learning",
@@ -594,7 +598,7 @@ export const reviewCrmVariant = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const admin = supabaseAdmin as any;
+    const admin = supabaseAdmin;
     const status = data.decision === "approve" ? "active" : "rejected";
     const { data: row } = await admin
       .from("crm_copy_variants")

@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type StarState = {
@@ -41,7 +41,7 @@ export const toggleStar = createServerFn({ method: "POST" })
     const pkg = await packageBySlug(data.slug);
     if (!pkg) throw new Response("PACKAGE_NOT_FOUND", { status: 404 });
 
-    const db = context.supabase as any;
+    const db = context.supabase;
     const { data: existing } = await db
       .from("package_stars")
       .select("package_id")
@@ -85,7 +85,7 @@ export const isStarred = createServerFn({ method: "GET" })
   .handler(async ({ data, context }): Promise<StarState> => {
     const pkg = await packageBySlug(data.slug);
     if (!pkg) return { packageId: null, starred: false, star_count: 0 };
-    const db = context.supabase as any;
+    const db = context.supabase;
     const { data: row } = await db
       .from("package_stars")
       .select("package_id")
@@ -99,7 +99,7 @@ export const isStarred = createServerFn({ method: "GET" })
 export const getMyStars = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<{ packages: StarredPackage[] }> => {
-    const db = context.supabase as any;
+    const db = context.supabase;
     const { data: stars, error } = await db
       .from("package_stars")
       .select("package_id, created_at")

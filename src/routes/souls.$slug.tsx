@@ -1,3 +1,7 @@
+import { JsonSchema } from "@/lib/json-schema";
+import { z } from "zod";
+const SoulStatus = z.enum(["stable", "beta", "candidate", "deprecated"]);
+import { errorField } from "@/lib/errors";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -296,27 +300,27 @@ function SoulView({
                   <Card key={i} className="p-5">
                     <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       Example {i + 1}
-                      {typeof (ex as any).title === "string" && (
-                        <span className="ml-2 text-foreground">— {(ex as any).title}</span>
+                      {typeof ex.title === "string" && (
+                        <span className="ml-2 text-foreground">— {ex.title}</span>
                       )}
                     </div>
-                    {typeof (ex as any).input === "string" && (
+                    {typeof ex.input === "string" && (
                       <div className="mt-3">
                         <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
                           Input
                         </div>
                         <pre className="mt-1 overflow-x-auto rounded-md border border-border bg-muted/40 p-3 text-xs">
-                          {(ex as any).input}
+                          {ex.input}
                         </pre>
                       </div>
                     )}
-                    {typeof (ex as any).expected_output === "string" && (
+                    {typeof ex.expected_output === "string" && (
                       <div className="mt-3">
                         <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
                           Expected output
                         </div>
                         <pre className="mt-1 whitespace-pre-wrap rounded-md border border-border bg-muted/40 p-3 text-xs">
-                          {(ex as any).expected_output}
+                          {ex.expected_output}
                         </pre>
                       </div>
                     )}
@@ -374,17 +378,19 @@ function VersionsList({ soul, isOwner }: { soul: SoulDetail; isOwner: boolean })
       qc.invalidateQueries({ queryKey: ["soul", soul.slug] });
       setPendingRollback(null);
     },
-    onError: (e: any) => toast.error(e?.message ?? "Rollback failed"),
+    onError: (e) => toast.error(e?.message ?? "Rollback failed"),
   });
 
   const changeStatus = useMutation({
     mutationFn: (vars: { version: string; status: string }) =>
-      statusFn({ data: { slug: soul.slug, version: vars.version, status: vars.status as any } }),
+      statusFn({
+        data: { slug: soul.slug, version: vars.version, status: SoulStatus.parse(vars.status) },
+      }),
     onSuccess: () => {
       toast.success("Status updated");
       qc.invalidateQueries({ queryKey: ["soul", soul.slug] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Update failed"),
+    onError: (e) => toast.error(e?.message ?? "Update failed"),
   });
 
   return (
@@ -486,18 +492,18 @@ function ManagePanel({ soul }: { soul: SoulDetail }) {
 
   const create = useMutation({
     mutationFn: async () => {
-      let rules: any;
-      let examples: any;
+      let rules: z.infer<typeof JsonSchema>;
+      let examples: z.infer<typeof JsonSchema>[];
       try {
-        rules = JSON.parse(rulesText || "{}");
+        rules = JsonSchema.parse(JSON.parse(rulesText || "{}"));
       } catch {
         throw new Error("Rules must be valid JSON");
       }
       try {
-        examples = JSON.parse(examplesText || "[]");
+        examples = z.array(JsonSchema).parse(JSON.parse(examplesText || "[]"));
         if (!Array.isArray(examples)) throw new Error("Examples must be a JSON array");
-      } catch (e: any) {
-        throw new Error(e?.message ?? "Examples must be a JSON array");
+      } catch (e) {
+        throw new Error(errorField(e, "message") ?? "Examples must be a JSON array");
       }
       return createFn({
         data: {
@@ -517,7 +523,7 @@ function ManagePanel({ soul }: { soul: SoulDetail }) {
       qc.invalidateQueries({ queryKey: ["soul", soul.slug] });
       setNotes("");
     },
-    onError: (e: any) => toast.error(e?.message ?? "Release failed"),
+    onError: (e) => toast.error(e?.message ?? "Release failed"),
   });
 
   const bump = (kind: "patch" | "minor" | "major") => {
@@ -567,7 +573,7 @@ function ManagePanel({ soul }: { soul: SoulDetail }) {
         </div>
         <div>
           <Label htmlFor="status">Status</Label>
-          <Select value={status} onValueChange={(v) => setStatus(v as any)}>
+          <Select value={status} onValueChange={(v) => setStatus(SoulStatus.parse(v))}>
             <SelectTrigger id="status" className="mt-1">
               <SelectValue />
             </SelectTrigger>
@@ -718,7 +724,7 @@ function buildSoulMarkdown(soul: SoulDetail): string {
   ];
   if (Array.isArray(c?.examples) && c!.examples.length) {
     sections.push("", "## Examples", "");
-    c!.examples.forEach((ex: any, i: number) => {
+    c!.examples.forEach((ex, i: number) => {
       sections.push(`### Example ${i + 1}${ex.title ? ` — ${ex.title}` : ""}`);
       if (ex.input) sections.push("", "**Input:**", "", "```", String(ex.input), "```");
       if (ex.expected_output)

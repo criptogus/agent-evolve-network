@@ -1,10 +1,11 @@
+import { errorField } from "@/lib/errors";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAdmin } from "./middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { createStripeClient, type StripeEnv } from "@/lib/stripe.server";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 // ---------------------------------------------------------------------------
 // Customers + finance dashboard server functions. Admin-only.
@@ -96,7 +97,7 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
     }
     const { data: profiles, error: pErr } = await pq;
     if (pErr) throw new Response(pErr.message, { status: 500 });
-    const ids: string[] = (profiles ?? []).map((p: any) => p.id);
+    const ids: string[] = (profiles ?? []).map((p) => p.id);
 
     // ---- 2. Auth emails (admin-only via service role) ----------------------
     const emailById = new Map<string, string | null>();
@@ -116,7 +117,7 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
     const [rolesQ, subsQ, runsQ, ledgerQ] = await Promise.all([
       ids.length
         ? supabaseAdmin.from("user_roles").select("user_id, role").in("user_id", ids)
-        : Promise.resolve({ data: [] as any[] }),
+        : Promise.resolve({ data: [] }),
       ids.length
         ? supabaseAdmin
             .from("subscriptions")
@@ -125,13 +126,13 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
             )
             .in("user_id", ids)
             .eq("environment", env)
-        : Promise.resolve({ data: [] as any[] }),
+        : Promise.resolve({ data: [] }),
       ids.length
         ? supabaseAdmin.from("runs").select("user_id, started_at").in("user_id", ids)
-        : Promise.resolve({ data: [] as any[] }),
+        : Promise.resolve({ data: [] }),
       ids.length
         ? supabaseAdmin.from("credit_ledger").select("user_id, delta").in("user_id", ids)
-        : Promise.resolve({ data: [] as any[] }),
+        : Promise.resolve({ data: [] }),
     ]);
 
     const rolesByUser = new Map<string, string[]>();
@@ -141,7 +142,7 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
       rolesByUser.set(r.user_id, arr);
     }
 
-    const subByUser = new Map<string, any>();
+    const subByUser = new Map<string, NonNullable<typeof subsQ.data>[number]>();
     for (const s of subsQ.data ?? []) {
       const prev = subByUser.get(s.user_id);
       const isActive = s.status === "active" || s.status === "trialing" || s.status === "past_due";
@@ -166,7 +167,7 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
       creditAgg.set(e.user_id, cur);
     }
 
-    const rows: CustomerRow[] = (profiles ?? []).map((p: any): CustomerRow => {
+    const rows: CustomerRow[] = (profiles ?? []).map((p): CustomerRow => {
       const sub = subByUser.get(p.id);
       const isPaying = sub && ["active", "trialing", "past_due"].includes(sub.status);
       const rs = runStats.get(p.id);
@@ -219,7 +220,7 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
 
     let mrrUsdCents = 0;
     let mrrCurrency = "usd";
-    for (const s of (mrrQ.data ?? []) as any[]) {
+    for (const s of mrrQ.data ?? []) {
       if (typeof s.price_cents === "number") {
         mrrUsdCents += s.price_cents;
         if (s.currency) mrrCurrency = s.currency;
@@ -234,7 +235,19 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
     const avgRunsPerCustomer = totalProfiles ? totalRuns / totalProfiles : 0;
 
     // ---- 5. Stripe finance (range-windowed) -------------------------------
-    let stripe: any = null;
+    let stripe: {
+      environment: StripeEnv;
+      range: string;
+      currency: string;
+      gross: number;
+      fees: number;
+      net: number;
+      successful_charges: number;
+      refunded_count: number;
+      refunded_amount: number;
+      balance: { available: number; pending: number; currency: string };
+      truncated: boolean;
+    } | null = null;
     let stripe_error: string | null = null;
     try {
       const client = createStripeClient(env);
@@ -258,18 +271,15 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
         netMinor += t.net ?? 0;
       }
 
-      const successfulCharges = charges.data.filter((c: any) => c.paid && !c.refunded).length;
+      const successfulCharges = charges.data.filter((c) => c.paid && !c.refunded).length;
       const refundedCount = refunds.data.length;
-      const refundedMinor = refunds.data.reduce((acc: number, r: any) => acc + (r.amount ?? 0), 0);
+      const refundedMinor = refunds.data.reduce((acc, r) => acc + (r.amount ?? 0), 0);
 
       const balanceAvailable = (balance.available ?? []).reduce(
-        (acc: number, b: any) => acc + (b.amount ?? 0),
+        (acc, b) => acc + (b.amount ?? 0),
         0,
       );
-      const balancePending = (balance.pending ?? []).reduce(
-        (acc: number, b: any) => acc + (b.amount ?? 0),
-        0,
-      );
+      const balancePending = (balance.pending ?? []).reduce((acc, b) => acc + (b.amount ?? 0), 0);
       const balanceCurrency = balance.available?.[0]?.currency ?? "usd";
 
       stripe = {
@@ -289,8 +299,8 @@ export const getCustomerMetrics = createServerFn({ method: "POST" })
         },
         truncated: txns.has_more || charges.has_more || refunds.has_more,
       };
-    } catch (e: any) {
-      stripe_error = e?.message ?? "Stripe call failed";
+    } catch (e) {
+      stripe_error = errorField(e, "message") ?? "Stripe call failed";
     }
 
     return {

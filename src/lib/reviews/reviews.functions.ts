@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { evaluateRateLimit, logAuditAttempt, REVIEW_RATE_RULES } from "./anti-fraud.server";
 

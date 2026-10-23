@@ -1,3 +1,4 @@
+import type { ErrorProfileEntry, Prescription } from "@/lib/university/types";
 import { createFileRoute } from "@tanstack/react-router";
 import { getDiagnosisForCurriculum } from "@/lib/university/university.server";
 import { planCurriculum } from "@/lib/university/curriculum";
@@ -51,7 +52,7 @@ export const Route = createFileRoute("/api/public/curriculum/next")({
           return json({ ok: false, error: "invalid_json" }, 400);
         }
 
-        let profile: any[] | undefined;
+        let profile: ErrorProfileEntry[] | undefined;
         let installed = Array.isArray(body.installed_skills)
           ? (body.installed_skills as unknown[]).slice(0, 64).map(String)
           : [];

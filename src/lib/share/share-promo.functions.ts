@@ -3,7 +3,7 @@ import { z } from "zod";
 import { generateText } from "ai";
 import { getGatewayModel } from "@/lib/ai-gateway";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 const InputSchema = z.object({
   slug: z.string().min(1).max(120),

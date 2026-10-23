@@ -1,3 +1,5 @@
+import { recordOf, isRecord } from "@/lib/json";
+import type { DiagnosisReport } from "@/lib/university/types";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -52,7 +54,7 @@ function DiagnosePage() {
   const [installed, setInstalled] = useState("");
   const [exam, setExam] = useState<{ diagnosis_id: string | null; tasks: Task[] } | null>(null);
   const [transcript, setTranscript] = useState("");
-  const [report, setReport] = useState<any | null>(null);
+  const [report, setReport] = useState<DiagnosisReport | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -118,7 +120,7 @@ function DiagnosePage() {
     setBusy(true);
     setError(null);
     try {
-      let parsed: any;
+      let parsed: unknown;
       try {
         parsed = JSON.parse(transcript);
       } catch {
@@ -126,7 +128,7 @@ function DiagnosePage() {
         setBusy(false);
         return;
       }
-      const answers = Array.isArray(parsed) ? parsed : parsed?.answers;
+      const answers = Array.isArray(parsed) ? parsed : recordOf(parsed).answers;
       if (!Array.isArray(answers) || !answers.length) {
         setError("No answers found in the JSON.");
         setBusy(false);
@@ -137,12 +139,15 @@ function DiagnosePage() {
           diagnosis_id: exam?.diagnosis_id ?? undefined,
           domain,
           installed_skills: installedList,
-          answers: answers.slice(0, 80).map((a: any) => ({
-            case_id: String(a.case_id ?? ""),
-            answer: String(a.answer ?? "").slice(0, 20000),
-            latency_ms: Number.isFinite(a.latency_ms) ? Number(a.latency_ms) : undefined,
-            tokens: Number.isFinite(a.tokens) ? Number(a.tokens) : undefined,
-          })),
+          answers: answers
+            .filter(isRecord)
+            .slice(0, 80)
+            .map((a) => ({
+              case_id: String(a.case_id ?? ""),
+              answer: String(a.answer ?? "").slice(0, 20000),
+              latency_ms: Number.isFinite(a.latency_ms) ? Number(a.latency_ms) : undefined,
+              tokens: Number.isFinite(a.tokens) ? Number(a.tokens) : undefined,
+            })),
         },
       });
       setReport(res);
@@ -294,7 +299,7 @@ function DiagnosePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {report.error_profile.map((p: any) => (
+                  {report.error_profile.map((p) => (
                     <tr key={p.error_class} className="border-t border-border/60">
                       <td className="py-2">{p.label}</td>
                       <td className="py-2 font-mono">{p.total}</td>
@@ -314,7 +319,7 @@ function DiagnosePage() {
               <>
                 <h2 className="mt-6 text-sm font-semibold">Prescription</h2>
                 <ul className="mt-2 space-y-2">
-                  {report.prescription.map((p: any) => (
+                  {report.prescription.map((p) => (
                     <li key={p.slug} className="rounded-xl border border-border p-3 text-sm">
                       <div className="font-medium">
                         {p.title}{" "}
@@ -354,7 +359,7 @@ function DiagnosePage() {
                 See case-by-case results
               </summary>
               <ul className="mt-3 space-y-1 text-xs">
-                {report.results.map((r: any) => (
+                {report.results.map((r) => (
                   <li key={r.case_id} className="flex gap-2">
                     <span className={r.passed ? "text-primary" : "text-destructive"}>
                       {r.passed ? "PASS" : "FAIL"}

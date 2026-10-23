@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -165,8 +166,12 @@ export function GuidedAgentEditor({
           : "Changes saved.",
       );
       onDone?.();
-    } catch (e: any) {
-      toast.error(typeof e?.message === "string" ? e.message : "Could not save your changes.");
+    } catch (e) {
+      toast.error(
+        typeof errorField(e, "message") === "string"
+          ? errorField(e, "message")!
+          : "Could not save your changes.",
+      );
     } finally {
       setSaving(false);
     }

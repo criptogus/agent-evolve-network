@@ -1,15 +1,19 @@
+import { toJson } from "@/lib/json";
+import type { AppDatabaseClient } from "@/integrations/supabase/database";
 /** Server-only data helpers for tenant CMEK. Never import from the browser. */
 export async function logKeyEvent(
-  db: any,
+  db: AppDatabaseClient,
   userId: string,
   keyId: string | null,
   event: string,
   detail: Record<string, unknown> = {},
 ) {
-  await db.from("tenant_key_events").insert({ user_id: userId, key_id: keyId, event, detail });
+  await db
+    .from("tenant_key_events")
+    .insert({ user_id: userId, key_id: keyId, event, detail: toJson(detail) });
 }
 
-export async function getActiveTenantKey(db: any, userId: string) {
+export async function getActiveTenantKey(db: AppDatabaseClient, userId: string) {
   const { data, error } = await db
     .from("tenant_encryption_keys")
     .select("*")

@@ -43,7 +43,7 @@ export const getAgentKpis = createServerFn({ method: "GET" })
     z.object({ days: z.number().int().min(1).max(365).default(30) }).parse(d ?? {}),
   )
   .handler(async ({ data, context }): Promise<AgentKpis> => {
-    const supabase = (context as { supabase: any }).supabase;
+    const supabase = context.supabase;
     const days = data.days;
     const since = new Date(Date.now() - days * 86_400_000).toISOString();
 

@@ -1,3 +1,13 @@
+type AuthEmailProps = {
+  siteName: string;
+  siteUrl: string;
+  recipient: string;
+  confirmationUrl: string;
+  token: string;
+  email: string;
+  oldEmail: string;
+  newEmail: string;
+};
 import * as React from "react";
 import { render } from "@react-email/render";
 import { createFileRoute } from "@tanstack/react-router";
@@ -8,7 +18,7 @@ import { RecoveryEmail } from "@/lib/email-templates/recovery";
 import { EmailChangeEmail } from "@/lib/email-templates/email-change";
 import { ReauthenticationEmail } from "@/lib/email-templates/reauthentication";
 
-const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
+const EMAIL_TEMPLATES: Record<string, React.ComponentType<AuthEmailProps>> = {
   signup: SignupEmail,
   invite: InviteEmail,
   magiclink: MagicLinkEmail,
@@ -28,7 +38,7 @@ const ROOT_DOMAIN = "superagentskill.com";
 // even if the project's domain has changed since the template was scaffolded.
 const SAMPLE_PROJECT_URL = "https://agent-evolve-network.lovable.app";
 const SAMPLE_EMAIL = "user@example.test";
-const SAMPLE_DATA: Record<string, object> = {
+const SAMPLE_DATA: Record<string, Partial<AuthEmailProps>> = {
   signup: {
     siteName: SITE_NAME,
     siteUrl: SAMPLE_PROJECT_URL,
@@ -90,7 +100,17 @@ export const Route = createFileRoute("/lovable/email/auth/preview")({
           return Response.json({ error: `Unknown email type: ${type}` }, { status: 400 });
         }
 
-        const sampleData = SAMPLE_DATA[type] || {};
+        const sampleData: AuthEmailProps = {
+          siteName: SITE_NAME,
+          siteUrl: SAMPLE_PROJECT_URL,
+          recipient: SAMPLE_EMAIL,
+          confirmationUrl: SAMPLE_PROJECT_URL,
+          token: "123456",
+          email: SAMPLE_EMAIL,
+          oldEmail: SAMPLE_EMAIL,
+          newEmail: SAMPLE_EMAIL,
+          ...SAMPLE_DATA[type],
+        };
         const html = await render(React.createElement(EmailTemplate, sampleData));
 
         return new Response(html, {

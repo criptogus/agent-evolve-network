@@ -1,6 +1,7 @@
+import { packageTypeEnum } from "@/lib/skills/schemas";
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/api/public/packages")({
           .order("install_count", { ascending: false })
           .order("name", { ascending: true })
           .limit(limit);
-        if (type) query = query.eq("type", type);
+        if (type) query = query.eq("type", packageTypeEnum.parse(type));
         if (q)
           query = query.or(
             `name.ilike.%${q}%,description.ilike.%${q}%,long_description.ilike.%${q}%`,

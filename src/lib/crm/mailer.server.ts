@@ -32,7 +32,7 @@ import {
   type TriggerId,
 } from "@/lib/crm/segments";
 
-const admin = _admin as any;
+const admin = _admin;
 
 const SITE_NAME = "SuperAgent Skill";
 const SENDER_DOMAIN = "notify.superagentskill.com";
@@ -139,7 +139,7 @@ export async function sendCrmEmail(opts: {
     pixelUrl: `${SITE_URL}/api/public/crm/o/${trackingToken}`,
   };
 
-  const element = React.createElement(entry.component, templateData as any);
+  const element = React.createElement(entry.component, templateData);
   const html = await render(element);
   const text = await render(element, { plainText: true });
 

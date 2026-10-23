@@ -1,5 +1,5 @@
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 export type AuditKind = "review_submit" | "review_update" | "review_report";
 

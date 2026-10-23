@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -60,12 +61,12 @@ function BuildPage() {
     queryKey: ["agent-build", id],
     queryFn: () => getFn({ data: { build_id: id } }),
     refetchInterval: (q) => {
-      const s = (q.state.data as any)?.status;
+      const s = q.state.data?.status;
       return s === "ready" || s === "error" ? false : 3000;
     },
   });
 
-  const status = (build as any)?.status as string | undefined;
+  const status = build?.status as string | undefined;
 
   // Drive the state machine: one bounded step per request, looping until done.
   useEffect(() => {
@@ -74,12 +75,16 @@ function BuildPage() {
     (async () => {
       try {
         for (let i = 0; i < 12; i++) {
-          const res: any = await runFn({ data: { build_id: id } });
+          const res = await runFn({ data: { build_id: id } });
           await qc.invalidateQueries({ queryKey: ["agent-build", id] });
           if (res?.done) break;
         }
-      } catch (e: any) {
-        toast.error(typeof e?.message === "string" ? e.message : "The build failed.");
+      } catch (e) {
+        toast.error(
+          typeof errorField(e, "message") === "string"
+            ? errorField(e, "message")
+            : "The build failed.",
+        );
         await qc.invalidateQueries({ queryKey: ["agent-build", id] });
       } finally {
         running.current = false;
@@ -102,11 +107,15 @@ function BuildPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${(build as any)?.slug ?? "agent"}-agent.${ext}`;
+      a.download = `${build?.slug ?? "agent"}-agent.${ext}`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch (e: any) {
-      toast.error(typeof e?.message === "string" ? e.message : "Download failed.");
+    } catch (e) {
+      toast.error(
+        typeof errorField(e, "message") === "string"
+          ? errorField(e, "message")
+          : "Download failed.",
+      );
     } finally {
       setBusy(null);
     }
@@ -118,14 +127,18 @@ function BuildPage() {
       const r = await promptFn({ data: { build_id: id } });
       await navigator.clipboard.writeText(r.system_prompt);
       toast.success("System prompt copied. Paste it as your agent's instructions.");
-    } catch (e: any) {
-      toast.error(typeof e?.message === "string" ? e.message : "Could not load the prompt.");
+    } catch (e) {
+      toast.error(
+        typeof errorField(e, "message") === "string"
+          ? errorField(e, "message")
+          : "Could not load the prompt.",
+      );
     } finally {
       setBusy(null);
     }
   }
 
-  const b: any = build;
+  const b = build;
   const doneIdx = b ? ORDER.indexOf(b.status) : -1;
   const finalReport = b?.report?.final_pass ?? b?.report?.first_pass;
 
@@ -271,7 +284,7 @@ function BuildPage() {
                 </p>
                 {Array.isArray(b.research_sources) && b.research_sources.length > 0 && (
                   <ul className="mt-3 flex flex-wrap gap-2">
-                    {b.research_sources.map((s: any, i: number) => (
+                    {b.research_sources.map((s, i: number) => (
                       <li key={i}>
                         <Badge variant="secondary">
                           {s.title}
@@ -284,11 +297,11 @@ function BuildPage() {
               </section>
             )}
 
-            {finalReport?.axes?.length > 0 && (
+            {finalReport && finalReport.axes.length > 0 && (
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold">Quality score</h2>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {finalReport.axes.map((a: any) => (
+                  {finalReport.axes.map((a) => (
                     <div key={a.name} className="rounded-lg border p-3">
                       <div className="flex items-center justify-between text-sm font-medium">
                         <span>{a.name}</span>
@@ -317,7 +330,7 @@ function BuildPage() {
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold">Skills ({b.skills.length})</h2>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  {b.skills.map((s: any) => (
+                  {b.skills.map((s) => (
                     <Card key={s.slug}>
                       <CardHeader>
                         <CardTitle className="text-base">{s.title}</CardTitle>
@@ -333,7 +346,7 @@ function BuildPage() {
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold">Playbooks ({b.playbooks.length})</h2>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  {b.playbooks.map((p: any) => (
+                  {b.playbooks.map((p) => (
                     <Card key={p.slug}>
                       <CardHeader>
                         <CardTitle className="text-base">{p.title}</CardTitle>
@@ -349,7 +362,7 @@ function BuildPage() {
               <section>
                 <h2 className="text-2xl font-semibold">Guardrails ({b.guardrails.length})</h2>
                 <ul className="mt-4 space-y-3">
-                  {b.guardrails.map((g: any) => (
+                  {b.guardrails.map((g) => (
                     <li key={g.slug} className="rounded-lg border p-3">
                       <p className="text-sm font-medium">{g.title}</p>
                       <p className="mt-1 text-sm">{g.rule}</p>

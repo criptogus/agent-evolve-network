@@ -1,3 +1,15 @@
+import { z } from "zod";
+import { ERROR_CLASSES } from "./types";
+const ErrorProfileSchema = z.array(
+  z.object({
+    error_class: z.enum(ERROR_CLASSES),
+    label: z.string(),
+    total: z.number(),
+    failed: z.number(),
+    fail_rate: z.number(),
+  }),
+);
+import type { ErrorProfileEntry, Prescription } from "@/lib/university/types";
 /**
  * Persistence for the admission exam. Server-only.
  *
@@ -10,7 +22,7 @@ import { buildReport, sampleExam } from "./diagnose";
 import { findCase } from "./cases";
 import type { CaseAnswer, DiagnosisReport, DomainId } from "./types.ts";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 export type StartedExam = {
   diagnosis_id: string | null;
@@ -118,6 +130,7 @@ export async function submitExam(args: {
   });
 
   if (args.diagnosisId) {
+    const diagnosisId = args.diagnosisId;
     try {
       await supabaseAdmin
         .from("agent_diagnoses")
@@ -132,7 +145,7 @@ export async function submitExam(args: {
 
       await supabaseAdmin.from("agent_diagnosis_items").insert(
         report.results.map((r) => ({
-          diagnosis_id: args.diagnosisId,
+          diagnosis_id: diagnosisId,
           case_id: r.case_id,
           error_class: r.error_class,
           answer: (args.answers.find((a) => a.case_id === r.case_id)?.answer ?? "").slice(0, 8000),
@@ -156,8 +169,8 @@ export type DiagnosisRow = {
   status: string;
   overall_score: number | null;
   bottleneck: string | null;
-  error_profile: any[];
-  prescription: any[];
+  error_profile: ErrorProfileEntry[];
+  prescription: Prescription[];
   installed_skills: string[];
   created_at: string;
 };
@@ -174,9 +187,11 @@ export async function listDiagnoses(userId: string, limit = 20): Promise<Diagnos
   return (data ?? []) as DiagnosisRow[];
 }
 
-export async function getDiagnosisForCurriculum(
-  diagnosisId: string,
-): Promise<{ domain: DomainId; error_profile: any[]; installed_skills: string[] } | null> {
+export async function getDiagnosisForCurriculum(diagnosisId: string): Promise<{
+  domain: DomainId;
+  error_profile: ErrorProfileEntry[];
+  installed_skills: string[];
+} | null> {
   const { data } = await supabaseAdmin
     .from("agent_diagnoses")
     .select("domain,error_profile,installed_skills")
@@ -185,7 +200,7 @@ export async function getDiagnosisForCurriculum(
   if (!data) return null;
   return {
     domain: data.domain as DomainId,
-    error_profile: Array.isArray(data.error_profile) ? data.error_profile : [],
+    error_profile: ErrorProfileSchema.parse(data.error_profile ?? []),
     installed_skills: (data.installed_skills ?? []) as string[],
   };
 }

@@ -1,3 +1,6 @@
+import { toJson } from "@/lib/json";
+import { publicPackage } from "@/lib/public-package";
+import type { AppDatabaseClient } from "@/integrations/supabase/database";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -21,7 +24,7 @@ const LoopInput = z.object({
 });
 
 /** Summarize real agent runs into the trajectory-driven learning signal. */
-async function buildExecutionSignal(supabase: any, packageId: string) {
+async function buildExecutionSignal(supabase: AppDatabaseClient, packageId: string) {
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const { data: rows } = await supabase
     .from("skill_executions")
@@ -63,8 +66,8 @@ export const runForgeLoop = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => LoopInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
 
     const { data: pkg } = await supabase
       .from("packages")
@@ -202,8 +205,8 @@ export const runForgeLoop = createServerFn({ method: "POST" })
         version: {
           version: best.from_version,
           system_prompt: best.system_prompt,
-          rules: best.rules,
-          examples: best.examples,
+          rules: toJson(best.rules),
+          examples: toJson(best.examples),
         },
         metrics: metrics || [],
         learnings: (learnings || []) as Array<{
@@ -294,7 +297,7 @@ export const runForgeLoop = createServerFn({ method: "POST" })
         pkg: { name: pkg.name, type: pkg.type },
         version: {
           system_prompt: best.system_prompt,
-          rules: best.rules,
+          rules: toJson(best.rules),
           examples: best.examples as Array<{
             title: string;
             input: string;
@@ -313,8 +316,8 @@ export const runForgeLoop = createServerFn({ method: "POST" })
             status: "beta",
             notes: `Forge loop (${data.epochs} epochs) · ${best.rationale}`.slice(0, 500),
             system_prompt: best.system_prompt,
-            rules: best.rules,
-            examples: best.examples,
+            rules: toJson(best.rules),
+            examples: toJson(best.examples),
             compatibility: ver.compatibility,
             parent_version_id: ver.id,
           })
@@ -368,7 +371,7 @@ export const runForgeLoop = createServerFn({ method: "POST" })
     });
 
     return {
-      package: pkg,
+      package: publicPackage(pkg),
       base_version: ver,
       before: before.evaluation,
       patch: lastLearn?.patch ?? null,
@@ -408,8 +411,8 @@ export const autoCreateMissing = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => CreateInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
 
     // Log the request first
     const { data: req } = await supabase
@@ -533,7 +536,7 @@ export const autoCreateMissing = createServerFn({ method: "POST" })
     });
 
     return {
-      package: pkg,
+      package: publicPackage(pkg),
       research_used: !!research,
       evaluation: evalRes?.evaluation ?? null,
       stages,

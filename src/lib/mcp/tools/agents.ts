@@ -1,13 +1,15 @@
+import { decodeAgentBuild } from "@/lib/agents/build-data";
+import type { ToolExecutionContext } from "mcp-tanstack-start";
 import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { findAgent, listAgentSummaries } from "@/lib/agents/catalog";
 import { agentSystemPrompt, agentFiles } from "@/lib/agents/bundle";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 
-async function requirePaidUser(ctx: any): Promise<string> {
+async function requirePaidUser(ctx: ToolExecutionContext): Promise<string> {
   const userId = (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
   if (!userId) {
     throw new Error(
@@ -277,11 +279,11 @@ export const installMyAgentTool = defineTool({
         slug: row.slug,
         name: row.name,
         grade: row.grade,
-        system_prompt: buildSystemPrompt(row),
+        system_prompt: buildSystemPrompt(decodeAgentBuild(row)),
       });
     }
 
-    const files = buildFiles(row);
+    const files = buildFiles(decodeAgentBuild(row));
     return json({
       slug: row.slug,
       name: row.name,

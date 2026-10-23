@@ -1,3 +1,4 @@
+import type { ToolExecutionContext } from "mcp-tanstack-start";
 /**
  * Second-connection-onward experience.
  *
@@ -15,11 +16,11 @@ import { z } from "zod";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { PLATFORM_VERSION, PLATFORM_CODENAME } from "@/lib/version";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 const ORIGIN = "https://superagentskill.com";
 
-function userIdOf(ctx: any): string | null {
+function userIdOf(ctx: ToolExecutionContext): string | null {
   return (ctx?.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
 }
 
@@ -41,7 +42,7 @@ export const resumeSessionTool = defineTool({
     if (!userId) return unauth();
     const since = new Date(Date.now() - lookback_days * 86400_000).toISOString();
 
-    const safe = async <T>(p: Promise<{ data: T | null }>): Promise<T | null> => {
+    const safe = async <T>(p: PromiseLike<{ data: T | null }>): Promise<T | null> => {
       try {
         return (await p).data ?? null;
       } catch {
@@ -115,8 +116,15 @@ export const resumeSessionTool = defineTool({
     ]);
 
     // Score trend per reviewed document: first vs latest run in the window.
-    const byDoc = new Map<string, { first: any; latest: any; runs: number }>();
-    for (const r of (runs ?? []) as any[]) {
+    const byDoc = new Map<
+      string,
+      {
+        first: NonNullable<typeof runs>[number];
+        latest: NonNullable<typeof runs>[number];
+        runs: number;
+      }
+    >();
+    for (const r of runs ?? []) {
       const cur = byDoc.get(r.doc_key);
       if (!cur) byDoc.set(r.doc_key, { first: r, latest: r, runs: 1 });
       else {
@@ -137,7 +145,7 @@ export const resumeSessionTool = defineTool({
       .sort((a, b) => (a.last_reviewed_at < b.last_reviewed_at ? 1 : -1))
       .slice(0, 12);
 
-    const myPkgs = (pkgs ?? []) as any[];
+    const myPkgs = pkgs ?? [];
     const drafts = myPkgs.filter((p) => !p.is_published);
     const pendingReview = myPkgs.filter(
       (p) => p.review_status === "pending" || p.review_status === "submitted",
@@ -146,9 +154,9 @@ export const resumeSessionTool = defineTool({
       (p) => p.review_status === "rejected" || p.review_status === "changes_requested",
     );
     const live = myPkgs.filter((p) => p.is_published && p.review_status === "approved");
-    const d = ((diagnosis ?? []) as any[])[0] ?? null;
-    const activeJobs = ((jobs ?? []) as any[]).filter((j) => j.status !== "failed");
-    const failedJobs = ((jobs ?? []) as any[]).filter((j) => j.status === "failed");
+    const d = (diagnosis ?? [])[0] ?? null;
+    const activeJobs = (jobs ?? []).filter((j) => j.status !== "failed");
+    const failedJobs = (jobs ?? []).filter((j) => j.status === "failed");
 
     // Ranked, account-specific next actions. Order = value, not category.
     const next: { priority: number; action: string; tool: string; why: string }[] = [];
@@ -418,7 +426,7 @@ export const checkUpdatesTool = defineTool({
       )
       .in("slug", slugs);
     if (error) return json({ error: error.message });
-    const bySlug = new Map<string, any>((data ?? []).map((p: any) => [p.slug, p]));
+    const bySlug = new Map((data ?? []).map((p) => [p.slug, p]));
 
     const outdated: unknown[] = [];
     const current: unknown[] = [];

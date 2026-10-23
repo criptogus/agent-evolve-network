@@ -94,23 +94,23 @@ function CrmAdminPage() {
 
   const sendMutation = useMutation({
     mutationFn: (vars: { userId: string; trigger: string }) => send({ data: vars }),
-    onSuccess: (res: any) => {
+    onSuccess: (res) => {
       if (res?.sent) toast.success(`Queued: ${res.subject}`);
       else toast.error(`Not sent: ${res?.reason ?? "unknown"}`);
       overview.refetch();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Send failed"),
+    onError: (e) => toast.error(e?.message ?? "Send failed"),
   });
 
   const cadenceMutation = useMutation({
     mutationFn: (dryRun: boolean) => runCadence({ data: { dryRun } }),
-    onSuccess: (res: any) => {
+    onSuccess: (res) => {
       toast.success(
         `${res.dryRun ? "Dry run" : "Cadence run"}: ${res.scanned} scanned, ${res.sent} sent, ${res.skipped} skipped`,
       );
       overview.refetch();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Cadence run failed"),
+    onError: (e) => toast.error(e?.message ?? "Cadence run failed"),
   });
 
   const rows = useMemo(() => {

@@ -37,11 +37,11 @@ export function EffectivenessPanel() {
 
   const toggleMutation = useMutation({
     mutationFn: (enabled: boolean) => toggle({ data: { enabled } }),
-    onSuccess: (r: any) => {
+    onSuccess: (r) => {
       toast.success(r.enabled ? "Learning loop enabled" : "Learning loop paused");
       q.refetch();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Could not change the setting"),
+    onError: (e) => toast.error(e?.message ?? "Could not change the setting"),
   });
 
   const reviewMutation = useMutation({
@@ -50,12 +50,12 @@ export function EffectivenessPanel() {
       toast.success("Variant updated");
       q.refetch();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Could not update the variant"),
+    onError: (e) => toast.error(e?.message ?? "Could not update the variant"),
   });
 
   const jobMutation = useMutation({
     mutationFn: (vars: { job: "score" | "tune"; dryRun: boolean }) => runJob({ data: vars }),
-    onSuccess: (r: any) => {
+    onSuccess: (r) => {
       toast.success(
         r.job === "score"
           ? `Scored ${r.checked} messages · ${r.converted} converted`
@@ -63,7 +63,7 @@ export function EffectivenessPanel() {
       );
       q.refetch();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Job failed"),
+    onError: (e) => toast.error(e?.message ?? "Job failed"),
   });
 
   const data = q.data;

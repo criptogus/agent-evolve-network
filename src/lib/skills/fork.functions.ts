@@ -23,7 +23,7 @@ export const forkPackage = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ForkInput.parse(d))
   .handler(async ({ context, data }) => {
     const { supabase: _sb, userId } = context;
-    const supabase = _sb as any;
+    const supabase = _sb;
 
     const { data: parent, error: pErr } = await supabase
       .from("packages")
@@ -65,9 +65,8 @@ export const forkPackage = createServerFn({ method: "POST" })
         description: `Fork of ${parent.slug}: ${parent.description}`.slice(0, 280),
         long_description: parent.long_description,
         license: parent.license,
-        owner_id: userId,
+        author_id: userId,
         is_published: false,
-        forked_from_slug: parent.slug,
       })
       .select("id,slug")
       .single();

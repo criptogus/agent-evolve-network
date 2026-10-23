@@ -165,7 +165,7 @@ function TrustPage() {
                         total: number;
                         passed: number;
                         failed: number;
-                        model: string;
+                        model: string | null;
                       },
                       index: number,
                     ) => (
@@ -256,7 +256,7 @@ function TrustPage() {
             </p>
           ) : (
             <div className="mt-4 grid gap-2">
-              {t.models.map((m: { model: string; runs: number; success_rate: number }) => (
+              {t.models.map((m: { model: string | null; runs: number; success_rate: number }) => (
                 <div key={m.model} className="flex items-center gap-3">
                   <div className="w-44 truncate font-mono text-xs">{m.model}</div>
                   <div className="h-2 flex-1 rounded bg-border/40">

@@ -1,3 +1,6 @@
+import { packageTypeEnum } from "@/lib/skills/schemas";
+import { toJson } from "@/lib/json";
+import { errorField } from "@/lib/errors";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -18,8 +21,8 @@ export const requestMissingPrimitive = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const { data: row, error } = await supabase
       .from("package_requests")
       .insert({
@@ -38,8 +41,8 @@ export const requestMissingPrimitive = createServerFn({ method: "POST" })
 export const listRequests = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    const { supabase: _sbCtx } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx } = context;
+    const supabase = _sbCtx;
     const { data, error } = await supabase
       .from("package_requests")
       .select("*")
@@ -53,8 +56,8 @@ export const processRequest = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
 
     const { data: req, error: rErr } = await supabase
       .from("package_requests")
@@ -74,7 +77,7 @@ export const processRequest = createServerFn({ method: "POST" })
         .update({
           status: "drafting",
           research_summary: research.summary,
-          research_sources: research.sources as any,
+          research_sources: toJson(research.sources),
         })
         .eq("id", data.id);
 
@@ -92,7 +95,7 @@ export const processRequest = createServerFn({ method: "POST" })
 
       const draft = await generateDraft(
         req.brief,
-        req.kind,
+        packageTypeEnum.parse(req.kind),
         req.industry ?? undefined,
         groundingText,
       );
@@ -108,12 +111,12 @@ export const processRequest = createServerFn({ method: "POST" })
         .eq("id", data.id);
 
       return { request_id: data.id, package: pkg, research };
-    } catch (e: any) {
+    } catch (e) {
       await supabase
         .from("package_requests")
-        .update({ status: "rejected", evaluation: { error: e?.message ?? "failed" } as any })
+        .update({ status: "rejected", evaluation: { error: errorField(e, "message") ?? "failed" } })
         .eq("id", data.id);
-      throw new Response(e?.message ?? "Process failed", { status: 500 });
+      throw new Response(errorField(e, "message") ?? "Process failed", { status: 500 });
     }
   });
 
@@ -121,8 +124,8 @@ export const publishRequestPackage = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx } = context;
+    const supabase = _sbCtx;
     const { data: req } = await supabase
       .from("package_requests")
       .select("generated_package_id")

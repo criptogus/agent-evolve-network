@@ -9,7 +9,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import JSZip from "jszip";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { buildSkillMd, buildExamplesMd, validateAnthropicSpec } from "@/lib/skills/anthropic-spec";
 import {
   signBytes,

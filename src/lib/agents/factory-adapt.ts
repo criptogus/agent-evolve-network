@@ -14,7 +14,7 @@ export type AgentBuildRow = {
   role: string;
   emoji: string | null;
   tagline: string | null;
-  brief: Record<string, any> | null;
+  brief: Record<string, unknown> | null;
   soul: string | null;
   skills: GeneratedDoc[] | null;
   playbooks: GeneratedDoc[] | null;

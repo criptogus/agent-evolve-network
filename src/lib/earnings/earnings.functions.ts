@@ -50,8 +50,8 @@ export type EarningsSummary = {
 export const getMyEarnings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<EarningsSummary> => {
-    const { supabase: _sb, userId } = context as any;
-    const supabase = _sb as any;
+    const { supabase: _sb, userId } = context;
+    const supabase = _sb;
 
     const [purchasesRes, tipsRes, payoutsRes] = await Promise.all([
       supabase

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/middleware";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { COMPAT_MODELS, probeCompatibility } from "./compatibility.server";
 
 const SweepInput = z.object({
@@ -97,8 +97,8 @@ export const getCompatibility = createServerFn({ method: "GET" })
 export const listMyDriftAlerts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const { data: pkgs } = await supabase.from("packages").select("id").eq("author_id", userId);
     const ids = (pkgs ?? []).map((p: { id: string }) => p.id);
     if (ids.length === 0) return { alerts: [] };

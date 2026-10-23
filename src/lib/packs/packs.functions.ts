@@ -1,8 +1,10 @@
+import { toJson } from "@/lib/json";
+import { errorField } from "@/lib/errors";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { createTtlCache } from "@/lib/cache/ttl-cache";
 import {
   researchStateOfTheArt,
@@ -63,13 +65,13 @@ export const listPacks = createServerFn({ method: "GET" }).handler(
         .eq("review_status", "approved")
         .order("created_at", { ascending: false });
       if (error) throw new Response(error.message, { status: 500 });
-      const packs = (rows ?? []).map((r: any) => ({
+      const packs = (rows ?? []).map((r) => ({
         id: r.id,
         slug: r.slug,
         name: r.name,
         theme: r.theme,
         description: r.description,
-        cover_emoji: r.cover_emoji,
+        cover_emoji: r.cover_emoji ?? "📦",
         price_credits: r.price_credits,
         install_count: r.install_count,
         item_count: r.pack_items?.[0]?.count ?? 0,
@@ -99,8 +101,8 @@ export const purchasePack = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => PackIdInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx } = context;
+    const supabase = _sbCtx;
     const { data: result, error } = await supabase.rpc("purchase_pack", { _pack_id: data.pack_id });
     if (error) {
       const known: Record<string, string> = {
@@ -129,8 +131,8 @@ export const startCustomization = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => CustomizeInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     // Must own the pack
     const { data: owned } = await supabase
       .from("pack_purchases")
@@ -164,8 +166,8 @@ export const runCustomization = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => RunInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const { data: cust, error: cErr } = await supabase
       .from("pack_customizations")
       .select("*")
@@ -193,7 +195,7 @@ export const runCustomization = createServerFn({ method: "POST" })
 
     const sources: PackItemSource[] = [];
     for (const it of items ?? []) {
-      const pkg = (it as any).package;
+      const pkg = it.package;
       if (!pkg) continue;
       const { data: ver } = await supabaseAdmin
         .from("package_versions")
@@ -208,7 +210,7 @@ export const runCustomization = createServerFn({ method: "POST" })
         name: pkg.name,
         type: pkg.type,
         description: pkg.description,
-        role: (it as any).role,
+        role: it.role,
         system_prompt: ver?.system_prompt ?? "",
         rules: ver?.rules ?? {},
         examples: ver?.examples ?? [],
@@ -234,7 +236,7 @@ export const runCustomization = createServerFn({ method: "POST" })
         .update({
           status: "customizing",
           research_summary: research.summary,
-          research_sources: research.sources as any,
+          research_sources: toJson(research.sources),
         })
         .eq("id", cust.id);
 
@@ -252,19 +254,19 @@ export const runCustomization = createServerFn({ method: "POST" })
         customized.push(c);
         await supabaseAdmin
           .from("pack_customizations")
-          .update({ items: customized as any })
+          .update({ items: toJson(customized) })
           .eq("id", cust.id);
       }
 
       await supabaseAdmin.from("pack_customizations").update({ status: "ready" }).eq("id", cust.id);
 
       return { status: "ready" as const, count: customized.length };
-    } catch (e: any) {
+    } catch (e) {
       await supabaseAdmin
         .from("pack_customizations")
-        .update({ status: "error", error: String(e?.message || e) })
+        .update({ status: "error", error: String(errorField(e, "message") || e) })
         .eq("id", cust.id);
-      throw new Response(`Customization failed: ${e?.message || e}`, { status: 500 });
+      throw new Response(`Customization failed: ${errorField(e, "message") || e}`, { status: 500 });
     }
   });
 
@@ -274,8 +276,8 @@ export const getCustomization = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => GetCustInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const { data: row, error } = await supabase
       .from("pack_customizations")
       .select("*")
@@ -292,8 +294,8 @@ export const listMyCustomizations = createServerFn({ method: "GET" })
     z.object({ pack_id: z.string().uuid().optional() }).parse(d ?? {}),
   )
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     let q = supabase
       .from("pack_customizations")
       .select("id, pack_id, status, brief, niche, created_at, updated_at")

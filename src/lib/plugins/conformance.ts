@@ -1,3 +1,5 @@
+import { recordOf } from "../json.ts";
+import { errorField } from "../errors.ts";
 /**
  * Agent Plugins v1 conformance suite.
  *
@@ -209,7 +211,7 @@ export function runPluginConformance(files: Map<string, string>): ConformanceRep
           : errors.slice(0, 4).join(" · "),
     });
     if (!parseError && errors.length === 0) manifest = parsed as PluginManifest;
-    const name = (parsed as any)?.name;
+    const name = recordOf(parsed).name;
     add({
       id: "manifest.name",
       title: "Plugin name is a legal identifier",
@@ -224,11 +226,11 @@ export function runPluginConformance(files: Map<string, string>): ConformanceRep
       title: "Version, description and license declared",
       level: "recommended",
       status:
-        (parsed as any)?.version && (parsed as any)?.description && (parsed as any)?.license
+        recordOf(parsed).version && recordOf(parsed).description && recordOf(parsed).license
           ? "pass"
           : "warn",
       detail:
-        (parsed as any)?.version && (parsed as any)?.description && (parsed as any)?.license
+        recordOf(parsed).version && recordOf(parsed).description && recordOf(parsed).license
           ? "All discovery metadata present."
           : "Add version, description and license so clients can display the plugin.",
     });

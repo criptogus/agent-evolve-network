@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 // Queue helpers for the package upload background pipeline.
 // See migration 20260525000000_package_upload_jobs.sql for context.
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -5,7 +6,7 @@ import { inferType } from "@/lib/admin/author.server";
 import { generateDraftWithMeta, insertDraftPackage } from "@/lib/admin/author.server";
 import { inspectContent } from "@/lib/security/prompt-injection-guard";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 export type QueuedJob = {
   id: string;
@@ -29,7 +30,7 @@ export async function enqueueUploadJobs(
     .insert(rows)
     .select("id, filename, inferred_type");
   if (error) throw new Error(`enqueueUploadJobs: ${error.message}`);
-  return data ?? [];
+  return (data ?? []).map((row) => ({ ...row, inferred_type: row.inferred_type ?? "skill" }));
 }
 
 // Drain up to `limit` queued jobs. Used by the cron endpoint AND
@@ -150,8 +151,8 @@ export async function drainUploadQueue(limit = 3): Promise<{
 
         .eq("id", locked.id);
       processed++;
-    } catch (e: any) {
-      const msg = e?.message ?? String(e);
+    } catch (e) {
+      const msg = errorField(e, "message") ?? String(e);
       console.error(`[uploads.queue] job=${locked.id} file=${locked.filename}: ${msg}`);
       await supabaseAdmin
         .from("package_upload_jobs")

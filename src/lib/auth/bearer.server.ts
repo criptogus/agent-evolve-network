@@ -2,7 +2,7 @@ import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.
 import { sha256 } from "@/lib/oauth/mcp-oauth.server";
 import { hashToken } from "@/lib/account/tokens.server";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 export type BearerAuth = { user_id: string; source: "oauth" | "pat" };
 

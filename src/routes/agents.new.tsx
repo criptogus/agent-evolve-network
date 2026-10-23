@@ -1,3 +1,5 @@
+import type { ChangeEvent } from "react";
+import { errorField } from "@/lib/errors";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -121,7 +123,8 @@ function NewAgent() {
   });
 
   const canBuild = !!user && isActive;
-  const set = (k: keyof typeof form) => (e: any) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const set = (k: keyof typeof form) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
 
   function next() {
     if (step === 1 && form.role.trim().length < 3) {
@@ -150,8 +153,12 @@ function NewAgent() {
         },
       });
       navigate({ to: "/agents/build/$id", params: { id: res.build_id } });
-    } catch (e: any) {
-      toast.error(typeof e?.message === "string" ? e.message : "Could not start the build.");
+    } catch (e) {
+      toast.error(
+        typeof errorField(e, "message") === "string"
+          ? errorField(e, "message")
+          : "Could not start the build.",
+      );
     } finally {
       setBusy(false);
     }

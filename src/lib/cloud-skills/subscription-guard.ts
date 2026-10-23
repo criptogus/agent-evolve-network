@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const requirePaidSubscription = createMiddleware({ type: "function" })
   .middleware([requireSupabaseAuth])
   .server(async ({ next, context }) => {
-    const { supabase, userId } = context as any;
+    const { supabase, userId } = context;
 
     const { data: sub } = await supabase
       .from("subscriptions")

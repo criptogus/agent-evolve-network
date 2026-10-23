@@ -59,9 +59,9 @@ function AccountPackagesPage() {
     queryFn: () => list(),
     // Poll while there are jobs in flight so users watch the queue drain.
     refetchInterval: (query) => {
-      const d: any = query.state.data;
+      const d = query.state.data;
       const inflight = (d?.jobs ?? []).some(
-        (j: any) => j.status === "queued" || j.status === "processing",
+        (j) => j.status === "queued" || j.status === "processing",
       );
       return inflight ? 5_000 : false;
     },
@@ -86,7 +86,7 @@ function AccountPackagesPage() {
       confirm_phrase?: string;
       price_credits?: number;
     }) => setPub({ data: input }),
-    onSuccess: (r: any) => {
+    onSuccess: (r) => {
       if (r.submitted_for_review) {
         toast.success(
           "Submitted for review. An admin will approve before it appears on the marketplace.",
@@ -99,7 +99,7 @@ function AccountPackagesPage() {
       qc.invalidateQueries({ queryKey: ["account", "my-packages"] });
       closeDialog();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Action failed"),
+    onError: (e) => toast.error(e?.message ?? "Action failed"),
   });
 
   const expectedPhrase = target ? `PUBLISH ${target.name}` : "";
@@ -120,14 +120,14 @@ function AccountPackagesPage() {
           admin then approves it after the adversarial gate passes. You can unpublish anytime.
         </p>
 
-        {q.data && (q.data as any).jobs && (q.data as any).jobs.length > 0 && (
+        {q.data && q.data.jobs && q.data.jobs.length > 0 && (
           <div className="mt-8 rounded-2xl border border-border bg-surface">
             <div className="border-b border-border/60 px-5 py-3 font-mono text-xs uppercase tracking-wider text-muted-foreground">
               Upload queue
             </div>
             <ul className="divide-y divide-border/60">
               {(
-                (q.data as any).jobs as Array<{
+                q.data.jobs as Array<{
                   id: string;
                   filename: string;
                   inferred_type: string;

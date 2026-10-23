@@ -327,7 +327,7 @@ function AdminRoiPage() {
                 </tr>
               </thead>
               <tbody>
-                {experiments.data.experiments.map((e: any) => (
+                {experiments.data.experiments.map((e) => (
                   <tr key={`${e.package_slug}:${e.key}`} className="border-t border-border">
                     <Td>{e.package_slug}</Td>
                     <Td>{e.key}</Td>

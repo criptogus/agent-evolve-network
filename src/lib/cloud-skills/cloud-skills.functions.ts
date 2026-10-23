@@ -1,3 +1,4 @@
+import type { Update } from "@/integrations/supabase/database";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requirePaidSubscription } from "./subscription-guard";
@@ -15,8 +16,8 @@ export const listCloudSkills = createServerFn({ method: "GET" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) => ListCloudSkillsInput.parse(d ?? {}))
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     let q = supabase
       .from("cloud_skills")
@@ -57,8 +58,8 @@ export const getCloudSkill = createServerFn({ method: "GET" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { data: skill, error } = await supabase
       .from("cloud_skills")
@@ -87,8 +88,8 @@ export const createCloudSkill = createServerFn({ method: "POST" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) => CreateCloudSkillInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { data: existing } = await supabase
       .from("cloud_skills")
@@ -134,8 +135,8 @@ export const updateCloudSkill = createServerFn({ method: "POST" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) => UpdateCloudSkillInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { data: current, error: fetchErr } = await supabase
       .from("cloud_skills")
@@ -149,7 +150,7 @@ export const updateCloudSkill = createServerFn({ method: "POST" })
     const contentChanged = data.content && data.content !== current.content;
     const newVersion = contentChanged ? current.version + 1 : current.version;
 
-    const update: Record<string, any> = { updated_at: new Date().toISOString() };
+    const update: Update<"cloud_skills"> = { updated_at: new Date().toISOString() };
     if (data.name !== undefined) update.name = data.name;
     if (data.description !== undefined) update.description = data.description;
     if (data.category !== undefined) update.category = data.category;
@@ -172,7 +173,7 @@ export const updateCloudSkill = createServerFn({ method: "POST" })
       await supabase.from("cloud_skill_versions").insert({
         cloud_skill_id: skill.id,
         version: newVersion,
-        content: data.content,
+        content: data.content ?? current.content,
         variables: data.variables ?? current.variables,
         changelog: data.changelog ?? null,
       });
@@ -188,8 +189,8 @@ export const deleteCloudSkill = createServerFn({ method: "POST" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { error } = await supabase
       .from("cloud_skills")
@@ -218,8 +219,8 @@ export const forkCloudSkill = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { data: source, error: srcErr } = await supabase
       .from("cloud_skills")
@@ -278,8 +279,8 @@ export const exportCloudSkill = createServerFn({ method: "GET" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { data: skill } = await supabase
       .from("cloud_skills")
@@ -351,8 +352,8 @@ export const importCloudSkill = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { filename, content } = data;
 
@@ -451,8 +452,8 @@ export const getCloudSkillVersion = createServerFn({ method: "GET" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     // Verify ownership
     const { data: skill } = await supabase
@@ -481,11 +482,11 @@ export const getCloudSkillVersion = createServerFn({ method: "GET" })
 export const listCloudSkillCategories = createServerFn({ method: "GET" })
   .middleware([requirePaidSubscription])
   .handler(async ({ context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { data } = await supabase.from("cloud_skills").select("category").eq("user_id", userId);
 
-    const categories = ([...new Set((data ?? []).map((r: any) => r.category))] as string[]).sort();
+    const categories = ([...new Set((data ?? []).map((r) => r.category))] as string[]).sort();
     return { categories };
   });

@@ -1,3 +1,4 @@
+import { errorField } from "../errors.ts";
 /**
  * Detached Ed25519 signatures for downloadable marketplace packages (.zip).
  *
@@ -86,7 +87,7 @@ export function signBytes(bytes: Uint8Array): PackageSignature {
   } catch (err) {
     return {
       ...base,
-      unsigned_reason: `signing failed: ${err instanceof Error ? err.message : "unknown error"}`,
+      unsigned_reason: `signing failed: ${err instanceof Error ? errorField(err, "message") : "unknown error"}`,
     };
   }
 }

@@ -24,8 +24,8 @@ export const listSyncEvents = createServerFn({ method: "GET" })
       .parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     let q = supabase
       .from("cloud_skill_sync_events")
@@ -51,8 +51,8 @@ export const listSyncEvents = createServerFn({ method: "GET" })
 export const syncHistorySummary = createServerFn({ method: "GET" })
   .middleware([requirePaidSubscription])
   .handler(async ({ context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { data: rows, error } = await supabase
       .from("cloud_skill_sync_events")
@@ -62,7 +62,19 @@ export const syncHistorySummary = createServerFn({ method: "GET" })
       .limit(500);
     if (error) throw new Response(error.message, { status: 500 });
 
-    const byKey = new Map<string, any>();
+    const byKey = new Map<
+      string,
+      {
+        provider: string;
+        provider_label: string;
+        scope: "global" | "project";
+        syncs: number;
+        files_written: number;
+        conflicts: number;
+        last_status: string;
+        last_synced_at: string;
+      }
+    >();
     for (const r of rows ?? []) {
       const key = `${r.provider}:${r.scope}`;
       const cur = byKey.get(key);
@@ -70,7 +82,7 @@ export const syncHistorySummary = createServerFn({ method: "GET" })
         byKey.set(key, {
           provider: r.provider,
           provider_label: r.provider_label ?? r.provider,
-          scope: r.scope,
+          scope: z.enum(["global", "project"]).parse(r.scope),
           syncs: 1,
           files_written: r.written_count ?? 0,
           conflicts: r.conflict_count ?? 0,
@@ -97,8 +109,8 @@ export const getSyncEvent = createServerFn({ method: "GET" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { data: event, error } = await supabase
       .from("cloud_skill_sync_events")
@@ -109,5 +121,23 @@ export const getSyncEvent = createServerFn({ method: "GET" })
     if (error) throw new Response(error.message, { status: 500 });
     if (!event) throw new Response("Not found", { status: 404 });
 
-    return { event };
+    return {
+      event: {
+        ...event,
+        changes: z
+          .array(
+            z.object({
+              slug: z.string(),
+              path: z.string(),
+              action: z.string(),
+              version: z.number().nullish(),
+              note: z.string().nullish(),
+              conflict: z.boolean().optional(),
+            }),
+          )
+          .parse(event.changes ?? []),
+        conflicts: Array.isArray(event.conflicts) ? event.conflicts : [],
+        orphans: z.array(z.string()).parse(event.orphans ?? []),
+      },
+    };
   });

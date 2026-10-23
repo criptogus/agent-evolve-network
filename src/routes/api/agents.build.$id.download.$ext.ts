@@ -1,9 +1,10 @@
+import { decodeAgentBuild } from "@/lib/agents/build-data";
 import { createFileRoute } from "@tanstack/react-router";
 import JSZip from "jszip";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { buildFiles, buildMarkdown } from "@/lib/agents/factory-adapt";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 /**
  * Download of a customer-generated agent (Agent Factory).
@@ -62,7 +63,7 @@ export const Route = createFileRoute("/api/agents/build/$id/download/$ext")({
         }
 
         if (params.ext === "md") {
-          return new Response(buildMarkdown(row), {
+          return new Response(buildMarkdown(decodeAgentBuild(row)), {
             headers: {
               "content-type": "text/markdown; charset=utf-8",
               "content-disposition": `attachment; filename="${row.slug}-agent.md"`,
@@ -73,7 +74,8 @@ export const Route = createFileRoute("/api/agents/build/$id/download/$ext")({
         if (params.ext === "zip") {
           const zip = new JSZip();
           const root = zip.folder(`${row.slug}-agent`)!;
-          for (const [path, content] of Object.entries(buildFiles(row))) root.file(path, content);
+          for (const [path, content] of Object.entries(buildFiles(decodeAgentBuild(row))))
+            root.file(path, content);
           const buf = await zip.generateAsync({ type: "arraybuffer", compression: "DEFLATE" });
           return new Response(buf, {
             headers: {

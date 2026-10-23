@@ -1,6 +1,10 @@
+import { z } from "zod";
+const SoulExamplesSchema = z.array(z.record(z.string(), JsonSchema));
+import { JsonSchema } from "@/lib/json-schema";
+import type { Json } from "@/integrations/supabase/types";
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { createTtlCache } from "@/lib/cache/ttl-cache";
 import { SOUL_DISCLAIMER } from "./disclaimer";
 
@@ -31,8 +35,8 @@ export type SoulDetail = {
     version: string;
     status: string;
     system_prompt: string;
-    rules: any;
-    examples: any[];
+    rules: Json;
+    examples: z.infer<typeof SoulExamplesSchema>;
     notes: string | null;
     created_at: string;
   } | null;
@@ -98,8 +102,8 @@ export const getSoul = createServerFn({ method: "GET" })
               version: current.version,
               status: current.status,
               system_prompt: current.system_prompt,
-              rules: (current.rules ?? {}) as any,
-              examples: (current.examples ?? []) as any[],
+              rules: JsonSchema.parse(current.rules ?? {}),
+              examples: SoulExamplesSchema.parse(current.examples ?? []),
               notes: current.notes,
               created_at: current.created_at,
             }
