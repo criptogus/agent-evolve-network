@@ -42,7 +42,7 @@ function ConnectionsPage() {
       toast.success(`Revoked ${r.revoked} token${r.revoked === 1 ? "" : "s"}.`);
       qc.invalidateQueries({ queryKey: ["mcp-connections"] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Revoke failed"),
+    onError: (e) => toast.error(e?.message ?? "Revoke failed"),
   });
 
   return (
@@ -68,7 +68,9 @@ function ConnectionsPage() {
           {q.isError && (
             <div className="p-5 text-sm">
               <span className="text-destructive">Sign in to manage connections.</span>{" "}
-              <Link to="/login" className="text-primary">Sign in →</Link>
+              <Link to="/login" className="text-primary">
+                Sign in →
+              </Link>
             </div>
           )}
           {q.data && q.data.items.length === 0 && (
@@ -90,9 +92,7 @@ function ConnectionsPage() {
                 >
                   <div className="min-w-0">
                     <div className="text-sm font-medium">{c.client_name}</div>
-                    <div className="font-mono text-xs text-muted-foreground">
-                      {c.client_id}
-                    </div>
+                    <div className="font-mono text-xs text-muted-foreground">{c.client_id}</div>
                     <div className="mt-1 text-xs text-muted-foreground">
                       {c.active_access} active · scopes:{" "}
                       <span className="font-mono">{c.scope}</span> · granted{" "}

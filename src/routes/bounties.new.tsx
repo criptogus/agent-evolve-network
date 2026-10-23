@@ -46,7 +46,7 @@ function NewBounty() {
     vertical: "general" as const,
     reward_cents: 50_000,
     required_trust_score: 0.85,
-    required_adversarial_pass: 0.80,
+    required_adversarial_pass: 0.8,
     deadline: "",
   });
 
@@ -83,21 +83,21 @@ function NewBounty() {
   return (
     <SitePage>
       <main className="mx-auto max-w-2xl px-6 py-10">
-        <h1 className="text-balance text-3xl font-semibold tracking-tight md:text-4xl">Post a skill bounty</h1>
+        <h1 className="text-balance text-3xl font-semibold tracking-tight md:text-4xl">
+          Post a skill bounty
+        </h1>
         <p className="mt-3 text-muted-foreground">
           Tell the community what you need. The first submission that meets your trust + adversarial
           thresholds claims the reward automatically.
         </p>
 
         <form onSubmit={submit} className="mt-8 space-y-6">
-          <Field
-            label="Title"
-            hint="One line. What should the skill do?"
-            for_="bounty-title"
-          >
+          <Field label="Title" hint="One line. What should the skill do?" for_="bounty-title">
             <Input
               id="bounty-title"
-              required minLength={8} maxLength={160}
+              required
+              minLength={8}
+              maxLength={160}
               value={form.title}
               onChange={(e) => set("title", e.target.value)}
               placeholder="GitHub Actions misconfig auditor"
@@ -111,7 +111,9 @@ function NewBounty() {
           >
             <Textarea
               id="bounty-brief"
-              required minLength={40} maxLength={4000}
+              required
+              minLength={40}
+              maxLength={4000}
               className="min-h-[160px]"
               value={form.brief}
               onChange={(e) => set("brief", e.target.value)}
@@ -120,7 +122,11 @@ function NewBounty() {
           </Field>
 
           <div className="grid gap-6 sm:grid-cols-2">
-            <Field label="Vertical" for_="bounty-vertical" hint="Drives required tags + harness vertical">
+            <Field
+              label="Vertical"
+              for_="bounty-vertical"
+              hint="Drives required tags + harness vertical"
+            >
               <select
                 id="bounty-vertical"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm"
@@ -128,13 +134,19 @@ function NewBounty() {
                 onChange={(e) => set("vertical", e.target.value as typeof form.vertical)}
               >
                 {VERTICALS.map((v) => (
-                  <option key={v.value} value={v.value}>{v.label} — {v.hint}</option>
+                  <option key={v.value} value={v.value}>
+                    {v.label} — {v.hint}
+                  </option>
                 ))}
               </select>
             </Field>
             <Field label="Reward (USD)" for_="bounty-reward" hint="Payable on auto-claim">
               <Input
-                id="bounty-reward" type="number" min={1} max={100_000} step={1}
+                id="bounty-reward"
+                type="number"
+                min={1}
+                max={100_000}
+                step={1}
                 value={form.reward_cents / 100}
                 onChange={(e) => set("reward_cents", Math.round(Number(e.target.value) * 100))}
               />
@@ -142,25 +154,46 @@ function NewBounty() {
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
-            <Field label="Min Trust Score" for_="bounty-trust" hint="0 – 1. 0.85 is the default ceiling for production">
+            <Field
+              label="Min Trust Score"
+              for_="bounty-trust"
+              hint="0 – 1. 0.85 is the default ceiling for production"
+            >
               <Input
-                id="bounty-trust" type="number" min={0} max={1} step={0.01}
+                id="bounty-trust"
+                type="number"
+                min={0}
+                max={1}
+                step={0.01}
                 value={form.required_trust_score}
                 onChange={(e) => set("required_trust_score", Number(e.target.value))}
               />
             </Field>
-            <Field label="Min adversarial pass rate" for_="bounty-adv" hint="0 – 1. Severity-weighted">
+            <Field
+              label="Min adversarial pass rate"
+              for_="bounty-adv"
+              hint="0 – 1. Severity-weighted"
+            >
               <Input
-                id="bounty-adv" type="number" min={0} max={1} step={0.01}
+                id="bounty-adv"
+                type="number"
+                min={0}
+                max={1}
+                step={0.01}
                 value={form.required_adversarial_pass}
                 onChange={(e) => set("required_adversarial_pass", Number(e.target.value))}
               />
             </Field>
           </div>
 
-          <Field label="Deadline" for_="bounty-deadline" hint="Optional. Bounties auto-expire on this date.">
+          <Field
+            label="Deadline"
+            for_="bounty-deadline"
+            hint="Optional. Bounties auto-expire on this date."
+          >
             <Input
-              id="bounty-deadline" type="datetime-local"
+              id="bounty-deadline"
+              type="datetime-local"
               value={form.deadline}
               onChange={(e) => set("deadline", e.target.value)}
             />
@@ -196,7 +229,9 @@ function Field({
 }) {
   return (
     <div>
-      <Label htmlFor={for_} className="text-sm font-medium">{label}</Label>
+      <Label htmlFor={for_} className="text-sm font-medium">
+        {label}
+      </Label>
       {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
       <div className="mt-2">{children}</div>
     </div>

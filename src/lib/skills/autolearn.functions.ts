@@ -1,3 +1,4 @@
+import { publicPackage } from "@/lib/public-package";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -13,8 +14,8 @@ export const autoLearnPackage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
 
     const { data: pkg, error: pErr } = await supabase
       .from("packages")
@@ -81,10 +82,12 @@ export const autoLearnPackage = createServerFn({ method: "POST" })
     let createdVersion: { id: string; version: string; status: string } | null = null;
     if (data.apply && !result.regression) {
       const mergedRules = JSON.parse(
-        JSON.stringify({ ...(ver.rules as object), ...(result.patch.patched_rules as object) })
+        JSON.stringify({ ...(ver.rules as object), ...(result.patch.patched_rules as object) }),
       );
       const existingExamples = Array.isArray(ver.examples) ? (ver.examples as unknown[]) : [];
-      const mergedExamples = JSON.parse(JSON.stringify([...existingExamples, ...result.patch.new_examples]));
+      const mergedExamples = JSON.parse(
+        JSON.stringify([...existingExamples, ...result.patch.new_examples]),
+      );
       const { data: nv, error: nvErr } = await supabase
         .from("package_versions")
         .insert({
@@ -123,5 +126,11 @@ export const autoLearnPackage = createServerFn({ method: "POST" })
       },
     });
 
-    return { package: pkg, current_version: ver, ...result, applied: createdVersion, feedback_request };
+    return {
+      package: publicPackage(pkg),
+      current_version: ver,
+      ...result,
+      applied: createdVersion,
+      feedback_request,
+    };
   });

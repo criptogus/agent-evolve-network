@@ -1,3 +1,4 @@
+import { errorField } from "../errors.ts";
 /**
  * Detached Ed25519 signatures for downloadable marketplace packages (.zip).
  *
@@ -86,7 +87,7 @@ export function signBytes(bytes: Uint8Array): PackageSignature {
   } catch (err) {
     return {
       ...base,
-      unsigned_reason: `signing failed: ${err instanceof Error ? err.message : "unknown error"}`,
+      unsigned_reason: `signing failed: ${err instanceof Error ? errorField(err, "message") : "unknown error"}`,
     };
   }
 }
@@ -115,7 +116,10 @@ export function contentDigest(files: Iterable<[string, string]>): {
 }
 
 /** Ed25519 is deterministic, so the same digest always yields the same signature. */
-export function signDigest(digestHex: string): { signature: string | null; signing_key_id: string | null } {
+export function signDigest(digestHex: string): {
+  signature: string | null;
+  signing_key_id: string | null;
+} {
   const priv = pem("SIGNING_PRIVATE_KEY");
   const keyId = signingKeyId();
   if (!priv || !keyId) return { signature: null, signing_key_id: null };

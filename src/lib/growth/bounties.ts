@@ -16,16 +16,21 @@ export interface SubmissionMetrics {
 }
 
 export type EligibilityReason =
-  | "BOUNTY_NOT_OPEN" | "DEADLINE_PASSED"
-  | "TRUST_BELOW_THRESHOLD" | "ADVERSARIAL_BELOW_THRESHOLD"
-  | "VERTICAL_MISMATCH" | "OK";
+  | "BOUNTY_NOT_OPEN"
+  | "DEADLINE_PASSED"
+  | "TRUST_BELOW_THRESHOLD"
+  | "ADVERSARIAL_BELOW_THRESHOLD"
+  | "VERTICAL_MISMATCH"
+  | "OK";
 
 export function checkEligibility(b: BountyRequirement, m: SubmissionMetrics): EligibilityReason {
   if (b.status !== "open") return "BOUNTY_NOT_OPEN";
   if (b.deadline && new Date(b.deadline).getTime() < Date.now()) return "DEADLINE_PASSED";
-  if (b.vertical && m.package_tags && !m.package_tags.includes(b.vertical)) return "VERTICAL_MISMATCH";
+  if (b.vertical && m.package_tags && !m.package_tags.includes(b.vertical))
+    return "VERTICAL_MISMATCH";
   if ((m.trust_score ?? 0) < b.required_trust_score) return "TRUST_BELOW_THRESHOLD";
-  if ((m.adversarial_pass_rate ?? 0) < b.required_adversarial_pass) return "ADVERSARIAL_BELOW_THRESHOLD";
+  if ((m.adversarial_pass_rate ?? 0) < b.required_adversarial_pass)
+    return "ADVERSARIAL_BELOW_THRESHOLD";
   return "OK";
 }
 

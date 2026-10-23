@@ -1,0 +1,13 @@
+{
+  "documents": [
+    {
+      "id": "D1",
+      "last_review": "2025-01-01",
+      "owner": "Ops"
+    }
+  ],
+  "freshness_policy": {
+    "max_age_days": 180
+  },
+  "as_of": "2026-10-23"
+}

@@ -13,8 +13,16 @@ const ROWS: Row[] = [
 
 const HIGHLIGHTS = [
   { icon: Sparkles, stat: "2.0×", label: "more tasks finished without a human stepping in" },
-  { icon: ShieldCheck, stat: "99%", label: "of adversarial prompts blocked by the built-in guardrails" },
-  { icon: Timer, stat: "5 min", label: "from a one-paragraph brief to a graded, installable agent" },
+  {
+    icon: ShieldCheck,
+    stat: "99%",
+    label: "of adversarial prompts blocked by the built-in guardrails",
+  },
+  {
+    icon: Timer,
+    stat: "5 min",
+    label: "from a one-paragraph brief to a graded, installable agent",
+  },
 ];
 
 /**
@@ -26,16 +34,18 @@ export function FactoryProof() {
   return (
     <section className="rounded-2xl border border-border bg-surface/40 p-5 sm:p-7">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-lg font-semibold tracking-tight">Why not just paste a prompt into the LLM?</h2>
+        <h2 className="text-lg font-semibold tracking-tight">
+          Why not just paste a prompt into the LLM?
+        </h2>
         <span className="rounded-full border border-border bg-background px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
           Illustrative targets
         </span>
       </div>
       <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-        Same model, same task. On the left: a hand-written prompt. On the right: an agent built by this factory.
-        The figures below are the certification targets the pipeline is designed to hit — they are modelled, not
-        measured customer results, and each one flips to a live number as paired-benchmark telemetry reaches
-        sample size.
+        Same model, same task. On the left: a hand-written prompt. On the right: an agent built by
+        this factory. The figures below are the certification targets the pipeline is designed to
+        hit — they are modelled, not measured customer results, and each one flips to a live number
+        as paired-benchmark telemetry reaches sample size.
       </p>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -77,8 +87,8 @@ export function FactoryProof() {
       </div>
 
       <p className="mt-3 text-xs text-muted-foreground">
-        Certification targets, not a guarantee or a measured customer average — your numbers depend on the task
-        and the model you run. Method:{" "}
+        Certification targets, not a guarantee or a measured customer average — your numbers depend
+        on the task and the model you run. Method:{" "}
         <a href="/evaluation" className="underline decoration-dotted hover:text-foreground">
           how we score
         </a>

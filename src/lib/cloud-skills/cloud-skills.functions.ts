@@ -1,3 +1,4 @@
+import type { Update } from "@/integrations/supabase/database";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requirePaidSubscription } from "./subscription-guard";
@@ -15,12 +16,15 @@ export const listCloudSkills = createServerFn({ method: "GET" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) => ListCloudSkillsInput.parse(d ?? {}))
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     let q = supabase
       .from("cloud_skills")
-      .select("id, slug, name, description, category, tags, is_public, version, created_at, updated_at", { count: "exact" });
+      .select(
+        "id, slug, name, description, category, tags, is_public, version, created_at, updated_at",
+        { count: "exact" },
+      );
 
     if (data.include_public) {
       q = q.or(`user_id.eq.${userId},is_public.eq.true`);
@@ -37,7 +41,9 @@ export const listCloudSkills = createServerFn({ method: "GET" })
       }
     }
 
-    q = q.order("updated_at", { ascending: false }).range(data.offset, data.offset + data.limit - 1);
+    q = q
+      .order("updated_at", { ascending: false })
+      .range(data.offset, data.offset + data.limit - 1);
 
     const { data: skills, error, count } = await q;
     if (error) throw new Response(error.message, { status: 500 });
@@ -52,8 +58,8 @@ export const getCloudSkill = createServerFn({ method: "GET" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { data: skill, error } = await supabase
       .from("cloud_skills")
@@ -82,8 +88,8 @@ export const createCloudSkill = createServerFn({ method: "POST" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) => CreateCloudSkillInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { data: existing } = await supabase
       .from("cloud_skills")
@@ -129,8 +135,8 @@ export const updateCloudSkill = createServerFn({ method: "POST" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) => UpdateCloudSkillInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { data: current, error: fetchErr } = await supabase
       .from("cloud_skills")
@@ -144,7 +150,7 @@ export const updateCloudSkill = createServerFn({ method: "POST" })
     const contentChanged = data.content && data.content !== current.content;
     const newVersion = contentChanged ? current.version + 1 : current.version;
 
-    const update: Record<string, any> = { updated_at: new Date().toISOString() };
+    const update: Update<"cloud_skills"> = { updated_at: new Date().toISOString() };
     if (data.name !== undefined) update.name = data.name;
     if (data.description !== undefined) update.description = data.description;
     if (data.category !== undefined) update.category = data.category;
@@ -167,7 +173,7 @@ export const updateCloudSkill = createServerFn({ method: "POST" })
       await supabase.from("cloud_skill_versions").insert({
         cloud_skill_id: skill.id,
         version: newVersion,
-        content: data.content,
+        content: data.content ?? current.content,
         variables: data.variables ?? current.variables,
         changelog: data.changelog ?? null,
       });
@@ -183,8 +189,8 @@ export const deleteCloudSkill = createServerFn({ method: "POST" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { error } = await supabase
       .from("cloud_skills")
@@ -202,14 +208,19 @@ export const deleteCloudSkill = createServerFn({ method: "POST" })
 export const forkCloudSkill = createServerFn({ method: "POST" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) =>
-    z.object({
-      source_id: z.string().uuid(),
-      new_slug: z.string().regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/).optional(),
-    }).parse(d),
+    z
+      .object({
+        source_id: z.string().uuid(),
+        new_slug: z
+          .string()
+          .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/)
+          .optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { data: source, error: srcErr } = await supabase
       .from("cloud_skills")
@@ -217,10 +228,12 @@ export const forkCloudSkill = createServerFn({ method: "POST" })
       .eq("id", data.source_id)
       .maybeSingle();
     if (srcErr || !source) throw new Response("Source skill not found", { status: 404 });
-    if (source.user_id === userId) throw new Response("Cannot fork your own skill", { status: 400 });
+    if (source.user_id === userId)
+      throw new Response("Cannot fork your own skill", { status: 400 });
     if (!source.is_public) throw new Response("Only public skills can be forked", { status: 403 });
 
-    const newSlug = data.new_slug ?? `${source.slug}-fork-${Math.random().toString(36).slice(2, 6)}`;
+    const newSlug =
+      data.new_slug ?? `${source.slug}-fork-${Math.random().toString(36).slice(2, 6)}`;
 
     const { data: skill, error } = await supabase
       .from("cloud_skills")
@@ -258,14 +271,16 @@ export const forkCloudSkill = createServerFn({ method: "POST" })
 export const exportCloudSkill = createServerFn({ method: "GET" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) =>
-    z.object({
-      id: z.string().uuid(),
-      format: ExportFormat.default("markdown"),
-    }).parse(d),
+    z
+      .object({
+        id: z.string().uuid(),
+        format: ExportFormat.default("markdown"),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { data: skill } = await supabase
       .from("cloud_skills")
@@ -316,7 +331,9 @@ export const exportCloudSkill = createServerFn({ method: "GET" })
       skill.tags.length ? `tags: ${skill.tags.join(", ")}` : null,
       `version: ${skill.version}`,
       "---",
-    ].filter(Boolean).join("\n");
+    ]
+      .filter(Boolean)
+      .join("\n");
 
     return { format: "markdown", data: `${frontmatter}\n\n${skill.content}` };
   });
@@ -327,20 +344,22 @@ export const exportCloudSkill = createServerFn({ method: "GET" })
 export const importCloudSkill = createServerFn({ method: "POST" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) =>
-    z.object({
-      filename: z.string().max(200),
-      content: z.string().min(10).max(200_000),
-    }).parse(d),
+    z
+      .object({
+        filename: z.string().max(200),
+        content: z.string().min(10).max(200_000),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     const { filename, content } = data;
 
     // Parse YAML frontmatter if present
     const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
-    let meta: Record<string, string> = {};
+    const meta: Record<string, string> = {};
     let body = content;
 
     if (frontmatterMatch) {
@@ -357,16 +376,22 @@ export const importCloudSkill = createServerFn({ method: "POST" })
     }
 
     const baseName = filename.replace(/\.(md|yaml|yml|json|txt|skill)$/i, "");
-    const slug = (meta.slug ?? baseName)
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 64) || "imported-skill";
+    const slug =
+      (meta.slug ?? baseName)
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 64) || "imported-skill";
     const name = meta.name ?? baseName;
     const description = meta.description ?? null;
     const category = meta.category ?? "imported";
-    const tags = meta.tags ? meta.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [];
+    const tags = meta.tags
+      ? meta.tags
+          .split(",")
+          .map((t: string) => t.trim())
+          .filter(Boolean)
+      : [];
 
     // Deduplicate slug
     let finalSlug = slug;
@@ -419,14 +444,16 @@ export const importCloudSkill = createServerFn({ method: "POST" })
 export const getCloudSkillVersion = createServerFn({ method: "GET" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) =>
-    z.object({
-      cloud_skill_id: z.string().uuid(),
-      version: z.number().int().min(1),
-    }).parse(d),
+    z
+      .object({
+        cloud_skill_id: z.string().uuid(),
+        version: z.number().int().min(1),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     // Verify ownership
     const { data: skill } = await supabase
@@ -455,14 +482,11 @@ export const getCloudSkillVersion = createServerFn({ method: "GET" })
 export const listCloudSkillCategories = createServerFn({ method: "GET" })
   .middleware([requirePaidSubscription])
   .handler(async ({ context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
-    const { data } = await supabase
-      .from("cloud_skills")
-      .select("category")
-      .eq("user_id", userId);
+    const { data } = await supabase.from("cloud_skills").select("category").eq("user_id", userId);
 
-    const categories = ([...new Set((data ?? []).map((r: any) => r.category))] as string[]).sort();
+    const categories = ([...new Set((data ?? []).map((r) => r.category))] as string[]).sort();
     return { categories };
   });

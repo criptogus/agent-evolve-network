@@ -1,3 +1,5 @@
+import { recordOf, isRecord } from "@/lib/json";
+import type { DiagnosisReport } from "@/lib/university/types";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -36,7 +38,13 @@ export const Route = createFileRoute("/diagnose")({
 
 type Task = { case_id: string; prompt: string; output_contract?: string };
 
-const CATEGORY_ORDER: DomainCategory[] = ["Foundation", "Revenue", "Execution", "Operations", "Media & Product"];
+const CATEGORY_ORDER: DomainCategory[] = [
+  "Foundation",
+  "Revenue",
+  "Execution",
+  "Operations",
+  "Media & Product",
+];
 
 function DiagnosePage() {
   const start = useServerFn(startDiagnosis);
@@ -46,13 +54,18 @@ function DiagnosePage() {
   const [installed, setInstalled] = useState("");
   const [exam, setExam] = useState<{ diagnosis_id: string | null; tasks: Task[] } | null>(null);
   const [transcript, setTranscript] = useState("");
-  const [report, setReport] = useState<any | null>(null);
+  const [report, setReport] = useState<DiagnosisReport | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
   const installedList = useMemo(
-    () => installed.split(/[,\s]+/).map((s) => s.trim()).filter(Boolean).slice(0, 64),
+    () =>
+      installed
+        .split(/[,\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .slice(0, 64),
     [installed],
   );
 
@@ -70,7 +83,9 @@ function DiagnosePage() {
       if (!map.has(d.category)) map.set(d.category, []);
       map.get(d.category)!.push(d);
     }
-    return CATEGORY_ORDER.map((c) => ({ category: c, items: map.get(c) ?? [] })).filter((g) => g.items.length > 0);
+    return CATEGORY_ORDER.map((c) => ({ category: c, items: map.get(c) ?? [] })).filter(
+      (g) => g.items.length > 0,
+    );
   }, [query]);
 
   const agentBrief = useMemo(() => {
@@ -105,7 +120,7 @@ function DiagnosePage() {
     setBusy(true);
     setError(null);
     try {
-      let parsed: any;
+      let parsed: unknown;
       try {
         parsed = JSON.parse(transcript);
       } catch {
@@ -113,7 +128,7 @@ function DiagnosePage() {
         setBusy(false);
         return;
       }
-      const answers = Array.isArray(parsed) ? parsed : parsed?.answers;
+      const answers = Array.isArray(parsed) ? parsed : recordOf(parsed).answers;
       if (!Array.isArray(answers) || !answers.length) {
         setError("No answers found in the JSON.");
         setBusy(false);
@@ -124,12 +139,15 @@ function DiagnosePage() {
           diagnosis_id: exam?.diagnosis_id ?? undefined,
           domain,
           installed_skills: installedList,
-          answers: answers.slice(0, 80).map((a: any) => ({
-            case_id: String(a.case_id ?? ""),
-            answer: String(a.answer ?? "").slice(0, 20000),
-            latency_ms: Number.isFinite(a.latency_ms) ? Number(a.latency_ms) : undefined,
-            tokens: Number.isFinite(a.tokens) ? Number(a.tokens) : undefined,
-          })),
+          answers: answers
+            .filter(isRecord)
+            .slice(0, 80)
+            .map((a) => ({
+              case_id: String(a.case_id ?? ""),
+              answer: String(a.answer ?? "").slice(0, 20000),
+              latency_ms: Number.isFinite(a.latency_ms) ? Number(a.latency_ms) : undefined,
+              tokens: Number.isFinite(a.tokens) ? Number(a.tokens) : undefined,
+            })),
         },
       });
       setReport(res);
@@ -150,9 +168,9 @@ function DiagnosePage() {
           Enrollment is diagnosis, not download.
         </h1>
         <p className="mt-4 max-w-2xl text-base text-muted-foreground">
-          Installing a skill by name is a guess. Here the agent takes an admission exam with fixed domain
-          tasks and gets the transcript back: <strong>where</strong> it fails, in <strong>which error
-          class</strong>, and at what cost. Only then comes the prescription.
+          Installing a skill by name is a guess. Here the agent takes an admission exam with fixed
+          domain tasks and gets the transcript back: <strong>where</strong> it fails, in{" "}
+          <strong>which error class</strong>, and at what cost. Only then comes the prescription.
         </p>
 
         <div className="mt-8 rounded-2xl border border-border bg-card p-5">
@@ -183,7 +201,9 @@ function DiagnosePage() {
                       type="button"
                       onClick={() => setDomain(d.id)}
                       className={`rounded-xl border p-3 text-left transition ${
-                        domain === d.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                        domain === d.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/40"
                       }`}
                     >
                       <div className="text-sm font-medium">{d.name}</div>
@@ -196,8 +216,8 @@ function DiagnosePage() {
           </div>
 
           <label className="mt-5 block text-xs font-medium text-muted-foreground">
-            Capabilities already installed on the agent (optional, comma-separated) — used to calculate
-            marginal gain
+            Capabilities already installed on the agent (optional, comma-separated) — used to
+            calculate marginal gain
           </label>
           <Textarea
             value={installed}
@@ -215,13 +235,13 @@ function DiagnosePage() {
         {exam && (
           <div className="mt-6 rounded-2xl border border-border bg-card p-5">
             <div className="flex items-center gap-2 text-sm font-medium">
-              <ClipboardCheck className="h-4 w-4 text-primary" /> 2. Run the {exam.tasks.length} tasks on
-              your agent
+              <ClipboardCheck className="h-4 w-4 text-primary" /> 2. Run the {exam.tasks.length}{" "}
+              tasks on your agent
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Paste the block below into your agent (Claude, Hermes, ChatGPT, Cursor). It runs the tasks and returns
-              the JSON with the answers. Grading expectations are private by design — part of the cases are
-              holdout.
+              Paste the block below into your agent (Claude, Hermes, ChatGPT, Cursor). It runs the
+              tasks and returns the JSON with the answers. Grading expectations are private by
+              design — part of the cases are holdout.
             </p>
             <div className="mt-4">
               <CodeBlock code={agentBrief} lang="markdown" filename="exam.md" />
@@ -244,7 +264,10 @@ function DiagnosePage() {
         )}
 
         {error && (
-          <p role="alert" className="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
+          <p
+            role="alert"
+            className="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm"
+          >
             {error}
           </p>
         )}
@@ -256,7 +279,8 @@ function DiagnosePage() {
                 <Activity className="h-4 w-4 text-primary" /> Exam transcript
               </div>
               <div className="font-mono text-sm">
-                {report.overall_score}/100 · <span className="text-muted-foreground">{report.grade}</span>
+                {report.overall_score}/100 ·{" "}
+                <span className="text-muted-foreground">{report.grade}</span>
               </div>
             </div>
 
@@ -275,12 +299,14 @@ function DiagnosePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {report.error_profile.map((p: any) => (
+                  {report.error_profile.map((p) => (
                     <tr key={p.error_class} className="border-t border-border/60">
                       <td className="py-2">{p.label}</td>
                       <td className="py-2 font-mono">{p.total}</td>
                       <td className="py-2 font-mono">{p.failed}</td>
-                      <td className={`py-2 font-mono ${p.fail_rate > 40 ? "text-destructive" : ""}`}>
+                      <td
+                        className={`py-2 font-mono ${p.fail_rate > 40 ? "text-destructive" : ""}`}
+                      >
                         {p.fail_rate}%
                       </td>
                     </tr>
@@ -293,7 +319,7 @@ function DiagnosePage() {
               <>
                 <h2 className="mt-6 text-sm font-semibold">Prescription</h2>
                 <ul className="mt-2 space-y-2">
-                  {report.prescription.map((p: any) => (
+                  {report.prescription.map((p) => (
                     <li key={p.slug} className="rounded-xl border border-border p-3 text-sm">
                       <div className="font-medium">
                         {p.title}{" "}
@@ -333,7 +359,7 @@ function DiagnosePage() {
                 See case-by-case results
               </summary>
               <ul className="mt-3 space-y-1 text-xs">
-                {report.results.map((r: any) => (
+                {report.results.map((r) => (
                   <li key={r.case_id} className="flex gap-2">
                     <span className={r.passed ? "text-primary" : "text-destructive"}>
                       {r.passed ? "PASS" : "FAIL"}

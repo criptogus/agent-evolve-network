@@ -34,11 +34,9 @@ export const Route = createFileRoute("/api/public/search")({
 
         try {
           const results = await searchPackages({ q, type, limit, offset });
-          return json(
-            { query: q, count: results.length, limit, offset, results },
-            200,
-            { "Cache-Control": "public, max-age=30" },
-          );
+          return json({ query: q, count: results.length, limit, offset, results }, 200, {
+            "Cache-Control": "public, max-age=30",
+          });
         } catch (e) {
           console.error("[api/public/search] db error:", e);
           return json({ error: "internal_server_error" }, 500);

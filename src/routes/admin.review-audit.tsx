@@ -9,7 +9,10 @@ export const Route = createFileRoute("/admin/review-audit")({
   head: () => ({
     meta: [
       { title: "Review audit — Admin · Super Agent Skill" },
-      { name: "description", content: "Audit log of review and report attempts, including blocked rate-limit events." },
+      {
+        name: "description",
+        content: "Audit log of review and report attempts, including blocked rate-limit events.",
+      },
     ],
   }),
   component: ReviewAuditAdmin,
@@ -99,9 +102,7 @@ function AuditCard({ row }: { row: AuditRow }) {
   return (
     <li
       className={`rounded-lg border p-3 text-xs ${
-        isBlocked
-          ? "border-destructive/30 bg-destructive/5"
-          : "border-border bg-card"
+        isBlocked ? "border-destructive/30 bg-destructive/5" : "border-border bg-card"
       }`}
     >
       <div className="flex flex-wrap items-center gap-2">
@@ -124,13 +125,18 @@ function AuditCard({ row }: { row: AuditRow }) {
       </div>
       <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
         <span>
-          User <strong className="text-foreground">{row.user_name ?? row.user_id.slice(0, 8)}</strong>
+          User{" "}
+          <strong className="text-foreground">{row.user_name ?? row.user_id.slice(0, 8)}</strong>
         </span>
         {row.package_id && (
-          <span>· pkg <code className="font-mono">{row.package_id.slice(0, 8)}</code></span>
+          <span>
+            · pkg <code className="font-mono">{row.package_id.slice(0, 8)}</code>
+          </span>
         )}
         {row.review_id && (
-          <span>· review <code className="font-mono">{row.review_id.slice(0, 8)}</code></span>
+          <span>
+            · review <code className="font-mono">{row.review_id.slice(0, 8)}</code>
+          </span>
         )}
         {Object.keys(row.metadata ?? {}).length > 0 && (
           <code className="ml-auto rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-foreground/80">

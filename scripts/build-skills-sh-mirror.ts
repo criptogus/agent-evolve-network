@@ -31,7 +31,9 @@ function validSlug(slug) {
 
 /** Frontmatter descriptions must carry WHAT + WHEN, be <=1024 chars and have no angle brackets. */
 function buildDescription(skill) {
-  const base = String(skill.description ?? "").replace(/[<>]/g, "").trim();
+  const base = String(skill.description ?? "")
+    .replace(/[<>]/g, "")
+    .trim();
   const hasTrigger =
     /\b(use when|use this when|when (the )?user|trigger|asks? (to|for)|mentions?|invoke when)\b/i.test(
       base,
@@ -142,8 +144,8 @@ Update later:
 npx skills update
 \`\`\`
 
-${slugs.length} skills are mirrored here. Every skill also carries a public **Trust Score** —
-format, substance and adversarial (prompt-injection) grading — at
+${slugs.length} skills are mirrored here. Candidate skills include their validation fixtures and
+do not claim model-specific certification. Published registry skills expose available evidence at
 ${SITE}/marketplace/trust/<skill-name>.
 
 ## Source of truth
@@ -180,6 +182,18 @@ for (const file of files) {
   }
   slugs.push(slug);
   written.set(join(slug, "SKILL.md"), buildSkillMd(skill));
+  if (skill.x_artifact_contract) {
+    written.set(
+      join(slug, "references/contract.json"),
+      JSON.stringify(skill.x_artifact_contract, null, 2) + "\n",
+    );
+    written.set(
+      join(slug, "scripts/check_input.py"),
+      readFileSync(join(ROOT, "content/expansion/check_input.py"), "utf8"),
+    );
+    const example = JSON.parse(skill.examples[0].input);
+    written.set(join(slug, "tests/input.json"), JSON.stringify(example, null, 2) + "\n");
+  }
 }
 
 slugs.sort();

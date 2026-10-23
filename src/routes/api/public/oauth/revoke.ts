@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { corsPreflight, jsonResponse, sha256 } from "@/lib/oauth/mcp-oauth.server";
 
 async function parseBody(request: Request): Promise<Record<string, string>> {
@@ -27,7 +27,9 @@ export const Route = createFileRoute("/api/public/oauth/revoke")({
         const token = (body.token ?? "").trim();
         // Per RFC 7009 we always return 200 even on unknown tokens.
         if (token) {
-          await supabaseAdmin.rpc("mcp_oauth_revoke_token", { _token_hash: sha256(token) } as never);
+          await supabaseAdmin.rpc("mcp_oauth_revoke_token", {
+            _token_hash: sha256(token),
+          } as never);
         }
         return jsonResponse({ ok: true });
       },

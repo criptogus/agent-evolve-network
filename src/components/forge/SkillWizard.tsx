@@ -15,7 +15,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type PackageType = "skill" | "playbook" | "soul" | "guardrail";
 
@@ -28,7 +34,8 @@ export type WizardSubmit = {
 
 const STEPS = ["Use case", "Triggers", "Structure", "Examples", "Validation"] as const;
 
-const TRIGGER_HINT = /\b(use when|when (the )?user|trigger|asks? (to|for)|invoke when|mentions?)\b/i;
+const TRIGGER_HINT =
+  /\b(use when|when (the )?user|trigger|asks? (to|for)|invoke when|mentions?)\b/i;
 
 export function SkillWizard({
   busy,
@@ -74,14 +81,38 @@ export function SkillWizard({
       ok: TRIGGER_HINT.test(whenPhrase),
       hint: "Anthropic spec requires explicit WHEN to activate.",
     });
-    c.push({ label: "≥ 2 example queries listed", ok: exampleQueries.split("\n").filter(Boolean).length >= 2 });
+    c.push({
+      label: "≥ 2 example queries listed",
+      ok: exampleQueries.split("\n").filter(Boolean).length >= 2,
+    });
     c.push({ label: "≥ 1 must rule", ok: must.split("\n").filter(Boolean).length >= 1 });
     c.push({ label: "≥ 1 must-not rule", ok: mustNot.split("\n").filter(Boolean).length >= 1 });
-    c.push({ label: "Example #1 input + expected output", ok: ex1In.trim().length > 5 && ex1Out.trim().length > 5 });
-    c.push({ label: "Example #2 input + expected output", ok: ex2In.trim().length > 5 && ex2Out.trim().length > 5 });
-    c.push({ label: "No `<` or `>` in trigger (prompt-injection guard)", ok: !/[<>]/.test(whenPhrase) });
+    c.push({
+      label: "Example #1 input + expected output",
+      ok: ex1In.trim().length > 5 && ex1Out.trim().length > 5,
+    });
+    c.push({
+      label: "Example #2 input + expected output",
+      ok: ex2In.trim().length > 5 && ex2Out.trim().length > 5,
+    });
+    c.push({
+      label: "No `<` or `>` in trigger (prompt-injection guard)",
+      ok: !/[<>]/.test(whenPhrase),
+    });
     return c;
-  }, [problem, audience, outcome, whenPhrase, exampleQueries, must, mustNot, ex1In, ex1Out, ex2In, ex2Out]);
+  }, [
+    problem,
+    audience,
+    outcome,
+    whenPhrase,
+    exampleQueries,
+    must,
+    mustNot,
+    ex1In,
+    ex1Out,
+    ex2In,
+    ex2Out,
+  ]);
 
   const allOk = checks.every((c) => c.ok);
 
@@ -94,12 +125,18 @@ export function SkillWizard({
     lines.push(whenPhrase.trim(), "");
     if (exampleQueries.trim()) {
       lines.push(`**Example user queries that should activate this:**`);
-      exampleQueries.split("\n").filter(Boolean).forEach((q) => lines.push(`- ${q.trim()}`));
+      exampleQueries
+        .split("\n")
+        .filter(Boolean)
+        .forEach((q) => lines.push(`- ${q.trim()}`));
       lines.push("");
     }
     if (antiTriggers.trim()) {
       lines.push(`**Do NOT activate when:**`);
-      antiTriggers.split("\n").filter(Boolean).forEach((q) => lines.push(`- ${q.trim()}`));
+      antiTriggers
+        .split("\n")
+        .filter(Boolean)
+        .forEach((q) => lines.push(`- ${q.trim()}`));
       lines.push("");
     }
     lines.push(`# Structure`);
@@ -107,17 +144,38 @@ export function SkillWizard({
     if (vertical.trim()) lines.push(`- Vertical: ${vertical.trim()}`);
     if (must.trim()) {
       lines.push(`**Must:**`);
-      must.split("\n").filter(Boolean).forEach((r) => lines.push(`- ${r.trim()}`));
+      must
+        .split("\n")
+        .filter(Boolean)
+        .forEach((r) => lines.push(`- ${r.trim()}`));
     }
     if (mustNot.trim()) {
       lines.push(`**Must not:**`);
-      mustNot.split("\n").filter(Boolean).forEach((r) => lines.push(`- ${r.trim()}`));
+      mustNot
+        .split("\n")
+        .filter(Boolean)
+        .forEach((r) => lines.push(`- ${r.trim()}`));
     }
     lines.push("", `# Worked examples`);
     lines.push(`## Example 1`, `Input:`, ex1In.trim(), `Expected output:`, ex1Out.trim(), "");
     lines.push(`## Example 2`, `Input:`, ex2In.trim(), `Expected output:`, ex2Out.trim(), "");
     return lines.join("\n");
-  }, [problem, audience, outcome, whenPhrase, exampleQueries, antiTriggers, type, vertical, must, mustNot, ex1In, ex1Out, ex2In, ex2Out]);
+  }, [
+    problem,
+    audience,
+    outcome,
+    whenPhrase,
+    exampleQueries,
+    antiTriggers,
+    type,
+    vertical,
+    must,
+    mustNot,
+    ex1In,
+    ex1Out,
+    ex2In,
+    ex2Out,
+  ]);
 
   const submit = () => {
     onSubmit({ brief: compiledBrief, type, vertical: vertical.trim() || undefined, publish });
@@ -160,11 +218,19 @@ export function SkillWizard({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Target user</Label>
-              <Input value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="growth marketer, SRE, support agent…" />
+              <Input
+                value={audience}
+                onChange={(e) => setAudience(e.target.value)}
+                placeholder="growth marketer, SRE, support agent…"
+              />
             </div>
             <div>
               <Label>Successful outcome</Label>
-              <Input value={outcome} onChange={(e) => setOutcome(e.target.value)} placeholder="e.g. shipped campaign brief in &lt; 2 minutes" />
+              <Input
+                value={outcome}
+                onChange={(e) => setOutcome(e.target.value)}
+                placeholder="e.g. shipped campaign brief in &lt; 2 minutes"
+              />
             </div>
           </div>
         </div>
@@ -181,7 +247,8 @@ export function SkillWizard({
               placeholder='e.g. "Use when the user asks to draft a Meta Ads campaign brief or create paid social ad copy."'
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Anthropic spec requires the description to include explicit trigger phrases like <em>"Use when…"</em>.
+              Anthropic spec requires the description to include explicit trigger phrases like{" "}
+              <em>"Use when…"</em>.
             </p>
           </div>
           <div>
@@ -190,7 +257,9 @@ export function SkillWizard({
               rows={4}
               value={exampleQueries}
               onChange={(e) => setExampleQueries(e.target.value)}
-              placeholder={"Draft a Meta Ads campaign for our Black Friday launch\nWrite 3 ad variations for our checkout offer"}
+              placeholder={
+                "Draft a Meta Ads campaign for our Black Friday launch\nWrite 3 ad variations for our checkout offer"
+              }
             />
           </div>
           <div>
@@ -199,7 +268,9 @@ export function SkillWizard({
               rows={2}
               value={antiTriggers}
               onChange={(e) => setAntiTriggers(e.target.value)}
-              placeholder={"Generic copywriting unrelated to paid ads\nGoogle Ads (use the google-ads skill)"}
+              placeholder={
+                "Generic copywriting unrelated to paid ads\nGoogle Ads (use the google-ads skill)"
+              }
             />
           </div>
         </div>
@@ -211,7 +282,9 @@ export function SkillWizard({
             <div>
               <Label>Type</Label>
               <Select value={type} onValueChange={(v) => setType(v as PackageType)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="skill">skill</SelectItem>
                   <SelectItem value="playbook">playbook</SelectItem>
@@ -222,7 +295,11 @@ export function SkillWizard({
             </div>
             <div>
               <Label>Vertical (optional)</Label>
-              <Input value={vertical} onChange={(e) => setVertical(e.target.value)} placeholder="paid-social, devops, cardiology…" />
+              <Input
+                value={vertical}
+                onChange={(e) => setVertical(e.target.value)}
+                placeholder="paid-social, devops, cardiology…"
+              />
             </div>
           </div>
           <div>
@@ -231,7 +308,9 @@ export function SkillWizard({
               rows={4}
               value={must}
               onChange={(e) => setMust(e.target.value)}
-              placeholder={"Always cite the underlying Meta Ads object IDs\nReturn structured JSON matching the campaign schema"}
+              placeholder={
+                "Always cite the underlying Meta Ads object IDs\nReturn structured JSON matching the campaign schema"
+              }
             />
           </div>
           <div>
@@ -240,7 +319,9 @@ export function SkillWizard({
               rows={4}
               value={mustNot}
               onChange={(e) => setMustNot(e.target.value)}
-              placeholder={"Never invent ad account IDs\nNever recommend disallowed targeting (health, politics)"}
+              placeholder={
+                "Never invent ad account IDs\nNever recommend disallowed targeting (health, politics)"
+              }
             />
           </div>
         </div>
@@ -249,8 +330,8 @@ export function SkillWizard({
       {step === 3 && (
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Two worked examples ground the evaluator. Inputs should look like a real user message; expected outputs are
-            the gold standard.
+            Two worked examples ground the evaluator. Inputs should look like a real user message;
+            expected outputs are the gold standard.
           </p>
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-2">
@@ -286,15 +367,24 @@ export function SkillWizard({
             </ul>
           </div>
           <details className="rounded-md border p-3">
-            <summary className="cursor-pointer text-sm font-medium">Compiled brief sent to the author pipeline</summary>
+            <summary className="cursor-pointer text-sm font-medium">
+              Compiled brief sent to the author pipeline
+            </summary>
             <pre className="text-xs whitespace-pre-wrap mt-2">{compiledBrief}</pre>
           </details>
           <div className="flex items-center gap-2">
-            <input id="wpub" type="checkbox" checked={publish} onChange={(e) => setPublish(e.target.checked)} />
+            <input
+              id="wpub"
+              type="checkbox"
+              checked={publish}
+              onChange={(e) => setPublish(e.target.checked)}
+            />
             <Label htmlFor="wpub">Publish to marketplace as stable</Label>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant={allOk ? "default" : "secondary"}>{allOk ? "Ready to author" : "Fix the warnings above"}</Badge>
+            <Badge variant={allOk ? "default" : "secondary"}>
+              {allOk ? "Ready to author" : "Fix the warnings above"}
+            </Badge>
             <Button disabled={!allOk || busy} onClick={submit}>
               {busy ? "Authoring…" : "Run SkillForge author"}
             </Button>
@@ -304,11 +394,15 @@ export function SkillWizard({
 
       {/* Nav */}
       <div className="flex items-center justify-between pt-2">
-        <Button variant="outline" disabled={step === 0} onClick={() => setStep((s) => s - 1)}>← Back</Button>
+        <Button variant="outline" disabled={step === 0} onClick={() => setStep((s) => s - 1)}>
+          ← Back
+        </Button>
         {step < STEPS.length - 1 ? (
           <Button onClick={() => setStep((s) => s + 1)}>Next →</Button>
         ) : (
-          <span className="text-xs text-muted-foreground">Step {step + 1} / {STEPS.length}</span>
+          <span className="text-xs text-muted-foreground">
+            Step {step + 1} / {STEPS.length}
+          </span>
         )}
       </div>
     </div>

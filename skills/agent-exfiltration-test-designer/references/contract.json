@@ -1,0 +1,8 @@
+{
+  "slug": "agent-exfiltration-test-designer",
+  "required": [
+    "authorized_scope",
+    "data_classes",
+    "mock_tools"
+  ]
+}

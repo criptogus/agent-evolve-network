@@ -1,0 +1,16 @@
+{
+  "policy": {
+    "allow": [
+      "catalog:read"
+    ],
+    "deny": [
+      "payments:send"
+    ]
+  },
+  "test_actions": [
+    {
+      "action": "payments:send",
+      "expected": "deny"
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -57,8 +58,12 @@ function AgentDetail() {
       const b = await bundleFn({ data: { slug } });
       await navigator.clipboard.writeText(b.system_prompt);
       toast.success("System prompt copied. Paste it as your agent's instructions.");
-    } catch (e: any) {
-      toast.error(typeof e?.message === "string" ? e.message : "Could not load the bundle.");
+    } catch (e) {
+      toast.error(
+        typeof errorField(e, "message") === "string"
+          ? errorField(e, "message")
+          : "Could not load the bundle.",
+      );
     } finally {
       setBusy(null);
     }
@@ -81,8 +86,12 @@ function AgentDetail() {
       a.download = `${slug}-agent.${ext}`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch (e: any) {
-      toast.error(typeof e?.message === "string" ? e.message : "Download failed.");
+    } catch (e) {
+      toast.error(
+        typeof errorField(e, "message") === "string"
+          ? errorField(e, "message")
+          : "Download failed.",
+      );
     } finally {
       setBusy(null);
     }
@@ -127,7 +136,11 @@ function AgentDetail() {
                     <Button onClick={() => download("zip")} disabled={busy !== null}>
                       {busy === "zip" ? "Preparing…" : "Download ZIP"}
                     </Button>
-                    <Button variant="outline" onClick={() => download("md")} disabled={busy !== null}>
+                    <Button
+                      variant="outline"
+                      onClick={() => download("md")}
+                      disabled={busy !== null}
+                    >
                       {busy === "md" ? "Preparing…" : "Download single .md"}
                     </Button>
                     <Button variant="outline" onClick={copyPrompt} disabled={busy !== null}>

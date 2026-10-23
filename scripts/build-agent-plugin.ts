@@ -44,7 +44,7 @@ const manifest = buildPluginManifest({
   name: "superagentskill",
   version,
   description:
-    "Graded agent skills from the Super Agent Skill network: every skill carries a public Trust Score, adversarial pass rate and before/after evidence.",
+    "Agent skills and candidate workflows from Super Agent Skill. Published registry packages expose available trust and execution evidence; candidate workflows include offline fixtures.",
   homepage: SAK_SITE,
   repository: SAK_REPO,
   license: "CC-BY-SA-4.0",

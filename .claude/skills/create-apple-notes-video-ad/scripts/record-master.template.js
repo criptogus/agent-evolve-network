@@ -22,29 +22,30 @@
  *     node clips/record-master.js
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
-const { chromium } = require('playwright');
-
+const fs = require("fs");
+const path = require("path");
+const { execSync } = require("child_process");
+const { chromium } = require("playwright");
 
 // Path to the create-apple-notes-mockup atom's generate.js.
 //
 // First try a standard ad layout (<brand>/ads/video-NN-<slug>/clips/record-master.js
 // → up 4 to repo root). If that fails, walk up looking for the skills/ tree.
 function resolveAtomGenerate() {
-  const rel = '../../../../skills/atoms/messaging/create-apple-notes-mockup/generate.js';
+  const rel = "../../../../skills/atoms/messaging/create-apple-notes-mockup/generate.js";
   const stdGuess = path.resolve(__dirname, rel);
   if (fs.existsSync(stdGuess)) return stdGuess;
   let dir = __dirname;
   for (let hop = 0; hop < 8; hop++) {
-    const cand = path.join(dir, 'skills/atoms/messaging/create-apple-notes-mockup/generate.js');
+    const cand = path.join(dir, "skills/atoms/messaging/create-apple-notes-mockup/generate.js");
     if (fs.existsSync(cand)) return cand;
     const parent = path.dirname(dir);
     if (parent === dir) break;
     dir = parent;
   }
-  throw new Error('cannot locate create-apple-notes-mockup/generate.js — set the relative path manually in record-master.js');
+  throw new Error(
+    "cannot locate create-apple-notes-mockup/generate.js — set the relative path manually in record-master.js",
+  );
 }
 const { generateHtml } = require(resolveAtomGenerate());
 
@@ -61,8 +62,8 @@ const FPS = 30;
 // =============================================================================
 
 function loadSpec() {
-  const specPath = path.join(__dirname, '..', 'notes', 'note.json');
-  return JSON.parse(fs.readFileSync(specPath, 'utf-8'));
+  const specPath = path.join(__dirname, "..", "notes", "note.json");
+  return JSON.parse(fs.readFileSync(specPath, "utf-8"));
 }
 
 // =============================================================================
@@ -76,7 +77,7 @@ function loadSpec() {
 // =============================================================================
 
 function seededRng(seed) {
-  let s = (seed >>> 0) || 1;
+  let s = seed >>> 0 || 1;
   return () => {
     s = (s * 1664525 + 1013904223) >>> 0;
     return (s & 0x7fffffff) / 0x7fffffff;
@@ -86,30 +87,30 @@ function seededRng(seed) {
 function buildTimingTable(spec) {
   const rng = seededRng(0xa5b1c2d3);
   const events = [];
-  let t = 0.30; // small lead-in before any typing starts (~9 frames)
+  let t = 0.3; // small lead-in before any typing starts (~9 frames)
   spec.typed_body.forEach((para, pi) => {
     t += para.pre_pause_seconds || 0.6;
-    const text = String(para.text || '');
+    const text = String(para.text || "");
     const n = Math.max(1, text.length);
-    const avg = (para.type_seconds || (n * 0.07)) / n;
+    const avg = (para.type_seconds || n * 0.07) / n;
     let i = 0;
     while (i < text.length) {
       // Jittered per-char step: avg * (0.65 .. 1.35).
-      const step = avg * (0.65 + rng() * 0.70);
+      const step = avg * (0.65 + rng() * 0.7);
       t += step;
       const ch = text[i];
       // Classify the keystroke for SFX selection.
-      let kind = 'letter';
-      if (ch === ' ') kind = 'space';
-      else if (ch === '.' || ch === ',' || ch === '?' || ch === '!' || ch === "'") kind = 'punct';
-      events.push({ t: +t.toFixed(4), pid: `tp${pi}`, idx: i, ch, kind, kind_evt: 'type' });
+      let kind = "letter";
+      if (ch === " ") kind = "space";
+      else if (ch === "." || ch === "," || ch === "?" || ch === "!" || ch === "'") kind = "punct";
+      events.push({ t: +t.toFixed(4), pid: `tp${pi}`, idx: i, ch, kind, kind_evt: "type" });
       i += 1;
     }
     // After last char of a paragraph, fire a "return" beat unless this is the
     // last paragraph (cursor stays parked at the end of the final paragraph).
     if (pi < spec.typed_body.length - 1) {
       t += 0.18;
-      events.push({ t: +t.toFixed(4), pid: `tp${pi}`, kind: 'return', kind_evt: 'return' });
+      events.push({ t: +t.toFixed(4), pid: `tp${pi}`, kind: "return", kind_evt: "return" });
     }
   });
   const total = t + (spec.post_hold_seconds || 1.0);
@@ -127,27 +128,27 @@ function buildTimingTable(spec) {
 function buildInitialSpec(spec) {
   // Compose the spec passed to the atom's generateHtml().
   const body = [];
-  for (const p of (spec.pre_typed_body || [])) {
-    body.push({ type: 'paragraph', text: p.text || '' });
+  for (const p of spec.pre_typed_body || []) {
+    body.push({ type: "paragraph", text: p.text || "" });
   }
   // Each typed paragraph starts empty. The driver fills it in.
   spec.typed_body.forEach((p, i) => {
     body.push({
-      type: 'paragraph',
-      text: '',
+      type: "paragraph",
+      text: "",
       _typed_pid: `tp${i}`,
       _typed_target: p.text,
       _typed_underline: p.autocorrect_underline || [],
     });
   });
   return {
-    title: spec.title || 'Hello',
+    title: spec.title || "Hello",
     body,
-    cursor: 'end',
+    cursor: "end",
     autocorrect_underline: [],
-    status_bar: spec.status_bar || { time: '9:41' },
+    status_bar: spec.status_bar || { time: "9:41" },
     show_keyboard: true,
-    keyboard_state: spec.keyboard_state || { suggestions: ['See', 'Let', 'I'], shift: 'upper' },
+    keyboard_state: spec.keyboard_state || { suggestions: ["See", "Let", "I"], shift: "upper" },
     with_iphone_frame: false,
   };
 }
@@ -186,11 +187,9 @@ function tagTypedParagraphs(html, spec) {
     const pid = `tp${i}`;
     // Replace the paragraph with one that has data-typed-pid + data-target-text
     // and starts with an empty span the driver appends to.
-    const targetEsc = (t.text || '')
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;');
+    const targetEsc = (t.text || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;");
     const replacement =
-      `<p class="note-paragraph" data-typed-pid="${pid}" data-target-text="${targetEsc}" data-pending-newline="${i < N - 1 ? '1' : '0'}">` +
+      `<p class="note-paragraph" data-typed-pid="${pid}" data-target-text="${targetEsc}" data-pending-newline="${i < N - 1 ? "1" : "0"}">` +
       `<span class="typed"></span>` +
       `<span class="cursor" data-cursor-for="${pid}" style="display:none"></span>` +
       `</p>`;
@@ -198,7 +197,7 @@ function tagTypedParagraphs(html, spec) {
   }
   // Also drop the existing cursor that was added at end of last pre_typed by
   // the atom (cursor: "end"). The driver will manage cursor visibility.
-  out = out.replace(/<span class="cursor"><\/span>/g, '');
+  out = out.replace(/<span class="cursor"><\/span>/g, "");
   return out;
 }
 
@@ -335,11 +334,9 @@ function makeUnderlineMapScript(spec) {
 // =============================================================================
 
 function buildCueList(timing) {
-  return timing.events.map(ev => ({
+  return timing.events.map((ev) => ({
     t: ev.t,
-    name: ev.kind_evt === 'return'
-      ? 'kb-return'
-      : (ev.kind === 'space' ? 'kb-space' : 'kb-tick'),
+    name: ev.kind_evt === "return" ? "kb-return" : ev.kind === "space" ? "kb-space" : "kb-tick",
     soft: false,
   }));
 }
@@ -349,17 +346,17 @@ function buildCueList(timing) {
 // =============================================================================
 
 async function main() {
-  const tmpDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'apple-notes-master-'));
+  const tmpDir = fs.mkdtempSync(path.join(require("os").tmpdir(), "apple-notes-master-"));
   const spec = loadSpec();
   const timing = buildTimingTable(spec);
   const initial = buildInitialSpec(spec);
   let html = generateHtml(initial);
   html = tagTypedParagraphs(html, spec);
   // Inject driver + underline map.
-  const driverHtml = html
-    .replace('</body>',
-      makeUnderlineMapScript(spec) + '\n' +
-      makeDriverScript(timing) + '\n</body>');
+  const driverHtml = html.replace(
+    "</body>",
+    makeUnderlineMapScript(spec) + "\n" + makeDriverScript(timing) + "\n</body>",
+  );
 
   // Per-recording tweaks. The atom's CSS hardcodes html/body/.screen at 2556px
   // (iPhone's true 19.5:9). We're recording at a shorter 9:16-ish canvas so
@@ -375,7 +372,7 @@ async function main() {
       p.note-paragraph[data-typed-pid] { min-height: 1.38em; }
     </style>
   `;
-  const finalHtml = driverHtml.replace('</head>', styleOverride + '\n</head>');
+  const finalHtml = driverHtml.replace("</head>", styleOverride + "\n</head>");
 
   const browser = await chromium.launch();
   const ctx = await browser.newContext({
@@ -384,7 +381,7 @@ async function main() {
     recordVideo: { dir: tmpDir, size: { width: VIEW_W, height: VIEW_H } },
   });
   const page = await ctx.newPage();
-  await page.setContent(finalHtml, { waitUntil: 'load' });
+  await page.setContent(finalHtml, { waitUntil: "load" });
   await page.waitForFunction(() => window.__driverReady === true, { timeout: 5000 });
   await page.evaluate(() => window.__startDriver());
   await page.waitForTimeout(timing.total * 1000 + 200);
@@ -393,17 +390,23 @@ async function main() {
   await browser.close();
 
   // Convert webm → mp4 at the chosen fps + native iPhone dimensions.
-  const outMp4 = path.join(__dirname, 'master-typing.mp4');
+  const outMp4 = path.join(__dirname, "master-typing.mp4");
   execSync(
     `ffmpeg -y -i "${videoPath}" -t ${timing.total} -r ${FPS} ` +
-    `-vf "scale=${VIEW_W}:${VIEW_H}" -c:v libx264 -pix_fmt yuv420p -movflags +faststart "${outMp4}"`,
-    { stdio: 'pipe' }
+      `-vf "scale=${VIEW_W}:${VIEW_H}" -c:v libx264 -pix_fmt yuv420p -movflags +faststart "${outMp4}"`,
+    { stdio: "pipe" },
   );
-  fs.writeFileSync(outMp4.replace(/\.mp4$/, '.sfx.json'), JSON.stringify(buildCueList(timing), null, 2));
+  fs.writeFileSync(
+    outMp4.replace(/\.mp4$/, ".sfx.json"),
+    JSON.stringify(buildCueList(timing), null, 2),
+  );
   fs.rmSync(tmpDir, { recursive: true, force: true });
   console.log(`mp4  → ${path.relative(process.cwd(), outMp4)}`);
   console.log(`sfx  → ${buildCueList(timing).length} cues`);
   console.log(`dur  → ${timing.total.toFixed(2)}s`);
 }
 
-main().catch(e => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

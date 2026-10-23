@@ -1,0 +1,11 @@
+{
+  "slug": "industrial-oee-analyst",
+  "required": [
+    "planned_seconds",
+    "downtime_seconds",
+    "ideal_cycle_seconds",
+    "total_units",
+    "good_units"
+  ],
+  "calculation": "oee"
+}

@@ -1,3 +1,5 @@
+import { recordOf } from "../json.ts";
+import { errorField } from "../errors.ts";
 /**
  * Agent Plugins v1 conformance suite.
  *
@@ -109,13 +111,17 @@ export function runPluginConformance(files: Map<string, string>): ConformanceRep
     title: "Package contains files",
     level: "required",
     status: paths.length > 0 ? "pass" : "fail",
-    detail: paths.length > 0 ? `${paths.length} file(s) read from the archive.` : "The archive is empty.",
+    detail:
+      paths.length > 0 ? `${paths.length} file(s) read from the archive.` : "The archive is empty.",
   });
   add({
     id: "package.size",
     title: "Size limits respected",
     level: "required",
-    status: paths.length <= MAX_FILES && totalBytes <= MAX_TOTAL_BYTES && oversize.length === 0 ? "pass" : "fail",
+    status:
+      paths.length <= MAX_FILES && totalBytes <= MAX_TOTAL_BYTES && oversize.length === 0
+        ? "pass"
+        : "fail",
     detail:
       oversize.length > 0
         ? `Files over 256 KB: ${oversize.slice(0, 3).join(", ")}`
@@ -126,14 +132,20 @@ export function runPluginConformance(files: Map<string, string>): ConformanceRep
     title: "Paths stay inside the plugin root",
     level: "required",
     status: badPaths.length === 0 ? "pass" : "fail",
-    detail: badPaths.length === 0 ? "No absolute paths, traversal or VCS metadata." : `Rejected: ${badPaths.slice(0, 3).join(", ")}`,
+    detail:
+      badPaths.length === 0
+        ? "No absolute paths, traversal or VCS metadata."
+        : `Rejected: ${badPaths.slice(0, 3).join(", ")}`,
   });
   add({
     id: "package.text-only",
     title: "Text-only, no binaries or executables",
     level: "required",
     status: badExt.length === 0 ? "pass" : "fail",
-    detail: badExt.length === 0 ? "Every entry has an allowed text extension." : `Not allowed: ${badExt.slice(0, 3).join(", ")}`,
+    detail:
+      badExt.length === 0
+        ? "Every entry has an allowed text extension."
+        : `Not allowed: ${badExt.slice(0, 3).join(", ")}`,
   });
 
   // ---- secrets -----------------------------------------------------------
@@ -163,7 +175,13 @@ export function runPluginConformance(files: Map<string, string>): ConformanceRep
       status: "fail",
       detail: "Agent Plugins v1 requires a plugin.json at the package root.",
     });
-    add({ id: "manifest.schema", title: "plugin.json matches the v1 schema", level: "required", status: "skip", detail: "No manifest to validate." });
+    add({
+      id: "manifest.schema",
+      title: "plugin.json matches the v1 schema",
+      level: "required",
+      status: "skip",
+      detail: "No manifest to validate.",
+    });
   } else {
     let parsed: unknown = null;
     let parseError: string | null = null;
@@ -177,7 +195,9 @@ export function runPluginConformance(files: Map<string, string>): ConformanceRep
       title: "Root plugin.json present",
       level: "required",
       status: parseError ? "fail" : "pass",
-      detail: parseError ? `plugin.json is not valid JSON: ${parseError}` : "Found and parsed plugin.json.",
+      detail: parseError
+        ? `plugin.json is not valid JSON: ${parseError}`
+        : "Found and parsed plugin.json.",
     });
     const errors = parseError ? ["unparseable JSON"] : validatePluginManifest(parsed);
     add({
@@ -185,25 +205,32 @@ export function runPluginConformance(files: Map<string, string>): ConformanceRep
       title: "plugin.json matches the v1 schema",
       level: "required",
       status: errors.length === 0 ? "pass" : "fail",
-      detail: errors.length === 0 ? "Closed schema, legal name, no unknown fields." : errors.slice(0, 4).join(" · "),
+      detail:
+        errors.length === 0
+          ? "Closed schema, legal name, no unknown fields."
+          : errors.slice(0, 4).join(" · "),
     });
     if (!parseError && errors.length === 0) manifest = parsed as PluginManifest;
-    const name = (parsed as any)?.name;
+    const name = recordOf(parsed).name;
     add({
       id: "manifest.name",
       title: "Plugin name is a legal identifier",
       level: "required",
       status: isValidPluginName(name) ? "pass" : "fail",
-      detail: isValidPluginName(name) ? `name = ${name}` : `Illegal name: ${JSON.stringify(name ?? null)}`,
+      detail: isValidPluginName(name)
+        ? `name = ${name}`
+        : `Illegal name: ${JSON.stringify(name ?? null)}`,
     });
     add({
       id: "manifest.metadata",
       title: "Version, description and license declared",
       level: "recommended",
       status:
-        (parsed as any)?.version && (parsed as any)?.description && (parsed as any)?.license ? "pass" : "warn",
+        recordOf(parsed).version && recordOf(parsed).description && recordOf(parsed).license
+          ? "pass"
+          : "warn",
       detail:
-        (parsed as any)?.version && (parsed as any)?.description && (parsed as any)?.license
+        recordOf(parsed).version && recordOf(parsed).description && recordOf(parsed).license
           ? "All discovery metadata present."
           : "Add version, description and license so clients can display the plugin.",
     });
@@ -231,7 +258,10 @@ export function runPluginConformance(files: Map<string, string>): ConformanceRep
       title: "mcp.json is valid when present",
       level: "required",
       status: mcpErrors.length === 0 ? "pass" : "fail",
-      detail: mcpErrors.length === 0 ? "Transport, URL and headers are spec-legal." : mcpErrors.slice(0, 4).join(" · "),
+      detail:
+        mcpErrors.length === 0
+          ? "Transport, URL and headers are spec-legal."
+          : mcpErrors.slice(0, 4).join(" · "),
     });
   }
 
@@ -247,7 +277,8 @@ export function runPluginConformance(files: Map<string, string>): ConformanceRep
     const description = fm["description"] ?? "";
     if (!name) skillProblems.push(`${p}: frontmatter is missing "name"`);
     if (!description) skillProblems.push(`${p}: frontmatter is missing "description"`);
-    else if (description.length < 20) skillProblems.push(`${p}: description is too short to be useful`);
+    else if (description.length < 20)
+      skillProblems.push(`${p}: description is too short to be useful`);
     const body = content.replace(/^---[\s\S]*?---/, "").trim();
     if (body.length < 200) skillProblems.push(`${p}: body is under 200 characters`);
     skills.push({ dir, name: name || dir, description, bytes: bytesOf(content) });
@@ -257,21 +288,31 @@ export function runPluginConformance(files: Map<string, string>): ConformanceRep
     title: "At least one skills/<name>/SKILL.md",
     level: "required",
     status: skillFiles.length > 0 ? "pass" : "fail",
-    detail: skillFiles.length > 0 ? `${skillFiles.length} skill component(s): ${skills.map((s) => s.dir).join(", ")}` : "No skill component found.",
+    detail:
+      skillFiles.length > 0
+        ? `${skillFiles.length} skill component(s): ${skills.map((s) => s.dir).join(", ")}`
+        : "No skill component found.",
   });
   add({
     id: "skills.frontmatter",
     title: "Every SKILL.md has name, description and substance",
     level: "required",
     status: skillFiles.length === 0 ? "skip" : skillProblems.length === 0 ? "pass" : "fail",
-    detail: skillFiles.length === 0 ? "No skill component to check." : skillProblems.length === 0 ? "Frontmatter and body pass the spec floor." : skillProblems.slice(0, 4).join(" · "),
+    detail:
+      skillFiles.length === 0
+        ? "No skill component to check."
+        : skillProblems.length === 0
+          ? "Frontmatter and body pass the spec floor."
+          : skillProblems.slice(0, 4).join(" · "),
   });
   add({
     id: "docs.readme",
     title: "README.md explains the plugin",
     level: "recommended",
     status: files.has("README.md") ? "pass" : "warn",
-    detail: files.has("README.md") ? "README.md found at the package root." : "Add a root README.md so humans can review the plugin.",
+    detail: files.has("README.md")
+      ? "README.md found at the package root."
+      : "Add a root README.md so humans can review the plugin.",
   });
 
   const failed = checks.filter((c) => c.level === "required" && c.status === "fail").length;

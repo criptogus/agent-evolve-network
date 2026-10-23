@@ -145,11 +145,23 @@ export class MCPError extends Error {
 export class MCPUnauthorizedError extends MCPError {
   public readonly authorizationUrl?: string;
   public readonly tokensUrl?: string;
-  constructor(message: string, data?: any) {
+  constructor(message: string, data?: unknown) {
     super(message, { code: -32001, status: 401, data });
     this.name = "MCPUnauthorizedError";
-    this.authorizationUrl = data?.authorization_url;
-    this.tokensUrl = data?.tokens_url;
+    this.authorizationUrl =
+      data &&
+      typeof data === "object" &&
+      "authorization_url" in data &&
+      typeof data.authorization_url === "string"
+        ? data.authorization_url
+        : undefined;
+    this.tokensUrl =
+      data &&
+      typeof data === "object" &&
+      "tokens_url" in data &&
+      typeof data.tokens_url === "string"
+        ? data.tokens_url
+        : undefined;
   }
 }
 

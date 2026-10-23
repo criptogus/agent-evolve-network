@@ -86,12 +86,18 @@ export function repairMinimalDraft(
   const v: PackageDraftLoose = loose.success ? loose.data : {};
   const content = ctx.content ?? "";
   const docTitle = firstHeading(content);
-  const fileBase = (ctx.filename ?? "").replace(/\.[a-z0-9]+$/i, "").replace(/[-_]+/g, " ").trim();
+  const fileBase = (ctx.filename ?? "")
+    .replace(/\.[a-z0-9]+$/i, "")
+    .replace(/[-_]+/g, " ")
+    .trim();
 
   const name = (v.name?.trim() || docTitle || fileBase || `Untitled ${ctx.type}`).slice(0, 120);
   const slug = slugify(v.slug?.trim() || name || fileBase, slugify(`${ctx.type}-${Date.now()}`));
 
-  let description = (v.description?.trim() || (content ? firstSentence(content) : "")).replace(/\s+/g, " ");
+  let description = (v.description?.trim() || (content ? firstSentence(content) : "")).replace(
+    /\s+/g,
+    " ",
+  );
   if (description.length < 20) {
     description = `${name} — a production-ready ${ctx.type} for agent runtimes.`;
   }
@@ -117,13 +123,18 @@ export function repairMinimalDraft(
     );
   }
 
-  const rawExamples = (v.examples ?? []).filter((e) => e && (e.input || e.expected_output || e.title));
+  const rawExamples = (v.examples ?? []).filter(
+    (e) => e && (e.input || e.expected_output || e.title),
+  );
   const seen = new Set<string>();
   const examples = rawExamples
     .map((e, i) => ({
       title: (e.title?.trim() || `Example ${i + 1}`).slice(0, 200),
       input: (e.input?.trim() || "Representative request for this primitive.").slice(0, 4000),
-      expected_output: (e.expected_output?.trim() || "The expected, well-formed result.").slice(0, 4000),
+      expected_output: (e.expected_output?.trim() || "The expected, well-formed result.").slice(
+        0,
+        4000,
+      ),
     }))
     .filter((e) => {
       const key = `${e.title}|${e.input}`;

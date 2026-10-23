@@ -19,8 +19,8 @@ export const exportSkillBundle = createServerFn({ method: "POST" })
   .middleware([requirePaidSubscription])
   .inputValidator((d: unknown) => ExportBundleInput.parse(d ?? {}))
   .handler(async ({ data, context }) => {
-    const { supabase: sb, userId } = context as any;
-    const supabase = sb as any;
+    const { supabase: sb, userId } = context;
+    const supabase = sb;
 
     let q = supabase
       .from("cloud_skills")
@@ -50,7 +50,7 @@ export const exportSkillBundle = createServerFn({ method: "POST" })
       client_name: "Web (private .zip export)",
       skill_count: rows.length,
       bytes: bytes.length,
-      changes: rows.map((r: any) => ({
+      changes: rows.map((r) => ({
         slug: r.slug,
         path: bundlePath(provider, data.scope, r.slug) ?? r.slug,
         action: "write",

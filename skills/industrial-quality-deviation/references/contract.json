@@ -1,0 +1,8 @@
+{
+  "slug": "industrial-quality-deviation",
+  "required": [
+    "deviation",
+    "lot_trace",
+    "quality_procedure"
+  ]
+}

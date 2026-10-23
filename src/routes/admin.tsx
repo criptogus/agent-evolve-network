@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
@@ -11,7 +12,10 @@ export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
       { title: "Admin — Super Agent Skill" },
-      { name: "description", content: "Manage accounts, plans, packages, and on-demand primitive creation." },
+      {
+        name: "description",
+        content: "Manage accounts, plans, packages, and on-demand primitive creation.",
+      },
     ],
   }),
   component: AdminLayout,
@@ -97,7 +101,9 @@ function AdminLayout() {
     return (
       <div className="min-h-screen bg-background">
         <Nav />
-        <div className="mx-auto max-w-7xl px-6 py-12 text-sm text-muted-foreground">Verifying admin role…</div>
+        <div className="mx-auto max-w-7xl px-6 py-12 text-sm text-muted-foreground">
+          Verifying admin role…
+        </div>
       </div>
     );
   }
@@ -119,8 +125,8 @@ function AdminLayout() {
                 await bootstrap();
                 setBootstrapMsg("You are now admin. Reloading…");
                 setTimeout(() => window.location.reload(), 600);
-              } catch (e: any) {
-                setBootstrapMsg(e?.message ?? "Could not claim admin");
+              } catch (e) {
+                setBootstrapMsg(errorField(e, "message") ?? "Could not claim admin");
               }
             }}
           >

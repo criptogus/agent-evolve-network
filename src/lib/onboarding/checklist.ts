@@ -6,13 +6,7 @@
  * and by the /agents.md manual so the two can never drift.
  */
 
-export type StepId =
-  | "connect"
-  | "discover"
-  | "inspect"
-  | "evaluate"
-  | "evolve"
-  | "diagnose";
+export type StepId = "connect" | "discover" | "inspect" | "evaluate" | "evolve" | "diagnose";
 
 export type Stage = "know" | "connect" | "evolve";
 
@@ -94,8 +88,7 @@ export function nextStep(completed: readonly string[]): OnboardingStep | null {
 }
 
 export type EvidenceCheck =
-  | { ok: true; needsDb?: { kind: "package"; slug: string } }
-  | { ok: false; reason: string };
+  { ok: true; needsDb?: { kind: "package"; slug: string } } | { ok: false; reason: string };
 
 function num(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
@@ -118,29 +111,48 @@ export function checkEvidence(id: StepId, evidence: unknown): EvidenceCheck {
     case "connect": {
       const version = str(e.protocol_version, 40);
       const tools = num(e.tools_count);
-      if (!version) return { ok: false, reason: "evidence.protocol_version must be the protocolVersion the server returned" };
-      if (tools === null || tools < 1) return { ok: false, reason: "evidence.tools_count must be the number of tools from tools/list (>= 1)" };
+      if (!version)
+        return {
+          ok: false,
+          reason: "evidence.protocol_version must be the protocolVersion the server returned",
+        };
+      if (tools === null || tools < 1)
+        return {
+          ok: false,
+          reason: "evidence.tools_count must be the number of tools from tools/list (>= 1)",
+        };
       return { ok: true };
     }
     case "discover": {
       const query = str(e.query, 200);
       const slug = str(e.slug, 120);
-      if (!query) return { ok: false, reason: "evidence.query must be the query you passed to search_registry" };
-      if (!slug) return { ok: false, reason: "evidence.slug must be a slug from the search results" };
+      if (!query)
+        return {
+          ok: false,
+          reason: "evidence.query must be the query you passed to search_registry",
+        };
+      if (!slug)
+        return { ok: false, reason: "evidence.slug must be a slug from the search results" };
       return { ok: true, needsDb: { kind: "package", slug } };
     }
     case "inspect": {
       const slug = str(e.slug, 120);
       const trust = num(e.trust_score);
       if (!slug) return { ok: false, reason: "evidence.slug is required" };
-      if (trust === null || trust < 0 || trust > 100) return { ok: false, reason: "evidence.trust_score must be the 0-100 score from get_skill_trust" };
+      if (trust === null || trust < 0 || trust > 100)
+        return {
+          ok: false,
+          reason: "evidence.trust_score must be the 0-100 score from get_skill_trust",
+        };
       return { ok: true, needsDb: { kind: "package", slug } };
     }
     case "evaluate": {
       const score = num(e.score);
       const grade = str(e.grade, 2);
-      if (score === null || score < 0 || score > 100) return { ok: false, reason: "evidence.score must be the 0-100 score from review_skill" };
-      if (!grade || !/^[A-F][+-]?$/.test(grade)) return { ok: false, reason: "evidence.grade must be the letter grade from review_skill" };
+      if (score === null || score < 0 || score > 100)
+        return { ok: false, reason: "evidence.score must be the 0-100 score from review_skill" };
+      if (!grade || !/^[A-F][+-]?$/.test(grade))
+        return { ok: false, reason: "evidence.grade must be the letter grade from review_skill" };
       return { ok: true };
     }
     case "evolve": {
@@ -148,8 +160,13 @@ export function checkEvidence(id: StepId, evidence: unknown): EvidenceCheck {
       const before = num(e.score_before);
       const after = num(e.score_after);
       if (!slug) return { ok: false, reason: "evidence.slug is required" };
-      if (before === null || after === null) return { ok: false, reason: "evidence.score_before and evidence.score_after are required" };
-      if (after <= before) return { ok: false, reason: "score_after must beat score_before — this step proves the skill got better" };
+      if (before === null || after === null)
+        return { ok: false, reason: "evidence.score_before and evidence.score_after are required" };
+      if (after <= before)
+        return {
+          ok: false,
+          reason: "score_after must beat score_before — this step proves the skill got better",
+        };
       return { ok: true, needsDb: { kind: "package", slug } };
     }
     case "diagnose": {
@@ -157,8 +174,13 @@ export function checkEvidence(id: StepId, evidence: unknown): EvidenceCheck {
       const score = num(e.score);
       const next = str(e.next_capability, 120);
       if (!domain) return { ok: false, reason: "evidence.domain must be the domain you diagnosed" };
-      if (score === null || score < 0 || score > 100) return { ok: false, reason: "evidence.score must be the 0-100 diagnosis score" };
-      if (!next) return { ok: false, reason: "evidence.next_capability must be the capability curriculum_next prescribed" };
+      if (score === null || score < 0 || score > 100)
+        return { ok: false, reason: "evidence.score must be the 0-100 diagnosis score" };
+      if (!next)
+        return {
+          ok: false,
+          reason: "evidence.next_capability must be the capability curriculum_next prescribed",
+        };
       return { ok: true };
     }
     default:

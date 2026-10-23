@@ -42,6 +42,12 @@ const SKILLS: NavItem[] = [
   { to: "/marketplace", label: "Marketplace", hint: "Top skills, ranked by Trust Score" },
   { to: "/discover", label: "Discover", hint: "Search everything" },
   { to: "/packs", label: "Packs", hint: "Curated bundles" },
+  {
+    to: "/solutions",
+    label: "Business solutions",
+    hint: "Workflows, new categories and complete bundles",
+  },
+  { to: "/evidence", label: "Task evidence", hint: "Measured outcomes by version and model" },
   { to: "/match", label: "Match", hint: "Pair skills to a goal" },
 ];
 
@@ -63,7 +69,6 @@ const SIMPLE: NavItem[] = [
   { to: "/how-it-works", label: "How it works" },
   { to: "/pricing", label: "Pricing" },
   { to: "/docs", label: "Docs" },
-
 ];
 
 function NavDropdown({ label, items }: { label: string; items: NavItem[] }) {
@@ -170,6 +175,9 @@ export function Nav() {
                     <Link to="/account/library">My library</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link to="/account/teams">Team workspaces</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/account/earnings">Earnings</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -221,7 +229,6 @@ export function Nav() {
                   Connect
                 </Link>
               )}
-
             </>
           ) : (
             <>
@@ -238,7 +245,6 @@ export function Nav() {
                 <span className="hidden sm:inline">Try with my agent</span>
                 <span className="sm:hidden">Try it</span>
               </Link>
-
             </>
           )}
           <Sheet open={open} onOpenChange={setOpen}>
@@ -258,7 +264,11 @@ export function Nav() {
                 </SheetTitle>
               </SheetHeader>
               <nav className="mt-6 flex flex-col gap-4">
-                <MobileSection title="Agents" items={AGENTS_MENU} onNavigate={() => setOpen(false)} />
+                <MobileSection
+                  title="Agents"
+                  items={AGENTS_MENU}
+                  onNavigate={() => setOpen(false)}
+                />
                 <MobileSection title="Skills" items={SKILLS} onNavigate={() => setOpen(false)} />
                 {user ? (
                   <MobileSection
@@ -269,7 +279,6 @@ export function Nav() {
                 ) : null}
                 <MobileSection title="More" items={SIMPLE} onNavigate={() => setOpen(false)} />
 
-
                 <div className="mt-2 border-t border-border pt-4">
                   {user ? (
                     <div className="flex flex-col gap-1">
@@ -278,6 +287,9 @@ export function Nav() {
                       </MobileLink>
                       <MobileLink to="/account/packages" onNavigate={() => setOpen(false)}>
                         My packages
+                      </MobileLink>
+                      <MobileLink to="/account/teams" onNavigate={() => setOpen(false)}>
+                        Team workspaces
                       </MobileLink>
                       <MobileLink to="/account/library" onNavigate={() => setOpen(false)}>
                         My library
@@ -301,7 +313,6 @@ export function Nav() {
                         Encryption (BYOK)
                       </MobileLink>
                       {isAdmin && (
-
                         <MobileLink to="/admin" onNavigate={() => setOpen(false)}>
                           Admin
                         </MobileLink>

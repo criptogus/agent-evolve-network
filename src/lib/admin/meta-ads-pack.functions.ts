@@ -2,7 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAdmin } from "./middleware";
 import { generateDraft, insertDraftPackage } from "./author.server";
-import { BLUEPRINTS, META_ADS_MCP, buildGroundingForBlueprint, categoryByKey } from "./meta-ads-tools";
+import {
+  BLUEPRINTS,
+  META_ADS_MCP,
+  buildGroundingForBlueprint,
+  categoryByKey,
+} from "./meta-ads-tools";
 
 const PACK_SLUG = "meta-ads-pack";
 const PACK_NAME = "Meta Ads Pack — 135 Tool-Grounded Primitives";
@@ -11,14 +16,14 @@ const PACK_NAME = "Meta Ads Pack — 135 Tool-Grounded Primitives";
 export const listMetaAdsBlueprints = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    const { supabase: _sbCtx } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx } = context;
+    const supabase = _sbCtx;
     const slugs = BLUEPRINTS.map((b) => b.slug);
     const { data: existing } = await supabase
       .from("packages")
       .select("id, slug, name, type, latest_version, is_published")
       .in("slug", slugs);
-    const bySlug = new Map<string, any>((existing ?? []).map((p: any) => [p.slug, p]));
+    const bySlug = new Map((existing ?? []).map((p) => [p.slug, p]));
 
     const { data: pack } = await supabase
       .from("packs")
@@ -46,8 +51,8 @@ export const generateMetaAdsBlueprint = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => GenInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const bp = BLUEPRINTS.find((b) => b.id === data.blueprint_id);
     if (!bp) throw new Response(`Unknown blueprint: ${data.blueprint_id}`, { status: 400 });
 
@@ -142,8 +147,8 @@ export const generateMetaAdsBlueprint = createServerFn({ method: "POST" })
 export const assembleMetaAdsPack = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
 
     // Load all generated packages by slug
     const slugs = BLUEPRINTS.map((b) => b.slug);
@@ -154,7 +159,7 @@ export const assembleMetaAdsPack = createServerFn({ method: "POST" })
     if (pkgErr) throw new Response(pkgErr.message, { status: 500 });
 
     const found = pkgs ?? [];
-    const missing = BLUEPRINTS.filter((b) => !found.some((p: any) => p.slug === b.slug));
+    const missing = BLUEPRINTS.filter((b) => !found.some((p) => p.slug === b.slug));
     if (missing.length > 0) {
       return { status: "incomplete" as const, missing: missing.map((m) => m.id) };
     }
@@ -214,7 +219,7 @@ export const assembleMetaAdsPack = createServerFn({ method: "POST" })
     }
 
     const items = BLUEPRINTS.map((bp, i) => {
-      const pkg = found.find((p: any) => p.slug === bp.slug)!;
+      const pkg = found.find((p) => p.slug === bp.slug)!;
       return {
         pack_id: packId,
         package_id: pkg.id,

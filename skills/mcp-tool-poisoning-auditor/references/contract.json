@@ -1,0 +1,7 @@
+{
+  "slug": "mcp-tool-poisoning-auditor",
+  "required": [
+    "tool_manifest",
+    "trust_policy"
+  ]
+}

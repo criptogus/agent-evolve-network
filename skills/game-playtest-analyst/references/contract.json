@@ -1,0 +1,8 @@
+{
+  "slug": "game-playtest-analyst",
+  "required": [
+    "sessions",
+    "research_question",
+    "consent_scope"
+  ]
+}

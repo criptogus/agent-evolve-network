@@ -1,0 +1,7 @@
+{
+  "slug": "agent-permission-policy-tester",
+  "required": [
+    "policy",
+    "test_actions"
+  ]
+}

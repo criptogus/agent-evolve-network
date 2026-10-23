@@ -14,27 +14,21 @@
 import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL =
-  process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_KEY =
   process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   process.env.SUPABASE_PUBLISHABLE_KEY ||
   process.env.SUPABASE_ANON_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error(
-    "[check-rls] Missing SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY env vars.",
-  );
+  console.error("[check-rls] Missing SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY env vars.");
   process.exit(2);
 }
 
 const FILE_ALLOWLIST = (() => {
   try {
     const raw = JSON.parse(
-      readFileSync(
-        new URL("../security/rls-no-policy-allowlist.json", import.meta.url),
-        "utf8",
-      ),
+      readFileSync(new URL("../security/rls-no-policy-allowlist.json", import.meta.url), "utf8"),
     );
     return Object.keys(raw.tables ?? {});
   } catch {
@@ -50,8 +44,6 @@ const ALLOWLIST = new Set([
     .filter(Boolean),
 ]);
 
-
-
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: false },
 });
@@ -64,12 +56,14 @@ if (error) {
 }
 
 const rows = data ?? [];
+if (!rows.length) {
+  console.error("[check-rls] Empty coverage result; refusing no-op success.");
+  process.exit(2);
+}
 // An allowlist entry only excuses a deny-all table (RLS on, no policies).
 // RLS being DISABLED is never allowlistable — that exposes every row.
 const problems = rows.filter(
-  (r) =>
-    r.issue !== "OK" &&
-    (r.issue === "RLS_DISABLED" || !ALLOWLIST.has(r.table_name)),
+  (r) => r.issue !== "OK" && (r.issue === "RLS_DISABLED" || !ALLOWLIST.has(r.table_name)),
 );
 
 const total = rows.length;
@@ -85,9 +79,7 @@ if (problems.length === 0) {
 console.error(`[check-rls] ❌ Found ${problems.length} table(s) with issues:`);
 for (const p of problems) {
   const reason =
-    p.issue === "RLS_DISABLED"
-      ? "RLS is DISABLED"
-      : `RLS enabled but ${p.policy_count} policies`;
+    p.issue === "RLS_DISABLED" ? "RLS is DISABLED" : `RLS enabled but ${p.policy_count} policies`;
   console.error(`  - ${p.table_name}: ${reason}`);
 }
 console.error(

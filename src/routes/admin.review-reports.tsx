@@ -17,7 +17,10 @@ export const Route = createFileRoute("/admin/review-reports")({
   head: () => ({
     meta: [
       { title: "Review reports — Admin · Super Agent Skill" },
-      { name: "description", content: "Moderate user-submitted reports of abusive or fake reviews." },
+      {
+        name: "description",
+        content: "Moderate user-submitted reports of abusive or fake reviews.",
+      },
     ],
   }),
   component: ReviewReportsAdmin,
@@ -45,8 +48,7 @@ function ReviewReportsAdmin() {
     queryFn: () => list({ data: { status } }),
   });
 
-  const invalidate = () =>
-    qc.invalidateQueries({ queryKey: ["admin", "review-reports"] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["admin", "review-reports"] });
 
   const hideMut = useMutation({
     mutationFn: (vars: { reviewId: string; hide: boolean; reason: string }) =>
@@ -54,8 +56,11 @@ function ReviewReportsAdmin() {
     onSuccess: invalidate,
   });
   const resolveMut = useMutation({
-    mutationFn: (vars: { reportId: string; status: "actioned" | "dismissed"; resolution: string }) =>
-      resolve({ data: vars }),
+    mutationFn: (vars: {
+      reportId: string;
+      status: "actioned" | "dismissed";
+      resolution: string;
+    }) => resolve({ data: vars }),
     onSuccess: invalidate,
   });
 
@@ -107,12 +112,8 @@ function ReviewReportsAdmin() {
               key={r.id}
               report={r}
               busy={hideMut.isPending || resolveMut.isPending}
-              onHide={(reason) =>
-                hideMut.mutate({ reviewId: r.review_id, hide: true, reason })
-              }
-              onUnhide={() =>
-                hideMut.mutate({ reviewId: r.review_id, hide: false, reason: "" })
-              }
+              onHide={(reason) => hideMut.mutate({ reviewId: r.review_id, hide: true, reason })}
+              onUnhide={() => hideMut.mutate({ reviewId: r.review_id, hide: false, reason: "" })}
               onDismiss={(resolution) =>
                 resolveMut.mutate({
                   reportId: r.id,

@@ -66,7 +66,7 @@ function PlansPage() {
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">
-        {(plans.data?.plans ?? []).map((p: any) => (
+        {(plans.data?.plans ?? []).map((p) => (
           <Card key={p.id}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
@@ -85,7 +85,11 @@ function PlansPage() {
                 ))}
               </ul>
               <div className="flex gap-2 pt-2">
-                <Button size="sm" variant="secondary" onClick={() => setEdit({ ...p, features: p.features ?? [] })}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setEdit({ ...p, features: p.features ?? [] })}
+                >
                   Edit
                 </Button>
                 <Button
@@ -109,10 +113,16 @@ function PlansPage() {
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-2">
             <Field label="Slug">
-              <Input value={edit.slug} onChange={(e) => setEdit({ ...edit, slug: e.target.value })} />
+              <Input
+                value={edit.slug}
+                onChange={(e) => setEdit({ ...edit, slug: e.target.value })}
+              />
             </Field>
             <Field label="Name">
-              <Input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} />
+              <Input
+                value={edit.name}
+                onChange={(e) => setEdit({ ...edit, name: e.target.value })}
+              />
             </Field>
             <Field label="Monthly runs limit">
               <Input
@@ -125,7 +135,9 @@ function PlansPage() {
               <Input
                 type="number"
                 value={edit.max_installed_packages}
-                onChange={(e) => setEdit({ ...edit, max_installed_packages: Number(e.target.value) })}
+                onChange={(e) =>
+                  setEdit({ ...edit, max_installed_packages: Number(e.target.value) })
+                }
               />
             </Field>
             <Field label="Price (cents)">
@@ -148,7 +160,13 @@ function PlansPage() {
                 rows={4}
                 value={edit.features.join("\n")}
                 onChange={(e) =>
-                  setEdit({ ...edit, features: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) })
+                  setEdit({
+                    ...edit,
+                    features: e.target.value
+                      .split("\n")
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  })
                 }
               />
             </div>

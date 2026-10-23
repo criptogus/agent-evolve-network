@@ -1,3 +1,4 @@
+import type { AppDatabaseClient } from "@/integrations/supabase/database";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
@@ -12,7 +13,7 @@ import {
 } from "./envelope.server";
 import { getActiveTenantKey, logKeyEvent } from "./keys.server";
 
-type Ctx = { userId: string; supabase: any };
+type Ctx = { userId: string; supabase: AppDatabaseClient };
 
 /** Public status: never returns key material. */
 export const getEncryptionStatus = createServerFn({ method: "GET" })
@@ -43,7 +44,12 @@ export const getEncryptionStatus = createServerFn({ method: "GET" })
           }
         : null,
       objectCount: count ?? 0,
-      events: (events ?? []) as Array<{ id: string; event: string; detail: any; created_at: string }>,
+      events: (events ?? []) as Array<{
+        id: string;
+        event: string;
+        detail: import("@/integrations/supabase/types").Json;
+        created_at: string;
+      }>,
     };
   });
 
@@ -55,7 +61,8 @@ export const enableTenantEncryption = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { userId, supabase: db } = context as Ctx;
-    if (await getActiveTenantKey(db, userId)) throw new Error("ALREADY_ENABLED: rotate the key instead");
+    if (await getActiveTenantKey(db, userId))
+      throw new Error("ALREADY_ENABLED: rotate the key instead");
     const rootKey = parseRootKey(data.rootKey);
     const material = provisionKeyMaterial(rootKey);
     const { data: row, error } = await db
@@ -71,7 +78,9 @@ export const enableTenantEncryption = createServerFn({ method: "POST" })
       .select("id, fingerprint, created_at")
       .single();
     if (error) throw new Error("Could not store tenant key");
-    await logKeyEvent(db, userId, row.id, "key.enabled", { fingerprint: material.fingerprint.slice(0, 16) });
+    await logKeyEvent(db, userId, row.id, "key.enabled", {
+      fingerprint: material.fingerprint.slice(0, 16),
+    });
     return { id: row.id as string, fingerprint: (row.fingerprint as string).slice(0, 16) };
   });
 
@@ -102,7 +111,9 @@ export const rotateTenantKey = createServerFn({ method: "POST" })
       .eq("id", key.id)
       .eq("user_id", userId);
     if (error) throw new Error("Rotation failed");
-    await logKeyEvent(db, userId, key.id, "key.rotated", { fingerprint: material.fingerprint.slice(0, 16) });
+    await logKeyEvent(db, userId, key.id, "key.rotated", {
+      fingerprint: material.fingerprint.slice(0, 16),
+    });
     return { fingerprint: material.fingerprint.slice(0, 16) };
   });
 
@@ -157,9 +168,15 @@ export const putEncryptedObject = createServerFn({ method: "POST" })
     if (!data?.rootKey) throw new Error("rootKey is required");
     const ref = String(data.ref ?? "").trim();
     if (!ref) throw new Error("ref is required");
-    if (typeof data.content !== "string" || !data.content.length) throw new Error("content is required");
+    if (typeof data.content !== "string" || !data.content.length)
+      throw new Error("content is required");
     if (data.content.length > 500_000) throw new Error("CONTENT_TOO_LARGE");
-    return { rootKey: data.rootKey, kind: (data.kind ?? "skill").slice(0, 40), ref: ref.slice(0, 200), content: data.content };
+    return {
+      rootKey: data.rootKey,
+      kind: (data.kind ?? "skill").slice(0, 40),
+      ref: ref.slice(0, 200),
+      content: data.content,
+    };
   })
   .handler(async ({ data, context }) => {
     const { userId, supabase: db } = context as Ctx;
@@ -186,7 +203,11 @@ export const putEncryptedObject = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error("Could not store encrypted object");
     await logKeyEvent(db, userId, key.id, "object.encrypted", { kind: data.kind, ref: data.ref });
-    return { id: row.id as string, sha256: row.plaintext_sha256 as string, byteSize: row.byte_size as number };
+    return {
+      id: row.id as string,
+      sha256: row.plaintext_sha256 as string,
+      byteSize: row.byte_size as number,
+    };
   });
 
 export const readEncryptedObject = createServerFn({ method: "POST" })
@@ -222,7 +243,11 @@ export const deleteEncryptedObject = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { userId, supabase: db } = context as Ctx;
-    const { error } = await db.from("tenant_encrypted_objects").delete().eq("id", data.id).eq("user_id", userId);
+    const { error } = await db
+      .from("tenant_encrypted_objects")
+      .delete()
+      .eq("id", data.id)
+      .eq("user_id", userId);
     if (error) throw new Error("Delete failed");
     await logKeyEvent(db, userId, null, "object.deleted", { id: data.id });
     return { ok: true };

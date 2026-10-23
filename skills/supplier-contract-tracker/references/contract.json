@@ -1,0 +1,7 @@
+{
+  "slug": "supplier-contract-tracker",
+  "required": [
+    "contract_extracts",
+    "as_of"
+  ]
+}

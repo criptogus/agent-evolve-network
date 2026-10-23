@@ -1,3 +1,4 @@
+import { publicPackage } from "@/lib/public-package";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -15,8 +16,8 @@ export const authorPackage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const { draft, research, stages } = await authorPipeline({
       brief: data.brief,
       type: data.type,
@@ -27,7 +28,11 @@ export const authorPackage = createServerFn({ method: "POST" })
     let slug = draft.slug;
     let n = 1;
     while (true) {
-      const { data: existing } = await supabase.from("packages").select("id").eq("slug", slug).maybeSingle();
+      const { data: existing } = await supabase
+        .from("packages")
+        .select("id")
+        .eq("slug", slug)
+        .maybeSingle();
       if (!existing) break;
       n += 1;
       slug = `${draft.slug}-${n}`;
@@ -78,5 +83,5 @@ export const authorPackage = createServerFn({ method: "POST" })
       context: { slug: pkg.slug, type: pkg.type },
     });
 
-    return { package: pkg, version: ver, draft, research, stages, feedback_request };
+    return { package: publicPackage(pkg), version: ver, draft, research, stages, feedback_request };
   });

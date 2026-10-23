@@ -1,3 +1,4 @@
+import type { Database, Insert } from "@/integrations/supabase/database";
 /**
  * CRM learning layer — server side.
  *
@@ -26,7 +27,7 @@ import {
 } from "@/lib/crm/learning";
 import type { TriggerId } from "@/lib/crm/segments";
 
-const admin = _admin as any;
+const admin = _admin;
 
 export type LearningSettings = { enabled: boolean; minSamples: number };
 
@@ -43,7 +44,11 @@ export type LearningState = {
 
 export async function loadSettings(): Promise<LearningSettings> {
   try {
-    const { data } = await admin.from("crm_settings").select("value").eq("key", "learning").maybeSingle();
+    const { data } = await admin
+      .from("crm_settings")
+      .select("value")
+      .eq("key", "learning")
+      .maybeSingle();
     const v = (data?.value ?? {}) as { enabled?: boolean; min_samples?: number };
     return { enabled: v.enabled !== false, minSamples: Math.max(5, v.min_samples ?? 20) };
   } catch {
@@ -61,7 +66,7 @@ export async function loadLearningState(): Promise<LearningState> {
 
   try {
     const { data } = await admin.rpc("crm_effectiveness", { _days: 120 });
-    for (const r of (data ?? []) as any[]) {
+    for (const r of data ?? []) {
       stats[armKey(r.trigger, r.variant)] = {
         sent: Number(r.sent ?? 0),
         opened: Number(r.opened ?? 0),
@@ -75,7 +80,7 @@ export async function loadLearningState(): Promise<LearningState> {
 
   try {
     const { data } = await admin.rpc("crm_send_hour_stats", { _days: 120 });
-    for (const r of (data ?? []) as any[]) {
+    for (const r of data ?? []) {
       hours[Number(r.send_hour)] = {
         sent: Number(r.sent ?? 0),
         engaged: Number(r.engaged ?? 0),
@@ -91,15 +96,24 @@ export async function loadLearningState(): Promise<LearningState> {
   try {
     const { data } = await admin
       .from("crm_copy_variants")
-      .select("trigger, variant, label, framing, status, subject_override, heading_override, intro_override");
-    for (const row of (data ?? []) as any[]) {
+      .select(
+        "trigger, variant, label, framing, status, subject_override, heading_override, intro_override",
+      );
+    for (const row of data ?? []) {
       const list = arms[row.trigger] ?? [];
       if (row.status !== "active") {
         arms[row.trigger] = list.filter((a) => a.variant !== row.variant);
         continue;
       }
       if (!list.some((a) => a.variant === row.variant))
-        list.push({ variant: row.variant, label: row.label, framing: row.framing });
+        list.push({
+          variant: row.variant,
+          label: row.label,
+          framing:
+            row.framing === "roi" || row.framing === "risk" || row.framing === "capability"
+              ? row.framing
+              : "capability",
+        });
       arms[row.trigger] = list;
       overrides[armKey(row.trigger, row.variant)] = {
         subject: row.subject_override,
@@ -147,10 +161,12 @@ export async function loadFatigue(userId: string): Promise<number> {
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(3);
-    const rows = (data ?? []) as any[];
+    const rows = data ?? [];
     let engaged = 0;
     for (const r of rows) {
-      const o = Array.isArray(r.crm_message_outcomes) ? r.crm_message_outcomes[0] : r.crm_message_outcomes;
+      const o = Array.isArray(r.crm_message_outcomes)
+        ? r.crm_message_outcomes[0]
+        : r.crm_message_outcomes;
       if (o && (o.opened_at || o.clicked_at || o.converted_at)) engaged += 1;
     }
     return fatigueMultiplier({ messages: rows.length, engaged });
@@ -164,7 +180,7 @@ export async function isGoodSendHour(userId: string, state: LearningState): Prom
   if (!state.settings.enabled) return true;
   try {
     const { data } = await admin.rpc("crm_active_hours", { _user_id: userId });
-    const active = ((data ?? []) as any[]).map((r) => ({
+    const active = (data ?? []).map((r) => ({
       hour: Number(r.hour),
       events: Number(r.events ?? 0),
     }));
@@ -177,7 +193,10 @@ export async function isGoodSendHour(userId: string, state: LearningState): Prom
 
 /* ---------------------------------------------------------- outcome scoring  */
 
-const TABLES: Record<OutcomeKind, Array<{ table: string; col: string }>> = {
+const TABLES: Record<
+  OutcomeKind,
+  Array<{ table: keyof Database["public"]["Tables"]; col: string }>
+> = {
   connected: [{ table: "mcp_call_log", col: "user_id" }],
   review: [{ table: "package_evaluations", col: "triggered_by" }],
   install_or_review: [
@@ -249,7 +268,7 @@ export async function scoreOutcomes(limit = 500): Promise<ScoreRunResult> {
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  const rows = (data ?? []) as any[];
+  const rows = data ?? [];
   if (rows.length === 0) return out;
 
   const { data: existing } = await admin
@@ -260,7 +279,7 @@ export async function scoreOutcomes(limit = 500): Promise<ScoreRunResult> {
       rows.map((r) => r.id),
     );
   const closed = new Set(
-    ((existing ?? []) as any[]).filter((o) => o.window_closed).map((o) => o.message_log_id),
+    (existing ?? []).filter((o) => o.window_closed).map((o) => o.message_log_id),
   );
 
   for (const row of rows) {
@@ -279,7 +298,7 @@ export async function scoreOutcomes(limit = 500): Promise<ScoreRunResult> {
       new Date(Math.min(windowEnd, Date.now())).toISOString(),
     );
 
-    const patch: Record<string, unknown> = {
+    const patch: Insert<"crm_message_outcomes"> = {
       message_log_id: row.id,
       user_id: row.user_id,
       trigger: row.trigger,
@@ -312,12 +331,17 @@ export type TuneResult = {
   leaders: Array<{ trigger: string; variant: string; rate: number; sent: number }>;
 };
 
-
 async function draftReplacement(
   trigger: string,
   leader: { variant: string; label: string },
   reason: string,
-): Promise<{ variant: string; label: string; subject: string; heading: string; intro: string } | null> {
+): Promise<{
+  variant: string;
+  label: string;
+  subject: string;
+  heading: string;
+  intro: string;
+} | null> {
   const key = process.env["LOVABLE_API_KEY"];
   if (!key) return null;
   const outcome = OUTCOMES[trigger as TriggerId];
@@ -329,7 +353,12 @@ async function draftReplacement(
     const { output } = await generateText({
       model: gateway("google/gemini-3.6-flash"),
       output: Output.object({
-        schema: z.object({ label: z.string(), subject: z.string(), heading: z.string(), intro: z.string() }),
+        schema: z.object({
+          label: z.string(),
+          subject: z.string(),
+          heading: z.string(),
+          intro: z.string(),
+        }),
       }),
       prompt: [
         "You write B2B lifecycle email copy for SuperAgent Skill, a platform that measures whether agent skills work and reports the result in dollars and engineer-hours.",
@@ -374,7 +403,9 @@ export async function runTuner(opts: { dryRun?: boolean } = {}): Promise<TuneRes
       def: d,
       stats: state.stats[armKey(trigger, d.variant)] ?? EMPTY_ARM,
     }));
-    const leader = scored.reduce((a, b) => (estimatedRate(b.stats) > estimatedRate(a.stats) ? b : a));
+    const leader = scored.reduce((a, b) =>
+      estimatedRate(b.stats) > estimatedRate(a.stats) ? b : a,
+    );
     result.leaders.push({
       trigger,
       variant: leader.def.variant,
@@ -389,7 +420,11 @@ export async function runTuner(opts: { dryRun?: boolean } = {}): Promise<TuneRes
 
       const pauseGate = canPause(activeCount, pausesThisRun);
       if (!pauseGate.ok) {
-        result.blocked.push({ trigger, variant: arm.def.variant, reason: pauseGate.violations.join("; ") });
+        result.blocked.push({
+          trigger,
+          variant: arm.def.variant,
+          reason: pauseGate.violations.join("; "),
+        });
         if (!opts.dryRun)
           await admin.from("crm_tuning_log").insert({
             action: "guardrail_blocked_pause",
@@ -437,7 +472,9 @@ export async function runTuner(opts: { dryRun?: boolean } = {}): Promise<TuneRes
       const violations = [
         ...copyGate.violations,
         ...slotGate.violations,
-        ...(overRun ? [`already published ${GUARDRAILS.maxAutoActivationsPerRun} new variants in this run`] : []),
+        ...(overRun
+          ? [`already published ${GUARDRAILS.maxAutoActivationsPerRun} new variants in this run`]
+          : []),
       ];
       const live = violations.length === 0;
 
@@ -480,5 +517,4 @@ export async function runTuner(opts: { dryRun?: boolean } = {}): Promise<TuneRes
     }
   }
   return result;
-
 }

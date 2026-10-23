@@ -1,0 +1,11 @@
+{
+  "contract_extracts": [
+    {
+      "clause": "4.2",
+      "renewal": "2026-12-31",
+      "notice_days": 30,
+      "day_type": "calendar"
+    }
+  ],
+  "as_of": "2026-10-23"
+}

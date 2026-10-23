@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -22,7 +23,7 @@ import {
 import { recordSyncEvent } from "@/lib/cloud-skills/sync-log.server";
 import type { SyncChange } from "@/lib/cloud-skills/sync-log";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 const json = (v: unknown) => JSON.stringify(v, null, 2);
 
 const AgentSchema = z
@@ -30,12 +31,12 @@ const AgentSchema = z
   .max(120)
   .optional()
   .describe(
-    "Optional label of the agent/app running this sync (e.g. \"Claude Code\", \"Cursor\"). Stored in the user's sync history for auditing.",
+    'Optional label of the agent/app running this sync (e.g. "Claude Code", "Cursor"). Stored in the user\'s sync history for auditing.',
   );
 
 /** Per-file audit rows for one plan. */
 function changesOf(plan: {
-  write: any[];
+  write: ReturnType<typeof planFor>["write"];
   skipped: { slug: string; path: string; reason?: string | null; conflict?: string }[];
 }): SyncChange[] {
   return [
@@ -108,13 +109,13 @@ async function loadSkills(userId: string, slugs?: string[]) {
   if (slugs?.length) q = q.in("slug", slugs);
   const { data, error } = await q;
   if (error) throw new Error(json({ error: error.message }));
-  return (data ?? []) as any[];
+  return data ?? [];
 }
 
 function planFor(
   providerId: string,
   scope: ProviderScope,
-  skills: any[],
+  skills: Awaited<ReturnType<typeof loadSkills>>,
   existing: LocalFile[],
   strategy: ConflictStrategy,
 ) {
@@ -138,7 +139,12 @@ function planFor(
       local,
     });
     const file = resolveConflict({ slug: s.slug, path, incoming, conflict, strategy, local });
-    return { ...file, version: s.version, cloud_hash: contentHash(incoming), conflict_detail: conflict };
+    return {
+      ...file,
+      version: s.version,
+      cloud_hash: contentHash(incoming),
+      conflict_detail: conflict,
+    };
   });
 
   const orphans = existing
@@ -163,7 +169,10 @@ export const cloudSkillsSyncTool = defineTool({
   description:
     "[CLOUD] Materialise your private cloud library for one agent tool. Returns the exact file paths and contents to write (SKILL.md folders, flat Markdown or Cursor .mdc). Detects conflicts when a different file already exists at the target path and resolves them with conflict_strategy: ask | overwrite | merge | keep_both. Requires OAuth + paid subscription. Nothing is ever deleted.",
   parameters: z.object({
-    tool: z.string().min(1).describe(`One of: ${PROVIDER_IDS.join(", ")}`),
+    tool: z
+      .string()
+      .min(1)
+      .describe(`One of: ${PROVIDER_IDS.join(", ")}`),
     scope: ScopeSchema,
     slugs: z.array(z.string()).max(200).optional().describe("Limit the sync to these slugs."),
     existing: ExistingSchema,
@@ -288,8 +297,8 @@ export const cloudSkillsSyncAllTool = defineTool({
             content: f.content,
           })),
         };
-      } catch (e: any) {
-        const message = String(e?.message ?? e);
+      } catch (e) {
+        const message = String(errorField(e, "message") ?? e);
         audits.push(
           recordSyncEvent(supabaseAdmin, userId, {
             source: "mcp_sync_all",

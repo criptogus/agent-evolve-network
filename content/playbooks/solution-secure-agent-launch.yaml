@@ -1,0 +1,61 @@
+slug: solution-secure-agent-launch
+name: Launch an agent with scoped permissions
+type: playbook
+version: 0.1.0
+description: A reviewed tool inventory, tested abuse cases and a controlled release decision.
+trigger: When the user requests launch an agent with scoped permissions and provides authorized
+  source inputs.
+inputs:
+  source_1:
+    type: string
+    description: Tool manifests and data classifications
+  source_2:
+    type: string
+    description: Permission policy and authorized test scope
+  source_3:
+    type: string
+    description: Synthetic fixtures and release criteria
+outputs:
+  deliverable:
+    type: string
+    description: Every tool has an owner and minimum scope; Abuse tests distinguish observed results
+      from plans; Release owner accepts remaining risks
+steps:
+  - id: inventory
+    action: instruction
+    with:
+      prompt: "Inventory tools and permissions. Produce: Tool/resource/actor permission matrix. Requires
+        completed steps: none. Preserve source evidence, permissions and owner approval. Never infer
+        completion from input validation."
+  - id: fixtures
+    action: instruction
+    with:
+      prompt: "Create authorized offline abuse cases. Produce: Synthetic injection and exfiltration
+        fixtures. Requires completed steps: inventory. Preserve source evidence, permissions and
+        owner approval. Never infer completion from input validation."
+  - id: test
+    action: instruction
+    with:
+      prompt: "Run and inspect the tests. Produce: Captured traces and pass/fail evidence. Requires
+        completed steps: fixtures. Preserve source evidence, permissions and owner approval. Never
+        infer completion from input validation."
+  - id: release
+    action: instruction
+    with:
+      prompt: "Release review. Produce: Owner-approved deployment and rollback plan. Requires completed
+        steps: test. Preserve source evidence, permissions and owner approval. Never infer
+        completion from input validation."
+tags:
+  - Agent security
+  - business-solution
+  - candidate
+license: CC-BY-SA-4.0
+authors:
+  - Super Agent Skill
+x_solution_id: secure-agent-launch
+x_context_budget: 4
+x_package_dependencies:
+  - mcp-server-builder
+  - prompt-injection-tester
+  - iam-least-privilege
+  - security-review

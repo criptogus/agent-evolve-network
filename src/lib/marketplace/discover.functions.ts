@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { createTtlCache } from "@/lib/cache/ttl-cache";
 import { z } from "zod";
 
@@ -93,8 +93,8 @@ async function fetchTypeCatalog(type: DiscoverType): Promise<TypeCatalog> {
 
   const verticalByPkg = new Map<string, string | null>();
   if (pkgs && pkgs.length) {
-    const ids = pkgs.map((r: any) => r.id);
-    const latestByPkg = new Map(pkgs.map((r: any) => [r.id, r.latest_version]));
+    const ids = pkgs.map((r) => r.id);
+    const latestByPkg = new Map(pkgs.map((r) => [r.id, r.latest_version]));
     const { data: vers } = await supabaseAdmin
       .from("package_versions")
       .select("package_id, version, rules")
@@ -111,7 +111,7 @@ async function fetchTypeCatalog(type: DiscoverType): Promise<TypeCatalog> {
     }
   }
 
-  const rows: CatalogRow[] = (pkgs ?? []).map((p: any) => {
+  const rows: CatalogRow[] = (pkgs ?? []).map((p) => {
     const vertical = verticalByPkg.get(p.id) ?? null;
     return {
       id: p.id,

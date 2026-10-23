@@ -9,7 +9,10 @@ export const Route = createFileRoute("/account/usage")({
   head: () => ({
     meta: [
       { title: "Usage — Super Agent Skill" },
-      { name: "description", content: "Track your plan, monthly runs, installed packages and remaining quota." },
+      {
+        name: "description",
+        content: "Track your plan, monthly runs, installed packages and remaining quota.",
+      },
     ],
   }),
   component: UsagePage,
@@ -41,8 +44,12 @@ function UsagePage() {
         )}
         {q.isError && (
           <div className="mt-10 rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-sm">
-            <div className="font-semibold text-destructive">You need to be signed in to see usage.</div>
-            <Link to="/connect" className="mt-2 inline-block text-primary">Connect your agent →</Link>
+            <div className="font-semibold text-destructive">
+              You need to be signed in to see usage.
+            </div>
+            <Link to="/connect" className="mt-2 inline-block text-primary">
+              Connect your agent →
+            </Link>
           </div>
         )}
         {q.data && (
@@ -50,8 +57,12 @@ function UsagePage() {
             {/* Plan card */}
             <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-6">
               <div>
-                <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Current plan</div>
-                <div className="mt-1 text-2xl font-semibold tracking-tight">{q.data.plan?.name ?? "Free"}</div>
+                <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                  Current plan
+                </div>
+                <div className="mt-1 text-2xl font-semibold tracking-tight">
+                  {q.data.plan?.name ?? "Free"}
+                </div>
                 <div className="mt-1 text-sm text-muted-foreground">
                   {(q.data.plan?.price_cents ?? 0) === 0
                     ? "Free tier"
@@ -78,27 +89,49 @@ function UsagePage() {
                 label="Installed packages"
                 used={q.data.installs.used}
                 limit={q.data.installs.limit}
-                hint={q.data.installs.over_limit ? "At cap — uninstall to add more" : "Within plan limit"}
+                hint={
+                  q.data.installs.over_limit
+                    ? "At cap — uninstall to add more"
+                    : "Within plan limit"
+                }
               />
             </div>
 
             {/* Recent runs */}
             <div className="rounded-2xl border border-border bg-surface p-6">
-              <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Recent runs</div>
+              <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                Recent runs
+              </div>
               <div className="mt-3 overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground">
-                    <tr><th className="py-2 pr-4">When</th><th className="py-2 pr-4">Status</th><th className="py-2 pr-4">Packages</th><th className="py-2 pr-4">Latency</th><th className="py-2 pr-4">Health</th></tr>
+                    <tr>
+                      <th className="py-2 pr-4">When</th>
+                      <th className="py-2 pr-4">Status</th>
+                      <th className="py-2 pr-4">Packages</th>
+                      <th className="py-2 pr-4">Latency</th>
+                      <th className="py-2 pr-4">Health</th>
+                    </tr>
                   </thead>
                   <tbody>
                     {q.data.recent_runs.length === 0 && (
-                      <tr><td colSpan={5} className="py-6 text-center text-muted-foreground">No runs yet this month.</td></tr>
+                      <tr>
+                        <td colSpan={5} className="py-6 text-center text-muted-foreground">
+                          No runs yet this month.
+                        </td>
+                      </tr>
                     )}
                     {q.data.recent_runs.map((r) => (
                       <tr key={r.id} className="border-t border-border/60">
-                        <td className="py-2 pr-4 text-muted-foreground">{new Date(r.started_at).toLocaleString()}</td>
-                        <td className="py-2 pr-4"><StatusPill s={r.status} /></td>
-                        <td className="py-2 pr-4 font-mono text-xs">{(r.package_slugs ?? []).join(", ") || "—"}</td>
+                        <td className="py-2 pr-4 text-muted-foreground">
+                          {new Date(r.started_at).toLocaleString()}
+                        </td>
+                        <td className="py-2 pr-4">
+                          <StatusPill s={r.status} />
+                        </td>
+                        <td className="py-2 pr-4 font-mono text-xs">
+                          {(r.package_slugs ?? []).join(", ") || "—"}
+                        </td>
                         <td className="py-2 pr-4">{r.latency_ms ?? "—"} ms</td>
                         <td className="py-2 pr-4">{r.health ?? "—"}</td>
                       </tr>
@@ -115,14 +148,28 @@ function UsagePage() {
   );
 }
 
-function QuotaCard({ label, used, limit, hint }: { label: string; used: number; limit: number; hint?: string }) {
+function QuotaCard({
+  label,
+  used,
+  limit,
+  hint,
+}: {
+  label: string;
+  used: number;
+  limit: number;
+  hint?: string;
+}) {
   const p = pct(used, limit);
   const danger = p >= 90;
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
       <div className="flex items-center justify-between">
-        <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
-        <div className="text-xs text-muted-foreground">{used.toLocaleString()} / {limit.toLocaleString()}</div>
+        <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+          {label}
+        </div>
+        <div className="text-xs text-muted-foreground">
+          {used.toLocaleString()} / {limit.toLocaleString()}
+        </div>
       </div>
       <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-background">
         <div
@@ -142,5 +189,11 @@ function StatusPill({ s }: { s: string }) {
     blocked: "bg-amber-500/15 text-amber-500",
     running: "bg-primary/15 text-primary",
   };
-  return <span className={`rounded px-2 py-0.5 font-mono text-[11px] ${map[s] ?? "bg-muted text-muted-foreground"}`}>{s}</span>;
+  return (
+    <span
+      className={`rounded px-2 py-0.5 font-mono text-[11px] ${map[s] ?? "bg-muted text-muted-foreground"}`}
+    >
+      {s}
+    </span>
+  );
 }

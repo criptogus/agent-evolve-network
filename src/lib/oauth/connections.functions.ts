@@ -2,25 +2,27 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 /** List MCP OAuth clients the current user has authorized. */
 export const listOauthConnections = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase: _sbCtx } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx } = context;
+    const supabase = _sbCtx;
     const { data, error } = await supabase.rpc("mcp_oauth_list_user_connections");
     if (error) throw new Error(error.message);
-    return { items: (data ?? []) as Array<{
-      client_id: string;
-      client_name: string;
-      scope: string;
-      active_access: number;
-      active_refresh: number;
-      first_granted: string;
-      last_used: string | null;
-    }> };
+    return {
+      items: (data ?? []) as Array<{
+        client_id: string;
+        client_name: string;
+        scope: string;
+        active_access: number;
+        active_refresh: number;
+        first_granted: string;
+        last_used: string | null;
+      }>,
+    };
   });
 
 /**
@@ -34,8 +36,8 @@ export const testOauthConnection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ client_id: z.string().min(3).max(200) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx } = context;
+    const supabase = _sbCtx;
     // We don't expose the actual token to the browser — instead we ask the
     // database whether the user has a live access token for this client
     // and then ping the MCP endpoint server-side using that token (via a
@@ -51,7 +53,7 @@ export const testOauthConnection = createServerFn({ method: "POST" })
     const nowIso = new Date().toISOString();
     const { data: live } = await supabaseAdmin
       .from("mcp_oauth_tokens")
-      .select("id,last_used_at,expires_at")
+      .select("token_hash,last_used_at,expires_at")
       .eq("user_id", userId)
       .eq("client_id", data.client_id)
       .eq("kind", "access")
@@ -76,12 +78,11 @@ export const revokeOauthConnection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ client_id: z.string().min(3).max(200) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx } = context as any;
-    const supabase = _sbCtx as any;
-    const { data: count, error } = await supabase.rpc(
-      "mcp_oauth_revoke_client_for_user",
-      { _client_id: data.client_id },
-    );
+    const { supabase: _sbCtx } = context;
+    const supabase = _sbCtx;
+    const { data: count, error } = await supabase.rpc("mcp_oauth_revoke_client_for_user", {
+      _client_id: data.client_id,
+    });
     if (error) throw new Error(error.message);
     return { revoked: count ?? 0 };
   });

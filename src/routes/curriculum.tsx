@@ -1,13 +1,29 @@
+import type { CurriculumPlan } from "@/lib/university/curriculum";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, ArrowRight, GraduationCap, Loader2, Lock, Search, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  GraduationCap,
+  Loader2,
+  Lock,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { SitePage } from "@/components/site/SitePage";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { getCurriculumPlan } from "@/lib/university/university.functions";
-import { DOMAINS, ERROR_CLASSES, ERROR_CLASS_LABEL, type DomainId, type ErrorClass, type DomainCategory } from "@/lib/university/types";
+import {
+  DOMAINS,
+  ERROR_CLASSES,
+  ERROR_CLASS_LABEL,
+  type DomainId,
+  type ErrorClass,
+  type DomainCategory,
+} from "@/lib/university/types";
 
 export const Route = createFileRoute("/curriculum")({
   validateSearch: (s: Record<string, unknown>): { diagnosis_id?: string; domain?: DomainId } => {
@@ -47,7 +63,13 @@ const STATUS_STYLE: Record<string, string> = {
   conflict: "border-destructive/40 bg-destructive/5",
 };
 
-const CATEGORY_ORDER: DomainCategory[] = ["Foundation", "Revenue", "Execution", "Operations", "Media & Product"];
+const CATEGORY_ORDER: DomainCategory[] = [
+  "Foundation",
+  "Revenue",
+  "Execution",
+  "Operations",
+  "Media & Product",
+];
 
 function CurriculumPage() {
   const search = Route.useSearch();
@@ -56,13 +78,18 @@ function CurriculumPage() {
   const [domain, setDomain] = useState<DomainId | undefined>(search.domain);
   const [failing, setFailing] = useState<ErrorClass[]>([]);
   const [installed, setInstalled] = useState("");
-  const [result, setResult] = useState<any | null>(null);
+  const [result, setResult] = useState<CurriculumPlan | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
   const installedList = useMemo(
-    () => installed.split(/[,\s]+/).map((s) => s.trim()).filter(Boolean).slice(0, 64),
+    () =>
+      installed
+        .split(/[,\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .slice(0, 64),
     [installed],
   );
 
@@ -80,7 +107,9 @@ function CurriculumPage() {
       if (!map.has(d.category)) map.set(d.category, []);
       map.get(d.category)!.push(d);
     }
-    return CATEGORY_ORDER.map((c) => ({ category: c, items: map.get(c) ?? [] })).filter((g) => g.items.length > 0);
+    return CATEGORY_ORDER.map((c) => ({ category: c, items: map.get(c) ?? [] })).filter(
+      (g) => g.items.length > 0,
+    );
   }, [query]);
 
   async function run() {
@@ -119,16 +148,18 @@ function CurriculumPage() {
           Adaptive track, not a catalog.
         </h1>
         <p className="mt-4 max-w-2xl text-base text-muted-foreground">
-          The curriculum orders capabilities by <strong>marginal gain</strong> for this agent: what it already
-          covers yields less, prerequisites come first, conflicts are penalized. And there's a{" "}
-          <strong>context budget</strong> — past it, the recommendation is to remove, not install.
+          The curriculum orders capabilities by <strong>marginal gain</strong> for this agent: what
+          it already covers yields less, prerequisites come first, conflicts are penalized. And
+          there's a <strong>context budget</strong> — past it, the recommendation is to remove, not
+          install.
         </p>
 
         <div className="mt-8 rounded-2xl border border-border bg-card p-5">
           {search.diagnosis_id ? (
             <p className="text-sm text-muted-foreground">
               Using diagnosis{" "}
-              <code className="font-mono text-xs">{search.diagnosis_id.slice(0, 8)}…</code> as the base.
+              <code className="font-mono text-xs">{search.diagnosis_id.slice(0, 8)}…</code> as the
+              base.
             </p>
           ) : (
             <>
@@ -151,7 +182,9 @@ function CurriculumPage() {
                         setFailing((prev) => (on ? prev.filter((x) => x !== ec) : [...prev, ec]))
                       }
                       className={`rounded-full border px-3 py-1.5 text-xs transition ${
-                        on ? "border-primary bg-primary/10 text-foreground" : "border-border text-muted-foreground"
+                        on
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border text-muted-foreground"
                       }`}
                     >
                       {ERROR_CLASS_LABEL[ec]}
@@ -183,7 +216,9 @@ function CurriculumPage() {
                           type="button"
                           onClick={() => setDomain(domain === d.id ? undefined : d.id)}
                           className={`rounded-full border px-3 py-1.5 text-xs transition ${
-                            domain === d.id ? "border-primary bg-primary/10" : "border-border text-muted-foreground"
+                            domain === d.id
+                              ? "border-primary bg-primary/10"
+                              : "border-border text-muted-foreground"
                           }`}
                         >
                           {d.name}
@@ -213,7 +248,10 @@ function CurriculumPage() {
         </div>
 
         {error && (
-          <p role="alert" className="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
+          <p
+            role="alert"
+            className="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm"
+          >
             {error}
           </p>
         )}
@@ -234,7 +272,9 @@ function CurriculumPage() {
               {result.next ? (
                 <div className="mt-4 rounded-xl border border-primary/50 bg-primary/5 p-4">
                   <div className="text-base font-semibold">{result.next.title}</div>
-                  <div className="mt-1 font-mono text-xs text-muted-foreground">{result.next.slug}</div>
+                  <div className="mt-1 font-mono text-xs text-muted-foreground">
+                    {result.next.slug}
+                  </div>
                   <p className="mt-2 text-sm">{result.next.summary}</p>
                   <p className="mt-2 text-sm text-muted-foreground">{result.next.why}</p>
                   <div className="mt-3 flex flex-wrap gap-2 text-xs">
@@ -254,8 +294,8 @@ function CurriculumPage() {
                 </div>
               ) : (
                 <p className="mt-4 text-sm">
-                  Nothing to install right now — the marginal gain of any addition is below the context
-                  cost.
+                  Nothing to install right now — the marginal gain of any addition is below the
+                  context cost.
                 </p>
               )}
             </div>
@@ -264,12 +304,17 @@ function CurriculumPage() {
               <div className="rounded-2xl border border-border bg-card p-5">
                 <h2 className="text-sm font-semibold">Full track (ordered by marginal gain)</h2>
                 <ol className="mt-4 space-y-3">
-                  {result.track.map((c: any, i: number) => (
-                    <li key={c.slug} className={`rounded-xl border p-4 ${STATUS_STYLE[c.status] ?? "border-border"}`}>
+                  {result.track.map((c, i: number) => (
+                    <li
+                      key={c.slug}
+                      className={`rounded-xl border p-4 ${STATUS_STYLE[c.status] ?? "border-border"}`}
+                    >
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-mono text-xs text-muted-foreground">{i + 1}.</span>
                         <span className="text-sm font-medium">{c.title}</span>
-                        <span className="font-mono text-[11px] text-muted-foreground">{c.slug}</span>
+                        <span className="font-mono text-[11px] text-muted-foreground">
+                          {c.slug}
+                        </span>
                         <span className="ml-auto font-mono text-xs text-primary">
                           gain {c.marginal_gain}
                         </span>
@@ -277,12 +322,14 @@ function CurriculumPage() {
                       <p className="mt-2 text-sm text-muted-foreground">{c.why}</p>
                       {!!c.missing_prerequisites?.length && (
                         <p className="mt-2 flex items-center gap-1.5 text-xs text-amber-500">
-                          <Lock className="h-3.5 w-3.5" /> requires first: {c.missing_prerequisites.join(", ")}
+                          <Lock className="h-3.5 w-3.5" /> requires first:{" "}
+                          {c.missing_prerequisites.join(", ")}
                         </p>
                       )}
                       {!!c.conflicts_with?.length && (
                         <p className="mt-2 flex items-center gap-1.5 text-xs text-destructive">
-                          <AlertTriangle className="h-3.5 w-3.5" /> conflicts with: {c.conflicts_with.join(", ")}
+                          <AlertTriangle className="h-3.5 w-3.5" /> conflicts with:{" "}
+                          {c.conflicts_with.join(", ")}
                         </p>
                       )}
                     </li>
@@ -297,7 +344,7 @@ function CurriculumPage() {
                   <Trash2 className="h-4 w-4" /> Remove before adding
                 </h2>
                 <ul className="mt-3 space-y-2 text-sm">
-                  {result.remove_suggestions.map((r: any) => (
+                  {result.remove_suggestions.map((r) => (
                     <li key={r.slug}>
                       <span className="font-mono text-xs">{r.slug}</span> — {r.why}
                     </li>

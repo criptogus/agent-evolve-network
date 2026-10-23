@@ -1,10 +1,16 @@
+import { errorField } from "@/lib/errors";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Check, Loader2, AlertTriangle } from "lucide-react";
-import { getAgentBuild, runAgentBuildStep, getAgentBuildPrompt, BUILD_STEPS } from "@/lib/agents/factory.functions";
+import {
+  getAgentBuild,
+  runAgentBuildStep,
+  getAgentBuildPrompt,
+  BUILD_STEPS,
+} from "@/lib/agents/factory.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
@@ -22,14 +28,24 @@ export const Route = createFileRoute("/agents/build/$id")({
       { title: "Your agent is being built — Agent Factory | SuperAgentSkill" },
       {
         name: "description",
-        content: "Live build of your custom corporate agent: soul, skills, playbooks, guardrails and quality score.",
+        content:
+          "Live build of your custom corporate agent: soul, skills, playbooks, guardrails and quality score.",
       },
       { name: "robots", content: "noindex" },
     ],
   }),
 });
 
-const ORDER = ["queued", "researching", "soul", "skills", "playbooks", "guardrails", "scoring", "ready"];
+const ORDER = [
+  "queued",
+  "researching",
+  "soul",
+  "skills",
+  "playbooks",
+  "guardrails",
+  "scoring",
+  "ready",
+];
 
 function BuildPage() {
   const { id } = Route.useParams();
@@ -45,12 +61,12 @@ function BuildPage() {
     queryKey: ["agent-build", id],
     queryFn: () => getFn({ data: { build_id: id } }),
     refetchInterval: (q) => {
-      const s = (q.state.data as any)?.status;
+      const s = q.state.data?.status;
       return s === "ready" || s === "error" ? false : 3000;
     },
   });
 
-  const status = (build as any)?.status as string | undefined;
+  const status = build?.status as string | undefined;
 
   // Drive the state machine: one bounded step per request, looping until done.
   useEffect(() => {
@@ -59,12 +75,16 @@ function BuildPage() {
     (async () => {
       try {
         for (let i = 0; i < 12; i++) {
-          const res: any = await runFn({ data: { build_id: id } });
+          const res = await runFn({ data: { build_id: id } });
           await qc.invalidateQueries({ queryKey: ["agent-build", id] });
           if (res?.done) break;
         }
-      } catch (e: any) {
-        toast.error(typeof e?.message === "string" ? e.message : "The build failed.");
+      } catch (e) {
+        toast.error(
+          typeof errorField(e, "message") === "string"
+            ? errorField(e, "message")
+            : "The build failed.",
+        );
         await qc.invalidateQueries({ queryKey: ["agent-build", id] });
       } finally {
         running.current = false;
@@ -87,11 +107,15 @@ function BuildPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${(build as any)?.slug ?? "agent"}-agent.${ext}`;
+      a.download = `${build?.slug ?? "agent"}-agent.${ext}`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch (e: any) {
-      toast.error(typeof e?.message === "string" ? e.message : "Download failed.");
+    } catch (e) {
+      toast.error(
+        typeof errorField(e, "message") === "string"
+          ? errorField(e, "message")
+          : "Download failed.",
+      );
     } finally {
       setBusy(null);
     }
@@ -103,14 +127,18 @@ function BuildPage() {
       const r = await promptFn({ data: { build_id: id } });
       await navigator.clipboard.writeText(r.system_prompt);
       toast.success("System prompt copied. Paste it as your agent's instructions.");
-    } catch (e: any) {
-      toast.error(typeof e?.message === "string" ? e.message : "Could not load the prompt.");
+    } catch (e) {
+      toast.error(
+        typeof errorField(e, "message") === "string"
+          ? errorField(e, "message")
+          : "Could not load the prompt.",
+      );
     } finally {
       setBusy(null);
     }
   }
 
-  const b: any = build;
+  const b = build;
   const doneIdx = b ? ORDER.indexOf(b.status) : -1;
   const finalReport = b?.report?.final_pass ?? b?.report?.first_pass;
 
@@ -159,7 +187,9 @@ function BuildPage() {
                       ) : (
                         <span className="h-4 w-4 rounded-full border border-border" />
                       )}
-                      <span className={done ? "text-foreground" : "text-muted-foreground"}>{s.label}</span>
+                      <span className={done ? "text-foreground" : "text-muted-foreground"}>
+                        {s.label}
+                      </span>
                     </div>
                   );
                 })}
@@ -180,7 +210,11 @@ function BuildPage() {
                 <p className="text-sm">
                   Want to adjust the guardrail rules or the soul before publishing?
                 </p>
-                <Button variant={editing ? "secondary" : "outline"} size="sm" onClick={() => setEditing((v) => !v)}>
+                <Button
+                  variant={editing ? "secondary" : "outline"}
+                  size="sm"
+                  onClick={() => setEditing((v) => !v)}
+                >
                   {editing ? "Close editor" : "Open guided editor"}
                 </Button>
               </div>
@@ -205,19 +239,24 @@ function BuildPage() {
               />
             )}
 
-
             {b.status === "ready" && (
               <Card className="mb-8">
                 <CardHeader>
                   <CardTitle>Install your agent</CardTitle>
-                  <CardDescription>Same delivery as the curated store — ZIP, single file, or copy/paste.</CardDescription>
+                  <CardDescription>
+                    Same delivery as the curated store — ZIP, single file, or copy/paste.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex flex-wrap gap-3">
                     <Button onClick={() => download("zip")} disabled={busy !== null}>
                       {busy === "zip" ? "Preparing…" : "Download ZIP"}
                     </Button>
-                    <Button variant="outline" onClick={() => download("md")} disabled={busy !== null}>
+                    <Button
+                      variant="outline"
+                      onClick={() => download("md")}
+                      disabled={busy !== null}
+                    >
                       {busy === "md" ? "Preparing…" : "Download single .md"}
                     </Button>
                     <Button variant="outline" onClick={copyPrompt} disabled={busy !== null}>
@@ -226,7 +265,9 @@ function BuildPage() {
                   </div>
                   <div className="rounded-lg border bg-muted/40 p-4 text-sm">
                     <p className="font-medium">Install via MCP</p>
-                    <p className="mt-1 text-muted-foreground">With the SuperAgentSkill MCP connected, ask your agent:</p>
+                    <p className="mt-1 text-muted-foreground">
+                      With the SuperAgentSkill MCP connected, ask your agent:
+                    </p>
                     <code className="mt-2 block rounded bg-background px-3 py-2 text-xs">
                       install my agent {b.slug}
                     </code>
@@ -238,10 +279,12 @@ function BuildPage() {
             {b.research_summary && (
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold">State of the art used</h2>
-                <p className="mt-3 whitespace-pre-wrap text-sm text-muted-foreground">{b.research_summary}</p>
+                <p className="mt-3 whitespace-pre-wrap text-sm text-muted-foreground">
+                  {b.research_summary}
+                </p>
                 {Array.isArray(b.research_sources) && b.research_sources.length > 0 && (
                   <ul className="mt-3 flex flex-wrap gap-2">
-                    {b.research_sources.map((s: any, i: number) => (
+                    {b.research_sources.map((s, i: number) => (
                       <li key={i}>
                         <Badge variant="secondary">
                           {s.title}
@@ -254,11 +297,11 @@ function BuildPage() {
               </section>
             )}
 
-            {finalReport?.axes?.length > 0 && (
+            {finalReport && finalReport.axes.length > 0 && (
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold">Quality score</h2>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {finalReport.axes.map((a: any) => (
+                  {finalReport.axes.map((a) => (
                     <div key={a.name} className="rounded-lg border p-3">
                       <div className="flex items-center justify-between text-sm font-medium">
                         <span>{a.name}</span>
@@ -268,7 +311,9 @@ function BuildPage() {
                     </div>
                   ))}
                 </div>
-                {finalReport.verdict && <p className="mt-4 text-sm text-muted-foreground">{finalReport.verdict}</p>}
+                {finalReport.verdict && (
+                  <p className="mt-4 text-sm text-muted-foreground">{finalReport.verdict}</p>
+                )}
               </section>
             )}
 
@@ -285,7 +330,7 @@ function BuildPage() {
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold">Skills ({b.skills.length})</h2>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  {b.skills.map((s: any) => (
+                  {b.skills.map((s) => (
                     <Card key={s.slug}>
                       <CardHeader>
                         <CardTitle className="text-base">{s.title}</CardTitle>
@@ -301,7 +346,7 @@ function BuildPage() {
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold">Playbooks ({b.playbooks.length})</h2>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  {b.playbooks.map((p: any) => (
+                  {b.playbooks.map((p) => (
                     <Card key={p.slug}>
                       <CardHeader>
                         <CardTitle className="text-base">{p.title}</CardTitle>
@@ -317,7 +362,7 @@ function BuildPage() {
               <section>
                 <h2 className="text-2xl font-semibold">Guardrails ({b.guardrails.length})</h2>
                 <ul className="mt-4 space-y-3">
-                  {b.guardrails.map((g: any) => (
+                  {b.guardrails.map((g) => (
                     <li key={g.slug} className="rounded-lg border p-3">
                       <p className="text-sm font-medium">{g.title}</p>
                       <p className="mt-1 text-sm">{g.rule}</p>

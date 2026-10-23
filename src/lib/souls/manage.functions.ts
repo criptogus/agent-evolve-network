@@ -1,8 +1,9 @@
+import type { AppDatabaseClient } from "@/integrations/supabase/database";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 const VersionStatus = z.enum(["stable", "beta", "deprecated", "candidate"]);
 
@@ -26,7 +27,7 @@ function semverMax(versions: string[]): string {
   return versions.reduce((acc, v) => (semverGt(v, acc) ? v : acc), "0.0.0");
 }
 
-async function assertSoulOwnership(supabase: any, userId: string, slug: string) {
+async function assertSoulOwnership(supabase: AppDatabaseClient, userId: string, slug: string) {
   const { data: pkg, error } = await supabase
     .from("packages")
     .select("id, author_id, latest_version, type")
@@ -48,8 +49,8 @@ export const getSoulOwnership = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const { data: pkg } = await supabase
       .from("packages")
       .select("author_id, type")
@@ -76,8 +77,8 @@ export const createSoulVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => CreateInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const pkg = await assertSoulOwnership(supabase, userId, data.slug);
 
     // ensure version doesn't already exist
@@ -139,8 +140,8 @@ export const rollbackSoulVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => RollbackInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const pkg = await assertSoulOwnership(supabase, userId, data.slug);
 
     const { data: target } = await supabase
@@ -171,8 +172,8 @@ export const setSoulVersionStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => StatusInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const pkg = await assertSoulOwnership(supabase, userId, data.slug);
 
     const { error } = await supabaseAdmin
@@ -185,7 +186,10 @@ export const setSoulVersionStatus = createServerFn({ method: "POST" })
   });
 
 // ----- suggest next semver -----
-export function suggestNextVersion(versions: string[], bump: "patch" | "minor" | "major" = "patch") {
+export function suggestNextVersion(
+  versions: string[],
+  bump: "patch" | "minor" | "major" = "patch",
+) {
   const max = semverMax(versions.length ? versions : ["0.0.0"]);
   const p = parseSemver(max) ?? [0, 0, 0];
   if (bump === "major") return `${p[0] + 1}.0.0`;

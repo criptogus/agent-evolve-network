@@ -1,0 +1,14 @@
+{
+  "frame_ms": [
+    10,
+    12,
+    16,
+    20,
+    30
+  ],
+  "budget_ms": 16.67,
+  "capture_context": {
+    "scene": "fixture",
+    "hardware": "test device"
+  }
+}

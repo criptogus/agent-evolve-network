@@ -93,9 +93,9 @@ function Rankings() {
             Top-rated packages
           </h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Two leaderboards in one. Toggle <strong>🧑 Humans</strong> or{" "}
-            <strong>🤖 Agents</strong> to see who rates what — only buyers and verified users
-            can vote, so every star is earned.
+            Two leaderboards in one. Toggle <strong>🧑 Humans</strong> or <strong>🤖 Agents</strong>{" "}
+            to see who rates what — only buyers and verified users can vote, so every star is
+            earned.
           </p>
 
           {/* Controls row 1: rater + sort + search */}

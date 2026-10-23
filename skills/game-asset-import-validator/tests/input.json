@@ -1,0 +1,13 @@
+{
+  "asset_manifest": [
+    {
+      "path": "assets/crate.glb",
+      "hash": "fixture",
+      "license": "original"
+    }
+  ],
+  "engine_settings": {
+    "engine": "Godot",
+    "units": "meters"
+  }
+}

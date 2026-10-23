@@ -4,7 +4,12 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PROVIDERS, getProvider, scopesFor, type ProviderScope } from "@/lib/cloud-skills/providers";
+import {
+  PROVIDERS,
+  getProvider,
+  scopesFor,
+  type ProviderScope,
+} from "@/lib/cloud-skills/providers";
 import { bundlePath } from "@/lib/cloud-skills/bundle";
 import { exportSkillBundle } from "@/lib/cloud-skills/bundle.functions";
 
@@ -57,7 +62,7 @@ export function ExportBundle({
         `${r.skill_count} skill${r.skill_count === 1 ? "" : "s"} exported for ${r.tool.label}`,
       );
     },
-    onError: (e: any) => toast.error(e?.message ?? "Export failed"),
+    onError: (e) => toast.error(e?.message ?? "Export failed"),
   });
 
   const toggle = (id: string) =>
@@ -70,8 +75,8 @@ export function ExportBundle({
         <Badge variant="secondary">Private to your account</Badge>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
-        One archive with your own skills, already in the folder structure the tool expects.
-        Unzip it anywhere — no MCP connection, no account needed on the machine that uses it.
+        One archive with your own skills, already in the folder structure the tool expects. Unzip it
+        anywhere — no MCP connection, no account needed on the machine that uses it.
       </p>
 
       <div className="mt-5">

@@ -1,0 +1,8 @@
+{
+  "engine": "Godot 4",
+  "core_loop": "Collect five items before the timer ends; restart after win or loss",
+  "constraints": {
+    "input": "keyboard",
+    "art": "original placeholders"
+  }
+}

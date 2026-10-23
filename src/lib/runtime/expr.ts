@@ -51,9 +51,14 @@ export function evaluateCondition(expr: string, ctx: RunContext): boolean {
 }
 
 type Tok =
-  | { t: "lparen" } | { t: "rparen" }
-  | { t: "and" } | { t: "or" } | { t: "not" }
-  | { t: "eq" } | { t: "neq" } | { t: "contains" }
+  | { t: "lparen" }
+  | { t: "rparen" }
+  | { t: "and" }
+  | { t: "or" }
+  | { t: "not" }
+  | { t: "eq" }
+  | { t: "neq" }
+  | { t: "contains" }
   | { t: "lit"; v: string | number | boolean | null }
   | { t: "ref"; v: string };
 
@@ -62,39 +67,86 @@ function tokenize(expr: string): Tok[] {
   let i = 0;
   while (i < expr.length) {
     const c = expr[i];
-    if (c === " " || c === "\t" || c === "\n") { i++; continue; }
-    if (c === "(") { out.push({ t: "lparen" }); i++; continue; }
-    if (c === ")") { out.push({ t: "rparen" }); i++; continue; }
-    if (expr.startsWith("&&", i)) { out.push({ t: "and" }); i += 2; continue; }
-    if (expr.startsWith("||", i)) { out.push({ t: "or" }); i += 2; continue; }
-    if (expr.startsWith("==", i)) { out.push({ t: "eq" }); i += 2; continue; }
-    if (expr.startsWith("!=", i)) { out.push({ t: "neq" }); i += 2; continue; }
-    if (c === "!") { out.push({ t: "not" }); i++; continue; }
-    if (expr.startsWith("contains", i)) { out.push({ t: "contains" }); i += 8; continue; }
+    if (c === " " || c === "\t" || c === "\n") {
+      i++;
+      continue;
+    }
+    if (c === "(") {
+      out.push({ t: "lparen" });
+      i++;
+      continue;
+    }
+    if (c === ")") {
+      out.push({ t: "rparen" });
+      i++;
+      continue;
+    }
+    if (expr.startsWith("&&", i)) {
+      out.push({ t: "and" });
+      i += 2;
+      continue;
+    }
+    if (expr.startsWith("||", i)) {
+      out.push({ t: "or" });
+      i += 2;
+      continue;
+    }
+    if (expr.startsWith("==", i)) {
+      out.push({ t: "eq" });
+      i += 2;
+      continue;
+    }
+    if (expr.startsWith("!=", i)) {
+      out.push({ t: "neq" });
+      i += 2;
+      continue;
+    }
+    if (c === "!") {
+      out.push({ t: "not" });
+      i++;
+      continue;
+    }
+    if (expr.startsWith("contains", i)) {
+      out.push({ t: "contains" });
+      i += 8;
+      continue;
+    }
     if (c === "'" || c === '"') {
-      const q = c; let j = i + 1; let s = "";
-      while (j < expr.length && expr[j] !== q) { s += expr[j++]; }
-      out.push({ t: "lit", v: s }); i = j + 1; continue;
+      const q = c;
+      let j = i + 1;
+      let s = "";
+      while (j < expr.length && expr[j] !== q) {
+        s += expr[j++];
+      }
+      out.push({ t: "lit", v: s });
+      i = j + 1;
+      continue;
     }
     if (c === "$" && expr[i + 1] === "{") {
       const end = expr.indexOf("}", i + 2);
       if (end < 0) throw new Error("unclosed ${");
       out.push({ t: "ref", v: expr.slice(i + 2, end).trim() });
-      i = end + 1; continue;
+      i = end + 1;
+      continue;
     }
     if (/[0-9]/.test(c)) {
-      let j = i, s = "";
+      let j = i,
+        s = "";
       while (j < expr.length && /[0-9.]/.test(expr[j])) s += expr[j++];
-      out.push({ t: "lit", v: Number(s) }); i = j; continue;
+      out.push({ t: "lit", v: Number(s) });
+      i = j;
+      continue;
     }
     if (/[a-zA-Z_]/.test(c)) {
-      let j = i, s = "";
+      let j = i,
+        s = "";
       while (j < expr.length && /[a-zA-Z0-9_]/.test(expr[j])) s += expr[j++];
       if (s === "true") out.push({ t: "lit", v: true });
       else if (s === "false") out.push({ t: "lit", v: false });
       else if (s === "null") out.push({ t: "lit", v: null });
       else throw new Error(`unexpected identifier: ${s}`);
-      i = j; continue;
+      i = j;
+      continue;
     }
     throw new Error(`unexpected char in expression: ${c}`);
   }

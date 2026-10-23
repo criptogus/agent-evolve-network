@@ -1,3 +1,4 @@
+import type { ErrorProfileEntry, Prescription } from "@/lib/university/types";
 /**
  * Thin server-function wrappers for the University web pages.
  * Module scope holds only imports + createServerFn declarations (server-fn
@@ -6,7 +7,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { startExam, submitExam, listDiagnoses, getDiagnosisForCurriculum } from "./university.server";
+import {
+  startExam,
+  submitExam,
+  listDiagnoses,
+  getDiagnosisForCurriculum,
+} from "./university.server";
 import { planCurriculum } from "./curriculum";
 import type { DomainId, ErrorClass } from "./types.ts";
 
@@ -85,7 +91,7 @@ export const getCurriculumPlan = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data }) => {
-    let profile: any[] | undefined;
+    let profile: ErrorProfileEntry[] | undefined;
     let installed = data.installed_skills;
     let domain = data.domain as DomainId | undefined;
     if (data.diagnosis_id) {
@@ -96,16 +102,15 @@ export const getCurriculumPlan = createServerFn({ method: "POST" })
         if (!installed.length) installed = d.installed_skills;
       }
     }
-    const failing =
-      (profile?.filter((p) => (p?.failed ?? 0) > 0).map((p) => p.error_class as ErrorClass) ?? []).concat(
-        data.failing as ErrorClass[],
-      );
+    const failing = (
+      profile?.filter((p) => (p?.failed ?? 0) > 0).map((p) => p.error_class as ErrorClass) ?? []
+    ).concat(data.failing as ErrorClass[]);
     return planCurriculum({ failing, profile, installed, domain, budget: data.budget });
   });
 
 export const listMyDiagnoses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { userId } = context as any;
+    const { userId } = context;
     return { diagnoses: await listDiagnoses(userId) };
   });

@@ -24,7 +24,7 @@ const ICONS = {
 
   // Status-bar battery — accepts a `pct` and `low` flag to colorize fill.
   battery: ({ pct = 87, low = false } = {}) => {
-    const fillColor = low ? '#FF3B30' : '#000';
+    const fillColor = low ? "#FF3B30" : "#000";
     const innerMaxW = 46;
     const innerW = Math.max(2, Math.round((pct / 100) * innerMaxW));
     return `<svg width="82" height="36" viewBox="0 0 60 26" fill="none"><rect x="1" y="1" width="50" height="24" rx="7" stroke="#000" stroke-opacity="0.4" stroke-width="2" fill="none"/><rect x="3" y="3" width="${innerW}" height="20" rx="4.5" fill="${fillColor}"/><rect x="53" y="9" width="4" height="10" rx="1.4" fill="#000" fill-opacity="0.4"/></svg>`;

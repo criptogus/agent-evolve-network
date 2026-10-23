@@ -49,7 +49,8 @@ function PlaygroundPage() {
         </h1>
         <p className="mt-4 max-w-2xl text-base text-muted-foreground">
           Pick a tool, fill the args, hit run. Read tools work anonymously; write tools need a
-          token. Same endpoint your agents hit (<code className="font-mono text-xs">/api/public/mcp</code>
+          token. Same endpoint your agents hit (
+          <code className="font-mono text-xs">/api/public/mcp</code>
           ), same shape, same rate limits — nothing to install.
         </p>
 

@@ -16,8 +16,19 @@ export type EnvHealth = {
 
 export type PaymentsHealth = {
   environments: EnvHealth[];
-  events: { last24h: number; last7d: number; last30d: number; total: number; latest: string | null };
-  subscriptions: Array<{ environment: string; status: string; count: number; missing_customer: number }>;
+  events: {
+    last24h: number;
+    last7d: number;
+    last30d: number;
+    total: number;
+    latest: string | null;
+  };
+  subscriptions: Array<{
+    environment: string;
+    status: string;
+    count: number;
+    missing_customer: number;
+  }>;
 };
 
 async function envHealth(environment: StripeEnv, probe: boolean): Promise<EnvHealth> {
@@ -63,10 +74,12 @@ async function envHealth(environment: StripeEnv, probe: boolean): Promise<EnvHea
         mode: price.type === "recurring" ? "subscription" : "payment",
         ui_mode: "embedded_page",
         return_url: "https://superagentskill.com/account/billing",
-      } as any);
+      });
       out.checkoutProbe = {
         ok: !!session.client_secret,
-        detail: session.client_secret ? `session ${session.id} created` : "no client_secret returned",
+        detail: session.client_secret
+          ? `session ${session.id} created`
+          : "no client_secret returned",
       };
     } else {
       out.checkoutProbe = { ok: false, detail: probe ? "price missing" : "skipped" };
@@ -79,11 +92,9 @@ async function envHealth(environment: StripeEnv, probe: boolean): Promise<EnvHea
 
 export const getPaymentsHealth = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((d: unknown) =>
-    z.object({ probe: z.boolean().default(false) }).parse(d ?? {}),
-  )
+  .inputValidator((d: unknown) => z.object({ probe: z.boolean().default(false) }).parse(d ?? {}))
   .handler(async ({ data, context }): Promise<PaymentsHealth> => {
-    const supabase = (context as { supabase: any }).supabase;
+    const supabase = context.supabase;
 
     const [sandbox, live] = await Promise.all([
       envHealth("sandbox", data.probe),
@@ -96,7 +107,7 @@ export const getPaymentsHealth = createServerFn({ method: "POST" })
       .select("created_at")
       .order("created_at", { ascending: false })
       .limit(5000);
-    const stamps: string[] = (eventRows ?? []).map((r: any) => r.created_at);
+    const stamps: string[] = (eventRows ?? []).map((r) => r.created_at);
     const within = (days: number) =>
       stamps.filter((s) => now - new Date(s).getTime() <= days * 86_400_000).length;
 
@@ -127,6 +138,8 @@ export const getPaymentsHealth = createServerFn({ method: "POST" })
           const [environment, status] = key.split("|");
           return { environment, status, count: v.count, missing_customer: v.missing };
         })
-        .sort((a, b) => a.environment.localeCompare(b.environment) || a.status.localeCompare(b.status)),
+        .sort(
+          (a, b) => a.environment.localeCompare(b.environment) || a.status.localeCompare(b.status),
+        ),
     };
   });

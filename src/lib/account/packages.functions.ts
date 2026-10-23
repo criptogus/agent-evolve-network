@@ -1,14 +1,15 @@
+import type { AppDatabaseClient } from "@/integrations/supabase/database";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 // Marketplace integrity: authors CANNOT flip their own packages to public.
 // They can only submit drafts for admin review. Admins approve via the
 // /admin/review flow, which also runs the adversarial gate. Authors can
 // always unpublish their own packages (taking content down is safe).
-async function isAdmin(supabase: any, userId: string): Promise<boolean> {
+async function isAdmin(supabase: AppDatabaseClient, userId: string): Promise<boolean> {
   const { data } = await supabase
     .from("user_roles")
     .select("role")
@@ -21,12 +22,12 @@ async function isAdmin(supabase: any, userId: string): Promise<boolean> {
 export const listMyAuthoredPackages = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase: _sb, userId } = context as any;
-    const supabase = _sb as any;
+    const { supabase: _sb, userId } = context;
+    const supabase = _sb;
     const { data, error } = await supabase
       .from("packages")
       .select(
-        "id, slug, name, type, description, latest_version, is_published, review_status, review_notes, submitted_at, reviewed_at, price_credits, install_count, created_at"
+        "id, slug, name, type, description, latest_version, is_published, review_status, review_notes, submitted_at, reviewed_at, price_credits, install_count, created_at",
       )
       .eq("author_id", userId)
       .order("created_at", { ascending: false });
@@ -68,8 +69,8 @@ export const setMyPackagePublished = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => PublishInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sb, userId } = context as any;
-    const supabase = _sb as any;
+    const { supabase: _sb, userId } = context;
+    const supabase = _sb;
 
     // Verify ownership before any write.
     const { data: pkg, error: getErr } = await supabase
@@ -84,16 +85,15 @@ export const setMyPackagePublished = createServerFn({ method: "POST" })
     if (data.publish) {
       const expected = `PUBLISH ${pkg.name}`;
       if ((data.confirm_phrase ?? "").trim() !== expected) {
-        throw new Response(
-          `Confirmation required. Type "${expected}" to submit for review.`,
-          { status: 400 }
-        );
+        throw new Response(`Confirmation required. Type "${expected}" to submit for review.`, {
+          status: 400,
+        });
       }
 
       const admin = await isAdmin(supabase, userId);
       if (!admin) {
         // Non-admin authors submit for review; they cannot self-publish.
-        const update: Record<string, unknown> = {
+        const update: import("@/integrations/supabase/database").Update<"packages"> = {
           review_status: "pending",
           submitted_at: new Date().toISOString(),
           is_published: false,
@@ -115,7 +115,7 @@ export const setMyPackagePublished = createServerFn({ method: "POST" })
       // Admin path: direct publish. (The /admin/review flow with the
       // adversarial gate is preferred, but admins can also flip the flag
       // here for hot-fix scenarios.)
-      const update: Record<string, unknown> = {
+      const update: import("@/integrations/supabase/database").Update<"packages"> = {
         is_published: true,
         review_status: "approved",
         reviewed_by: userId,

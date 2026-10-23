@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { createTtlCache } from "@/lib/cache/ttl-cache";
 
 export type MarketplaceItem = {
@@ -26,6 +26,7 @@ export type MarketplaceItem = {
   trust_score: number | null;
   /** Evidence-gated verification flag from package_trust_scores. */
   trust_verified: boolean;
+  trust_confidence: number | null;
 };
 
 type ListPayload = { items: MarketplaceItem[]; verticals: string[] };
@@ -33,119 +34,134 @@ const cache = createTtlCache<ListPayload>(5 * 60 * 1000, { max: 4 });
 
 async function fetchMarketplace(): Promise<ListPayload> {
   const { data: pkgs, error } = await supabaseAdmin
-      .from("packages")
-      .select(
-        "id, slug, name, type, description, author_handle, author_verified, install_count, latest_version, created_at, price_credits"
-      )
-      .eq("is_published", true)
-      .eq("review_status", "approved")
-      .order("install_count", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(2000);
-    if (error) throw new Response(error.message, { status: 500 });
+    .from("packages")
+    .select(
+      "id, slug, name, type, description, author_handle, author_verified, install_count, latest_version, created_at, price_credits",
+    )
+    .eq("is_published", true)
+    .eq("review_status", "approved")
+    .order("install_count", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(2000);
+  if (error) throw new Response(error.message, { status: 500 });
 
-    const ids = (pkgs ?? []).map((p) => p.id);
-    let verticalByPkg = new Map<string, string | null>();
-    if (ids.length) {
-      const { data: vers } = await supabaseAdmin
-        .from("package_versions")
-        .select("package_id, version, rules")
-        .in("package_id", ids);
-      const latestByPkg = new Map((pkgs ?? []).map((p) => [p.id, p.latest_version]));
-      for (const v of vers ?? []) {
-        if (v.version !== latestByPkg.get(v.package_id)) continue;
-        const rules = (v.rules ?? {}) as Record<string, unknown>;
-        const vertical =
-          (typeof rules.vertical === "string" && rules.vertical) ||
-          (typeof rules.category === "string" && rules.category) ||
-          (typeof rules.domain === "string" && rules.domain) ||
-          null;
-        verticalByPkg.set(v.package_id, vertical || null);
-      }
+  const ids = (pkgs ?? []).map((p) => p.id);
+  const verticalByPkg = new Map<string, string | null>();
+  if (ids.length) {
+    const { data: vers } = await supabaseAdmin
+      .from("package_versions")
+      .select("package_id, version, rules")
+      .in("package_id", ids);
+    const latestByPkg = new Map((pkgs ?? []).map((p) => [p.id, p.latest_version]));
+    for (const v of vers ?? []) {
+      if (v.version !== latestByPkg.get(v.package_id)) continue;
+      const rules = (v.rules ?? {}) as Record<string, unknown>;
+      const vertical =
+        (typeof rules.vertical === "string" && rules.vertical) ||
+        (typeof rules.category === "string" && rules.category) ||
+        (typeof rules.domain === "string" && rules.domain) ||
+        null;
+      verticalByPkg.set(v.package_id, vertical || null);
     }
+  }
 
-    // Aggregate ratings per package (single grouped query)
-    const ratingByPkg = new Map<
-      string,
-      { sum: number; count: number; humanSum: number; humanCount: number; agentSum: number; agentCount: number }
-    >();
-    if (ids.length) {
-      const { data: rs } = await supabaseAdmin
-        .from("reviews")
-        .select("package_id, rating, rater_kind")
-        .in("package_id", ids);
-      for (const r of rs ?? []) {
-        const cur = ratingByPkg.get(r.package_id) ?? {
-          sum: 0,
-          count: 0,
-          humanSum: 0,
-          humanCount: 0,
-          agentSum: 0,
-          agentCount: 0,
-        };
-        cur.sum += r.rating;
-        cur.count += 1;
-        if (r.rater_kind === "agent") {
-          cur.agentSum += r.rating;
-          cur.agentCount += 1;
-        } else {
-          cur.humanSum += r.rating;
-          cur.humanCount += 1;
-        }
-        ratingByPkg.set(r.package_id, cur);
-      }
+  // Aggregate ratings per package (single grouped query)
+  const ratingByPkg = new Map<
+    string,
+    {
+      sum: number;
+      count: number;
+      humanSum: number;
+      humanCount: number;
+      agentSum: number;
+      agentCount: number;
     }
-
-    // Trust scores per package (single batched query, keyed by package id).
-    // Fail soft: on any error every package renders as "Unscored".
-    const trustByPkg = new Map<string, { score: number | null; verified: boolean }>();
-    if (ids.length) {
-      try {
-        const { data: ts } = await supabaseAdmin
-          .from("package_trust_scores")
-          .select("package_id, score, verified")
-          .in("package_id", ids);
-        for (const t of ts ?? []) {
-          const score = t.score == null ? null : Number(t.score);
-          trustByPkg.set(t.package_id, {
-            score: score != null && Number.isFinite(score) ? score : null,
-            verified: Boolean(t.verified),
-          });
-        }
-      } catch {
-        /* trust data unavailable → leave map empty */
-      }
-    }
-
-    const round2 = (n: number) => Math.round(n * 100) / 100;
-    const items: MarketplaceItem[] = (pkgs ?? []).map((p) => {
-      const rt =
-        ratingByPkg.get(p.id) ??
-        { sum: 0, count: 0, humanSum: 0, humanCount: 0, agentSum: 0, agentCount: 0 };
-      const trust = trustByPkg.get(p.id);
-      return {
-        ...p,
-        type: p.type as MarketplaceItem["type"],
-        vertical: verticalByPkg.get(p.id) ?? null,
-        price_credits: p.price_credits ?? 0,
-        rating_avg: rt.count ? round2(rt.sum / rt.count) : 0,
-        rating_count: rt.count,
-        rating_human_count: rt.humanCount,
-        rating_human_avg: rt.humanCount ? round2(rt.humanSum / rt.humanCount) : 0,
-        rating_agent_count: rt.agentCount,
-        rating_agent_avg: rt.agentCount ? round2(rt.agentSum / rt.agentCount) : 0,
-        trust_score: trust?.score ?? null,
-        trust_verified: trust?.verified ?? false,
+  >();
+  if (ids.length) {
+    const { data: rs } = await supabaseAdmin
+      .from("reviews")
+      .select("package_id, rating, rater_kind")
+      .in("package_id", ids);
+    for (const r of rs ?? []) {
+      const cur = ratingByPkg.get(r.package_id) ?? {
+        sum: 0,
+        count: 0,
+        humanSum: 0,
+        humanCount: 0,
+        agentSum: 0,
+        agentCount: 0,
       };
-    });
+      cur.sum += r.rating;
+      cur.count += 1;
+      if (r.rater_kind === "agent") {
+        cur.agentSum += r.rating;
+        cur.agentCount += 1;
+      } else {
+        cur.humanSum += r.rating;
+        cur.humanCount += 1;
+      }
+      ratingByPkg.set(r.package_id, cur);
+    }
+  }
 
-    const vs = new Set<string>();
-    for (const it of items) if (it.vertical) vs.add(it.vertical);
-    return { items, verticals: Array.from(vs).sort() };
+  // Trust scores per package (single batched query, keyed by package id).
+  // Fail soft: on any error every package renders as "Unscored".
+  const trustByPkg = new Map<
+    string,
+    { score: number | null; verified: boolean; confidence: number | null }
+  >();
+  if (ids.length) {
+    try {
+      const { data: ts } = await supabaseAdmin
+        .from("package_trust_scores")
+        .select("package_id, score, verified, confidence")
+        .in("package_id", ids);
+      for (const t of ts ?? []) {
+        const score = t.score == null ? null : Number(t.score);
+        trustByPkg.set(t.package_id, {
+          score: score != null && Number.isFinite(score) ? score : null,
+          verified: Boolean(t.verified),
+          confidence: t.confidence == null ? null : Number(t.confidence),
+        });
+      }
+    } catch {
+      /* trust data unavailable → leave map empty */
+    }
+  }
+
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+  const items: MarketplaceItem[] = (pkgs ?? []).map((p) => {
+    const rt = ratingByPkg.get(p.id) ?? {
+      sum: 0,
+      count: 0,
+      humanSum: 0,
+      humanCount: 0,
+      agentSum: 0,
+      agentCount: 0,
+    };
+    const trust = trustByPkg.get(p.id);
+    return {
+      ...p,
+      type: p.type as MarketplaceItem["type"],
+      vertical: verticalByPkg.get(p.id) ?? null,
+      price_credits: p.price_credits ?? 0,
+      rating_avg: rt.count ? round2(rt.sum / rt.count) : 0,
+      rating_count: rt.count,
+      rating_human_count: rt.humanCount,
+      rating_human_avg: rt.humanCount ? round2(rt.humanSum / rt.humanCount) : 0,
+      rating_agent_count: rt.agentCount,
+      rating_agent_avg: rt.agentCount ? round2(rt.agentSum / rt.agentCount) : 0,
+      trust_score: trust?.score ?? null,
+      trust_verified: trust?.verified ?? false,
+      trust_confidence: trust?.confidence ?? null,
+    };
+  });
+
+  const vs = new Set<string>();
+  for (const it of items) if (it.vertical) vs.add(it.vertical);
+  return { items, verticals: Array.from(vs).sort() };
 }
 
 export const listMarketplace = createServerFn({ method: "GET" }).handler(
-  async (): Promise<ListPayload> => cache.getOrLoad("all", fetchMarketplace)
+  async (): Promise<ListPayload> => cache.getOrLoad("all", fetchMarketplace),
 );
-
-

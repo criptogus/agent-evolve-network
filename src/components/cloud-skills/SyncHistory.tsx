@@ -76,7 +76,7 @@ export function SyncHistory() {
     enabled: !!openId,
   });
 
-  const usedProviders = new Set((summary.data?.targets ?? []).map((t: any) => t.provider));
+  const usedProviders = new Set((summary.data?.targets ?? []).map((t) => t.provider));
   const filterable = PROVIDERS.filter((p) => usedProviders.has(p.id));
 
   return (
@@ -86,14 +86,14 @@ export function SyncHistory() {
         <Badge variant="secondary">Only you can see this</Badge>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
-        Every sync and private export, per tool and per scope: what was written, what was
-        skipped, which conflicts appeared and how they were resolved.
+        Every sync and private export, per tool and per scope: what was written, what was skipped,
+        which conflicts appeared and how they were resolved.
       </p>
 
       {/* Per-target rollup */}
       {summary.data?.targets?.length ? (
         <div className="mt-5 grid gap-2 sm:grid-cols-2">
-          {summary.data.targets.map((t: any) => (
+          {summary.data.targets.map((t) => (
             <button
               key={`${t.provider}:${t.scope}`}
               onClick={() => {
@@ -172,12 +172,12 @@ export function SyncHistory() {
           <p className="p-4 text-sm text-muted-foreground">Loading history...</p>
         ) : !events.data?.events?.length ? (
           <p className="p-4 text-sm text-muted-foreground">
-            No syncs recorded yet. Run a sync from your agent or export a private .zip and it
-            will show up here.
+            No syncs recorded yet. Run a sync from your agent or export a private .zip and it will
+            show up here.
           </p>
         ) : (
           <ul className="divide-y divide-border/60">
-            {events.data.events.map((e: any) => (
+            {events.data.events.map((e) => (
               <li key={e.id} className="flex flex-wrap items-center gap-3 p-3">
                 <Badge variant={STATUS_VARIANT[e.status] ?? "outline"}>
                   {label(SYNC_STATUS_LABELS, e.status)}
@@ -185,8 +185,7 @@ export function SyncHistory() {
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{summarizeSyncEvent(e)}</div>
                   <div className="font-mono text-xs text-muted-foreground">
-                    {when(e.created_at)} ·{" "}
-                    {label(SYNC_SOURCE_LABELS, e.source as SyncSource)}
+                    {when(e.created_at)} · {label(SYNC_SOURCE_LABELS, e.source as SyncSource)}
                     {e.strategy ? ` · ${e.strategy}` : ""}
                     {e.client_name ? ` · ${e.client_name}` : ""}
                   </div>
@@ -260,7 +259,7 @@ export function SyncHistory() {
                 <h3 className="mb-2 text-sm font-semibold">Changes applied</h3>
                 {detail.data.event.changes?.length ? (
                   <ul className="space-y-1">
-                    {detail.data.event.changes.map((c: any, i: number) => (
+                    {detail.data.event.changes.map((c, i: number) => (
                       <li
                         key={`${c.path}-${i}`}
                         className="rounded border border-border/60 px-2 py-1 font-mono text-xs"
@@ -273,7 +272,9 @@ export function SyncHistory() {
                           [{c.action}]
                         </span>{" "}
                         <span className="break-all">{c.path}</span>
-                        {c.version ? <span className="text-muted-foreground"> v{c.version}</span> : null}
+                        {c.version ? (
+                          <span className="text-muted-foreground"> v{c.version}</span>
+                        ) : null}
                         {c.conflict ? <span className="text-amber-500"> conflict</span> : null}
                         {c.note ? (
                           <div className="mt-0.5 font-sans text-[11px] text-muted-foreground">

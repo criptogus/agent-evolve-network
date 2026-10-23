@@ -1,26 +1,36 @@
+import { parseEnvelope, type RpcEnvelope } from "../../../packages/sdk-ts/src/protocol";
+import { errorField } from "@/lib/errors";
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 
 type ToolKey =
-  | "list_packages"
-  | "search_registry"
-  | "get_package"
-  | "request_primitive"
-  | "upload_packages";
+  "list_packages" | "search_registry" | "get_package" | "request_primitive" | "upload_packages";
+
+type UploadFileArgs = { name: string; content: string; type?: string };
+type ToolArgs = {
+  type?: string;
+  query?: string;
+  limit?: string | number;
+  slug?: string;
+  brief?: string;
+  industry?: string;
+  publish?: boolean;
+  files?: UploadFileArgs[];
+};
 
 type Result = {
   status: number;
   latencyMs: number;
   ok: boolean;
   raw: string;
-  parsed?: any;
+  parsed?: unknown;
   error?: string;
 };
 
 const ENDPOINT = "/api/public/mcp";
 const TOKEN_LS_KEY = "sas_mcp_test_token";
 
-const TOOL_DEFAULTS: Record<ToolKey, Record<string, any>> = {
+const TOOL_DEFAULTS: Record<ToolKey, ToolArgs> = {
   list_packages: { type: "", query: "", limit: 10 },
   search_registry: { query: "soul", limit: 5 },
   get_package: { slug: "" },
@@ -39,11 +49,11 @@ const TOOL_REQUIRES_AUTH: Record<ToolKey, boolean> = {
   upload_packages: true,
 };
 
-function parseMcpResponse(text: string): any {
+function parseMcpResponse(text: string): RpcEnvelope | null {
   const trimmed = text.trim();
   if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
     try {
-      return JSON.parse(trimmed);
+      return parseEnvelope(trimmed);
     } catch {
       /* fallthrough */
     }
@@ -55,7 +65,8 @@ function parseMcpResponse(text: string): any {
     .filter(Boolean);
   for (let i = dataLines.length - 1; i >= 0; i--) {
     try {
-      return JSON.parse(dataLines[i]);
+      const envelope = parseEnvelope(dataLines[i]);
+      if (envelope) return envelope;
     } catch {
       /* keep trying */
     }
@@ -63,10 +74,10 @@ function parseMcpResponse(text: string): any {
   return null;
 }
 
-function unwrapToolResult(parsed: any): any {
+function unwrapToolResult(parsed: RpcEnvelope | null): unknown {
   const content = parsed?.result?.content;
   if (Array.isArray(content)) {
-    const text = content.find((c: any) => c?.type === "text")?.text;
+    const text = content.find((c) => c?.type === "text")?.text;
     if (typeof text === "string") {
       try {
         return JSON.parse(text);
@@ -83,12 +94,12 @@ export function McpTester({
   initialArgs,
 }: {
   initialTool?: ToolKey;
-  initialArgs?: Record<string, any>;
+  initialArgs?: ToolArgs;
 } = {}) {
   const startTool: ToolKey =
     initialTool && initialTool in TOOL_DEFAULTS ? initialTool : "list_packages";
   const [tool, setTool] = useState<ToolKey>(startTool);
-  const [args, setArgs] = useState<Record<string, any>>({
+  const [args, setArgs] = useState<ToolArgs>({
     ...structuredClone(TOOL_DEFAULTS[startTool]),
     ...initialArgs,
   });
@@ -123,9 +134,10 @@ export function McpTester({
     setResult(null);
   };
 
-  const updateArg = (k: string, v: any) => setArgs((prev) => ({ ...prev, [k]: v }));
+  const updateArg = <K extends keyof ToolArgs>(k: K, v: ToolArgs[K]) =>
+    setArgs((prev) => ({ ...prev, [k]: v }));
 
-  const updateFile = (i: number, k: string, v: any) =>
+  const updateFile = (i: number, k: keyof UploadFileArgs, v: string) =>
     setArgs((prev) => {
       const files = [...(prev.files ?? [])];
       files[i] = { ...files[i], [k]: v };
@@ -141,11 +153,11 @@ export function McpTester({
   const removeFile = (i: number) =>
     setArgs((prev) => ({
       ...prev,
-      files: (prev.files ?? []).filter((_: any, idx: number) => idx !== i),
+      files: (prev.files ?? []).filter((_, idx: number) => idx !== i),
     }));
 
   const cleanArgs = () => {
-    const out: Record<string, any> = {};
+    const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(args)) {
       if (v === "" || v === undefined || v === null) continue;
       if (k === "limit") {
@@ -154,9 +166,9 @@ export function McpTester({
         continue;
       }
       if (k === "files" && Array.isArray(v)) {
-        out[k] = v
-          .filter((f: any) => f?.name && f?.content)
-          .map((f: any) => ({
+        out[k] = (args.files ?? [])
+          .filter((f) => f?.name && f?.content)
+          .map((f) => ({
             name: String(f.name),
             content: String(f.content),
             ...(f.type ? { type: f.type } : {}),
@@ -171,7 +183,7 @@ export function McpTester({
     return out;
   };
 
-  async function callRpc(body: Record<string, any>): Promise<Result> {
+  async function callRpc(body: Record<string, unknown>): Promise<Result> {
     const started = performance.now();
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -198,13 +210,13 @@ export function McpTester({
         raw: text,
         parsed: unwrapped,
       };
-    } catch (e: any) {
+    } catch (e) {
       return {
         status: 0,
         latencyMs: Math.round(performance.now() - started),
         ok: false,
         raw: "",
-        error: e?.message ?? "Network error",
+        error: errorField(e, "message") ?? "Network error",
       };
     }
   }
@@ -235,7 +247,7 @@ export function McpTester({
     try {
       const res = await fetch("/api/public/mcp/health");
       const text = await res.text();
-      let parsed: any = null;
+      let parsed: unknown = null;
       try {
         parsed = JSON.parse(text);
       } catch {
@@ -248,13 +260,13 @@ export function McpTester({
         raw: text,
         parsed,
       });
-    } catch (e: any) {
+    } catch (e) {
       setResult({
         status: 0,
         latencyMs: Math.round(performance.now() - started),
         ok: false,
         raw: "",
-        error: e?.message ?? "Network error",
+        error: errorField(e, "message") ?? "Network error",
       });
     } finally {
       setPending(false);
@@ -444,7 +456,7 @@ export function McpTester({
               </label>
             </Field>
             <div className="md:col-span-3 space-y-3">
-              {(args.files ?? []).map((f: any, i: number) => (
+              {(args.files ?? []).map((f, i: number) => (
                 <div key={i} className="rounded-lg border border-border bg-background p-3">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <input

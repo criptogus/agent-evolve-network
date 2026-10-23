@@ -1,3 +1,6 @@
+import { decodeAgentBuild, encodeAgentBuildPatch, type AgentBuildPatch } from "./build-data";
+import { errorField } from "@/lib/errors";
+import type { AppDatabaseClient } from "@/integrations/supabase/database";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -44,7 +47,7 @@ export const BUILD_STEPS: { status: AgentBuildStatus; label: string }[] = [
   { status: "scoring", label: "Scoring and repairing to grade A" },
 ];
 
-async function assertPaid(supabase: any, userId: string) {
+async function assertPaid(supabase: AppDatabaseClient, userId: string) {
   const { data: sub } = await supabase
     .from("subscriptions")
     .select("status,current_period_end")
@@ -53,9 +56,13 @@ async function assertPaid(supabase: any, userId: string) {
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
-  const active = !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+  const active =
+    !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
   if (!active) {
-    throw new Response("The Agent Factory requires Agent Pass or Enterprise. Upgrade at /pricing.", { status: 402 });
+    throw new Response(
+      "The Agent Factory requires Agent Pass or Enterprise. Upgrade at /pricing.",
+      { status: 402 },
+    );
   }
 }
 
@@ -75,7 +82,7 @@ export const startAgentBuild = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => BriefInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context as any;
+    const { supabase, userId } = context;
     await assertPaid(supabase, userId);
 
     const base = slugify(data.role);
@@ -108,7 +115,7 @@ export const startAgentBuild = createServerFn({ method: "POST" })
 
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      await (supabaseAdmin as any)
+      await supabaseAdmin
         .from("mcp_funnel_events")
         .insert({ event: "agent_build_started", user_id: userId, props: { slug } });
     } catch {
@@ -124,16 +131,17 @@ export const runAgentBuildStep = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => IdInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context as any;
+    const { supabase, userId } = context;
     await assertPaid(supabase, userId);
 
-    const { data: row, error } = await supabase
+    const { data: rawRow, error } = await supabase
       .from("agent_builds")
       .select("*")
       .eq("id", data.build_id)
       .eq("user_id", userId)
       .single();
-    if (error || !row) throw new Response("Build not found", { status: 404 });
+    if (error || !rawRow) throw new Response("Build not found", { status: 404 });
+    const row = decodeAgentBuild(rawRow);
     if (row.status === "ready" || row.status === "error") {
       return { status: row.status as AgentBuildStatus, done: true };
     }
@@ -144,11 +152,14 @@ export const runAgentBuildStep = createServerFn({ method: "POST" })
     const research: AgentResearch = {
       summary: row.research_summary ?? "",
       principles: (row.report?.principles as string[]) ?? [],
-      sources: (row.research_sources as any[]) ?? [],
+      sources: row.research_sources ?? [],
     };
 
-    const patch = async (p: Record<string, unknown>) => {
-      const { error: uErr } = await supabase.from("agent_builds").update(p).eq("id", row.id);
+    const patch = async (p: AgentBuildPatch) => {
+      const { error: uErr } = await supabase
+        .from("agent_builds")
+        .update(encodeAgentBuildPatch(p))
+        .eq("id", row.id);
       if (uErr) throw new Response(uErr.message, { status: 500 });
     };
 
@@ -184,13 +195,27 @@ export const runAgentBuildStep = createServerFn({ method: "POST" })
           return { status: "skills" as AgentBuildStatus, done: false };
         }
         case "skills": {
-          const playbooks = await factory.generateDocs("playbook", brief, research, row.soul ?? "", 3);
-          await patch({ status: "playbooks", step: `${playbooks.length} playbooks authored`, playbooks });
+          const playbooks = await factory.generateDocs(
+            "playbook",
+            brief,
+            research,
+            row.soul ?? "",
+            3,
+          );
+          await patch({
+            status: "playbooks",
+            step: `${playbooks.length} playbooks authored`,
+            playbooks,
+          });
           return { status: "playbooks" as AgentBuildStatus, done: false };
         }
         case "playbooks": {
           const guardrails = await factory.generateGuardrails(brief, research);
-          await patch({ status: "guardrails", step: `${guardrails.length} guardrails attached`, guardrails });
+          await patch({
+            status: "guardrails",
+            step: `${guardrails.length} guardrails attached`,
+            guardrails,
+          });
           return { status: "guardrails" as AgentBuildStatus, done: false };
         }
         case "guardrails": {
@@ -231,13 +256,19 @@ export const runAgentBuildStep = createServerFn({ method: "POST" })
             soul,
             score,
             grade: gradeLetter(score),
-            report: { ...(row.report ?? {}), final_pass: final, repaired: soul !== (row.soul ?? "") },
+            report: {
+              ...(row.report ?? {}),
+              final_pass: final,
+              repaired: soul !== (row.soul ?? ""),
+            },
           });
           try {
             const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-            await (supabaseAdmin as any)
-              .from("mcp_funnel_events")
-              .insert({ event: "agent_build_ready", user_id: userId, props: { slug: row.slug, score } });
+            await supabaseAdmin.from("mcp_funnel_events").insert({
+              event: "agent_build_ready",
+              user_id: userId,
+              props: { slug: row.slug, score },
+            });
           } catch {
             /* best-effort */
           }
@@ -246,8 +277,8 @@ export const runAgentBuildStep = createServerFn({ method: "POST" })
         default:
           return { status: row.status as AgentBuildStatus, done: true };
       }
-    } catch (e: any) {
-      const msg = String(e?.message || e).slice(0, 500);
+    } catch (e) {
+      const msg = String(errorField(e, "message") || e).slice(0, 500);
       await supabase.from("agent_builds").update({ status: "error", error: msg }).eq("id", row.id);
       throw new Response(`Build failed: ${msg}`, { status: 500 });
     }
@@ -257,21 +288,22 @@ export const getAgentBuild = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => IdInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context as any;
-    const { data: row, error } = await supabase
+    const { supabase, userId } = context;
+    const { data: rawRow, error } = await supabase
       .from("agent_builds")
       .select("*")
       .eq("id", data.build_id)
       .eq("user_id", userId)
       .single();
-    if (error || !row) throw new Response("Build not found", { status: 404 });
+    if (error || !rawRow) throw new Response("Build not found", { status: 404 });
+    const row = decodeAgentBuild(rawRow);
     return row;
   });
 
 export const listMyAgentBuilds = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context as any;
+    const { supabase, userId } = context;
     const { data: rows, error } = await supabase
       .from("agent_builds")
       .select("id, slug, name, role, emoji, tagline, status, step, score, grade, created_at")
@@ -286,8 +318,12 @@ export const deleteAgentBuild = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => IdInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context as any;
-    const { error } = await supabase.from("agent_builds").delete().eq("id", data.build_id).eq("user_id", userId);
+    const { supabase, userId } = context;
+    const { error } = await supabase
+      .from("agent_builds")
+      .delete()
+      .eq("id", data.build_id)
+      .eq("user_id", userId);
     if (error) throw new Response(error.message, { status: 500 });
     return { ok: true };
   });
@@ -297,18 +333,20 @@ export const getAgentBuildPrompt = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => IdInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context as any;
+    const { supabase, userId } = context;
     await assertPaid(supabase, userId);
-    const { data: row, error } = await supabase
+    const { data: rawRow, error } = await supabase
       .from("agent_builds")
       .select("*")
       .eq("id", data.build_id)
       .eq("user_id", userId)
       .single();
-    if (error || !row) throw new Response("Build not found", { status: 404 });
-    if (row.status !== "ready") throw new Response("This agent is still building.", { status: 409 });
+    if (error || !rawRow) throw new Response("Build not found", { status: 404 });
+    const row = decodeAgentBuild(rawRow);
+    if (row.status !== "ready")
+      throw new Response("This agent is still building.", { status: 409 });
     const { buildSystemPrompt } = await import("./factory-adapt");
-    return { system_prompt: buildSystemPrompt(row as any) };
+    return { system_prompt: buildSystemPrompt(row) };
   });
 
 /**
@@ -338,17 +376,19 @@ export const updateAgentBuildDraft = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => DraftEdit.parse(d))
   .handler(async ({ context, data }) => {
-    const { supabase, userId } = context as any;
+    const { supabase, userId } = context;
     await assertPaid(supabase, userId);
 
-    const { data: row, error } = await supabase
+    const { data: rawRow, error } = await supabase
       .from("agent_builds")
       .select("*")
       .eq("id", data.build_id)
       .eq("user_id", userId)
       .single();
-    if (error || !row) throw new Response("Build not found", { status: 404 });
-    if (row.status !== "ready") throw new Response("Finish the build before editing it.", { status: 409 });
+    if (error || !rawRow) throw new Response("Build not found", { status: 404 });
+    const row = decodeAgentBuild(rawRow);
+    if (row.status !== "ready")
+      throw new Response("Finish the build before editing it.", { status: 409 });
 
     const guardrails = data.guardrails.map((g, i) => ({
       ...g,
@@ -356,7 +396,7 @@ export const updateAgentBuildDraft = createServerFn({ method: "POST" })
       slug: g.slug || `guardrail-${i + 1}`,
     }));
 
-    const patch: Record<string, unknown> = {
+    const patch: AgentBuildPatch = {
       soul: data.soul,
       guardrails,
       step: "Edited by you",
@@ -383,7 +423,10 @@ export const updateAgentBuildDraft = createServerFn({ method: "POST" })
       Object.assign(patch, { score, grade, report });
     }
 
-    const { error: uErr } = await supabase.from("agent_builds").update(patch).eq("id", row.id);
+    const { error: uErr } = await supabase
+      .from("agent_builds")
+      .update(encodeAgentBuildPatch(patch))
+      .eq("id", row.id);
     if (uErr) throw new Response(uErr.message, { status: 500 });
 
     return { ok: true, score, grade };

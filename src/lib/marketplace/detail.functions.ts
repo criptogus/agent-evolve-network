@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { createTtlCache } from "@/lib/cache/ttl-cache";
 import type { Package, PackageVersion, CompatibilityCheck } from "@/data/packages";
 
@@ -57,80 +57,86 @@ export const getPackageDetail = createServerFn({ method: "GET" })
   .inputValidator((data: { slug: string }) => data)
   .handler(async ({ data }): Promise<{ pkg: Package } | null> => {
     return detailCache.getOrLoad(data.slug, async () => {
-    const { data: pkg, error } = await supabaseAdmin
-      .from("packages")
-      .select(
-        "id, slug, name, type, description, long_description, author_handle, author_verified, install_count, latest_version, price_credits, license, scopes, is_published, review_status"
-      )
-      .eq("slug", data.slug)
-      .maybeSingle();
-    if (error) throw new Response(error.message, { status: 500 });
-    if (!pkg || !pkg.is_published || pkg.review_status !== "approved") return null;
+      const { data: pkg, error } = await supabaseAdmin
+        .from("packages")
+        .select(
+          "id, slug, name, type, description, long_description, author_handle, author_verified, install_count, latest_version, price_credits, license, scopes, is_published, review_status",
+        )
+        .eq("slug", data.slug)
+        .maybeSingle();
+      if (error) throw new Response(error.message, { status: 500 });
+      if (!pkg || !pkg.is_published || pkg.review_status !== "approved") return null;
 
-    const { data: versions } = await supabaseAdmin
-      .from("package_versions")
-      .select("version, status, notes, created_at, examples, compatibility, rules, permissions, system_prompt")
-      .eq("package_id", pkg.id)
-      .order("created_at", { ascending: false });
+      const { data: versions } = await supabaseAdmin
+        .from("package_versions")
+        .select(
+          "version, status, notes, created_at, examples, compatibility, rules, permissions, system_prompt",
+        )
+        .eq("package_id", pkg.id)
+        .order("created_at", { ascending: false });
 
-    const vers = versions ?? [];
-    const latest = vers.find((v) => v.version === pkg.latest_version) ?? vers[0];
+      const vers = versions ?? [];
+      const latest = vers.find((v) => v.version === pkg.latest_version) ?? vers[0];
 
-    const versionList: PackageVersion[] = vers.map((v) => ({
-      version: v.version,
-      date: fmtDate(v.created_at as string),
-      status: (v.status as PackageVersion["status"]) ?? "stable",
-      notes: (v.notes as string) ?? "",
-    }));
+      const versionList: PackageVersion[] = vers.map((v) => ({
+        version: v.version,
+        date: fmtDate(v.created_at as string),
+        status: (v.status as PackageVersion["status"]) ?? "stable",
+        notes: (v.notes as string) ?? "",
+      }));
 
-    const compatibility = latest ? normCompat(latest.compatibility) : [];
-    const examples = latest ? normExamples(latest.examples) : [];
-    const rules = (latest?.rules ?? {}) as Record<string, unknown>;
-    const versionPerms = asArr<string>(latest?.permissions).filter((s): s is string => typeof s === "string");
-    const pkgScopes = Array.isArray(pkg.scopes) ? (pkg.scopes as string[]) : [];
-    const scopes = versionPerms.length ? versionPerms : pkgScopes;
+      const compatibility = latest ? normCompat(latest.compatibility) : [];
+      const examples = latest ? normExamples(latest.examples) : [];
+      const rules = (latest?.rules ?? {}) as Record<string, unknown>;
+      const versionPerms = asArr<string>(latest?.permissions).filter(
+        (s): s is string => typeof s === "string",
+      );
+      const pkgScopes = Array.isArray(pkg.scopes) ? (pkg.scopes as string[]) : [];
+      const scopes = versionPerms.length ? versionPerms : pkgScopes;
 
-    // ratings + reviews count via reviews aggregate
-    const { data: rs } = await supabaseAdmin
-      .from("reviews")
-      .select("rating")
-      .eq("package_id", pkg.id);
-    const reviewCount = rs?.length ?? 0;
-    const ratingAvg =
-      reviewCount > 0
-        ? Math.round((rs!.reduce((s, r) => s + (r.rating ?? 0), 0) / reviewCount) * 10) / 10
-        : 0;
+      // ratings + reviews count via reviews aggregate
+      const { data: rs } = await supabaseAdmin
+        .from("reviews")
+        .select("rating")
+        .eq("package_id", pkg.id);
+      const reviewCount = rs?.length ?? 0;
+      const ratingAvg =
+        reviewCount > 0
+          ? Math.round((rs!.reduce((s, r) => s + (r.rating ?? 0), 0) / reviewCount) * 10) / 10
+          : 0;
 
-    const dependencies = asArr<Record<string, unknown>>(rules.dependencies).map((d) => ({
-      name: String(d.name ?? d.slug ?? "dependency"),
-      version: String(d.version ?? "*"),
-    }));
+      const dependencies = asArr<Record<string, unknown>>(rules.dependencies).map((d) => ({
+        name: String(d.name ?? d.slug ?? "dependency"),
+        version: String(d.version ?? "*"),
+      }));
 
-    const out: Package = {
-      id: pkg.slug,
-      name: pkg.name,
-      type: pkg.type as Package["type"],
-      author: pkg.author_handle ?? "@unknown",
-      authorVerified: !!pkg.author_verified,
-      downloads: fmtCount(pkg.install_count ?? 0),
-      rating: ratingAvg,
-      reviews: reviewCount,
-      description: pkg.description ?? "",
-      longDescription: pkg.long_description ?? pkg.description ?? "",
-      latest: pkg.latest_version,
-      versions: versionList.length ? versionList : [{ version: pkg.latest_version, date: "—", status: "stable", notes: "" }],
-      compatibility,
-      dependencies,
-      scopes: scopes.length ? scopes : ["registry:read"],
-      size: "—",
-      license: (pkg.license as string) ?? "—",
-      examples,
-      metrics: [],
-      vertical: typeof rules.vertical === "string" ? (rules.vertical as string) : undefined,
-      reviewStatus: (pkg.review_status as string) ?? undefined,
-      systemPrompt: typeof latest?.system_prompt === "string" ? (latest.system_prompt as string) : undefined,
-    };
-    return { pkg: out };
+      const out: Package = {
+        id: pkg.slug,
+        name: pkg.name,
+        type: pkg.type as Package["type"],
+        author: pkg.author_handle ?? "@unknown",
+        authorVerified: !!pkg.author_verified,
+        downloads: fmtCount(pkg.install_count ?? 0),
+        rating: ratingAvg,
+        reviews: reviewCount,
+        description: pkg.description ?? "",
+        longDescription: pkg.long_description ?? pkg.description ?? "",
+        latest: pkg.latest_version,
+        versions: versionList.length
+          ? versionList
+          : [{ version: pkg.latest_version, date: "—", status: "stable", notes: "" }],
+        compatibility,
+        dependencies,
+        scopes: scopes.length ? scopes : ["registry:read"],
+        size: "—",
+        license: (pkg.license as string) ?? "—",
+        examples,
+        metrics: [],
+        vertical: typeof rules.vertical === "string" ? (rules.vertical as string) : undefined,
+        reviewStatus: (pkg.review_status as string) ?? undefined,
+        systemPrompt:
+          typeof latest?.system_prompt === "string" ? (latest.system_prompt as string) : undefined,
+      };
+      return { pkg: out };
     });
   });
-

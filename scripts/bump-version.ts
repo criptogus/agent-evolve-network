@@ -18,6 +18,7 @@
  */
 
 import { execSync } from "node:child_process";
+import { format, resolveConfig } from "prettier";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -143,7 +144,6 @@ const highlights = meaningful
   .slice(0, 5);
 if (highlights.length === 0) highlights.push("Housekeeping and minor improvements.");
 
-
 const kindLabel = kind === "major" ? "major" : kind === "minor" ? "minor" : "patch";
 const title =
   kind === "major"
@@ -180,7 +180,10 @@ newVersionSrc = newVersionSrc.replace(
   (m) => m + entry,
 );
 
-writeFileSync(VERSION_FILE, newVersionSrc);
+writeFileSync(
+  VERSION_FILE,
+  await format(newVersionSrc, { ...(await resolveConfig(VERSION_FILE)), filepath: VERSION_FILE }),
+);
 
 // ---------- rewrite package.json ----------
 const pkg = JSON.parse(readFileSync(PKG_FILE, "utf8"));
@@ -198,8 +201,7 @@ const mdEntry =
 // Insert after the first "## [" heading marker, or after the intro block.
 const anchor = /\n## \[/;
 const idx = md.search(anchor);
-const newMd =
-  idx === -1 ? md + "\n" + mdEntry : md.slice(0, idx + 1) + mdEntry + md.slice(idx + 1);
+const newMd = idx === -1 ? md + "\n" + mdEntry : md.slice(0, idx + 1) + mdEntry + md.slice(idx + 1);
 writeFileSync(CHANGELOG_FILE, newMd);
 
 console.log(

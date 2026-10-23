@@ -117,9 +117,7 @@ function colorDistance(color1, color2) {
   if (!rgb1 || !rgb2) return Infinity;
 
   return Math.sqrt(
-    Math.pow(rgb1.r - rgb2.r, 2) +
-      Math.pow(rgb1.g - rgb2.g, 2) +
-      Math.pow(rgb1.b - rgb2.b, 2)
+    Math.pow(rgb1.r - rgb2.r, 2) + Math.pow(rgb1.g - rgb2.g, 2) + Math.pow(rgb1.b - rgb2.b, 2),
   );
 }
 
@@ -235,12 +233,9 @@ function main() {
   const jsonOutput = args.includes("--json");
   const showPalette = args.includes("--palette");
   const brandFileIdx = args.indexOf("--brand-file");
-  const brandFile =
-    brandFileIdx !== -1 ? args[brandFileIdx + 1] : DEFAULT_GUIDELINES_PATH;
+  const brandFile = brandFileIdx !== -1 ? args[brandFileIdx + 1] : DEFAULT_GUIDELINES_PATH;
   const brandFileValue = brandFileIdx !== -1 ? args[brandFileIdx + 1] : null;
-  const imagePath = args.find(
-    (a) => !a.startsWith("--") && a !== brandFileValue
-  );
+  const imagePath = args.find((a) => !a.startsWith("--") && a !== brandFileValue);
 
   // Load brand palette
   const brandPalette = parseBrandColors(brandFile);
@@ -269,9 +264,7 @@ function main() {
   }
 
   // Resolve image path
-  const resolvedPath = path.isAbsolute(imagePath)
-    ? imagePath
-    : path.join(process.cwd(), imagePath);
+  const resolvedPath = path.isAbsolute(imagePath) ? imagePath : path.join(process.cwd(), imagePath);
 
   if (!fs.existsSync(resolvedPath)) {
     console.error(`Image not found: ${resolvedPath}`);
@@ -297,8 +290,7 @@ function main() {
     ],
     complianceCheck: {
       threshold: 50,
-      description:
-        "Colors within distance 50 (RGB space) are considered brand-compliant",
+      description: "Colors within distance 50 (RGB space) are considered brand-compliant",
       brandColors: brandPalette.all,
     },
   };

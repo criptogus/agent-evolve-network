@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 import { renderTrustBadge } from "@/lib/badges/trust-badge";
 
 // GET /api/badges/trust/<slug>.svg
@@ -24,10 +24,15 @@ export const Route = createFileRoute("/api/badges/trust/$slug/svg")({
             .maybeSingle();
           if (pkg?.id) {
             const { data: t } = await supabaseAdmin
-              .from("package_trust_scores").select("score").eq("package_id", pkg.id).maybeSingle();
+              .from("package_trust_scores")
+              .select("score")
+              .eq("package_id", pkg.id)
+              .maybeSingle();
             if (t?.score !== undefined) score = Number(t.score);
           }
-        } catch { /* render gray "—" badge on any error */ }
+        } catch {
+          /* render gray "—" badge on any error */
+        }
 
         const svg = renderTrustBadge({ slug, score });
         return new Response(svg, {

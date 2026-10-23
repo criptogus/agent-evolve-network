@@ -21,13 +21,13 @@ Update later:
 npx skills update
 ```
 
-104 skills are mirrored here. Every skill also carries a public **Trust Score** —
-format, substance and adversarial (prompt-injection) grading — at
+125 skills are mirrored here. Candidate skills include their validation fixtures and
+do not claim model-specific certification. Published registry skills expose available evidence at
 https://superagentskill.com/marketplace/trust/<skill-name>.
 
 ## Source of truth
 
 Do not edit files in this directory. They are generated from `content/skills/*.yaml` by
-`scripts/build-skills-sh-mirror.mjs` (`npm run build:skills-mirror`). Skills authored inside the
+`scripts/build-skills-sh-mirror.ts` (`npm run build:skills-mirror`). Skills authored inside the
 app are served live from https://superagentskill.com/api/skills/<slug>/export.md and through the MCP server at
 https://superagentskill.com/api/mcp, which always returns the current graded version plus telemetry.

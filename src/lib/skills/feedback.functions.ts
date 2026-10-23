@@ -1,3 +1,5 @@
+import { toJson } from "@/lib/json";
+import type { AppDatabaseClient } from "@/integrations/supabase/database";
 /**
  * Feedback after enrichment of any package (skill / playbook / soul / guardrail).
  *
@@ -46,17 +48,19 @@ export type FeedbackRequest = {
 const PROMPTS: Record<EnrichmentKind, string> = {
   author: "How did this newly authored package turn out? Rate 1-5 and add a comment.",
   autocreate: "We auto-created this package on demand. Was it usable? Rate 1-5 and add a comment.",
-  forge_loop: "The forge loop just evolved this package. Did the patch help? Rate 1-5 and add a comment.",
+  forge_loop:
+    "The forge loop just evolved this package. Did the patch help? Rate 1-5 and add a comment.",
   autolearn: "The auto-learner proposed/applied a patch. Was it the right call? Rate 1-5.",
   evaluate: "We just evaluated this package. Did the report match your experience? Rate 1-5.",
-  review_skill: "You just got a review of a local skill/playbook. Was the verdict accurate? Rate 1-5.",
+  review_skill:
+    "You just got a review of a local skill/playbook. Was the verdict accurate? Rate 1-5.",
   upload: "We normalised your uploaded primitive(s). Did the result preserve intent? Rate 1-5.",
   request_primitive: "Your request was queued. Was the brief captured correctly? Rate 1-5.",
 };
 
 /** Create a feedback request row. Pass the admin/server supabase client. */
 export async function createFeedbackRequest(
-  supabase: any,
+  supabase: AppDatabaseClient,
   args: {
     kind: EnrichmentKind;
     packageId: string | null;
@@ -74,14 +78,14 @@ export async function createFeedbackRequest(
       version_id: args.versionId ?? null,
       source_user_id: args.sourceUserId ?? null,
       source: args.source ?? "ui",
-      context: args.context ?? {},
+      context: toJson(args.context ?? {}),
     })
     .select("id, kind, package_id, expires_at")
     .single();
   if (error || !data) return null;
   return {
     id: data.id,
-    kind: data.kind,
+    kind: args.kind,
     package_id: data.package_id,
     prompt: PROMPTS[data.kind as EnrichmentKind] ?? "Share your feedback (1-5).",
     expires_at: data.expires_at,
@@ -113,15 +117,15 @@ export const submitPackageFeedback = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => SubmitInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context as any;
+    const { supabase } = context;
     const { data: id, error } = await supabase.rpc("submit_package_feedback", {
       _request_id: data.request_id,
-      _rating: data.rating ?? null,
-      _sentiment: data.sentiment ?? null,
-      _comments: data.comments ?? null,
+      _rating: data.rating ?? undefined,
+      _sentiment: data.sentiment ?? undefined,
+      _comments: data.comments ?? undefined,
       _source: "ui",
-      _agent_model: data.agent_model ?? null,
-      _context: data.context ?? {},
+      _agent_model: data.agent_model ?? undefined,
+      _context: toJson(data.context ?? {}),
     });
     if (error) throw new Response(error.message, { status: 400 });
     return { ok: true as const, id };

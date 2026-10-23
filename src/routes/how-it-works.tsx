@@ -41,7 +41,9 @@ function HowItWorksPage() {
       <main>
         <section className="border-b border-border px-6 py-16 md:py-20">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">How it works</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
+              How it works
+            </p>
             <h1 className="mt-4 text-balance text-4xl font-semibold tracking-tight md:text-5xl">
               Connect once. Install what is already tested.
             </h1>

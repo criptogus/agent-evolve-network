@@ -1,0 +1,8 @@
+{
+  "slug": "br-pix-reconciler",
+  "required": [
+    "expected",
+    "observed"
+  ],
+  "calculation": "reconcile"
+}

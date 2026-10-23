@@ -1,3 +1,4 @@
+import { errorField } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 import { drainUploadQueue } from "@/lib/uploads/queue.server";
 
@@ -42,12 +43,15 @@ async function handle(req: Request): Promise<Response> {
       status: 200,
       headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
     });
-  } catch (e: any) {
+  } catch (e) {
     console.error("[drain-upload-queue] fatal:", e);
-    return new Response(JSON.stringify({ ok: false, error: e?.message ?? String(e) }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ ok: false, error: errorField(e, "message") ?? String(e) }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 }
 

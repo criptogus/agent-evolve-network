@@ -1,0 +1,15 @@
+{
+  "source_extracts": [
+    {
+      "id": "A",
+      "period": "2026",
+      "claim": "Notice is 30 days"
+    },
+    {
+      "id": "B",
+      "period": "2026",
+      "claim": "Notice is 60 days"
+    }
+  ],
+  "scope": "Same contract type"
+}

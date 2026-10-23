@@ -1,0 +1,8 @@
+{
+  "slug": "supplier-risk-evidence",
+  "required": [
+    "supplier",
+    "evidence",
+    "risk_rubric"
+  ]
+}

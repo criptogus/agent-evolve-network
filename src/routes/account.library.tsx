@@ -37,7 +37,7 @@ function AccountLibraryPage() {
       toast.success("Removed from your library.");
       qc.invalidateQueries({ queryKey: ["account", "my-library"] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Action failed"),
+    onError: (e) => toast.error(e?.message ?? "Action failed"),
   });
 
   return (
@@ -46,8 +46,8 @@ function AccountLibraryPage() {
         <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Account</span>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">My library</h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">
-          Packages you starred. Save any skill, playbook, soul, or guardrail from its
-          marketplace page and it shows up here.
+          Packages you starred. Save any skill, playbook, soul, or guardrail from its marketplace
+          page and it shows up here.
         </p>
 
         <div className="mt-8 rounded-2xl border border-border bg-surface">
@@ -58,20 +58,27 @@ function AccountLibraryPage() {
           {q.isError && (
             <div className="p-5 text-sm">
               <span className="text-destructive">Sign in to see your library.</span>{" "}
-              <Link to="/login" className="text-primary">Sign in →</Link>
+              <Link to="/login" className="text-primary">
+                Sign in →
+              </Link>
             </div>
           )}
           {q.data && q.data.packages.length === 0 && (
             <div className="p-5 text-sm text-muted-foreground">
               Nothing saved yet. Browse the{" "}
-              <Link to="/marketplace" className="text-primary hover:underline">marketplace</Link>{" "}
+              <Link to="/marketplace" className="text-primary hover:underline">
+                marketplace
+              </Link>{" "}
               and hit <Star className="inline h-3.5 w-3.5 align-[-2px]" /> Save on any package.
             </div>
           )}
           {q.data && q.data.packages.length > 0 && (
             <ul className="divide-y divide-border/60">
               {(q.data.packages as StarredPackage[]).map((p) => (
-                <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+                <li
+                  key={p.id}
+                  className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
+                >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <Link

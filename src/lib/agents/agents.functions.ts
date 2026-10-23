@@ -54,7 +54,7 @@ export const getAgentBundle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => SlugInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as any;
+    const { supabase, userId } = context;
     await assertPaid(supabase, userId);
     const a = findAgent(data.slug);
     if (!a) throw new Response("Agent not found", { status: 404 });

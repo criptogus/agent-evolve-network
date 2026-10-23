@@ -25,8 +25,12 @@ function fixture() {
     ev,
     JSON.stringify({
       package: { type: "skill", slug: "demo-skill", version: "1.0.0" },
-      total: 10, passed: 9, failed: 1, pass_rate: 0.9,
-      severity_weighted_score: 0.95, by_severity: { high: { total: 4, passed: 4, pass_rate: 1 } },
+      total: 10,
+      passed: 9,
+      failed: 1,
+      pass_rate: 0.9,
+      severity_weighted_score: 0.95,
+      by_severity: { high: { total: 4, passed: 4, pass_rate: 1 } },
     }),
   );
   return { dir, pkg, ev, att: join(dir, "demo-skill.trust.json") };
@@ -35,15 +39,35 @@ function fixture() {
 function attest(pkg, ev, att, k) {
   return spawnSync(
     "node",
-    ["--experimental-strip-types", "scripts/generate-trust-attestation.ts", "--pkg", pkg, "--eval", ev, "--out", att],
-    { cwd: ROOT, encoding: "utf8", env: { ...process.env, SIGNING_PRIVATE_KEY: k.priv, SIGNING_PUBLIC_KEY: k.pub } },
+    [
+      "--experimental-strip-types",
+      "scripts/generate-trust-attestation.ts",
+      "--pkg",
+      pkg,
+      "--eval",
+      ev,
+      "--out",
+      att,
+    ],
+    {
+      cwd: ROOT,
+      encoding: "utf8",
+      env: { ...process.env, SIGNING_PRIVATE_KEY: k.priv, SIGNING_PUBLIC_KEY: k.pub },
+    },
   );
 }
 
 function doVerify(att, pkg, pubPem) {
   return spawnSync(
     "node",
-    ["--experimental-strip-types", "scripts/verify-trust-attestation.ts", "--attestation", att, "--pkg", pkg],
+    [
+      "--experimental-strip-types",
+      "scripts/verify-trust-attestation.ts",
+      "--attestation",
+      att,
+      "--pkg",
+      pkg,
+    ],
     { cwd: ROOT, encoding: "utf8", env: { ...process.env, SIGNING_PUBLIC_KEY: pubPem } },
   );
 }

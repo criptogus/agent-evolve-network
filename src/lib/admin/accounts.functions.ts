@@ -8,8 +8,8 @@ import { requireAdmin } from "./middleware";
 export const getMyAdminStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
     return { isAdmin: !!data, userId };
   });
@@ -18,7 +18,7 @@ export const getMyAdminStatus = createServerFn({ method: "GET" })
 export const claimAdminBootstrap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { userId } = context as any;
+    const { userId } = context;
     // Use the service-role client so the "is there any admin yet?" check is a
     // true global invariant. The user-scoped client is blinded by RLS
     // (`roles read self`) and would report 0 admins to any non-admin caller,
@@ -41,11 +41,11 @@ export const claimAdminBootstrap = createServerFn({ method: "POST" })
 export const listAccounts = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) =>
-    z.object({ search: z.string().max(120).optional() }).parse(d ?? {})
+    z.object({ search: z.string().max(120).optional() }).parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx } = context;
+    const supabase = _sbCtx;
     let q = supabase
       .from("profiles")
       .select("id, display_name, handle, avatar_url, created_at")
@@ -62,7 +62,7 @@ export const listAccounts = createServerFn({ method: "GET" })
     const { data: profiles, error } = await q;
     if (error) throw new Response(error.message, { status: 500 });
 
-    const ids = (profiles ?? []).map((p: any) => p.id);
+    const ids = (profiles ?? []).map((p) => p.id);
     if (ids.length === 0) return { accounts: [] };
 
     const [{ data: roles }, { data: aps }, { data: plans }, { data: runs }] = await Promise.all([
@@ -72,12 +72,12 @@ export const listAccounts = createServerFn({ method: "GET" })
       supabase.from("runs").select("user_id").in("user_id", ids),
     ]);
 
-    const planById = new Map((plans ?? []).map((p: any) => [p.id, p]));
-    const accounts = (profiles ?? []).map((p: any) => {
-      const userRoles = (roles ?? []).filter((r: any) => r.user_id === p.id).map((r: any) => r.role);
-      const ap = (aps ?? []).find((a: any) => a.user_id === p.id);
+    const planById = new Map((plans ?? []).map((p) => [p.id, p]));
+    const accounts = (profiles ?? []).map((p) => {
+      const userRoles = (roles ?? []).filter((r) => r.user_id === p.id).map((r) => r.role);
+      const ap = (aps ?? []).find((a) => a.user_id === p.id);
       const plan = ap ? planById.get(ap.plan_id) : null;
-      const runCount = (runs ?? []).filter((r: any) => r.user_id === p.id).length;
+      const runCount = (runs ?? []).filter((r) => r.user_id === p.id).length;
       return { ...p, roles: userRoles, plan, runCount };
     });
     return { accounts };
@@ -92,11 +92,11 @@ export const setUserRole = createServerFn({ method: "POST" })
         role: z.enum(["admin", "publisher", "user"]),
         grant: z.boolean(),
       })
-      .parse(d)
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx } = context;
+    const supabase = _sbCtx;
     if (data.grant) {
       const { error } = await supabase
         .from("user_roles")
@@ -118,17 +118,20 @@ export const setUserRole = createServerFn({ method: "POST" })
 export const setUserPlan = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) =>
-    z.object({ userId: z.string().uuid(), planId: z.string().uuid() }).parse(d)
+    z.object({ userId: z.string().uuid(), planId: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx } = context as any;
-    const supabase = _sbCtx as any;
-    const { error } = await supabase
-      .from("account_plans")
-      .upsert(
-        { user_id: data.userId, plan_id: data.planId, status: "active", updated_at: new Date().toISOString() },
-        { onConflict: "user_id" }
-      );
+    const { supabase: _sbCtx } = context;
+    const supabase = _sbCtx;
+    const { error } = await supabase.from("account_plans").upsert(
+      {
+        user_id: data.userId,
+        plan_id: data.planId,
+        status: "active",
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    );
     if (error) throw new Response(error.message, { status: 500 });
     return { ok: true };
   });

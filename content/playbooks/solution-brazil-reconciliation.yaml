@@ -1,0 +1,53 @@
+slug: solution-brazil-reconciliation
+name: Reconcile Brazilian order operations
+type: playbook
+version: 0.1.0
+description: An order-to-invoice-to-payment reconciliation and a human exception queue.
+trigger: When the user requests reconcile brazilian order operations and provides authorized source inputs.
+inputs:
+  source_1:
+    type: string
+    description: Authorized NF-e XML exports
+  source_2:
+    type: string
+    description: Order ledger
+  source_3:
+    type: string
+    description: Pix settlement export and support consent policy
+outputs:
+  deliverable:
+    type: string
+    description: Each document and payment is linked or flagged; Duplicates and mismatches are retained;
+      Finance owns posting and payment decisions
+steps:
+  - id: invoices
+    action: instruction
+    with:
+      prompt: "Reconcile invoices to orders. Produce: Invoice/order matching and document exceptions.
+        Requires completed steps: none. Preserve source evidence, permissions and owner approval.
+        Never infer completion from input validation."
+  - id: payments
+    action: instruction
+    with:
+      prompt: "Reconcile settlement evidence. Produce: Matched payments and unresolved amounts. Requires
+        completed steps: invoices. Preserve source evidence, permissions and owner approval. Never
+        infer completion from input validation."
+  - id: handoff
+    action: instruction
+    with:
+      prompt: "Assign exceptions to people. Produce: Owner-specific summaries and reply drafts; no
+        automatic sending. Requires completed steps: payments. Preserve source evidence, permissions
+        and owner approval. Never infer completion from input validation."
+tags:
+  - Operações Brasil
+  - business-solution
+  - candidate
+license: CC-BY-SA-4.0
+authors:
+  - Super Agent Skill
+x_solution_id: brazil-reconciliation
+x_context_budget: 3
+x_package_dependencies:
+  - br-nfe-order-reconciler
+  - br-pix-reconciler
+  - br-whatsapp-handoff

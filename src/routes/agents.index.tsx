@@ -21,7 +21,8 @@ export const Route = createFileRoute("/agents/")({
       { property: "og:title", content: "Agent Store — Ready-to-use AI agents" },
       {
         property: "og:description",
-        content: "13 curated agents. One soul, real skills, real playbooks. ZIP, MCP or copy/paste.",
+        content:
+          "13 curated agents. One soul, real skills, real playbooks. ZIP, MCP or copy/paste.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -41,9 +42,10 @@ function AgentsIndex() {
           <Badge variant="outline">Agent Pass</Badge>
           <h1 className="mt-3 text-4xl font-bold tracking-tight">Agent Store</h1>
           <p className="mt-3 text-muted-foreground">
-            Ready-to-use agents. Each one bundles an operating <strong>soul</strong> (identity, reasoning process and
-            hard rules), bounded <strong>skills</strong> and step-by-step <strong>playbooks</strong>. Install via MCP in
-            one line, download the ZIP, or paste the system prompt into ChatGPT or Claude.
+            Ready-to-use agents. Each one bundles an operating <strong>soul</strong> (identity,
+            reasoning process and hard rules), bounded <strong>skills</strong> and step-by-step{" "}
+            <strong>playbooks</strong>. Install via MCP in one line, download the ZIP, or paste the
+            system prompt into ChatGPT or Claude.
           </p>
         </header>
 

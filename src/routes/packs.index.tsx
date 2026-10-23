@@ -32,8 +32,8 @@ function PacksIndex() {
           <Badge variant="outline">New</Badge>
           <h1 className="mt-3 text-4xl font-bold tracking-tight">Packs</h1>
           <p className="mt-3 text-muted-foreground">
-            Curated, themed bundles of skills, playbooks, guardrails and souls. Buy with credits, then customize the
-            entire pack to your niche — anchored on the state of the art.
+            Curated, themed bundles of skills, playbooks, guardrails and souls. Buy with credits,
+            then customize the entire pack to your niche — anchored on the state of the art.
           </p>
         </header>
 

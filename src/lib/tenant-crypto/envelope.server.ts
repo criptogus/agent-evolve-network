@@ -38,7 +38,9 @@ export function newSaltB64(): string {
 function deriveKey(rootKey: Buffer, saltB64: string): Buffer {
   const salt = Buffer.from(saltB64, "base64");
   const prk = createHmac("sha256", salt).update(rootKey).digest();
-  return createHmac("sha256", prk).update(Buffer.concat([Buffer.from(INFO), Buffer.from([1])])).digest();
+  return createHmac("sha256", prk)
+    .update(Buffer.concat([Buffer.from(INFO), Buffer.from([1])]))
+    .digest();
 }
 
 function seal(key: Buffer, plaintext: Buffer): string {

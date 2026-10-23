@@ -1,3 +1,4 @@
+import { ArtifactFilesSchema, artifactDigest } from "./artifacts";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/middleware";
@@ -20,7 +21,7 @@ export const validatePluginUpload = createServerFn({ method: "POST" })
   });
 
 const PublishInput = ZipInput.extend({
-  /** When false the plugin lands as a private draft instead of going live. */
+  /** When true, submit for review; conformance alone never publishes the plugin. */
   publish: z.boolean().default(false),
 });
 
@@ -32,7 +33,7 @@ export const publishPluginUpload = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => PublishInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as { supabase: any; userId: string };
+    const { supabase, userId } = context;
     const { validateZipPayload, pluginToDraft } = await import("./upload.server");
     const { insertDraftPackage } = await import("@/lib/admin/author.server");
     const { runPluginConformance } = await import("./conformance");
@@ -41,29 +42,44 @@ export const publishPluginUpload = createServerFn({ method: "POST" })
     const fileMap = new Map(Object.entries(files));
     const report = runPluginConformance(fileMap);
     if (!report.conformant) {
-      return { ok: false as const, report: serializeReport(report), package: null, published: false };
+      return {
+        ok: false as const,
+        report: serializeReport(report),
+        package: null,
+        published: false,
+      };
     }
 
+    const completeFiles = ArtifactFilesSchema.parse(files);
     const draft = pluginToDraft(fileMap, report);
     const pkg = await insertDraftPackage(supabase, userId, draft, {
       source_kind: "markdown",
       source_ref: `agent-plugin:${data.filename}`,
+      version: report.manifest?.version ?? "0.1.0",
     });
 
-    let published = false;
-    if (data.publish) {
-      const { error } = await supabase
+    const { data: version, error: versionError } = await supabase
+      .from("package_versions")
+      .select("id")
+      .eq("package_id", pkg.id)
+      .eq("version", pkg.latest_version)
+      .single();
+    if (versionError || !version) throw new Response("Imported version not found", { status: 500 });
+    const { error: artifactError } = await supabase.from("package_artifacts").insert({
+      package_id: pkg.id,
+      version_id: version.id,
+      files: completeFiles,
+      sha256: artifactDigest(completeFiles),
+      created_by: userId,
+    });
+    if (artifactError) throw new Response("Could not preserve complete bundle", { status: 500 });
+    // Conformance is structural. Publication still requires the version-specific adversarial gate.
+    if (data.publish)
+      await supabase
         .from("packages")
-        .update({
-          is_published: true,
-          review_status: "approved",
-          reviewed_at: new Date().toISOString(),
-          review_notes: "Agent Plugins v1 conformance suite passed on admin upload.",
-        })
+        .update({ review_status: "pending", submitted_at: new Date().toISOString() })
         .eq("id", pkg.id);
-      if (error) throw new Response(`Publish failed: ${error.message}`, { status: 500 });
-      published = true;
-    }
+    const published = false;
 
     await supabase.from("plugin_conformance_runs").insert({
       created_by: userId,
@@ -80,5 +96,6 @@ export const publishPluginUpload = createServerFn({ method: "POST" })
       report: serializeReport(report),
       package: { id: pkg.id as string, slug: pkg.slug as string },
       published,
+      submitted_for_review: data.publish,
     };
   });

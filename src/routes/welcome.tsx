@@ -144,7 +144,6 @@ function QuickCopyStrip({
   );
 }
 
-
 const CLIENTS: Client[] = [
   {
     id: "hermes",
@@ -218,7 +217,8 @@ Auth: None (read-only)`,
     }
   }
 }`,
-    notes: "Windows: %APPDATA%\\Claude\\claude_desktop_config.json — Linux: ~/.config/Claude/claude_desktop_config.json",
+    notes:
+      "Windows: %APPDATA%\\Claude\\claude_desktop_config.json — Linux: ~/.config/Claude/claude_desktop_config.json",
   },
   {
     id: "cursor",
@@ -280,8 +280,7 @@ url = "${ENDPOINT}"`,
     id: "grok",
     name: "Grok (xAI)",
     badge: "Custom tool",
-    blurb:
-      "Grok web/desktop accepts MCP-compatible tool URLs through the Tools panel.",
+    blurb: "Grok web/desktop accepts MCP-compatible tool URLs through the Tools panel.",
     steps: [
       "Open Grok → Settings → Tools → Add tool.",
       `Paste the URL: ${ENDPOINT}`,
@@ -299,11 +298,7 @@ Type: MCP (HTTP)`,
     name: "Windsurf (Codeium)",
     badge: "Cascade",
     blurb: "Cascade reads MCP servers from a JSON config under ~/.codeium/windsurf/.",
-    steps: [
-      "Open ~/.codeium/windsurf/mcp_config.json.",
-      "Paste the snippet.",
-      "Reload Windsurf.",
-    ],
+    steps: ["Open ~/.codeium/windsurf/mcp_config.json.", "Paste the snippet.", "Reload Windsurf."],
     filename: "~/.codeium/windsurf/mcp_config.json",
     lang: "json",
     code: `{
@@ -319,7 +314,10 @@ Type: MCP (HTTP)`,
     name: "Continue.dev",
     badge: "Open source",
     blurb: "The open-source AI code assistant. Add MCP servers under experimental in config.json.",
-    steps: ["Open ~/.continue/config.json.", "Add the snippet under experimental → modelContextProtocolServers."],
+    steps: [
+      "Open ~/.continue/config.json.",
+      "Add the snippet under experimental → modelContextProtocolServers.",
+    ],
     filename: "~/.continue/config.json",
     lang: "json",
     code: `{
@@ -356,12 +354,32 @@ Please do the following:
 After that, briefly explain in plain English what new things you can now do that you couldn't before.`;
 
 const SUGGESTED_SKILLS = [
-  { slug: "code-reviewer", role: "Coding assistants", what: "Senior-level PR reviews with security & perf checks." },
+  {
+    slug: "code-reviewer",
+    role: "Coding assistants",
+    what: "Senior-level PR reviews with security & perf checks.",
+  },
   { slug: "pragmatic-sre", role: "SRE / DevOps", what: "Incident triage, runbooks, postmortems." },
-  { slug: "meddpicc-sales", role: "Sales / GTM", what: "Qualify deals using the MEDDPICC framework." },
-  { slug: "no-pii-guardrail", role: "Anyone touching customer data", what: "Hard rule: never echo PII back." },
-  { slug: "research-deepdive", role: "Research / strategy", what: "Multi-source synthesis with citations." },
-  { slug: "humanized-doctor", role: "Health / clinical", what: "Empathetic clinical tone, evidence-based." },
+  {
+    slug: "meddpicc-sales",
+    role: "Sales / GTM",
+    what: "Qualify deals using the MEDDPICC framework.",
+  },
+  {
+    slug: "no-pii-guardrail",
+    role: "Anyone touching customer data",
+    what: "Hard rule: never echo PII back.",
+  },
+  {
+    slug: "research-deepdive",
+    role: "Research / strategy",
+    what: "Multi-source synthesis with citations.",
+  },
+  {
+    slug: "humanized-doctor",
+    role: "Health / clinical",
+    what: "Empathetic clinical tone, evidence-based.",
+  },
 ];
 
 function WelcomePage() {
@@ -406,9 +424,12 @@ function WelcomePage() {
           <div className="flex items-center gap-3">
             <Logo className="h-7 w-7" />
             <div>
-              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">Welcome</div>
+              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                Welcome
+              </div>
               <div className="text-xs text-muted-foreground">
-                {search.plan ? `Plan: ${search.plan} ·` : ""} You're in. Let's give your agent superpowers.
+                {search.plan ? `Plan: ${search.plan} ·` : ""} You're in. Let's give your agent
+                superpowers.
               </div>
             </div>
           </div>
@@ -416,8 +437,8 @@ function WelcomePage() {
             Connect your AI in 60 seconds.
           </h1>
           <p className="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
-            Pick your tool below. We'll show you the exact config to paste —
-            and a magic prompt that makes any AI auto-install its first skills.
+            Pick your tool below. We'll show you the exact config to paste — and a magic prompt that
+            makes any AI auto-install its first skills.
           </p>
 
           {/* Stepper */}
@@ -438,7 +459,9 @@ function WelcomePage() {
                 >
                   <span
                     className={`flex size-5 items-center justify-center rounded-full font-mono text-[10px] ${
-                      step >= s.n ? "bg-primary text-primary-foreground" : "bg-surface-elevated text-muted-foreground"
+                      step >= s.n
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-surface-elevated text-muted-foreground"
                     }`}
                   >
                     {s.n}
@@ -456,110 +479,112 @@ function WelcomePage() {
         {/* Step 1 — Pick your AI + config */}
         {step === 1 && (
           <>
-          <QuickCopyStrip
-            clients={CLIENTS.filter((c) => c.featured)}
-            onFocus={(id) => setActive(id)}
-          />
-          <div className="grid gap-8 md:grid-cols-[260px_1fr]">
-            <aside>
-              <div className="flex items-center gap-2">
-                <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
-                  Featured
-                </div>
-                <span className="h-px flex-1 bg-border" aria-hidden />
-              </div>
-              <ul className="mt-3 space-y-1.5">
-                {CLIENTS.filter((c) => c.featured).map((c) => (
-                  <li key={c.id}>
-                    <button
-                      onClick={() => setActive(c.id)}
-                      className={`flex w-full items-center justify-between rounded-lg border-2 px-3 py-2.5 text-left text-sm transition-all ${
-                        active === c.id
-                          ? "border-primary bg-primary/10 text-foreground shadow-elevated"
-                          : "border-primary/30 bg-primary/5 text-foreground hover:border-primary/60 hover:bg-primary/10"
-                      }`}
-                    >
-                      <span className="flex items-center gap-2 font-semibold">
-                        <span className="text-primary">★</span>
-                        {c.name}
-                      </span>
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-primary/80">
-                        {c.badge.split("·")[0].trim()}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-6 flex items-center gap-2">
-                <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                  Also supported
-                </div>
-                <span className="h-px flex-1 bg-border" aria-hidden />
-              </div>
-              <ul className="mt-3 space-y-1">
-                {CLIENTS.filter((c) => !c.featured).map((c) => (
-                  <li key={c.id}>
-                    <button
-                      onClick={() => setActive(c.id)}
-                      className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition-colors ${
-                        active === c.id
-                          ? "border-primary bg-primary/10 text-foreground"
-                          : "border-border bg-surface text-foreground/80 hover:bg-accent"
-                      }`}
-                    >
-                      <span className="font-medium">{c.name}</span>
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                        {c.badge}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </aside>
-
-            <div>
-              <div className="rounded-2xl border border-border bg-surface/40 p-6">
+            <QuickCopyStrip
+              clients={CLIENTS.filter((c) => c.featured)}
+              onFocus={(id) => setActive(id)}
+            />
+            <div className="grid gap-8 md:grid-cols-[260px_1fr]">
+              <aside>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-semibold tracking-tight">{client.name}</h2>
-                  <span className="rounded-full border border-border bg-surface px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {client.badge}
-                  </span>
+                  <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                    Featured
+                  </div>
+                  <span className="h-px flex-1 bg-border" aria-hidden />
                 </div>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{client.blurb}</p>
-
-                <ol className="mt-5 space-y-2 text-sm">
-                  {client.steps.map((s, i) => (
-                    <li key={i} className="flex gap-3">
-                      <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[10px] text-primary">
-                        {i + 1}
-                      </span>
-                      <span className="text-foreground/90">{s}</span>
+                <ul className="mt-3 space-y-1.5">
+                  {CLIENTS.filter((c) => c.featured).map((c) => (
+                    <li key={c.id}>
+                      <button
+                        onClick={() => setActive(c.id)}
+                        className={`flex w-full items-center justify-between rounded-lg border-2 px-3 py-2.5 text-left text-sm transition-all ${
+                          active === c.id
+                            ? "border-primary bg-primary/10 text-foreground shadow-elevated"
+                            : "border-primary/30 bg-primary/5 text-foreground hover:border-primary/60 hover:bg-primary/10"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2 font-semibold">
+                          <span className="text-primary">★</span>
+                          {c.name}
+                        </span>
+                        <span className="font-mono text-[10px] uppercase tracking-wider text-primary/80">
+                          {c.badge.split("·")[0].trim()}
+                        </span>
+                      </button>
                     </li>
                   ))}
-                </ol>
+                </ul>
 
-                <div className="mt-6">
-                  <CodeBlock code={client.code} lang={client.lang} filename={client.filename} />
+                <div className="mt-6 flex items-center gap-2">
+                  <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                    Also supported
+                  </div>
+                  <span className="h-px flex-1 bg-border" aria-hidden />
+                </div>
+                <ul className="mt-3 space-y-1">
+                  {CLIENTS.filter((c) => !c.featured).map((c) => (
+                    <li key={c.id}>
+                      <button
+                        onClick={() => setActive(c.id)}
+                        className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition-colors ${
+                          active === c.id
+                            ? "border-primary bg-primary/10 text-foreground"
+                            : "border-border bg-surface text-foreground/80 hover:bg-accent"
+                        }`}
+                      >
+                        <span className="font-medium">{c.name}</span>
+                        <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                          {c.badge}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </aside>
+
+              <div>
+                <div className="rounded-2xl border border-border bg-surface/40 p-6">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-2xl font-semibold tracking-tight">{client.name}</h2>
+                    <span className="rounded-full border border-border bg-surface px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {client.badge}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {client.blurb}
+                  </p>
+
+                  <ol className="mt-5 space-y-2 text-sm">
+                    {client.steps.map((s, i) => (
+                      <li key={i} className="flex gap-3">
+                        <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[10px] text-primary">
+                          {i + 1}
+                        </span>
+                        <span className="text-foreground/90">{s}</span>
+                      </li>
+                    ))}
+                  </ol>
+
+                  <div className="mt-6">
+                    <CodeBlock code={client.code} lang={client.lang} filename={client.filename} />
+                  </div>
+
+                  {client.notes && (
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground/80">Note:</span> {client.notes}
+                    </p>
+                  )}
                 </div>
 
-                {client.notes && (
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground/80">Note:</span> {client.notes}
-                  </p>
-                )}
-              </div>
-
-              <div className="mt-6 flex justify-end">
-                <button
-                  onClick={() => setStep(2)}
-                  className="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95"
-                >
-                  Done — get the magic prompt →
-                </button>
+                <div className="mt-6 flex justify-end">
+                  <button
+                    onClick={() => setStep(2)}
+                    className="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-elevated transition-all hover:opacity-95"
+                  >
+                    Done — get the magic prompt →
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
           </>
         )}
 
@@ -574,8 +599,8 @@ function WelcomePage() {
                 Paste this into {CLIENTS.find((c) => c.id === active)?.name ?? "your AI"}.
               </h2>
               <p className="mt-3 text-base text-muted-foreground">
-                It tells the AI to discover the right skills for what you do, install them
-                through MCP, and explain what just changed.
+                It tells the AI to discover the right skills for what you do, install them through
+                MCP, and explain what just changed.
               </p>
 
               <div className="mt-6">
@@ -591,10 +616,7 @@ function WelcomePage() {
                 </h3>
                 <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                   {SUGGESTED_SKILLS.map((s) => (
-                    <li
-                      key={s.slug}
-                      className="rounded-xl border border-border bg-background p-4"
-                    >
+                    <li key={s.slug} className="rounded-xl border border-border bg-background p-4">
                       <div className="flex items-center justify-between">
                         <code className="font-mono text-xs text-primary">{s.slug}</code>
                         <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -684,7 +706,7 @@ function WelcomePage() {
                   <code className="font-mono">curl</code>) and the request goes through:
                 </p>
                 <pre className="mt-3 overflow-x-auto rounded-md border border-border bg-surface p-3 font-mono text-[11px] leading-relaxed text-foreground/80">
-{`curl -X POST https://superagentskill.com/api/public/mcp \\
+                  {`curl -X POST https://superagentskill.com/api/public/mcp \\
   -H "User-Agent: Mozilla/5.0" \\
   -H "Content-Type: application/json" \\
   -H "Accept: application/json, text/event-stream" \\
@@ -693,13 +715,14 @@ function WelcomePage() {
               </div>
             </div>
 
-
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               <Link
                 to="/marketplace"
                 className="rounded-xl border border-border bg-background p-5 transition-all hover:border-primary/40 hover:shadow-elevated"
               >
-                <div className="font-mono text-[10px] uppercase tracking-wider text-primary">Step 4</div>
+                <div className="font-mono text-[10px] uppercase tracking-wider text-primary">
+                  Step 4
+                </div>
                 <div className="mt-2 text-base font-semibold">Browse packages</div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {PACKAGES_LABEL} skills, playbooks, souls and guardrails.
@@ -709,7 +732,9 @@ function WelcomePage() {
                 to="/account/billing"
                 className="rounded-xl border border-border bg-background p-5 transition-all hover:border-primary/40 hover:shadow-elevated"
               >
-                <div className="font-mono text-[10px] uppercase tracking-wider text-primary">Step 5</div>
+                <div className="font-mono text-[10px] uppercase tracking-wider text-primary">
+                  Step 5
+                </div>
                 <div className="mt-2 text-base font-semibold">Manage your plan</div>
                 <p className="mt-1 text-xs text-muted-foreground">Invoices, seats and renewal.</p>
               </Link>
@@ -717,7 +742,9 @@ function WelcomePage() {
                 to="/docs"
                 className="rounded-xl border border-border bg-background p-5 transition-all hover:border-primary/40 hover:shadow-elevated"
               >
-                <div className="font-mono text-[10px] uppercase tracking-wider text-primary">Step 6</div>
+                <div className="font-mono text-[10px] uppercase tracking-wider text-primary">
+                  Step 6
+                </div>
                 <div className="mt-2 text-base font-semibold">Read the docs</div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Trust Score, SkillForge, write your own skill.

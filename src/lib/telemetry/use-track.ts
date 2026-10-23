@@ -49,7 +49,10 @@ export function useTrack() {
 }
 
 /** Fire a single event once per component mount (client-only). */
-export function useTrackOnce(event: EventName, props?: Record<string, string | number | boolean | null>) {
+export function useTrackOnce(
+  event: EventName,
+  props?: Record<string, string | number | boolean | null>,
+) {
   const track = useTrack();
   const fired = useRef(false);
   useEffect(() => {

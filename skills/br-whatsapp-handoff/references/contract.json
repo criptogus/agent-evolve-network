@@ -1,0 +1,8 @@
+{
+  "slug": "br-whatsapp-handoff",
+  "required": [
+    "conversation",
+    "consent_record",
+    "routing_policy"
+  ]
+}

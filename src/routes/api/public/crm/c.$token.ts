@@ -12,7 +12,7 @@ export const Route = createFileRoute("/api/public/crm/c/$token")({
         if (/^[a-f0-9]{16,128}$/.test(token)) {
           try {
             const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-            const { data } = await (supabaseAdmin as any).rpc("crm_track_click", { _token: token });
+            const { data } = await supabaseAdmin.rpc("crm_track_click", { _token: token });
             // Only internal paths are ever followed.
             if (typeof data === "string" && /^\/[A-Za-z0-9\-._~/]*$/.test(data)) path = data;
           } catch {

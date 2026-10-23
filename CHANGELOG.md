@@ -11,21 +11,37 @@ Component artifacts are versioned and released independently via git tags:
 - **`super-agent` CLI** — `cli-v*` tags publish cross-platform binaries.
 - **`@superagentskill/sdk`** — versioned in `packages/sdk-ts/package.json`.
 
-## [0.5.5] — 2026-10-23 — *Genesis* (alpha) — Maintenance release
+## [0.6.0] — 2026-10-23 — *Genesis* (alpha) — Feature update
 
 ### Changed
 
-- Added Bun install to release
+- expand business skills, solutions, evidence and team workspaces
 
-## [0.5.4] — 2026-10-23 — *Genesis* (alpha) — Maintenance release
+## [0.5.7] — 2026-10-23 — *Genesis* (alpha) — Maintenance release
 
 ### Changed
 
-- Investigou funções Deno impl.
 - eliminate legacy explicit any and enforce strict type gates (#61)
+
+## [0.5.6] — 2026-10-23 — *Genesis* (alpha) — Maintenance release
+
+### Changed
+
 - patch vulnerable dependencies and enforce dependency audit
 - align trust evidence, signup recovery and MCP outcomes
-- normalize source formatting for existing lint rules
+
+## [0.5.5] — 2026-10-08 — *Genesis* (alpha) — Maintenance release
+
+### Changed
+
+- Synchronize Bun and npm on the verified patched dependency graph
+- Patch vulnerable dependencies and retain compatible Lovable builds
+
+## [0.5.4] — 2026-10-08 — *Genesis* (alpha) — Maintenance release
+
+### Changed
+
+- Housekeeping and minor improvements.
 
 ## [0.5.3] — 2026-10-08 — *Genesis* (alpha) — Maintenance release
 

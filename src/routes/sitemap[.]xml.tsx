@@ -3,7 +3,7 @@ import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.
 import { USE_CASES } from "@/lib/seo/use-cases";
 import { COMPARISONS } from "@/lib/seo/comparisons";
 
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 const SITE = "https://superagentskill.com";
 
@@ -134,7 +134,13 @@ export const Route = createFileRoute("/sitemap.xml")({
           fetchCollectionUrls().catch(() => [] as UrlEntry[]),
         ]);
 
-        const urls = [...staticUrls, ...compareUrls, ...useCaseUrls, ...packageUrls, ...collectionUrls];
+        const urls = [
+          ...staticUrls,
+          ...compareUrls,
+          ...useCaseUrls,
+          ...packageUrls,
+          ...collectionUrls,
+        ];
         return new Response(buildXml(urls), {
           headers: {
             "Content-Type": "application/xml; charset=utf-8",

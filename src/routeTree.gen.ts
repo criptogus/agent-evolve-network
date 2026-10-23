@@ -24,6 +24,7 @@ import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as EnterpriseRouteImport } from './routes/enterprise'
 import { Route as EvaluationRouteImport } from './routes/evaluation'
+import { Route as EvidenceRouteImport } from './routes/evidence'
 import { Route as ForgeRouteImport } from './routes/forge'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as HomeRouteImport } from './routes/home'
@@ -44,6 +45,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SkillOfTheWeekRouteImport } from './routes/skill-of-the-week'
 import { Route as SkillforgeRouteImport } from './routes/skillforge'
+import { Route as SolutionsRouteImport } from './routes/solutions'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
@@ -63,6 +65,7 @@ import { Route as AccountEncryptionRouteImport } from './routes/account.encrypti
 import { Route as AccountLibraryRouteImport } from './routes/account.library'
 import { Route as AccountPackagesRouteImport } from './routes/account.packages'
 import { Route as AccountReferralsRouteImport } from './routes/account.referrals'
+import { Route as AccountTeamsRouteImport } from './routes/account.teams'
 import { Route as AccountTokensRouteImport } from './routes/account.tokens'
 import { Route as AccountUsageRouteImport } from './routes/account.usage'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
@@ -70,6 +73,7 @@ import { Route as AdminAccountsRouteImport } from './routes/admin.accounts'
 import { Route as AdminAgentKpisRouteImport } from './routes/admin.agent-kpis'
 import { Route as AdminCalibrationRouteImport } from './routes/admin.calibration'
 import { Route as AdminCrmRouteImport } from './routes/admin.crm'
+import { Route as AdminCurationRouteImport } from './routes/admin.curation'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminFunnelRouteImport } from './routes/admin.funnel'
 import { Route as AdminMetaAdsPackRouteImport } from './routes/admin.meta-ads-pack'
@@ -253,6 +257,11 @@ const EvaluationRoute = EvaluationRouteImport.update({
   path: '/evaluation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EvidenceRoute = EvidenceRouteImport.update({
+  id: '/evidence',
+  path: '/evidence',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgeRoute = ForgeRouteImport.update({
   id: '/forge',
   path: '/forge',
@@ -353,6 +362,11 @@ const SkillforgeRoute = SkillforgeRouteImport.update({
   path: '/skillforge',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SolutionsRoute = SolutionsRouteImport.update({
+  id: '/solutions',
+  path: '/solutions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StatusRoute = StatusRouteImport.update({
   id: '/status',
   path: '/status',
@@ -450,6 +464,11 @@ const AccountReferralsRoute = AccountReferralsRouteImport.update({
   path: '/account/referrals',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountTeamsRoute = AccountTeamsRouteImport.update({
+  id: '/account/teams',
+  path: '/account/teams',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountTokensRoute = AccountTokensRouteImport.update({
   id: '/account/tokens',
   path: '/account/tokens',
@@ -483,6 +502,11 @@ const AdminCalibrationRoute = AdminCalibrationRouteImport.update({
 const AdminCrmRoute = AdminCrmRouteImport.update({
   id: '/crm',
   path: '/crm',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCurationRoute = AdminCurationRouteImport.update({
+  id: '/curation',
+  path: '/curation',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminCustomersRoute = AdminCustomersRouteImport.update({
@@ -1061,6 +1085,7 @@ export interface FileRoutesByFullPath {
   '/docs': typeof DocsRouteWithChildren
   '/enterprise': typeof EnterpriseRoute
   '/evaluation': typeof EvaluationRoute
+  '/evidence': typeof EvidenceRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/home': typeof HomeRoute
@@ -1081,6 +1106,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skill-of-the-week': typeof SkillOfTheWeekRoute
   '/skillforge': typeof SkillforgeRoute
+  '/solutions': typeof SolutionsRoute
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -1100,12 +1126,14 @@ export interface FileRoutesByFullPath {
   '/account/library': typeof AccountLibraryRoute
   '/account/packages': typeof AccountPackagesRoute
   '/account/referrals': typeof AccountReferralsRoute
+  '/account/teams': typeof AccountTeamsRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/agent-kpis': typeof AdminAgentKpisRoute
   '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/crm': typeof AdminCrmRoute
+  '/admin/curation': typeof AdminCurationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
@@ -1230,6 +1258,7 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsRouteWithChildren
   '/enterprise': typeof EnterpriseRoute
   '/evaluation': typeof EvaluationRoute
+  '/evidence': typeof EvidenceRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/home': typeof HomeRoute
@@ -1250,6 +1279,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skill-of-the-week': typeof SkillOfTheWeekRoute
   '/skillforge': typeof SkillforgeRoute
+  '/solutions': typeof SolutionsRoute
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -1269,12 +1299,14 @@ export interface FileRoutesByTo {
   '/account/library': typeof AccountLibraryRoute
   '/account/packages': typeof AccountPackagesRoute
   '/account/referrals': typeof AccountReferralsRoute
+  '/account/teams': typeof AccountTeamsRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/agent-kpis': typeof AdminAgentKpisRoute
   '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/crm': typeof AdminCrmRoute
+  '/admin/curation': typeof AdminCurationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
@@ -1401,6 +1433,7 @@ export interface FileRoutesById {
   '/docs': typeof DocsRouteWithChildren
   '/enterprise': typeof EnterpriseRoute
   '/evaluation': typeof EvaluationRoute
+  '/evidence': typeof EvidenceRoute
   '/forge': typeof ForgeRouteWithChildren
   '/generate': typeof GenerateRoute
   '/home': typeof HomeRoute
@@ -1421,6 +1454,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/skill-of-the-week': typeof SkillOfTheWeekRoute
   '/skillforge': typeof SkillforgeRoute
+  '/solutions': typeof SolutionsRoute
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -1440,12 +1474,14 @@ export interface FileRoutesById {
   '/account/library': typeof AccountLibraryRoute
   '/account/packages': typeof AccountPackagesRoute
   '/account/referrals': typeof AccountReferralsRoute
+  '/account/teams': typeof AccountTeamsRoute
   '/account/tokens': typeof AccountTokensRoute
   '/account/usage': typeof AccountUsageRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/agent-kpis': typeof AdminAgentKpisRoute
   '/admin/calibration': typeof AdminCalibrationRoute
   '/admin/crm': typeof AdminCrmRoute
+  '/admin/curation': typeof AdminCurationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
@@ -1573,6 +1609,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/enterprise'
     | '/evaluation'
+    | '/evidence'
     | '/forge'
     | '/generate'
     | '/home'
@@ -1593,6 +1630,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/skill-of-the-week'
     | '/skillforge'
+    | '/solutions'
     | '/status'
     | '/terms'
     | '/unsubscribe'
@@ -1612,12 +1650,14 @@ export interface FileRouteTypes {
     | '/account/library'
     | '/account/packages'
     | '/account/referrals'
+    | '/account/teams'
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
     | '/admin/agent-kpis'
     | '/admin/calibration'
     | '/admin/crm'
+    | '/admin/curation'
     | '/admin/customers'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
@@ -1742,6 +1782,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/enterprise'
     | '/evaluation'
+    | '/evidence'
     | '/forge'
     | '/generate'
     | '/home'
@@ -1762,6 +1803,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/skill-of-the-week'
     | '/skillforge'
+    | '/solutions'
     | '/status'
     | '/terms'
     | '/unsubscribe'
@@ -1781,12 +1823,14 @@ export interface FileRouteTypes {
     | '/account/library'
     | '/account/packages'
     | '/account/referrals'
+    | '/account/teams'
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
     | '/admin/agent-kpis'
     | '/admin/calibration'
     | '/admin/crm'
+    | '/admin/curation'
     | '/admin/customers'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
@@ -1912,6 +1956,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/enterprise'
     | '/evaluation'
+    | '/evidence'
     | '/forge'
     | '/generate'
     | '/home'
@@ -1932,6 +1977,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/skill-of-the-week'
     | '/skillforge'
+    | '/solutions'
     | '/status'
     | '/terms'
     | '/unsubscribe'
@@ -1951,12 +1997,14 @@ export interface FileRouteTypes {
     | '/account/library'
     | '/account/packages'
     | '/account/referrals'
+    | '/account/teams'
     | '/account/tokens'
     | '/account/usage'
     | '/admin/accounts'
     | '/admin/agent-kpis'
     | '/admin/calibration'
     | '/admin/crm'
+    | '/admin/curation'
     | '/admin/customers'
     | '/admin/funnel'
     | '/admin/meta-ads-pack'
@@ -2083,6 +2131,7 @@ export interface RootRouteChildren {
   DocsRoute: typeof DocsRouteWithChildren
   EnterpriseRoute: typeof EnterpriseRoute
   EvaluationRoute: typeof EvaluationRoute
+  EvidenceRoute: typeof EvidenceRoute
   ForgeRoute: typeof ForgeRouteWithChildren
   GenerateRoute: typeof GenerateRoute
   HomeRoute: typeof HomeRoute
@@ -2103,6 +2152,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SkillOfTheWeekRoute: typeof SkillOfTheWeekRoute
   SkillforgeRoute: typeof SkillforgeRoute
+  SolutionsRoute: typeof SolutionsRoute
   StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
@@ -2122,6 +2172,7 @@ export interface RootRouteChildren {
   AccountLibraryRoute: typeof AccountLibraryRoute
   AccountPackagesRoute: typeof AccountPackagesRoute
   AccountReferralsRoute: typeof AccountReferralsRoute
+  AccountTeamsRoute: typeof AccountTeamsRoute
   AccountTokensRoute: typeof AccountTokensRoute
   AccountUsageRoute: typeof AccountUsageRoute
   AgentsSlugRoute: typeof AgentsSlugRoute
@@ -2310,6 +2361,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EvaluationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/evidence': {
+      id: '/evidence'
+      path: '/evidence'
+      fullPath: '/evidence'
+      preLoaderRoute: typeof EvidenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forge': {
       id: '/forge'
       path: '/forge'
@@ -2450,6 +2508,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SkillforgeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/solutions': {
+      id: '/solutions'
+      path: '/solutions'
+      fullPath: '/solutions'
+      preLoaderRoute: typeof SolutionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/status': {
       id: '/status'
       path: '/status'
@@ -2583,6 +2648,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountReferralsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/teams': {
+      id: '/account/teams'
+      path: '/account/teams'
+      fullPath: '/account/teams'
+      preLoaderRoute: typeof AccountTeamsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/tokens': {
       id: '/account/tokens'
       path: '/account/tokens'
@@ -2630,6 +2702,13 @@ declare module '@tanstack/react-router' {
       path: '/crm'
       fullPath: '/admin/crm'
       preLoaderRoute: typeof AdminCrmRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/curation': {
+      id: '/admin/curation'
+      path: '/curation'
+      fullPath: '/admin/curation'
+      preLoaderRoute: typeof AdminCurationRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/customers': {
@@ -3401,6 +3480,7 @@ interface AdminRouteChildren {
   AdminAgentKpisRoute: typeof AdminAgentKpisRoute
   AdminCalibrationRoute: typeof AdminCalibrationRoute
   AdminCrmRoute: typeof AdminCrmRoute
+  AdminCurationRoute: typeof AdminCurationRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminFunnelRoute: typeof AdminFunnelRoute
   AdminMetaAdsPackRoute: typeof AdminMetaAdsPackRoute
@@ -3423,6 +3503,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAgentKpisRoute: AdminAgentKpisRoute,
   AdminCalibrationRoute: AdminCalibrationRoute,
   AdminCrmRoute: AdminCrmRoute,
+  AdminCurationRoute: AdminCurationRoute,
   AdminCustomersRoute: AdminCustomersRoute,
   AdminFunnelRoute: AdminFunnelRoute,
   AdminMetaAdsPackRoute: AdminMetaAdsPackRoute,
@@ -3599,6 +3680,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsRoute: DocsRouteWithChildren,
   EnterpriseRoute: EnterpriseRoute,
   EvaluationRoute: EvaluationRoute,
+  EvidenceRoute: EvidenceRoute,
   ForgeRoute: ForgeRouteWithChildren,
   GenerateRoute: GenerateRoute,
   HomeRoute: HomeRoute,
@@ -3619,6 +3701,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SkillOfTheWeekRoute: SkillOfTheWeekRoute,
   SkillforgeRoute: SkillforgeRoute,
+  SolutionsRoute: SolutionsRoute,
   StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
@@ -3640,6 +3723,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountLibraryRoute: AccountLibraryRoute,
   AccountPackagesRoute: AccountPackagesRoute,
   AccountReferralsRoute: AccountReferralsRoute,
+  AccountTeamsRoute: AccountTeamsRoute,
   AccountTokensRoute: AccountTokensRoute,
   AccountUsageRoute: AccountUsageRoute,
   AgentsSlugRoute: AgentsSlugRoute,

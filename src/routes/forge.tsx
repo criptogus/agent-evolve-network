@@ -12,12 +12,23 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Nav } from "@/components/site/Nav";
-import { ForgeProgress, AUTHOR_STAGES, EVAL_STAGES, EVOLVE_STAGES } from "@/components/forge/ForgeProgress";
+import {
+  ForgeProgress,
+  AUTHOR_STAGES,
+  EVAL_STAGES,
+  EVOLVE_STAGES,
+} from "@/components/forge/ForgeProgress";
 import { SkillWizard, type WizardSubmit } from "@/components/forge/SkillWizard";
 import { FeedbackPrompt } from "@/components/forge/FeedbackPrompt";
 
@@ -25,7 +36,11 @@ export const Route = createFileRoute("/forge")({
   head: () => ({
     meta: [
       { title: "Forge — Author, Evaluate, Auto-Learn skills" },
-      { name: "description", content: "Proprietary AI to author, evaluate and evolve skills, playbooks, souls and guardrails." },
+      {
+        name: "description",
+        content:
+          "Proprietary AI to author, evaluate and evolve skills, playbooks, souls and guardrails.",
+      },
     ],
   }),
   component: ForgePage,
@@ -40,7 +55,11 @@ function useSession() {
       setReady(true);
     });
     supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ? { id: data.session.user.id, email: data.session.user.email ?? undefined } : null);
+      setUser(
+        data.session?.user
+          ? { id: data.session.user.id, email: data.session.user.email ?? undefined }
+          : null,
+      );
       setReady(true);
     });
     return () => sub.subscription.unsubscribe();
@@ -56,11 +75,13 @@ function AuthGate() {
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
-    setBusy(true); setErr(null);
+    setBusy(true);
+    setErr(null);
     try {
       if (mode === "up") {
         const { error } = await supabase.auth.signUp({
-          email, password,
+          email,
+          password,
           options: { emailRedirectTo: `${window.location.origin}/forge` },
         });
         if (error) throw error;
@@ -68,8 +89,11 @@ function AuthGate() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
-    } catch (e) { setErr((e as Error).message); }
-    finally { setBusy(false); }
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const google = async () => {
@@ -87,14 +111,24 @@ function AuthGate() {
           <CardDescription>Required to author, evaluate and evolve packages.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Input placeholder="email" value={email} onChange={e => setEmail(e.target.value)} />
-          <Input placeholder="password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+          <Input placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input
+            placeholder="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
           {err && <p className="text-sm text-destructive">{err}</p>}
           <Button onClick={submit} disabled={busy} className="w-full">
             {busy ? "..." : mode === "in" ? "Sign in" : "Sign up"}
           </Button>
-          <Button variant="outline" onClick={google} className="w-full">Continue with Google</Button>
-          <button className="text-sm text-muted-foreground underline" onClick={() => setMode(m => m === "in" ? "up" : "in")}>
+          <Button variant="outline" onClick={google} className="w-full">
+            Continue with Google
+          </Button>
+          <button
+            className="text-sm text-muted-foreground underline"
+            onClick={() => setMode((m) => (m === "in" ? "up" : "in"))}
+          >
             {mode === "in" ? "Need an account? Sign up" : "Have an account? Sign in"}
           </button>
         </CardContent>
@@ -113,7 +147,8 @@ function ForgePage() {
         <header className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Forge</h1>
           <p className="text-muted-foreground mt-1">
-            Proprietary skills that <strong>author</strong>, <strong>evaluate</strong> and <strong>auto-evolve</strong> agent packages.
+            Proprietary skills that <strong>author</strong>, <strong>evaluate</strong> and{" "}
+            <strong>auto-evolve</strong> agent packages.
           </p>
         </header>
         {!user ? <AuthGate /> : <ForgeTabs />}
@@ -132,9 +167,15 @@ function ForgeTabs() {
         <TabsTrigger value="evaluate">Evaluate</TabsTrigger>
         <TabsTrigger value="evolve">Auto-Learn</TabsTrigger>
       </TabsList>
-      <TabsContent value="author"><AuthorTab /></TabsContent>
-      <TabsContent value="evaluate"><EvaluateTab packages={data?.all ?? []} /></TabsContent>
-      <TabsContent value="evolve"><EvolveTab packages={data?.mine ?? []} allPackages={data?.all ?? []} /></TabsContent>
+      <TabsContent value="author">
+        <AuthorTab />
+      </TabsContent>
+      <TabsContent value="evaluate">
+        <EvaluateTab packages={data?.all ?? []} />
+      </TabsContent>
+      <TabsContent value="evolve">
+        <EvolveTab packages={data?.mine ?? []} allPackages={data?.all ?? []} />
+      </TabsContent>
     </Tabs>
   );
 }
@@ -151,7 +192,12 @@ function AuthorTab() {
     mutationFn: (override?: WizardSubmit) =>
       author({
         data: override
-          ? { brief: override.brief, type: override.type, vertical: override.vertical, publish: override.publish }
+          ? {
+              brief: override.brief,
+              type: override.type,
+              vertical: override.vertical,
+              publish: override.publish,
+            }
           : { brief, type, vertical: vertical || undefined, publish },
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["forge", "list"] }),
@@ -162,7 +208,8 @@ function AuthorTab() {
       <CardHeader>
         <CardTitle>SkillForge Author</CardTitle>
         <CardDescription>
-          Describe the brief; the meta-agent designs a complete, executable, Anthropic-spec-compliant package.
+          Describe the brief; the meta-agent designs a complete, executable,
+          Anthropic-spec-compliant package.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -190,8 +237,10 @@ function AuthorTab() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Type</Label>
-                <Select value={type} onValueChange={v => setType(v as typeof type)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select value={type} onValueChange={(v) => setType(v as typeof type)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="skill">skill</SelectItem>
                     <SelectItem value="playbook">playbook</SelectItem>
@@ -202,17 +251,27 @@ function AuthorTab() {
               </div>
               <div>
                 <Label>Vertical (optional)</Label>
-                <Input value={vertical} onChange={e => setVertical(e.target.value)} placeholder="cardiology, sales, devops…" />
+                <Input
+                  value={vertical}
+                  onChange={(e) => setVertical(e.target.value)}
+                  placeholder="cardiology, sales, devops…"
+                />
               </div>
             </div>
             <div>
               <Label>Brief</Label>
-              <Textarea rows={6} value={brief} onChange={e => setBrief(e.target.value)}
-                placeholder="What should this package make an agent good at? Include domain, tools, constraints, success criteria." />
+              <Textarea
+                rows={6}
+                value={brief}
+                onChange={(e) => setBrief(e.target.value)}
+                placeholder="What should this package make an agent good at? Include domain, tools, constraints, success criteria."
+              />
             </div>
             <div className="flex items-center gap-2">
               <Switch id="publish" checked={publish} onCheckedChange={setPublish} />
-              <Label htmlFor="publish">Publish to marketplace as stable (otherwise saved as private beta)</Label>
+              <Label htmlFor="publish">
+                Publish to marketplace as stable (otherwise saved as private beta)
+              </Label>
             </div>
             <Button disabled={m.isPending || brief.length < 20} onClick={() => m.mutate(undefined)}>
               {m.isPending ? "Authoring…" : "Author package"}
@@ -242,14 +301,24 @@ function AuthorTab() {
               </a>
             </div>
             <p className="text-sm text-muted-foreground mt-1">{m.data.draft.description}</p>
-            <details className="mt-3"><summary className="cursor-pointer text-sm">System prompt</summary>
+            <details className="mt-3">
+              <summary className="cursor-pointer text-sm">System prompt</summary>
               <pre className="text-xs whitespace-pre-wrap mt-2">{m.data.draft.system_prompt}</pre>
             </details>
-            <details className="mt-2"><summary className="cursor-pointer text-sm">Rules + examples ({m.data.draft.examples.length})</summary>
-              <pre className="text-xs whitespace-pre-wrap mt-2">{JSON.stringify({ rules: m.data.draft.rules, examples: m.data.draft.examples }, null, 2)}</pre>
+            <details className="mt-2">
+              <summary className="cursor-pointer text-sm">
+                Rules + examples ({m.data.draft.examples.length})
+              </summary>
+              <pre className="text-xs whitespace-pre-wrap mt-2">
+                {JSON.stringify(
+                  { rules: m.data.draft.rules, examples: m.data.draft.examples },
+                  null,
+                  2,
+                )}
+              </pre>
             </details>
             <div className="mt-3">
-              <FeedbackPrompt request={(m.data as any).feedback_request} />
+              <FeedbackPrompt request={m.data.feedback_request} />
             </div>
           </div>
         )}
@@ -261,20 +330,31 @@ function AuthorTab() {
 function EvaluateTab({ packages }: { packages: Array<{ slug: string; name: string }> }) {
   const evaluate = useServerFn(evaluatePackage);
   const [slug, setSlug] = useState("");
-  const m = useMutation({ mutationFn: () => evaluate({ data: { package_slug: slug, extra_cases: [] } }) });
+  const m = useMutation({
+    mutationFn: () => evaluate({ data: { package_slug: slug, extra_cases: [] } }),
+  });
   return (
     <Card className="mt-4">
       <CardHeader>
         <CardTitle>SkillForge Evaluator</CardTitle>
-        <CardDescription>Runs the package on canonical + adversarial cases and judges precision, hallucination and safety.</CardDescription>
+        <CardDescription>
+          Runs the package on canonical + adversarial cases and judges precision, hallucination and
+          safety.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
           <Label>Package</Label>
           <Select value={slug} onValueChange={setSlug}>
-            <SelectTrigger><SelectValue placeholder="select…" /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="select…" />
+            </SelectTrigger>
             <SelectContent>
-              {packages.map(p => <SelectItem key={p.slug} value={p.slug}>{p.name} <span className="text-muted-foreground">({p.slug})</span></SelectItem>)}
+              {packages.map((p) => (
+                <SelectItem key={p.slug} value={p.slug}>
+                  {p.name} <span className="text-muted-foreground">({p.slug})</span>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -293,30 +373,60 @@ function EvaluateTab({ packages }: { packages: Array<{ slug: string; name: strin
         {m.data && (
           <div className="mt-2 rounded-md border p-4 space-y-3">
             <div className="flex items-center gap-3">
-              <Badge variant={m.data.evaluation.verdict === "ship" ? "default" : m.data.evaluation.verdict === "iterate" ? "secondary" : "destructive"}>
+              <Badge
+                variant={
+                  m.data.evaluation.verdict === "ship"
+                    ? "default"
+                    : m.data.evaluation.verdict === "iterate"
+                      ? "secondary"
+                      : "destructive"
+                }
+              >
                 {m.data.evaluation.verdict}
               </Badge>
-              <span className="text-sm">overall <strong>{m.data.evaluation.overall_score}</strong></span>
-              <span className="text-xs text-muted-foreground">precision {m.data.evaluation.precision} · health {m.data.evaluation.health} · halluc {m.data.evaluation.hallucination_rate} · safety {m.data.evaluation.safety}</span>
+              <span className="text-sm">
+                overall <strong>{m.data.evaluation.overall_score}</strong>
+              </span>
+              <span className="text-xs text-muted-foreground">
+                precision {m.data.evaluation.precision} · health {m.data.evaluation.health} · halluc{" "}
+                {m.data.evaluation.hallucination_rate} · safety {m.data.evaluation.safety}
+              </span>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="font-medium">Strengths</p>
-                <ul className="list-disc pl-5 text-muted-foreground">{m.data.evaluation.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                <ul className="list-disc pl-5 text-muted-foreground">
+                  {m.data.evaluation.strengths.map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
               </div>
               <div>
                 <p className="font-medium">Weaknesses</p>
-                <ul className="list-disc pl-5 text-muted-foreground">{m.data.evaluation.weaknesses.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                <ul className="list-disc pl-5 text-muted-foreground">
+                  {m.data.evaluation.weaknesses.map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
               </div>
             </div>
             <div>
               <p className="font-medium text-sm">Improvement actions</p>
-              <ul className="list-disc pl-5 text-sm text-muted-foreground">{m.data.evaluation.improvement_actions.map((s, i) => <li key={i}>{s}</li>)}</ul>
+              <ul className="list-disc pl-5 text-sm text-muted-foreground">
+                {m.data.evaluation.improvement_actions.map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ul>
             </div>
-            <details><summary className="cursor-pointer text-sm">Per-case results ({m.data.evaluation.example_results.length})</summary>
-              <pre className="text-xs whitespace-pre-wrap mt-2">{JSON.stringify(m.data.evaluation.example_results, null, 2)}</pre>
+            <details>
+              <summary className="cursor-pointer text-sm">
+                Per-case results ({m.data.evaluation.example_results.length})
+              </summary>
+              <pre className="text-xs whitespace-pre-wrap mt-2">
+                {JSON.stringify(m.data.evaluation.example_results, null, 2)}
+              </pre>
             </details>
-            <FeedbackPrompt request={(m.data as any).feedback_request} />
+            <FeedbackPrompt request={m.data.feedback_request} />
           </div>
         )}
       </CardContent>
@@ -324,7 +434,10 @@ function EvaluateTab({ packages }: { packages: Array<{ slug: string; name: strin
   );
 }
 
-function EvolveTab({ packages, allPackages }: {
+function EvolveTab({
+  packages,
+  allPackages,
+}: {
   packages: Array<{ slug: string; name: string }>;
   allPackages: Array<{ slug: string; name: string }>;
 }) {
@@ -337,15 +450,24 @@ function EvolveTab({ packages, allPackages }: {
     <Card className="mt-4">
       <CardHeader>
         <CardTitle>SkillForge Auto-Learner</CardTitle>
-        <CardDescription>Reads metrics + learnings and proposes the smallest patch that lifts quality. Apply to create a beta version.</CardDescription>
+        <CardDescription>
+          Reads metrics + learnings and proposes the smallest patch that lifts quality. Apply to
+          create a beta version.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
           <Label>Package</Label>
           <Select value={slug} onValueChange={setSlug}>
-            <SelectTrigger><SelectValue placeholder="select…" /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="select…" />
+            </SelectTrigger>
             <SelectContent>
-              {choices.map(p => <SelectItem key={p.slug} value={p.slug}>{p.name}</SelectItem>)}
+              {choices.map((p) => (
+                <SelectItem key={p.slug} value={p.slug}>
+                  {p.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -366,22 +488,38 @@ function EvolveTab({ packages, allPackages }: {
         {m.data && (
           <div className="mt-2 rounded-md border p-4 space-y-3">
             <div className="flex items-center gap-2 text-sm">
-              <Badge>{m.data.current_version.version} → {m.data.patch.next_version}</Badge>
+              <Badge>
+                {m.data.current_version.version} → {m.data.patch.next_version}
+              </Badge>
               <span className="text-muted-foreground">confidence {m.data.patch.confidence}%</span>
               {m.data.applied && <Badge variant="secondary">applied as beta</Badge>}
             </div>
             <p className="text-sm">{m.data.patch.rationale}</p>
             <div>
               <p className="font-medium text-sm">Changelog</p>
-              <ul className="list-disc pl-5 text-sm text-muted-foreground">{m.data.patch.changelog.map((c, i) => <li key={i}>{c}</li>)}</ul>
+              <ul className="list-disc pl-5 text-sm text-muted-foreground">
+                {m.data.patch.changelog.map((c, i) => (
+                  <li key={i}>{c}</li>
+                ))}
+              </ul>
             </div>
-            <details><summary className="cursor-pointer text-sm">Patched system prompt</summary>
-              <pre className="text-xs whitespace-pre-wrap mt-2">{m.data.patch.patched_system_prompt}</pre>
+            <details>
+              <summary className="cursor-pointer text-sm">Patched system prompt</summary>
+              <pre className="text-xs whitespace-pre-wrap mt-2">
+                {m.data.patch.patched_system_prompt}
+              </pre>
             </details>
-            <details><summary className="cursor-pointer text-sm">Patched rules + new examples</summary>
-              <pre className="text-xs whitespace-pre-wrap mt-2">{JSON.stringify({ rules: m.data.patch.patched_rules, examples: m.data.patch.new_examples }, null, 2)}</pre>
+            <details>
+              <summary className="cursor-pointer text-sm">Patched rules + new examples</summary>
+              <pre className="text-xs whitespace-pre-wrap mt-2">
+                {JSON.stringify(
+                  { rules: m.data.patch.patched_rules, examples: m.data.patch.new_examples },
+                  null,
+                  2,
+                )}
+              </pre>
             </details>
-            <FeedbackPrompt request={(m.data as any).feedback_request} />
+            <FeedbackPrompt request={m.data.feedback_request} />
           </div>
         )}
       </CardContent>

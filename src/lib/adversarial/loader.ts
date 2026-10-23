@@ -6,12 +6,7 @@ import { parse as parseYaml } from "yaml";
 // imported and tested without pulling in the YAML parser.
 export { splitTrainHoldout, caseHashUnit } from "./holdout";
 
-export type AdversarialVertical =
-  | "security"
-  | "fintech"
-  | "healthcare"
-  | "devops"
-  | "general";
+export type AdversarialVertical = "security" | "fintech" | "healthcare" | "devops" | "general";
 
 export type AdversarialCategory =
   | "prompt_injection"
@@ -78,7 +73,11 @@ export function loadAdversarialCases(opts: LoadOptions = {}): AdversarialCase[] 
     if (opts.vertical && vertical !== opts.vertical) continue;
     const dir = join(root, vertical);
     let stats;
-    try { stats = statSync(dir); } catch { continue; }
+    try {
+      stats = statSync(dir);
+    } catch {
+      continue;
+    }
     if (!stats.isDirectory()) continue;
     for (const entry of readdirSync(dir)) {
       if (!/\.ya?ml$/i.test(entry) || entry.startsWith("_")) continue;

@@ -1,3 +1,5 @@
+import { toJson } from "@/lib/json";
+import { packageTypeEnum } from "@/lib/skills/schemas";
 // Server-side core of the public certification API.
 // Runs the same proprietary review engine as the `review_skill` MCP tool,
 // records the result keyed by content hash, and hands back a badge the
@@ -15,7 +17,7 @@ import {
 
 // external_certifications is newer than the generated Supabase types; the
 // admin client is cast like the other API routes until types are regenerated.
-const supabaseAdmin = _supabaseAdmin as any;
+const supabaseAdmin = _supabaseAdmin;
 
 export interface CertifyResult {
   record: CertificationRecord;
@@ -57,14 +59,14 @@ export async function certifyContent(req: CertifyRequest): Promise<CertifyResult
       overall_score,
       grade,
       engine_version: CERTIFY_ENGINE_VERSION,
-      report: {
+      report: toJson({
         structural_score: core.structural_score,
         content_quality_score: core.content_quality_score,
         doc_class: core.doc_class,
         language: core.language,
         input_warning: core.input_warning ?? null,
         guard: { severity: guard.severity, findings: guard.findings.length },
-      },
+      }),
     })
     .select("id, created_at")
     .single();
@@ -104,5 +106,5 @@ export async function getCertification(
     )
     .eq("id", id)
     .maybeSingle();
-  return data ?? null;
+  return data ? { ...data, type: packageTypeEnum.parse(data.type) } : null;
 }

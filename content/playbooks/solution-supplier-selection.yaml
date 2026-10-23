@@ -1,0 +1,60 @@
+slug: solution-supplier-selection
+name: Evaluate and select suppliers
+type: playbook
+version: 0.1.0
+description: Comparable bids, documented risks and a buyer-owned decision.
+trigger: When the user requests evaluate and select suppliers and provides authorized source inputs.
+inputs:
+  source_1:
+    type: string
+    description: Supplier bids and required scope
+  source_2:
+    type: string
+    description: Evaluation weights and procurement policy
+  source_3:
+    type: string
+    description: Delivery requirements and contract extracts
+outputs:
+  deliverable:
+    type: string
+    description: Scope and currencies are comparable; Every score cites a source; Buyer approves award
+      and contractual actions
+steps:
+  - id: scope
+    action: instruction
+    with:
+      prompt: "Define scope and mandatory criteria. Produce: Comparable requirements matrix. Requires
+        completed steps: none. Preserve source evidence, permissions and owner approval. Never infer
+        completion from input validation."
+  - id: compare
+    action: instruction
+    with:
+      prompt: "Normalize bids and exclusions. Produce: Cost, lead time and scope comparison. Requires
+        completed steps: scope. Preserve source evidence, permissions and owner approval. Never
+        infer completion from input validation."
+  - id: risk
+    action: instruction
+    with:
+      prompt: "Review obligations and supplier risks. Produce: Evidence-backed risk and contract exception
+        log. Requires completed steps: compare. Preserve source evidence, permissions and owner
+        approval. Never infer completion from input validation."
+  - id: award
+    action: instruction
+    with:
+      prompt: "Buyer decision. Produce: Decision record with required approval; no automatic award.
+        Requires completed steps: risk. Preserve source evidence, permissions and owner approval.
+        Never infer completion from input validation."
+tags:
+  - Procurement
+  - business-solution
+  - candidate
+license: CC-BY-SA-4.0
+authors:
+  - Super Agent Skill
+x_solution_id: supplier-selection
+x_context_budget: 4
+x_package_dependencies:
+  - lg-supply-chain
+  - freight-rfp-runner
+  - contract-clause-extractor
+  - guardrail-contract-review-risk

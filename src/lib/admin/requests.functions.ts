@@ -1,3 +1,6 @@
+import { packageTypeEnum } from "@/lib/skills/schemas";
+import { toJson } from "@/lib/json";
+import { errorField } from "@/lib/errors";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -15,11 +18,11 @@ export const requestMissingPrimitive = createServerFn({ method: "POST" })
         kind: z.enum(["skill", "playbook", "soul", "guardrail"]),
         industry: z.string().max(120).optional(),
       })
-      .parse(d)
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
     const { data: row, error } = await supabase
       .from("package_requests")
       .insert({
@@ -38,8 +41,8 @@ export const requestMissingPrimitive = createServerFn({ method: "POST" })
 export const listRequests = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    const { supabase: _sbCtx } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx } = context;
+    const supabase = _sbCtx;
     const { data, error } = await supabase
       .from("package_requests")
       .select("*")
@@ -53,8 +56,8 @@ export const processRequest = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx, userId  } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx, userId } = context;
+    const supabase = _sbCtx;
 
     const { data: req, error: rErr } = await supabase
       .from("package_requests")
@@ -74,13 +77,15 @@ export const processRequest = createServerFn({ method: "POST" })
         .update({
           status: "drafting",
           research_summary: research.summary,
-          research_sources: research.sources as any,
+          research_sources: toJson(research.sources),
         })
         .eq("id", data.id);
 
       const groundingText = [
         research.summary,
-        research.best_practices?.length ? `Best practices:\n- ${research.best_practices.join("\n- ")}` : "",
+        research.best_practices?.length
+          ? `Best practices:\n- ${research.best_practices.join("\n- ")}`
+          : "",
         research.sources?.length
           ? `Sources:\n- ${research.sources.map((s) => `${s.title}${s.url ? ` (${s.url})` : ""}`).join("\n- ")}`
           : "",
@@ -88,7 +93,12 @@ export const processRequest = createServerFn({ method: "POST" })
         .filter(Boolean)
         .join("\n\n");
 
-      const draft = await generateDraft(req.brief, req.kind, req.industry ?? undefined, groundingText);
+      const draft = await generateDraft(
+        req.brief,
+        packageTypeEnum.parse(req.kind),
+        req.industry ?? undefined,
+        groundingText,
+      );
 
       const pkg = await insertDraftPackage(supabase, userId, draft, {
         source_kind: "request",
@@ -101,12 +111,12 @@ export const processRequest = createServerFn({ method: "POST" })
         .eq("id", data.id);
 
       return { request_id: data.id, package: pkg, research };
-    } catch (e: any) {
+    } catch (e) {
       await supabase
         .from("package_requests")
-        .update({ status: "rejected", evaluation: { error: e?.message ?? "failed" } as any })
+        .update({ status: "rejected", evaluation: { error: errorField(e, "message") ?? "failed" } })
         .eq("id", data.id);
-      throw new Response(e?.message ?? "Process failed", { status: 500 });
+      throw new Response(errorField(e, "message") ?? "Process failed", { status: 500 });
     }
   });
 
@@ -114,15 +124,18 @@ export const publishRequestPackage = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase: _sbCtx } = context as any;
-    const supabase = _sbCtx as any;
+    const { supabase: _sbCtx } = context;
+    const supabase = _sbCtx;
     const { data: req } = await supabase
       .from("package_requests")
       .select("generated_package_id")
       .eq("id", data.id)
       .single();
     if (!req?.generated_package_id) throw new Response("No draft to publish", { status: 400 });
-    await supabase.from("packages").update({ is_published: true }).eq("id", req.generated_package_id);
+    await supabase
+      .from("packages")
+      .update({ is_published: true })
+      .eq("id", req.generated_package_id);
     await supabase.from("package_requests").update({ status: "published" }).eq("id", data.id);
     return { ok: true };
   });

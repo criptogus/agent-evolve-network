@@ -44,7 +44,9 @@ test("plugin name constraints (§5.5)", () => {
 test("fatal manifest violations are reported", () => {
   assert.ok(validatePluginManifest({ name: "x" }).some((e) => e.includes("$schema")));
   assert.ok(
-    validatePluginManifest({ $schema: PLUGIN_SCHEMA_URL }).some((e) => e.includes("invalid plugin name")),
+    validatePluginManifest({ $schema: PLUGIN_SCHEMA_URL }).some((e) =>
+      e.includes("invalid plugin name"),
+    ),
   );
   assert.ok(
     validatePluginManifest({ $schema: PLUGIN_SCHEMA_URL, name: "x", mcpServers: {} }).some((e) =>
@@ -96,7 +98,11 @@ test("mcp.json violations", () => {
     validateMcpConfig({
       ...base,
       mcpServers: {
-        a: { type: "streamable-http", url: "https://x.dev/mcp", headers: { Authorization: "Bearer t" } },
+        a: {
+          type: "streamable-http",
+          url: "https://x.dev/mcp",
+          headers: { Authorization: "Bearer t" },
+        },
       },
     }).some((e) => e.includes("credentials")),
   );

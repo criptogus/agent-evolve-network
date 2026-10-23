@@ -32,7 +32,7 @@ import {
   type TriggerId,
 } from "@/lib/crm/segments";
 
-const admin = _admin as any;
+const admin = _admin;
 
 const SITE_NAME = "SuperAgent Skill";
 const SENDER_DOMAIN = "notify.superagentskill.com";
@@ -139,7 +139,7 @@ export async function sendCrmEmail(opts: {
     pixelUrl: `${SITE_URL}/api/public/crm/o/${trackingToken}`,
   };
 
-  const element = React.createElement(entry.component, templateData as any);
+  const element = React.createElement(entry.component, templateData);
   const html = await render(element);
   const text = await render(element, { plainText: true });
 
@@ -229,12 +229,14 @@ export type CadenceRunResult = {
 };
 
 /** Hourly cadence pass over every customer. */
-export async function runCadence(opts: {
-  dryRun?: boolean;
-  limit?: number;
-  maxSends?: number;
-  ignoreSendWindow?: boolean;
-} = {}): Promise<CadenceRunResult> {
+export async function runCadence(
+  opts: {
+    dryRun?: boolean;
+    limit?: number;
+    maxSends?: number;
+    ignoreSendWindow?: boolean;
+  } = {},
+): Promise<CadenceRunResult> {
   const dryRun = !!opts.dryRun;
   const maxSends = opts.maxSends ?? 200;
   const rows = await loadCustomerRows(opts.limit ?? 1000, 0);
@@ -268,7 +270,8 @@ export async function runCadence(opts: {
         },
         { onConflict: "user_id" },
       );
-      if (reason) result.details.push({ email: redacted, stage: classifyStage(row), action: reason });
+      if (reason)
+        result.details.push({ email: redacted, stage: classifyStage(row), action: reason });
     };
 
     if (blocked || ranked.length === 0) {

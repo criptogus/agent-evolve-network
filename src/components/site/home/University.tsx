@@ -38,9 +38,9 @@ export function University() {
             A store sells you a skill. A university figures out which skill you need.
           </h2>
           <p className="mt-4 max-w-2xl text-base text-muted-foreground">
-            Installing a capability by name is a guess — and an agent with 40 skills gets worse, not better. The
-            University measures the agent first, points out the error class blocking the result, and prescribes the
-            next step. Free and anonymous.
+            Installing a capability by name is a guess — and an agent with 40 skills gets worse, not
+            better. The University measures the agent first, points out the error class blocking the
+            result, and prescribes the next step. Free and anonymous.
           </p>
         </SectionReveal>
 

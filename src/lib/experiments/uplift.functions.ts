@@ -1,12 +1,10 @@
+import type { Database } from "@/integrations/supabase/database";
+import { recordOf } from "@/lib/json";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { requireAdmin } from "@/lib/admin/middleware";
-import {
-  twoProportionUplift,
-  formatUpliftClaim,
-  type UpliftResult,
-} from "./uplift";
+import { twoProportionUplift, formatUpliftClaim, type UpliftResult } from "./uplift";
 
 // ---------------------------------------------------------------------------
 // Customer-value proof surface:
@@ -51,25 +49,28 @@ export type SkillUplift = {
 export const getSkillUplift = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) =>
     z
-      .object({ slug: z.string().min(1).max(128), days: z.number().int().min(1).max(365).optional() })
+      .object({
+        slug: z.string().min(1).max(128),
+        days: z.number().int().min(1).max(365).optional(),
+      })
       .parse(d),
   )
   .handler(async ({ data }): Promise<SkillUplift> => {
-    const supabase = createClient(
+    const supabase = createClient<Database>(
       process.env.SUPABASE_URL!,
       process.env.SUPABASE_PUBLISHABLE_KEY!,
       { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
     );
     const days = data.days ?? 30;
-    const { data: raw, error } = await supabase.rpc("get_skill_uplift" as any, {
+    const { data: raw, error } = await supabase.rpc("get_skill_uplift", {
       _slug: data.slug,
       _days: days,
-    } as any);
+    });
     if (error) throw new Error(`uplift lookup failed: ${error.message}`);
 
-    const arms = ((raw as any)?.arms ?? {}) as Record<string, Partial<ArmAgg>>;
-    const control: ArmAgg = { ...EMPTY_ARM, ...num(arms.control) };
-    const treatment: ArmAgg = { ...EMPTY_ARM, ...num(arms.treatment) };
+    const arms = recordOf(recordOf(raw).arms);
+    const control: ArmAgg = { ...EMPTY_ARM, ...num(recordOf(arms.control)) };
+    const treatment: ArmAgg = { ...EMPTY_ARM, ...num(recordOf(arms.treatment)) };
 
     const completion = twoProportionUplift(
       { n: control.n, completed: control.completed },
@@ -123,12 +124,12 @@ export const getWorkspaceRoi = createServerFn({ method: "POST" })
     z.object({ days: z.number().int().min(1).max(365).optional() }).parse(d ?? {}),
   )
   .handler(async ({ context, data }) => {
-    const supabase = (context as any).supabase as any;
+    const supabase = context.supabase;
     const days = data.days ?? 30;
     const { data: rows, error } = await supabase.rpc("get_workspace_roi", { _days: days });
     if (error) throw new Response(error.message, { status: 403 });
 
-    const workspaces: WorkspaceRoiRow[] = ((rows ?? []) as any[]).map((r) => ({
+    const workspaces: WorkspaceRoiRow[] = (rows ?? []).map((r) => ({
       workspace_hash: String(r.workspace_hash ?? "unknown"),
       executions: Number(r.executions ?? 0),
       completed: Number(r.completed ?? 0),
@@ -155,7 +156,14 @@ export const getWorkspaceRoi = createServerFn({ method: "POST" })
         acc.guardrail_blocks += w.guardrail_blocks;
         return acc;
       },
-      { executions: 0, completed: 0, interventions: 0, hours_saved: 0, tokens_saved: 0, guardrail_blocks: 0 },
+      {
+        executions: 0,
+        completed: 0,
+        interventions: 0,
+        hours_saved: 0,
+        tokens_saved: 0,
+        guardrail_blocks: 0,
+      },
     );
 
     return {
@@ -210,7 +218,7 @@ export const listExecutionOutcomes = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const db = supabaseAdmin as any;
+    const db = supabaseAdmin;
     const days = data.days ?? 30;
     const limit = data.limit ?? 50;
     const since = new Date(Date.now() - days * 86_400_000).toISOString();
@@ -229,7 +237,7 @@ export const listExecutionOutcomes = createServerFn({ method: "POST" })
     const { data: rows, error } = await q;
     if (error) throw new Response("outcome feed unavailable", { status: 500 });
 
-    const executions: ExecutionOutcomeRow[] = ((rows ?? []) as any[]).map((r) => {
+    const executions: ExecutionOutcomeRow[] = (rows ?? []).map((r) => {
       const lat = r.latency_ms == null ? null : Number(r.latency_ms);
       const baseLat = r.baseline_latency_ms == null ? null : Number(r.baseline_latency_ms);
       const tok =
@@ -301,13 +309,12 @@ export const listExecutionOutcomes = createServerFn({ method: "POST" })
 export const listExperiments = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    const supabase = (context as { supabase: any }).supabase;
+    const supabase = context.supabase;
     const { data, error } = await supabase
-      .from("skill_experiments" as any)
+      .from("skill_experiments")
       .select("package_slug, key, hypothesis, control_share, status, started_at, ended_at")
       .order("started_at", { ascending: false })
       .limit(100);
-    if (error) return { experiments: [] as any[], error: "unavailable" };
-    return { experiments: (data ?? []) as any[], error: null as string | null };
+    if (error) return { experiments: [], error: "unavailable" };
+    return { experiments: data ?? [], error: null as string | null };
   });
-
