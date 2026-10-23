@@ -1,4 +1,4 @@
-import { verifyArtifact } from "./artifacts";
+import { verifyArtifact, bindManifestVersion } from "./artifacts";
 /**
  * Builds an Agent Plugins v1 portable package for a published catalog item.
  * Server-only: reads the live registry and reuses the SKILL.md serializer.
@@ -62,16 +62,12 @@ export async function loadPluginPackage(
     const files = new Map(Object.entries(verifyArtifact(artifact.files, artifact.sha256)));
     const { runPluginConformance } = await import("./conformance");
     const report = runPluginConformance(files);
-    if (
-      !report.conformant ||
-      !report.manifest ||
-      (report.manifest.version ?? "0.1.0") !== ver.version
-    )
+    if (!report.conformant || !report.manifest)
       throw new Error("Stored package failed conformance");
     return {
       slug: pkg.slug,
       pluginName: report.manifest.name,
-      manifest: report.manifest,
+      manifest: bindManifestVersion(report.manifest, ver.version),
       mcp: files.has("mcp.json")
         ? (JSON.parse(files.get("mcp.json")!) as McpConfig)
         : buildMcpConfig(),

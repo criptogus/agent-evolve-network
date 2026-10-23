@@ -48,3 +48,13 @@ export function verifyArtifact(files: unknown, digest: string): Record<string, s
   if (artifactDigest(parsed) !== digest) throw new Error("Bundle integrity check failed");
   return parsed;
 }
+
+/** Bind optional source-manifest metadata to the immutable registry version without rewriting files. */
+export function bindManifestVersion<T extends { version?: string }>(
+  manifest: T,
+  version: string,
+): T & { version: string } {
+  if (manifest.version !== undefined && manifest.version !== version)
+    throw new Error("Archive manifest version does not match its reviewed registry version");
+  return { ...manifest, version };
+}
