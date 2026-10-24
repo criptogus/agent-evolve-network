@@ -202,6 +202,10 @@ function ReviewRow({ item, onAction }: { item: ReviewQueueItem; onAction: () => 
     mutationFn: (input: { status: ReviewStatus; notes: string | null }) =>
       setStatusFn({ data: { slug: item.slug, status: input.status, notes: input.notes } }),
     onSuccess: (res) => {
+      if (res?.ok !== true) {
+        toast.error("Review was not confirmed. Refresh the queue and verify its status.");
+        return;
+      }
       toast.success(`Marked as ${res.status}${res.is_published ? " · live" : ""}`);
       setOpen(null);
       setNotes("");
