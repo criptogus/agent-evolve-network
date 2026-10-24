@@ -2,6 +2,8 @@
 export const BENCHMARK_MODEL = "openai/gpt-5.2";
 export const BENCHMARK_OUTPUT_LIMIT = 4096;
 export const BENCHMARK_USD_LIMIT = 5;
+// Prior client-error attempt has no reported tokens, but its reserve is held until billing reconciliation.
+export const BENCHMARK_PRIOR_HELD_USD = 0.24430525;
 export function generatorCost(input: number, cached: number, output: number) {
   if (![input, cached, output].every((n) => Number.isSafeInteger(n) && n >= 0) || cached > input)
     throw new Error("Missing or invalid usage");

@@ -6,9 +6,9 @@ import {
   getBenchmarkReadiness,
   generateBenchmarkObservation,
 } from "@/lib/match/benchmark.functions";
-import { requireBenchmarkPreview } from "@/lib/match/benchmark-budget";
+import { BENCHMARK_PRIOR_HELD_USD, requireBenchmarkPreview } from "@/lib/match/benchmark-budget";
 const schema = z.object({
-  planHash: z.literal("f498ccf75aa603842123013543aba73a885fd07383068a1fc944aeac0dae7bbf"),
+  planHash: z.literal("62d4d92cb729da63d9adbdf2ea59f839afbe4a5350d0bd656642561842437641"),
   catalog: z
     .array(
       z.object({
@@ -46,7 +46,7 @@ const schema = z.object({
     )
     .length(36),
 });
-const STORAGE = "sas-agent-match-paired-v2-usd5";
+const STORAGE = "sas-agent-match-paired-v3-usd5";
 export const Route = createFileRoute("/admin/match-benchmark")({ component: Benchmark });
 function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);
@@ -86,7 +86,10 @@ function Benchmark() {
             .parse(JSON.parse(previous))
         : null;
       if (checkpoint && checkpoint.planHash !== batch.planHash) throw new Error("Changed plan");
-      let remaining = Math.min(checkpoint?.remainingProviderEquivalentUsd ?? 5, 5 - billedUsd);
+      let remaining = Math.min(
+        checkpoint?.remainingProviderEquivalentUsd ?? 5 - BENCHMARK_PRIOR_HELD_USD,
+        5 - BENCHMARK_PRIOR_HELD_USD - billedUsd,
+      );
       const rows: Array<{ caseId: string; repeat: number; arm: string; result: unknown }> =
         checkpoint?.rows ?? [];
       if (rows.length >= 72) throw new Error("Batch complete; export evidence");
@@ -97,6 +100,7 @@ function Benchmark() {
             status,
             remainingProviderEquivalentUsd: remaining,
             limitUsd: 5,
+            priorHeldUsd: BENCHMARK_PRIOR_HELD_USD,
             billingReconciliationRequired: true,
             reconciledBilledUsd: billedUsd,
             inflight,
@@ -119,7 +123,7 @@ function Benchmark() {
           step.arm === "baseline"
             ? batch.catalog
             : batch.catalog.filter((c) => selection.slugs.includes(c.slug));
-        const attempt = `${step.caseId}:${step.repeat}:${step.arm}`;
+        const attempt = `${batch.planHash.slice(0, 8)}:${step.caseId}:${step.repeat}:${step.arm}`;
         persist("inflight", { attempt, remaining });
         setMessage(`Running ${rows.length + 1}/72: ${attempt}`);
         const result = await generate({
@@ -134,12 +138,18 @@ function Benchmark() {
         });
         rows.push({ ...step, result });
         if (result.status === "unknown" || result.providerEquivalentUsd === null) {
+          remaining -= result.reservation.reserve;
           persist("stopped_unknown_usage", { attempt });
           throw new Error("Stopped: unknown billed usage; no retry");
         }
         remaining -= result.providerEquivalentUsd;
         persist("checkpoint");
-        if (result.finishReason !== "stop" || !result.parsed || !result.clean) {
+        if (
+          result.finishReason !== "stop" ||
+          !result.parsed ||
+          !result.clean ||
+          !/^(?:openai\/)?gpt-5\.2(?:-|$)/.test(result.actualModel)
+        ) {
           persist("stopped_invalid_output");
           throw new Error("Invalid or truncated output; no retry");
         }

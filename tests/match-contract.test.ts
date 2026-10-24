@@ -1,6 +1,12 @@
+import { z } from "zod";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { sanitizeMatch, type AgentMatchResult } from "../src/lib/match/match-contract.ts";
+import {
+  buildMatchPrompt,
+  MatchSchema,
+  sanitizeMatch,
+  type AgentMatchResult,
+} from "../src/lib/match/match-contract.ts";
 const candidates = [
   { slug: "good", name: "Good", type: "skill" as const, description: "Source-grounded analysis" },
   { slug: "weak", name: "Weak", type: "skill" as const, description: "Unrelated" },
@@ -55,4 +61,17 @@ test("MCP pairings reference the sanitized kit and retain the original registry/
   assert.deepEqual(clean.recommended_mcps, [
     { id: "sentry-mcp", score: 8, why: "Read errors", pairs_with: ["good"] },
   ]);
+});
+
+test("Agent Match supplies the JSON contract to gateways without native schema support", () => {
+  const { system } = buildMatchPrompt({
+    brief: "Conferir notas fiscais com evidências",
+    candidates,
+    desired,
+    catalogSize: 3,
+  });
+  assert.match(system, /JSON/);
+  assert.ok(system.includes(JSON.stringify(z.toJSONSchema(MatchSchema))));
+  assert.match(system, /same language/);
+  assert.match(system, /untrusted evidence/);
 });

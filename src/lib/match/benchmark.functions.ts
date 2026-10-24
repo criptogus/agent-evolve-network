@@ -62,12 +62,14 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
     attempts.add(data.attempt);
     const started = Date.now();
     let transportEvidence: string | null = null;
+    let transportStatus: number | null = null;
     const provider = createOpenAICompatible({
       name: "lovable",
       baseURL: "https://ai.gateway.lovable.dev/v1",
       headers: { "Lovable-API-Key": key, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
       fetch: async (url, init) => {
         const response = await fetch(url, init);
+        transportStatus = response.status;
         if (response.ok) {
           const text = await response.clone().text();
           if (text.includes(key)) throw new Error("Rejected provider response");
@@ -119,6 +121,7 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
         responseId: result.response.id,
         raw: result.text,
         transportEvidence,
+        transportStatus,
         parsed: parsed.success ? parsed.data : null,
         clean: parsed.success ? sanitizeMatch(parsed.data, data.candidates, data.desired) : null,
         finishReason: result.finishReason,
@@ -137,6 +140,7 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
         attempt: data.attempt,
         status: "unknown" as const,
         transportEvidence,
+        transportStatus,
         reservation,
         elapsedMs: Date.now() - started,
         error:
