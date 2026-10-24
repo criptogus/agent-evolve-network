@@ -8,7 +8,7 @@ import {
 } from "@/lib/match/benchmark.functions";
 import { BENCHMARK_PRIOR_HELD_USD, requireBenchmarkPreview } from "@/lib/match/benchmark-budget";
 const schema = z.object({
-  planHash: z.literal("f7aace421dad1444728bddd934e95eb30197c8faf410b0d1f8748278c1c27828"),
+  planHash: z.literal("44e6a4723ae7514a39baaa54e7b2fb56694387736a9a0349d2ff11103e6c5eae"),
   catalog: z
     .array(
       z.object({
@@ -46,7 +46,7 @@ const schema = z.object({
     )
     .length(36),
 });
-const STORAGE = "sas-agent-match-paired-v4-usd5";
+const STORAGE = "sas-agent-match-paired-v5-usd5";
 export const Route = createFileRoute("/admin/match-benchmark")({ component: Benchmark });
 function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);
@@ -80,6 +80,7 @@ function Benchmark() {
                   repeat: z.number(),
                   arm: z.string(),
                   result: z.unknown(),
+                  clientElapsedMs: z.number().positive().optional(),
                 }),
               ),
             })
@@ -90,8 +91,13 @@ function Benchmark() {
         checkpoint?.remainingProviderEquivalentUsd ?? 5 - BENCHMARK_PRIOR_HELD_USD,
         5 - BENCHMARK_PRIOR_HELD_USD - billedUsd,
       );
-      const rows: Array<{ caseId: string; repeat: number; arm: string; result: unknown }> =
-        checkpoint?.rows ?? [];
+      const rows: Array<{
+        caseId: string;
+        repeat: number;
+        arm: string;
+        result: unknown;
+        clientElapsedMs?: number;
+      }> = checkpoint?.rows ?? [];
       if (rows.length >= 72) throw new Error("Batch complete; export evidence");
       const persist = (status: string, inflight: unknown = null) => {
         const text = JSON.stringify(
@@ -112,6 +118,11 @@ function Benchmark() {
         localStorage.setItem(STORAGE, text);
         setReport(text);
       };
+      const nextStep = batch.schedule[rows.length];
+      if (nextStep.arm === "jev" && !checked.jevConfigured)
+        throw new Error(
+          "TYPESAFE_API_KEY is required for the next managed-backend Jev observation. No new inference started.",
+        );
       persist("running");
       for (const step of batch.schedule.slice(rows.length)) {
         const item = batch.cases.find((c) => c.id === step.caseId);
@@ -119,24 +130,29 @@ function Benchmark() {
           (s) => s.caseId === step.caseId && s.repeat === step.repeat,
         );
         if (!item || !selection) throw new Error("Missing frozen case/selection");
-        const candidates =
-          step.arm === "baseline"
-            ? batch.catalog
-            : batch.catalog.filter((c) => selection.slugs.includes(c.slug));
+        // Actual qualification executes Jev in the same backend, never a locally
+        // precomputed selection or additive cross-environment latency estimate.
+        const candidates = batch.catalog;
         const attempt = `${batch.planHash.slice(0, 8)}:${step.caseId}:${step.repeat}:${step.arm}`;
         persist("inflight", { attempt, remaining });
         setMessage(`Running ${rows.length + 1}/72: ${attempt}`);
+        const clientStarted = performance.now();
         const result = await generate({
           data: {
             attempt,
             brief: item.brief,
             candidates,
+            arm: step.arm,
             catalogSize: 665,
             desired: batch.desired,
             remaining,
           },
         });
-        rows.push({ ...step, result });
+        rows.push({
+          ...step,
+          result,
+          clientElapsedMs: Math.round(performance.now() - clientStarted),
+        });
         if (result.status === "unknown" || result.providerEquivalentUsd === null) {
           remaining -= result.reservation.reserve;
           persist("stopped_unknown_usage", { attempt });
@@ -215,7 +231,7 @@ function Benchmark() {
             const r = await readiness();
             setMessage(
               r.ready
-                ? "Backend ready: authenticated admin and managed Lovable AI configured. Zero inference calls."
+                ? `Backend ready: authenticated admin and managed Lovable AI configured. TypeSafe configured: ${r.jevConfigured}. Mode: ${r.jevMode}. Zero inference calls.`
                 : "Managed Lovable AI unavailable. Zero inference calls.",
             );
           } catch (e) {

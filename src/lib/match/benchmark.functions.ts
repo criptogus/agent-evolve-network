@@ -4,6 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText, Output } from "ai";
 import { matchGenerationOptions } from "./match-generation.ts";
+import { preselectAgentMatch } from "./jev-agent-match.server.ts";
 import { z } from "zod";
 import { MatchSchema, buildMatchPrompt, sanitizeMatch } from "./match-contract";
 import {
@@ -22,7 +23,8 @@ const input = z.object({
   attempt: z.string().regex(/^[a-z0-9:-]{1,100}$/),
   brief: z.string().min(20).max(4000),
   catalogSize: z.literal(665),
-  candidates: z.array(candidate).min(1).max(665),
+  candidates: z.array(candidate).length(665),
+  arm: z.enum(["baseline", "jev"]),
   desired: z.object({
     skills: z.literal(5),
     playbooks: z.literal(2),
@@ -48,19 +50,86 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
     if (role.error || !role.data) throw new Response("Forbidden", { status: 403 });
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Managed Lovable AI is unavailable; no request started");
+    if (data.arm === "jev" && !process.env.TYPESAFE_API_KEY)
+      throw new Error("TypeSafe is not configured; no inference started");
     if (attempts.has(data.attempt) || attempts.size >= 72)
       throw new Error("Attempt already started or finite batch exhausted");
     if (new Set(data.candidates.map((c) => c.slug)).size !== data.candidates.length)
       throw new Error("Duplicate catalog slugs");
-    const { system, prompt } = buildMatchPrompt(data);
+    const fullPrompt = buildMatchPrompt(data);
     const reservation = reserveGeneration(
-      system,
-      prompt,
+      fullPrompt.system,
+      fullPrompt.prompt,
       JSON.stringify(z.toJSONSchema(MatchSchema)),
       data.remaining,
     );
     attempts.add(data.attempt);
     const started = Date.now();
+    const selectionBatches: Array<{
+      offset: number;
+      model: string;
+      probabilities: number[];
+      inputTokens: number;
+      outputTokens: number;
+    }> = [];
+    const selection = await preselectAgentMatch(
+      {
+        brief: data.brief,
+        catalog: data.candidates,
+        desired: data.desired,
+        consent: data.arm === "jev",
+      },
+      {
+        mode: data.arm === "jev" ? "filter" : "off",
+        fetch: async (url, init) => {
+          const response = await fetch(url, init);
+          if (response.ok) {
+            const sent = z
+              .object({
+                state: z.object({ candidates: z.array(z.object({ slug: z.string() })).min(1) }),
+              })
+              .parse(JSON.parse(String(init?.body)));
+            const parsed = z
+              .object({
+                model: z.literal("jev-1.14.0"),
+                answers: z.record(
+                  z.string(),
+                  z.object({ type: z.literal("noul"), noul: z.number().min(0).max(1) }),
+                ),
+                usage: z.object({
+                  input_tokens: z.number().int().nonnegative(),
+                  output_tokens: z.number().int().nonnegative(),
+                }),
+              })
+              .safeParse(await response.clone().json());
+            if (parsed.success)
+              selectionBatches.push({
+                offset: data.candidates.findIndex((c) => c.slug === sent.state.candidates[0].slug),
+                model: parsed.data.model,
+                probabilities: sent.state.candidates.map(
+                  (_, i) => parsed.data.answers[`c${i}`]?.noul ?? -1,
+                ),
+                inputTokens: parsed.data.usage.input_tokens,
+                outputTokens: parsed.data.usage.output_tokens,
+              });
+          }
+          return response;
+        },
+      },
+    );
+    if (!selection.trace.usage_complete)
+      return {
+        attempt: data.attempt,
+        status: "unknown" as const,
+        reservation,
+        elapsedMs: Date.now() - started,
+        selection: selection.trace,
+        selectionBatches,
+        generatorStarted: false,
+        error: "TypeSafe usage incomplete; generator not started. Stop without automatic retry.",
+      };
+    const { system, prompt } = buildMatchPrompt({ ...data, candidates: selection.candidates });
+    const generatorStarted = Date.now();
     let transportEvidence: string | null = null;
     let transportStatus: number | null = null;
     const provider = createOpenAICompatible({
@@ -130,7 +199,9 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
         transportEvidence,
         transportStatus,
         parsed: parsed.success ? parsed.data : null,
-        clean: parsed.success ? sanitizeMatch(parsed.data, data.candidates, data.desired) : null,
+        clean: parsed.success
+          ? sanitizeMatch(parsed.data, selection.candidates, data.desired)
+          : null,
         finishReason: result.finishReason,
         usage: {
           input: inputTokens ?? null,
@@ -140,6 +211,11 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
         providerEquivalentUsd: cost,
         reservation,
         elapsedMs: Date.now() - started,
+        generatorElapsedMs: Date.now() - generatorStarted,
+        selection: selection.trace,
+        selectionBatches,
+        forwardedSlugs: selection.candidates.map((c) => c.slug),
+        generatorStarted: true,
       };
     } catch {
       // Error bodies can contain headers or credentials. Unknown usage remains reserved.
@@ -150,6 +226,11 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
         transportStatus,
         reservation,
         elapsedMs: Date.now() - started,
+        generatorElapsedMs: Date.now() - generatorStarted,
+        selection: selection.trace,
+        selectionBatches,
+        forwardedSlugs: selection.candidates.map((c) => c.slug),
+        generatorStarted: true,
         error:
           "Generation failed; usage unknown. Stop and reconcile billing before any further attempt.",
       };
