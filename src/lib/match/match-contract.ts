@@ -199,13 +199,14 @@ Return only one JSON object matching the provider-supplied JSON Schema, without 
 First classify recommended_kit.work_domain from the work explicitly requested in the brief. Use runtime_work for business, document and operational jobs performed by an agent. Use software_work only when the brief explicitly requests developing, training, testing or fixing software/code or machine-learning models. For runtime_work the decoder disallows packages whose documented subject is verifying code changes, declaring a software fix, software/model deployment, or preparing examples before model training. Never reclassify a business job as software_work just to include such a package.
 Every package named in coverage, rationale or MCP pairings must actually appear in the recommended kit in its documented type.`;
 
-  const prompt = `CATALOG (${input.candidates.length} candidate packages from ${input.catalogSize} available):
+  const prompt = `EXTERNAL MCP REGISTRY (${MCP_REGISTRY.length} servers):
+${compactMcpCatalogForLLM()}
+
+CATALOG:
 ${compact}
 
+CATALOG COUNTS: ${input.candidates.length} candidate packages from ${input.catalogSize} available.
 ${input.candidates.length < input.catalogSize ? "This is a filtered shortlist. Describe gaps as not covered by supplied candidates, never as proof that the full marketplace lacks a capability." : ""}
-
-EXTERNAL MCP REGISTRY (${MCP_REGISTRY.length} servers):
-${compactMcpCatalogForLLM()}
 
 AGENT BRIEF:
 ${input.brief}

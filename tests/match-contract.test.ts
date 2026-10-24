@@ -469,3 +469,15 @@ test("generation omits merely nice-to-have scores without turning preferences in
   assert.match(prompt.prompt, /playbook: disabled \(empty array required\)/);
   assert.match(prompt.prompt, /caps, never a target/);
 });
+
+test("shared registry and candidate prefix are cacheable before variable counters", () => {
+  const args = { brief: "Perform source-grounded analysis", desired, catalogSize: 3 };
+  const single = buildMatchPrompt({ ...args, candidates: candidates.slice(0, 1) }).prompt;
+  const multiple = buildMatchPrompt({ ...args, candidates }).prompt;
+  const prefix = single.slice(0, single.indexOf("CATALOG COUNTS:"));
+  assert.ok(single.startsWith("EXTERNAL MCP REGISTRY"));
+  assert.ok(multiple.startsWith(prefix.trimEnd()));
+  assert.ok(
+    single.indexOf("CATALOG COUNTS:") > single.indexOf('description="Source-grounded analysis"'),
+  );
+});

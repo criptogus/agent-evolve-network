@@ -220,7 +220,7 @@ export const MCP_REGISTRY: McpRegistryEntry[] = [
     vendor: "stripe",
     category: "data",
     description:
-      "Look up customers, subscriptions, invoices and revenue. Refunds gated by guardrails.",
+      "Stripe payment service provider (PSP) connector: look up customers, subscriptions, invoices and revenue. Refunds gated by guardrails.",
     tags: ["billing", "payments", "revenue", "subscriptions", "stripe"],
     transport: "stdio",
     command: "npx",
