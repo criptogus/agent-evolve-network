@@ -2,7 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { z } from "zod";
-import { generateBenchmarkObservation } from "@/lib/match/benchmark.functions";
+import {
+  getBenchmarkReadiness,
+  generateBenchmarkObservation,
+} from "@/lib/match/benchmark.functions";
 import { requireBenchmarkPreview } from "@/lib/match/benchmark-budget";
 const schema = z.object({
   planHash: z.literal("f498ccf75aa603842123013543aba73a885fd07383068a1fc944aeac0dae7bbf"),
@@ -47,6 +50,7 @@ const STORAGE = "sas-agent-match-paired-v2-usd5";
 export const Route = createFileRoute("/admin/match-benchmark")({ component: Benchmark });
 function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);
+  const readiness = useServerFn(getBenchmarkReadiness);
   const [batch, setBatch] = useState<z.infer<typeof schema> | null>(null);
   const [message, setMessage] = useState(
     "Import the frozen synthetic batch. This preview-only runner never publishes.",
@@ -59,6 +63,9 @@ function Benchmark() {
     setBusy(true);
     try {
       requireBenchmarkPreview(window.location.href);
+      const checked = await readiness();
+      if (!checked.ready)
+        throw new Error("Managed Lovable AI is not configured; zero inference calls started");
       const previous = localStorage.getItem(STORAGE);
       const checkpoint = previous
         ? z
@@ -189,6 +196,26 @@ function Benchmark() {
       </label>
       <button className="border rounded p-2" disabled={!batch || busy} onClick={run}>
         Run next observation
+      </button>
+      <button
+        className="border rounded p-2"
+        disabled={busy}
+        onClick={async () => {
+          try {
+            const r = await readiness();
+            setMessage(
+              r.ready
+                ? "Backend ready: authenticated admin and managed Lovable AI configured. Zero inference calls."
+                : "Managed Lovable AI unavailable. Zero inference calls.",
+            );
+          } catch (e) {
+            setMessage(
+              e instanceof Error ? e.message : "Backend preflight failed; zero inference calls.",
+            );
+          }
+        }}
+      >
+        Check backend readiness (no inference)
       </button>
       <p role="status">{message}</p>
       <label className="block">

@@ -21,6 +21,11 @@ export function reserveGeneration(
   return { inputUpperBound, reserve };
 }
 export function requireBenchmarkPreview(url: string) {
-  if (new URL(url).hostname !== "preview--agent-evolve-network.lovable.app")
+  if (
+    ![
+      "preview--agent-evolve-network.lovable.app",
+      "id-preview--b00a8021-9d8d-4f49-a581-628727b71f68.lovable.app",
+    ].includes(new URL(url).hostname)
+  )
     throw new Error("Benchmark is restricted to the managed preview");
 }

@@ -144,3 +144,19 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
       };
     }
   });
+
+// Read-only preflight: confirms the normal authenticated backend path without
+// spending inference budget or reserving an attempt.
+export const getBenchmarkReadiness = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    requireBenchmarkPreview(getRequest().url);
+    const role = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (role.error || !role.data) throw new Response("Forbidden", { status: 403 });
+    return { ready: !!process.env.LOVABLE_API_KEY, provider: "lovable-ai", model: BENCHMARK_MODEL };
+  });

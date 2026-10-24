@@ -21,6 +21,9 @@ test("benchmark is unavailable on production or spoofed suffix hostnames", () =>
   requireBenchmarkPreview(
     "https://preview--agent-evolve-network.lovable.app/admin/match-benchmark",
   );
+  requireBenchmarkPreview(
+    "https://id-preview--b00a8021-9d8d-4f49-a581-628727b71f68.lovable.app/admin/match-benchmark",
+  );
   for (const url of [
     "https://superagentskill.com/admin/match-benchmark",
     "https://preview--agent-evolve-network.lovable.app.evil.example/",
