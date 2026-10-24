@@ -132,3 +132,50 @@ test("missing path param raises MISSING_PARAM", async () => {
     (e) => e.code === "MISSING_PARAM",
   );
 });
+
+test("patched Zod preserves MCP schemas and rejects invalid arguments before execution", async () => {
+  const { createMcpServer, defineTool } = await import("mcp-tanstack-start");
+  const { z } = await import("zod");
+  let executions = 0;
+  const server = createMcpServer({
+    name: "schema-compatibility",
+    version: "1.0.0",
+    tools: [
+      defineTool({
+        name: "echo",
+        description: "Offline schema compatibility regression",
+        parameters: z.object({ text: z.string() }),
+        execute: async ({ text }) => {
+          executions++;
+          return text;
+        },
+      }),
+    ],
+  });
+  let id = 0;
+  const rpc = async (method: string, params?: Record<string, unknown>) => {
+    const response = await server.handleRequest(
+      new Request("http://localhost/mcp", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json, text/event-stream",
+        },
+        body: JSON.stringify({ jsonrpc: "2.0", id: ++id, method, params }),
+      }),
+    );
+    assert.equal(response.status, 200);
+    return response.text();
+  };
+  assert.match(await rpc("tools/list"), /"required":\["text"\]/);
+  assert.match(
+    await rpc("tools/call", { name: "echo", arguments: { text: "hello" } }),
+    /"text":"hello"/,
+  );
+  assert.equal(executions, 1);
+  assert.match(
+    await rpc("tools/call", { name: "echo", arguments: { text: 42 } }),
+    /"isError":true/,
+  );
+  assert.equal(executions, 1);
+});

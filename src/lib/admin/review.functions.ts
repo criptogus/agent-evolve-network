@@ -44,7 +44,13 @@ export const listReviewQueue = createServerFn({ method: "GET" })
       typeof t === "string" && ["soul", "skill", "playbook", "guardrail", "all"].includes(t)
         ? (t as string)
         : "soul";
-    return { type };
+    const status = (data as { status?: unknown })?.status ?? "all";
+    if (
+      typeof status !== "string" ||
+      !["all", "draft", "pending", "approved", "paused", "rejected"].includes(status)
+    )
+      throw new Error("invalid review status filter");
+    return { type, status: status as ReviewStatus | "all" };
   })
   .handler(async ({ context, data }): Promise<{ items: ReviewQueueItem[] }> => {
     await assertAdmin(context.supabase, context.userId);
@@ -57,6 +63,8 @@ export const listReviewQueue = createServerFn({ method: "GET" })
       .order("updated_at", { ascending: false })
       .limit(500);
     if (data.type !== "all") q = q.eq("type", packageTypeEnum.parse(data.type));
+    // Filter in PostgreSQL, before the row limit; approved catalogs must not hide drafts.
+    if (data.status !== "all") q = q.eq("review_status", data.status);
     const { data: rows, error } = await q;
     if (error) throw new Response(error.message, { status: 500 });
     return { items: (rows ?? []) as ReviewQueueItem[] };

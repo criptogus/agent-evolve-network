@@ -42,3 +42,7 @@ artifacts/validation/
 
 # Private raw adversarial traces and judge evidence
 artifacts/adversarial-business/
+
+# Local Python caches are not skill source artifacts.
+__pycache__/
+*.pyc

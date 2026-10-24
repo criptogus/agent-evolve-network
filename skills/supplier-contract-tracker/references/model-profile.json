@@ -1,0 +1,49 @@
+{
+  "model": "mlx-community/Qwen3.5-9B-4bit@8b2b98c00a6b4d291155e4890773ca8f769aee53",
+  "revision": "8b2b98c00a6b4d291155e4890773ca8f769aee53",
+  "prompt_protocol": "redact-route-generate-v1",
+  "mlx_vlm": "0.6.13",
+  "mlx": "0.32.0",
+  "python": "3.12.15",
+  "architecture": "arm64",
+  "max_tokens": 768,
+  "temperature": 0,
+  "seed": 0,
+  "weights_sha256": {
+    "model-00001-of-00002.safetensors": "a68b87558c6ef43f74c2bd63ce7e9092ceddc3101f3def0030774bae5f42aadd",
+    "model-00002-of-00002.safetensors": "b0a770bf8469c7f3f18756a0e0283f1c1174344a83e059a4e483f6af4907352d"
+  },
+  "scope": "Text-only local runner qualification only. Bare prompts, other models/protocols and live tool execution are unqualified.",
+  "model_files_sha256": {
+    "tokenizer_config.json": "e98f1901ac6f0adff67b1d540bfa0c36ac1a0cf59eb72ed78146ef89aafa1182",
+    "config.json": "a96942cb6a8a1d3f1d17514d81a1925d04362a6a3233b389d13012211baaa9f8",
+    "tokenizer.json": "87a7830d63fcf43bf241c3c5242e96e62dd3fdc29224ca26fed8ea333db72de4",
+    "processor_config.json": "14932921ca485d458a04dafd8069fbb0a4505622a48208d19ed247115801385b",
+    "chat_template.jinja": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715",
+    "vocab.json": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003",
+    "model.safetensors.index.json": "dd023913fb87cfdae27fb11dcf695117c925833796ccac3c64117d6652d8ff1e",
+    "video_preprocessor_config.json": "7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13",
+    "preprocessor_config.json": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516"
+  },
+  "routing": {
+    "contract": "one categorical token from eight labels",
+    "max_tokens": 1
+  },
+  "input_boundary": {
+    "business_evidence": "Structured context.input using this skill contract; host validation is recomputed, not trusted from client claims.",
+    "ancillary_notes": "Inline source_note annotations are silently quarantined and cannot supply required business facts; counts and hashes remain in provenance.",
+    "privacy": "Supported labeled credential/personal fields are removed before inference; this is not a universal PII detector or a bare-model certification.",
+    "refusal_data_minimization": "Full sanitized request is classified by the local model. Final refusal generation receives category policy only, without unnecessary user records or proof markers; final outputs are raw model generation. Analytical/sanitization/clinical modes retain sanitized relevant records.",
+    "host_facts": "The host records actual packaged validator/contract reads and distinguishes helper actions from supported local runtime calculations. BRL minor-unit normalization, explicit calendar notices, pack quantities, freshness and production loss components are deterministic source-derived facts, not external operations. Handoff inventory preserves supplied purpose, owner and hours separately from consent, availability, sending and transfer verification; this offline host performs none of those operational checks. The host also records same-currency bid differences relative to the first bid, exact pack quantity/price equations, unverified supplier-evidence inventory and frame-sample rank/count facts. These are source-derived calculations/inventories, not model-generated answers or external verification. Same-currency bid relative changes use the named baseline with four decimal places for percentage presentation; zero baselines leave the relative change undefined. Handoff process receipts separate whether a check ran from its unassessed result.",
+    "routing_context": "Intent routing reads the sanitized actual request. Host-validated structured business records are excluded from routing and retained for legitimate domain generation; other sanitized contextual history remains available. Records do not confer action authority. Routing context hashes and exclusion flags are retained."
+  },
+  "package_slug": "supplier-contract-tracker",
+  "package_version": "0.1.4",
+  "files_sha256": {
+    "scripts/check_input.py": "b7043b2eb7b7a407ec68d12253d6f9b75b72d254e5eff80d66879c5905a94260",
+    "references/contract.json": "daf8d800300e77c7994ee3a24363fd168028eea0625caff639589ea0eaf3b277",
+    "scripts/local_runtime.py": "9fda01b2205de3b0e0b1888ab9b2b83e4b318898fa4ed8e37aa22f9f5fa9ba31",
+    "scripts/run_request.py": "a5bd9fb046af144f3eaae011f45ba709f9b4f0d41a7b1d3ceffc42138ae9cb96",
+    "references/system-prompt.txt": "dcd9cd51b8b6b7e1b91169c35487e545b7fd69bb14affdaf41146bd679ccfae2"
+  }
+}

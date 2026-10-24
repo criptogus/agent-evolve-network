@@ -4,7 +4,14 @@ import { existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 const raw = process.argv.slice(2);
 const resume = raw.includes("--resume");
-const args = raw.filter((a) => a !== "--resume"),
+const protocolIndex = raw.indexOf("--prompt-protocol");
+const protocol = protocolIndex < 0 ? "system-first-v1" : raw[protocolIndex + 1];
+if (!["system-first-v1", "redact-route-generate-v1"].includes(protocol))
+  throw new Error("Unsupported prompt protocol");
+const args = raw.filter(
+    (a, i) =>
+      a !== "--resume" && (protocolIndex < 0 || (i !== protocolIndex && i !== protocolIndex + 1)),
+  ),
   required = ["--workdir", "--python", "--model-path", "--model-id", "--jev-helper"];
 if (
   args.length !== required.length * 2 ||
@@ -44,6 +51,7 @@ if (resume) {
   const rows = readFileSync(join(dir, "outputs.jsonl"), "utf8").trim().split("\n");
   if (
     plan.model !== options["--model-id"] ||
+    (plan.prompt_protocol ?? "system-first-v1") !== protocol ||
     rows.length !== plan.subjects.reduce((n, s) => n + s.cases.length, 0) ||
     existsSync(join(dir, "report.json"))
   )
@@ -56,6 +64,8 @@ if (resume) {
     ...nodeArgs,
     "prepare",
     options["--model-id"],
+    "--prompt-protocol",
+    protocol,
     "--workdir",
     dir,
   ]);

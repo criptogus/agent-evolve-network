@@ -57,11 +57,12 @@ export const Route = createFileRoute("/admin/review")({
 
 function ReviewPage() {
   const [type, setType] = useState<TypeFilter>("soul");
+  const [status, setStatus] = useState<ReviewStatus | "all">("all");
   const fetchFn = useServerFn(listReviewQueue);
   const qc = useQueryClient();
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["review-queue", type],
-    queryFn: () => fetchFn({ data: { type } }),
+    queryKey: ["review-queue", type, status],
+    queryFn: () => fetchFn({ data: { type, status } }),
   });
 
   const isForbidden = isError && errorField(error)?.includes("Forbidden");
@@ -107,6 +108,21 @@ function ReviewPage() {
                 ))}
               </TabsList>
             </Tabs>
+            <label className="mt-4 flex items-center gap-3 text-sm">
+              Review status
+              <select
+                className="rounded-md border border-input bg-background px-3 py-2"
+                value={status}
+                onChange={(event) => setStatus(event.target.value as ReviewStatus | "all")}
+              >
+                <option value="all">All statuses</option>
+                {STATUS_GROUPS.map((group) => (
+                  <option key={group.key} value={group.key}>
+                    {group.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
         </div>
       </section>

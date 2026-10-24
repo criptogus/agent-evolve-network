@@ -1,6 +1,6 @@
 {
   "name": "tanstack_start_ts",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -48,7 +48,8 @@
     "build:business-skills": "node --experimental-strip-types scripts/build-business-skills.mjs",
     "check:business-skills": "node --experimental-strip-types scripts/build-business-skills.mjs --check && node scripts/check-business-skills.mjs",
     "eval:business:local": "node --experimental-strip-types scripts/run-business-adversarial.mjs",
-    "eval:business:sql": "node scripts/record-business-adversarial.mjs"
+    "eval:business:sql": "node scripts/record-business-adversarial.mjs",
+    "publish:business:sql": "node --experimental-strip-types scripts/prepare-business-publication.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",
@@ -119,7 +120,7 @@
     "tw-animate-css": "^1.3.4",
     "vaul": "^1.1.2",
     "vite-tsconfig-paths": "^6.0.2",
-    "zod": "^3.24.2"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
@@ -136,7 +137,7 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
     "prettier": "^3.7.3",
-    "puppeteer": "^25.0.2",
+    "puppeteer": "^25.16.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^7.3.1",
@@ -151,6 +152,9 @@
     "@lovable.dev/vite-tanstack-config": {
       "nitro": "$nitro"
     },
-    "sharp": "0.35.5"
+    "sharp": "0.35.5",
+    "zod": "$zod",
+    "undici@6": "6.29.1",
+    "undici@7": "7.30.1"
   }
 }
