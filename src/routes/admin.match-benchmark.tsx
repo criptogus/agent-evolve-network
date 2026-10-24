@@ -14,7 +14,7 @@ import {
   requireBenchmarkPreview,
 } from "@/lib/match/benchmark-budget";
 const schema = z.object({
-  planHash: z.literal("93374756c413f0b2a12ae2284df8b915e58ca7ead90de7407b8bddd2d4c55410"),
+  planHash: z.literal("e3ebfd54fe6e4de958ed2f27cb95f1051ccc8e76b241b0a18791419a53ec2fcd"),
   catalog: z
     .array(
       z.object({
@@ -52,7 +52,7 @@ const schema = z.object({
     )
     .length(36),
 });
-const STORAGE = "sas-agent-match-paired-v6-usd5";
+const STORAGE = "sas-agent-match-paired-v7-usd5";
 export const Route = createFileRoute("/admin/match-benchmark")({ component: Benchmark });
 function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);
@@ -250,10 +250,8 @@ function Benchmark() {
                 ? `Backend ready: authenticated admin and managed Lovable AI configured. TypeSafe configured: ${r.jevConfigured}. Mode: ${r.jevMode}. Zero inference calls.`
                 : "Managed Lovable AI unavailable. Zero inference calls.",
             );
-          } catch (e) {
-            setMessage(
-              e instanceof Error ? e.message : "Backend preflight failed; zero inference calls.",
-            );
+          } catch {
+            setMessage("Backend preflight failed; zero inference calls.");
           }
         }}
       >
@@ -271,51 +269,28 @@ function Benchmark() {
           let phase = "opening";
           try {
             const stream = await probe();
+            const firstResponseMs = Math.round(performance.now() - started);
             phase = "reading";
-            console.info(
-              "[DEBUG-sas-match-transport]",
-              JSON.stringify({
-                phase,
-                elapsedMs: Math.round(performance.now() - started),
-                reader: !!stream && typeof stream.getReader === "function",
-              }),
-            );
-            const result = await readMatchResult(stream, (event) => {
-              phase = event.type;
-              console.info(
-                "[DEBUG-sas-match-transport]",
-                JSON.stringify({ phase, elapsedMs: Math.round(performance.now() - started) }),
-              );
-            });
-            phase = "validating";
+            const result = await readMatchResult(stream);
             const details = {
-              phase,
+              firstResponseMs,
               clientElapsedMs: Math.round(performance.now() - started),
               serverElapsedMs: result.elapsedMs,
               payloadBytes: result.payload.length,
             };
-            console.info("[DEBUG-sas-match-transport]", JSON.stringify(details));
-            if (result.payload.length !== 147456 || result.elapsedMs < 25000) {
+            if (
+              result.payload.length !== 147456 ||
+              result.elapsedMs < 25000 ||
+              details.clientElapsedMs < 25000
+            ) {
               setMessage(
                 `Transport delivered but validation failed: ${JSON.stringify(details)}; zero inference.`,
               );
               return;
             }
             setMessage(`Transport probe passed: ${JSON.stringify(details)}; zero inference.`);
-          } catch (e) {
-            const safe =
-              e instanceof Error && /^Agent Match (transport|failed|deadline)/.test(e.message)
-                ? e.message
-                : "Remote transport error";
-            console.info(
-              "[DEBUG-sas-match-transport]",
-              JSON.stringify({
-                phase,
-                elapsedMs: Math.round(performance.now() - started),
-                error: safe,
-              }),
-            );
-            setMessage(`Transport probe failed during ${phase}: ${safe}; zero inference.`);
+          } catch {
+            setMessage(`Transport probe failed during ${phase}; no inference started.`);
           } finally {
             setBusy(false);
           }
@@ -340,8 +315,10 @@ function Benchmark() {
           const a = document.createElement("a");
           a.href = url;
           a.download = "agent-match-observations.json";
+          document.body.appendChild(a);
           a.click();
-          URL.revokeObjectURL(url);
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
         }}
       >
         Download evidence

@@ -45,17 +45,13 @@ export function streamMatchResult<T>(
   });
 }
 
-export async function readMatchResult<T>(
-  stream: ReadableStream<MatchStreamEvent<T>>,
-  onEvent?: (event: MatchStreamEvent<T>) => void,
-): Promise<T> {
+export async function readMatchResult<T>(stream: ReadableStream<MatchStreamEvent<T>>): Promise<T> {
   const reader = stream.getReader();
   try {
     while (true) {
       const item = await reader.read();
       if (item.done)
         throw new Error("Agent Match transport ended without a result; reconcile usage.");
-      onEvent?.(item.value);
       if (item.value.type === "error") throw new Error(item.value.message);
       if (item.value.type === "result") return item.value.value;
     }

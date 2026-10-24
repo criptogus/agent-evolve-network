@@ -117,3 +117,11 @@ node --experimental-strip-types scripts/evaluate-agent-match-comparison.ts \
 ```
 
 Esse adaptador preserva o decisor original e exige o hash do plano, fingerprints atuais das fontes, slugs obrigatórios, tempo completo, modelo/uso de seleção medidos no backend e revisões primárias. O custo usa o limite inferior do baseline e o superior do braço Jev para rejeitar economia que dependa do arredondamento da UI. Uso/cobrança ausentes permanecem nulos no relatório; coortes vazias, inflight, parciais ou sem revisões saem com código 4 e `approved:false`. A execução real contra o journal interrompido v5 foi rejeitada. Nenhuma permissão de publicação foi inferida desses testes.
+
+### Regressão do serializer e prova no preview
+
+O primeiro probe encontrou uma falha adicional de transporte, sem inferência: os logs nativos do preview registraram `ctx.parseStreamSource is not a function`. O lock combinava Seroval 1.6.8 e seroval-plugins 1.7.1. A reprodução com os plugins reais do framework foi adicionada a `tests/match-stream.test.ts` e falhou com a mesma exceção. Os dois pacotes foram fixados explicitamente em 1.7.2, a instalação congelada `npm ci` foi refeita e a mesma regressão passou. Nenhum teste foi removido nem critério abrandado.
+
+O probe repetido na revisão `276dc7c3` passou: primeiro transporte em **670 ms**, resultado completo após **25.626 ms** no cliente, **25.000 ms** no servidor e **147.456 bytes**. Foram observados heartbeats em 670, 5.615, 10.614, 15.618 e 20.614 ms; o resultado chegou em 25.624 ms. Nenhum modelo foi chamado. O relatório está em `run-live-v6/native-transport-probe.json`. A instrumentação temporária foi removida após localizar e validar as falhas.
+
+O plano v7 (`e3ebfd54fe6e4de958ed2f27cb95f1051ccc8e76b241b0a18791419a53ec2fcd`) inclui também package.json, além do lock e dos 15 arquivos anteriores. Mantém exatamente os inputs, expectativas, limiares e critérios dos planos anteriores. O orçamento continua o mesmo teto inicial de US$5 e desconta os custos/reservas anteriores. A prova de transporte não aprova a comparação de qualidade/custo nem altera a exigência de completar 72 observações reais e revisá-las por hash.

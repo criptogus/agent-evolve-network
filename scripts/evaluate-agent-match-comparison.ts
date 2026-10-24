@@ -113,7 +113,7 @@ const { planHash: declaredHash, ...planPayload } = rawPlan;
 if (evidenceHash(planPayload) !== declaredHash) throw new Error("Invalid frozen plan hash");
 for (const [path, hash] of Object.entries(plan.sources)) {
   if (
-    !/^(src\/[\w./-]+\.(?:ts|tsx)|package-lock\.json)$/.test(path) ||
+    !/^(src\/[\w./-]+\.(?:ts|tsx)|package(?:-lock)?\.json)$/.test(path) ||
     path.split("/").includes("..")
   )
     throw new Error("Invalid source path");

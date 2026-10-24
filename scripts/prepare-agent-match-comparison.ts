@@ -90,6 +90,7 @@ const sourceFiles = [
   "src/lib/match/jev-selection.ts",
   "src/lib/match/jev-agent-match.server.ts",
   "src/lib/match/paired-evaluation.ts",
+  "package.json",
   "package-lock.json",
 ];
 const sources = Object.fromEntries(
