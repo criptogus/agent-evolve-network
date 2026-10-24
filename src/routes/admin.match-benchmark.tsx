@@ -6,6 +6,7 @@ import { z } from "zod";
 import {
   getBenchmarkReadiness,
   probeBenchmarkTransport,
+  probeBenchmarkJev,
   generateBenchmarkObservation,
 } from "@/lib/match/benchmark.functions";
 import {
@@ -58,6 +59,7 @@ function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);
   const readiness = useServerFn(getBenchmarkReadiness);
   const probe = useServerFn(probeBenchmarkTransport);
+  const probeJev = useServerFn(probeBenchmarkJev);
   const [batch, setBatch] = useState<z.infer<typeof schema> | null>(null);
   const [message, setMessage] = useState(
     "Import the frozen synthetic batch. This preview-only runner never publishes.",
@@ -297,6 +299,23 @@ function Benchmark() {
         }}
       >
         Test streaming transport (no inference)
+      </button>
+      <button
+        className="border rounded p-2"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          try {
+            const result = await probeJev();
+            setMessage(`Finite TypeSafe probe: ${JSON.stringify(result)}. No Lovable generation.`);
+          } catch {
+            setMessage("TypeSafe diagnostic failed; no automatic retry.");
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        Test TypeSafe transport (one synthetic request)
       </button>
       <p role="status">{message}</p>
       <label className="block">

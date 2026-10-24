@@ -252,3 +252,13 @@ test("missing type coverage restores every alternative without discarding ambigu
   );
   assert.equal(result.candidates.filter((c) => c.type === "guardrail").length, 1);
 });
+
+test("Jev failure diagnostics retain only stage and HTTP status, never response secrets", async () => {
+  const result = await preselectAgentMatch(input, {
+    ...options,
+    fetch: transport({ error: options.apiKey }, 401),
+  });
+  assert.deepEqual(result.trace.failures, [{ stage: "http_response", http_status: 401 }]);
+  assert.equal(result.trace.usage_complete, false);
+  assert.ok(!JSON.stringify(result.trace).includes(options.apiKey));
+});

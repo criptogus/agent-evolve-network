@@ -295,3 +295,34 @@ export const probeBenchmarkTransport = createServerFn({ method: "GET" })
       { timeoutMs: 35000 },
     );
   });
+
+// Finite provider diagnosis: one public synthetic candidate, no generator or retry.
+export const probeBenchmarkJev = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    requireBenchmarkPreview(getRequest().url);
+    const role = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (role.error || !role.data) throw new Response("Forbidden", { status: 403 });
+    const result = await preselectAgentMatch(
+      {
+        brief: "Verify citations against source evidence",
+        catalog: [
+          {
+            slug: "citation-checker",
+            name: "Citation Checker",
+            type: "skill",
+            description: "Verifies that quoted facts truly appear in the cited source.",
+          },
+        ],
+        desired: { skills: 1, playbooks: 0, souls: 0, guardrails: 0 },
+        consent: true,
+      },
+      { mode: "shadow" },
+    );
+    return { trace: result.trace, generatorStarted: false };
+  });

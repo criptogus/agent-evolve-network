@@ -37,6 +37,7 @@ export type MatchSelectionTrace = {
   output_tokens: number;
   usage_complete: boolean;
   elapsed_ms: number;
+  failures?: Array<{ stage: string; http_status?: number }>;
 };
 export type JevMatchOptions = {
   apiKey?: string;
@@ -115,12 +116,15 @@ export async function preselectAgentMatch(
   async function worker() {
     while (!failed && next < batches.length) {
       const batch = batches[next++];
+      let stage = "request_validation";
+      let httpStatus: number | undefined;
       try {
         const request = buildJevRequest(input.brief, input.vertical, batch.candidates);
         const body = JSON.stringify(request);
         if (new TextEncoder().encode(body).byteLength > MAX_BODY || body.includes(key!))
           throw new Error("Input rejected");
         trace.requests++;
+        stage = "transport";
         const response = await transport(ENDPOINT, {
           method: "POST",
           headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
@@ -128,7 +132,10 @@ export async function preselectAgentMatch(
           redirect: "error",
           signal: controller.signal,
         });
+        httpStatus = response.status;
+        stage = "http_response";
         if (!response.ok) throw new Error("Provider unavailable");
+        stage = "response_body";
         const reader = response.body?.getReader();
         if (!reader) throw new Error("Empty response");
         const chunks: Uint8Array[] = [];
@@ -153,6 +160,7 @@ export async function preselectAgentMatch(
         }
         const raw = new TextDecoder().decode(bytes);
         if (raw.includes(key!)) throw new Error("Response rejected");
+        stage = "response_schema";
         const parsed = ResponseSchema.parse(JSON.parse(raw));
         if (
           Object.keys(parsed.answers).length !== batch.candidates.length ||
@@ -165,6 +173,10 @@ export async function preselectAgentMatch(
         trace.input_tokens += parsed.usage.input_tokens;
         trace.output_tokens += parsed.usage.output_tokens;
       } catch {
+        (trace.failures ??= []).push({
+          stage,
+          ...(httpStatus === undefined ? {} : { http_status: httpStatus }),
+        });
         failed = true;
         controller.abort();
       }
