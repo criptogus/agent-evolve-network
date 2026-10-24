@@ -4,10 +4,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { matchAgentToPackages, type AgentMatchResult } from "@/lib/match/match.functions";
+import { matchAgentToPackages, type AgentMatchResponse } from "@/lib/match/match.functions";
 import { McpRecommendations } from "@/components/match/McpRecommendations";
 
-type FullResult = AgentMatchResult & { catalog_size: number };
+type FullResult = AgentMatchResponse;
 
 export const Route = createFileRoute("/match")({
   head: () => ({
@@ -28,14 +28,23 @@ const SAMPLE = `Outbound SDR agent for B2B SaaS. It enriches a list of accounts,
 function MatchPage() {
   const matchFn = useServerFn(matchAgentToPackages);
   const [brief, setBrief] = useState(SAMPLE);
+  const [semanticSelection, setSemanticSelection] = useState(false);
   const [vertical, setVertical] = useState("B2B SaaS · Outbound");
-  const m = useMutation<FullResult, Error, { brief: string; vertical?: string }>({
+  const m = useMutation<
+    FullResult,
+    Error,
+    { brief: string; vertical?: string; semantic_selection: boolean }
+  >({
     mutationFn: async (vars) => (await matchFn({ data: vars })) as FullResult,
   });
 
   const onRun = () => {
     if (brief.trim().length < 20) return;
-    m.mutate({ brief: brief.trim(), vertical: vertical.trim() || undefined });
+    m.mutate({
+      brief: brief.trim(),
+      vertical: vertical.trim() || undefined,
+      semantic_selection: semanticSelection,
+    });
   };
 
   return (
@@ -50,9 +59,8 @@ function MatchPage() {
             Describe the agent. We pick the kit.
           </h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Score every primitive in the catalog against your agent brief. Get a balanced kit
-            (skills + playbooks + souls + guardrails) with rationale, fit score and the gaps you
-            still need to author.
+            Find relevant primitives for your agent brief. Get a balanced kit (skills + playbooks +
+            souls + guardrails) with rationale, fit score and the gaps you still need to author.
           </p>
         </header>
 
@@ -67,6 +75,22 @@ function MatchPage() {
               placeholder="What should the agent do? Who is it for? What must it never do?"
             />
             <span className="text-xs text-muted-foreground">{brief.length}/4000</span>
+          </label>
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              checked={semanticSelection}
+              onChange={(event) => setSemanticSelection(event.target.checked)}
+              className="mt-1"
+            />
+            <span>
+              Help evaluate semantic matching (optional)
+              <span className="mt-1 block text-xs text-muted-foreground">
+                Sends your brief, vertical and public package descriptions to TypeSafe. Avoid
+                private or sensitive information. Matching may use the full catalog if selection is
+                uncertain or unavailable.
+              </span>
+            </span>
           </label>
           <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
             <label className="grid gap-1.5">
@@ -96,6 +120,15 @@ function MatchPage() {
 
         {m.isPending && <PendingPanel />}
 
+        {m.data && semanticSelection && (
+          <p className="mt-4 text-sm text-muted-foreground" role="status">
+            {m.data.selection.status === "complete" && m.data.selection.mode === "shadow"
+              ? "Semantic evaluation recorded. Your kit was matched using the full catalog."
+              : m.data.selection.forwarded_count < m.data.catalog_size
+                ? "Semantic selection narrowed the candidates used for this kit."
+                : "Matching used the full catalog; semantic selection was unavailable or did not narrow the candidates."}
+          </p>
+        )}
         {m.data && <ResultPanel data={m.data} />}
       </main>
       <Footer />
@@ -165,7 +198,8 @@ function ResultPanel({ data }: { data: FullResult }) {
             <p className="text-xs uppercase tracking-wider text-muted-foreground">Overall fit</p>
             <p className="text-2xl font-semibold">{fit}/100</p>
             <p className="text-xs text-muted-foreground">
-              scored across {data.catalog_size} packages
+              scored across {data.selection.forwarded_count} candidate packages ({data.catalog_size}{" "}
+              available)
             </p>
           </div>
         </div>

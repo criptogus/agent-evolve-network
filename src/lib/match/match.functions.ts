@@ -4,10 +4,12 @@ import { generateText, Output } from "ai";
 import { getGatewayModel } from "@/lib/ai-gateway";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin;
+import { preselectAgentMatch, type MatchSelectionTrace } from "./jev-agent-match.server";
 import { MCP_REGISTRY, compactMcpCatalogForLLM, getMcpById } from "./mcp-registry";
 
 const Input = z.object({
   brief: z.string().min(20).max(4000),
+  semantic_selection: z.boolean().default(false),
   vertical: z.string().max(80).optional(),
   desired: z
     .object({
@@ -72,6 +74,12 @@ const MatchSchema = z.object({
 
 export type AgentMatchResult = z.infer<typeof MatchSchema>;
 
+export type AgentMatchResponse = AgentMatchResult & {
+  catalog_size: number;
+  selection: MatchSelectionTrace;
+  generation_usage: { input_tokens: number | null; output_tokens: number | null };
+};
+
 type CatalogRow = {
   slug: string;
   name: string;
@@ -81,7 +89,7 @@ type CatalogRow = {
 
 export const matchAgentToPackages = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Input.parse(d))
-  .handler(async ({ data }): Promise<AgentMatchResult & { catalog_size: number }> => {
+  .handler(async ({ data }): Promise<AgentMatchResponse> => {
     const { data: rows, error } = await supabaseAdmin
       .from("packages")
       .select("slug,name,type,description")
@@ -92,18 +100,25 @@ export const matchAgentToPackages = createServerFn({ method: "POST" })
     if (error) throw new Response(`Catalog read failed: ${error.message}`, { status: 500 });
     const catalog = (rows ?? []) as CatalogRow[];
 
-    const compact = catalog
+    const { candidates, trace: selection } = await preselectAgentMatch({
+      brief: data.brief,
+      vertical: data.vertical,
+      catalog,
+      desired: data.desired,
+      consent: data.semantic_selection,
+    });
+
+    const compact = candidates
       .map((p) => `- [${p.type}] ${p.slug} :: ${p.name} — ${p.description.slice(0, 180)}`)
       .join("\n");
 
-    const validSlugs = new Set(catalog.map((p) => p.slug));
     const slugByType: Record<string, Set<string>> = {
       skill: new Set(),
       playbook: new Set(),
       soul: new Set(),
       guardrail: new Set(),
     };
-    for (const p of catalog) slugByType[p.type].add(p.slug);
+    for (const p of candidates) slugByType[p.type].add(p.slug);
 
     const sys = `You are SkillForge's Agent Match Evaluator. Given a brief describing what an AI agent should do, you select the best combination of SKILLS, PLAYBOOKS, SOULS and GUARDRAILS from the provided catalog to make that agent excellent.
 
@@ -127,13 +142,15 @@ ${data.brief}
 
 ${data.vertical ? `VERTICAL: ${data.vertical}\n` : ""}DESIRED COUNTS: skills≈${data.desired.skills}, playbooks≈${data.desired.playbooks}, souls≈${data.desired.souls}, guardrails≈${data.desired.guardrails}
 
-CATALOG (${catalog.length} packages):
+CATALOG (${candidates.length} candidate packages from ${catalog.length} available):
 ${compact}
+
+${candidates.length < catalog.length ? "This is a filtered shortlist. Describe gaps as not covered by supplied candidates, never as proof that the full marketplace lacks a capability." : ""}
 
 EXTERNAL MCP REGISTRY (${MCP_REGISTRY.length} servers):
 ${compactMcpCatalogForLLM()}`;
 
-    const { output } = await generateText({
+    const { output, usage } = await generateText({
       model: getGatewayModel("openai/gpt-5.2"),
       system: sys,
       prompt: user,
@@ -172,7 +189,21 @@ ${compactMcpCatalogForLLM()}`;
       })
       .slice(0, 4);
 
-    return { ...output, catalog_size: catalog.length };
+    console.info("[agent-match.metrics]", {
+      selection,
+      generation_model: "openai/gpt-5.2",
+      generation_input_tokens: usage.inputTokens ?? null,
+      generation_output_tokens: usage.outputTokens ?? null,
+    });
+    return {
+      ...output,
+      catalog_size: catalog.length,
+      selection,
+      generation_usage: {
+        input_tokens: usage.inputTokens ?? null,
+        output_tokens: usage.outputTokens ?? null,
+      },
+    };
   });
 
 // --- MCP connections (per-user) -------------------------------------------------

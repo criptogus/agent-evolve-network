@@ -12,7 +12,7 @@
  * We are still pre-1.0: rapid evolution, no stability guarantees.
  */
 
-export const PLATFORM_VERSION = "0.6.8" as const;
+export const PLATFORM_VERSION = "0.7.0" as const;
 export const PLATFORM_CODENAME = "Genesis" as const;
 export const PLATFORM_STAGE: "alpha" | "beta" | "ga" = "alpha";
 export const PLATFORM_BUILD_DATE = "2026-10-24" as const;
@@ -30,6 +30,15 @@ export type ChangelogEntry = {
  * Every deployed change appends a new entry (or amends the top one before shipping).
  */
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "0.7.0",
+    date: "2026-10-24",
+    kind: "minor",
+    title: "Optional Jev selection for Agent Match",
+    highlights: [
+      "Add consent-based TypeSafe discovery with shadow measurement, bounded requests and full-catalog recovery.",
+    ],
+  },
   {
     version: "0.6.8",
     date: "2026-10-24",
@@ -71,7 +80,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: "0.6.4",
     date: "2026-10-23",
     kind: "patch",
-    title: "Maintenance release",
+    title: "Optional Jev selection for Agent Match",
     highlights: ["package model-scoped local business skill evaluation"],
   },
   {
