@@ -11,12 +11,12 @@ export function matchGenerationOptions() {
     providerOptions: {
       lovable: {
         max_completion_tokens: MATCH_MAX_OUTPUT_TOKENS,
-        reasoningEffort: "low",
+        reasoningEffort: "medium",
         textVerbosity: "low",
       },
       "ai-gateway": {
         max_completion_tokens: MATCH_MAX_OUTPUT_TOKENS,
-        reasoningEffort: "low",
+        reasoningEffort: "medium",
         textVerbosity: "low",
       },
     },

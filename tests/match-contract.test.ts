@@ -156,7 +156,7 @@ test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instru
     .object({
       model: z.literal("openai/gpt-5.2"),
       max_completion_tokens: z.literal(4096),
-      reasoning_effort: z.literal("low"),
+      reasoning_effort: z.literal("medium"),
       verbosity: z.literal("low"),
       max_tokens: z.never().optional(),
       response_format: z.object({
