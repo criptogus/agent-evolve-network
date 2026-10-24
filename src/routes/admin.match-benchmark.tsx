@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { readMatchResult } from "@/lib/match/result-stream";
 import { z } from "zod";
+import { readBenchmarkJournal, writeBenchmarkJournal } from "@/lib/match/benchmark-journal";
 import {
   getBenchmarkReadiness,
   probeBenchmarkTransport,
@@ -16,7 +17,7 @@ import {
   reconcileBenchmarkBudget,
 } from "@/lib/match/benchmark-budget";
 const schema = z.object({
-  planHash: z.literal("bb65012fa50678a5b216bf2725a160517553d1e77c5e35dd59572d9d09f401c3"),
+  planHash: z.literal("8994558673e88d59618288f9d0ebd0c051087d1e2880c780af62fb7474601dba"),
   catalog: z
     .array(
       z.object({
@@ -44,7 +45,7 @@ const schema = z.object({
     )
     .length(72),
 });
-const STORAGE = "sas-agent-match-paired-v12-usd5";
+const STORAGE = "sas-agent-match-paired-v15-usd5";
 export const Route = createFileRoute("/admin/match-benchmark")({ component: Benchmark });
 function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);
@@ -67,7 +68,7 @@ function Benchmark() {
       const checked = await readiness();
       if (!checked.ready)
         throw new Error("Managed Lovable AI is not configured; zero inference calls started");
-      const previous = localStorage.getItem(STORAGE);
+      const previous = await readBenchmarkJournal(STORAGE);
       const checkpoint = previous
         ? z
             .object({
@@ -103,7 +104,7 @@ function Benchmark() {
         clientElapsedMs?: number;
       }> = checkpoint?.rows ?? [];
       if (rows.length >= 72) throw new Error("Batch complete; export evidence");
-      const persist = (status: string, inflight: unknown = null) => {
+      const persist = async (status: string, inflight: unknown = null) => {
         const text = JSON.stringify(
           {
             planHash: batch.planHash,
@@ -121,7 +122,7 @@ function Benchmark() {
           null,
           2,
         );
-        localStorage.setItem(STORAGE, text);
+        await writeBenchmarkJournal(STORAGE, text);
         setReport(text);
       };
       if (
@@ -131,7 +132,7 @@ function Benchmark() {
         throw new Error(
           "TYPESAFE_API_KEY is required for the next managed-backend Jev observation. No new inference started.",
         );
-      persist("running");
+      await persist("running");
       const batchEnd = Math.min(72, rows.length + 4);
       for (const step of batch.schedule.slice(rows.length, batchEnd)) {
         const item = batch.cases.find((c) => c.id === step.caseId);
@@ -140,7 +141,7 @@ function Benchmark() {
         // precomputed selection or additive cross-environment latency estimate.
         const candidates = batch.catalog;
         const attempt = `${batch.planHash.slice(0, 8)}:${step.caseId}:${step.repeat}:${step.arm}`;
-        persist("inflight", { attempt, remaining });
+        await persist("inflight", { attempt, remaining });
         setMessage(`Running ${rows.length + 1}/72: ${attempt}`);
         const clientStarted = performance.now();
         const result = await readMatchResult(
@@ -163,24 +164,24 @@ function Benchmark() {
         });
         if (result.status === "unknown" || result.providerEquivalentUsd === null) {
           remaining -= result.reservation.reserve;
-          persist("stopped_unknown_usage", { attempt });
+          await persist("stopped_unknown_usage", { attempt });
           throw new Error("Stopped: unknown billed usage; no retry");
         }
         // Keep the full worst-case reservation until this batch is reconciled.
         remaining -= result.reservation.reserve;
-        persist("checkpoint");
+        await persist("checkpoint");
         if (
           result.finishReason !== "stop" ||
           !result.parsed ||
           !result.clean ||
           !/^(?:openai\/)?gpt-5\.2(?:-|$)/.test(result.actualModel)
         ) {
-          persist("stopped_invalid_output");
+          await persist("stopped_invalid_output");
           throw new Error("Invalid or truncated output; no retry");
         }
         // At most four unique observations, with full reservations held until native reconciliation.
         if (rows.length < batchEnd) continue;
-        persist(rows.length === 72 ? "completed" : "billing_checkpoint");
+        await persist(rows.length === 72 ? "completed" : "billing_checkpoint");
         setMessage(
           "Observation saved. Reconcile actual billed credits before continuing the finite batch.",
         );
@@ -239,7 +240,7 @@ function Benchmark() {
               if (!f || f.size > 2000000) throw new Error("Missing or oversized batch");
               setBatch(schema.parse(JSON.parse(await f.text())));
               setMessage("Frozen batch loaded; no inference started.");
-              setReport(localStorage.getItem(STORAGE) ?? "");
+              setReport((await readBenchmarkJournal(STORAGE)) ?? "");
             } catch {
               setMessage("Invalid batch");
             }
@@ -325,6 +326,29 @@ function Benchmark() {
       >
         Test TypeSafe transport (one synthetic request)
       </button>
+      <button
+        className="border rounded p-2"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          try {
+            const text = "synthetic-evidence".repeat(393216);
+            const key = `${STORAGE}:storage-probe`;
+            await writeBenchmarkJournal(key, text);
+            const actual = await readBenchmarkJournal(key);
+            if (actual !== text) throw new Error("Journal mismatch");
+            setMessage(
+              `Durable journal probe passed: ${text.length} characters committed and read back exactly; zero inference.`,
+            );
+          } catch {
+            setMessage("Durable journal probe failed; do not start inference.");
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        Test durable journal (no inference)
+      </button>
       <p role="status">{message}</p>
       <label className="block">
         Evidence journal
@@ -332,8 +356,8 @@ function Benchmark() {
       </label>
       <button
         className="border rounded p-2"
-        onClick={() => {
-          const text = localStorage.getItem(STORAGE);
+        onClick={async () => {
+          const text = await readBenchmarkJournal(STORAGE);
           if (!text) {
             setMessage("No evidence to export");
             return;

@@ -11,7 +11,6 @@ import assert from "node:assert/strict";
 import {
   buildMatchPrompt,
   buildMatchOutputSchema,
-  MatchSchema,
   sanitizeMatch,
   type AgentMatchResult,
 } from "../src/lib/match/match-contract.ts";
@@ -71,7 +70,7 @@ test("MCP pairings reference the sanitized kit and retain the original registry/
   ]);
 });
 
-test("Agent Match supplies the JSON contract to gateways without native schema support", () => {
+test("Agent Match requests the provider-supplied JSON contract with explicit scope classification", () => {
   const { system } = buildMatchPrompt({
     brief: "Conferir notas fiscais com evidências",
     candidates,
@@ -79,7 +78,8 @@ test("Agent Match supplies the JSON contract to gateways without native schema s
     catalogSize: 3,
   });
   assert.match(system, /JSON/);
-  assert.ok(system.includes(JSON.stringify(z.toJSONSchema(MatchSchema))));
+  assert.match(system, /provider-supplied JSON Schema/);
+  assert.match(system, /recommended_kit.work_domain/);
   assert.match(system, /same language/);
   assert.match(system, /untrusted evidence/);
 });
@@ -102,7 +102,13 @@ test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instru
               index: 0,
               message: {
                 role: "assistant",
-                content: JSON.stringify(sanitizeMatch(output(), candidates, desired)),
+                content: JSON.stringify({
+                  ...sanitizeMatch(output(), candidates, desired),
+                  recommended_kit: {
+                    ...sanitizeMatch(output(), candidates, desired).recommended_kit,
+                    work_domain: "runtime_work",
+                  },
+                }),
               },
               finish_reason: "stop",
             },
@@ -153,6 +159,10 @@ test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instru
     .object({ properties: z.record(z.string(), z.unknown()), required: z.array(z.string()) })
     .parse(request.response_format.json_schema.schema);
   assert.deepEqual(new Set(wireSchema.required), new Set(Object.keys(wireSchema.properties)));
+  const kitSchema = z
+    .object({ anyOf: z.array(z.unknown()).length(2), oneOf: z.never().optional() })
+    .parse(wireSchema.properties.recommended_kit);
+  assert.equal(kitSchema.anyOf.length, 2);
 });
 
 test("explicit zero optional package counts stay empty", () => {
@@ -162,7 +172,11 @@ test("explicit zero optional package counts stay empty", () => {
 
 test("generation schema rejects wrong-type, absent, weak and over-quota packages before sanitization", () => {
   const schema = buildMatchOutputSchema(candidates, desired);
-  const valid = sanitizeMatch(output(), candidates, desired);
+  const clean = sanitizeMatch(output(), candidates, desired);
+  const valid = {
+    ...clean,
+    recommended_kit: { ...clean.recommended_kit, work_domain: "runtime_work" },
+  };
   assert.equal(schema.safeParse(valid).success, true);
   for (const bad of ["policy", "foreign"]) {
     const value = structuredClone(valid);
@@ -177,4 +191,42 @@ test("generation schema rejects wrong-type, absent, weak and over-quota packages
   assert.equal(schema.safeParse(excess).success, false);
   const disabled = buildMatchOutputSchema(candidates, { ...desired, guardrails: 0 });
   assert.equal(disabled.safeParse(valid).success, false);
+});
+
+test("runtime selection cannot repurpose documented software-verification capabilities", () => {
+  const scoped = [
+    ...candidates,
+    {
+      slug: "fix-proof",
+      name: "Fix proof",
+      type: "skill" as const,
+      description: "Demands first-hand evidence before declaring a fix.",
+    },
+    {
+      slug: "code-gate",
+      name: "Code gate",
+      type: "skill" as const,
+      description: "Build and lint check that gates every code change.",
+    },
+  ];
+  const schema = buildMatchOutputSchema(scoped, desired);
+  const clean = sanitizeMatch(output(), candidates, desired);
+  for (const slug of ["fix-proof", "code-gate"]) {
+    const runtime = {
+      ...clean,
+      recommended_kit: {
+        ...clean.recommended_kit,
+        work_domain: "runtime_work",
+        skills: [item(slug)],
+      },
+    };
+    assert.equal(schema.safeParse(runtime).success, false);
+    assert.equal(
+      schema.safeParse({
+        ...runtime,
+        recommended_kit: { ...runtime.recommended_kit, work_domain: "software_work" },
+      }).success,
+      true,
+    );
+  }
 });

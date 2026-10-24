@@ -83,6 +83,7 @@ const sourceFiles = [
   "src/routes/match.tsx",
   "src/lib/match/benchmark.functions.ts",
   "src/lib/match/benchmark-budget.ts",
+  "src/lib/match/benchmark-journal.ts",
   "src/lib/match/match-generation.ts",
   "src/lib/match/match.functions.ts",
   "src/lib/ai-gateway.ts",
