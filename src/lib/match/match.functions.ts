@@ -5,7 +5,14 @@ import { getGatewayModel } from "@/lib/ai-gateway";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin;
 import { preselectAgentMatch, type MatchSelectionTrace } from "./jev-agent-match.server";
-import { MCP_REGISTRY, compactMcpCatalogForLLM, getMcpById } from "./mcp-registry";
+import { MCP_REGISTRY, getMcpById } from "./mcp-registry";
+import {
+  MatchSchema,
+  buildMatchPrompt,
+  sanitizeMatch,
+  type AgentMatchResult,
+} from "./match-contract.ts";
+export type { AgentMatchResult } from "./match-contract.ts";
 
 const Input = z.object({
   brief: z.string().min(20).max(4000),
@@ -20,59 +27,6 @@ const Input = z.object({
     })
     .default({ skills: 5, playbooks: 2, souls: 1, guardrails: 2 }),
 });
-
-const RecItem = z.object({
-  slug: z.string(),
-  score: z.number().min(0).max(10),
-  why: z.string().max(280),
-  role: z.string().max(80).describe("the specific role this plays in the agent"),
-});
-
-const MatchSchema = z.object({
-  agent_summary: z.object({
-    one_liner: z.string().max(200),
-    primary_jobs: z.array(z.string()).min(1).max(6),
-    target_user: z.string().max(160),
-    success_metric: z.string().max(160),
-  }),
-  recommended_kit: z.object({
-    skills: z.array(RecItem),
-    playbooks: z.array(RecItem),
-    souls: z.array(RecItem),
-    guardrails: z.array(RecItem),
-  }),
-  coverage: z.object({
-    overall_fit_score: z.number().min(0).max(100),
-    strengths: z.array(z.string()).max(6),
-    risks: z.array(z.string()).max(6),
-  }),
-  gaps: z
-    .array(
-      z.object({
-        capability: z.string().max(160),
-        suggestion: z.string().max(240),
-        recommended_type: z.enum(["skill", "playbook", "soul", "guardrail"]),
-      }),
-    )
-    .max(8),
-  recommended_mcps: z
-    .array(
-      z.object({
-        id: z.string(),
-        score: z.number().min(0).max(10),
-        why: z.string().max(280),
-        pairs_with: z
-          .array(z.string())
-          .max(8)
-          .describe("slugs from the kit that this MCP empowers"),
-      }),
-    )
-    .max(6)
-    .default([]),
-  rationale: z.string().max(1200),
-});
-
-export type AgentMatchResult = z.infer<typeof MatchSchema>;
 
 export type AgentMatchResponse = AgentMatchResult & {
   catalog_size: number;
@@ -108,86 +62,20 @@ export const matchAgentToPackages = createServerFn({ method: "POST" })
       consent: data.semantic_selection,
     });
 
-    const compact = candidates
-      .map((p) => `- [${p.type}] ${p.slug} :: ${p.name} — ${p.description.slice(0, 180)}`)
-      .join("\n");
-
-    const slugByType: Record<string, Set<string>> = {
-      skill: new Set(),
-      playbook: new Set(),
-      soul: new Set(),
-      guardrail: new Set(),
-    };
-    for (const p of candidates) slugByType[p.type].add(p.slug);
-
-    const sys = `You are SkillForge's Agent Match Evaluator. Given a brief describing what an AI agent should do, you select the best combination of SKILLS, PLAYBOOKS, SOULS and GUARDRAILS from the provided catalog to make that agent excellent.
-
-Definitions:
-- skill: a single sharply-scoped capability the agent gains.
-- playbook: a multi-step decision graph for a recurring scenario.
-- soul: a personality/heuristic layer that biases tone and decisions.
-- guardrail: a refusal/safety/compliance layer.
-
-Rules:
-- ONLY pick slugs that appear in the catalog. Never invent slugs.
-- Score 0-10 per item: 10 = essential, 7-9 = strong, 5-6 = nice-to-have. Drop anything <5.
-- Pick a balanced kit close to the requested counts; less is more.
-- "role" = the specific job this package does inside the agent (e.g. "lead qualification engine", "voice of taste").
-- "gaps" = capabilities the agent needs that the catalog does NOT cover well — recommend the type to author next.
-- "recommended_mcps" = pick 0-4 EXTERNAL MCP servers from the MCP registry whose tools the agent will actually call to deliver the brief. ONLY use ids from the registry. Score 0-10 like above; drop anything <6. "pairs_with" must reference slugs you put in the kit.
-- Be opinionated and concise. No hedging, no marketing language.`;
-
-    const user = `AGENT BRIEF:
-${data.brief}
-
-${data.vertical ? `VERTICAL: ${data.vertical}\n` : ""}DESIRED COUNTS: skills≈${data.desired.skills}, playbooks≈${data.desired.playbooks}, souls≈${data.desired.souls}, guardrails≈${data.desired.guardrails}
-
-CATALOG (${candidates.length} candidate packages from ${catalog.length} available):
-${compact}
-
-${candidates.length < catalog.length ? "This is a filtered shortlist. Describe gaps as not covered by supplied candidates, never as proof that the full marketplace lacks a capability." : ""}
-
-EXTERNAL MCP REGISTRY (${MCP_REGISTRY.length} servers):
-${compactMcpCatalogForLLM()}`;
+    const { system, prompt } = buildMatchPrompt({
+      ...data,
+      candidates,
+      catalogSize: catalog.length,
+    });
 
     const { output, usage } = await generateText({
       model: getGatewayModel("openai/gpt-5.2"),
-      system: sys,
-      prompt: user,
+      system,
+      prompt,
       output: Output.object({ schema: MatchSchema }),
     });
 
-    // sanitize: drop any hallucinated slugs / wrong types
-    const clean = (arr: typeof output.recommended_kit.skills, type: keyof typeof slugByType) =>
-      arr
-        .filter((x) => slugByType[type].has(x.slug))
-        .slice(
-          0,
-          data.desired[
-            type === "skill"
-              ? "skills"
-              : type === "playbook"
-                ? "playbooks"
-                : type === "soul"
-                  ? "souls"
-                  : "guardrails"
-          ] + 1,
-        );
-
-    output.recommended_kit.skills = clean(output.recommended_kit.skills, "skill");
-    output.recommended_kit.playbooks = clean(output.recommended_kit.playbooks, "playbook");
-    output.recommended_kit.souls = clean(output.recommended_kit.souls, "soul");
-    output.recommended_kit.guardrails = clean(output.recommended_kit.guardrails, "guardrail");
-
-    // sanitize MCPs: only registry ids, dedupe, drop low scores, cap at 4
-    const seen = new Set<string>();
-    output.recommended_mcps = (output.recommended_mcps ?? [])
-      .filter((m) => {
-        if (!getMcpById(m.id) || seen.has(m.id) || m.score < 6) return false;
-        seen.add(m.id);
-        return true;
-      })
-      .slice(0, 4);
+    const clean = sanitizeMatch(output, candidates, data.desired);
 
     console.info("[agent-match.metrics]", {
       selection,
@@ -196,7 +84,7 @@ ${compactMcpCatalogForLLM()}`;
       generation_output_tokens: usage.outputTokens ?? null,
     });
     return {
-      ...output,
+      ...clean,
       catalog_size: catalog.length,
       selection,
       generation_usage: {
