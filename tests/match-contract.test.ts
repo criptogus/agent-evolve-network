@@ -313,3 +313,29 @@ test("language evidence and score units follow the large catalog rather than bei
   assert.ok(prompt.endsWith("omit an unsupported package."));
   assert.match(prompt, /0–100 percentage scale/);
 });
+
+test("brief language is explicit without allowing catalog language to set it", () => {
+  const input = {
+    brief:
+      "Analyze production losses using planned time, downtime, ideal cycle, total units and good units.",
+    candidates: [],
+    catalogSize: 0,
+    desired: { skills: 5, playbooks: 2, souls: 1, guardrails: 2 },
+  };
+  const english = buildMatchPrompt(input);
+  assert.match(english.system, /OUTPUT LANGUAGE: English \(eng\)/);
+  assert.match(english.prompt, /OUTPUT LANGUAGE: English \(eng\)/);
+  const portuguese = buildMatchPrompt({
+    ...input,
+    brief:
+      "Conferir documentos fiscais brasileiros contra os pedidos e apontar divergências com referências.",
+  });
+  assert.match(portuguese.system, /OUTPUT LANGUAGE: Portuguese \(por\)/);
+  assert.match(buildMatchPrompt({ ...input, brief: "Hi" }).system, /original brief's language/);
+  assert.match(english.system, /unless the brief explicitly requests another output language/);
+  assert.ok(english.prompt.indexOf("CATALOG") < english.prompt.indexOf("AGENT BRIEF:"));
+  assert.match(
+    english.system,
+    /Cross-domain reuse is allowed only when metadata documents general-purpose scope/,
+  );
+});
