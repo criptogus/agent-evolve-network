@@ -27,6 +27,18 @@ const item = (slug: string, score = 9) => ({
   why: "Fits supplied evidence",
   role: "Analyze",
 });
+function evidenceKit(kit: AgentMatchResult["recommended_kit"], catalog = candidates) {
+  return Object.fromEntries(
+    Object.entries(kit).map(([type, items]) => [
+      type,
+      items.map((item) => ({
+        ...item,
+        source_quote:
+          catalog.find((c) => c.slug === item.slug)?.description.slice(0, 180) ?? "absent",
+      })),
+    ]),
+  );
+}
 function output(): AgentMatchResult {
   return {
     agent_summary: {
@@ -106,7 +118,7 @@ test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instru
                 content: JSON.stringify({
                   ...sanitizeMatch(output(), candidates, desired),
                   recommended_kit: {
-                    ...sanitizeMatch(output(), candidates, desired).recommended_kit,
+                    ...evidenceKit(sanitizeMatch(output(), candidates, desired).recommended_kit),
                     work_domain: "runtime_work",
                   },
                 }),
@@ -160,9 +172,18 @@ test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instru
     .object({ properties: z.record(z.string(), z.unknown()), required: z.array(z.string()) })
     .parse(request.response_format.json_schema.schema);
   assert.deepEqual(new Set(wireSchema.required), new Set(Object.keys(wireSchema.properties)));
+  const reference = z
+    .object({ $ref: z.string().startsWith("#/definitions/") })
+    .safeParse(wireSchema.properties.recommended_kit);
+  const definitions = z
+    .object({ definitions: z.record(z.string(), z.unknown()) })
+    .parse(request.response_format.json_schema.schema).definitions;
+  const kitValue = reference.success
+    ? definitions[reference.data.$ref.slice("#/definitions/".length)]
+    : wireSchema.properties.recommended_kit;
   const kitSchema = z
     .object({ anyOf: z.array(z.unknown()).length(2), oneOf: z.never().optional() })
-    .parse(wireSchema.properties.recommended_kit);
+    .parse(kitValue);
   assert.equal(kitSchema.anyOf.length, 2);
 });
 
@@ -176,7 +197,11 @@ test("generation schema rejects wrong-type, absent, weak and over-quota packages
   const clean = sanitizeMatch(output(), candidates, desired);
   const valid = {
     ...clean,
-    recommended_kit: { ...clean.recommended_kit, work_domain: "runtime_work" },
+    recommended_kit: {
+      ...clean.recommended_kit,
+      ...evidenceKit(clean.recommended_kit),
+      work_domain: "runtime_work",
+    },
   };
   assert.equal(schema.safeParse(valid).success, true);
   for (const bad of ["policy", "foreign"]) {
@@ -217,8 +242,9 @@ test("runtime selection cannot repurpose documented software-verification capabi
       ...clean,
       recommended_kit: {
         ...clean.recommended_kit,
+        ...evidenceKit(clean.recommended_kit, scoped),
         work_domain: "runtime_work",
-        skills: [item(slug)],
+        skills: [{ ...item(slug), source_quote: scoped.find((c) => c.slug === slug)?.description }],
       },
     };
     assert.equal(schema.safeParse(runtime).success, false);
@@ -276,8 +302,14 @@ test("runtime schema excludes software deployment and placeholders without losin
     ...clean,
     recommended_kit: {
       ...clean.recommended_kit,
+      ...evidenceKit(clean.recommended_kit, scoped),
       work_domain: "runtime_work",
-      skills: [item("deployment-helper")],
+      skills: [
+        {
+          ...item("deployment-helper"),
+          source_quote: scoped.find((c) => c.slug === "deployment-helper")?.description,
+        },
+      ],
     },
   };
   assert.equal(schema.safeParse(runtime).success, false);
@@ -292,6 +324,7 @@ test("runtime schema excludes software deployment and placeholders without losin
     ...clean,
     recommended_kit: {
       ...clean.recommended_kit,
+      ...evidenceKit(clean.recommended_kit, scoped),
       work_domain: "runtime_work",
       skills: [{ ...item("good"), role: "N/A", why: "N/A" }],
     },
@@ -338,4 +371,33 @@ test("brief language is explicit without allowing catalog language to set it", (
     english.system,
     /Cross-domain reuse is allowed only when metadata documents general-purpose scope/,
   );
+});
+
+test("generation requires an exact source quotation and rejects invented or swapped evidence", () => {
+  const schema = buildMatchOutputSchema(candidates, desired);
+  const clean = sanitizeMatch(output(), candidates, desired);
+  const value = {
+    ...clean,
+    recommended_kit: {
+      ...clean.recommended_kit,
+      ...evidenceKit(clean.recommended_kit),
+      work_domain: "runtime_work",
+    },
+  };
+  assert.equal(schema.safeParse(value).success, true);
+  for (const quote of ["Invented general-purpose financial deduplication", "Safety policy"]) {
+    const invalid = {
+      ...value,
+      recommended_kit: {
+        ...value.recommended_kit,
+        skills: value.recommended_kit.skills.map((item, index) => ({
+          ...item,
+          source_quote:
+            index === 0 ? quote : candidates.find((c) => c.slug === item.slug)?.description,
+        })),
+      },
+    };
+    assert.equal(schema.safeParse(invalid).success, false);
+  }
+  assert.deepEqual(sanitizeMatch(schema.parse(value), candidates, desired), clean);
 });
