@@ -1,0 +1,26 @@
+// USD provider-equivalent metering; billed credits must be reconciled separately.
+export const BENCHMARK_MODEL = "openai/gpt-5.2";
+export const BENCHMARK_OUTPUT_LIMIT = 4096;
+export const BENCHMARK_USD_LIMIT = 5;
+export function generatorCost(input: number, cached: number, output: number) {
+  if (![input, cached, output].every((n) => Number.isSafeInteger(n) && n >= 0) || cached > input)
+    throw new Error("Missing or invalid usage");
+  return ((input - cached) * 1.75 + cached * 0.175 + output * 14) / 1e6;
+}
+export function reserveGeneration(
+  system: string,
+  prompt: string,
+  schema: string,
+  remaining: number,
+) {
+  // Byte upper bound plus framing allowance; no average chars/token assumption.
+  const inputUpperBound = new TextEncoder().encode(system + prompt + schema).length + 4096;
+  const reserve = generatorCost(inputUpperBound, 0, BENCHMARK_OUTPUT_LIMIT);
+  if (!Number.isFinite(remaining) || remaining < reserve || remaining > BENCHMARK_USD_LIMIT)
+    throw new Error("Insufficient authorized budget");
+  return { inputUpperBound, reserve };
+}
+export function requireBenchmarkPreview(url: string) {
+  if (new URL(url).hostname !== "preview--agent-evolve-network.lovable.app")
+    throw new Error("Benchmark is restricted to the managed preview");
+}

@@ -76,6 +76,7 @@ import { Route as AdminCrmRouteImport } from './routes/admin.crm'
 import { Route as AdminCurationRouteImport } from './routes/admin.curation'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminFunnelRouteImport } from './routes/admin.funnel'
+import { Route as AdminMatchBenchmarkRouteImport } from './routes/admin.match-benchmark'
 import { Route as AdminMetaAdsPackRouteImport } from './routes/admin.meta-ads-pack'
 import { Route as AdminPackagesRouteImport } from './routes/admin.packages'
 import { Route as AdminPaymentsHealthRouteImport } from './routes/admin.payments-health'
@@ -517,6 +518,11 @@ const AdminCustomersRoute = AdminCustomersRouteImport.update({
 const AdminFunnelRoute = AdminFunnelRouteImport.update({
   id: '/funnel',
   path: '/funnel',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMatchBenchmarkRoute = AdminMatchBenchmarkRouteImport.update({
+  id: '/match-benchmark',
+  path: '/match-benchmark',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminMetaAdsPackRoute = AdminMetaAdsPackRouteImport.update({
@@ -1136,6 +1142,7 @@ export interface FileRoutesByFullPath {
   '/admin/curation': typeof AdminCurationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
+  '/admin/match-benchmark': typeof AdminMatchBenchmarkRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/payments-health': typeof AdminPaymentsHealthRoute
@@ -1309,6 +1316,7 @@ export interface FileRoutesByTo {
   '/admin/curation': typeof AdminCurationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
+  '/admin/match-benchmark': typeof AdminMatchBenchmarkRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/payments-health': typeof AdminPaymentsHealthRoute
@@ -1484,6 +1492,7 @@ export interface FileRoutesById {
   '/admin/curation': typeof AdminCurationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/funnel': typeof AdminFunnelRoute
+  '/admin/match-benchmark': typeof AdminMatchBenchmarkRoute
   '/admin/meta-ads-pack': typeof AdminMetaAdsPackRoute
   '/admin/packages': typeof AdminPackagesRouteWithChildren
   '/admin/payments-health': typeof AdminPaymentsHealthRoute
@@ -1660,6 +1669,7 @@ export interface FileRouteTypes {
     | '/admin/curation'
     | '/admin/customers'
     | '/admin/funnel'
+    | '/admin/match-benchmark'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
     | '/admin/payments-health'
@@ -1833,6 +1843,7 @@ export interface FileRouteTypes {
     | '/admin/curation'
     | '/admin/customers'
     | '/admin/funnel'
+    | '/admin/match-benchmark'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
     | '/admin/payments-health'
@@ -2007,6 +2018,7 @@ export interface FileRouteTypes {
     | '/admin/curation'
     | '/admin/customers'
     | '/admin/funnel'
+    | '/admin/match-benchmark'
     | '/admin/meta-ads-pack'
     | '/admin/packages'
     | '/admin/payments-health'
@@ -2723,6 +2735,13 @@ declare module '@tanstack/react-router' {
       path: '/funnel'
       fullPath: '/admin/funnel'
       preLoaderRoute: typeof AdminFunnelRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/match-benchmark': {
+      id: '/admin/match-benchmark'
+      path: '/match-benchmark'
+      fullPath: '/admin/match-benchmark'
+      preLoaderRoute: typeof AdminMatchBenchmarkRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/meta-ads-pack': {
@@ -3483,6 +3502,7 @@ interface AdminRouteChildren {
   AdminCurationRoute: typeof AdminCurationRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminFunnelRoute: typeof AdminFunnelRoute
+  AdminMatchBenchmarkRoute: typeof AdminMatchBenchmarkRoute
   AdminMetaAdsPackRoute: typeof AdminMetaAdsPackRoute
   AdminPackagesRoute: typeof AdminPackagesRouteWithChildren
   AdminPaymentsHealthRoute: typeof AdminPaymentsHealthRoute
@@ -3506,6 +3526,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCurationRoute: AdminCurationRoute,
   AdminCustomersRoute: AdminCustomersRoute,
   AdminFunnelRoute: AdminFunnelRoute,
+  AdminMatchBenchmarkRoute: AdminMatchBenchmarkRoute,
   AdminMetaAdsPackRoute: AdminMetaAdsPackRoute,
   AdminPackagesRoute: AdminPackagesRouteWithChildren,
   AdminPaymentsHealthRoute: AdminPaymentsHealthRoute,
