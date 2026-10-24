@@ -44,3 +44,26 @@ test("stream deadline ends unknown work without automatic retry", async () => {
   });
   await assert.rejects(readMatchResult(stream), /deadline exceeded/);
 });
+
+test("framework serializer supports the actual typed result stream", async () => {
+  const { toCrossJSONStream } = await import("seroval");
+  const { defaultSerovalDeserializerPlugins } = await import("@tanstack/router-core/ssr/server");
+  const stream = streamMatchResult(async () => ({ ok: true }));
+  let records = 0;
+  await new Promise<void>((resolve, reject) => {
+    toCrossJSONStream(stream, {
+      refs: new Map(),
+      plugins: defaultSerovalDeserializerPlugins,
+      onParse() {
+        records++;
+      },
+      onDone() {
+        resolve();
+      },
+      onError(error) {
+        reject(error);
+      },
+    });
+  });
+  assert.ok(records > 0);
+});

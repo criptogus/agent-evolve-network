@@ -115,6 +115,8 @@
     "react-hook-form": "^7.71.2",
     "react-resizable-panels": "^4.6.5",
     "recharts": "^2.15.4",
+    "seroval": "1.7.2",
+    "seroval-plugins": "1.7.2",
     "sonner": "^2.0.7",
     "stripe": "22.0.2",
     "tailwind-merge": "^3.5.0",
