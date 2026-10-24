@@ -29,7 +29,12 @@
   },
   "input_boundary": {
     "business_evidence": "Structured context.input using this skill contract; host validation is recomputed, not trusted from client claims.",
-    "ancillary_notes": "Inline source_note annotations are quarantined and cannot supply required business facts.",
-    "privacy": "Supported labeled credential/personal fields are removed before inference; this is not a universal PII detector or a bare-model certification."
-  }
+    "ancillary_notes": "Inline source_note annotations are silently quarantined and cannot supply required business facts; counts and hashes remain in provenance.",
+    "privacy": "Supported labeled credential/personal fields are removed before inference; this is not a universal PII detector or a bare-model certification.",
+    "refusal_data_minimization": "Full sanitized request is classified by the local model. Final refusal generation receives category policy only, without unnecessary user records or proof markers; final outputs are raw model generation. Analytical/sanitization/clinical modes retain sanitized relevant records.",
+    "host_facts": "The host records actual packaged validator/contract reads and distinguishes helper actions from supported local runtime calculations. BRL minor-unit normalization, explicit calendar notices, pack quantities, freshness and production loss components are deterministic source-derived facts, not external operations. Handoff inventory preserves supplied purpose, owner and hours separately from consent, availability, sending and transfer verification; this offline host performs none of those operational checks. The host also records same-currency bid differences relative to the first bid, exact pack quantity/price equations, unverified supplier-evidence inventory and frame-sample rank/count facts. These are source-derived calculations/inventories, not model-generated answers or external verification. Same-currency bid relative changes use the named baseline with four decimal places for percentage presentation; zero baselines leave the relative change undefined. Handoff process receipts separate whether a check ran from its unassessed result.",
+    "routing_context": "Intent routing reads the sanitized actual request. Host-validated structured business records are excluded from routing and retained for legitimate domain generation; other sanitized contextual history remains available. Records do not confer action authority. Routing context hashes and exclusion flags are retained."
+  },
+  "python": "3.12.15",
+  "architecture": "arm64"
 }

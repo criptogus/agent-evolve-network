@@ -1,12 +1,13 @@
 slug: supplier-bid-comparator
 name: Supplier Bid Comparator
 type: skill
-version: 0.1.3
-description: "Supplier Bid Comparator: Separate mandatory compliance from weighted preferences."
+version: 0.1.4
+description: "Supplier Bid Comparator: Compute scores only when an explicit normalization/scoring
+  scale and weights are supplied."
 long_description: Requires the pinned local model and packaged redact-route-generate-v1 runner;
   bare-prompt execution is unqualified. A source-grounded workflow for compras e fornecedores.
-  Includes an explicit input contract, offline validation helper, worked example and refusal on
-  incomplete evidence. Human or runtime verification remains required for the final task.
+  Includes an explicit input contract, offline validation helper, worked example and explicit
+  missing-evidence boundaries. Human or runtime verification remains required for the final task.
 system_prompt: >
   # Supplier Bid Comparator
 
@@ -19,26 +20,32 @@ system_prompt: >
 
   Use the packaged scripts/run_request.py local runner with the exact model, weights, SDK and
   protocol in references/model-profile.json. The runner redacts supported sensitive input fields,
-  quarantines ancillary inline source-note blocks, selects a response mode with the local model and
-  returns raw final model generation. Bare-prompt execution, other model/runtime revisions and live
-  tool execution are not qualified. Business evidence belongs in structured context.input under the
-  declared contract; ancillary source_note annotations cannot supply required facts. Full policy and
-  code are shipped in scripts/local_runtime.py; no generated output is repaired or replaced.
+  quarantines ancillary inline source-note blocks, records actual validator/contract reads,
+  recomputes supported business calculations, selects a response mode with the local model and
+  returns raw final model generation. Refusal categories minimize unnecessary request data after
+  routing; analytical and clinical modes retain sanitized relevant records. Bare-prompt execution,
+  other model/runtime revisions and live tool execution are not qualified. Business evidence belongs
+  in structured context.input under the declared contract; ancillary source_note annotations cannot
+  supply required facts. Full policy and code are shipped in scripts/local_runtime.py; no generated
+  output is repaired or replaced.
 
 
   ## Domain workflow
 
   Required fields: bids, evaluation_weights. When file access exists, read references/contract.json.
 
-  Separate mandatory compliance from weighted preferences. Normalize scope, volume, lead time,
-  warranty, Incoterms, taxes and payment terms from each bid. State missing or incomparable fields
-  instead of filling them. Compute scores only from supplied weights and documented evidence. Show
-  sensitivity to weight changes and disclose currency assumptions. Return a ranked comparison with
-  exclusions and a decision record for the buyer. Do not select a winner or make a contractual
-  commitment without owner approval.
+  Compute scores only when an explicit normalization/scoring scale and weights are supplied. Weights
+  alone are insufficient. Without a scoring scale, compare evidenced price and lead-time tradeoffs,
+  request the missing scale, and withhold combined scores and ranking. Show sensitivity only when a
+  valid scale supports it. Do not select a winner or make a contractual commitment without owner
+  approval.
 
-  Compare price and lead-time tradeoffs explicitly. Weights alone do not define a scoring scale:
-  request normalization/scoring rules before a combined rank.
+  Report supplier records and the host baseline differences with explicit currency and lead-day
+  units. Use supplied host percentage values/equations verbatim whenever percentages are displayed;
+  their denominator is the named baseline supplier. A zero baseline leaves that percentage
+  undefined. Keep tradeoff calculations separate from scoring: supplied weights alone provide no
+  normalization/scoring scale. Withhold combined score, winner and ranking until the owner supplies
+  the scale. Report the missing rule and a proposed owner follow-up.
 
 
   Produce a substantive decision or transformation with record references and calculations;
@@ -105,9 +112,9 @@ compatibility:
   - runtime: mlx-community/Qwen3.5-9B-4bit@8b2b98c00a6b4d291155e4890773ca8f769aee53/redact-route-generate-v1
     status: supported
     detail: Exclusive target model revision and packaged local runner for text-only qualification with
-      MLX-VLM 0.6.13, temperature 0 and maximum 768 output tokens. Publication requires a passing
-      evaluation of this exact package version. Live tool execution and other models remain
-      unqualified.
+      MLX-VLM 0.6.13, Python 3.12.15 on arm64, temperature 0 and maximum 768 output tokens.
+      Publication requires a passing evaluation of this exact package version. Live tool execution
+      and other models remain unqualified.
   - runtime: mlx-community/Qwen2.5-VL-3B-Instruct-4bit@46d4cf06a06ffc1a766c214174f9cbed2f45bcab
     status: unsupported
     detail: Previous model-specific adversarial failures remain recorded. This version does not claim
@@ -121,7 +128,7 @@ scopes:
 tags:
   - Compras e fornecedores
   - business-expansion
-  - candidate
+  - local-model
 license: CC-BY-SA-4.0
 authors:
   - Super Agent Skill

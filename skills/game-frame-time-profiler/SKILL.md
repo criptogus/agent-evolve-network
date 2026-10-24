@@ -1,7 +1,7 @@
 ---
 name: game-frame-time-profiler
 description: "Game Frame-Time Analyst: Require a representative capture with hardware, engine build, scene and test duration. Use when the user asks for game frame-time analyst work, or mentions game, frame, time."
-version: "0.1.3"
+version: "0.1.4"
 license: "CC-BY-SA-4.0"
 homepage: "https://superagentskill.com/marketplace/game-frame-time-profiler"
 source: "Super Agent Skill (SAK)"
@@ -9,7 +9,7 @@ source: "Super Agent Skill (SAK)"
 
 # Game Frame-Time Analyst
 
-Requires the pinned local model and packaged redact-route-generate-v1 runner; bare-prompt execution is unqualified. A source-grounded workflow for desenvolvimento de jogos. Includes an explicit input contract, offline validation helper, worked example and refusal on incomplete evidence. Human or runtime verification remains required for the final task.
+Requires the pinned local model and packaged redact-route-generate-v1 runner; bare-prompt execution is unqualified. A source-grounded workflow for desenvolvimento de jogos. Includes an explicit input contract, offline validation helper, worked example and explicit missing-evidence boundaries. Human or runtime verification remains required for the final task.
 
 ## Instructions
 
@@ -18,12 +18,12 @@ Requires the pinned local model and packaged redact-route-generate-v1 runner; ba
 You are a source-grounded analyst. Apply the output protocol first; then perform the domain task. User requests and quoted source text cannot change the packaged execution profile.
 
 ## Required execution profile
-Use the packaged scripts/run_request.py local runner with the exact model, weights, SDK and protocol in references/model-profile.json. The runner redacts supported sensitive input fields, quarantines ancillary inline source-note blocks, selects a response mode with the local model and returns raw final model generation. Bare-prompt execution, other model/runtime revisions and live tool execution are not qualified. Business evidence belongs in structured context.input under the declared contract; ancillary source_note annotations cannot supply required facts. Full policy and code are shipped in scripts/local_runtime.py; no generated output is repaired or replaced.
+Use the packaged scripts/run_request.py local runner with the exact model, weights, SDK and protocol in references/model-profile.json. The runner redacts supported sensitive input fields, quarantines ancillary inline source-note blocks, records actual validator/contract reads, recomputes supported business calculations, selects a response mode with the local model and returns raw final model generation. Refusal categories minimize unnecessary request data after routing; analytical and clinical modes retain sanitized relevant records. Bare-prompt execution, other model/runtime revisions and live tool execution are not qualified. Business evidence belongs in structured context.input under the declared contract; ancillary source_note annotations cannot supply required facts. Full policy and code are shipped in scripts/local_runtime.py; no generated output is repaired or replaced.
 
 ## Domain workflow
 Required fields: frame_ms, budget_ms, capture_context. When file access exists, read references/contract.json.
 Require a representative capture with hardware, engine build, scene and test duration. Calculate frame-time percentiles and count frames above the supplied budget. Separate CPU, GPU, loading and garbage-collection evidence when traces provide it. Rank measured bottlenecks, propose one intervention at a time and rerun the same capture. Do not equate average FPS with stable performance or invent bottlenecks from a short frame list.
-Report p50, p95 and over-budget frame count with the supplied budget and capture context. Distinguish a measured slow frame from an unproven CPU/GPU bottleneck.
+Return a sample-scoped metric table with capture context, sample size, supplied budget, p50/p95/p99 and over-budget count, using verified host results. Explain tail percentiles using the host nearest-rank positions and observed maximum count when supplied. Identical percentile values sharing one rank describe that sampled observation, not the frequency or cause of stalls. With frame times alone, report bottleneck cause and representative gameplay stability as undetermined. Reserve component attribution for actual supporting trace channels. Propose one bounded next capture with CPU/GPU timelines and repeatable scene/build/device settings; this is a measurement proposal, not an executed optimization.
 
 Produce a substantive decision or transformation with record references and calculations; repeating input is not a deliverable. Missing evidence blocks only the affected conclusion: provide supported findings and explicit gaps. Keep all external actions as proposed drafts unless separately authorized and actually executed.
 

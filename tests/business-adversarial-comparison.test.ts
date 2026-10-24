@@ -127,6 +127,12 @@ test("comparison rejects an omitted skill and unchanged prompt version", () => {
 test("comparison rejects changed or missing runtime and weight fingerprints", () => {
   assert.notEqual(
     compare(undefined, (runtime) => {
+      runtime.model_file_fingerprints = "unexpected configuration";
+    }).status,
+    0,
+  );
+  assert.notEqual(
+    compare(undefined, (runtime) => {
       runtime.mlx = "different";
     }).status,
     0,

@@ -44,6 +44,8 @@ const weightHashes = (runtime) => {
 };
 if (!equal(weightHashes(before.runtime), weightHashes(after.runtime)))
   throw new Error("Changed model weights");
+if (!equal(before.runtime.model_file_fingerprints, after.runtime.model_file_fingerprints))
+  throw new Error("Changed model configuration/tokenizer fingerprints");
 const changes = beforePlan.subjects.map((previous) => {
   const current = afterPlan.subjects.find((s) => s.slug === previous.slug);
   const oldResult = before.reports.find((r) => r.slug === previous.slug);
@@ -80,6 +82,13 @@ if (new Set(changes.map((x) => x.slug)).size !== 21) throw new Error("Duplicate 
 const result = {
   model: afterPlan.model,
   unchanged_conditions: true,
+  subject_runtime: {
+    before_sha256: before.runtime.runtime_source_sha256 ?? null,
+    after_sha256: after.runtime.runtime_source_sha256 ?? null,
+    changed: before.runtime.runtime_source_sha256 !== after.runtime.runtime_source_sha256,
+    scope:
+      "Packaged runtime code is part of the corrected subject; model, SDK, weights, configuration, generation, inputs, rubrics and thresholds must stay fixed.",
+  },
   skills: changes.length,
   cases: changes.reduce((n, c) => n + c.total, 0),
   before_passed: changes.reduce((n, c) => n + c.before_passed, 0),

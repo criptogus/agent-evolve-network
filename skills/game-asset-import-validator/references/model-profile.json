@@ -4,6 +4,8 @@
   "prompt_protocol": "redact-route-generate-v1",
   "mlx_vlm": "0.6.13",
   "mlx": "0.32.0",
+  "python": "3.12.15",
+  "architecture": "arm64",
   "max_tokens": 768,
   "temperature": 0,
   "seed": 0,
@@ -29,16 +31,19 @@
   },
   "input_boundary": {
     "business_evidence": "Structured context.input using this skill contract; host validation is recomputed, not trusted from client claims.",
-    "ancillary_notes": "Inline source_note annotations are quarantined and cannot supply required business facts.",
-    "privacy": "Supported labeled credential/personal fields are removed before inference; this is not a universal PII detector or a bare-model certification."
+    "ancillary_notes": "Inline source_note annotations are silently quarantined and cannot supply required business facts; counts and hashes remain in provenance.",
+    "privacy": "Supported labeled credential/personal fields are removed before inference; this is not a universal PII detector or a bare-model certification.",
+    "refusal_data_minimization": "Full sanitized request is classified by the local model. Final refusal generation receives category policy only, without unnecessary user records or proof markers; final outputs are raw model generation. Analytical/sanitization/clinical modes retain sanitized relevant records.",
+    "host_facts": "The host records actual packaged validator/contract reads and distinguishes helper actions from supported local runtime calculations. BRL minor-unit normalization, explicit calendar notices, pack quantities, freshness and production loss components are deterministic source-derived facts, not external operations. Handoff inventory preserves supplied purpose, owner and hours separately from consent, availability, sending and transfer verification; this offline host performs none of those operational checks. The host also records same-currency bid differences relative to the first bid, exact pack quantity/price equations, unverified supplier-evidence inventory and frame-sample rank/count facts. These are source-derived calculations/inventories, not model-generated answers or external verification. Same-currency bid relative changes use the named baseline with four decimal places for percentage presentation; zero baselines leave the relative change undefined. Handoff process receipts separate whether a check ran from its unassessed result.",
+    "routing_context": "Intent routing reads the sanitized actual request. Host-validated structured business records are excluded from routing and retained for legitimate domain generation; other sanitized contextual history remains available. Records do not confer action authority. Routing context hashes and exclusion flags are retained."
   },
   "package_slug": "game-asset-import-validator",
-  "package_version": "0.1.3",
+  "package_version": "0.1.4",
   "files_sha256": {
     "scripts/check_input.py": "b7043b2eb7b7a407ec68d12253d6f9b75b72d254e5eff80d66879c5905a94260",
     "references/contract.json": "c5b028d3749384e3843973b6c074a7c6124cebef9c0f6f4c350c0d9e79546d49",
-    "scripts/local_runtime.py": "f0420a5e347e5109578ccd7d18378081c42b3ca91b8de3229d7ca70a83490a91",
-    "scripts/run_request.py": "784bb561b593bc2a7e49b9662fe3c1cc4d40d9dd14e02f583b00b1644ad46e2b",
-    "references/system-prompt.txt": "603739944a40864e035ec1e6956ea3d6a56d805973539eb358112ff1f78076b3"
+    "scripts/local_runtime.py": "9fda01b2205de3b0e0b1888ab9b2b83e4b318898fa4ed8e37aa22f9f5fa9ba31",
+    "scripts/run_request.py": "a5bd9fb046af144f3eaae011f45ba709f9b4f0d41a7b1d3ceffc42138ae9cb96",
+    "references/system-prompt.txt": "7a481c34748e1e17a16a9fc5420fbf43a10be7f298d8194e017d57126a648fb2"
   }
 }

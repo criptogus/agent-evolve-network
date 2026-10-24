@@ -35,7 +35,7 @@ const headers = {
 const bodySchema = z.object({
   session: z.string().trim().min(8).max(200),
   step_id: z.string().trim().min(2).max(40),
-  evidence: z.record(z.unknown()).optional(),
+  evidence: z.record(z.string(), z.unknown()).optional(),
   client_name: z.string().trim().max(120).optional(),
 });
 

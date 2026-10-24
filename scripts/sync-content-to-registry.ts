@@ -40,7 +40,7 @@ const schema = z.object({
   authors: z.array(z.string()).min(1),
   system_prompt: z.string().optional(),
   long_description: z.string().optional(),
-  rules: z.record(z.unknown()).optional(),
+  rules: z.record(z.string(), z.unknown()).optional(),
   examples: z.array(z.unknown()).optional(),
   compatibility: z.array(z.unknown()).optional(),
   tags: z.array(z.string()).optional(),

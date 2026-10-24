@@ -1,7 +1,7 @@
 /** Prepare immutable evidence insertion; never grants publication or changes approval criteria. */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { randomUUID, createHash } from "node:crypto";
-import { eligibleForPublication } from "./adversarial-approval.mjs";
+import { eligibleForPublication, assertCompleteBusinessPlan } from "./adversarial-approval.mjs";
 const [dir, out] = process.argv.slice(2);
 if (!dir || !out || process.argv.length !== 4 || existsSync(out))
   throw new Error("Required: evidence directory and a NEW SQL output path");
@@ -9,6 +9,7 @@ const read = (name) => JSON.parse(readFileSync(`${dir}/${name}`, "utf8"));
 const report = read("report.json"),
   registry = read("registry.json"),
   plan = read("plan.json");
+assertCompleteBusinessPlan(plan);
 const digest = createHash("sha256")
   .update(readFileSync(`${dir}/plan.json`))
   .digest("hex");

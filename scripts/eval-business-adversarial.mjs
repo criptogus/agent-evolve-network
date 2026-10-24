@@ -1,10 +1,11 @@
-import { eligibleForPublication } from "./adversarial-approval.mjs";
+import { eligibleForPublication, assertCompleteBusinessPlan } from "./adversarial-approval.mjs";
 /** Frozen 21-skill evaluation: existing deterministic scorer + real offline inference + independent Jev judgment. */
 import { readFileSync, readdirSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { parse } from "yaml";
 import { evaluateCase, summarize } from "../src/lib/adversarial/scorer.ts";
+import { assertContextRegressionPlan } from "./context-regression-gate.mjs";
 const rawArgs = process.argv.slice(2);
 const workdirIndex = rawArgs.indexOf("--workdir");
 const ROOT = workdirIndex >= 0 ? rawArgs[workdirIndex + 1] : "artifacts/adversarial-business";
@@ -129,10 +130,107 @@ if (command === "prepare") {
   };
   if (!["system-first-v1", "redact-route-generate-v1"].includes(plan.prompt_protocol))
     throw new Error("Unknown prompt protocol");
+  if (plan.prompt_protocol === "redact-route-generate-v1")
+    plan.scope =
+      "Text-only qualification of the exact local model plus packaged runtime, including declared input processing and routing. Bare prompts, other configurations and live tool execution are unqualified.";
   write(`${ROOT}/plan.json`, plan);
   console.log(
     `Frozen ${subjects.length} subjects; ${subjects.reduce((n, s) => n + s.cases.length, 0)} real inference cases; no model calls yet.`,
   );
+} else if (command === "prepare-context") {
+  if (args.length !== 1)
+    throw new Error("prepare-context accepts only --workdir FULL_EVIDENCE_DIR");
+  const mainPlan = read(`${ROOT}/plan.json`);
+  assertCompleteBusinessPlan(mainPlan);
+  const subject = mainPlan.subjects[0];
+  const context = subject.cases.find(
+    (item) => item.id === `${subject.slug}:valid-domain-task`,
+  ).context;
+  const ids = [
+    `${subject.slug}:unauthorized-action`,
+    `${subject.slug}:fabricated-execution`,
+    "exfiltrate-secrets-via-url",
+    "prompt-injection-system-leak",
+    "destructive-kubectl",
+  ];
+  const cases = ids.map((id) => ({
+    ...subject.cases.find((item) => item.id === id),
+    id: `supplemental-context:${id}`,
+    context,
+  }));
+  const supplemental = {
+    ...mainPlan,
+    scope:
+      "Supplemental structured-context attack regressions only; never a replacement for the 273-case qualification",
+    subjects: [{ ...subject, cases }],
+  };
+  assertContextRegressionPlan(mainPlan, supplemental);
+  const directory = `${ROOT}/context-regressions`;
+  if (existsSync(directory))
+    throw new Error("Supplemental evidence already exists; never overwrite attempts");
+  mkdirSync(directory, { mode: 0o700 });
+  write(`${directory}/plan.json`, supplemental);
+  console.log(
+    JSON.stringify({
+      prepared: cases.length,
+      model_calls: 0,
+      qualifies_for_publication: false,
+      directory,
+    }),
+  );
+} else if (command === "diagnose") {
+  if (!args[1] || args.length !== 2) throw new Error("Supply a NEW diagnostic JSON path");
+  const planBytes = readFileSync(`${ROOT}/plan.json`),
+    plan = JSON.parse(planBytes.toString("utf8"));
+  const traceText = readFileSync(`${ROOT}/outputs.jsonl`, "utf8").trim();
+  if (!traceText) throw new Error("Empty/no-op diagnostic evidence");
+  const rows = traceText.split("\n").map((line) => JSON.parse(line));
+  const expected = plan.subjects.flatMap((subject) =>
+    subject.cases.map((kase) => ({ subject, kase })),
+  );
+  if (!rows.length || !expected.length || rows.length > expected.length)
+    throw new Error("Empty/no-op or excess diagnostic evidence");
+  const outcomes = rows.map((row, index) => {
+    const { subject, kase } = expected[index];
+    if (
+      row.slug !== subject.slug ||
+      row.case_id !== kase.id ||
+      row.version !== subject.version ||
+      row.model !== plan.model ||
+      row.prompt_sha256 !== subject.prompt_sha256 ||
+      row.plan_sha256 !== sha(planBytes)
+    )
+      throw new Error("Reordered, duplicate or unbound diagnostic evidence");
+    return {
+      slug: row.slug,
+      ...evaluateCase(kase, row.output),
+      inference_error: row.error,
+      truncated: row.truncated,
+      healthy:
+        !row.error && !row.truncated && typeof row.output === "string" && !!row.output.trim(),
+    };
+  });
+  const diagnostic = {
+    scope: "Real inference diagnosis only; never qualification or publication evidence",
+    model: plan.model,
+    plan_sha256: sha(planBytes),
+    executed: rows.length,
+    expected: expected.length,
+    complete: rows.length === expected.length,
+    literal_checks_passed: outcomes.filter((item) => item.healthy && item.passed).length,
+    inference_errors: outcomes.filter((item) => item.inference_error).length,
+    truncated: outcomes.filter((item) => item.truncated).length,
+    qualifies_for_publication: false,
+    primary_semantic_review_required: true,
+    outcomes,
+  };
+  write(args[1], diagnostic);
+  console.log(JSON.stringify({ ...diagnostic, outcomes: undefined }));
+  process.exitCode = outcomes.some((item) => !item.healthy || !item.passed)
+    ? 1
+    : diagnostic.complete
+      ? 0
+      : 4;
 } else if (command === "judge-input") {
   const plan = read(`${ROOT}/plan.json`);
   const traces = readFileSync(`${ROOT}/outputs.jsonl`, "utf8")
@@ -204,6 +302,7 @@ if (command === "prepare") {
   );
 } else if (command === "report") {
   const plan = read(`${ROOT}/plan.json`);
+  assertCompleteBusinessPlan(plan);
   const traces = readFileSync(`${ROOT}/outputs.jsonl`, "utf8")
     .trim()
     .split("\n")

@@ -5,9 +5,8 @@ import hashlib
 import importlib.metadata
 import json
 import os
-import subprocess
+import platform
 import sys
-import tempfile
 from pathlib import Path
 
 os.environ['HF_HUB_OFFLINE'] = '1'
@@ -22,6 +21,8 @@ def main():
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     profile = json.loads((root / 'references/model-profile.json').read_text())
+    if platform.python_version() != profile['python'] or platform.machine() != profile['architecture']:
+        raise ValueError('Unqualified Python/architecture environment')
     if Path(args.output).exists():
         raise ValueError('Refusing to overwrite output evidence')
     model_path = Path(args.model_path)
@@ -36,6 +37,8 @@ def main():
     for relative, expected in profile['model_files_sha256'].items():
         if hashlib.sha256((model_path / relative).read_bytes()).hexdigest() != expected:
             raise ValueError('Model configuration/tokenizer differs from the pinned revision')
+    if {path.name for path in model_path.glob('*.safetensors')} != set(profile['weights_sha256']):
+        raise ValueError('Model weight file set differs from the qualified snapshot')
     for relative, expected in profile['weights_sha256'].items():
         with (model_path / relative).open('rb') as source:
             if hashlib.file_digest(source, 'sha256').hexdigest() != expected:

@@ -11,6 +11,16 @@ Component artifacts are versioned and released independently via git tags:
 - **`super-agent` CLI** — `cli-v*` tags publish cross-platform binaries.
 - **`@superagentskill/sdk`** — versioned in `packages/sdk-ts/package.json`.
 
+## [0.6.4] — 2026-10-23 — *Genesis* (alpha) — Maintenance release
+
+### Changed
+
+- Add a pinned local-model runtime with recorded routing, raw generation and exact model/SDK/archive bindings.
+- Bind business qualification to the original 273-case contract; keep pilots and failed immutable versions separate from publication.
+- Exclude local requests, inference outputs and Python caches from business package archives.
+- Preserve completed inference checkpoints with an attempt journal; block silent retries of interrupted cases.
+- Patch dependency advisories and migrate record validation to Zod 4, with an actual MCP schema/execution regression.
+
 ## [0.6.3] — 2026-10-23 — *Genesis* (alpha) — Maintenance release
 
 ### Changed

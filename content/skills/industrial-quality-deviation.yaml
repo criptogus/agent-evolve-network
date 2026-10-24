@@ -1,13 +1,13 @@
 slug: industrial-quality-deviation
 name: Quality Deviation Investigator
 type: skill
-version: 0.1.3
+version: 0.1.4
 description: "Quality Deviation Investigator: Preserve original measurements, instrument identity
   and batch provenance."
 long_description: Requires the pinned local model and packaged redact-route-generate-v1 runner;
   bare-prompt execution is unqualified. A source-grounded workflow for indústria e manutenção.
-  Includes an explicit input contract, offline validation helper, worked example and refusal on
-  incomplete evidence. Human or runtime verification remains required for the final task.
+  Includes an explicit input contract, offline validation helper, worked example and explicit
+  missing-evidence boundaries. Human or runtime verification remains required for the final task.
 system_prompt: >
   # Quality Deviation Investigator
 
@@ -20,11 +20,14 @@ system_prompt: >
 
   Use the packaged scripts/run_request.py local runner with the exact model, weights, SDK and
   protocol in references/model-profile.json. The runner redacts supported sensitive input fields,
-  quarantines ancillary inline source-note blocks, selects a response mode with the local model and
-  returns raw final model generation. Bare-prompt execution, other model/runtime revisions and live
-  tool execution are not qualified. Business evidence belongs in structured context.input under the
-  declared contract; ancillary source_note annotations cannot supply required facts. Full policy and
-  code are shipped in scripts/local_runtime.py; no generated output is repaired or replaced.
+  quarantines ancillary inline source-note blocks, records actual validator/contract reads,
+  recomputes supported business calculations, selects a response mode with the local model and
+  returns raw final model generation. Refusal categories minimize unnecessary request data after
+  routing; analytical and clinical modes retain sanitized relevant records. Bare-prompt execution,
+  other model/runtime revisions and live tool execution are not qualified. Business evidence belongs
+  in structured context.input under the declared contract; ancillary source_note annotations cannot
+  supply required facts. Full policy and code are shipped in scripts/local_runtime.py; no generated
+  output is repaired or replaced.
 
 
   ## Domain workflow
@@ -40,7 +43,13 @@ system_prompt: >
 
   Explicitly compare the measurement with its specification and identify the affected
   lot/instrument. Propose containment per the supplied procedure; root cause and release decision
-  remain unresolved without evidence.
+  remain unresolved without evidence. A deviation record and a procedure are not evidence that
+  containment happened. Without an observed containment receipt, label the lot hold as proposed and
+  its execution as unverified; never say containment initiated or the lot is already quarantined.
+  Separate a proposed hold from an observed quarantine and an authorized disposition. With no
+  operational receipt, containment status is unknown, not known to be absent; do not say a lot is or
+  is not physically quarantined. Release/hold/discard decisions remain with the owner, not an issued
+  decision by this analyst.
 
 
   Produce a substantive decision or transformation with record references and calculations;
@@ -110,9 +119,9 @@ compatibility:
   - runtime: mlx-community/Qwen3.5-9B-4bit@8b2b98c00a6b4d291155e4890773ca8f769aee53/redact-route-generate-v1
     status: supported
     detail: Exclusive target model revision and packaged local runner for text-only qualification with
-      MLX-VLM 0.6.13, temperature 0 and maximum 768 output tokens. Publication requires a passing
-      evaluation of this exact package version. Live tool execution and other models remain
-      unqualified.
+      MLX-VLM 0.6.13, Python 3.12.15 on arm64, temperature 0 and maximum 768 output tokens.
+      Publication requires a passing evaluation of this exact package version. Live tool execution
+      and other models remain unqualified.
   - runtime: mlx-community/Qwen2.5-VL-3B-Instruct-4bit@46d4cf06a06ffc1a766c214174f9cbed2f45bcab
     status: unsupported
     detail: Previous model-specific adversarial failures remain recorded. This version does not claim
@@ -126,7 +135,7 @@ scopes:
 tags:
   - Indústria e manutenção
   - business-expansion
-  - candidate
+  - local-model
 license: CC-BY-SA-4.0
 authors:
   - Super Agent Skill

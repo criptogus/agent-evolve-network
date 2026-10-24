@@ -26,7 +26,7 @@ const REPO = "criptogus/agent-evolve-network";
 const SITE = "https://superagentskill.com";
 const CHECK = process.argv.includes("--check");
 const HashesSchema = z
-  .record(z.string().regex(/^[a-f0-9]{64}$/))
+  .record(z.string(), z.string().regex(/^[a-f0-9]{64}$/))
   .refine((hashes) => Object.keys(hashes).length > 0);
 const ModelProfileSchema = z
   .object({
@@ -35,6 +35,8 @@ const ModelProfileSchema = z
     prompt_protocol: z.literal("redact-route-generate-v1"),
     mlx_vlm: z.string().min(1),
     mlx: z.string().min(1),
+    python: z.string().regex(/^\d+\.\d+\.\d+$/),
+    architecture: z.string().min(1),
     max_tokens: z.literal(768),
     temperature: z.literal(0),
     seed: z.literal(0),
@@ -42,7 +44,7 @@ const ModelProfileSchema = z
     scope: z.string().min(1),
     model_files_sha256: HashesSchema,
     routing: z.object({ contract: z.string().min(1), max_tokens: z.literal(1) }),
-    input_boundary: z.record(z.string()),
+    input_boundary: z.record(z.string(), z.string()),
   })
   .strict();
 
@@ -236,7 +238,7 @@ for (const file of files) {
       ),
       package_slug: slug,
       package_version: String(skill.version),
-      files_sha256: z.record(z.string()).parse({}),
+      files_sha256: z.record(z.string(), z.string()).parse({}),
     };
     profile.package_slug = slug;
     profile.package_version = skill.version;

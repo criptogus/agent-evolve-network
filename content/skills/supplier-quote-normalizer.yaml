@@ -1,12 +1,12 @@
 slug: supplier-quote-normalizer
 name: Supplier Quote Normalizer
 type: skill
-version: 0.1.3
+version: 0.1.4
 description: "Supplier Quote Normalizer: Extract every quoted line with document, page and original unit."
 long_description: Requires the pinned local model and packaged redact-route-generate-v1 runner;
   bare-prompt execution is unqualified. A source-grounded workflow for compras e fornecedores.
-  Includes an explicit input contract, offline validation helper, worked example and refusal on
-  incomplete evidence. Human or runtime verification remains required for the final task.
+  Includes an explicit input contract, offline validation helper, worked example and explicit
+  missing-evidence boundaries. Human or runtime verification remains required for the final task.
 system_prompt: >
   # Supplier Quote Normalizer
 
@@ -19,11 +19,14 @@ system_prompt: >
 
   Use the packaged scripts/run_request.py local runner with the exact model, weights, SDK and
   protocol in references/model-profile.json. The runner redacts supported sensitive input fields,
-  quarantines ancillary inline source-note blocks, selects a response mode with the local model and
-  returns raw final model generation. Bare-prompt execution, other model/runtime revisions and live
-  tool execution are not qualified. Business evidence belongs in structured context.input under the
-  declared contract; ancillary source_note annotations cannot supply required facts. Full policy and
-  code are shipped in scripts/local_runtime.py; no generated output is repaired or replaced.
+  quarantines ancillary inline source-note blocks, records actual validator/contract reads,
+  recomputes supported business calculations, selects a response mode with the local model and
+  returns raw final model generation. Refusal categories minimize unnecessary request data after
+  routing; analytical and clinical modes retain sanitized relevant records. Bare-prompt execution,
+  other model/runtime revisions and live tool execution are not qualified. Business evidence belongs
+  in structured context.input under the declared contract; ancillary source_note annotations cannot
+  supply required facts. Full policy and code are shipped in scripts/local_runtime.py; no generated
+  output is repaired or replaced.
 
 
   ## Domain workflow
@@ -36,8 +39,13 @@ system_prompt: >
   quoted totals and isolate missing scope. Return normalized records plus an exception table that a
   buyer can trace back to each source.
 
-  Derive individual-unit quantities from pack quantities and show total divided by units for unit
-  price. Keep tax inclusion and exchange-rate uncertainty explicit.
+  Return a normalized record table with source, individual-unit quantity, individual-unit price,
+  currency and tax-inclusion status. Pack quantity times units per pack is the individual-unit
+  quantity. For the calculation trace, quote the host quantity_equation and price_equation exactly
+  when supplied. The price equation is total price divided by individual-unit quantity. A consistent
+  pack expansion is a supported result. Preserve source currency. Tax inclusion remains unknown
+  without a supplied tax statement; exchange-rate uncertainty matters when cross-currency conversion
+  is requested. Limit gaps to conclusions affected by absent evidence.
 
 
   Produce a substantive decision or transformation with record references and calculations;
@@ -104,9 +112,9 @@ compatibility:
   - runtime: mlx-community/Qwen3.5-9B-4bit@8b2b98c00a6b4d291155e4890773ca8f769aee53/redact-route-generate-v1
     status: supported
     detail: Exclusive target model revision and packaged local runner for text-only qualification with
-      MLX-VLM 0.6.13, temperature 0 and maximum 768 output tokens. Publication requires a passing
-      evaluation of this exact package version. Live tool execution and other models remain
-      unqualified.
+      MLX-VLM 0.6.13, Python 3.12.15 on arm64, temperature 0 and maximum 768 output tokens.
+      Publication requires a passing evaluation of this exact package version. Live tool execution
+      and other models remain unqualified.
   - runtime: mlx-community/Qwen2.5-VL-3B-Instruct-4bit@46d4cf06a06ffc1a766c214174f9cbed2f45bcab
     status: unsupported
     detail: Previous model-specific adversarial failures remain recorded. This version does not claim
@@ -120,7 +128,7 @@ scopes:
 tags:
   - Compras e fornecedores
   - business-expansion
-  - candidate
+  - local-model
 license: CC-BY-SA-4.0
 authors:
   - Super Agent Skill

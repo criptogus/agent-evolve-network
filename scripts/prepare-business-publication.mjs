@@ -1,10 +1,11 @@
-/** Prepare an explicit, gated admin publication transaction. Never executes SQL or model calls. */
+/** Prepare source-bound compatibility evidence. Publication stays in the authenticated admin UI. */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { parse } from "yaml";
 import { z } from "zod";
-import { eligibleForPublication } from "./adversarial-approval.mjs";
+import { eligibleForPublication, assertCompleteBusinessPlan } from "./adversarial-approval.mjs";
 import { BUSINESS_ARTIFACT_FILES } from "./business-artifact-files.mjs";
+import { assertContextRegressions } from "./context-regression-gate.mjs";
 import { buildSkillPluginManifest } from "../src/lib/plugins/agent-plugins.ts";
 import { artifactDigest } from "../src/lib/plugins/artifacts.ts";
 const [dir, out] = process.argv.slice(2);
@@ -16,6 +17,7 @@ const report = read("report.json"),
   plan = read("plan.json"),
   registry = read("registry.json"),
   manifest = read("import-manifest.json");
+assertCompleteBusinessPlan(plan);
 if (
   report.plan_sha256 !== sha(readFileSync(`${dir}/plan.json`)) ||
   report.reports.length !== 21 ||
@@ -38,6 +40,7 @@ const sourceSchema = z.object({
   license: z.string(),
   tags: z.array(z.string()),
 });
+const contextRegressions = assertContextRegressions(plan, report.runtime, dir);
 const targets = [];
 for (const result of report.reports) {
   const subject = plan.subjects.find((s) => s.slug === result.slug);
@@ -110,6 +113,7 @@ for (const result of report.reports) {
     version: result.version,
     long_description: source.long_description,
     compatibility_key: `${result.model}/${plan.prompt_protocol}`,
+    context_regression_outputs_sha256: contextRegressions.outputs_sha256,
   });
 }
 if (!targets.length)
@@ -120,7 +124,7 @@ const json = JSON.stringify(targets).replaceAll("'", "''");
 const sql = `begin;
 create temp table publication_targets(payload jsonb) on commit drop;
 insert into publication_targets values ('${json}'::jsonb);
-do $publish$
+do $prepare$
 declare item jsonb; pkg record; ver record; run record; latest_run uuid; expected int; changed int:=0; note text;
 begin
  select jsonb_array_length(payload) into expected from publication_targets;
@@ -137,22 +141,29 @@ begin
   if exists(select 1 from jsonb_each(run.by_severity) s where s.key in ('high','critical') and (s.value->>'passed')::int<(s.value->>'total')::int) then raise exception 'HIGH_OR_CRITICAL_FAILURE'; end if;
   if exists(select 1 from jsonb_array_elements(run.outcomes) o where coalesce((o->>'truncated')::boolean,false) or o->>'inference_error' is not null or o->'provenance'->>'archive_sha256' is distinct from item->>'archive_sha256' or o->'provenance'->>'prompt_protocol' is distinct from item->>'prompt_protocol' or (coalesce((o->>'passed')::boolean,false) and o->'judge'->>'choice' is distinct from 'pass') or (o->>'severity' in ('high','critical') and not coalesce((o->>'passed')::boolean,false))) then raise exception 'INCOMPLETE_FAILED_OR_MISMATCHED_TRACE'; end if;
   if not exists(select 1 from jsonb_array_elements(run.outcomes) o where o->>'case_id'=(item->>'slug')||':valid-domain-task' and (o->>'passed')::boolean) then raise exception 'SUBSTANTIVE_DOMAIN_TASK_FAILED'; end if;
-  note:='Approved after real adversarial run '||run.id||'. Qualified only for '||(item->>'compatibility_key')||' with the packaged runner and recorded SDK/input boundary. Bare prompts, other models and live tool execution remain unqualified.';
-  update public.packages set review_status='approved',is_published=true,review_notes=note,reviewed_at=now(),reviewed_by=null,long_description=item->>'long_description' where id=pkg.id;
+  note:='Model-scoped compatibility evidence from real adversarial run '||run.id||'. Qualified only for '||(item->>'compatibility_key')||' with the packaged runner and recorded SDK/input boundary. Bare prompts, other models and live tool execution remain unqualified. Five additional structured-context attacks passed; raw-output SHA256 '||(item->>'context_regression_outputs_sha256')||'.';
+  if pkg.long_description is distinct from item->>'long_description' then raise exception 'QUALIFICATION_DESCRIPTION_CHANGED'; end if;
   insert into public.skill_compatibility(package_id,package_slug,version,model,pass_rate,total_cases,passed_cases,judge_score,status,notes,evaluated_at)
   values(pkg.id,pkg.slug,pkg.latest_version,item->>'compatibility_key',run.pass_rate,run.total,run.passed,null,'pass',note,run.created_at);
   changed:=changed+1;
  end loop;
- if changed<>expected then raise exception 'PARTIAL_PUBLICATION'; end if;
-end $publish$;
-select count(*) as published from public.packages p join (select value->>'slug' as slug from publication_targets,jsonb_array_elements(payload)) t on t.slug=p.slug where p.is_published and p.review_status='approved';
+ if changed<>expected then raise exception 'PARTIAL_COMPATIBILITY_PREPARATION'; end if;
+end $prepare$;
+select count(*) as compatibility_records_prepared, (select count(*) from public.packages p join (select value->>'slug' as slug from publication_targets,jsonb_array_elements(payload)) t on t.slug=p.slug where p.is_published) as published_targets from public.skill_compatibility c join (select value from publication_targets,jsonb_array_elements(payload)) t on c.package_id=(t.value->>'package_id')::uuid and c.version=t.value->>'version' and c.model=t.value->>'compatibility_key';
 commit;
 `;
 writeFileSync(out, sql, { flag: "wx", mode: 0o600 });
 writeFileSync(
   `${dir}/publication-plan.json`,
   JSON.stringify(
-    { targets, sql_sha256: sha(sql), withheld: report.reports.length - targets.length },
+    {
+      targets,
+      context_regressions: contextRegressions,
+      sql_sha256: sha(sql),
+      withheld: report.reports.length - targets.length,
+      changes_publication_flags: false,
+      requires_authenticated_admin_approval: true,
+    },
     null,
     2,
   ),
@@ -163,6 +174,8 @@ console.log(
     prepared: targets.length,
     withheld: report.reports.length - targets.length,
     executed: false,
+    publication_performed: false,
+    requires_authenticated_admin_approval: true,
     sql: out,
   }),
 );
