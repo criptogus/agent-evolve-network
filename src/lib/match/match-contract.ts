@@ -68,7 +68,7 @@ export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: De
   const makeLists = (type: (typeof MATCH_TYPES)[number]) => {
     const matching = candidates.filter((c) => c.type === type);
     const isSoftwareDelivery = (c: MatchCandidate) =>
-      /before declaring a fix|gates? every code change|\bdeploy(?:ment|ments|s)?\b/i.test(
+      /before declaring a fix|gates? every code change|before training|\bdeploy(?:ment|ments|s)?\b/i.test(
         c.description,
       );
     const runtime = matching.filter((c) => !isSoftwareDelivery(c)).map((c) => c.slug);
@@ -196,7 +196,7 @@ Rules:
 - Be opinionated and concise. Use short complete sentences: aim for <=120 characters per why and <=60 per role, and at most three precise gaps. No hedging, no marketing language.
 
 Return only one JSON object matching the provider-supplied JSON Schema, without Markdown fences or extra prose.
-First classify recommended_kit.work_domain from the work explicitly requested in the brief. Use runtime_work for business, document and operational jobs performed by an agent. Use software_work only when the brief explicitly requests developing, testing or fixing software/code. For runtime_work the decoder disallows packages whose documented subject is verifying code changes, declaring a software fix, or software/model deployment. Never reclassify a business job as software_work just to include such a package.
+First classify recommended_kit.work_domain from the work explicitly requested in the brief. Use runtime_work for business, document and operational jobs performed by an agent. Use software_work only when the brief explicitly requests developing, training, testing or fixing software/code or machine-learning models. For runtime_work the decoder disallows packages whose documented subject is verifying code changes, declaring a software fix, software/model deployment, or preparing examples before model training. Never reclassify a business job as software_work just to include such a package.
 Every package named in coverage, rationale or MCP pairings must actually appear in the recommended kit in its documented type.`;
 
   const prompt = `CATALOG (${input.candidates.length} candidate packages from ${input.catalogSize} available):

@@ -156,6 +156,8 @@ test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instru
     .object({
       model: z.literal("openai/gpt-5.2"),
       max_completion_tokens: z.literal(4096),
+      reasoning_effort: z.literal("low"),
+      verbosity: z.literal("low"),
       max_tokens: z.never().optional(),
       response_format: z.object({
         type: z.literal("json_schema"),
@@ -229,6 +231,12 @@ test("runtime selection cannot repurpose documented software-verification capabi
       description: "Demands first-hand evidence before declaring a fix.",
     },
     {
+      slug: "training-prep",
+      name: "Training prep",
+      type: "skill" as const,
+      description: "Prepares duplicate-free examples before training.",
+    },
+    {
       slug: "code-gate",
       name: "Code gate",
       type: "skill" as const,
@@ -237,7 +245,7 @@ test("runtime selection cannot repurpose documented software-verification capabi
   ];
   const schema = buildMatchOutputSchema(scoped, desired);
   const clean = sanitizeMatch(output(), candidates, desired);
-  for (const slug of ["fix-proof", "code-gate"]) {
+  for (const slug of ["fix-proof", "code-gate", "training-prep"]) {
     const runtime = {
       ...clean,
       recommended_kit: {

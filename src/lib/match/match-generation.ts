@@ -9,8 +9,16 @@ export function matchGenerationOptions() {
     // OpenAI-compatible SDK otherwise emits deprecated max_tokens. GPT-5.2
     // uses max_completion_tokens; this bounds visible and reasoning output.
     providerOptions: {
-      lovable: { max_completion_tokens: MATCH_MAX_OUTPUT_TOKENS },
-      "ai-gateway": { max_completion_tokens: MATCH_MAX_OUTPUT_TOKENS },
+      lovable: {
+        max_completion_tokens: MATCH_MAX_OUTPUT_TOKENS,
+        reasoningEffort: "low",
+        textVerbosity: "low",
+      },
+      "ai-gateway": {
+        max_completion_tokens: MATCH_MAX_OUTPUT_TOKENS,
+        reasoningEffort: "low",
+        textVerbosity: "low",
+      },
     },
   };
 }
