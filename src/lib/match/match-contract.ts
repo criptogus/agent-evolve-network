@@ -51,6 +51,30 @@ export const MatchSchema = z.object({
   rationale: z.string().max(1200),
 });
 
+// Constrain the original contract before generation, never repair a wrong-type item afterward.
+export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: DesiredKit) {
+  const list = (type: (typeof MATCH_TYPES)[number]) => {
+    const slugs = candidates.filter((c) => c.type === type).map((c) => c.slug);
+    const count = desired[`${type}s` as keyof DesiredKit];
+    return z
+      .array(
+        RecItem.extend({
+          slug: slugs.length ? z.enum(slugs) : z.string(),
+          score: z.number().min(5).max(10),
+        }),
+      )
+      .max(slugs.length && count ? count + 1 : 0);
+  };
+  return MatchSchema.extend({
+    recommended_kit: z.object({
+      skills: list("skill"),
+      playbooks: list("playbook"),
+      souls: list("soul"),
+      guardrails: list("guardrail"),
+    }),
+  });
+}
+
 export type AgentMatchResult = z.infer<typeof MatchSchema>;
 
 export function buildMatchPrompt(input: {
@@ -77,6 +101,7 @@ Rules:
 - Requested counts are preferences, never quotas. Prefer fewer supported packages over filling every category. If a count is zero, return an empty array for that type.
 - Return an empty array when no package of a type has a documented contribution to the requested jobs. Do not reinterpret a domain-specific package as a different domain workflow or assume it will be rewritten/adapted to fit. Describe such missing workflows as gaps instead.
 - A role must be supported by the supplied package metadata as-is. Generic similarity or an "adaptable" rationale is insufficient when the proposed role changes the package domain.
+- Select packages for the work requested in the brief, not for developing the software that might implement that work. Packages whose documented subject is code changes, builds, lint, tests or declaring a fix apply to software development/repair; they do not verify unrelated business records, documents, statuses or transactions. Include them only when the brief explicitly requests that software work.
 - Preserve the documented subject and outcome of every package. Sharing generic verbs such as verify, audit, match or monitor is insufficient if the package applies them to a different subject or outcome. Omit that package instead of broadening its scope.
 - "role" = the specific job this package does inside the agent (e.g. "lead qualification engine", "voice of taste").
 - "gaps" = capabilities the agent needs that the catalog does NOT cover well — recommend the type to author next.

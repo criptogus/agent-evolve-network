@@ -7,7 +7,7 @@ import { matchGenerationOptions, MATCH_PROVIDER_OPTIONS } from "./match-generati
 import { streamMatchResult } from "./result-stream.ts";
 import { preselectAgentMatch } from "./jev-agent-match.server.ts";
 import { z } from "zod";
-import { MatchSchema, buildMatchPrompt, sanitizeMatch } from "./match-contract";
+import { buildMatchOutputSchema, buildMatchPrompt, sanitizeMatch } from "./match-contract";
 import {
   BENCHMARK_MODEL,
   generatorCost,
@@ -61,7 +61,7 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
     const reservation = reserveGeneration(
       fullPrompt.system,
       fullPrompt.prompt,
-      JSON.stringify(z.toJSONSchema(MatchSchema)),
+      JSON.stringify(z.toJSONSchema(buildMatchOutputSchema(data.candidates, data.desired))),
       data.remaining,
     );
     attempts.add(data.attempt);
@@ -181,7 +181,9 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
           model: provider(BENCHMARK_MODEL),
           system,
           prompt,
-          output: Output.object({ schema: MatchSchema }),
+          output: Output.object({
+            schema: buildMatchOutputSchema(selection.candidates, data.desired),
+          }),
           ...matchGenerationOptions(),
           abortSignal: AbortSignal.any([signal, AbortSignal.timeout(180000)]),
         });
@@ -190,7 +192,9 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
           outputTokens = usage.outputTokens,
           cached = usage.inputTokenDetails.cacheReadTokens;
         // Retain a completed transport even if schema/finish/metering fails. No output repair.
-        const parsed = MatchSchema.safeParse(JSON.parse(result.text));
+        const parsed = buildMatchOutputSchema(selection.candidates, data.desired).safeParse(
+          JSON.parse(result.text),
+        );
         const cost =
           inputTokens !== undefined && outputTokens !== undefined && cached !== undefined
             ? generatorCost(inputTokens, cached, outputTokens)

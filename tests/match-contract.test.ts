@@ -10,6 +10,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   buildMatchPrompt,
+  buildMatchOutputSchema,
   MatchSchema,
   sanitizeMatch,
   type AgentMatchResult,
@@ -99,7 +100,10 @@ test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instru
           choices: [
             {
               index: 0,
-              message: { role: "assistant", content: JSON.stringify(output()) },
+              message: {
+                role: "assistant",
+                content: JSON.stringify(sanitizeMatch(output(), candidates, desired)),
+              },
               finish_reason: "stop",
             },
           ],
@@ -125,7 +129,7 @@ test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instru
     ...matchGenerationOptions(),
     system,
     prompt,
-    output: Output.object({ schema: MatchSchema }),
+    output: Output.object({ schema: buildMatchOutputSchema(candidates, desired) }),
   });
   assert.equal(result.finishReason, "stop");
   assert.ok(captured);
@@ -154,4 +158,23 @@ test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instru
 test("explicit zero optional package counts stay empty", () => {
   const result = sanitizeMatch(output(), candidates, { ...desired, guardrails: 0 });
   assert.deepEqual(result.recommended_kit.guardrails, []);
+});
+
+test("generation schema rejects wrong-type, absent, weak and over-quota packages before sanitization", () => {
+  const schema = buildMatchOutputSchema(candidates, desired);
+  const valid = sanitizeMatch(output(), candidates, desired);
+  assert.equal(schema.safeParse(valid).success, true);
+  for (const bad of ["policy", "foreign"]) {
+    const value = structuredClone(valid);
+    value.recommended_kit.skills = [item(bad)];
+    assert.equal(schema.safeParse(value).success, false);
+  }
+  const weak = structuredClone(valid);
+  weak.recommended_kit.skills = [item("good", 4)];
+  assert.equal(schema.safeParse(weak).success, false);
+  const excess = structuredClone(valid);
+  excess.recommended_kit.skills = [item("good"), item("weak"), item("good")];
+  assert.equal(schema.safeParse(excess).success, false);
+  const disabled = buildMatchOutputSchema(candidates, { ...desired, guardrails: 0 });
+  assert.equal(disabled.safeParse(valid).success, false);
 });
