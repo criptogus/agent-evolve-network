@@ -54,7 +54,7 @@ test("Jev consent and configuration gates make zero external calls", async () =>
 test("Jev adapter uses only fixed TypeSafe endpoint, rejects redirects and records actual usage", async () => {
   const fetcher: typeof fetch = async (url, init) => {
     assert.equal(url, "https://api.typesafe.ai/v1/systemone");
-    assert.equal(init?.redirect, "error");
+    assert.equal(init?.redirect, "manual");
     assert.equal(new Headers(init?.headers).get("authorization"), `Bearer ${options.apiKey}`);
     const body = JSON.parse(String(init?.body));
     assert.equal(body.model, JEV_MATCH_MODEL);
@@ -261,4 +261,24 @@ test("Jev failure diagnostics retain only stage and HTTP status, never response 
   assert.deepEqual(result.trace.failures, [{ stage: "http_response", http_status: 401 }]);
   assert.equal(result.trace.usage_complete, false);
   assert.ok(!JSON.stringify(result.trace).includes(options.apiKey));
+});
+
+test("manual redirects fail closed without forwarding credentials or retrying", async () => {
+  let calls = 0;
+  const result = await preselectAgentMatch(input, {
+    ...options,
+    fetch: async (_url, init) => {
+      calls++;
+      assert.equal(init?.redirect, "manual");
+      return new Response(null, {
+        status: 307,
+        headers: { location: "https://untrusted.invalid/" },
+      });
+    },
+  });
+  assert.equal(calls, 1);
+  assert.equal(result.trace.status, "fallback");
+  assert.equal(result.trace.usage_complete, false);
+  assert.deepEqual(result.candidates, catalog);
+  assert.deepEqual(result.trace.failures, [{ stage: "http_response", http_status: 307 }]);
 });

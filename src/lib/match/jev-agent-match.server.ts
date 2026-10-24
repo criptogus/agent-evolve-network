@@ -129,7 +129,9 @@ export async function preselectAgentMatch(
           method: "POST",
           headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
           body,
-          redirect: "error",
+          // Manual mode is supported by the managed transport; 3xx fails below.
+          // Never follow a redirect or forward the credential to another origin.
+          redirect: "manual",
           signal: controller.signal,
         });
         httpStatus = response.status;
