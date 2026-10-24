@@ -411,5 +411,27 @@ test("catalog labels separate source description from names and reject quota pad
   });
   assert.ok(result.prompt.includes('name="Good"; description="Source-grounded analysis"'));
   assert.match(result.system, /smallest sufficient kit/);
-  assert.match(result.system, /never the name or the entire catalog line/);
+  assert.match(result.system, /never the outer name field or the entire catalog line/);
+});
+
+test("wire schema binds slug before literal evidence and explanatory fields", async () => {
+  const wire = z
+    .record(z.string(), z.unknown())
+    .parse(await buildMatchWireSchema(candidates, desired).jsonSchema);
+  const definitions = z.record(z.string(), z.unknown()).parse(wire.definitions);
+  let checked = 0;
+  for (const value of Object.values(definitions)) {
+    const item = z.object({ properties: z.record(z.string(), z.unknown()) }).safeParse(value);
+    if (item.success && "source_quote" in item.data.properties) {
+      assert.deepEqual(Object.keys(item.data.properties), [
+        "slug",
+        "source_quote",
+        "score",
+        "why",
+        "role",
+      ]);
+      checked++;
+    }
+  }
+  assert.ok(checked > 0);
 });
