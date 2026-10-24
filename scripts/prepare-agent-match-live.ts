@@ -47,7 +47,10 @@ for (const step of plan.schedule.filter((s) => s.arm === "jev")) {
   const transport: typeof fetch = async (url, init) => {
     const response = await fetch(url, init);
     try {
-      responses.push(await response.clone().json());
+      responses.push({
+        request: JSON.parse(String(init?.body)),
+        response: await response.clone().json(),
+      });
     } catch {
       responses.push({ invalidJson: true, status: response.status });
     }

@@ -87,7 +87,7 @@ test("shadow mode measures selection while forwarding the full original catalog"
   assert.equal(result.trace.forwarded_count, 8);
 });
 
-test("uncertainty, no match and missing per-type coverage retain the full catalog", () => {
+test("uncertainty and no match retain the full catalog; missing types retain every alternative", () => {
   assert.deepEqual(
     selectMatchCandidates(
       catalog,
@@ -232,4 +232,23 @@ test("question identity is explicit rather than relying on numeric array indirec
     assert.ok(request.questions[`c${i}`].instructions.includes(candidate.name));
     assert.ok(request.questions[`c${i}`].instructions.includes(candidate.slug));
   });
+});
+
+test("missing type coverage restores every alternative without discarding ambiguous candidates", () => {
+  const mixed: MatchCandidate[] = [
+    ...catalog,
+    { slug: "safety", name: "Safety", type: "guardrail", description: "Required boundary" },
+  ];
+  const values = [0.99, 0.5, 0.2, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01];
+  const result = selectMatchCandidates(mixed, values, { ...input.desired, guardrails: 1 });
+  assert.equal(result.reason, "restored_type_coverage");
+  assert.deepEqual(
+    result.candidates.map((c) => c.slug),
+    ["skill-0", "skill-1", "skill-2", "safety"],
+  );
+  assert.equal(
+    result.candidates.filter((c) => c.type === "skill").length,
+    input.desired.skills + 2,
+  );
+  assert.equal(result.candidates.filter((c) => c.type === "guardrail").length, 1);
 });

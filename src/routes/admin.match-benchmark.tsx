@@ -5,7 +5,7 @@ import { z } from "zod";
 import { generateBenchmarkObservation } from "@/lib/match/benchmark.functions";
 import { requireBenchmarkPreview } from "@/lib/match/benchmark-budget";
 const schema = z.object({
-  planHash: z.literal("69e20f1d037be5934c57e44dfe8f44a9122a3e870057797bb19957c18e9ab81b"),
+  planHash: z.literal("f498ccf75aa603842123013543aba73a885fd07383068a1fc944aeac0dae7bbf"),
   catalog: z
     .array(
       z.object({
@@ -43,7 +43,7 @@ const schema = z.object({
     )
     .length(36),
 });
-const STORAGE = "sas-agent-match-paired-v1-usd5";
+const STORAGE = "sas-agent-match-paired-v2-usd5";
 export const Route = createFileRoute("/admin/match-benchmark")({ component: Benchmark });
 function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);
