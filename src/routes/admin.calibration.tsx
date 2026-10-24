@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { SitePage } from "@/components/site/SitePage";
+import { Footer } from "@/components/site/Footer";
 import {
   getJudgeCalibration,
   runAdversarialWithJudge,
@@ -67,8 +67,8 @@ function AdminCalibrationPage() {
   const rows = (q.data?.rows ?? []) as JudgeCalibrationRow[];
 
   return (
-    <SitePage>
-      <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
+    <>
+      <div className="mx-auto max-w-4xl px-4 py-10 md:py-14">
         <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">Admin</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
           Judge calibration
@@ -188,8 +188,9 @@ function AdminCalibrationPage() {
             </tbody>
           </table>
         </div>
-      </main>
-    </SitePage>
+      </div>
+      <Footer />
+    </>
   );
 }
 

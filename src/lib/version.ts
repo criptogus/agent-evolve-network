@@ -12,7 +12,7 @@
  * We are still pre-1.0: rapid evolution, no stability guarantees.
  */
 
-export const PLATFORM_VERSION = "0.6.7" as const;
+export const PLATFORM_VERSION = "0.6.8" as const;
 export const PLATFORM_CODENAME = "Genesis" as const;
 export const PLATFORM_STAGE: "alpha" | "beta" | "ga" = "alpha";
 export const PLATFORM_BUILD_DATE = "2026-10-24" as const;
@@ -30,6 +30,16 @@ export type ChangelogEntry = {
  * Every deployed change appends a new entry (or amends the top one before shipping).
  */
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "0.6.8",
+    date: "2026-10-24",
+    kind: "patch",
+    title: "Deduplicate admin page navigation",
+    highlights: [
+      "Remove duplicate global menus from catalog curation, judge calibration and funnel reports.",
+      "Audit nested route navigation in the release validation batch.",
+    ],
+  },
   {
     version: "0.6.7",
     date: "2026-10-24",

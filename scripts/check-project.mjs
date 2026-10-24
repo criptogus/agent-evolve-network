@@ -12,6 +12,7 @@ const checks = [
   "check:business-skills",
   "check:skills-mirror",
   "check:agent-plugin",
+  "check:navigation",
 ];
 if (process.argv.includes("--security")) checks.push("check:security");
 if (process.argv.includes("--ui")) checks.push("test:ui");
