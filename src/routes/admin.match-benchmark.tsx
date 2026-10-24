@@ -15,7 +15,7 @@ import {
   requireBenchmarkPreview,
 } from "@/lib/match/benchmark-budget";
 const schema = z.object({
-  planHash: z.literal("d8de6867034bda9860dfcb48b6cdc2ecb5dd12afe828045e082f57dbca7b88e9"),
+  planHash: z.literal("b6c1b01340b8804d31dd65baafba1c5ca2c840bd004be5f84a5d65e86854d1ce"),
   catalog: z
     .array(
       z.object({
@@ -42,18 +42,8 @@ const schema = z.object({
       }),
     )
     .length(72),
-  selections: z
-    .array(
-      z.object({
-        caseId: z.string(),
-        repeat: z.number(),
-        slugs: z.array(z.string()).min(1),
-        trace: z.record(z.string(), z.unknown()),
-      }),
-    )
-    .length(36),
 });
-const STORAGE = "sas-agent-match-paired-v8-usd5";
+const STORAGE = "sas-agent-match-paired-v9-usd5";
 export const Route = createFileRoute("/admin/match-benchmark")({ component: Benchmark });
 function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);
@@ -137,10 +127,7 @@ function Benchmark() {
       persist("running");
       for (const step of batch.schedule.slice(rows.length)) {
         const item = batch.cases.find((c) => c.id === step.caseId);
-        const selection = batch.selections.find(
-          (s) => s.caseId === step.caseId && s.repeat === step.repeat,
-        );
-        if (!item || !selection) throw new Error("Missing frozen case/selection");
+        if (!item) throw new Error("Missing frozen case");
         // Actual qualification executes Jev in the same backend, never a locally
         // precomputed selection or additive cross-environment latency estimate.
         const candidates = batch.catalog;

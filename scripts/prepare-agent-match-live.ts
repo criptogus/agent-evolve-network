@@ -4,6 +4,49 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import { preselectAgentMatch } from "../src/lib/match/jev-agent-match.server.ts";
 const [planFile, outputDir, live, selectionFile, oldPlanFile] = process.argv.slice(2);
+if (live === "--managed-only") {
+  if (!planFile || !outputDir || existsSync(`${outputDir}/batch.json`))
+    throw new Error("Managed preparation requires a frozen plan and a new output target");
+  const rawPlan = JSON.parse(readFileSync(planFile, "utf8"));
+  const plan = z
+    .object({
+      planHash: z.string(),
+      catalog: z.array(z.unknown()).length(665),
+      cases: z.array(z.unknown()).length(12),
+      desired: z.unknown(),
+      schedule: z.array(z.unknown()).length(72),
+    })
+    .passthrough()
+    .parse(rawPlan);
+  const { planHash, ...payload } = z.record(z.string(), z.unknown()).parse(rawPlan);
+  if (createHash("sha256").update(JSON.stringify(payload)).digest("hex") !== planHash)
+    throw new Error("Invalid plan hash");
+  writeFileSync(
+    `${outputDir}/batch.json`,
+    JSON.stringify(
+      {
+        planHash,
+        catalog: plan.catalog,
+        cases: plan.cases,
+        desired: plan.desired,
+        schedule: plan.schedule,
+      },
+      null,
+      2,
+    ) + "\n",
+    { flag: "wx", mode: 0o600 },
+  );
+  console.log(
+    JSON.stringify({
+      status: "prepared_not_evaluated",
+      planHash,
+      execution: "managed_backend",
+      localInferenceCalls: 0,
+      generatorCalls: 0,
+    }),
+  );
+  process.exit(4);
+}
 if (live === "--reuse") {
   if (
     !planFile ||
