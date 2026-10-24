@@ -251,3 +251,31 @@ O v25 completou quatro respostas com 654/762/463/720 reasoning_tokens. Três pas
 Contador 541; créditos .31/.18/.16/.12, limite superior do lote US$0,1975. V26 inicia com cobranças acumuladas US$3,10125, reservas US$1,08116575, saldo US$2,81758425 do teto US$7.
 
 A descrição do Stripe passa a identificá-lo explicitamente como conector de payment service provider (PSP), mantendo exatamente as operações, IDs e ferramentas anteriores. O prompt coloca o registry comum antes do catálogo e contadores variáveis depois das linhas de candidatos. Assim ambos os braços podem reutilizar prefixos comuns, sem desfavorecer o baseline ou presumir economia. Regressão verifica que mudanças de contador não invalidam o prefixo comum. Casos/catálogo665/schedule/desired/critérios não mudam; novo perfil e nova coorte obrigatórios.
+
+### V26: primeira passagem e controle de lotes
+
+O primeiro bloco de 24 observações (12 casos, dois braços) passou na revisão primária, sem falhas altas/críticas. O scorer continua reprovando a coorte incompleta e sem economia: baseline US$0,36/p95 36.726 ms, Jev US$0,541161138/p95 25.664 ms, incluindo seleção e margens nativas. O baseline usou 376.294 tokens de entrada, dos quais 316.672 em cache; Jev usou 212.265, com 74.752 em cache. Menor contexto não equivale a menor cobrança. Não constitui conclusão sobre as 72 observações.
+
+O novo planejador offline `scripts/plan-agent-match-next-batch.ts` reutiliza prompt/schema/reserva do runtime congelado e valida os hashes e vínculos de cobrança. No checkpoint20 calculou quatro próximas observações dentro do saldo; recusou relatório existente, inflight e faturamento incompleto. ESLint e TypeScript estritos passaram. Relatório real `run-live-v26/planner-validation.json`, zero inferência; não emite aprovação semântica, não altera autorização e não inicia o lote. O operador mantém revisão primária e ação explícita por lote.
+
+### V26 completo: rejeição de eficiência, sem publicação
+
+A coorte congelada `ab3502a7c65e75488db9fdbe7c5849320133244e`, plano `2da52cce101067e132d54ca6b887999806dd3d9cc15f3b149412a429606cd062`, completou exatamente 72/72 observações no mesmo backend. Gerador real `gpt-5.2-2025-12-11`, reasoning medium/verbosity low, Jev `jev-1.14.0`/agent-match-v4. Todos os seis critérios primários passaram em todas as saídas, sem falhas altas/críticas; slugs obrigatórios, modelo, uso e hashes foram aceitos pelo scorer original. Nenhuma saída foi reparada ou substituída, nenhum perfil foi alterado durante a coorte. As revisões permanecem vinculadas aos hashes brutos/clean; Jev auxiliou apenas questões delimitadas, sem aprovação automática.
+
+| Critério                         | Base (36 chamadas) | Com Jev (36 chamadas) |
+| -------------------------------- | -----------------: | --------------------: |
+| Custo conservador para aprovação |         US$ 0,8725 |       US$ 1,623483414 |
+| p95 real do cliente              |          23.805 ms |             28.230 ms |
+| Tokens de entrada                |          1.128.882 |               636.885 |
+| Entrada em cache                 |          1.066.240 |               230.784 |
+| Tokens de saída                  |             44.459 |                44.497 |
+
+O custo de aprovação usa limite inferior nativo da base e superior de Jev mais US$0,205983414 equivalentes de seleção. Intervalos nativos do gerador: base US$0,8725–0,9625; Jev US$1,3275–1,4175. Assim Jev já custa mais mesmo sem a seleção. A redução de 43,58% dos tokens não compensa a diferença observada de cache (aproximadamente 94% vs36%) nem a seleção. O p95 regrediu 18,59%. Não extrapolar esses valores para todos os tráfegos/modelos; esta configuração concreta não atende aos critérios.
+
+`run-live-v26/comparison-072.json`: exit4, `approved=false`, motivos exclusivamente `no_total_cost_reduction` e `p95_regression_or_missing`. Journal completo, 72 revisões e 72 cobranças nativas preservados; contador nativo 541→613, sem chamadas ao construtor. `FINAL-SUMMARY.json` agrega os valores reais. O planejador terminou com exit4 `cohort_complete_no_next_batch`, zero chamadas, recusando no-op como sucesso.
+
+A rodada consumiu até US$2,38 nativos; cobranças acumuladas até US$5,48125, reservas desconhecidas anteriores US$1,08116575, total econômico conservador US$6,56241575 e saldo US$0,43758425 do teto autorizado US$7. Reservas desconhecidas não foram liberadas. Lotes reduziram de quatro para três, duas e uma observação conforme as reservas integrais cabiam no saldo. Nenhuma nova inferência foi iniciada após 72.
+
+**Decisão: não publicar nem ativar filtro.** O PR continua draft, a produção permanece na versão anterior e os 21 pacotes de negócio não tiveram aprovação, versão ou compatibilidade alteradas. Um perfil diferente exigiria nova coorte completa e autoridade econômica suficiente; não cabe no saldo restante com as reservas originais. As correções técnicas e o método reproduzível ficam disponíveis para revisão, sem alegar qualificação.
+
+Validação final após a coorte: `npm run check:project` concluiu exit0, 11/11 verificações aprovadas; 277 testes, zero falhas; lint em 6.983 arquivos, zero erros bloqueantes e zero violações de `any` explícito. Inclui os snapshots históricos preservados, sem exclusão relaxada. `run-live-v26/final-check-project.log` e `FINAL-VALIDATION.json` retêm o resultado real. O sucesso técnico não altera a reprovação econômica/latência.
