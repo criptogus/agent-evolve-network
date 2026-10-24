@@ -75,7 +75,9 @@ Definitions:
 Rules:
 - ONLY pick slugs that appear in the catalog. Never invent slugs.
 - Score 0-10 per item: 10 = essential, 7-9 = strong, 5-6 = nice-to-have. Drop anything <5.
-- Pick a balanced kit close to the requested counts; less is more.
+- Requested counts are preferences, never quotas. Prefer fewer supported packages over filling every category. If a count is zero, return an empty array for that type.
+- Return an empty array when no package of a type has a documented contribution to the requested jobs. Do not reinterpret a domain-specific package as a different domain workflow or assume it will be rewritten/adapted to fit. Describe such missing workflows as gaps instead.
+- A role must be supported by the supplied package metadata as-is. Generic similarity or an "adaptable" rationale is insufficient when the proposed role changes the package domain.
 - "role" = the specific job this package does inside the agent (e.g. "lead qualification engine", "voice of taste").
 - "gaps" = capabilities the agent needs that the catalog does NOT cover well — recommend the type to author next.
 - "recommended_mcps" = pick 0-4 EXTERNAL MCP servers from the MCP registry whose tools the agent will actually call to deliver the brief. ONLY use ids from the registry. Score 0-10 like above; drop anything <6. "pairs_with" must reference slugs you put in the kit.
@@ -119,13 +121,14 @@ export function sanitizeMatch(
     type: (typeof MATCH_TYPES)[number],
   ) => {
     const seen = new Set<string>();
+    const count = desired[`${type}s` as keyof DesiredKit];
     return arr
       .filter((x) => {
         if (x.score < 5 || !slugByType[type].has(x.slug) || seen.has(x.slug)) return false;
         seen.add(x.slug);
         return true;
       })
-      .slice(0, desired[`${type}s` as keyof DesiredKit] + 1);
+      .slice(0, count === 0 ? 0 : count + 1);
   };
   const recommended_kit = {
     skills: clean(output.recommended_kit.skills, "skill"),

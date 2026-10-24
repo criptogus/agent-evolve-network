@@ -5,9 +5,10 @@ export const BENCHMARK_OUTPUT_LIMIT = MATCH_MAX_OUTPUT_TOKENS;
 export const BENCHMARK_USD_LIMIT = 5;
 // Prior client-error attempt has no reported tokens, but its reserve is held until billing reconciliation.
 export const BENCHMARK_PRIOR_HELD_USD = 0.24430525;
-// Native AI displayed 0.24 Pro credits for the completed generator whose RPC timed out.
-// Upper rounding bound: (0.24 + 0.005) * 0.25 USD/credit.
-export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 0.06125;
+// Prior native AI checkpoints displayed 0.24 credits (RPC delivery failed)
+// and 0.26 credits (completed baseline with a primary quality failure).
+// Combined upper rounding bound: (0.245 + 0.265) * 0.25 USD/credit.
+export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 0.1275;
 export function generatorCost(input: number, cached: number, output: number) {
   if (![input, cached, output].every((n) => Number.isSafeInteger(n) && n >= 0) || cached > input)
     throw new Error("Missing or invalid usage");

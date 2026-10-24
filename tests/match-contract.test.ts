@@ -137,3 +137,8 @@ test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instru
     .parse(captured);
   assert.ok(request.messages.some((m) => m.content.includes("JSON Schema")));
 });
+
+test("explicit zero optional package counts stay empty", () => {
+  const result = sanitizeMatch(output(), candidates, { ...desired, guardrails: 0 });
+  assert.deepEqual(result.recommended_kit.guardrails, []);
+});
