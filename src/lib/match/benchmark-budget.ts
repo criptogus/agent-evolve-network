@@ -2,7 +2,7 @@
 import { MATCH_GENERATOR_MODEL, MATCH_MAX_OUTPUT_TOKENS } from "./match-generation.ts";
 export const BENCHMARK_MODEL = MATCH_GENERATOR_MODEL;
 export const BENCHMARK_OUTPUT_LIMIT = MATCH_MAX_OUTPUT_TOKENS;
-export const BENCHMARK_USD_LIMIT = 5;
+export const BENCHMARK_USD_LIMIT = 7;
 // Hold the original client error, v8 Jev reservation, v15 schema error and interrupted v16 attempt; never reset the owner cap.
 export const BENCHMARK_PRIOR_HELD_USD = 1.08116575;
 // Prior native AI checkpoints displayed 0.24 credits (RPC delivery failed)

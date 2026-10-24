@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  BENCHMARK_USD_LIMIT,
   generatorCost,
   reserveGeneration,
   requireBenchmarkPreview,
@@ -12,10 +13,10 @@ test("benchmark metering rejects unknown/negative/cache inconsistencies", () => 
   assert.throws(() => generatorCost(NaN, 0, 1));
 });
 test("benchmark reserves output and byte bound before any paid call", () => {
-  const result = reserveGeneration("s", "p", "{}", 5);
+  const result = reserveGeneration("s", "p", "{}", BENCHMARK_USD_LIMIT);
   assert.ok(result.reserve > 0);
   assert.throws(() => reserveGeneration("s", "p", "{}", result.reserve - 0.00001));
-  assert.throws(() => reserveGeneration("s", "p", "{}", 6));
+  assert.throws(() => reserveGeneration("s", "p", "{}", BENCHMARK_USD_LIMIT + 1));
 });
 test("benchmark is unavailable on production or spoofed suffix hostnames", () => {
   requireBenchmarkPreview(
@@ -48,6 +49,6 @@ test("native reconciliation cannot reset spending or release unaccounted reserva
       completed: 4,
       previousBilledUsd: 0.1,
     }),
-    5 - BENCHMARK_PRIOR_HELD_USD - BENCHMARK_PRIOR_SPEND_UPPER_USD - 0.2,
+    BENCHMARK_USD_LIMIT - BENCHMARK_PRIOR_HELD_USD - BENCHMARK_PRIOR_SPEND_UPPER_USD - 0.2,
   );
 });

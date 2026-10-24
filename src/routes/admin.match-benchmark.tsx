@@ -11,13 +11,14 @@ import {
   generateBenchmarkObservation,
 } from "@/lib/match/benchmark.functions";
 import {
+  BENCHMARK_USD_LIMIT,
   BENCHMARK_PRIOR_HELD_USD,
   BENCHMARK_PRIOR_SPEND_UPPER_USD,
   requireBenchmarkPreview,
   reconcileBenchmarkBudget,
 } from "@/lib/match/benchmark-budget";
 const schema = z.object({
-  planHash: z.literal("c50e6608c2568811e700f5ba116eed54d670fd8238230300da1d46629b80da29"),
+  planHash: z.literal("17e099bb1d169cc4e5323d206d416547c405623bcb8b507c5aa1c7a57bb87477"),
   catalog: z
     .array(
       z.object({
@@ -45,7 +46,7 @@ const schema = z.object({
     )
     .length(72),
 });
-const STORAGE = "sas-agent-match-paired-v17-usd5";
+const STORAGE = "sas-agent-match-paired-v18-usd7";
 export const Route = createFileRoute("/admin/match-benchmark")({ component: Benchmark });
 function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);
@@ -113,7 +114,7 @@ function Benchmark() {
             planHash: batch.planHash,
             status,
             remainingProviderEquivalentUsd: remaining,
-            limitUsd: 5,
+            limitUsd: BENCHMARK_USD_LIMIT,
             priorHeldUsd: BENCHMARK_PRIOR_HELD_USD,
             priorSpendUpperUsd: BENCHMARK_PRIOR_SPEND_UPPER_USD,
             billingReconciliationRequired: true,
@@ -206,15 +207,15 @@ function Benchmark() {
     <main className="p-6 space-y-4">
       <h1 className="text-2xl font-semibold">Agent Match — private paired evaluation</h1>
       <p>
-        12 frozen cases × 3 repeats × 2 arms. USD 5 total authorization. No automatic retries or
-        publication.
+        12 frozen cases × 3 repeats × 2 arms. USD {BENCHMARK_USD_LIMIT} total authorization. No
+        automatic retries or publication.
       </p>
       <label className="block">
         This run’s billed USD upper bound, reconciled from native AI credits
         <input
           type="number"
           min="0"
-          max="5"
+          max={BENCHMARK_USD_LIMIT}
           step="0.0001"
           value={billedUsd}
           onChange={(e) => setBilledUsd(Number(e.target.value))}
