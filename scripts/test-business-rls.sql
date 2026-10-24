@@ -82,8 +82,9 @@ select pg_temp.expect_error(format('insert into package_artifacts(version_id,pac
 select pg_temp.expect_error(format('update public.packages set latest_version=''0.0.0-security-fixture'' where id=%L',current_setting('test.public_package')),'current version has no adversarial run','published version cannot switch to unevaluated source');
 select set_config('request.jwt.claims','{}',true);
 set local role anon;
-select pg_temp.assert_true((select count(*)=1 from package_artifacts where version_id=current_setting('test.public_version')::uuid),'anonymous reader sees approved current archive');
+select pg_temp.assert_true((select count(*)=0 from package_artifacts where version_id=current_setting('test.public_version')::uuid),'anonymous direct archive read denied; distribution uses gated public API');
 select pg_temp.assert_true((select count(*)=0 from package_artifacts where version_id=current_setting('test.old_version')::uuid),'anonymous reader cannot see unreviewed version archive');
+select pg_temp.assert_true((select count(*)=0 from skill_compatibility),'anonymous direct compatibility reads denied');
 reset role;
 select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('test.owner'),'email','owner@example.invalid','role','authenticated')::text,true);
 set local role authenticated;
