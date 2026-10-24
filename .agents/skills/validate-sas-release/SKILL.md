@@ -3,7 +3,7 @@ name: validate-sas-release
 description: Validate Super Agent Skill changes before publication, using the existing local checks without Lovable generation credits.
 ---
 
-Run `npm ci` when locked dependencies changed. Run `npm run check:project` from the repository root. This batches tests, types, dependency audit, build, strict lint, content validation and both generated-artifact checks. It writes actual exit codes and logs to `artifacts/validation/`; failures block release.
+Run `npm ci` when locked dependencies changed. Run `npm run check:project` from the repository root. Its `check:navigation` step audits the generated route hierarchy and rendered local wrappers (including `SitePage`) for duplicate global navigation in nested layouts; retain `artifacts/validation/navigation.json`. Global navigation belongs to the ancestor layout, while child content retains its controls and authorization. Verify affected pages visually in the authenticated browser after deployment; the static check does not replace visual judgment. This batches tests, types, dependency audit, build, strict lint, content validation and both generated-artifact checks. It writes actual exit codes and logs to `artifacts/validation/`; failures block release.
 
 Use `npm run check:project -- --security` with the existing Supabase publishable environment to include RLS and anonymous-access checks. Never expose credentials or weaken allowlists to pass. With a local dev server running, add `--ui` to test signup at mobile and desktop sizes with intercepted auth; review its screenshots personally.
 

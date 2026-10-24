@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { SitePage } from "@/components/site/SitePage";
+import { Footer } from "@/components/site/Footer";
 import {
   getMcpFunnelSummary,
   getMcpFunnelTrafficBreakdown,
@@ -107,8 +107,8 @@ function AdminFunnelPage() {
   const humanPct = totalAll ? ((totals.human / totalAll) * 100).toFixed(1) : "0.0";
 
   return (
-    <SitePage>
-      <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
+    <>
+      <div className="mx-auto max-w-4xl px-4 py-10 md:py-14">
         <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">Admin</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">Funnel & traffic</h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -269,8 +269,9 @@ function AdminFunnelPage() {
             </tbody>
           </table>
         </div>
-      </main>
-    </SitePage>
+      </div>
+      <Footer />
+    </>
   );
 }
 

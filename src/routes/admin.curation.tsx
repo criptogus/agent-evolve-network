@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { SitePage } from "@/components/site/SitePage";
+import { Footer } from "@/components/site/Footer";
 import { getCatalogCuration } from "@/lib/admin/curation.functions";
 export const Route = createFileRoute("/admin/curation")({
   head: () => ({ meta: [{ title: "Catalog curation — Super Agent Skill" }] }),
@@ -11,8 +11,8 @@ function Curation() {
   const get = useServerFn(getCatalogCuration);
   const q = useQuery({ queryKey: ["catalog-curation"], queryFn: () => get(), retry: false });
   return (
-    <SitePage>
-      <main className="mx-auto max-w-5xl space-y-6 px-4 py-12">
+    <>
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-12">
         <h1 className="text-3xl font-semibold">Catalog curation</h1>
         <p>
           Find potentially overlapping published packages. Inspect contracts, examples, behavior and
@@ -69,7 +69,8 @@ function Curation() {
             ))}
           </>
         )}
-      </main>
-    </SitePage>
+      </div>
+      <Footer />
+    </>
   );
 }
