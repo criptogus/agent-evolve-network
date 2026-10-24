@@ -47,8 +47,7 @@ export const MatchSchema = z.object({
           .describe("slugs from the kit that this MCP empowers"),
       }),
     )
-    .max(6)
-    .default([]),
+    .max(6),
   rationale: z.string().max(1200),
 });
 

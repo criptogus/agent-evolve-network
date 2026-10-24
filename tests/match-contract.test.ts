@@ -3,6 +3,7 @@ import { generateText, Output } from "ai";
 import {
   MATCH_GENERATOR_MODEL,
   matchGenerationOptions,
+  MATCH_PROVIDER_OPTIONS,
 } from "../src/lib/match/match-generation.ts";
 import { z } from "zod";
 import test from "node:test";
@@ -86,6 +87,7 @@ test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instru
   let captured: Record<string, unknown> | null = null;
   const provider = createOpenAICompatible({
     name: "lovable",
+    ...MATCH_PROVIDER_OPTIONS,
     baseURL: "https://gateway.test/v1",
     fetch: async (_url, init) => {
       captured = z.record(z.string(), z.unknown()).parse(JSON.parse(String(init?.body)));
@@ -132,10 +134,21 @@ test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instru
       model: z.literal("openai/gpt-5.2"),
       max_completion_tokens: z.literal(4096),
       max_tokens: z.never().optional(),
+      response_format: z.object({
+        type: z.literal("json_schema"),
+        json_schema: z.object({
+          strict: z.literal(true),
+          schema: z.record(z.string(), z.unknown()),
+        }),
+      }),
       messages: z.array(z.object({ content: z.string() })),
     })
     .parse(captured);
   assert.ok(request.messages.some((m) => m.content.includes("JSON Schema")));
+  const wireSchema = z
+    .object({ properties: z.record(z.string(), z.unknown()), required: z.array(z.string()) })
+    .parse(request.response_format.json_schema.schema);
+  assert.deepEqual(new Set(wireSchema.required), new Set(Object.keys(wireSchema.properties)));
 });
 
 test("explicit zero optional package counts stay empty", () => {

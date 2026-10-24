@@ -7,8 +7,8 @@ export const BENCHMARK_USD_LIMIT = 5;
 export const BENCHMARK_PRIOR_HELD_USD = 0.49615825;
 // Prior native AI checkpoints displayed 0.24 credits (RPC delivery failed)
 // and 0.26 credits (completed baseline with a primary quality failure).
-// Add v8 completed baseline: (0.245 + 0.265 + 0.245) * 0.25 USD/credit.
-export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 0.18875;
+// Add v8/v9: (0.245 + 0.265 + 0.245 + 0.105 + 0.175) * 0.25 USD/credit.
+export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 0.25875;
 export function generatorCost(input: number, cached: number, output: number) {
   if (![input, cached, output].every((n) => Number.isSafeInteger(n) && n >= 0) || cached > input)
     throw new Error("Missing or invalid usage");

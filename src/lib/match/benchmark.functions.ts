@@ -3,7 +3,7 @@ import { getRequest } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText, Output } from "ai";
-import { matchGenerationOptions } from "./match-generation.ts";
+import { matchGenerationOptions, MATCH_PROVIDER_OPTIONS } from "./match-generation.ts";
 import { streamMatchResult } from "./result-stream.ts";
 import { preselectAgentMatch } from "./jev-agent-match.server.ts";
 import { z } from "zod";
@@ -138,6 +138,7 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
       let transportStatus: number | null = null;
       const provider = createOpenAICompatible({
         name: "lovable",
+        ...MATCH_PROVIDER_OPTIONS,
         baseURL: "https://ai.gateway.lovable.dev/v1",
         headers: { "Lovable-API-Key": key, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
         fetch: async (url, init) => {

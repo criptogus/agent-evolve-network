@@ -2,7 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { generateText, Output } from "ai";
 import { streamMatchResult, type MatchStreamEvent } from "./result-stream.ts";
-import { MATCH_GENERATOR_MODEL, matchGenerationOptions } from "./match-generation.ts";
+import {
+  MATCH_GENERATOR_MODEL,
+  MATCH_PROVIDER_OPTIONS,
+  matchGenerationOptions,
+} from "./match-generation.ts";
 import { getGatewayModel } from "@/lib/ai-gateway";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin;
@@ -73,7 +77,7 @@ export const matchAgentToPackages = createServerFn({ method: "POST" })
       });
 
       const { output, usage } = await generateText({
-        model: getGatewayModel(MATCH_GENERATOR_MODEL),
+        model: getGatewayModel(MATCH_GENERATOR_MODEL, MATCH_PROVIDER_OPTIONS),
         ...matchGenerationOptions(),
         abortSignal: AbortSignal.any([signal, AbortSignal.timeout(180000)]),
         system,

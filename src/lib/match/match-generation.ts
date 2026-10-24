@@ -1,6 +1,7 @@
 // Same generator profile for production and both paired-evaluation arms.
 export const MATCH_GENERATOR_MODEL = "openai/gpt-5.2";
 export const MATCH_MAX_OUTPUT_TOKENS = 4096;
+export const MATCH_PROVIDER_OPTIONS = { supportsStructuredOutputs: true } as const;
 export function matchGenerationOptions() {
   return {
     maxRetries: 0,

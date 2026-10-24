@@ -70,10 +70,11 @@ function resolveConfig(): GatewayConfig {
   );
 }
 
-function providerFor(cfg: GatewayConfig) {
+function providerFor(cfg: GatewayConfig, supportsStructuredOutputs = false) {
   if (cfg.authStyle === "lovable") {
     return createOpenAICompatible({
       name: "lovable",
+      supportsStructuredOutputs,
       baseURL: cfg.baseURL,
       headers: {
         "Lovable-API-Key": cfg.apiKey,
@@ -83,6 +84,7 @@ function providerFor(cfg: GatewayConfig) {
   }
   return createOpenAICompatible({
     name: "ai-gateway",
+    supportsStructuredOutputs,
     baseURL: cfg.baseURL,
     apiKey: cfg.apiKey,
   });
@@ -106,11 +108,14 @@ export const createLovableAiGatewayProvider = (lovableApiKey: string) =>
  * given model id. Pass `"default"` (or omit) to use the env-configured
  * default — useful for "just pick whatever works" call sites.
  */
-export function getGatewayModel(modelId: string = "default") {
+export function getGatewayModel(
+  modelId: string = "default",
+  options: { supportsStructuredOutputs?: boolean } = {},
+) {
   const cfg = resolveConfig();
   const resolved =
     modelId === "default" ? process.env.AI_GATEWAY_MODEL || "google/gemini-2.5-flash" : modelId;
-  return providerFor(cfg)(resolved);
+  return providerFor(cfg, options.supportsStructuredOutputs)(resolved);
 }
 
 /**
