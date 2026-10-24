@@ -92,7 +92,7 @@ export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: De
               .describe(
                 "After selecting this slug, copy its entire description field value verbatim, including repeated names or prefixes inside that value. Never copy another candidate or abbreviate. Exclude only the outer name/slug/type fields.",
               ),
-            score: z.number().min(5).max(10),
+            score: z.number().min(7).max(10),
             why: RecItem.shape.why,
             role: RecItem.shape.role,
           }),
@@ -178,7 +178,7 @@ Definitions:
 
 Rules:
 - ONLY pick slugs that appear in the catalog. Never invent slugs.
-- Score 0-10 per item: 10 = essential, 7-9 = strong, 5-6 = nice-to-have. Drop anything <5.
+- Score 0-10 per item: 10 = essential, 7-9 = strong. Only recommend strong documented contributions (>=7); omit weaker, uncertain or merely nice-to-have candidates. Never raise a score just to retain a weak helper.
 - Build the smallest sufficient kit. A sharply scoped single-job brief often needs only one or two skills. Never add conditional formats, adjacent workflows or optional helpers that the brief does not require merely to fill a category.\n- Requested counts are preferences, never quotas. Prefer fewer supported packages over filling every category. If a count is zero, return an empty array for that type.
 - Return an empty array when no package of a type has a documented contribution to the requested jobs. Do not reinterpret a domain-specific package as a different domain workflow or assume it will be rewritten/adapted to fit. Describe such missing workflows as gaps instead.
 - A role must be supported by the supplied package metadata as-is. Generic similarity or an "adaptable" rationale is insufficient when the proposed role changes the package domain.
@@ -210,7 +210,7 @@ ${compactMcpCatalogForLLM()}
 AGENT BRIEF:
 ${input.brief}
 
-${input.vertical ? `VERTICAL: ${input.vertical}\n` : ""}DESIRED COUNTS: skills≈${input.desired.skills}, playbooks≈${input.desired.playbooks}, souls≈${input.desired.souls}, guardrails≈${input.desired.guardrails}
+${input.vertical ? `VERTICAL: ${input.vertical}\n` : ""}TYPE AVAILABILITY: ${MATCH_TYPES.map((type) => `${type}: ${input.desired[`${type}s` as keyof DesiredKit] === 0 ? "disabled (empty array required)" : "enabled only for strong documented contributions"}`).join("; ")}. The provider schema enforces maximum counts; these are caps, never a target.
 
 FINAL LANGUAGE AND SCALE REQUIREMENTS:
 ${languageInstruction}

@@ -443,3 +443,29 @@ test("wire schema binds slug before literal evidence and explanatory fields", as
   }
   assert.ok(checked > 0);
 });
+
+test("generation omits merely nice-to-have scores without turning preferences into quotas", () => {
+  const schema = buildMatchOutputSchema(candidates, desired);
+  const clean = sanitizeMatch(output(), candidates, desired);
+  const value = {
+    ...clean,
+    recommended_kit: {
+      ...clean.recommended_kit,
+      ...evidenceKit(clean.recommended_kit),
+      work_domain: "runtime_work",
+      skills: [{ ...item("good", 6), source_quote: candidates[0].description }],
+    },
+  };
+  assert.equal(schema.safeParse(value).success, false);
+  value.recommended_kit.skills[0].score = 7;
+  assert.equal(schema.safeParse(value).success, true);
+  const prompt = buildMatchPrompt({
+    brief: "Perform source-grounded analysis",
+    candidates,
+    desired,
+    catalogSize: 3,
+  });
+  assert.ok(!prompt.prompt.includes("DESIRED COUNTS"));
+  assert.match(prompt.prompt, /playbook: disabled \(empty array required\)/);
+  assert.match(prompt.prompt, /caps, never a target/);
+});
