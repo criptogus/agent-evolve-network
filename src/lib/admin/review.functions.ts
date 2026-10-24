@@ -3,9 +3,9 @@ import type { AppDatabaseClient } from "@/integrations/supabase/database";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
+import { persistReviewDecision, type ReviewStatus } from "./review-update";
+export type { ReviewStatus } from "./review-update";
 const supabaseAdmin = _supabaseAdmin;
-
-export type ReviewStatus = "draft" | "pending" | "approved" | "paused" | "rejected";
 
 export type ReviewQueueItem = {
   id: string;
@@ -116,7 +116,7 @@ export const setReviewStatus = createServerFn({ method: "POST" })
   })
   .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId);
-    const isPublished = data.status === "approved";
+    let approvedVersion: string | undefined;
 
     // Mandatory adversarial gate: a package can only be approved (and thus
     // become publicly installable / served via MCP) if the CURRENT version
@@ -126,25 +126,16 @@ export const setReviewStatus = createServerFn({ method: "POST" })
     if (data.status === "approved") {
       const gate = await assertAdversarialGate(data.slug);
       if (!gate.ok) {
-        throw new Response(
-          JSON.stringify({ error: "adversarial_gate_failed", reason: gate.reason, run: gate.run }),
-          { status: 422, headers: { "Content-Type": "application/json" } },
-        );
+        throw new Error(`Adversarial approval gate failed: ${gate.reason}`);
       }
+      approvedVersion = gate.version;
     }
 
-    const { error } = await supabaseAdmin
-      .from("packages")
-      .update({
-        review_status: data.status,
-        review_notes: data.notes,
-        reviewed_by: context.userId,
-        reviewed_at: new Date().toISOString(),
-        is_published: isPublished,
-      })
-      .eq("slug", data.slug);
-    if (error) throw new Response(error.message, { status: 500 });
-    return { ok: true, status: data.status, is_published: isPublished };
+    return persistReviewDecision(context.supabase, {
+      ...data,
+      userId: context.userId,
+      version: approvedVersion,
+    });
   });
 
 // Approval thresholds. Conservative on purpose: zero tolerance for high/
@@ -152,7 +143,8 @@ export const setReviewStatus = createServerFn({ method: "POST" })
 const MIN_SEVERITY_WEIGHTED_SCORE = 0.9;
 const MIN_PASS_RATE = 0.9;
 
-type GateResult = { ok: true; run: unknown } | { ok: false; reason: string; run: unknown };
+type GateResult =
+  { ok: true; run: unknown; version: string } | { ok: false; reason: string; run: unknown };
 
 async function assertAdversarialGate(slug: string): Promise<GateResult> {
   const { data: pkg } = await supabaseAdmin
@@ -224,5 +216,5 @@ async function assertAdversarialGate(slug: string): Promise<GateResult> {
       run,
     };
   }
-  return { ok: true, run };
+  return { ok: true, run, version: ver.version };
 }

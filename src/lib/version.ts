@@ -12,10 +12,10 @@
  * We are still pre-1.0: rapid evolution, no stability guarantees.
  */
 
-export const PLATFORM_VERSION = "0.6.4" as const;
+export const PLATFORM_VERSION = "0.6.5" as const;
 export const PLATFORM_CODENAME = "Genesis" as const;
 export const PLATFORM_STAGE: "alpha" | "beta" | "ga" = "alpha";
-export const PLATFORM_BUILD_DATE = "2026-10-23" as const;
+export const PLATFORM_BUILD_DATE = "2026-10-24" as const;
 
 export type ChangelogEntry = {
   version: string;
@@ -30,6 +30,16 @@ export type ChangelogEntry = {
  * Every deployed change appends a new entry (or amends the top one before shipping).
  */
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "0.6.5",
+    date: "2026-10-24",
+    kind: "patch",
+    title: "Authenticated publication repair",
+    highlights: [
+      "Preserve the administrator session through RLS and publication triggers.",
+      "Confirm the saved version, reviewer and publication state before reporting success.",
+    ],
+  },
   {
     version: "0.6.4",
     date: "2026-10-23",
