@@ -401,3 +401,15 @@ test("generation requires an exact source quotation and rejects invented or swap
   }
   assert.deepEqual(sanitizeMatch(schema.parse(value), candidates, desired), clean);
 });
+
+test("catalog labels separate source description from names and reject quota padding", () => {
+  const result = buildMatchPrompt({
+    brief: "Check a supplied document",
+    candidates,
+    desired,
+    catalogSize: 3,
+  });
+  assert.ok(result.prompt.includes('name="Good"; description="Source-grounded analysis"'));
+  assert.match(result.system, /smallest sufficient kit/);
+  assert.match(result.system, /never the name or the entire catalog line/);
+});
