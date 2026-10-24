@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zodSchema } from "ai";
 import { MCP_REGISTRY, compactMcpCatalogForLLM, getMcpById } from "./mcp-registry.ts";
 import { MATCH_TYPES, type MatchCandidate, type DesiredKit } from "./jev-selection.ts";
 const RecItem = z.object({
@@ -53,37 +54,56 @@ export const MatchSchema = z.object({
 
 // Constrain the original contract before generation, never repair a wrong-type item afterward.
 export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: DesiredKit) {
-  const list = (type: (typeof MATCH_TYPES)[number], allowSoftwareVerification = true) => {
-    const slugs = candidates
-      .filter(
-        (c) =>
-          c.type === type &&
-          (allowSoftwareVerification ||
-            !/before declaring a fix|gates? every code change/i.test(c.description)),
-      )
-      .map((c) => c.slug);
+  const makeLists = (type: (typeof MATCH_TYPES)[number]) => {
+    const matching = candidates.filter((c) => c.type === type);
+    const isSoftwareVerification = (c: MatchCandidate) =>
+      /before declaring a fix|gates? every code change/i.test(c.description);
+    const runtime = matching.filter((c) => !isSoftwareVerification(c)).map((c) => c.slug);
+    const softwareOnly = matching.filter(isSoftwareVerification).map((c) => c.slug);
+    const runtimeSlug = runtime.length ? z.enum(runtime) : z.string();
+    const softwareSlug = softwareOnly.length
+      ? runtime.length
+        ? z.union([runtimeSlug, z.enum(softwareOnly)])
+        : z.enum(softwareOnly)
+      : runtimeSlug;
     const count = desired[`${type}s` as keyof DesiredKit];
-    return z
-      .array(
-        RecItem.extend({
-          slug: slugs.length ? z.enum(slugs) : z.string(),
-          score: z.number().min(5).max(10),
-        }),
-      )
-      .max(slugs.length && count ? count + 1 : 0);
+    const list = (slug: z.ZodType<string>, hasCandidates: boolean) =>
+      z
+        .array(RecItem.extend({ slug, score: z.number().min(5).max(10) }))
+        .max(hasCandidates && count ? count + 1 : 0);
+    return {
+      runtime: list(runtimeSlug, runtime.length > 0),
+      software: list(softwareSlug, matching.length > 0),
+    };
   };
-  const items = (allowSoftwareVerification: boolean) => ({
-    skills: list("skill", allowSoftwareVerification),
-    playbooks: list("playbook", allowSoftwareVerification),
-    souls: list("soul", allowSoftwareVerification),
-    guardrails: list("guardrail", allowSoftwareVerification),
-  });
+  const skills = makeLists("skill"),
+    playbooks = makeLists("playbook"),
+    souls = makeLists("soul"),
+    guardrails = makeLists("guardrail");
   return MatchSchema.extend({
     recommended_kit: z.union([
-      z.object({ work_domain: z.literal("runtime_work"), ...items(false) }),
-      z.object({ work_domain: z.literal("software_work"), ...items(true) }),
+      z.object({
+        work_domain: z.literal("runtime_work"),
+        skills: skills.runtime,
+        playbooks: playbooks.runtime,
+        souls: souls.runtime,
+        guardrails: guardrails.runtime,
+      }),
+      z.object({
+        work_domain: z.literal("software_work"),
+        skills: skills.software,
+        playbooks: playbooks.software,
+        souls: souls.software,
+        guardrails: guardrails.software,
+      }),
     ]),
   });
+}
+
+export function buildMatchWireSchema(candidates: MatchCandidate[], desired: DesiredKit) {
+  // Reuse the ordinary-slug enum in both branches; never duplicate >1000 values
+  // or weaken strict decoding. The SDK retains the original Zod validation.
+  return zodSchema(buildMatchOutputSchema(candidates, desired), { useReferences: true });
 }
 
 export type AgentMatchResult = z.infer<typeof MatchSchema>;

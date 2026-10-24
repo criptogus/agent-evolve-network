@@ -13,7 +13,7 @@ const supabaseAdmin = _supabaseAdmin;
 import { preselectAgentMatch, type MatchSelectionTrace } from "./jev-agent-match.server";
 import { MCP_REGISTRY, getMcpById } from "./mcp-registry";
 import {
-  buildMatchOutputSchema,
+  buildMatchWireSchema,
   buildMatchPrompt,
   sanitizeMatch,
   type AgentMatchResult,
@@ -82,7 +82,7 @@ export const matchAgentToPackages = createServerFn({ method: "POST" })
         abortSignal: AbortSignal.any([signal, AbortSignal.timeout(180000)]),
         system,
         prompt,
-        output: Output.object({ schema: buildMatchOutputSchema(candidates, data.desired) }),
+        output: Output.object({ schema: buildMatchWireSchema(candidates, data.desired) }),
       });
 
       const clean = sanitizeMatch(output, candidates, data.desired);

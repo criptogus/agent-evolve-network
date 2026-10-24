@@ -3,8 +3,8 @@ import { MATCH_GENERATOR_MODEL, MATCH_MAX_OUTPUT_TOKENS } from "./match-generati
 export const BENCHMARK_MODEL = MATCH_GENERATOR_MODEL;
 export const BENCHMARK_OUTPUT_LIMIT = MATCH_MAX_OUTPUT_TOKENS;
 export const BENCHMARK_USD_LIMIT = 5;
-// Hold the original unknown client attempt plus the v8 stopped Jev reservation; never reset the owner cap.
-export const BENCHMARK_PRIOR_HELD_USD = 0.49615825;
+// Hold the original client error, v8 stopped Jev reservation and v15 strict-schema error; never reset the owner cap.
+export const BENCHMARK_PRIOR_HELD_USD = 0.8014125;
 // Prior native AI checkpoints displayed 0.24 credits (RPC delivery failed)
 // and 0.26 credits (completed baseline with a primary quality failure).
 // Sixteen successful native checkpoints total 3.25 displayed credits; upper bound (3.25 + 16*0.005) * USD 0.25.

@@ -11,6 +11,7 @@ import assert from "node:assert/strict";
 import {
   buildMatchPrompt,
   buildMatchOutputSchema,
+  buildMatchWireSchema,
   sanitizeMatch,
   type AgentMatchResult,
 } from "../src/lib/match/match-contract.ts";
@@ -135,7 +136,7 @@ test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instru
     ...matchGenerationOptions(),
     system,
     prompt,
-    output: Output.object({ schema: buildMatchOutputSchema(candidates, desired) }),
+    output: Output.object({ schema: buildMatchWireSchema(candidates, desired) }),
   });
   assert.equal(result.finishReason, "stop");
   assert.ok(captured);
@@ -229,4 +230,32 @@ test("runtime selection cannot repurpose documented software-verification capabi
       true,
     );
   }
+});
+
+test("665-candidate scoped wire schema stays below the strict provider enum cap without dropping choices", async () => {
+  const large = Array.from({ length: 665 }, (_, i) => ({
+    slug: `candidate-${i}`,
+    name: `Candidate ${i}`,
+    type: "skill" as const,
+    description: i < 2 ? "Evidence before declaring a fix." : "General public capability",
+  }));
+  const wire = await buildMatchWireSchema(large, desired).jsonSchema;
+  let enumValues = 0;
+  const collected: string[] = [];
+  const visit = (value: unknown) => {
+    if (Array.isArray(value)) {
+      for (const child of value) visit(child);
+    } else if (value && typeof value === "object") {
+      for (const [key, child] of Object.entries(value)) {
+        if (key === "enum" && Array.isArray(child)) {
+          enumValues += child.length;
+          for (const item of child) if (typeof item === "string") collected.push(item);
+        }
+        visit(child);
+      }
+    }
+  };
+  visit(wire);
+  assert.ok(enumValues <= 1000, `Provider enum cap exceeded: ${enumValues}`);
+  for (const item of large) assert.ok(collected.includes(item.slug), `Lost candidate ${item.slug}`);
 });

@@ -17,7 +17,7 @@ import {
   reconcileBenchmarkBudget,
 } from "@/lib/match/benchmark-budget";
 const schema = z.object({
-  planHash: z.literal("8994558673e88d59618288f9d0ebd0c051087d1e2880c780af62fb7474601dba"),
+  planHash: z.literal("a3fba3632da3853eb5187e8e100ec46438e418464a6cef0897528260a1c2f7a3"),
   catalog: z
     .array(
       z.object({
@@ -45,7 +45,7 @@ const schema = z.object({
     )
     .length(72),
 });
-const STORAGE = "sas-agent-match-paired-v15-usd5";
+const STORAGE = "sas-agent-match-paired-v16-usd5";
 export const Route = createFileRoute("/admin/match-benchmark")({ component: Benchmark });
 function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);
@@ -60,11 +60,14 @@ function Benchmark() {
   const [report, setReport] = useState("");
   const [billedUsd, setBilledUsd] = useState(0);
   const [billedObservations, setBilledObservations] = useState(0);
+  const [batchLimit, setBatchLimit] = useState(4);
   async function run() {
     if (!batch || busy) return;
     setBusy(true);
     try {
       requireBenchmarkPreview(window.location.href);
+      if (!Number.isInteger(batchLimit) || batchLimit < 1 || batchLimit > 4)
+        throw new Error("Batch limit must be 1–4");
       const checked = await readiness();
       if (!checked.ready)
         throw new Error("Managed Lovable AI is not configured; zero inference calls started");
@@ -116,6 +119,7 @@ function Benchmark() {
             billingReconciliationRequired: true,
             reconciledBilledUsd: billedUsd,
             reconciledBilledObservations: billedObservations,
+            maximumBatchObservations: batchLimit,
             inflight,
             rows,
           },
@@ -126,14 +130,14 @@ function Benchmark() {
         setReport(text);
       };
       if (
-        batch.schedule.slice(rows.length, rows.length + 4).some((s) => s.arm === "jev") &&
+        batch.schedule.slice(rows.length, rows.length + batchLimit).some((s) => s.arm === "jev") &&
         !checked.jevConfigured
       )
         throw new Error(
           "TYPESAFE_API_KEY is required for the next managed-backend Jev observation. No new inference started.",
         );
       await persist("running");
-      const batchEnd = Math.min(72, rows.length + 4);
+      const batchEnd = Math.min(72, rows.length + batchLimit);
       for (const step of batch.schedule.slice(rows.length, batchEnd)) {
         const item = batch.cases.find((c) => c.id === step.caseId);
         if (!item) throw new Error("Missing frozen case");
@@ -225,6 +229,18 @@ function Benchmark() {
           step="1"
           value={billedObservations}
           onChange={(e) => setBilledObservations(Number(e.target.value))}
+        />
+      </label>
+      <label className="block">
+        Maximum observations in next batch
+        <input
+          type="number"
+          min="1"
+          max="4"
+          step="1"
+          value={batchLimit}
+          disabled={busy}
+          onChange={(e) => setBatchLimit(Number(e.target.value))}
         />
       </label>
       <label className="block">
