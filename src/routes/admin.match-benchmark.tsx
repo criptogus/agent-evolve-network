@@ -267,15 +267,55 @@ function Benchmark() {
           setMessage(
             "Testing 25-second streaming transport with a 144 KiB synthetic payload; zero inference.",
           );
+          const started = performance.now();
+          let phase = "opening";
           try {
-            const result = await readMatchResult(await probe());
-            if (result.payload.length !== 147456 || result.elapsedMs < 25000)
-              throw new Error("Invalid transport probe");
-            setMessage(
-              `Transport probe passed: ${result.elapsedMs} ms and ${result.payload.length} bytes; zero inference.`,
+            const stream = await probe();
+            phase = "reading";
+            console.info(
+              "[DEBUG-sas-match-transport]",
+              JSON.stringify({
+                phase,
+                elapsedMs: Math.round(performance.now() - started),
+                reader: !!stream && typeof stream.getReader === "function",
+              }),
             );
-          } catch {
-            setMessage("Transport probe failed; no inference started.");
+            const result = await readMatchResult(stream, (event) => {
+              phase = event.type;
+              console.info(
+                "[DEBUG-sas-match-transport]",
+                JSON.stringify({ phase, elapsedMs: Math.round(performance.now() - started) }),
+              );
+            });
+            phase = "validating";
+            const details = {
+              phase,
+              clientElapsedMs: Math.round(performance.now() - started),
+              serverElapsedMs: result.elapsedMs,
+              payloadBytes: result.payload.length,
+            };
+            console.info("[DEBUG-sas-match-transport]", JSON.stringify(details));
+            if (result.payload.length !== 147456 || result.elapsedMs < 25000) {
+              setMessage(
+                `Transport delivered but validation failed: ${JSON.stringify(details)}; zero inference.`,
+              );
+              return;
+            }
+            setMessage(`Transport probe passed: ${JSON.stringify(details)}; zero inference.`);
+          } catch (e) {
+            const safe =
+              e instanceof Error && /^Agent Match (transport|failed|deadline)/.test(e.message)
+                ? e.message
+                : "Remote transport error";
+            console.info(
+              "[DEBUG-sas-match-transport]",
+              JSON.stringify({
+                phase,
+                elapsedMs: Math.round(performance.now() - started),
+                error: safe,
+              }),
+            );
+            setMessage(`Transport probe failed during ${phase}: ${safe}; zero inference.`);
           } finally {
             setBusy(false);
           }
