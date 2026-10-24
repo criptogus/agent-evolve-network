@@ -17,7 +17,7 @@ import {
   reconcileBenchmarkBudget,
 } from "@/lib/match/benchmark-budget";
 const schema = z.object({
-  planHash: z.literal("a3fba3632da3853eb5187e8e100ec46438e418464a6cef0897528260a1c2f7a3"),
+  planHash: z.literal("c50e6608c2568811e700f5ba116eed54d670fd8238230300da1d46629b80da29"),
   catalog: z
     .array(
       z.object({
@@ -45,7 +45,7 @@ const schema = z.object({
     )
     .length(72),
 });
-const STORAGE = "sas-agent-match-paired-v16-usd5";
+const STORAGE = "sas-agent-match-paired-v17-usd5";
 export const Route = createFileRoute("/admin/match-benchmark")({ component: Benchmark });
 function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);
@@ -149,7 +149,7 @@ function Benchmark() {
         setMessage(`Running ${rows.length + 1}/72: ${attempt}`);
         const clientStarted = performance.now();
         const result = await readMatchResult(
-          await generate({
+          generate({
             data: {
               attempt,
               brief: item.brief,
@@ -364,6 +364,33 @@ function Benchmark() {
         }}
       >
         Test durable journal (no inference)
+      </button>
+      <button
+        className="border rounded p-2"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          const started = performance.now();
+          try {
+            await readMatchResult(probe(), { timeoutMs: 250 });
+            setMessage(
+              "Client deadline probe failed: unexpected completed result; zero inference.",
+            );
+          } catch (error) {
+            const elapsedMs = Math.round(performance.now() - started);
+            setMessage(
+              error instanceof Error &&
+                /client deadline exceeded/.test(error.message) &&
+                elapsedMs < 2000
+                ? `Client deadline probe passed: ${elapsedMs} ms; opening/read canceled without waiting for remote cleanup; zero inference.`
+                : "Client deadline probe failed; zero inference.",
+            );
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        Test client deadline (no inference)
       </button>
       <p role="status">{message}</p>
       <label className="block">

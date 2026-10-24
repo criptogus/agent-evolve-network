@@ -259,3 +259,57 @@ test("665-candidate scoped wire schema stays below the strict provider enum cap 
   assert.ok(enumValues <= 1000, `Provider enum cap exceeded: ${enumValues}`);
   for (const item of large) assert.ok(collected.includes(item.slug), `Lost candidate ${item.slug}`);
 });
+
+test("runtime schema excludes software deployment and placeholders without losing software choices", () => {
+  const scoped = [
+    ...candidates,
+    {
+      slug: "deployment-helper",
+      name: "Delivery",
+      type: "skill" as const,
+      description: "Configures deployments, build settings and domains.",
+    },
+  ];
+  const schema = buildMatchOutputSchema(scoped, desired);
+  const clean = sanitizeMatch(output(), candidates, desired);
+  const runtime = {
+    ...clean,
+    recommended_kit: {
+      ...clean.recommended_kit,
+      work_domain: "runtime_work",
+      skills: [item("deployment-helper")],
+    },
+  };
+  assert.equal(schema.safeParse(runtime).success, false);
+  assert.equal(
+    schema.safeParse({
+      ...runtime,
+      recommended_kit: { ...runtime.recommended_kit, work_domain: "software_work" },
+    }).success,
+    true,
+  );
+  const placeholder = {
+    ...clean,
+    recommended_kit: {
+      ...clean.recommended_kit,
+      work_domain: "runtime_work",
+      skills: [{ ...item("good"), role: "N/A", why: "N/A" }],
+    },
+  };
+  assert.equal(schema.safeParse(placeholder).success, false);
+});
+
+test("language evidence and score units follow the large catalog rather than being buried before it", () => {
+  const { prompt } = buildMatchPrompt({
+    brief: "Analyze production losses with the supplied measurements.",
+    candidates,
+    desired,
+    catalogSize: 3,
+  });
+  assert.ok(
+    prompt.indexOf("FINAL LANGUAGE AND SCALE REQUIREMENTS") >
+      prompt.indexOf("EXTERNAL MCP REGISTRY"),
+  );
+  assert.ok(prompt.endsWith("omit an unsupported package."));
+  assert.match(prompt, /0–100 percentage scale/);
+});

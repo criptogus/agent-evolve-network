@@ -3,12 +3,12 @@ import { MATCH_GENERATOR_MODEL, MATCH_MAX_OUTPUT_TOKENS } from "./match-generati
 export const BENCHMARK_MODEL = MATCH_GENERATOR_MODEL;
 export const BENCHMARK_OUTPUT_LIMIT = MATCH_MAX_OUTPUT_TOKENS;
 export const BENCHMARK_USD_LIMIT = 5;
-// Hold the original client error, v8 stopped Jev reservation and v15 strict-schema error; never reset the owner cap.
-export const BENCHMARK_PRIOR_HELD_USD = 0.8014125;
+// Hold the original client error, v8 Jev reservation, v15 schema error and interrupted v16 attempt; never reset the owner cap.
+export const BENCHMARK_PRIOR_HELD_USD = 1.08116575;
 // Prior native AI checkpoints displayed 0.24 credits (RPC delivery failed)
 // and 0.26 credits (completed baseline with a primary quality failure).
-// Sixteen successful native checkpoints total 3.25 displayed credits; upper bound (3.25 + 16*0.005) * USD 0.25.
-export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 0.8325;
+// Thirty successful native checkpoints total 6.19 displayed credits; upper bound (6.19 + 30*0.005) * USD 0.25.
+export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 1.585;
 export function generatorCost(input: number, cached: number, output: number) {
   if (![input, cached, output].every((n) => Number.isSafeInteger(n) && n >= 0) || cached > input)
     throw new Error("Missing or invalid usage");

@@ -45,18 +45,41 @@ export function streamMatchResult<T>(
   });
 }
 
-export async function readMatchResult<T>(stream: ReadableStream<MatchStreamEvent<T>>): Promise<T> {
-  const reader = stream.getReader();
+export async function readMatchResult<T>(
+  source: ReadableStream<MatchStreamEvent<T>> | PromiseLike<ReadableStream<MatchStreamEvent<T>>>,
+  options: { timeoutMs?: number } = {},
+): Promise<T> {
+  let reader: ReadableStreamDefaultReader<MatchStreamEvent<T>> | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const opened = Promise.resolve(source);
+  const deadline = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () =>
+        reject(
+          new Error("Agent Match client deadline exceeded; reconcile usage; no automatic retry."),
+        ),
+      options.timeoutMs ?? 195000,
+    );
+  });
   try {
+    const stream = await Promise.race([opened, deadline]);
+    reader = stream.getReader();
     while (true) {
-      const item = await reader.read();
+      const item = await Promise.race([reader.read(), deadline]);
       if (item.done)
         throw new Error("Agent Match transport ended without a result; reconcile usage.");
       if (item.value.type === "error") throw new Error(item.value.message);
       if (item.value.type === "result") return item.value.value;
     }
   } finally {
-    await reader.cancel().catch(() => {});
-    reader.releaseLock();
+    if (timer !== undefined) clearTimeout(timer);
+    if (reader) {
+      // Remote cancellation can itself stall; it must not hide the result/error.
+      void reader.cancel().catch(() => {});
+      reader.releaseLock();
+    } else {
+      // If opening lost the race, cancel a late transport without awaiting it.
+      void opened.then((stream) => stream.cancel()).catch(() => {});
+    }
   }
 }

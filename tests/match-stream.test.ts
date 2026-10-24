@@ -67,3 +67,38 @@ test("framework serializer supports the actual typed result stream", async () =>
   });
   assert.ok(records > 0);
 });
+
+test("a pending cleanup cannot hide a delivered result", async () => {
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue({ type: "result" as const, value: { ok: true } });
+    },
+    cancel() {
+      return new Promise<void>(() => {});
+    },
+  });
+  const actual = await Promise.race([
+    readMatchResult(stream),
+    new Promise((resolve) => setTimeout(() => resolve("cleanup_stalled"), 20)),
+  ]);
+  assert.deepEqual(actual, { ok: true });
+});
+
+test("client deadline covers a transport that never opens", async () => {
+  await assert.rejects(
+    readMatchResult(new Promise<ReadableStream<never>>(() => {}), { timeoutMs: 5 }),
+    /client deadline exceeded/,
+  );
+});
+
+test("client deadline ends a stalled reader without awaiting its cleanup", async () => {
+  let canceled = false;
+  const stream = new ReadableStream<never>({
+    cancel() {
+      canceled = true;
+      return new Promise<void>(() => {});
+    },
+  });
+  await assert.rejects(readMatchResult(stream, { timeoutMs: 5 }), /client deadline exceeded/);
+  assert.equal(canceled, true);
+});

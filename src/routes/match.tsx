@@ -38,7 +38,7 @@ function MatchPage() {
   >({
     mutationFn: async (vars) => {
       try {
-        return await readMatchResult(await matchFn({ data: vars }));
+        return await readMatchResult(matchFn({ data: vars }));
       } catch {
         throw new Error("Agent Match could not complete. Please try again later.");
       }
