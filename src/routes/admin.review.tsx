@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -77,7 +76,6 @@ function ReviewPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Nav />
       <section className="border-b border-border bg-surface/40">
         <div className="mx-auto max-w-6xl px-6 py-10">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
