@@ -98,3 +98,22 @@ A inspeção somente dos nomes de secrets confirmou a ausência de `TYPESAFE_API
 O executor agora realiza a seleção real pelo adaptador de produção dentro do mesmo backend que gera o kit. O baseline não faz chamadas Jev; o braço Jev exige sua credencial antes de reservar/iniciar a observação. Os dois recebem o mesmo catálogo congelado, e a reserva Lovable usa conservadoramente o prompt completo antes da seleção. Falha com uso Jev desconhecido impede iniciar o gerador e bloqueia a rodada. O resultado retém notas por lote, modelo/uso real, slugs efetivamente encaminhados, tempo do gerador, tempo total no servidor e ida/volta real do cliente. A medição local anterior permanece apenas diagnóstico/proveniência, sem substituir o tempo nem as notas medidos na rodada de qualificação.
 
 O plano v5 (`44e6a4723ae7514a39baaa54e7b2fb56694387736a9a0349d2ff11103e6c5eae`) inclui fingerprints do executor e orçamento, além do contrato/perfil/adaptador de produção. Mantém os mesmos briefs, expectativas, critérios, catálogo e 72 gerações; as 36 novas seleções Jev da qualificação serão executadas no backend, com máximo 612 chamadas e sem retries. Preparação de arquivo não é inferência nem aprovação. O teto financeiro é o mesmo US$5 inicial, com a reserva anterior ainda retida.
+
+### Entrega da resposta e preservação do orçamento
+
+A primeira geração corrigida chegou ao gateway com sucesso: o painel nativo registrou 22.689 tokens de entrada, 1.537 de saída, 24,3 segundos e 0,24 crédito exibido. O RPC devolveu uma página de erro e o journal original permaneceu inflight, sem resultado. Essa geração **não** foi transformada em observação aprovada nem reutilizada como baseline completo. Os registros estão em `run-live-v5/generator-journal-001.json` e `gateway-billing-reconciliation.json`.
+
+A causa reproduzida é o prazo de 20 segundos do handler em `src/server.ts`, anterior à conclusão do gerador. `tests/match-stream.test.ts` reproduziu o timeout com o mesmo padrão de await e um relógio reduzido; falhou antes da correção e passou com a resposta tipada por streaming. O limite global de 20 segundos continua intacto. O stream inicia imediatamente, mantém heartbeats, devolve somente o resultado completo e cancela/encerra trabalho pendente em prazo finito. O tempo do cliente continua medido até ler o resultado final, não até o primeiro heartbeat. Erros brutos/HTML não são exibidos pelo novo consumidor.
+
+O probe privado `Test streaming transport (no inference)` aguarda 25 segundos e devolve 147.456 bytes sintéticos pelo mesmo caminho de transporte. Exige admin autenticado e hostname de preview; não chama modelos. Seu resultado real precisa ser observado no preview antes de repetir inferências pagas. Isso testa entrega e serialização, não qualidade de kits.
+
+O plano v6 (`93374756c413f0b2a12ae2284df8b915e58ca7ead90de7407b8bddd2d4c55410`) acrescenta os fingerprints do servidor, prazo, stream e tela de produção. Inputs, modelo, repetições e critérios continuam congelados. O orçamento original não foi reiniciado: além da reserva antiga de US$0,24430525, o executor desconta US$0,06125 como teto conservador do crédito exibido da geração cujo RPC falhou. Restam no máximo US$4,69444475 para as próximas inferências, até conferir outros lançamentos. O campo de reconciliação da tela refere-se apenas à nova rodada; os custos anteriores já estão descontados separadamente.
+
+Comando determinístico de decisão, sem inferência nem publicação:
+
+```sh
+node --experimental-strip-types scripts/evaluate-agent-match-comparison.ts \
+  PLAN JOURNAL PRIMARY_REVIEWS NATIVE_BILLING NEW_REPORT
+```
+
+Esse adaptador preserva o decisor original e exige o hash do plano, fingerprints atuais das fontes, slugs obrigatórios, tempo completo, modelo/uso de seleção medidos no backend e revisões primárias. O custo usa o limite inferior do baseline e o superior do braço Jev para rejeitar economia que dependa do arredondamento da UI. Uso/cobrança ausentes permanecem nulos no relatório; coortes vazias, inflight, parciais ou sem revisões saem com código 4 e `approved:false`. A execução real contra o journal interrompido v5 foi rejeitada. Nenhuma permissão de publicação foi inferida desses testes.

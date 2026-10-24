@@ -1,14 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { readMatchResult } from "@/lib/match/result-stream";
 import { z } from "zod";
 import {
   getBenchmarkReadiness,
+  probeBenchmarkTransport,
   generateBenchmarkObservation,
 } from "@/lib/match/benchmark.functions";
-import { BENCHMARK_PRIOR_HELD_USD, requireBenchmarkPreview } from "@/lib/match/benchmark-budget";
+import {
+  BENCHMARK_PRIOR_HELD_USD,
+  BENCHMARK_PRIOR_SPEND_UPPER_USD,
+  requireBenchmarkPreview,
+} from "@/lib/match/benchmark-budget";
 const schema = z.object({
-  planHash: z.literal("44e6a4723ae7514a39baaa54e7b2fb56694387736a9a0349d2ff11103e6c5eae"),
+  planHash: z.literal("93374756c413f0b2a12ae2284df8b915e58ca7ead90de7407b8bddd2d4c55410"),
   catalog: z
     .array(
       z.object({
@@ -46,11 +52,12 @@ const schema = z.object({
     )
     .length(36),
 });
-const STORAGE = "sas-agent-match-paired-v5-usd5";
+const STORAGE = "sas-agent-match-paired-v6-usd5";
 export const Route = createFileRoute("/admin/match-benchmark")({ component: Benchmark });
 function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);
   const readiness = useServerFn(getBenchmarkReadiness);
+  const probe = useServerFn(probeBenchmarkTransport);
   const [batch, setBatch] = useState<z.infer<typeof schema> | null>(null);
   const [message, setMessage] = useState(
     "Import the frozen synthetic batch. This preview-only runner never publishes.",
@@ -88,8 +95,9 @@ function Benchmark() {
         : null;
       if (checkpoint && checkpoint.planHash !== batch.planHash) throw new Error("Changed plan");
       let remaining = Math.min(
-        checkpoint?.remainingProviderEquivalentUsd ?? 5 - BENCHMARK_PRIOR_HELD_USD,
-        5 - BENCHMARK_PRIOR_HELD_USD - billedUsd,
+        checkpoint?.remainingProviderEquivalentUsd ??
+          5 - BENCHMARK_PRIOR_HELD_USD - BENCHMARK_PRIOR_SPEND_UPPER_USD,
+        5 - BENCHMARK_PRIOR_HELD_USD - BENCHMARK_PRIOR_SPEND_UPPER_USD - billedUsd,
       );
       const rows: Array<{
         caseId: string;
@@ -107,6 +115,7 @@ function Benchmark() {
             remainingProviderEquivalentUsd: remaining,
             limitUsd: 5,
             priorHeldUsd: BENCHMARK_PRIOR_HELD_USD,
+            priorSpendUpperUsd: BENCHMARK_PRIOR_SPEND_UPPER_USD,
             billingReconciliationRequired: true,
             reconciledBilledUsd: billedUsd,
             inflight,
@@ -137,17 +146,19 @@ function Benchmark() {
         persist("inflight", { attempt, remaining });
         setMessage(`Running ${rows.length + 1}/72: ${attempt}`);
         const clientStarted = performance.now();
-        const result = await generate({
-          data: {
-            attempt,
-            brief: item.brief,
-            candidates,
-            arm: step.arm,
-            catalogSize: 665,
-            desired: batch.desired,
-            remaining,
-          },
-        });
+        const result = await readMatchResult(
+          await generate({
+            data: {
+              attempt,
+              brief: item.brief,
+              candidates,
+              arm: step.arm,
+              catalogSize: 665,
+              desired: batch.desired,
+              remaining,
+            },
+          }),
+        );
         rows.push({
           ...step,
           result,
@@ -177,7 +188,12 @@ function Benchmark() {
         break;
       }
     } catch (e) {
-      setMessage(e instanceof Error ? e.message : "Stopped; inspect journal");
+      const message = e instanceof Error ? e.message : "Stopped; inspect journal";
+      setMessage(
+        message.length > 240 || /<(?:!doctype|html|script|body)/i.test(message)
+          ? "Transport failed. Inflight attempt stays blocked; reconcile billing before any retry."
+          : message,
+      );
     } finally {
       setBusy(false);
     }
@@ -190,7 +206,7 @@ function Benchmark() {
         publication.
       </p>
       <label className="block">
-        Cumulative billed USD, reconciled from Lovable AI credits
+        This run’s billed USD upper bound, reconciled from native AI credits
         <input
           type="number"
           min="0"
@@ -242,6 +258,30 @@ function Benchmark() {
         }}
       >
         Check backend readiness (no inference)
+      </button>
+      <button
+        className="border rounded p-2"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          setMessage(
+            "Testing 25-second streaming transport with a 144 KiB synthetic payload; zero inference.",
+          );
+          try {
+            const result = await readMatchResult(await probe());
+            if (result.payload.length !== 147456 || result.elapsedMs < 25000)
+              throw new Error("Invalid transport probe");
+            setMessage(
+              `Transport probe passed: ${result.elapsedMs} ms and ${result.payload.length} bytes; zero inference.`,
+            );
+          } catch {
+            setMessage("Transport probe failed; no inference started.");
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        Test streaming transport (no inference)
       </button>
       <p role="status">{message}</p>
       <label className="block">

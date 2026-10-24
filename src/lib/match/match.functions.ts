@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { generateText, Output } from "ai";
+import { streamMatchResult, type MatchStreamEvent } from "./result-stream.ts";
 import { MATCH_GENERATOR_MODEL, matchGenerationOptions } from "./match-generation.ts";
 import { getGatewayModel } from "@/lib/ai-gateway";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -44,57 +45,61 @@ type CatalogRow = {
 
 export const matchAgentToPackages = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Input.parse(d))
-  .handler(async ({ data }): Promise<AgentMatchResponse> => {
-    const { data: rows, error } = await supabaseAdmin
-      .from("packages")
-      .select("slug,name,type,description")
-      .eq("is_published", true)
-      .eq("review_status", "approved")
-      .order("install_count", { ascending: false })
-      .limit(800);
-    if (error) throw new Response(`Catalog read failed: ${error.message}`, { status: 500 });
-    const catalog = (rows ?? []) as CatalogRow[];
+  .handler(async ({ data }): Promise<ReadableStream<MatchStreamEvent<AgentMatchResponse>>> =>
+    streamMatchResult(async (signal) => {
+      const { data: rows, error } = await supabaseAdmin
+        .from("packages")
+        .select("slug,name,type,description")
+        .eq("is_published", true)
+        .eq("review_status", "approved")
+        .order("install_count", { ascending: false })
+        .limit(800)
+        .abortSignal(signal);
+      if (error) throw new Response(`Catalog read failed: ${error.message}`, { status: 500 });
+      const catalog = (rows ?? []) as CatalogRow[];
 
-    const { candidates, trace: selection } = await preselectAgentMatch({
-      brief: data.brief,
-      vertical: data.vertical,
-      catalog,
-      desired: data.desired,
-      consent: data.semantic_selection,
-    });
+      const { candidates, trace: selection } = await preselectAgentMatch({
+        brief: data.brief,
+        vertical: data.vertical,
+        catalog,
+        desired: data.desired,
+        consent: data.semantic_selection,
+      });
 
-    const { system, prompt } = buildMatchPrompt({
-      ...data,
-      candidates,
-      catalogSize: catalog.length,
-    });
+      const { system, prompt } = buildMatchPrompt({
+        ...data,
+        candidates,
+        catalogSize: catalog.length,
+      });
 
-    const { output, usage } = await generateText({
-      model: getGatewayModel(MATCH_GENERATOR_MODEL),
-      ...matchGenerationOptions(),
-      system,
-      prompt,
-      output: Output.object({ schema: MatchSchema }),
-    });
+      const { output, usage } = await generateText({
+        model: getGatewayModel(MATCH_GENERATOR_MODEL),
+        ...matchGenerationOptions(),
+        abortSignal: AbortSignal.any([signal, AbortSignal.timeout(180000)]),
+        system,
+        prompt,
+        output: Output.object({ schema: MatchSchema }),
+      });
 
-    const clean = sanitizeMatch(output, candidates, data.desired);
+      const clean = sanitizeMatch(output, candidates, data.desired);
 
-    console.info("[agent-match.metrics]", {
-      selection,
-      generation_model: MATCH_GENERATOR_MODEL,
-      generation_input_tokens: usage.inputTokens ?? null,
-      generation_output_tokens: usage.outputTokens ?? null,
-    });
-    return {
-      ...clean,
-      catalog_size: catalog.length,
-      selection,
-      generation_usage: {
-        input_tokens: usage.inputTokens ?? null,
-        output_tokens: usage.outputTokens ?? null,
-      },
-    };
-  });
+      console.info("[agent-match.metrics]", {
+        selection,
+        generation_model: MATCH_GENERATOR_MODEL,
+        generation_input_tokens: usage.inputTokens ?? null,
+        generation_output_tokens: usage.outputTokens ?? null,
+      });
+      return {
+        ...clean,
+        catalog_size: catalog.length,
+        selection,
+        generation_usage: {
+          input_tokens: usage.inputTokens ?? null,
+          output_tokens: usage.outputTokens ?? null,
+        },
+      };
+    }),
+  );
 
 // --- MCP connections (per-user) -------------------------------------------------
 

@@ -77,6 +77,10 @@ if (
   throw new Error("Incomplete frozen fixtures/catalog");
 const sourceFiles = [
   "src/lib/match/match-contract.ts",
+  "src/lib/match/result-stream.ts",
+  "src/lib/server/response-deadline.ts",
+  "src/server.ts",
+  "src/routes/match.tsx",
   "src/lib/match/benchmark.functions.ts",
   "src/lib/match/benchmark-budget.ts",
   "src/lib/match/match-generation.ts",

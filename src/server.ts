@@ -1,4 +1,5 @@
 import "./lib/error-capture";
+import { withTimeout } from "./lib/server/response-deadline";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
@@ -92,13 +93,6 @@ function canonicalRedirect(request: Request): Response | null {
 // PostgREST query killed by the statement timeout manager, leaving the fetch
 // pending) is enough to trigger it. Bound every request so we always answer.
 const REQUEST_TIMEOUT_MS = 20_000;
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | "__timeout__"> {
-  return Promise.race([
-    promise,
-    new Promise<"__timeout__">((resolve) => setTimeout(() => resolve("__timeout__"), ms)),
-  ]);
-}
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {

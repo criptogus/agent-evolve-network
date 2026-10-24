@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { readMatchResult } from "@/lib/match/result-stream";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { matchAgentToPackages, type AgentMatchResponse } from "@/lib/match/match.functions";
@@ -35,7 +36,13 @@ function MatchPage() {
     Error,
     { brief: string; vertical?: string; semantic_selection: boolean }
   >({
-    mutationFn: async (vars) => (await matchFn({ data: vars })) as FullResult,
+    mutationFn: async (vars) => {
+      try {
+        return await readMatchResult(await matchFn({ data: vars }));
+      } catch {
+        throw new Error("Agent Match could not complete. Please try again later.");
+      }
+    },
   });
 
   const onRun = () => {
