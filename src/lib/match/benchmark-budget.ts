@@ -7,8 +7,8 @@ export const BENCHMARK_USD_LIMIT = 5;
 export const BENCHMARK_PRIOR_HELD_USD = 0.49615825;
 // Prior native AI checkpoints displayed 0.24 credits (RPC delivery failed)
 // and 0.26 credits (completed baseline with a primary quality failure).
-// Add v8/v9: (0.245 + 0.265 + 0.245 + 0.105 + 0.175) * 0.25 USD/credit.
-export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 0.25875;
+// Eight native successful checkpoints total 1.60 displayed credits; upper bound (1.60 + 8*0.005) * USD 0.25.
+export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 0.41;
 export function generatorCost(input: number, cached: number, output: number) {
   if (![input, cached, output].every((n) => Number.isSafeInteger(n) && n >= 0) || cached > input)
     throw new Error("Missing or invalid usage");
@@ -35,4 +35,28 @@ export function requireBenchmarkPreview(url: string) {
     ].includes(new URL(url).hostname)
   )
     throw new Error("Benchmark is restricted to the managed preview");
+}
+
+export function reconcileBenchmarkBudget(input: {
+  billedUsd: number;
+  billedObservations: number;
+  completed: number;
+  previousBilledUsd: number;
+}) {
+  if (
+    !Number.isFinite(input.billedUsd) ||
+    input.billedUsd < input.previousBilledUsd ||
+    input.billedUsd < 0 ||
+    !Number.isSafeInteger(input.billedObservations) ||
+    input.billedObservations !== input.completed ||
+    (input.completed > 0 && input.billedUsd === 0)
+  )
+    throw new Error("Reconcile every completed observation with native billing before continuing");
+  const remaining =
+    BENCHMARK_USD_LIMIT -
+    BENCHMARK_PRIOR_HELD_USD -
+    BENCHMARK_PRIOR_SPEND_UPPER_USD -
+    input.billedUsd;
+  if (remaining < 0) throw new Error("Authorized budget exceeded");
+  return remaining;
 }

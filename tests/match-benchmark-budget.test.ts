@@ -31,3 +31,23 @@ test("benchmark is unavailable on production or spoofed suffix hostnames", () =>
   ])
     assert.throws(() => requireBenchmarkPreview(url));
 });
+
+test("native reconciliation cannot reset spending or release unaccounted reservations", async () => {
+  const { reconcileBenchmarkBudget, BENCHMARK_PRIOR_HELD_USD, BENCHMARK_PRIOR_SPEND_UPPER_USD } =
+    await import("../src/lib/match/benchmark-budget.ts");
+  for (const value of [
+    { billedUsd: 0, billedObservations: 4, completed: 4, previousBilledUsd: 0 },
+    { billedUsd: 0.2, billedObservations: 3, completed: 4, previousBilledUsd: 0.1 },
+    { billedUsd: 0.1, billedObservations: 4, completed: 4, previousBilledUsd: 0.2 },
+  ])
+    assert.throws(() => reconcileBenchmarkBudget(value));
+  assert.equal(
+    reconcileBenchmarkBudget({
+      billedUsd: 0.2,
+      billedObservations: 4,
+      completed: 4,
+      previousBilledUsd: 0.1,
+    }),
+    5 - BENCHMARK_PRIOR_HELD_USD - BENCHMARK_PRIOR_SPEND_UPPER_USD - 0.2,
+  );
+});

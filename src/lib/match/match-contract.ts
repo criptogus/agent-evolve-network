@@ -77,6 +77,7 @@ Rules:
 - Requested counts are preferences, never quotas. Prefer fewer supported packages over filling every category. If a count is zero, return an empty array for that type.
 - Return an empty array when no package of a type has a documented contribution to the requested jobs. Do not reinterpret a domain-specific package as a different domain workflow or assume it will be rewritten/adapted to fit. Describe such missing workflows as gaps instead.
 - A role must be supported by the supplied package metadata as-is. Generic similarity or an "adaptable" rationale is insufficient when the proposed role changes the package domain.
+- Preserve the documented subject and outcome of every package. Sharing generic verbs such as verify, audit, match or monitor is insufficient if the package applies them to a different subject or outcome. Omit that package instead of broadening its scope.
 - "role" = the specific job this package does inside the agent (e.g. "lead qualification engine", "voice of taste").
 - "gaps" = capabilities the agent needs that the catalog does NOT cover well — recommend the type to author next.
 - "recommended_mcps" = pick 0-4 EXTERNAL MCP servers from the MCP registry whose tools the agent will actually call to deliver the brief. ONLY use ids from the registry. Score 0-10 like above; drop anything <6. "pairs_with" must reference slugs you put in the kit.

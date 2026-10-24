@@ -13,9 +13,10 @@ import {
   BENCHMARK_PRIOR_HELD_USD,
   BENCHMARK_PRIOR_SPEND_UPPER_USD,
   requireBenchmarkPreview,
+  reconcileBenchmarkBudget,
 } from "@/lib/match/benchmark-budget";
 const schema = z.object({
-  planHash: z.literal("dbf73ef607c43ba7d257eeae0b526f326921da0353e892b5048c0505d30f9da5"),
+  planHash: z.literal("bb791cc1b3a8d28c65fb9947d7a6bb1754b001e34296980ddfa4f3e769f243ad"),
   catalog: z
     .array(
       z.object({
@@ -43,7 +44,7 @@ const schema = z.object({
     )
     .length(72),
 });
-const STORAGE = "sas-agent-match-paired-v10-usd5";
+const STORAGE = "sas-agent-match-paired-v11-usd5";
 export const Route = createFileRoute("/admin/match-benchmark")({ component: Benchmark });
 function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);
@@ -57,6 +58,7 @@ function Benchmark() {
   const [busy, setBusy] = useState(false);
   const [report, setReport] = useState("");
   const [billedUsd, setBilledUsd] = useState(0);
+  const [billedObservations, setBilledObservations] = useState(0);
   async function run() {
     if (!batch || busy) return;
     setBusy(true);
@@ -73,6 +75,7 @@ function Benchmark() {
               status: z.enum(["billing_checkpoint", "completed"]),
               inflight: z.null(),
               remainingProviderEquivalentUsd: z.number(),
+              reconciledBilledUsd: z.number(),
               rows: z.array(
                 z.object({
                   caseId: z.string(),
@@ -86,11 +89,12 @@ function Benchmark() {
             .parse(JSON.parse(previous))
         : null;
       if (checkpoint && checkpoint.planHash !== batch.planHash) throw new Error("Changed plan");
-      let remaining = Math.min(
-        checkpoint?.remainingProviderEquivalentUsd ??
-          5 - BENCHMARK_PRIOR_HELD_USD - BENCHMARK_PRIOR_SPEND_UPPER_USD,
-        5 - BENCHMARK_PRIOR_HELD_USD - BENCHMARK_PRIOR_SPEND_UPPER_USD - billedUsd,
-      );
+      let remaining = reconcileBenchmarkBudget({
+        billedUsd,
+        billedObservations,
+        completed: checkpoint?.rows.length ?? 0,
+        previousBilledUsd: checkpoint?.reconciledBilledUsd ?? 0,
+      });
       const rows: Array<{
         caseId: string;
         repeat: number;
@@ -110,6 +114,7 @@ function Benchmark() {
             priorSpendUpperUsd: BENCHMARK_PRIOR_SPEND_UPPER_USD,
             billingReconciliationRequired: true,
             reconciledBilledUsd: billedUsd,
+            reconciledBilledObservations: billedObservations,
             inflight,
             rows,
           },
@@ -119,13 +124,16 @@ function Benchmark() {
         localStorage.setItem(STORAGE, text);
         setReport(text);
       };
-      const nextStep = batch.schedule[rows.length];
-      if (nextStep.arm === "jev" && !checked.jevConfigured)
+      if (
+        batch.schedule.slice(rows.length, rows.length + 4).some((s) => s.arm === "jev") &&
+        !checked.jevConfigured
+      )
         throw new Error(
           "TYPESAFE_API_KEY is required for the next managed-backend Jev observation. No new inference started.",
         );
       persist("running");
-      for (const step of batch.schedule.slice(rows.length)) {
+      const batchEnd = Math.min(72, rows.length + 4);
+      for (const step of batch.schedule.slice(rows.length, batchEnd)) {
         const item = batch.cases.find((c) => c.id === step.caseId);
         if (!item) throw new Error("Missing frozen case");
         // Actual qualification executes Jev in the same backend, never a locally
@@ -158,7 +166,8 @@ function Benchmark() {
           persist("stopped_unknown_usage", { attempt });
           throw new Error("Stopped: unknown billed usage; no retry");
         }
-        remaining -= result.providerEquivalentUsd;
+        // Keep the full worst-case reservation until this batch is reconciled.
+        remaining -= result.reservation.reserve;
         persist("checkpoint");
         if (
           result.finishReason !== "stop" ||
@@ -169,7 +178,8 @@ function Benchmark() {
           persist("stopped_invalid_output");
           throw new Error("Invalid or truncated output; no retry");
         }
-        // One observation per click: reconcile the actual Lovable credits before continuing.
+        // At most four unique observations, with full reservations held until native reconciliation.
+        if (rows.length < batchEnd) continue;
         persist(rows.length === 72 ? "completed" : "billing_checkpoint");
         setMessage(
           "Observation saved. Reconcile actual billed credits before continuing the finite batch.",
@@ -206,6 +216,17 @@ function Benchmark() {
         />
       </label>
       <label className="block">
+        Native billing reconciled observation count
+        <input
+          type="number"
+          min="0"
+          max="72"
+          step="1"
+          value={billedObservations}
+          onChange={(e) => setBilledObservations(Number(e.target.value))}
+        />
+      </label>
+      <label className="block">
         Synthetic batch JSON
         <input
           className="block"
@@ -226,7 +247,7 @@ function Benchmark() {
         />
       </label>
       <button className="border rounded p-2" disabled={!batch || busy} onClick={run}>
-        Run next observation
+        Run next batch (up to 4 observations)
       </button>
       <button
         className="border rounded p-2"
