@@ -11,6 +11,13 @@ Component artifacts are versioned and released independently via git tags:
 - **`super-agent` CLI** — `cli-v*` tags publish cross-platform binaries.
 - **`@superagentskill/sdk`** — versioned in `packages/sdk-ts/package.json`.
 
+## [0.6.6] — 2026-10-24 — *Genesis* (alpha) — Restrict direct evidence reads
+
+### Changed
+
+- Require authentication for direct archive and compatibility table reads, preserving existing row predicates and public server/API distribution.
+- Add a finite, source-bound verifier for all 21 public metadata and plugin-manifest endpoints without expanding the anonymous-read allowlist.
+
 ## [0.6.5] — 2026-10-24 — *Genesis* (alpha) — Authenticated publication repair
 
 ### Changed
