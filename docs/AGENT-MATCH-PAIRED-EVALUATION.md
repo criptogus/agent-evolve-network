@@ -125,3 +125,13 @@ O primeiro probe encontrou uma falha adicional de transporte, sem inferência: o
 O probe repetido na revisão `276dc7c3` passou: primeiro transporte em **670 ms**, resultado completo após **25.626 ms** no cliente, **25.000 ms** no servidor e **147.456 bytes**. Foram observados heartbeats em 670, 5.615, 10.614, 15.618 e 20.614 ms; o resultado chegou em 25.624 ms. Nenhum modelo foi chamado. O relatório está em `run-live-v6/native-transport-probe.json`. A instrumentação temporária foi removida após localizar e validar as falhas.
 
 O plano v7 (`e3ebfd54fe6e4de958ed2f27cb95f1051ccc8e76b241b0a18791419a53ec2fcd`) inclui também package.json, além do lock e dos 15 arquivos anteriores. Mantém exatamente os inputs, expectativas, limiares e critérios dos planos anteriores. O orçamento continua o mesmo teto inicial de US$5 e desconta os custos/reservas anteriores. A prova de transporte não aprova a comparação de qualidade/custo nem altera a exigência de completar 72 observações reais e revisá-las por hash.
+
+### Correção de grounding e primeira execução com o secret configurado
+
+A resposta completa v7 foi rejeitada na revisão primária: o playbook de higiene trimestral de CRM foi reaproveitado como normalização de pedidos, fora do domínio documentado. A revisão por hash foi preservada, com `grounded_roles=false`, sem alterar os critérios. O contrato passou a explicitar que contagens são preferências e funções devem ser sustentadas pelos metadados, sem adaptação de domínio. O sanitizer também respeita contagens opcionais explicitamente zero; a regressão falhou antes e passou após a correção.
+
+O plano v8 (`d8de6867034bda9860dfcb48b6cdc2ecb5dd12afe828045e082f57dbca7b88e9`) preserva catálogo, casos, critérios, contagens e schedule originais. As 11 verificações e 260 testes passaram. O proprietário configurou o secret; o preflight autenticado confirmou TypeSafe configurado, mantendo o modo de produção shadow.
+
+O primeiro baseline corrigido retornou em 24.737 ms no cliente: GPT-5.2-2025-12-11, 22.792 tokens de entrada, 1.523 de saída. A revisão primária aprovou suas seis dimensões, sem playbook fora de domínio. O painel nativo registrou a solicitação 482 com 0,24 crédito exibido; intervalo conservador US$ 0,05875–0,06125. Isso não aprova a comparação.
+
+O próximo braço Jev encerrou com `provider_error`: quatro solicitações, uso incompleto, nenhum gerador iniciado. O journal interrompido permanece imutável em `run-live-v8/browser-journal-002.json`. Sem repetição automática ou promoção. A instrumentação diagnóstica registra somente etapa e código HTTP, sem corpo do provedor, cabeçalhos ou credenciais; o teste administrativo finito usa um único candidato sintético e não chama Lovable AI.

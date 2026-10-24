@@ -37,7 +37,7 @@ export type MatchSelectionTrace = {
   output_tokens: number;
   usage_complete: boolean;
   elapsed_ms: number;
-  failures?: Array<{ stage: string; http_status?: number }>;
+  failures?: Array<{ stage: string; http_status?: number; category?: string }>;
 };
 export type JevMatchOptions = {
   apiKey?: string;
@@ -172,9 +172,23 @@ export async function preselectAgentMatch(
         });
         trace.input_tokens += parsed.usage.input_tokens;
         trace.output_tokens += parsed.usage.output_tokens;
-      } catch {
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "";
+        // Fixed categories only; provider/runtime messages may contain credentials.
+        const category = /header|ByteString|character|token/i.test(message)
+          ? "invalid_header"
+          : /redirect/i.test(message)
+            ? "redirect_rejected"
+            : /blocked|not allowed|allowlist|denied|outbound/i.test(message)
+              ? "egress_rejected"
+              : /abort|timeout/i.test(message)
+                ? "aborted"
+                : /fetch|network|DNS|connect/i.test(message)
+                  ? "network"
+                  : "unclassified";
         (trace.failures ??= []).push({
           stage,
+          ...(stage === "transport" ? { category } : {}),
           ...(httpStatus === undefined ? {} : { http_status: httpStatus }),
         });
         failed = true;
