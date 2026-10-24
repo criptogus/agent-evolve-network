@@ -3,11 +3,11 @@ import { getRequest } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText, Output } from "ai";
+import { matchGenerationOptions } from "./match-generation.ts";
 import { z } from "zod";
 import { MatchSchema, buildMatchPrompt, sanitizeMatch } from "./match-contract";
 import {
   BENCHMARK_MODEL,
-  BENCHMARK_OUTPUT_LIMIT,
   generatorCost,
   requireBenchmarkPreview,
   reserveGeneration,
@@ -90,6 +90,15 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
             .safeParse(JSON.parse(text));
           if (parsed.success) transportEvidence = JSON.stringify(parsed.data);
         }
+        if (!response.ok) {
+          const text = await response.clone().text();
+          if (!text.includes(key)) {
+            const error = z
+              .object({ error: z.object({ message: z.string().max(1000) }) })
+              .safeParse(JSON.parse(text));
+            if (error.success) transportEvidence = JSON.stringify(error.data);
+          }
+        }
         return response;
       },
     });
@@ -99,9 +108,7 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
         system,
         prompt,
         output: Output.object({ schema: MatchSchema }),
-        maxOutputTokens: BENCHMARK_OUTPUT_LIMIT,
-        maxRetries: 0,
-        abortSignal: AbortSignal.timeout(180000),
+        ...matchGenerationOptions(),
       });
       const usage = result.usage;
       const inputTokens = usage.inputTokens,
@@ -162,5 +169,11 @@ export const getBenchmarkReadiness = createServerFn({ method: "GET" })
       .eq("role", "admin")
       .maybeSingle();
     if (role.error || !role.data) throw new Response("Forbidden", { status: 403 });
-    return { ready: !!process.env.LOVABLE_API_KEY, provider: "lovable-ai", model: BENCHMARK_MODEL };
+    return {
+      ready: !!process.env.LOVABLE_API_KEY,
+      jevConfigured: !!process.env.TYPESAFE_API_KEY,
+      jevMode: process.env.JEV_AGENT_MATCH_MODE ?? "shadow",
+      provider: "lovable-ai",
+      model: BENCHMARK_MODEL,
+    };
   });

@@ -1,3 +1,9 @@
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { generateText, Output } from "ai";
+import {
+  MATCH_GENERATOR_MODEL,
+  matchGenerationOptions,
+} from "../src/lib/match/match-generation.ts";
 import { z } from "zod";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -74,4 +80,60 @@ test("Agent Match supplies the JSON contract to gateways without native schema s
   assert.ok(system.includes(JSON.stringify(z.toJSONSchema(MatchSchema))));
   assert.match(system, /same language/);
   assert.match(system, /untrusted evidence/);
+});
+
+test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instructions", async () => {
+  let captured: Record<string, unknown> | null = null;
+  const provider = createOpenAICompatible({
+    name: "lovable",
+    baseURL: "https://gateway.test/v1",
+    fetch: async (_url, init) => {
+      captured = z.record(z.string(), z.unknown()).parse(JSON.parse(String(init?.body)));
+      return new Response(
+        JSON.stringify({
+          id: "fixture",
+          model: "gpt-5.2",
+          created: 1,
+          choices: [
+            {
+              index: 0,
+              message: { role: "assistant", content: JSON.stringify(output()) },
+              finish_reason: "stop",
+            },
+          ],
+          usage: {
+            prompt_tokens: 1,
+            completion_tokens: 1,
+            total_tokens: 2,
+            prompt_tokens_details: { cached_tokens: 0 },
+          },
+        }),
+        { headers: { "content-type": "application/json" } },
+      );
+    },
+  });
+  const { system, prompt } = buildMatchPrompt({
+    brief: "Conferir notas fiscais com evidências",
+    candidates,
+    desired,
+    catalogSize: 3,
+  });
+  const result = await generateText({
+    model: provider(MATCH_GENERATOR_MODEL),
+    ...matchGenerationOptions(),
+    system,
+    prompt,
+    output: Output.object({ schema: MatchSchema }),
+  });
+  assert.equal(result.finishReason, "stop");
+  assert.ok(captured);
+  const request = z
+    .object({
+      model: z.literal("openai/gpt-5.2"),
+      max_completion_tokens: z.literal(4096),
+      max_tokens: z.never().optional(),
+      messages: z.array(z.object({ content: z.string() })),
+    })
+    .parse(captured);
+  assert.ok(request.messages.some((m) => m.content.includes("JSON Schema")));
 });

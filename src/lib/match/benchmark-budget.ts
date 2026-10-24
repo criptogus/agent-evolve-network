@@ -1,6 +1,7 @@
 // USD provider-equivalent metering; billed credits must be reconciled separately.
-export const BENCHMARK_MODEL = "openai/gpt-5.2";
-export const BENCHMARK_OUTPUT_LIMIT = 4096;
+import { MATCH_GENERATOR_MODEL, MATCH_MAX_OUTPUT_TOKENS } from "./match-generation.ts";
+export const BENCHMARK_MODEL = MATCH_GENERATOR_MODEL;
+export const BENCHMARK_OUTPUT_LIMIT = MATCH_MAX_OUTPUT_TOKENS;
 export const BENCHMARK_USD_LIMIT = 5;
 // Prior client-error attempt has no reported tokens, but its reserve is held until billing reconciliation.
 export const BENCHMARK_PRIOR_HELD_USD = 0.24430525;

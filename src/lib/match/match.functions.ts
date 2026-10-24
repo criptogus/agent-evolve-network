@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { generateText, Output } from "ai";
+import { MATCH_GENERATOR_MODEL, matchGenerationOptions } from "./match-generation.ts";
 import { getGatewayModel } from "@/lib/ai-gateway";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin;
@@ -69,7 +70,8 @@ export const matchAgentToPackages = createServerFn({ method: "POST" })
     });
 
     const { output, usage } = await generateText({
-      model: getGatewayModel("openai/gpt-5.2"),
+      model: getGatewayModel(MATCH_GENERATOR_MODEL),
+      ...matchGenerationOptions(),
       system,
       prompt,
       output: Output.object({ schema: MatchSchema }),
@@ -79,7 +81,7 @@ export const matchAgentToPackages = createServerFn({ method: "POST" })
 
     console.info("[agent-match.metrics]", {
       selection,
-      generation_model: "openai/gpt-5.2",
+      generation_model: MATCH_GENERATOR_MODEL,
       generation_input_tokens: usage.inputTokens ?? null,
       generation_output_tokens: usage.outputTokens ?? null,
     });
