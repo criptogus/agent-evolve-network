@@ -147,3 +147,27 @@ test("distinct Pix end-to-end IDs for one order are summed while repeated IDs re
   assert.equal(e.facts.totals.difference_minor, "-20");
   assert.equal(e.facts.duplicate_pix_mentions.length, 1);
 });
+
+test("product identifiers inside an order line cannot be selected as additional order records", () => {
+  const inputs = {
+    ...brazilInputs,
+    source_2: brazilInputs.source_2.replace("order ORD-8 total", "order ORD-8 one PART-9 total"),
+  };
+  const prepared = prepareBrazilRoles(inputs, xmlFixture());
+  const productIndex = prepared.ids.indexOf("PART-9");
+  assert.ok(productIndex >= 0, "Retain product as an explicitly classified candidate");
+  assert.equal(
+    Object.hasOwn(prepared.request.questions[`role_${productIndex}`].criteria, "order"),
+    false,
+  );
+  for (const id of ["ORD-7", "ORD-8"]) {
+    const index = prepared.ids.indexOf(id);
+    assert.equal(
+      Object.hasOwn(prepared.request.questions[`role_${index}`].criteria, "order"),
+      true,
+    );
+  }
+  const e = brazilEvidenceFixture(inputs);
+  assert.equal(e.facts.reconciliations.length, 2);
+  assert.equal(e.facts.totals.orders_minor, "6535");
+});

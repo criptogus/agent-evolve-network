@@ -158,7 +158,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v26-brazil-source-state",
+    protocol: "compiled-playbook-gateway-v27-brazil-record-heads",
     python,
     modelPath,
     model: profileFor(modelPath).model,

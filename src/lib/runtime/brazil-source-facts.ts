@@ -52,6 +52,18 @@ export function prepareBrazilRoles(inputs: Record<string, unknown>, receipt: Bra
   const ids = [
     ...new Set(ledgerText.match(/\b[A-Za-z][A-Za-z0-9]*(?:[-_][A-Za-z0-9]+)+\b/g) ?? []),
   ].sort();
+  // The supported order ledger is a semicolon/newline-delimited record export.
+  // Keep all identifiers for classification, but only a record's own leading ID
+  // can denote that order. Product references inside its payload are not new rows.
+  const orderHeads = new Set(
+    context.sources.source_2.split(/[;\n]/).flatMap((record) => {
+      const payload = record.slice(record.lastIndexOf(":") + 1).trim();
+      const match = payload.match(
+        /^(?:(?:order|pedido)\s+)?([A-Za-z][A-Za-z0-9]*(?:[-_][A-Za-z0-9]+)+)\b/i,
+      );
+      return match ? [match[1]] : [];
+    }),
+  );
   const labels = [
     ...new Set(
       [...ledgerText.matchAll(/\b(?:owner|respons[aá]vel)\s*[:=]?\s+([^\n,.;]+)/giu)].map((m) =>
@@ -73,9 +85,14 @@ export function prepareBrazilRoles(inputs: Record<string, unknown>, receipt: Bra
   ids.forEach((id, i) => {
     questions[`role_${i}`] = {
       type: "choice",
-      instructions: `Classify the exact referent of identifier ${id} in original_sources.source_2 and source_3. Source/export IDs and SKU/product IDs are other even when their paragraphs contain orders or Pix rows. An order must have its own record in source_2; a reference only in a payment does not establish a supplied order record. A Pix entity must have a source record in source_3. Invoice identities are already parsed separately from XML; do not invent another invoice entity.`,
+      instructions: `Classify the exact referent of identifier ${id} in original_sources.source_2 and source_3. An order ID names the record itself at the start of its ledger row; an embedded item/product ID never creates another order. Source/export IDs and SKU/product IDs are other even when their paragraphs contain orders or Pix rows. An order must have its own record in source_2; a reference only in a payment does not establish a supplied order record. A Pix entity must have a source record in source_3. Invoice identities are already parsed separately from XML; do not invent another invoice entity.`,
       criteria: {
-        order: "Identifier of an explicitly supplied commercial order record in source_2",
+        ...(orderHeads.has(id)
+          ? {
+              order:
+                "Identifier of this record itself at the start of a supplied commercial order row in source_2",
+            }
+          : {}),
         pix: "Pix end-to-end transaction identifier itself",
         other: "Source/export document, product/SKU, metadata or another kind of identifier",
       },
