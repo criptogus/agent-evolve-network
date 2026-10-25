@@ -129,7 +129,7 @@ for (const s of SOLUTIONS) {
       slug: `solution-${s.id}`,
       name: s.title,
       type: "playbook",
-      version: s.id === "monthly-finance-close" ? "0.1.5" : "0.1.1",
+      version: "0.1.6",
       description: s.outcome,
       trigger: `When the user requests ${s.title.toLowerCase()} and provides authorized source inputs.`,
       inputs: Object.fromEntries(

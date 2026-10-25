@@ -16,6 +16,10 @@ import { resolve, join } from "node:path";
 import { once } from "node:events";
 import { setTimeout as delay } from "node:timers/promises";
 import { parse } from "yaml";
+import {
+  buildSolutionPlaybookFiles,
+  verifySolutionPlaybookSnapshot,
+} from "./solution-artifact-files.ts";
 const CONTRACT = "content/expansion/playbook-adversarial-cases.json";
 const CONTRACT_HASH = "c8361a94d98c18577812e003524b57e2ef25ff7a68cd450c4c7f59a28b3fc63a";
 const hash = (s) => createHash("sha256").update(s).digest("hex");
@@ -37,6 +41,15 @@ const sourcePaths = [
   "content/expansion/playbook-model-profiles.json",
   "scripts/run-playbook.ts",
   "scripts/evaluate-solution-playbooks.mjs",
+  "scripts/solution-artifact-files.ts",
+  "src/lib/solutions/catalog.ts",
+  "src/lib/plugins/agent-plugins.ts",
+  "src/lib/plugins/artifacts.ts",
+  "src/lib/plugins/conformance.ts",
+  "src/lib/json.ts",
+  "src/lib/errors.ts",
+  "package-lock.json",
+  "LICENSE",
   "src/lib/runtime/compile.ts",
   "src/lib/runtime/run.ts",
   "src/lib/runtime/types.ts",
@@ -94,8 +107,28 @@ if (mode === "prepare") {
     mkdirSync(resolve(snapshot, ".."), { recursive: true });
     writeFileSync(snapshot, readFileSync(source), { flag: "wx" });
   }
+  const subjects = cases.subjects.map((s) => {
+    const artifact = buildSolutionPlaybookFiles(
+      readFileSync(`content/playbooks/${s.slug}.yaml`, "utf8"),
+    );
+    for (const [path, body] of Object.entries(artifact.files)) {
+      const destination = join(dir, "package-snapshots", s.slug, path);
+      mkdirSync(resolve(destination, ".."), { recursive: true });
+      writeFileSync(destination, body, { flag: "wx" });
+    }
+    return {
+      ...s,
+      version: artifact.version,
+      artifact: {
+        sha256: artifact.sha256,
+        fileHashes: Object.fromEntries(
+          Object.entries(artifact.files).map(([p, b]) => [p, hash(b)]),
+        ),
+      },
+    };
+  });
   const payload = {
-    protocol: "compiled-playbook-gateway-v3",
+    protocol: "compiled-playbook-gateway-v4-packaged",
     python,
     modelPath,
     model: profileFor(modelPath).model,
@@ -103,10 +136,7 @@ if (mode === "prepare") {
     sourceHashes,
     thresholds: cases.thresholds,
     settings: { temperature: 0, server_max_tokens: 768, server_enable_thinking: false, seed: null },
-    subjects: cases.subjects.map((s) => ({
-      ...s,
-      version: parse(readFileSync(`content/playbooks/${s.slug}.yaml`, "utf8")).version,
-    })),
+    subjects,
   };
   save(join(dir, "plan.json"), { ...payload, planHash: hash(JSON.stringify(payload)) });
   console.log(
@@ -134,6 +164,32 @@ if (mode === "prepare") {
   const outputsPath = join(dir, "outputs.jsonl");
   if (existsSync(outputsPath) || existsSync(join(dir, "attempts.jsonl")))
     throw new Error("Existing inference attempts are preserved; no replay/resume in this command");
+  const installations = [];
+  for (const s of plan.subjects) {
+    const artifact = verifySolutionPlaybookSnapshot(
+      readFileSync(`content/playbooks/${s.slug}.yaml`, "utf8"),
+      s.artifact,
+      join(dir, "package-snapshots", s.slug),
+    );
+    const root = join(dir, "package-snapshots", s.slug, "skills", s.slug);
+    const install = spawnSync(
+      "npm",
+      ["ci", "--offline", "--ignore-scripts", "--no-audit", "--no-fund"],
+      { cwd: root, encoding: "utf8", timeout: 30000 },
+    );
+    installations.push({
+      slug: s.slug,
+      packageSha256: artifact.sha256,
+      exitCode: install.status,
+      stdout: install.stdout,
+      stderr: install.stderr,
+    });
+    if (install.status !== 0) {
+      save(join(dir, "package-installations.json"), installations);
+      throw new Error("Packaged dependency installation failed");
+    }
+  }
+  save(join(dir, "package-installations.json"), installations);
   const bind = async (server) => {
     server.listen(0, "127.0.0.1");
     await once(server, "listening");
@@ -278,7 +334,14 @@ if (mode === "prepare") {
         process.execPath,
         [
           "--experimental-strip-types",
-          "scripts/run-playbook.ts",
+          join(
+            dir,
+            "package-snapshots",
+            subject.slug,
+            "skills",
+            subject.slug,
+            "scripts/run-playbook.ts",
+          ),
           "--playbook",
           subject.slug,
           "--inputs-file",
@@ -292,6 +355,7 @@ if (mode === "prepare") {
             AI_GATEWAY_API_KEY: "offline-loopback-only",
             AI_GATEWAY_MODEL: plan.modelPath,
           },
+          cwd: join(dir, "package-snapshots", subject.slug, "skills", subject.slug),
         },
       );
       let stdout = "",
@@ -306,6 +370,7 @@ if (mode === "prepare") {
       const row = {
         slug: subject.slug,
         version: subject.version,
+        package_sha256: subject.artifact.sha256,
         case_id: c.id,
         planHash,
         exitCode,

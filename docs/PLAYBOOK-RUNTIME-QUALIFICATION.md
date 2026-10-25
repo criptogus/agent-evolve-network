@@ -141,3 +141,34 @@ Package and bind the actual graph/CLI/runtime/model profile before a full model
 qualification; the existing artifact allowlist/schema/digest/conformance checks
 must continue to reject unsafe files and stale versions. No registry approval or
 publication is authorized by the single-case extraction or CLI tests.
+
+The 0.1.6 packaging candidate uses `scripts/solution-artifact-files.ts` as the
+shared builder for the import and evaluation paths. Each of the four archives now
+contains the actual CLI, compiled-graph runtime, leak scanner, workflow YAML,
+license, exact minimal YAML dependency lock and candidate model fingerprints.
+The original artifact size/path/extension/secret/conformance gates are unchanged;
+only an explicit file allowlist is copied. Missing or substituted source refuses.
+
+Run `node --experimental-strip-types --test tests/solution-artifact.test.ts` to
+extract all four archives outside the repository, install YAML from the existing
+cache with lifecycle scripts disabled, and execute the included CLI. This transport
+check uses explicit mock responses, makes zero model calls and writes the actual
+aggregate report to `artifacts/validation/solution-artifacts.json`. Archive binding
+and modified-runtime rejection tests accompany it. The normal `test:all` batch
+includes these tests automatically.
+
+The new qualification protocol is `compiled-playbook-gateway-v4-packaged`.
+Preparation stores each exact artifact digest/file-hash map and its archive
+snapshot. Real execution installs the packaged dependency offline and invokes that
+archive's CLI with `--gateway`, rather than a repository copy. The report requires
+those artifact bindings, snapshots, successful install receipts and the matching
+package digest on every case row, in addition to all original semantic and health
+gates. The 72 cases and generation settings are unchanged. The first v4 plan is
+prepared only: no v4 inference or compatibility approval exists yet. Preserve v3
+failed pilots; they cannot become packaged qualification retrospectively.
+
+Packaging does not itself enforce a supported gateway model or solve the known
+financial grounding failures. Candidate fingerprints are not approval claims.
+Integrate and validate source-derived facts in the actual delivered runtime,
+confirm the exact intended model/runtime scope and complete real qualification
+before importing evidence or publishing. No prepared draft SQL has been applied.

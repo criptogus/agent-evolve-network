@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { parse } from "yaml";
+import { verifySolutionPlaybookSnapshot } from "./solution-artifact-files.ts";
 import { buildGatewayMessages } from "../src/lib/runtime/gateway-messages.ts";
 import { evaluateCase } from "../src/lib/adversarial/scorer.ts";
 import { eligibleForPublication } from "./adversarial-approval.mjs";
@@ -32,7 +33,7 @@ const profile = read("content/expansion/playbook-model-profiles.json").find(
 if (!profile) throw new Error("Unsupported exact model/runtime profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v3" ||
+  plan.protocol !== "compiled-playbook-gateway-v4-packaged" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({
@@ -73,6 +74,15 @@ const requiredSources = [
   "content/expansion/playbook-model-profiles.json",
   "scripts/run-playbook.ts",
   "scripts/evaluate-solution-playbooks.mjs",
+  "scripts/solution-artifact-files.ts",
+  "src/lib/solutions/catalog.ts",
+  "src/lib/plugins/agent-plugins.ts",
+  "src/lib/plugins/artifacts.ts",
+  "src/lib/plugins/conformance.ts",
+  "src/lib/json.ts",
+  "src/lib/errors.ts",
+  "package-lock.json",
+  "LICENSE",
   "src/lib/runtime/compile.ts",
   "src/lib/runtime/run.ts",
   "src/lib/runtime/types.ts",
@@ -92,6 +102,23 @@ if (schedule.length !== 72 || rows.length !== 72)
 for (const [path, digest] of Object.entries(plan.sourceHashes))
   if (hash(readFileSync(join(dir, "source-snapshot", path))) !== digest)
     throw new Error("Missing or changed frozen source snapshot");
+const installations = read(join(dir, "package-installations.json"));
+if (!Array.isArray(installations) || installations.length !== 4)
+  throw new Error("Missing packaged dependency evidence");
+for (const s of plan.subjects) {
+  const artifact = verifySolutionPlaybookSnapshot(
+    readFileSync(`content/playbooks/${s.slug}.yaml`, "utf8"),
+    s.artifact,
+    join(dir, "package-snapshots", s.slug),
+  );
+  const installed = installations.filter((i) => i.slug === s.slug);
+  if (
+    installed.length !== 1 ||
+    installed[0].exitCode !== 0 ||
+    installed[0].packageSha256 !== artifact.sha256
+  )
+    throw new Error("Unbound package installation");
+}
 const transports = lines(join(dir, "transport.jsonl"));
 const attempts = lines(join(dir, "attempts.jsonl"));
 if (attempts.length !== transports.length * 2) throw new Error("Unknown/inflight step attempt");
@@ -145,6 +172,7 @@ const outcomes = schedule.map(({ s, c }, i) => {
   if (
     row.slug !== s.slug ||
     row.version !== s.version ||
+    row.package_sha256 !== s.artifact.sha256 ||
     row.case_id !== c.id ||
     row.planHash !== planHash ||
     row.exitCode !== 0 ||
@@ -237,6 +265,8 @@ const reports = plan.subjects.map((s) => {
   const report = {
     slug: s.slug,
     version: s.version,
+    source_sha256: plan.sourceHashes[`content/playbooks/${s.slug}.yaml`],
+    artifact_sha256: s.artifact.sha256,
     total: os.length,
     passed,
     failed: os.length - passed,
