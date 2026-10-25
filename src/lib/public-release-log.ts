@@ -20,7 +20,7 @@ export async function loadPublicReleaseLog(client: AppDatabaseClient): Promise<P
   const { data, error } = await client
     .from("package_releases")
     .select(
-      "signed_at,version,content_hash,signature,signing_key_id,packages!inner(slug,name,is_published,review_status)",
+      "signed_at,version,content_hash,signature,signing_key_id,packages!inner(slug,name,is_published,review_status,latest_version)",
     )
     .eq("packages.is_published", true)
     .eq("packages.review_status", "approved")
@@ -34,6 +34,7 @@ export async function loadPublicReleaseLog(client: AppDatabaseClient): Promise<P
       if (
         !pkg?.is_published ||
         pkg.review_status !== "approved" ||
+        row.version !== pkg.latest_version ||
         !pkg.slug ||
         !row.signature ||
         !row.content_hash ||

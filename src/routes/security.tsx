@@ -190,9 +190,9 @@ function SecurityPage() {
             <h2 className="text-2xl font-semibold tracking-tight">Live signed release log</h2>
           </div>
           <p className="mt-3 max-w-3xl text-muted-foreground">
-            Up to 20 recent signed release records for currently public, approved packages. Each row
-            identifies a specific version and its recorded content hash, key fingerprint and
-            timestamp. Older records do not establish evidence for the current package version.
+            Up to 20 recent signed release records for the current versions of public, approved
+            packages. Each row identifies the version and its recorded content hash, key fingerprint
+            and timestamp. Other versions are excluded.
           </p>
 
           <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-surface">

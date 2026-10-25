@@ -16,6 +16,7 @@ const release = {
     name: "Example",
     is_published: true,
     review_status: "approved",
+    latest_version: "1.0.0",
     author_id: "private-author-id",
   },
 };
@@ -74,6 +75,21 @@ test("release log excludes private, unapproved, unjoined and incomplete records"
   ];
   const result = await loadPublicReleaseLog(clientFor(rows));
   assert.deepEqual(result, { available: true, releases: [] });
+});
+
+test("release log never exposes another version of a currently public package", async () => {
+  const result = await loadPublicReleaseLog(
+    clientFor([
+      { ...release, version: "0.9.0" },
+      { ...release, version: "2.0.0-private-draft" },
+      release,
+    ]),
+  );
+  assert.equal(result.available, true);
+  assert.deepEqual(
+    result.releases.map((row) => row.version),
+    ["1.0.0"],
+  );
 });
 
 test("an unavailable release log is distinct from an empty successful query", async () => {
