@@ -10,6 +10,7 @@ import {
   type PairedObservation,
 } from "../src/lib/match/paired-evaluation.ts";
 import { SELECTION_CACHE_TTL_MS } from "../src/lib/match/jev-selection-cache.server.ts";
+import { assertMatchFrozenSourcePath } from "../src/lib/match/frozen-sources.ts";
 const [planFile, journalFile, reviewFile, billingFile, reportFile] = process.argv.slice(2);
 if (
   !planFile ||
@@ -123,12 +124,7 @@ const rawPlan = z.record(z.string(), z.unknown()).parse(load(planFile));
 const { planHash: declaredHash, ...planPayload } = rawPlan;
 if (evidenceHash(planPayload) !== declaredHash) throw new Error("Invalid frozen plan hash");
 for (const [path, hash] of Object.entries(plan.sources)) {
-  if (
-    (path !== "scripts/evaluate-agent-match-comparison.ts" &&
-      !/^(src\/[\w./-]+\.(?:ts|tsx)|package(?:-lock)?\.json)$/.test(path)) ||
-    path.split("/").includes("..")
-  )
-    throw new Error("Invalid source path");
+  assertMatchFrozenSourcePath(path);
   if (!existsSync(path) || evidenceHash(readFileSync(path, "utf8")) !== hash)
     missing.push(`stale_source:${path}`);
 }

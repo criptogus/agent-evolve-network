@@ -7,6 +7,8 @@ import {
   BENCHMARK_PRIOR_LIMIT_USD,
   BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD,
   BENCHMARK_PRIOR_HELD_USD,
+  BENCHMARK_HISTORICAL_HELD_USD,
+  BENCHMARK_VERIFIED_NO_START_HOLD_USD,
   BENCHMARK_PRIOR_SPEND_UPPER_USD,
   generatorCost,
 } from "../src/lib/match/benchmark-budget.ts";
@@ -122,7 +124,7 @@ if (
       BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD -
       BENCHMARK_PRIOR_SPEND_UPPER_USD,
   ) > 1e-9 ||
-  summary.priorUnknownHeldUsd !== BENCHMARK_PRIOR_HELD_USD ||
+  summary.priorUnknownHeldUsd !== BENCHMARK_HISTORICAL_HELD_USD ||
   summary.ownerAccumulatedLimitUsd !== BENCHMARK_PRIOR_LIMIT_USD
 )
   throw new Error("Unreconciled accumulated authority");
@@ -211,6 +213,7 @@ const report = {
     limitUsd: BENCHMARK_USD_LIMIT,
     priorBilledUpperUsd: BENCHMARK_PRIOR_SPEND_UPPER_USD,
     unknownHeldUsd: BENCHMARK_PRIOR_HELD_USD,
+    verifiedNoGeneratorReservationUsd: BENCHMARK_VERIFIED_NO_START_HOLD_USD,
     availableUsd: available,
     referenceFullCohortBilledUpperUsd: billed,
     referenceOutputOnlyProviderUsd: generatorCost(

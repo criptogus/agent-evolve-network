@@ -92,6 +92,7 @@ const sourceFiles = [
   "src/lib/match/jev-selection.ts",
   "src/lib/match/jev-selection-cache.server.ts",
   "src/lib/match/jev-persistent-cache.server.ts",
+  "src/lib/match/frozen-sources.ts",
   "src/integrations/supabase/platform-schema.ts",
   "supabase/migrations/20261025143000_agent_match_selection_cache.sql",
   "src/lib/match/jev-agent-match.server.ts",

@@ -6,6 +6,7 @@ import {
   MATCH_PROVIDER_OPTIONS,
 } from "../src/lib/match/match-generation.ts";
 import { z } from "zod";
+import { getMcpById } from "../src/lib/match/mcp-registry.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -41,6 +42,7 @@ function evidenceKit(kit: AgentMatchResult["recommended_kit"], catalog = candida
 }
 function output(): AgentMatchResult {
   return {
+    catalog_checks: [],
     agent_summary: {
       one_liner: "Analyst",
       primary_jobs: ["Analyze"],
@@ -59,6 +61,110 @@ function output(): AgentMatchResult {
     rationale: "Fixture for output validation",
   };
 }
+
+test("catalog counterevidence binds literal supplied sources without adding unselected packages to the kit", () => {
+  const supplied = [
+    ...candidates,
+    {
+      slug: "pdf-extractor",
+      name: "PDF Extractor",
+      type: "skill" as const,
+      description: "Extracts structured text, tables and metadata from PDFs.",
+    },
+    {
+      slug: "ocr-pipeline",
+      name: "OCR Pipeline",
+      type: "skill" as const,
+      description: "Runs OCR on scanned docs with page deskew and language detection.",
+    },
+  ];
+  const clean = sanitizeMatch(output(), supplied, desired);
+  const value = {
+    ...clean,
+    catalog_checks: [
+      { kind: "package", id: "pdf-extractor", source_quote: supplied[3].description },
+      { kind: "package", id: "ocr-pipeline", source_quote: supplied[4].description },
+      {
+        kind: "mcp",
+        id: "stripe-mcp",
+        source_quote: getMcpById("stripe-mcp")!.description.slice(0, 180),
+      },
+    ],
+    recommended_kit: {
+      ...evidenceKit(clean.recommended_kit, supplied),
+      work_domain: "runtime_work",
+    },
+    coverage: {
+      ...clean.coverage,
+      risks: [
+        "PDF/OCR sources are available but unselected; ERP line mapping remains unspecified.",
+      ],
+    },
+    gaps: [
+      {
+        capability: "Target ERP line mapping",
+        suggestion: "Specify the target ERP schema before authoring an adapter.",
+        recommended_type: "skill",
+      },
+    ],
+  };
+  const schema = buildMatchOutputSchema(supplied, desired);
+  assert.equal(schema.safeParse(value).success, true);
+  for (const bad of [
+    [{ ...value.catalog_checks[0], id: "invented-source" }],
+    [{ ...value.catalog_checks[0], source_quote: supplied[4].description }],
+    [value.catalog_checks[0], value.catalog_checks[0]],
+    [{ ...value.catalog_checks[0], kind: "mcp" }],
+    [],
+  ])
+    assert.equal(schema.safeParse({ ...value, catalog_checks: bad }).success, false);
+  const parsed = schema.parse(value);
+  assert.deepEqual(sanitizeMatch(parsed, supplied, desired).recommended_kit, clean.recommended_kit);
+});
+
+test("new generation enforces the existing concise rationale targets without truncating outputs", () => {
+  const clean = sanitizeMatch(output(), candidates, desired);
+  const value = {
+    ...clean,
+    recommended_kit: { ...evidenceKit(clean.recommended_kit), work_domain: "runtime_work" },
+  };
+  const schema = buildMatchOutputSchema(candidates, desired);
+  const boundary = {
+    ...value,
+    recommended_kit: {
+      ...value.recommended_kit,
+      skills: [
+        {
+          ...item("good"),
+          source_quote: candidates[0].description,
+          why: "x".repeat(120),
+          role: "x".repeat(60),
+        },
+      ],
+    },
+  };
+  assert.equal(schema.safeParse(boundary).success, true);
+  assert.equal(
+    schema.safeParse({
+      ...boundary,
+      recommended_kit: {
+        ...boundary.recommended_kit,
+        skills: [{ ...boundary.recommended_kit.skills[0], why: "x".repeat(121) }],
+      },
+    }).success,
+    false,
+  );
+  assert.equal(
+    schema.safeParse({
+      ...boundary,
+      recommended_kit: {
+        ...boundary.recommended_kit,
+        skills: [{ ...boundary.recommended_kit.skills[0], role: "x".repeat(61) }],
+      },
+    }).success,
+    false,
+  );
+});
 test("Agent Match enforces existing minimum score, distinct catalog slugs and package types", () => {
   const result = sanitizeMatch(output(), candidates, desired);
   assert.deepEqual(
@@ -418,6 +524,9 @@ test("catalog labels separate source description from names and reject quota pad
     catalogSize: 3,
   });
   assert.ok(result.prompt.includes('name="Good"; description="Source-grounded analysis"'));
+  assert.ok(
+    result.prompt.includes(`description=${JSON.stringify(getMcpById("stripe-mcp")!.description)}`),
+  );
   assert.match(result.system, /smallest sufficient kit/);
   assert.match(result.system, /never the outer name field or the entire catalog line/);
 });
@@ -428,9 +537,15 @@ test("wire schema binds slug before literal evidence and explanatory fields", as
     .parse(await buildMatchWireSchema(candidates, desired).jsonSchema);
   const definitions = z.record(z.string(), z.unknown()).parse(wire.definitions);
   let checked = 0;
+  let catalogChecks = 0;
   for (const value of Object.values(definitions)) {
     const item = z.object({ properties: z.record(z.string(), z.unknown()) }).safeParse(value);
     if (item.success && "source_quote" in item.data.properties) {
+      if ("kind" in item.data.properties) {
+        assert.deepEqual(Object.keys(item.data.properties), ["kind", "id", "source_quote"]);
+        catalogChecks++;
+        continue;
+      }
       assert.deepEqual(Object.keys(item.data.properties), [
         "slug",
         "source_quote",
@@ -442,6 +557,12 @@ test("wire schema binds slug before literal evidence and explanatory fields", as
     }
   }
   assert.ok(checked > 0);
+  assert.ok(catalogChecks > 0);
+  const root = z.object({ properties: z.record(z.string(), z.unknown()) }).parse(wire);
+  assert.ok(
+    Object.keys(root.properties).indexOf("catalog_checks") <
+      Object.keys(root.properties).indexOf("coverage"),
+  );
 });
 
 test("generation omits merely nice-to-have scores without turning preferences into quotas", () => {

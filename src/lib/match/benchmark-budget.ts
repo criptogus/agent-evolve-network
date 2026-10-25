@@ -5,8 +5,14 @@ export const BENCHMARK_OUTPUT_LIMIT = MATCH_MAX_OUTPUT_TOKENS;
 // Owner explicitly raised the accumulated ceiling from USD7 to USD10 on 2026-10-25.
 export const BENCHMARK_PRIOR_LIMIT_USD = 7;
 export const BENCHMARK_USD_LIMIT = 10;
-// Hold the original client error, v8 Jev reservation, v15 schema error and interrupted v16 attempt; never reset the owner cap.
-export const BENCHMARK_PRIOR_HELD_USD = 1.08116575;
+// Preserve historical ledgers unchanged. The v8 no-start branch is now proven
+// against frozen code and contiguous native counters482/483 with exact usage.
+// Only its generator reservation is reconciled; unknown TypeSafe usage remains
+// unknown, and the client/schema/interrupt holds remain reserved.
+export const BENCHMARK_HISTORICAL_HELD_USD = 1.08116575;
+export const BENCHMARK_VERIFIED_NO_START_HOLD_USD = 0.251853;
+export const BENCHMARK_PRIOR_HELD_USD =
+  BENCHMARK_HISTORICAL_HELD_USD - BENCHMARK_VERIFIED_NO_START_HOLD_USD;
 // Prior checkpoints and complete v26 total US$5.48125 upper; the rejected v29
 // four-request prefix adds US$0.205 and the rejected v30 44-request prefix
 // adds US$1.385 native upper. Rejection never refunds inference. Holds stay intact.

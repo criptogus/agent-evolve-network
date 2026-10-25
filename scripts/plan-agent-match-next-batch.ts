@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { z } from "zod";
 import { evidenceHash } from "../src/lib/match/paired-evaluation.ts";
 import { buildMatchPrompt, buildMatchWireSchema } from "../src/lib/match/match-contract.ts";
+import { assertMatchFrozenSourcePath } from "../src/lib/match/frozen-sources.ts";
 import {
   reconcileBenchmarkBudget,
   generationReservation,
@@ -46,9 +47,11 @@ const plan = z
     schedule: z.array(step).length(72),
   })
   .parse(raw);
-for (const [path, hash] of Object.entries(plan.sources))
+for (const [path, hash] of Object.entries(plan.sources)) {
+  assertMatchFrozenSourcePath(path);
   if (evidenceHash(readFileSync(path, "utf8")) !== hash)
     throw new Error(`Changed runtime source: ${path}`);
+}
 const journal = z
   .object({
     planHash: z.string(),

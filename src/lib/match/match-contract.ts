@@ -15,6 +15,24 @@ const RecItem = z.object({
     ),
   role: z.string().min(5).max(80).describe("the specific role this plays in the agent"),
 });
+const CatalogChecks = z
+  .array(
+    z.object({
+      kind: z.enum(["package", "mcp"]),
+      id: z.string().min(1).max(160),
+      source_quote: z
+        .string()
+        .min(1)
+        .max(180)
+        .describe(
+          "Copy this supplied source's description verbatim (first 180 characters if longer). This is availability counterevidence, not a kit assignment. Check the closest existing alternative before claiming a missing capability.",
+        ),
+    }),
+  )
+  .max(3)
+  .describe(
+    "Before writing any risks or gaps, cite at least one closest supplied source as factual counterevidence. Use an empty array only when both risks and gaps are empty. Availability evidence may be outside the selected kit; it assigns no role.",
+  );
 
 export const MatchSchema = z.object({
   agent_summary: z.object({
@@ -29,6 +47,8 @@ export const MatchSchema = z.object({
     souls: z.array(RecItem),
     guardrails: z.array(RecItem),
   }),
+  // Optional when reading historical public responses; required before new generation.
+  catalog_checks: CatalogChecks.optional(),
   coverage: z.object({
     overall_fit_score: z
       .number()
@@ -105,8 +125,8 @@ export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: De
                 "After selecting this slug, copy its entire description field value verbatim, including repeated names or prefixes inside that value. Never copy another candidate or abbreviate. Exclude only the outer name/slug/type fields.",
               ),
             score: z.number().min(7).max(10),
-            why: RecItem.shape.why,
-            role: RecItem.shape.role,
+            why: RecItem.shape.why.max(120),
+            role: RecItem.shape.role.max(60),
           }),
         )
         .max(hasCandidates && count ? count + 1 : 0);
@@ -121,6 +141,7 @@ export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: De
     souls = makeLists("soul"),
     guardrails = makeLists("guardrail");
   return MatchSchema.extend({
+    catalog_checks: CatalogChecks,
     recommended_kit: z.union([
       z.object({
         work_domain: z.literal("runtime_work"),
@@ -158,6 +179,31 @@ export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: De
           });
       }
     }
+    const checked = new Set<string>();
+    for (const [index, check] of output.catalog_checks.entries()) {
+      const identity = `${check.kind}:${check.id}`;
+      const source =
+        check.kind === "package"
+          ? candidates.find((candidate) => candidate.slug === check.id)
+          : getMcpById(check.id);
+      if (
+        !source ||
+        checked.has(identity) ||
+        check.source_quote !== source.description.slice(0, 180)
+      )
+        ctx.addIssue({
+          code: "custom",
+          message: "Catalog check must cite a distinct supplied source with its exact description",
+          path: ["catalog_checks", index],
+        });
+      checked.add(identity);
+    }
+    if ((output.coverage.risks.length || output.gaps.length) && !output.catalog_checks.length)
+      ctx.addIssue({
+        code: "custom",
+        message: "Read supplied counterevidence before writing risks or gaps",
+        path: ["catalog_checks"],
+      });
   });
 }
 
@@ -218,7 +264,8 @@ Rules:
 Return only one JSON object matching the provider-supplied JSON Schema, without Markdown fences or extra prose.
 First classify recommended_kit.work_domain from the work explicitly requested in the brief. Use runtime_work for business-record and operational jobs performed by an agent. Use knowledge_work only when the brief explicitly requests knowledge-base/source/statement auditing: its objects are claims, passages, citations, source validity or source access. Comparing transaction rows, amounts or identifiers is not knowledge-source auditing merely because both compare evidence. A knowledge-source package cannot become a transaction reconciler or operational record matcher. Use software_work only when the brief explicitly requests developing, training, testing or fixing software/code or machine-learning models. For runtime_work the decoder disallows packages whose documented subject is verifying code changes, declaring a software fix, software/model deployment, or preparing examples before model training. Never reclassify a business job as software_work just to include such a package.
 Missing-capability claims in coverage.risks follow exactly the same source and catalog-scope rules as gaps. An empty recommended_mcps array means no connector was selected, never that the supplied registry lacks connectors. State the precise unsupported operation and distinguish it from related supported operations.
-Every package named in coverage, rationale or MCP pairings must actually appear in the recommended kit in its documented type.`;
+Before writing coverage.risks or gaps, fill catalog_checks with the closest existing package or MCP descriptions that could contradict an absence claim. Read unselected alternatives as well as selected items. Copy descriptions exactly; do not treat generic extraction/OCR as absent merely because it is not procurement-specific, or call a function missing just because it was not selected. Check only needs actually required by the brief; optional formats and vague wishes such as "robust" or "dedicated" do not establish a new missing operation. If a source covers part of the job, acknowledge that supported operation and name only the precise residual limitation. A literal quote is evidence, not proof of your later interpretation: semantic accuracy still matters.
+catalog_checks are availability evidence and may cite supplied packages or MCPs outside the recommended kit. Coverage may name an unselected source only explicitly as available-but-not-selected counterevidence, never as an assigned kit role. Every operational package role, package named in rationale, and MCP pairing must still refer to the selected kit in its documented type.`;
 
   const prompt = `EXTERNAL MCP REGISTRY (${MCP_REGISTRY.length} servers):
 ${compactMcpCatalogForLLM()}

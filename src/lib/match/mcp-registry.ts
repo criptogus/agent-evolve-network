@@ -270,6 +270,6 @@ export function getMcpById(id: string) {
 export function compactMcpCatalogForLLM() {
   return MCP_REGISTRY.map(
     (m) =>
-      `- [${m.category}] ${m.id} :: ${m.name} (${m.vendor}) — ${m.description} | tags: ${m.tags.join(", ")}`,
+      `- [${m.category}] ${m.id} :: name=${JSON.stringify(m.name)}; vendor=${JSON.stringify(m.vendor)}; description=${JSON.stringify(m.description)}; tags=${JSON.stringify(m.tags)}`,
   ).join("\n");
 }

@@ -3,6 +3,8 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { preselectAgentMatch } from "../src/lib/match/jev-agent-match.server.ts";
+import { assertMatchFrozenSourcePath } from "../src/lib/match/frozen-sources.ts";
+import { evidenceHash } from "../src/lib/match/paired-evaluation.ts";
 const [planFile, outputDir, live, selectionFile, oldPlanFile] = process.argv.slice(2);
 if (live === "--managed-only") {
   if (!planFile || !outputDir || existsSync(`${outputDir}/batch.json`))
@@ -15,12 +17,19 @@ if (live === "--managed-only") {
       cases: z.array(z.unknown()).length(12),
       desired: z.unknown(),
       schedule: z.array(z.unknown()).length(72),
+      sources: z.record(z.string(), z.string()),
     })
     .passthrough()
     .parse(rawPlan);
   const { planHash, ...payload } = z.record(z.string(), z.unknown()).parse(rawPlan);
   if (createHash("sha256").update(JSON.stringify(payload)).digest("hex") !== planHash)
     throw new Error("Invalid plan hash");
+  if (!Object.keys(plan.sources).length) throw new Error("Missing frozen runtime sources");
+  for (const [path, hash] of Object.entries(plan.sources)) {
+    assertMatchFrozenSourcePath(path);
+    if (!existsSync(path) || evidenceHash(readFileSync(path, "utf8")) !== hash)
+      throw new Error(`Changed runtime source: ${path}`);
+  }
   writeFileSync(
     `${outputDir}/batch.json`,
     JSON.stringify(
