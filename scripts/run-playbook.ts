@@ -42,6 +42,10 @@ const interpretedPlaybook = [
   "solution-monthly-finance-close",
   "solution-supplier-selection",
 ].includes(args.playbook);
+const generatedSolution = [
+  "solution-secure-agent-launch",
+  "solution-brazil-reconciliation",
+].includes(args.playbook);
 let localContract;
 let localEvidence;
 const contractPath = join(ROOT, "references/runtime-profile.json");
@@ -109,9 +113,13 @@ if (args.gateway && existsSync(contractPath)) {
     process.exit(2);
   }
 }
+if (args["semantic-source-facts"] && !interpretedPlaybook && !generatedSolution) {
+  console.error("Source interpretation is supported only for declared solution workflows");
+  process.exit(2);
+}
 let sourceFacts;
 let sourceFactsProviderEvidence;
-if (args["semantic-source-facts"]) {
+if (args["semantic-source-facts"] && interpretedPlaybook) {
   if (
     !args.gateway ||
     !args["allow-typesafe-source-upload"] ||
@@ -146,6 +154,51 @@ if (args["semantic-source-facts"]) {
       process.stdout.write(failureOutput + "\n", (error) =>
         error ? reject(error) : resolve(undefined),
       ),
+    );
+    process.exit(2);
+  }
+}
+let workflowContext;
+if (args.gateway && generatedSolution) {
+  try {
+    const { prepareWorkflowContext } = await import(
+      `${ROOT}/src/lib/runtime/workflow-source-context.ts`
+    );
+    const prepared = prepareWorkflowContext(inputs);
+    if (
+      prepared.request &&
+      (!args["semantic-source-facts"] || !args["allow-typesafe-source-upload"])
+    )
+      throw new Error("Explicit interpretation consent required");
+    if (
+      localContract &&
+      (localContract.workflow_interpreter?.model !== "jev-1.14.0" ||
+        localContract.workflow_interpreter?.protocol !== "quarantine-source-notes-v1")
+    )
+      throw new Error("Workflow interpreter profile mismatch");
+    const { deriveWorkflowContext } = await import(
+      `${ROOT}/src/lib/runtime/workflow-source-context.server.ts`
+    );
+    workflowContext = await deriveWorkflowContext(
+      inputs,
+      process.env.TYPESAFE_API_KEY ?? "",
+      fetch,
+      (evidence) => {
+        sourceFactsProviderEvidence = evidence;
+      },
+    );
+  } catch {
+    const failure = JSON.stringify({
+      status: "error",
+      stage: "workflow_context",
+      error:
+        "Workflow source preparation failed before generation; explicit upload consent and private interpreter key are required for annotations",
+      ...(sourceFactsProviderEvidence
+        ? { source_facts_provider_evidence: sourceFactsProviderEvidence }
+        : {}),
+    });
+    await new Promise((resolve, reject) =>
+      process.stdout.write(failure + "\n", (error) => (error ? reject(error) : resolve(undefined))),
     );
     process.exit(2);
   }
@@ -188,6 +241,7 @@ console.log(
     {
       ...result,
       ...(sourceFacts ? { source_facts: sourceFacts } : {}),
+      ...(workflowContext ? { workflow_context: workflowContext } : {}),
       ...(localEvidence ? { local_model_evidence: localEvidence } : {}),
       ...(sourceExecution
         ? { [financeMode ? "finance_execution" : "supplier_execution"]: sourceExecution }
@@ -252,7 +306,7 @@ async function gatewayAdapters() {
     console.error("AI_GATEWAY_BASE_URL and AI_GATEWAY_API_KEY required for --gateway");
     process.exit(1);
   }
-  const chat = async (prompt, data) => {
+  const chat = async (prompt, data, safetyResponse = "") => {
     const r = await fetch(`${AI_GATEWAY_BASE_URL}/chat/completions`, {
       method: "POST",
       headers: {
@@ -261,7 +315,7 @@ async function gatewayAdapters() {
       },
       body: JSON.stringify({
         model: AI_GATEWAY_MODEL,
-        messages: buildGatewayMessages(prompt, data),
+        messages: buildGatewayMessages(prompt, data, safetyResponse),
         temperature: 0,
         ...(localContract
           ? {
@@ -291,11 +345,16 @@ async function gatewayAdapters() {
   };
   return {
     invokeInstruction: ({ prompt, context }) =>
-      chat(prompt, {
-        inputs: context.inputs,
-        steps: context.steps,
-        ...(sourceFacts ? { source_facts: sourceFacts.facts } : {}),
-      }),
+      chat(
+        prompt,
+        {
+          inputs: workflowContext ? workflowContext.facts.original_sources : context.inputs,
+          steps: context.steps,
+          ...(sourceFacts ? { source_facts: sourceFacts.facts } : {}),
+          ...(workflowContext ? { source_context: workflowContext.facts } : {}),
+        },
+        workflowContext?.facts.attachment_safety_response ?? "",
+      ),
     invokeSkill: ({ slug, inputs, context }) =>
       chat(`Invoke skill ${slug}.`, { inputs, steps: context.steps }),
     onTelemetry: (e) => console.error(`[telemetry] ${JSON.stringify(e)}`),

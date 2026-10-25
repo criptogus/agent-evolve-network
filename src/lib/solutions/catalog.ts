@@ -147,13 +147,15 @@ export const SOLUTIONS: Solution[] = [
       {
         id: "test",
         title: "Run and inspect the tests",
-        deliverable: "Captured traces and pass/fail evidence",
+        deliverable:
+          "Test evidence record distinguishing executed observations from unexecuted plans",
         depends_on: ["fixtures"],
       },
       {
         id: "release",
         title: "Release review",
-        deliverable: "Owner-approved deployment and rollback plan",
+        deliverable:
+          "Deployment and rollback review plan with explicit evidence and owner-approval gates",
         depends_on: ["test"],
       },
     ],

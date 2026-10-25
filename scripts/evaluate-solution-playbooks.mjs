@@ -70,6 +70,8 @@ const sourcePaths = [
   "src/lib/runtime/supplier-source-facts.ts",
   "src/lib/runtime/supplier-source-facts.server.ts",
   "src/lib/runtime/supplier-stages.ts",
+  "src/lib/runtime/workflow-source-context.ts",
+  "src/lib/runtime/workflow-source-context.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
   ...cases.subjects.map((s) => `content/playbooks/${s.slug}.yaml`),
 ];
@@ -146,11 +148,13 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v16-supplier-state",
+    protocol: "compiled-playbook-gateway-v17-source-quarantine",
     python,
     modelPath,
     model: profileFor(modelPath).model,
     finance_host: financeHost,
+    workflow_interpreter: load("content/expansion/playbook-local-contract.json")
+      .workflow_interpreter,
     supplier_host: load("content/expansion/playbook-local-contract.json").supplier_host,
     runtime,
     sourceHashes,
@@ -306,8 +310,13 @@ if (mode === "prepare") {
       const finance = ["solution-monthly-finance-close", "solution-supplier-selection"].includes(
         subject.slug,
       );
+      const requiresInterpretation =
+        finance ||
+        Object.values(c.inputs).some(
+          (value) => typeof value === "string" && /\nSOURCE (?:NOTE|ATTACHMENT):/.test(value),
+        );
       const factsJournal = join(dir, "source-facts-attempts.jsonl");
-      if (finance)
+      if (requiresInterpretation)
         appendFileSync(
           factsJournal,
           JSON.stringify({ event: "source_facts_started", case_id: c.id, planHash }) + "\n",
@@ -329,7 +338,8 @@ if (mode === "prepare") {
           "--inputs-file",
           inputPath,
           "--gateway",
-          ...(finance ? ["--semantic-source-facts", "--allow-typesafe-source-upload"] : []),
+          "--semantic-source-facts",
+          "--allow-typesafe-source-upload",
         ],
         {
           env: {
@@ -353,18 +363,19 @@ if (mode === "prepare") {
       const [exitCode, signal] = await once(child, "close");
       const decoded = decodePlaybookCliResult(stdout, exitCode);
       const parsed = decoded.value;
-      if (finance)
+      const sourceEvidence = parsed?.source_facts ?? parsed?.workflow_context;
+      if (requiresInterpretation)
         appendFileSync(
           factsJournal,
           JSON.stringify({
-            event: parsed?.source_facts ? "source_facts_completed" : "source_facts_unknown",
+            event: sourceEvidence?.response ? "source_facts_completed" : "source_facts_unknown",
             case_id: c.id,
             planHash,
-            ...(parsed?.source_facts
+            ...(sourceEvidence?.response
               ? {
-                  evidence_sha256: hash(JSON.stringify(parsed.source_facts)),
-                  model: parsed.source_facts.response.model,
-                  usage: parsed.source_facts.response.usage,
+                  evidence_sha256: hash(JSON.stringify(sourceEvidence)),
+                  model: sourceEvidence.response.model,
+                  usage: sourceEvidence.response.usage,
                 }
               : {}),
           }) + "\n",

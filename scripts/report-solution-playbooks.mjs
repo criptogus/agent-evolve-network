@@ -20,6 +20,11 @@ import {
   composeSupplierFacts,
 } from "../src/lib/runtime/supplier-source-facts.ts";
 import { prepareSupplierStage } from "../src/lib/runtime/supplier-stages.ts";
+import {
+  prepareWorkflowContext,
+  validateWorkflowResponse,
+  composeWorkflowContext,
+} from "../src/lib/runtime/workflow-source-context.ts";
 const [dir, reviewsPath, output] = process.argv.slice(2);
 if (!dir || !reviewsPath || !output || process.argv.length !== 5 || existsSync(output))
   throw new Error("Supply EVIDENCE_DIR PRIMARY_REVIEWS NEW_REPORT; existing reports are preserved");
@@ -46,6 +51,15 @@ const profile = read("content/expansion/playbook-model-profiles.json").find(
 if (!profile) throw new Error("Unsupported exact model/runtime profile");
 const financeHost = read("content/expansion/playbook-local-contract.json").finance_host;
 const supplierHost = read("content/expansion/playbook-local-contract.json").supplier_host;
+const workflowInterpreter = read(
+  "content/expansion/playbook-local-contract.json",
+).workflow_interpreter;
+if (
+  JSON.stringify(plan.workflow_interpreter) !== JSON.stringify(workflowInterpreter) ||
+  workflowInterpreter.model !== FINANCE_FACTS_MODEL ||
+  workflowInterpreter.protocol !== "quarantine-source-notes-v1"
+)
+  throw new Error("Unqualified workflow source interpreter");
 if (
   JSON.stringify(plan.supplier_host) !== JSON.stringify(supplierHost) ||
   supplierHost.model !== FINANCE_FACTS_MODEL ||
@@ -58,7 +72,7 @@ if (JSON.stringify(plan.finance_host) !== JSON.stringify(financeHost))
   throw new Error("Unqualified finance model/host profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v16-supplier-state" ||
+  plan.protocol !== "compiled-playbook-gateway-v17-source-quarantine" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({
@@ -126,6 +140,8 @@ const requiredSources = [
   "src/lib/runtime/supplier-source-facts.ts",
   "src/lib/runtime/supplier-source-facts.server.ts",
   "src/lib/runtime/supplier-stages.ts",
+  "src/lib/runtime/workflow-source-context.ts",
+  "src/lib/runtime/workflow-source-context.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
   ...contract.subjects.map((s) => `content/playbooks/${s.slug}.yaml`),
 ];
@@ -206,8 +222,12 @@ const expectedIds = new Set(schedule.map(({ c }) => c.id));
 if (transports.some((t) => !expectedIds.has(t.value.case_id)))
   throw new Error("Unscheduled transport");
 const sourceFactsAttempts = lines(join(dir, "source-facts-attempts.jsonl")).map((r) => r.value);
-const financeSchedule = schedule.filter(({ s }) =>
-  ["solution-monthly-finance-close", "solution-supplier-selection"].includes(s.slug),
+const financeSchedule = schedule.filter(
+  ({ s, c }) =>
+    ["solution-monthly-finance-close", "solution-supplier-selection"].includes(s.slug) ||
+    Object.values(c.inputs).some(
+      (value) => typeof value === "string" && /\nSOURCE (?:NOTE|ATTACHMENT):/.test(value),
+    ),
 );
 if (sourceFactsAttempts.length !== financeSchedule.length * 2)
   throw new Error("Incomplete source-facts attempt journal");
@@ -271,6 +291,7 @@ const outcomes = schedule.map(({ s, c }, i) => {
   )
     throw new Error("Unbound local generative runtime");
   let sourceFacts;
+  let workflowFacts;
   if (s.slug === "solution-monthly-finance-close") {
     const evidence = run.source_facts;
     const prepared = prepareFinanceFacts(c.inputs);
@@ -310,7 +331,40 @@ const outcomes = schedule.map(({ s, c }, i) => {
       JSON.stringify(end.usage) !== JSON.stringify(response.usage)
     )
       throw new Error("Changed supplier source facts or usage");
-  } else if (run.source_facts) throw new Error("Unscheduled source-facts interpretation");
+  } else {
+    if (run.source_facts) throw new Error("Unscheduled source-facts interpretation");
+    const evidence = run.workflow_context,
+      prepared = prepareWorkflowContext(c.inputs);
+    if (!evidence || JSON.stringify(evidence.request) !== JSON.stringify(prepared.request))
+      throw new Error("Missing or changed workflow source preparation");
+    const response = validateWorkflowResponse(
+      prepared.request ? JSON.parse(evidence.raw_response) : null,
+      prepared,
+    );
+    workflowFacts = composeWorkflowContext(prepared, response);
+    if (
+      JSON.stringify(evidence.response) !== JSON.stringify(response) ||
+      JSON.stringify(evidence.facts) !== JSON.stringify(workflowFacts)
+    )
+      throw new Error("Changed workflow context or source isolation");
+    if (prepared.request) {
+      const end = sourceFactsAttempts.find(
+        (a) => a.case_id === c.id && a.event === "source_facts_completed",
+      );
+      if (
+        !end ||
+        end.evidence_sha256 !== hash(JSON.stringify(evidence)) ||
+        end.model !== FINANCE_FACTS_MODEL ||
+        JSON.stringify(end.usage) !== JSON.stringify(response.usage) ||
+        response.usage.input_tokens <= 0 ||
+        response.usage.output_tokens <= 0
+      )
+        throw new Error("Missing workflow interpretation usage or journal");
+    } else if (evidence.raw_response !== null)
+      throw new Error("Invented workflow provider response");
+  }
+  if (sourceState && run.workflow_context)
+    throw new Error("Unscheduled generated-workflow context");
   const previous = {};
   let combined = "";
   if (sourceState)
@@ -352,11 +406,16 @@ const outcomes = schedule.map(({ s, c }, i) => {
       r.usage.completion_tokens >= plan.settings.server_max_tokens
     )
       throw new Error("Unqualified model/usage/truncated generation");
-    const expectedMessages = buildGatewayMessages(yaml.steps[j].with.prompt, {
-      inputs: c.inputs,
-      steps: previous,
-      ...(sourceFacts ? { source_facts: sourceFacts } : {}),
-    });
+    const expectedMessages = buildGatewayMessages(
+      yaml.steps[j].with.prompt,
+      {
+        inputs: workflowFacts ? workflowFacts.original_sources : c.inputs,
+        steps: previous,
+        ...(sourceFacts ? { source_facts: sourceFacts } : {}),
+        ...(workflowFacts ? { source_context: workflowFacts } : {}),
+      },
+      workflowFacts?.attachment_safety_response ?? "",
+    );
     if (
       t.request.model !== plan.modelPath ||
       t.request.temperature !== 0 ||
@@ -415,7 +474,7 @@ const reports = plan.subjects.map((s) => {
         ? `typesafe/${financeHost.model}/${financeHost.execution}@node-${financeHost.node}-${financeHost.architecture}`
         : s.slug === "solution-supplier-selection"
           ? `typesafe/${supplierHost.model}/${supplierHost.execution}@node-${supplierHost.node}-${supplierHost.architecture}`
-          : plan.model,
+          : `${plan.model}+typesafe/${workflowInterpreter.model}/${workflowInterpreter.protocol}`,
     execution_protocol:
       s.slug === "solution-monthly-finance-close"
         ? financeHost.execution
@@ -441,8 +500,9 @@ writeFileSync(
       model: plan.model,
       finance_host: financeHost,
       supplier_host: supplierHost,
+      workflow_interpreter: workflowInterpreter,
       model_scope:
-        "Per-package models and execution protocols are recorded in reports; finance and supplier use pinned TypeSafe interpretation plus real domain tools; the other two graphs use the pinned local generator.",
+        "Per-package models and execution protocols are recorded in reports; finance and supplier use pinned TypeSafe interpretation plus real domain tools; the other two graphs use the pinned local generator plus separately recorded redacted-note interpretation.",
       protocol: plan.protocol,
       total: 72,
       reports,
