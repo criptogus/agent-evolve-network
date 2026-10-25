@@ -7,9 +7,10 @@ export const BENCHMARK_PRIOR_LIMIT_USD = 7;
 export const BENCHMARK_USD_LIMIT = 10;
 // Hold the original client error, v8 Jev reservation, v15 schema error and interrupted v16 attempt; never reset the owner cap.
 export const BENCHMARK_PRIOR_HELD_USD = 1.08116575;
-// Prior 61 checkpoints (US$3.10125 upper) plus the fully reconciled v26
-// 72-request cohort (US$2.38 upper). Unknown holds stay separate and unchanged.
-export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 5.48125;
+// Prior checkpoints and complete v26 total US$5.48125 upper; the rejected v29
+// four-request prefix adds US$0.205 native upper. Unknown holds remain unchanged.
+export const BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD = 0.205;
+export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 5.48125 + BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD;
 export function generatorCost(input: number, cached: number, output: number) {
   if (![input, cached, output].every((n) => Number.isSafeInteger(n) && n >= 0) || cached > input)
     throw new Error("Missing or invalid usage");

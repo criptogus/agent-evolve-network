@@ -5,6 +5,7 @@ import { evidenceHash, PAIRED_CRITERIA } from "../src/lib/match/paired-evaluatio
 import {
   BENCHMARK_USD_LIMIT,
   BENCHMARK_PRIOR_LIMIT_USD,
+  BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD,
   BENCHMARK_PRIOR_HELD_USD,
   BENCHMARK_PRIOR_SPEND_UPPER_USD,
   generatorCost,
@@ -116,7 +117,11 @@ const billed = billing.reduce((n, b) => n + b.usdUpper, 0);
 if (
   summary.planHash !== plan.planHash ||
   Math.abs(summary.runBilledUpperUsd - billed) > 1e-9 ||
-  Math.abs(summary.accumulatedBilledUpperUsd - BENCHMARK_PRIOR_SPEND_UPPER_USD) > 1e-9 ||
+  Math.abs(
+    summary.accumulatedBilledUpperUsd +
+      BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD -
+      BENCHMARK_PRIOR_SPEND_UPPER_USD,
+  ) > 1e-9 ||
   summary.priorUnknownHeldUsd !== BENCHMARK_PRIOR_HELD_USD ||
   summary.ownerAccumulatedLimitUsd !== BENCHMARK_PRIOR_LIMIT_USD
 )

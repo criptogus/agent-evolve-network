@@ -71,14 +71,26 @@ export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: De
       /before declaring a fix|gates? every code change|before training|\bdeploy(?:ment|ments|s)?\b/i.test(
         c.description,
       );
-    const runtime = matching.filter((c) => !isSoftwareDelivery(c)).map((c) => c.slug);
+    const isKnowledgeSourceWork = (c: MatchCandidate) =>
+      /\bknowledge (?:base|sources?|freshness|contradiction)\b/i.test(`${c.name} ${c.description}`);
+    const runtime = matching
+      .filter((c) => !isSoftwareDelivery(c) && !isKnowledgeSourceWork(c))
+      .map((c) => c.slug);
+    const knowledgeOnly = matching
+      .filter((c) => !isSoftwareDelivery(c) && isKnowledgeSourceWork(c))
+      .map((c) => c.slug);
     const softwareOnly = matching.filter(isSoftwareDelivery).map((c) => c.slug);
     const runtimeSlug = runtime.length ? z.enum(runtime) : z.string();
-    const softwareSlug = softwareOnly.length
+    const knowledgeSlug = knowledgeOnly.length
       ? runtime.length
-        ? z.union([runtimeSlug, z.enum(softwareOnly)])
-        : z.enum(softwareOnly)
+        ? z.union([runtimeSlug, z.enum(knowledgeOnly)])
+        : z.enum(knowledgeOnly)
       : runtimeSlug;
+    const softwareSlug = softwareOnly.length
+      ? runtime.length + knowledgeOnly.length
+        ? z.union([knowledgeSlug, z.enum(softwareOnly)])
+        : z.enum(softwareOnly)
+      : knowledgeSlug;
     const count = desired[`${type}s` as keyof DesiredKit];
     const list = (slug: z.ZodType<string>, hasCandidates: boolean) =>
       z
@@ -100,6 +112,7 @@ export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: De
         .max(hasCandidates && count ? count + 1 : 0);
     return {
       runtime: list(runtimeSlug, runtime.length > 0),
+      knowledge: list(knowledgeSlug, runtime.length + knowledgeOnly.length > 0),
       software: list(softwareSlug, matching.length > 0),
     };
   };
@@ -115,6 +128,13 @@ export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: De
         playbooks: playbooks.runtime,
         souls: souls.runtime,
         guardrails: guardrails.runtime,
+      }),
+      z.object({
+        work_domain: z.literal("knowledge_work"),
+        skills: skills.knowledge,
+        playbooks: playbooks.knowledge,
+        souls: souls.knowledge,
+        guardrails: guardrails.knowledge,
       }),
       z.object({
         work_domain: z.literal("software_work"),
@@ -196,7 +216,8 @@ Rules:
 - Be opinionated and concise. Use short complete sentences: aim for <=120 characters per why and <=60 per role, and at most three precise gaps. No hedging, no marketing language.
 
 Return only one JSON object matching the provider-supplied JSON Schema, without Markdown fences or extra prose.
-First classify recommended_kit.work_domain from the work explicitly requested in the brief. Use runtime_work for business, document and operational jobs performed by an agent. Use software_work only when the brief explicitly requests developing, training, testing or fixing software/code or machine-learning models. For runtime_work the decoder disallows packages whose documented subject is verifying code changes, declaring a software fix, software/model deployment, or preparing examples before model training. Never reclassify a business job as software_work just to include such a package.
+First classify recommended_kit.work_domain from the work explicitly requested in the brief. Use runtime_work for business-record and operational jobs performed by an agent. Use knowledge_work only when the brief explicitly requests knowledge-base/source/statement auditing: its objects are claims, passages, citations, source validity or source access. Comparing transaction rows, amounts or identifiers is not knowledge-source auditing merely because both compare evidence. A knowledge-source package cannot become a transaction reconciler or operational record matcher. Use software_work only when the brief explicitly requests developing, training, testing or fixing software/code or machine-learning models. For runtime_work the decoder disallows packages whose documented subject is verifying code changes, declaring a software fix, software/model deployment, or preparing examples before model training. Never reclassify a business job as software_work just to include such a package.
+Missing-capability claims in coverage.risks follow exactly the same source and catalog-scope rules as gaps. An empty recommended_mcps array means no connector was selected, never that the supplied registry lacks connectors. State the precise unsupported operation and distinguish it from related supported operations.
 Every package named in coverage, rationale or MCP pairings must actually appear in the recommended kit in its documented type.`;
 
   const prompt = `EXTERNAL MCP REGISTRY (${MCP_REGISTRY.length} servers):

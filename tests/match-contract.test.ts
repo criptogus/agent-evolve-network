@@ -184,9 +184,9 @@ test("actual SDK transport sends GPT-5.2 completion cap and explicit JSON instru
     ? definitions[reference.data.$ref.slice("#/definitions/".length)]
     : wireSchema.properties.recommended_kit;
   const kitSchema = z
-    .object({ anyOf: z.array(z.unknown()).length(2), oneOf: z.never().optional() })
+    .object({ anyOf: z.array(z.unknown()).length(3), oneOf: z.never().optional() })
     .parse(kitValue);
-  assert.equal(kitSchema.anyOf.length, 2);
+  assert.equal(kitSchema.anyOf.length, 3);
 });
 
 test("explicit zero optional package counts stay empty", () => {
@@ -480,4 +480,34 @@ test("shared registry and candidate prefix are cacheable before variable counter
   assert.ok(
     single.indexOf("CATALOG COUNTS:") > single.indexOf('description="Source-grounded analysis"'),
   );
+});
+
+test("operational records cannot inherit knowledge-source capabilities by sharing comparison verbs", () => {
+  const scoped = [
+    ...candidates,
+    {
+      slug: "source-statements",
+      name: "Source statements",
+      type: "skill" as const,
+      description: "Compares source statements within a knowledge base by entity and time period.",
+    },
+  ];
+  const clean = sanitizeMatch(output(), candidates, desired);
+  const value = {
+    ...clean,
+    recommended_kit: {
+      ...evidenceKit(clean.recommended_kit, scoped),
+      work_domain: "runtime_work",
+      skills: [{ ...item("source-statements"), source_quote: scoped.at(-1)!.description }],
+    },
+  };
+  const schema = buildMatchOutputSchema(scoped, desired);
+  assert.equal(schema.safeParse(value).success, false);
+  value.recommended_kit.work_domain = "knowledge_work";
+  assert.equal(schema.safeParse(value).success, true);
+  value.recommended_kit.work_domain = "software_work";
+  assert.equal(schema.safeParse(value).success, true);
+  value.recommended_kit.work_domain = "knowledge_work";
+  value.recommended_kit.skills = [{ ...item("good"), source_quote: candidates[0].description }];
+  assert.equal(schema.safeParse(value).success, true);
 });
