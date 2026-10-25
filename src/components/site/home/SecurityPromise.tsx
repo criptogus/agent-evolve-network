@@ -78,8 +78,8 @@ export function SecurityPromise() {
             Your proprietary skill stays <span className="text-primary">yours</span>.
           </h2>
           <p className="mt-5 text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
-            We don't copy, train on, or resell your code. Every upload is signed, scoped to your
-            workspace, and evaluated in an isolated sandbox.
+            We don't copy, train on, or resell your code. Inspect the access policies, available
+            signatures and version-specific evaluation evidence.
           </p>
         </div>
 
@@ -105,6 +105,12 @@ export function SecurityPromise() {
             DPA/NDA.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2">
+            <Link
+              to="/security"
+              className="inline-flex h-9 items-center rounded-md border border-primary/40 bg-primary/10 px-4 text-sm font-medium text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+            >
+              Verify the evidence →
+            </Link>
             <Link
               to="/enterprise"
               className="inline-flex h-9 items-center rounded-md border border-border bg-surface-elevated px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
