@@ -67,7 +67,10 @@ function Search() {
               minLength={2}
               maxLength={2000}
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setConsent(false);
+              }}
             />
           </label>
           <label className="flex items-center gap-2">
