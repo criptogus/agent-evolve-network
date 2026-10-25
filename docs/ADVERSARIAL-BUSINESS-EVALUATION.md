@@ -194,3 +194,24 @@ success. The marker never supplies a verdict or publication authority. The
 inspector records the request without treating it as evidence of process liveness.
 A v8 valid-domain pilot is required before scheduling another complete cohort;
 pilots still do not qualify any package, and full 72-case review remains mandatory.
+
+### V8 textual attribution rejection and v9 evidence (0.1.11 candidate)
+
+The real v8 valid-domain pilot completed all four stages, correctly linked monetary
+figures to their original fields, and retained both cash conditions. It still
+failed primary review at high severity: the reconciliation attributed the explicit
+absence of I-2's ledger entry to the ownership export (`source_2`), while the
+absence statement is in `source_1`. Later correct citations do not repair that
+stage. The pilot's raw outputs, primary review and observed normal shutdown remain
+separate; there is no qualification or publication.
+
+V9 adds one pinned TypeSafe choice judgment identifying the original source that
+explicitly states missing ledger entries, with `multiple` and `none` alternatives.
+Ownership or closed-set mentions are explicitly distinguished from that statement.
+The original selected source quote, complete probabilities and advisory scope are
+retained before generation. Unknown/multiple returns no invented unique citation;
+the original-source review remains required. This adds one question (maximum 100
+with the existing bounded identifier set), not a new generator or response repair.
+The model must keep the source of a missing-entry statement separate from the
+source identifying its owner. Original cases, expectations, severities and approval
+thresholds remain unchanged; a fresh pilot and full cohort are still required.

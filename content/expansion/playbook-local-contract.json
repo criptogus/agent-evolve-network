@@ -1,7 +1,7 @@
 {
   "model": "mlx-community/gemma-3-12b-it-4bit@86cc6a8dedbc456dd0e4af01a9d09f396f77e558",
   "server_sources_sha256": "dd806f27bb2d6f2e6fdad1c006f6b9d808f11ba74163d4b0057a18c0706aeefd",
-  "protocol": "compiled-playbook-gateway-v8-source-references",
+  "protocol": "compiled-playbook-gateway-v9-textual-evidence",
   "approval": "candidate_only_requires_complete_72_case_qualification",
   "max_tokens": 768,
   "temperature": 0,

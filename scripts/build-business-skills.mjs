@@ -111,7 +111,7 @@ Qualification is model-specific and version-specific. No live tool safety or unt
   } else writeFileSync(path, output);
 }
 const financeFactsPolicy =
-  "When source_facts are present, their integer-minor-unit calculations and display values are deterministic compositions of the retained source interpretations. Explain these source-derived figures without recalculating from prior drafts. Selection probabilities remain advisory and are not external verification or authority to approve, post or pay. Distinguish source-recorded bank movements from executing new payments. For each numerical figure, copy its original source field references from source_facts.totals source_refs and verify the field role against those original inputs. Cite original sources rather than source_facts alone. Do not reuse prior draft source labels: a period/account export is not evidence for an expense budget unless that budget is present there.";
+  "When source_facts are present, their integer-minor-unit calculations and display values are deterministic compositions of the retained source interpretations. Explain these source-derived figures without recalculating from prior drafts. Selection probabilities remain advisory and are not external verification or authority to approve, post or pay. Distinguish source-recorded bank movements from executing new payments. For each numerical figure, copy its original source field references from source_facts.totals source_refs and verify the field role against those original inputs. Cite original sources rather than source_facts alone. Do not reuse prior draft source labels: a period/account export is not evidence for an expense budget unless that budget is present there. For explicit missing-ledger statements, use source_facts.textual_evidence.ledger_absence to check the original quote and source_refs. Keep the source of the missing-entry statement separate from the source naming its owner. Unknown or multiple evidence is unresolved and must not become an invented unique citation.";
 const financeApprovalScope =
   "Approval subjects are distinct: budget, invoice posting, payment and closing sign-off. Preserve each source-stated approval for its own subject. Missing controller posting or sign-off approval does not make a source-stated approved budget pending. For approval-status statements include the subject and a short exact source quote; never merge those subjects into one pending flag.";
 const financeGuidance = {
@@ -131,7 +131,7 @@ for (const s of SOLUTIONS) {
       slug: `solution-${s.id}`,
       name: s.title,
       type: "playbook",
-      version: "0.1.10",
+      version: "0.1.11",
       description: s.outcome,
       trigger: `When the user requests ${s.title.toLowerCase()} and provides authorized source inputs.`,
       inputs: Object.fromEntries(

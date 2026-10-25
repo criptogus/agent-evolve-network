@@ -134,7 +134,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v8-source-references",
+    protocol: "compiled-playbook-gateway-v9-textual-evidence",
     python,
     modelPath,
     model: profileFor(modelPath).model,
