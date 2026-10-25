@@ -1,8 +1,17 @@
 # Solution playbook runtime qualification
 
-The four standalone `solution-*` playbooks remain unqualified. Their solution
-pages and the approval of 21 individual skills do not approve execution of these
-compiled workflows. No production publication is authorized by this document.
+The four standalone `solution-*` playbooks qualified as immutable version0.1.31
+under their exact source-state model/runtime profiles and were published through
+authenticated administrator review. All72original cases passed primary source
+review and strict parser/provider/stage reconstruction, with zero high/critical
+failures. Publication does not transfer qualification to bare prompts, other
+models, MCP transport alone or external financial/sending/security actions.
+
+Current scope is Jev1.14.0 and each packaged Node24.22.0/arm64 protocol; Brazil also
+pins Python3.12.15/Expat2.7.4. The21individual skills retain their separate packaged
+local-model qualification. See `ADVERSARIAL-BUSINESS-EVALUATION.md` for current
+proofs. The investigations below preserve historical candidate/failed protocols
+and never supersede the original approval criteria.
 
 The gateway CLI previously dropped `RunContext.inputs` and `RunContext.steps`.
 The real CLI regression reproduced that omission and acceptance of both empty and

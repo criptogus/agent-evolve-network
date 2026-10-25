@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createHash } from "node:crypto";
-import { publicCompatibility } from "@/lib/plugins/public-compatibility.server";
+import { loadPublicEvaluationCompatibility } from "@/lib/plugins/public-compatibility-loader.server";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin;
 
@@ -47,40 +46,7 @@ export const Route = createFileRoute("/api/public/packages/$slug")({
           .eq("version", pkg.latest_version)
           .maybeSingle();
 
-        const [compat, latestRun, artifact] = ver
-          ? await Promise.all([
-              supabaseAdmin
-                .from("skill_compatibility")
-                .select("package_id,version,model,status,pass_rate,total_cases,passed_cases")
-                .eq("package_id", pkg.id)
-                .eq("version", ver.version),
-              supabaseAdmin
-                .from("adversarial_runs")
-                .select(
-                  "package_id,version_id,model,total,passed,failed,pass_rate,severity_weighted_score,by_severity,outcomes",
-                )
-                .eq("package_id", pkg.id)
-                .eq("version_id", ver.id)
-                .order("created_at", { ascending: false })
-                .limit(1)
-                .maybeSingle(),
-              supabaseAdmin
-                .from("package_artifacts")
-                .select("sha256")
-                .eq("version_id", ver.id)
-                .maybeSingle(),
-            ])
-          : [];
-        const scopedCompatibility =
-          ver && !compat?.error && !latestRun?.error && !artifact?.error && artifact?.data
-            ? publicCompatibility(ver.compatibility, compat?.data, latestRun?.data, {
-                packageId: pkg.id,
-                versionId: ver.id,
-                version: ver.version,
-                promptSha256: createHash("sha256").update(ver.system_prompt).digest("hex"),
-                archiveSha256: artifact.data.sha256,
-              })
-            : (ver?.compatibility ?? []);
+        const scopedCompatibility = ver ? await loadPublicEvaluationCompatibility(pkg.id, ver) : [];
         const { id: _omit, is_published: _p, review_status: _r, ...rest } = pkg;
         return new Response(
           JSON.stringify({
