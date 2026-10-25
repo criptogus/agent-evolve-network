@@ -104,7 +104,7 @@ if (JSON.stringify(plan.finance_host) !== JSON.stringify(financeHost))
   throw new Error("Unqualified finance model/host profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v28-bound-package-profile" ||
+  plan.protocol !== "compiled-playbook-gateway-v29-structural-record-identities" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({

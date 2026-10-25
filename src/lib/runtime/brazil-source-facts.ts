@@ -64,6 +64,17 @@ export function prepareBrazilRoles(inputs: Record<string, unknown>, receipt: Bra
       return match ? [match[1]] : [];
     }),
   );
+  const pixHeads = new Set(
+    context.sources.source_3.split(/;\s*|(?<=[.!?])\s+|\n/).flatMap((record) => {
+      const payload = record
+        .slice(record.lastIndexOf(":") + 1)
+        .trim()
+        .replace(/^duplicate(?:\s+identical)?\s+/i, "");
+      const match = payload.match(/^([A-Za-z][A-Za-z0-9]*(?:[-_][A-Za-z0-9]+)+)\b/);
+      return match && !orderHeads.has(match[1]) ? [match[1]] : [];
+    }),
+  );
+  const referenceIds = ids.filter((id) => !orderHeads.has(id) && !pixHeads.has(id));
   const labels = [
     ...new Set(
       [...ledgerText.matchAll(/\b(?:owner|respons[aá]vel)\s*[:=]?\s+([^\n,.;]+)/giu)].map((m) =>
@@ -83,6 +94,7 @@ export function prepareBrazilRoles(inputs: Record<string, unknown>, receipt: Bra
     return fail();
   const questions: Record<string, FactQuestion> = {};
   ids.forEach((id, i) => {
+    if (referenceIds.includes(id)) return;
     questions[`role_${i}`] = {
       type: "choice",
       instructions: `Classify the exact referent of identifier ${id} in original_sources.source_2 and source_3. An order ID names the record itself at the start of its ledger row; an embedded item/product ID never creates another order. Source/export IDs and SKU/product IDs are other even when their paragraphs contain orders or Pix rows. An order must have its own record in source_2; a reference only in a payment does not establish a supplied order record. A Pix entity must have a source record in source_3. Invoice identities are already parsed separately from XML; do not invent another invoice entity.`,
@@ -93,7 +105,11 @@ export function prepareBrazilRoles(inputs: Record<string, unknown>, receipt: Bra
                 "Identifier of this record itself at the start of a supplied commercial order row in source_2",
             }
           : {}),
-        pix: "Pix end-to-end transaction identifier itself",
+        ...(pixHeads.has(id)
+          ? {
+              pix: "Pix end-to-end transaction identifier itself at the start of a supplied payment record, never its export header",
+            }
+          : {}),
         other: "Source/export document, product/SKU, metadata or another kind of identifier",
       },
     };
@@ -118,6 +134,7 @@ export function prepareBrazilRoles(inputs: Record<string, unknown>, receipt: Bra
       model: FINANCE_FACTS_MODEL,
       state: {
         original_sources: context.sources,
+        structural_reference_identifiers: referenceIds,
         xml_invoice_identities: xml.invoices.map((i) => ({
           id: i.id,
           amount_minor: i.amount_minor,
@@ -132,7 +149,10 @@ export function prepareBrazilRoles(inputs: Record<string, unknown>, receipt: Bra
 export function prepareBrazilFields(p: ReturnType<typeof prepareBrazilRoles>, roles: FactResponse) {
   const response = validateFinanceResponse(roles, p);
   if (response.usage.input_tokens <= 0 || response.usage.output_tokens <= 0) return fail();
-  const records = p.ids.map((id, i) => ({ id, role: choice(response, `role_${i}`) }));
+  const records = p.ids.map((id, i) => ({
+    id,
+    role: Object.hasOwn(p.request.questions, `role_${i}`) ? choice(response, `role_${i}`) : "other",
+  }));
   const orders = records.filter((r) => r.role === "order"),
     pix = records.filter((r) => r.role === "pix");
   if (!orders.length) return fail();

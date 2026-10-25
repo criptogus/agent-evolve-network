@@ -157,7 +157,7 @@ test("product identifiers inside an order line cannot be selected as additional 
   const productIndex = prepared.ids.indexOf("PART-9");
   assert.ok(productIndex >= 0, "Retain product as an explicitly classified candidate");
   assert.equal(
-    Object.hasOwn(prepared.request.questions[`role_${productIndex}`].criteria, "order"),
+    Object.hasOwn(prepared.request.questions[`role_${productIndex}`]?.criteria ?? {}, "order"),
     false,
   );
   for (const id of ["ORD-7", "ORD-8"]) {
@@ -170,4 +170,21 @@ test("product identifiers inside an order line cannot be selected as additional 
   const e = brazilEvidenceFixture(inputs);
   assert.equal(e.facts.reconciliations.length, 2);
   assert.equal(e.facts.totals.orders_minor, "6535");
+});
+
+test("source document labels and embedded products are structural references, never model-selectable transactions", () => {
+  const inputs = {
+    ...brazilInputs,
+    source_2: brazilInputs.source_2.replace("order ORD-8 total", "order ORD-8 one PART-9 total"),
+  };
+  const p = prepareBrazilRoles(inputs, xmlFixture());
+  for (const id of ["LEDGER-1", "PIX-1", "PART-9"]) {
+    const index = p.ids.indexOf(id);
+    assert.ok(index >= 0);
+    assert.equal(p.request.questions[`role_${index}`], undefined);
+  }
+  for (const id of ["PAY-77", "PAY-88"]) {
+    const index = p.ids.indexOf(id);
+    assert.equal(Object.hasOwn(p.request.questions[`role_${index}`].criteria, "pix"), true);
+  }
 });
