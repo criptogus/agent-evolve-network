@@ -308,3 +308,10 @@ A candidata v28, protocolo agent-match-v6, usa expiração fixa de 30 minutos, a
 Não há nova comparação generativa nem publicação. O saldo Lovable permanece US$0,43758425; reservas desconhecidas não foram liberadas. Cache de processo não garante persistência entre workers, nem resolve sozinho o cache de prefixo do gerador. Uma coorte completa real permanece obrigatória.
 
 Validação v28: 285 testes e 11 verificações locais passaram. Plano `95d12543a45a6dad14ebad083ae378f5d74714d95fe7c41aad068a7778a7c52b` preserva exatamente os seis campos originais (critérios, casos, catálogo, quantidades, schedule, gerador); fontes novas permanecem separadas. O relatório vazio foi rejeitado com exit4, 0 observações e `approved:false`, em `run-cost-latency-v28/comparison-not-started.json`. Nenhuma geração Lovable adicional.
+
+
+### V29: resumed with accumulated USD10 authority
+
+Plan `11b307c9c677427a53e4d5f70c5c2ff06ba14fdc75f2ff8b5d1f284472153a52` preserves the six original fields exactly: criteria, cases, catalog, desired counts, schedule and generator. Selection protocol stays agent-match-v6. Owner authorization raises only the accumulated cap to USD10; previous billed upper bounds and unknown holds remain deducted. The auditor checks the historical USD7 cap separately from current authority, without editing historical summaries.
+
+The candidate integrated with production 0.7.1 passed 388 tests and 12 project/security checks; 25 targeted selection/cache/budget tests also passed. The offline audit recorded USD3.43758425 available versus USD2.38 reference cost, without guaranteeing a future invoice. Managed preparation made zero inference calls. New evidence is in `artifacts/agent-match-paired/run-live-v29/`. The preview must show USD10, the new plan and correct runtime before any paid observation. No generator observations or qualification yet.
