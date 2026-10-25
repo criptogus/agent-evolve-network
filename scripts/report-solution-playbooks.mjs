@@ -59,6 +59,9 @@ const profile = read("content/expansion/playbook-model-profiles.json").find(
   (p) => p.model === plan.model,
 );
 if (!profile) throw new Error("Unsupported exact model/runtime profile");
+const packagedContract = read("content/expansion/playbook-local-contract.json");
+if (plan.protocol !== packagedContract.protocol)
+  throw new Error("Plan and packaged execution protocol differ");
 const financeHost = read("content/expansion/playbook-local-contract.json").finance_host;
 const supplierHost = read("content/expansion/playbook-local-contract.json").supplier_host;
 const securityHost = read("content/expansion/playbook-local-contract.json").security_host;
@@ -101,7 +104,7 @@ if (JSON.stringify(plan.finance_host) !== JSON.stringify(financeHost))
   throw new Error("Unqualified finance model/host profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v27-brazil-record-heads" ||
+  plan.protocol !== "compiled-playbook-gateway-v28-bound-package-profile" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({

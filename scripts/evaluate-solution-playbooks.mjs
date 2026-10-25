@@ -158,7 +158,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v27-brazil-record-heads",
+    protocol: load("content/expansion/playbook-local-contract.json").protocol,
     python,
     modelPath,
     model: profileFor(modelPath).model,

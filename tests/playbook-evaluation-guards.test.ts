@@ -111,7 +111,8 @@ test("primary report rejects a partial cohort even with all runtime bindings", (
       ...contract.subjects.map((s: { slug: string }) => `content/playbooks/${s.slug}.yaml`),
     ];
     const payload = {
-      protocol: "compiled-playbook-gateway-v27-brazil-record-heads",
+      protocol: JSON.parse(readFileSync("content/expansion/playbook-local-contract.json", "utf8"))
+        .protocol,
       model: profile.model,
       workflow_interpreter: { model: "jev-1.14.0", protocol: "quarantine-source-notes-v1" },
       brazil_host: {
@@ -181,6 +182,24 @@ test("primary report rejects a partial cohort even with all runtime bindings", (
     );
     assert.equal(result.status, 1);
     assert.match(result.stderr, /Incomplete 72-case/);
+    const mismatched = { ...payload, protocol: "unqualified-substituted-package-protocol" };
+    writeFileSync(
+      join(dir, "plan.json"),
+      JSON.stringify({ ...mismatched, planHash: digest(JSON.stringify(mismatched)) }),
+    );
+    const rejected = spawnSync(
+      process.execPath,
+      [
+        "--experimental-strip-types",
+        "scripts/report-solution-playbooks.mjs",
+        dir,
+        join(dir, "no-reviews.json"),
+        join(dir, "protocol-must-not-pass.json"),
+      ],
+      { encoding: "utf8", timeout: 5000 },
+    );
+    assert.equal(rejected.status, 1);
+    assert.match(rejected.stderr, /Plan and packaged execution protocol differ/);
   } finally {
     rmSync(dir, { recursive: true });
   }
