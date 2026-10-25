@@ -155,7 +155,7 @@ if (
   args.playbook === "solution-supplier-selection" &&
   localContract &&
   (sourceFacts.response.model !== localContract.supplier_interpreter?.model ||
-    localContract.supplier_interpreter?.execution !== "source-interpreted-local-generation-v1")
+    localContract.supplier_interpreter?.execution !== "source-interpreted-local-generation-v2")
 ) {
   console.error("Supplier interpreter model/protocol mismatch");
   process.exit(2);

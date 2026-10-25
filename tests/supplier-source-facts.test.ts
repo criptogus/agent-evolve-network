@@ -20,6 +20,7 @@ function fixture() {
   const selections: Record<string, string> = {
     maximum_delivery: n("6"),
     maximum_delivery_unit: "calendar",
+    maximum_delivery_source: "source_2",
     scope: "same",
   };
   p.ids.forEach((id, i) => {
@@ -27,6 +28,8 @@ function fixture() {
     const q = id === "Q-9";
     Object.assign(selections, {
       [`kind_${i}`]: quote ? "quote" : "other",
+      [`pricing_source_${i}`]: quote ? "source_1" : "none",
+      [`payment_source_${i}`]: quote ? "source_3" : "none",
       [`quantity_${i}`]: quote ? n("37") : "none",
       [`unit_price_${i}`]: quote ? n(q ? "3.50" : "3.75") : "none",
       [`delivery_charge_${i}`]: quote ? (q ? n("12.50") : "included") : "none",
@@ -61,6 +64,13 @@ test("supplier arithmetic composes original decimal quote values without invente
   assert.equal(z.landed_cost_minor, "13875");
   assert.equal(q.landed_cost_minor, "14200");
   assert.equal(q.prepayment_percent, "100");
+  assert.deepEqual(q.payment_terms_source.source_refs, ["source_3"]);
+  assert.deepEqual(q.pricing_source.source_refs, ["source_1"]);
+  assert.deepEqual(f.mandatory_delivery_source.source_refs, ["source_2"]);
+  assert.ok(
+    !Object.hasOwn(q, "source_refs"),
+    "Identifier occurrence cannot imply payment-term attribution",
+  );
   assert.equal(z.net_days, "30");
   assert.equal(f.mandatory_delivery_limit, "6");
   assert.ok(f.comparison.every((q) => q.meets_supplied_delivery_limit));
@@ -93,6 +103,22 @@ test("supplier interpretation rejects missing or invented values and unsupported
   };
   assert.throws(() => composeSupplierFacts(x.p, x.r));
 });
+test("ambiguous payment-term attribution cannot invent a unique source citation", () => {
+  const { p, r } = fixture();
+  const i = p.ids.indexOf("Q-9");
+  r.answers[`payment_source_${i}`] = {
+    type: "choice",
+    choice: "multiple",
+    confidence: 0.4,
+    probabilities: { source_1: 0.2, source_2: 0, source_3: 0.2, multiple: 0.5, none: 0.1 },
+  };
+  const q = composeSupplierFacts(p, r).quotes.find((q) => q.quote_id === "Q-9")!;
+  assert.deepEqual(q.payment_terms_source.source_refs, []);
+  assert.equal(q.payment_terms_source.source_quote, null);
+  assert.equal(q.payment_terms_source.citation_unresolved, true);
+  assert.equal(q.source_claims_verified, false);
+});
+
 test("supplier attachment context cannot become quoted cost or payment authority", () => {
   const p = prepareSupplierFacts({
     ...inputs,

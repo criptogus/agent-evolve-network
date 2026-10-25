@@ -50,14 +50,14 @@ const supplierInterpreter = read(
 if (
   JSON.stringify(plan.supplier_interpreter) !== JSON.stringify(supplierInterpreter) ||
   supplierInterpreter.model !== FINANCE_FACTS_MODEL ||
-  supplierInterpreter.execution !== "source-interpreted-local-generation-v1"
+  supplierInterpreter.execution !== "source-interpreted-local-generation-v2"
 )
   throw new Error("Unqualified supplier interpreter");
 if (JSON.stringify(plan.finance_host) !== JSON.stringify(financeHost))
   throw new Error("Unqualified finance model/host profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v14-supplier-facts" ||
+  plan.protocol !== "compiled-playbook-gateway-v15-supplier-provenance" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({

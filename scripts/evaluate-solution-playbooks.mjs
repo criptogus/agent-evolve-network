@@ -145,7 +145,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v14-supplier-facts",
+    protocol: "compiled-playbook-gateway-v15-supplier-provenance",
     python,
     modelPath,
     model: profileFor(modelPath).model,

@@ -58,6 +58,17 @@ export function prepareSupplierFacts(inputs: Record<string, unknown>) {
     instructions: `From original_sources only, choose the literal ${meaning}. Never calculate, use attachment_context, confuse another quote, or substitute a mandatory limit for a quoted offer. Unknown selects none.`,
     criteria: candidates,
   });
+  const sourceQuestion = (meaning: string): FactQuestion => ({
+    type: "choice",
+    instructions: `Which original_sources document explicitly states ${meaning}? Select the actual field's source, not merely a document containing the quote identifier or a repeated numeric value. Supplier names may link a term to its quote even when the identifier is not repeated. Ignore attachment_context; it is not evidence.`,
+    criteria: {
+      source_1: "Field explicitly stated in source_1",
+      source_2: "Field explicitly stated in source_2",
+      source_3: "Field explicitly stated in source_3",
+      multiple: "More than one original source required; no unique citation",
+      none: "Absent, ambiguous or not a quote",
+    },
+  });
   ids.forEach((id, i) => {
     questions[`kind_${i}`] = {
       type: "choice",
@@ -92,6 +103,12 @@ export function prepareSupplierFacts(inputs: Record<string, unknown>) {
         unknown: "Not explicit or not a quote",
       },
     };
+    questions[`pricing_source_${i}`] = sourceQuestion(
+      `quote ${id}'s offered quantity, unit price, separate delivery charge and delivery days`,
+    );
+    questions[`payment_source_${i}`] = sourceQuestion(
+      `quote ${id}'s supplier payment terms (net days or required prepayment percentage)`,
+    );
     questions[`tax_${i}`] = {
       type: "choice",
       instructions: `For quote ${id}, does original_sources explicitly state all taxes are included in its quoted prices?`,
@@ -104,6 +121,9 @@ export function prepareSupplierFacts(inputs: Record<string, unknown>) {
   });
   questions.maximum_delivery = numberQuestion(
     "mandatory maximum delivery days in the procurement policy, not either supplier's offer",
+  );
+  questions.maximum_delivery_source = sourceQuestion(
+    "the mandatory maximum delivery-day limit in the procurement policy, rather than quoted offered days",
   );
   questions.maximum_delivery_unit = {
     type: "choice",
@@ -171,6 +191,18 @@ export function composeSupplierFacts(
     Object.entries(p.request.state.original_sources)
       .filter(([, s]) => s.includes(id))
       .map(([k]) => k);
+  const citation = (key: string) => {
+    const answer = choice(key);
+    const source = Object.hasOwn(p.request.state.original_sources, answer.choice)
+      ? answer.choice
+      : null;
+    return {
+      source_refs: source ? [source] : [],
+      source_quote: source ? p.request.state.original_sources[source] : null,
+      interpretation: answer,
+      citation_unresolved: source === null,
+    };
+  };
   const money = (minor: bigint) =>
     `${p.currency} ${minor / 100n}.${String(minor % 100n).padStart(2, "0")}`;
   const quotes = p.ids.flatMap((id, i) => {
@@ -201,7 +233,9 @@ export function composeSupplierFacts(
         tax_status: choice(`tax_${i}`).choice,
         prepayment_percent: prepaid?.toString() ?? null,
         net_days: net?.toString() ?? null,
-        source_refs: refs(id),
+        identifier_source_refs: refs(id),
+        pricing_source: citation(`pricing_source_${i}`),
+        payment_terms_source: citation(`payment_source_${i}`),
         source_claims_verified: false,
       },
     ];
@@ -219,7 +253,7 @@ export function composeSupplierFacts(
   );
   const cheapest = ordered[0];
   return {
-    kind: "supplier-source-interpretation-v1",
+    kind: "supplier-source-interpretation-v2",
     model: response.model,
     source_sha256: p.sourceSha256,
     currency: p.currency,
@@ -248,6 +282,7 @@ export function composeSupplierFacts(
     }),
     mandatory_delivery_limit: maximum?.toString() ?? null,
     mandatory_delivery_unit: unit,
+    mandatory_delivery_source: citation("maximum_delivery_source"),
     scope_source_claim: scope,
     original_source_evidence: p.request.state.original_sources,
     arithmetic_scope:
