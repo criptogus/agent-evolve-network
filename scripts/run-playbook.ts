@@ -33,7 +33,7 @@ const adapters = args.gateway ? await gatewayAdapters() : mockAdapters();
 const result = await runPlaybook(compilePlaybook(yaml), inputs, adapters);
 
 console.log(JSON.stringify(result, null, 2));
-process.exit(result.status === "error" ? 2 : 0);
+process.exitCode = result.status === "error" ? 2 : 0;
 
 function parseArgs(argv) {
   const out = {};
