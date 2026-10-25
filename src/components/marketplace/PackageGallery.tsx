@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { packageInstallPreview, packagedExecution } from "@/lib/marketplace/package-execution";
 import { FileCode2, Play, Terminal } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Package } from "@/data/packages";
@@ -25,31 +26,23 @@ export function PackageGallery({ pkg, gatewayUrl }: { pkg: Package; gatewayUrl: 
   const frames: Frame[] = [
     {
       id: "install",
-      label: "Install",
+      label: packagedExecution(pkg) ? "Evaluated bundle" : "Install",
       icon: Terminal,
       filename: "terminal",
       tone: "terminal",
-      body: [
-        `$ npx super-agent install ${pkg.id}`,
-        "",
-        `→ resolving ${pkg.id}@${pkg.latest}`,
-        `→ runtimes ......... ${pkg.compatibility.map((c) => c.runtime).join(", ") || "any MCP client"}`,
-        `→ scopes ........... ${pkg.scopes.join(", ") || "none"}`,
-        `→ size ............. ${pkg.size}`,
-        "",
-        `✓ ${pkg.name} is available to your agent`,
-        "",
-        "# or point any MCP client at the gateway:",
-        `# ${gatewayUrl}`,
-      ].join("\n"),
+      body: packageInstallPreview(pkg, gatewayUrl),
     },
     ...(pkg.systemPrompt
       ? [
           {
             id: "prompt",
-            label: "System prompt",
+            label:
+              packagedExecution(pkg)?.kind === "source-state" ? "Workflow source" : "System prompt",
             icon: FileCode2,
-            filename: `${pkg.id}.system-prompt.md`,
+            filename:
+              packagedExecution(pkg)?.kind === "source-state"
+                ? `${pkg.id}.workflow.yaml`
+                : `${pkg.id}.system-prompt.md`,
             tone: "editor" as const,
             body: pkg.systemPrompt.split("\n").slice(0, 26).join("\n"),
           },

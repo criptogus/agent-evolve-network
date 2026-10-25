@@ -25,6 +25,8 @@ import { BookOpen, Bot, Gauge, KeyRound, PackageIcon, ShieldCheck, Star, Tag } f
 import { useEffect, useState } from "react";
 import { ShareOnXButton } from "@/components/share/ShareOnXButton";
 import { PackageGallery } from "@/components/marketplace/PackageGallery";
+import { PackagedExecutionInstructions } from "@/components/marketplace/PackagedExecutionInstructions";
+import { packagedExecution } from "@/lib/marketplace/package-execution";
 import { StatLine } from "@/components/marketplace/StatLine";
 import {
   AGENT_PLUGINS_SITE,
@@ -103,6 +105,7 @@ const SECTIONS = [
 
 function PackageDetail() {
   const { pkg } = Route.useLoaderData();
+  const execution = packagedExecution(pkg);
   const { user } = useAuth();
   const requireAuth = useRequireAuth();
   const [selectedVersion, setSelectedVersion] = useState(pkg.latest);
@@ -300,9 +303,13 @@ function PackageDetail() {
               <div className="mt-8">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-base font-semibold tracking-tight">System prompt</h3>
+                    <h3 className="text-base font-semibold tracking-tight">
+                      {execution ? "Package source (inspection)" : "System prompt"}
+                    </h3>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      The exact instructions this package installs into your agent.
+                      {execution
+                        ? "Inspect the source here. The complete evaluated execution requires the bundled runner and runtime profile."
+                        : "The exact instructions this package installs into your agent."}
                     </p>
                   </div>
                   <CopyButton value={pkg.systemPrompt} label="Copy system prompt" />
@@ -346,7 +353,11 @@ function PackageDetail() {
           <Section
             id="install"
             title="Install instructions"
-            description="Five ways in — pick the one your client supports."
+            description={
+              execution
+                ? "Run the complete package in its evaluated environment."
+                : "Five ways in — pick the one your client supports."
+            }
           >
             <InstallInstructions pkg={pkg} />
           </Section>
@@ -354,7 +365,7 @@ function PackageDetail() {
           <Section
             id="changelog"
             title="Changelog"
-            description="Every published release, newest first."
+            description="Recorded versions, newest first. Qualification remains version-specific."
           >
             <ChangelogTab pkg={pkg} />
           </Section>
@@ -374,118 +385,130 @@ function PackageDetail() {
 
         <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
           <div className="rounded-xl border border-border bg-background p-5 shadow-elevated">
-            {/* Primary: no-signup MCP path */}
-            <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
-              Install — no account needed
-            </div>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Use the open skills CLI, our CLI, or add the MCP gateway URL to Claude or Cursor. No
-              signup required.
-            </p>
-            <div className="mt-3 space-y-2">
-              <CodeBlockCopy code={openSkillsInstallOne(pkg.id)} label="open skills CLI command" />
-              <CodeBlockCopy code={`npx super-agent install ${pkg.id}`} label="install command" />
-              <CodeBlockCopy code={MCP_GATEWAY_URL} label="gateway URL" />
-            </div>
-
-            <div className="mt-5 flex items-center gap-3">
-              <span className="h-px flex-1 bg-border" />
-              <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                or with an account
-              </span>
-              <span className="h-px flex-1 bg-border" />
-            </div>
-
-            <label className="mt-4 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-              Version
-            </label>
-            <select
-              value={selectedVersion}
-              onChange={(e) => setSelectedVersion(e.target.value)}
-              className="mt-2 h-10 w-full rounded-md border border-border bg-background px-3 font-mono text-sm outline-none focus:border-primary"
-            >
-              {pkg.versions.map((v: Package["versions"][number]) => (
-                <option key={v.version} value={v.version}>
-                  {v.version} · {v.status}
-                </option>
-              ))}
-            </select>
-
-            {installed && (
-              <div className="mt-3 rounded-md border border-border bg-surface px-3 py-2 font-mono text-[11px]">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">installed</span>
-                  <span className="text-foreground">v{installed}</span>
+            {execution ? (
+              <PackagedExecutionInstructions pkg={pkg} compact />
+            ) : (
+              <>
+                {/* Primary: no-signup MCP path */}
+                <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
+                  Install — no account needed
                 </div>
-                {isOutdated ? (
-                  <div className="mt-1 flex items-center justify-between text-amber-600 dark:text-amber-400">
-                    <span>update available</span>
-                    <span>v{pkg.latest}</span>
-                  </div>
-                ) : (
-                  <div className="mt-1 flex items-center justify-between text-signal">
-                    <span>up to date</span>
-                    <span>✓</span>
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Use the open skills CLI, our CLI, or add the MCP gateway URL to Claude or Cursor.
+                  No signup required.
+                </p>
+                <div className="mt-3 space-y-2">
+                  <CodeBlockCopy
+                    code={openSkillsInstallOne(pkg.id)}
+                    label="open skills CLI command"
+                  />
+                  <CodeBlockCopy
+                    code={`npx super-agent install ${pkg.id}`}
+                    label="install command"
+                  />
+                  <CodeBlockCopy code={MCP_GATEWAY_URL} label="gateway URL" />
+                </div>
+
+                <div className="mt-5 flex items-center gap-3">
+                  <span className="h-px flex-1 bg-border" />
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                    or with an account
+                  </span>
+                  <span className="h-px flex-1 bg-border" />
+                </div>
+
+                <label className="mt-4 block font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                  Version
+                </label>
+                <select
+                  value={selectedVersion}
+                  onChange={(e) => setSelectedVersion(e.target.value)}
+                  className="mt-2 h-10 w-full rounded-md border border-border bg-background px-3 font-mono text-sm outline-none focus:border-primary"
+                >
+                  {pkg.versions.map((v: Package["versions"][number]) => (
+                    <option key={v.version} value={v.version}>
+                      {v.version} · {v.status}
+                    </option>
+                  ))}
+                </select>
+
+                {installed && (
+                  <div className="mt-3 rounded-md border border-border bg-surface px-3 py-2 font-mono text-[11px]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">installed</span>
+                      <span className="text-foreground">v{installed}</span>
+                    </div>
+                    {isOutdated ? (
+                      <div className="mt-1 flex items-center justify-between text-amber-600 dark:text-amber-400">
+                        <span>update available</span>
+                        <span>v{pkg.latest}</span>
+                      </div>
+                    ) : (
+                      <div className="mt-1 flex items-center justify-between text-signal">
+                        <span>up to date</span>
+                        <span>✓</span>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
 
-            {isOutdated && (
-              <button
-                onClick={() => {
-                  if (requireAuth("update this package")) handleUpdateToLatest();
-                }}
-                disabled={updating}
-                className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-95 disabled:opacity-60"
-              >
-                {updating ? "Updating…" : `Update to v${pkg.latest}`}
-              </button>
-            )}
+                {isOutdated && (
+                  <button
+                    onClick={() => {
+                      if (requireAuth("update this package")) handleUpdateToLatest();
+                    }}
+                    disabled={updating}
+                    className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-95 disabled:opacity-60"
+                  >
+                    {updating ? "Updating…" : `Update to v${pkg.latest}`}
+                  </button>
+                )}
 
-            <button
-              onClick={() => {
-                if (requireAuth("install this package")) setInstallOpen(true);
-              }}
-              className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background text-sm font-semibold text-foreground transition-all hover:bg-accent"
-            >
-              {isUpgrade
-                ? `Upgrade → v${selectedVersion}`
-                : installed
-                  ? `Reinstall v${selectedVersion}`
-                  : `Install v${selectedVersion}`}
-            </button>
+                <button
+                  onClick={() => {
+                    if (requireAuth("install this package")) setInstallOpen(true);
+                  }}
+                  className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background text-sm font-semibold text-foreground transition-all hover:bg-accent"
+                >
+                  {isUpgrade
+                    ? `Upgrade → v${selectedVersion}`
+                    : installed
+                      ? `Reinstall v${selectedVersion}`
+                      : `Install v${selectedVersion}`}
+                </button>
 
-            {installed && (
-              <button
-                onClick={handleUninstall}
-                disabled={uninstalling}
-                className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-destructive/30 bg-background text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
-              >
-                {uninstalling ? "Uninstalling…" : "Uninstall"}
-              </button>
-            )}
+                {installed && (
+                  <button
+                    onClick={handleUninstall}
+                    disabled={uninstalling}
+                    className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-destructive/30 bg-background text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+                  >
+                    {uninstalling ? "Uninstalling…" : "Uninstall"}
+                  </button>
+                )}
 
-            <Link
-              to="/play"
-              search={{ tool: "get_package", slug: pkg.id }}
-              className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-border bg-background text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-            >
-              ▶ Test drive in the playground — no install
-            </Link>
-
-            <div className="mt-3 text-center text-[11px] text-muted-foreground">
-              {user ? (
-                <>
-                  via MCP · scoped <span className="font-mono text-foreground">agent:upgrade</span>
-                </>
-              ) : (
-                <Link to="/login" className="text-primary underline-offset-2 hover:underline">
-                  Sign in to install
+                <Link
+                  to="/play"
+                  search={{ tool: "get_package", slug: pkg.id }}
+                  className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md border border-border bg-background text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                >
+                  ▶ Test drive in the playground — no install
                 </Link>
-              )}
-            </div>
 
+                <div className="mt-3 text-center text-[11px] text-muted-foreground">
+                  {user ? (
+                    <>
+                      via MCP · scoped{" "}
+                      <span className="font-mono text-foreground">agent:upgrade</span>
+                    </>
+                  ) : (
+                    <Link to="/login" className="text-primary underline-offset-2 hover:underline">
+                      Sign in to install
+                    </Link>
+                  )}
+                </div>
+              </>
+            )}
             <CompatibilitySummary checks={pkg.compatibility} />
           </div>
           <DetailsPanel pkg={pkg} />
@@ -495,7 +518,7 @@ function PackageDetail() {
 
       <Footer />
 
-      {installOpen && (
+      {installOpen && !execution && (
         <InstallModal
           pkg={pkg}
           version={selectedVersion}
@@ -696,6 +719,7 @@ function DetailsPanel({ pkg }: { pkg: Package }) {
 
 /** Four install paths: open Skills CLI, MCP gateway, our CLI, manual copy. */
 function InstallInstructions({ pkg }: { pkg: Package }) {
+  if (packagedExecution(pkg)) return <PackagedExecutionInstructions pkg={pkg} />;
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-border bg-card p-5">
@@ -897,20 +921,31 @@ function VersionsTab({
             <tr key={v.version} className="border-t border-border bg-background">
               <td className="px-5 py-4 font-mono font-semibold">{v.version}</td>
               <td className="px-5 py-4">
-                <StatusPill status={v.status} />
+                {packagedExecution(pkg) && v.version !== pkg.latest ? (
+                  <span className="text-xs text-muted-foreground">
+                    Outside current qualification
+                  </span>
+                ) : (
+                  <StatusPill status={v.status} />
+                )}
               </td>
               <td className="px-5 py-4 text-muted-foreground">{v.date}</td>
               <td className="px-5 py-4 text-muted-foreground">{v.notes}</td>
               <td className="px-5 py-4 text-right">
                 <button
                   onClick={() => onSelect(v.version)}
+                  disabled={!!packagedExecution(pkg) && v.version !== pkg.latest}
                   className={`rounded-md border px-3 py-1.5 font-mono text-[11px] uppercase transition-colors ${
                     selected === v.version
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {selected === v.version ? "selected" : "select"}
+                  {packagedExecution(pkg) && v.version !== pkg.latest
+                    ? "not covered"
+                    : selected === v.version
+                      ? "selected"
+                      : "select"}
                 </button>
               </td>
             </tr>
@@ -925,8 +960,9 @@ function CompatibilityTab({ pkg }: { pkg: Package }) {
   return (
     <div>
       <p className="max-w-2xl text-sm text-muted-foreground">
-        Compatibility is verified through the MCP gateway across major agent runtimes. Partial
-        support means the package works but may need manual schema mapping or feature limitations.
+        {packagedExecution(pkg)
+          ? "Qualification is restricted to this version’s complete bundle and the exact evaluated environment shown below. It does not transfer to bare prompts, other models or external actions."
+          : "Runtime declarations and any recorded evaluation evidence for this version are shown below. Partial support may require manual mapping or have feature limitations."}
       </p>
       <div className="mt-6 grid gap-3 md:grid-cols-2">
         {pkg.compatibility.map((c) => (
@@ -948,7 +984,7 @@ function CompatRow({ c }: { c: CompatibilityCheck }) {
     <div className="flex items-start gap-3 rounded-xl border border-border bg-background p-4">
       <span className={`mt-1 inline-block h-2.5 w-2.5 shrink-0 rounded-full ${conf.dot}`} />
       <div className="min-w-0">
-        <div className={`font-medium ${conf.text}`}>{c.runtime}</div>
+        <div className={`break-all font-medium ${conf.text}`}>{c.runtime}</div>
         <div className="mt-0.5 text-xs text-muted-foreground">{c.detail}</div>
       </div>
       <span className="ml-auto rounded border border-border bg-surface px-2 py-0.5 font-mono text-[10px] uppercase text-muted-foreground">
@@ -965,7 +1001,11 @@ function ChangelogTab({ pkg }: { pkg: Package }) {
         <div key={v.version} className="rounded-xl border border-border bg-background p-5">
           <div className="flex items-center gap-3">
             <div className="font-mono text-base font-semibold">v{v.version}</div>
-            <StatusPill status={v.status} />
+            {packagedExecution(pkg) && v.version !== pkg.latest ? (
+              <span className="text-xs text-muted-foreground">Outside current qualification</span>
+            ) : (
+              <StatusPill status={v.status} />
+            )}
             <span className="ml-auto font-mono text-xs text-muted-foreground">{v.date}</span>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">{v.notes}</p>
@@ -1077,13 +1117,13 @@ function InstallModal({
   onClose: () => void;
   onInstalled?: () => void | Promise<void>;
 }) {
-  const [runtime, setRuntime] = useState(pkg.compatibility[0].runtime);
+  const [runtime, setRuntime] = useState(pkg.compatibility[0]?.runtime ?? "");
   const [phase, setPhase] = useState<InstallPhase>("preflight");
   const [error, setError] = useState<string | null>(null);
   const installFn = useServerFn(installPackageBySlug);
 
-  const compat = pkg.compatibility.find((c) => c.runtime === runtime)!;
-  const blocked = compat.status === "unsupported";
+  const compat = pkg.compatibility.find((c) => c.runtime === runtime);
+  const blocked = !compat || compat.status === "unsupported";
 
   const installLines = [
     `> Super Agent Skill: ${isUpgrade ? "upgrade" : "install"} ${pkg.name}@${version}`,
@@ -1158,8 +1198,8 @@ function InstallModal({
             <PreflightItem
               label="Compatibility check"
               ok={!blocked}
-              warn={compat.status === "partial"}
-              detail={compat.detail}
+              warn={compat?.status === "partial"}
+              detail={compat?.detail ?? "No supported runtime is declared for this version."}
             />
             <PreflightItem
               label="Dependency resolution"
@@ -1178,8 +1218,9 @@ function InstallModal({
 
             {blocked && (
               <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-xs text-foreground">
-                <span className="font-mono text-primary">Blocked:</span> {compat.detail} Switch
-                runtime or wait for support.
+                <span className="font-mono text-primary">Blocked:</span>{" "}
+                {compat?.detail ?? "No supported runtime is declared."} Switch runtime or wait for
+                support.
               </div>
             )}
 
