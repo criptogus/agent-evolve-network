@@ -274,3 +274,26 @@ before any source upload. Only bare boolean execution/consent flags are accepted
 The regression reproduced the prior parsing issue with a network-forbidden fixture
 and passed after the fix. These are deterministic transport/authority regressions,
 not model qualification or publication evidence.
+
+### V11 truncated process output and v12 complete transport (0.1.14 candidate)
+
+The v11 CLI returned exit zero but only 65,536 bytes of its larger JSON result. The
+raw prefix contained four stage markers, but the complete response could not be
+parsed and was not qualified or repaired. A real CLI loopback regression reproduced
+this truncation with a large response. The runner now drains successful stdout by
+setting its exit code instead of forcing immediate process termination; large
+failed-provider evidence is explicitly flushed before its error exit as well.
+
+The evaluator decodes the original stdout without trimming or completion and
+records invalid JSON as an output error even after a zero process exit. It stops
+before another case and counts that error in the aggregate. The strict reporter
+requires a null output error for every qualifying row. Diagnostic inspection retains
+recorded output errors instead of calling them successful cases. Regressions cover
+large successful output, large error evidence and zero-exit invalid/empty results.
+The frozen plan also binds the reporter, original eligibility gate and literal
+scorer source bytes, so their code cannot drift after evaluation begins.
+
+This is a transport/provenance fix. It changes none of the 72 case inputs,
+expectations, severities, numerical thresholds or primary review requirements.
+The prior incomplete output and unknown interpretation attempt remain preserved;
+a fresh real run is required. No Lovable inference or builder action was used.

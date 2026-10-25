@@ -272,3 +272,39 @@ test("explicit false or string-valued consent flags cannot start source upload",
     assert.equal(child.stdout, "");
   }
 });
+
+test("CLI flushes large failed-provider evidence before exiting", async () => {
+  const { spawnSync } = await import("node:child_process");
+  const setup =
+    'data:text/javascript,globalThis.fetch=async()=>new Response(JSON.stringify({model:"wrong-model",detail:"X".repeat(90000)+"FINAL_PROVIDER_SENTINEL"}));';
+  const child = spawnSync(
+    process.execPath,
+    [
+      "--import",
+      setup,
+      "--experimental-strip-types",
+      "scripts/run-playbook.ts",
+      "--playbook",
+      "solution-monthly-finance-close",
+      "--inputs",
+      JSON.stringify(inputs),
+      "--gateway",
+      "--semantic-source-facts",
+      "--allow-typesafe-source-upload",
+    ],
+    {
+      encoding: "utf8",
+      maxBuffer: 2000000,
+      env: { ...process.env, TYPESAFE_API_KEY: "synthetic-test-credential" },
+    },
+  );
+  assert.equal(child.status, 2);
+  assert.ok(Buffer.byteLength(child.stdout) > 90000);
+  const output = JSON.parse(child.stdout);
+  assert.equal(output.stage, "source_facts");
+  assert.equal(
+    JSON.parse(output.source_facts_provider_evidence.raw_response).detail.length,
+    90000 + "FINAL_PROVIDER_SENTINEL".length,
+  );
+  assert.ok(!child.stdout.includes("synthetic-test-credential"));
+});

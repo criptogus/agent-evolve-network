@@ -1,7 +1,7 @@
 slug: solution-supplier-selection
 name: Evaluate and select suppliers
 type: playbook
-version: 0.1.13
+version: 0.1.14
 description: Comparable bids, documented risks and a buyer-owned decision.
 trigger: When the user requests evaluate and select suppliers and provides authorized source inputs.
 inputs:

@@ -70,6 +70,10 @@ test("primary report rejects a partial cohort even with all runtime bindings", (
       "scripts/run-playbook.ts",
       "scripts/evaluate-solution-playbooks.mjs",
       "scripts/playbook-evaluation-proxy.mjs",
+      "scripts/playbook-cli-result.mjs",
+      "scripts/report-solution-playbooks.mjs",
+      "scripts/adversarial-approval.mjs",
+      "src/lib/adversarial/scorer.ts",
       "scripts/solution-artifact-files.ts",
       "src/lib/solutions/catalog.ts",
       "src/lib/plugins/agent-plugins.ts",
@@ -92,7 +96,7 @@ test("primary report rejects a partial cohort even with all runtime bindings", (
       ...contract.subjects.map((s: { slug: string }) => `content/playbooks/${s.slug}.yaml`),
     ];
     const payload = {
-      protocol: "compiled-playbook-gateway-v11-finance-audit",
+      protocol: "compiled-playbook-gateway-v12-complete-output",
       model: profile.model,
       finance_host: {
         execution: "finance-source-state-v1",

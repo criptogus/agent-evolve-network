@@ -1,4 +1,5 @@
 /** Finite offline execution of real compiled workflows. No automated semantic verdict or publishing. */
+import { decodePlaybookCliResult } from "./playbook-cli-result.mjs";
 import { createPlaybookEvaluationProxy } from "./playbook-evaluation-proxy.mjs";
 import { createHash } from "node:crypto";
 import {
@@ -44,6 +45,10 @@ const sourcePaths = [
   "scripts/run-playbook.ts",
   "scripts/evaluate-solution-playbooks.mjs",
   "scripts/playbook-evaluation-proxy.mjs",
+  "scripts/playbook-cli-result.mjs",
+  "scripts/report-solution-playbooks.mjs",
+  "scripts/adversarial-approval.mjs",
+  "src/lib/adversarial/scorer.ts",
   "scripts/solution-artifact-files.ts",
   "src/lib/solutions/catalog.ts",
   "src/lib/plugins/agent-plugins.ts",
@@ -138,7 +143,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v11-finance-audit",
+    protocol: "compiled-playbook-gateway-v12-complete-output",
     python,
     modelPath,
     model: profileFor(modelPath).model,
@@ -340,12 +345,8 @@ if (mode === "prepare") {
         stderr += b;
       });
       const [exitCode, signal] = await once(child, "close");
-      let parsed;
-      try {
-        parsed = JSON.parse(stdout);
-      } catch {
-        parsed = null;
-      }
+      const decoded = decodePlaybookCliResult(stdout, exitCode);
+      const parsed = decoded.value;
       if (finance)
         appendFileSync(
           factsJournal,
@@ -369,6 +370,7 @@ if (mode === "prepare") {
         case_id: c.id,
         planHash,
         exitCode,
+        output_error: decoded.error,
         signal,
         stdout,
         stderr,
@@ -384,14 +386,14 @@ if (mode === "prepare") {
           qualifies: false,
         }),
       );
-      if (exitCode !== 0) break;
+      if (exitCode !== 0 || decoded.error) break;
     }
     save(join(dir, "execution-summary.json"), {
       planHash,
       scheduled_cases: 72,
       completed_cases: rows.length,
       model_requests: requestCount,
-      error_cases: rows.filter((r) => r.exitCode !== 0).length,
+      error_cases: rows.filter((r) => r.exitCode !== 0 || r.output_error).length,
       owner_stop_requested: existsSync(join(dir, "STOP-AFTER-CURRENT-CASE")),
       primary_review: "pending",
       publicationApproved: false,

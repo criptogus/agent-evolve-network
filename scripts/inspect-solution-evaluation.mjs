@@ -62,12 +62,14 @@ export function inspectSolutionEvaluation(dir) {
     try {
       out = JSON.parse(row.stdout);
     } catch {
-      if (row.exitCode === 0) throw new Error("Successful case has no parseable result");
-      out = { status: "no_result" };
+      if (row.exitCode === 0 && !row.output_error)
+        throw new Error("Successful case has no parseable result");
+      out = { status: row.output_error ? "invalid_result" : "no_result" };
     }
     return {
       case_id: row.case_id,
       exitCode: row.exitCode,
+      output_error: row.output_error ?? null,
       graph_status: out.status,
       steps: out.step_outcomes?.length ?? 0,
       primary_review: "required",
@@ -91,7 +93,7 @@ export function inspectSolutionEvaluation(dir) {
     scheduled_cases: 72,
     recorded_cases: outputs.length,
     pending_cases: 72 - outputs.length,
-    error_cases: outputs.filter((r) => r.exitCode !== 0).length,
+    error_cases: outputs.filter((r) => r.exitCode !== 0 || r.output_error).length,
     steps: { started, completed, unknown, inflight_or_unaccounted: started - completed - unknown },
     source_facts: {
       started: facts.filter((r) => r.event === "source_facts_started").length,

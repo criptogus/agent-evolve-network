@@ -125,15 +125,18 @@ if (args["semantic-source-facts"]) {
       },
     );
   } catch {
-    console.log(
-      JSON.stringify({
-        status: "error",
-        stage: "source_facts",
-        error: "Source-facts extraction failed; no graph stage started",
-        ...(sourceFactsProviderEvidence
-          ? { source_facts_provider_evidence: sourceFactsProviderEvidence }
-          : {}),
-      }),
+    const failureOutput = JSON.stringify({
+      status: "error",
+      stage: "source_facts",
+      error: "Source-facts extraction failed; no graph stage started",
+      ...(sourceFactsProviderEvidence
+        ? { source_facts_provider_evidence: sourceFactsProviderEvidence }
+        : {}),
+    });
+    await new Promise((resolve, reject) =>
+      process.stdout.write(failureOutput + "\n", (error) =>
+        error ? reject(error) : resolve(undefined),
+      ),
     );
     process.exit(2);
   }
@@ -176,7 +179,7 @@ console.log(
     2,
   ),
 );
-process.exit(result.status === "error" ? 2 : 0);
+process.exitCode = result.status === "error" ? 2 : 0;
 
 function parseArgs(argv) {
   const out = {};

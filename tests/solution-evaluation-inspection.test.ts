@@ -87,3 +87,24 @@ test("cancelled CLI output remains an error rather than empty success", () =>
     assert.equal(report.cases[0].graph_status, "no_result");
     assert.equal(report.publicationApproved, false);
   }));
+
+test("recorded malformed stdout remains failed despite a zero exit code", () =>
+  fixture((dir, planHash) => {
+    writeFileSync(
+      join(dir, "outputs.jsonl"),
+      JSON.stringify({
+        case_id: "s0:0",
+        slug: "s0",
+        version: "1.0.0",
+        package_sha256: "archive0",
+        planHash,
+        exitCode: 0,
+        output_error: "invalid_stdout_json",
+        stdout: '{"status":"ok"',
+      }),
+    );
+    const report = inspectSolutionEvaluation(dir);
+    assert.equal(report.error_cases, 1);
+    assert.equal(report.cases[0].graph_status, "invalid_result");
+    assert.equal(report.publicationApproved, false);
+  }));

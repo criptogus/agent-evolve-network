@@ -43,7 +43,7 @@ if (JSON.stringify(plan.finance_host) !== JSON.stringify(financeHost))
   throw new Error("Unqualified finance model/host profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v11-finance-audit" ||
+  plan.protocol !== "compiled-playbook-gateway-v12-complete-output" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({
@@ -86,6 +86,10 @@ const requiredSources = [
   "scripts/run-playbook.ts",
   "scripts/evaluate-solution-playbooks.mjs",
   "scripts/playbook-evaluation-proxy.mjs",
+  "scripts/playbook-cli-result.mjs",
+  "scripts/report-solution-playbooks.mjs",
+  "scripts/adversarial-approval.mjs",
+  "src/lib/adversarial/scorer.ts",
   "scripts/solution-artifact-files.ts",
   "src/lib/solutions/catalog.ts",
   "src/lib/plugins/agent-plugins.ts",
@@ -209,6 +213,7 @@ const outcomes = schedule.map(({ s, c }, i) => {
     row.case_id !== c.id ||
     row.planHash !== planHash ||
     row.exitCode !== 0 ||
+    row.output_error !== null ||
     row.signal !== null
   )
     throw new Error("Failed/unbound/reordered case");

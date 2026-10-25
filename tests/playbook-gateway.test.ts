@@ -91,3 +91,13 @@ test("real gateway CLI rejects empty generation before downstream steps", async 
   assert.equal(result.code, 2);
   assert.equal(result.requests.length, 1);
 });
+
+test("real CLI drains large structured results before reporting success", async () => {
+  const content = "LARGE_RESULT_".repeat(2500) + "FINAL_SENTINEL";
+  const result = await runFixture("stop", content);
+  assert.equal(result.code, 0, result.stderr);
+  assert.ok(Buffer.byteLength(result.stdout) > 200000);
+  const output = JSON.parse(result.stdout);
+  assert.equal(output.step_outcomes.length, 4);
+  assert.equal(output.step_outcomes[3].output, `${content}_4`);
+});
