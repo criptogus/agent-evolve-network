@@ -136,21 +136,33 @@ test("database failure and cancellation are cache misses, not fake hits or provi
   );
   assert.equal(await unavailable.get(key), undefined);
   assert.equal(unavailable.metrics.unavailable, 1);
+  const entered = Promise.withResolvers<void>();
+  const observedSignals: AbortSignal[] = [];
   const cancel = createPersistentSelectionCache(
     clientFor(async (_url, init) => {
+      const signal = init?.signal;
+      assert.ok(signal);
+      observedSignals.push(signal);
       await new Promise((_resolve, reject) => {
-        if (init?.signal?.aborted) reject(init.signal.reason);
-        else
-          init?.signal?.addEventListener("abort", () => reject(init.signal?.reason), {
-            once: true,
-          });
+        if (signal.aborted) reject(signal.reason);
+        else signal.addEventListener("abort", () => reject(signal.reason), { once: true });
+        entered.resolve();
       });
       return Response.json([]);
     }),
     scope,
   );
+  const controller = new AbortController();
   const started = performance.now();
-  assert.equal(await cancel.get(key, AbortSignal.timeout(10)), undefined);
+  const pending = cancel.get(key, controller.signal);
+  // Abort only after the real SDK has forwarded the signal to the pending
+  // transport. Unlike actual network I/O, an unref'ed timeout alone cannot
+  // keep this mocked transport alive on Node22.
+  await entered.promise;
+  controller.abort();
+  assert.equal(await pending, undefined);
+  assert.equal(observedSignals.length, 1);
+  assert.equal(observedSignals[0].aborted, true);
   assert.ok(performance.now() - started < 500);
   assert.equal(cancel.metrics.unavailable, 1);
 });
