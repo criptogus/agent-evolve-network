@@ -29,6 +29,12 @@ import {
   validateLocalGatewayHealth,
   textOnlyContent,
 } from "../src/lib/runtime/local-model-contract.ts";
+import {
+  prepareSecurityFacts,
+  validateSecurityResponse,
+  composeSecurityFacts,
+} from "../src/lib/runtime/security-source-facts.ts";
+import { prepareSecurityStage } from "../src/lib/runtime/security-stages.ts";
 const [dir, reviewsPath, output] = process.argv.slice(2);
 if (!dir || !reviewsPath || !output || process.argv.length !== 5 || existsSync(output))
   throw new Error("Supply EVIDENCE_DIR PRIMARY_REVIEWS NEW_REPORT; existing reports are preserved");
@@ -55,6 +61,15 @@ const profile = read("content/expansion/playbook-model-profiles.json").find(
 if (!profile) throw new Error("Unsupported exact model/runtime profile");
 const financeHost = read("content/expansion/playbook-local-contract.json").finance_host;
 const supplierHost = read("content/expansion/playbook-local-contract.json").supplier_host;
+const securityHost = read("content/expansion/playbook-local-contract.json").security_host;
+if (
+  JSON.stringify(plan.security_host) !== JSON.stringify(securityHost) ||
+  securityHost.model !== FINANCE_FACTS_MODEL ||
+  securityHost.execution !== "security-source-state-v1" ||
+  securityHost.node !== financeHost.node ||
+  securityHost.architecture !== financeHost.architecture
+)
+  throw new Error("Unqualified security interpreter/host");
 const workflowInterpreter = read(
   "content/expansion/playbook-local-contract.json",
 ).workflow_interpreter;
@@ -76,7 +91,7 @@ if (JSON.stringify(plan.finance_host) !== JSON.stringify(financeHost))
   throw new Error("Unqualified finance model/host profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v22-source-negation" ||
+  plan.protocol !== "compiled-playbook-gateway-v23-security-source-state" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({
@@ -144,6 +159,9 @@ const requiredSources = [
   "src/lib/runtime/supplier-source-facts.ts",
   "src/lib/runtime/supplier-source-facts.server.ts",
   "src/lib/runtime/supplier-stages.ts",
+  "src/lib/runtime/security-source-facts.ts",
+  "src/lib/runtime/security-source-facts.server.ts",
+  "src/lib/runtime/security-stages.ts",
   "src/lib/runtime/workflow-source-context.ts",
   "src/lib/runtime/workflow-source-context.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
@@ -229,7 +247,11 @@ if (transports.some((t) => !expectedIds.has(t.value.case_id)))
 const sourceFactsAttempts = lines(join(dir, "source-facts-attempts.jsonl")).map((r) => r.value);
 const financeSchedule = schedule.filter(
   ({ s, c }) =>
-    ["solution-monthly-finance-close", "solution-supplier-selection"].includes(s.slug) ||
+    [
+      "solution-monthly-finance-close",
+      "solution-supplier-selection",
+      "solution-secure-agent-launch",
+    ].includes(s.slug) ||
     Object.values(c.inputs).some(
       (value) => typeof value === "string" && /\nSOURCE (?:NOTE|ATTACHMENT):/.test(value),
     ),
@@ -267,7 +289,8 @@ const outcomes = schedule.map(({ s, c }, i) => {
   const trace = transports.filter((t) => t.value.case_id === c.id);
   const finance = s.slug === "solution-monthly-finance-close";
   const supplier = s.slug === "solution-supplier-selection";
-  const sourceState = finance || supplier;
+  const security = s.slug === "solution-secure-agent-launch";
+  const sourceState = finance || supplier || security;
   if (
     run.status !== "ok" ||
     run.playbook_slug !== s.slug ||
@@ -277,10 +300,15 @@ const outcomes = schedule.map(({ s, c }, i) => {
   )
     throw new Error("Incomplete graph or unexpected finance generation");
   if (sourceState) {
-    const host = finance ? financeHost : supplierHost;
+    const host = finance ? financeHost : security ? securityHost : supplierHost;
     if (
-      JSON.stringify(finance ? run.finance_execution : run.supplier_execution) !==
-        JSON.stringify(host) ||
+      JSON.stringify(
+        finance
+          ? run.finance_execution
+          : security
+            ? run.security_execution
+            : run.supplier_execution,
+      ) !== JSON.stringify(host) ||
       JSON.stringify(run.local_model_evidence) !== JSON.stringify(host)
     )
       throw new Error("Unbound finance interpreter or host runtime");
@@ -338,6 +366,25 @@ const outcomes = schedule.map(({ s, c }, i) => {
       JSON.stringify(end.usage) !== JSON.stringify(response.usage)
     )
       throw new Error("Changed supplier source facts or usage");
+  } else if (s.slug === "solution-secure-agent-launch") {
+    const evidence = run.source_facts;
+    const prepared = prepareSecurityFacts(c.inputs);
+    const response = validateSecurityResponse(JSON.parse(evidence.raw_response), prepared);
+    sourceFacts = composeSecurityFacts(prepared, response);
+    const end = sourceFactsAttempts.find(
+      (a) => a.case_id === c.id && a.event === "source_facts_completed",
+    );
+    if (
+      response.usage.input_tokens <= 0 ||
+      response.usage.output_tokens <= 0 ||
+      JSON.stringify(evidence.response) !== JSON.stringify(response) ||
+      JSON.stringify(evidence.request) !== JSON.stringify(prepared.request) ||
+      JSON.stringify(evidence.facts) !== JSON.stringify(sourceFacts) ||
+      end.evidence_sha256 !== hash(JSON.stringify(evidence)) ||
+      end.model !== FINANCE_FACTS_MODEL ||
+      JSON.stringify(end.usage) !== JSON.stringify(response.usage)
+    )
+      throw new Error("Changed security source facts or usage");
   } else {
     if (run.source_facts) throw new Error("Unscheduled source-facts interpretation");
     const evidence = run.workflow_context,
@@ -376,13 +423,14 @@ const outcomes = schedule.map(({ s, c }, i) => {
   let combined = "";
   if (sourceState)
     yaml.steps.forEach((definition, j) => {
-      if (definition.action !== `tool:${finance ? "finance" : "supplier"}.${definition.id}`)
+      if (
+        definition.action !==
+        `tool:${finance ? "finance" : security ? "security" : "supplier"}.${definition.id}`
+      )
         throw new Error("Unqualified finance graph action");
-      const expected = (finance ? prepareFinanceStage : prepareSupplierStage)(
-        definition.action.slice(5),
-        run.source_facts,
-        previous,
-      );
+      const expected = (
+        finance ? prepareFinanceStage : security ? prepareSecurityStage : prepareSupplierStage
+      )(definition.action.slice(5), run.source_facts, previous);
       const step = run.step_outcomes[j];
       if (
         step.step_id !== definition.id ||
@@ -485,13 +533,17 @@ const reports = plan.subjects.map((s) => {
         ? `typesafe/${financeHost.model}/${financeHost.execution}@node-${financeHost.node}-${financeHost.architecture}`
         : s.slug === "solution-supplier-selection"
           ? `typesafe/${supplierHost.model}/${supplierHost.execution}@node-${supplierHost.node}-${supplierHost.architecture}`
-          : `${plan.model}+typesafe/${workflowInterpreter.model}/${workflowInterpreter.protocol}`,
+          : s.slug === "solution-secure-agent-launch"
+            ? `typesafe/${securityHost.model}/${securityHost.execution}@node-${securityHost.node}-${securityHost.architecture}`
+            : `${plan.model}+typesafe/${workflowInterpreter.model}/${workflowInterpreter.protocol}`,
     execution_protocol:
       s.slug === "solution-monthly-finance-close"
         ? financeHost.execution
         : s.slug === "solution-supplier-selection"
           ? supplierHost.execution
-          : plan.protocol,
+          : s.slug === "solution-secure-agent-launch"
+            ? securityHost.execution
+            : plan.protocol,
     source_sha256: plan.sourceHashes[`content/playbooks/${s.slug}.yaml`],
     artifact_sha256: s.artifact.sha256,
     total: os.length,
@@ -511,9 +563,10 @@ writeFileSync(
       model: plan.model,
       finance_host: financeHost,
       supplier_host: supplierHost,
+      security_host: securityHost,
       workflow_interpreter: workflowInterpreter,
       model_scope:
-        "Per-package models and execution protocols are recorded in reports; finance and supplier use pinned TypeSafe interpretation plus real domain tools; the other two graphs use the pinned local generator plus separately recorded redacted-note interpretation.",
+        "Per-package models and execution protocols are recorded in reports; finance, supplier and security use pinned TypeSafe interpretation plus real domain tools; the remaining graph uses the pinned local generator plus separately recorded redacted-note interpretation.",
       protocol: plan.protocol,
       total: 72,
       reports,

@@ -47,30 +47,34 @@ const { runPlaybook } = await import(new URL("src/lib/runtime/run.ts", ROOT_URL)
 const interpretedPlaybook = [
   "solution-monthly-finance-close",
   "solution-supplier-selection",
-].includes(args.playbook);
-const generatedSolution = [
   "solution-secure-agent-launch",
-  "solution-brazil-reconciliation",
 ].includes(args.playbook);
+const generatedSolution = ["solution-brazil-reconciliation"].includes(args.playbook);
 let localContract;
 let localEvidence;
 const contractPath = join(ROOT, "references/runtime-profile.json");
 if (args.gateway && existsSync(contractPath)) {
   try {
     localContract = JSON.parse(readFileSync(contractPath, "utf8"));
-    if (["finance-source-state-v2", "supplier-source-state-v1"].includes(localContract.execution)) {
+    if (
+      ["finance-source-state-v2", "supplier-source-state-v1", "security-source-state-v1"].includes(
+        localContract.execution,
+      )
+    ) {
       const expected =
         args.playbook === "solution-monthly-finance-close"
           ? "finance-source-state-v2"
           : args.playbook === "solution-supplier-selection"
             ? "supplier-source-state-v1"
-            : null;
+            : args.playbook === "solution-secure-agent-launch"
+              ? "security-source-state-v1"
+              : null;
       if (localContract.execution !== expected) throw new Error("Source-state workflow mismatch");
       if (
         process.versions.node !== localContract.node ||
         process.arch !== localContract.architecture
       )
-        throw new Error("Finance host runtime mismatch");
+        throw new Error("Source-state host runtime mismatch");
       localEvidence = {
         execution: localContract.execution,
         model: localContract.model,
@@ -106,7 +110,7 @@ if (args.gateway && existsSync(contractPath)) {
       interpretedPlaybook &&
       (!args["semantic-source-facts"] || !args["allow-typesafe-source-upload"])
     )
-      throw new Error("Finance source-state execution requires explicit source upload consent");
+      throw new Error("Source-state execution requires explicit source upload consent");
   } catch {
     console.error(
       "Packaged local model/runtime contract rejected before source upload or generation",
@@ -128,17 +132,23 @@ if (args["semantic-source-facts"] && interpretedPlaybook) {
     !process.env.TYPESAFE_API_KEY
   ) {
     console.error(
-      "Source facts require a supported finance or supplier playbook, --gateway, --allow-typesafe-source-upload and private TYPESAFE_API_KEY",
+      "Source facts require a supported source-state playbook, --gateway, --allow-typesafe-source-upload and private TYPESAFE_API_KEY",
     );
     process.exit(2);
   }
   try {
     const derive =
-      args.playbook === "solution-supplier-selection"
-        ? (await import(new URL("src/lib/runtime/supplier-source-facts.server.ts", ROOT_URL).href))
-            .deriveSupplierSourceFacts
-        : (await import(new URL("src/lib/runtime/finance-source-facts.server.ts", ROOT_URL).href))
-            .deriveFinanceSourceFacts;
+      args.playbook === "solution-secure-agent-launch"
+        ? (await import(new URL("src/lib/runtime/security-source-facts.server.ts", ROOT_URL).href))
+            .deriveSecuritySourceFacts
+        : args.playbook === "solution-supplier-selection"
+          ? (
+              await import(
+                new URL("src/lib/runtime/supplier-source-facts.server.ts", ROOT_URL).href
+              )
+            ).deriveSupplierSourceFacts
+          : (await import(new URL("src/lib/runtime/finance-source-facts.server.ts", ROOT_URL).href))
+              .deriveFinanceSourceFacts;
     sourceFacts = await derive(inputs, process.env.TYPESAFE_API_KEY, fetch, (evidence) => {
       sourceFactsProviderEvidence = evidence;
     });
@@ -205,9 +215,10 @@ if (args.gateway && generatedSolution) {
   }
 }
 const financeMode = args.gateway && args.playbook === "solution-monthly-finance-close";
+const securityMode = args.gateway && args.playbook === "solution-secure-agent-launch";
 if (args.gateway && interpretedPlaybook && !sourceFacts) {
   console.error(
-    "Finance/supplier execution requires --semantic-source-facts and explicit source upload consent",
+    "Source-state execution requires --semantic-source-facts and explicit source upload consent",
   );
   process.exit(2);
 }
@@ -223,7 +234,11 @@ if (
 const sourceExecution =
   args.gateway && interpretedPlaybook
     ? {
-        execution: financeMode ? "finance-source-state-v2" : "supplier-source-state-v1",
+        execution: financeMode
+          ? "finance-source-state-v2"
+          : securityMode
+            ? "security-source-state-v1"
+            : "supplier-source-state-v1",
         model: sourceFacts.response.model,
         node: process.versions.node,
         architecture: process.arch,
@@ -245,7 +260,13 @@ console.log(
       ...(workflowContext ? { workflow_context: workflowContext } : {}),
       ...(localEvidence ? { local_model_evidence: localEvidence } : {}),
       ...(sourceExecution
-        ? { [financeMode ? "finance_execution" : "supplier_execution"]: sourceExecution }
+        ? {
+            [financeMode
+              ? "finance_execution"
+              : securityMode
+                ? "security_execution"
+                : "supplier_execution"]: sourceExecution,
+          }
         : {}),
     },
     null,
@@ -276,17 +297,20 @@ function mockAdapters() {
     invokeSkill: async ({ slug, inputs }) =>
       `[mock-skill:${slug}] ${JSON.stringify(inputs).slice(0, 80)}`,
     invokeTool: async ({ name, inputs }) =>
-      /^(finance|supplier)\./.test(name) ? `[mock-tool] ${name}` : { name, inputs },
+      /^(finance|supplier|security)\./.test(name) ? `[mock-tool] ${name}` : { name, inputs },
     onTelemetry: (e) => console.error(`[telemetry] ${JSON.stringify(e)}`),
   };
 }
 
 async function sourceStateAdapters() {
-  const prepare = financeMode
-    ? (await import(new URL("src/lib/runtime/finance-stages.ts", ROOT_URL).href))
-        .prepareFinanceStage
-    : (await import(new URL("src/lib/runtime/supplier-stages.ts", ROOT_URL).href))
-        .prepareSupplierStage;
+  const prepare = securityMode
+    ? (await import(new URL("src/lib/runtime/security-stages.ts", ROOT_URL).href))
+        .prepareSecurityStage
+    : financeMode
+      ? (await import(new URL("src/lib/runtime/finance-stages.ts", ROOT_URL).href))
+          .prepareFinanceStage
+      : (await import(new URL("src/lib/runtime/supplier-stages.ts", ROOT_URL).href))
+          .prepareSupplierStage;
   return {
     invokeInstruction: async () => {
       throw new Error("Unexpected free-form source-state generation");

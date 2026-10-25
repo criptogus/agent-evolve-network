@@ -95,15 +95,24 @@ test("primary report rejects a partial cohort even with all runtime bindings", (
       "src/lib/runtime/supplier-source-facts.ts",
       "src/lib/runtime/supplier-source-facts.server.ts",
       "src/lib/runtime/supplier-stages.ts",
+      "src/lib/runtime/security-source-facts.ts",
+      "src/lib/runtime/security-source-facts.server.ts",
+      "src/lib/runtime/security-stages.ts",
       "src/lib/runtime/workflow-source-context.ts",
       "src/lib/runtime/workflow-source-context.server.ts",
       "src/lib/adversarial/leak-scanner.ts",
       ...contract.subjects.map((s: { slug: string }) => `content/playbooks/${s.slug}.yaml`),
     ];
     const payload = {
-      protocol: "compiled-playbook-gateway-v22-source-negation",
+      protocol: "compiled-playbook-gateway-v23-security-source-state",
       model: profile.model,
       workflow_interpreter: { model: "jev-1.14.0", protocol: "quarantine-source-notes-v1" },
+      security_host: {
+        execution: "security-source-state-v1",
+        model: "jev-1.14.0",
+        node: "24.22.0",
+        architecture: "arm64",
+      },
       supplier_host: {
         execution: "supplier-source-state-v1",
         model: "jev-1.14.0",

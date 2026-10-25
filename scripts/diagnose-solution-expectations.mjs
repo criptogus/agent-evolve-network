@@ -22,6 +22,12 @@ import {
   composeWorkflowContext,
 } from "../src/lib/runtime/workflow-source-context.ts";
 import { buildGatewayMessages } from "../src/lib/runtime/gateway-messages.ts";
+import {
+  prepareSecurityFacts,
+  validateSecurityResponse,
+  composeSecurityFacts,
+} from "../src/lib/runtime/security-source-facts.ts";
+import { prepareSecurityStage } from "../src/lib/runtime/security-stages.ts";
 const [dir, output] = process.argv.slice(2);
 if (process.argv.length !== 4 || !dir || !output || existsSync(output))
   throw new Error("Supply EVIDENCE_DIR NEW_REPORT; reports are never overwritten");
@@ -54,6 +60,8 @@ for (const path of [
   "src/lib/adversarial/scorer.ts",
   "src/lib/runtime/supplier-source-facts.ts",
   "src/lib/runtime/supplier-stages.ts",
+  "src/lib/runtime/security-source-facts.ts",
+  "src/lib/runtime/security-stages.ts",
   "src/lib/runtime/workflow-source-context.ts",
   "src/lib/runtime/gateway-messages.ts",
 ])
@@ -143,8 +151,33 @@ const results = raw.split("\n").map((line) => {
     }
     supplierFacts = true;
   }
+  let securityFacts = false;
+  if (subject.slug === "solution-secure-agent-launch") {
+    const evidence = run.source_facts,
+      prepared = prepareSecurityFacts(c.inputs);
+    const response = validateSecurityResponse(JSON.parse(evidence.raw_response), prepared);
+    if (
+      JSON.stringify(evidence.request) !== JSON.stringify(prepared.request) ||
+      JSON.stringify(response) !== JSON.stringify(evidence.response) ||
+      JSON.stringify(composeSecurityFacts(prepared, response)) !== JSON.stringify(evidence.facts)
+    )
+      throw new Error("Changed security provider evidence");
+    const previous = {};
+    for (const step of run.step_outcomes) {
+      const expected = prepareSecurityStage(`security.${step.step_id}`, evidence, previous);
+      if (
+        step.status !== "ok" ||
+        step.attempts !== 1 ||
+        JSON.stringify(step.output) !== JSON.stringify(expected) ||
+        JSON.stringify(run.outputs[step.step_id]) !== JSON.stringify(expected)
+      )
+        throw new Error("Changed security stage output");
+      previous[step.step_id] = { output: expected, status: "ok" };
+    }
+    securityFacts = true;
+  }
   let workflowContext = false;
-  if (["solution-secure-agent-launch", "solution-brazil-reconciliation"].includes(subject.slug)) {
+  if (["solution-brazil-reconciliation"].includes(subject.slug)) {
     const evidence = run.workflow_context,
       prepared = prepareWorkflowContext(c.inputs);
     if (!evidence || JSON.stringify(evidence.request) !== JSON.stringify(prepared.request))
@@ -198,6 +231,7 @@ const results = raw.split("\n").map((line) => {
     output_sha256: hash(line),
     finance_receipts_recomputed: financeReceipts,
     supplier_facts_and_stages_recomputed: supplierFacts,
+    security_facts_and_stages_recomputed: securityFacts,
     workflow_context_and_requests_recomputed: workflowContext,
     generative_transport_qualification: "requires complete strict reporter, not this diagnostic",
     literal: c.original_case ? evaluateCase(c.original_case, text) : null,

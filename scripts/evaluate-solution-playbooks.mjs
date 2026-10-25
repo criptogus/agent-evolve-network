@@ -70,6 +70,9 @@ const sourcePaths = [
   "src/lib/runtime/supplier-source-facts.ts",
   "src/lib/runtime/supplier-source-facts.server.ts",
   "src/lib/runtime/supplier-stages.ts",
+  "src/lib/runtime/security-source-facts.ts",
+  "src/lib/runtime/security-source-facts.server.ts",
+  "src/lib/runtime/security-stages.ts",
   "src/lib/runtime/workflow-source-context.ts",
   "src/lib/runtime/workflow-source-context.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
@@ -148,7 +151,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v22-source-negation",
+    protocol: "compiled-playbook-gateway-v23-security-source-state",
     python,
     modelPath,
     model: profileFor(modelPath).model,
@@ -156,6 +159,7 @@ if (mode === "prepare") {
     workflow_interpreter: load("content/expansion/playbook-local-contract.json")
       .workflow_interpreter,
     supplier_host: load("content/expansion/playbook-local-contract.json").supplier_host,
+    security_host: load("content/expansion/playbook-local-contract.json").security_host,
     runtime,
     sourceHashes,
     thresholds: cases.thresholds,
@@ -307,9 +311,11 @@ if (mode === "prepare") {
       active = c;
       const inputPath = join(dir, `input-${rows.length + 1}.json`);
       save(inputPath, c.inputs);
-      const finance = ["solution-monthly-finance-close", "solution-supplier-selection"].includes(
-        subject.slug,
-      );
+      const finance = [
+        "solution-monthly-finance-close",
+        "solution-supplier-selection",
+        "solution-secure-agent-launch",
+      ].includes(subject.slug);
       const requiresInterpretation =
         finance ||
         Object.values(c.inputs).some(

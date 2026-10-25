@@ -95,7 +95,11 @@ test("all four standalone archives execute their actual CLI outside the reposito
         assert.ok(
           result.step_outcomes.every((step: { output: string }) =>
             step.output.startsWith(
-              ["solution-monthly-finance-close", "solution-supplier-selection"].includes(slug)
+              [
+                "solution-monthly-finance-close",
+                "solution-supplier-selection",
+                "solution-secure-agent-launch",
+              ].includes(slug)
                 ? "[mock-tool]"
                 : "[mock-llm]",
             ),

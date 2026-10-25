@@ -43,7 +43,7 @@ async function runFixture(
         "--experimental-strip-types",
         "scripts/run-playbook.ts",
         "--playbook",
-        "solution-secure-agent-launch",
+        "solution-brazil-reconciliation",
         "--inputs",
         JSON.stringify(
           suppliedInputs ?? {
@@ -86,7 +86,7 @@ async function runFixture(
 test("real gateway CLI forwards source inputs and previous step outputs as data", async () => {
   const result = await runFixture();
   assert.equal(result.code, 0, result.stderr);
-  assert.equal(result.requests.length, 4);
+  assert.equal(result.requests.length, 3);
   assert.ok(
     result.requests.every(
       (r) => Array.isArray(r.tools) && r.tools.length === 0 && r.tool_choice === "none",
@@ -112,13 +112,13 @@ test("real gateway CLI rejects empty generation before downstream steps", async 
 });
 
 test("real CLI drains large structured results before reporting success", async () => {
-  const content = "LARGE_RESULT_".repeat(2500) + "FINAL_SENTINEL";
+  const content = "LARGE_RESULT_".repeat(3500) + "FINAL_SENTINEL";
   const result = await runFixture("stop", content);
   assert.equal(result.code, 0, result.stderr);
   assert.ok(Buffer.byteLength(result.stdout) > 200000);
   const output = JSON.parse(result.stdout);
-  assert.equal(output.step_outcomes.length, 4);
-  assert.equal(output.step_outcomes[3].output, `${content}_4`);
+  assert.equal(output.step_outcomes.length, 3);
+  assert.equal(output.step_outcomes[2].output, `${content}_3`);
 });
 
 test("annotated solution requires explicit interpretation consent before generation", async () => {
@@ -151,8 +151,8 @@ test("real gateway rejects structured model tool calls even with a stop finish a
 test("real CLI includes the parent workflow objective, not only its current phase", async () => {
   const r = await runFixture();
   assert.equal(r.code, 0, r.stderr);
-  assert.match(r.requests[0].messages[0].content, /Launch an agent with scoped permissions/);
-  assert.match(r.requests[3].messages[1].content, /solution-secure-agent-launch/);
+  assert.match(r.requests[0].messages[0].content, /Reconcile Brazilian order operations/);
+  assert.match(r.requests[2].messages[1].content, /solution-brazil-reconciliation/);
 });
 
 test("real CLI requires source negation and literal support for attributed claims in every phase", async () => {
