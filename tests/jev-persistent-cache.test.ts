@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createClient } from "@supabase/supabase-js";
+import { z } from "zod";
 import type { Database } from "../src/integrations/supabase/database.ts";
 import { createPersistentSelectionCache } from "../src/lib/match/jev-persistent-cache.server.ts";
 import { preselectAgentMatch } from "../src/lib/match/jev-agent-match.server.ts";
@@ -16,6 +17,19 @@ const evidence = {
   inputTokens: 472,
   outputTokens: 21,
 };
+const rpcEvidence = z
+  .object({
+    probabilities: z.array(z.number()),
+    model: z.literal(JEV_MATCH_MODEL),
+    requests: z.number().int(),
+    inputTokens: z.number().int(),
+    outputTokens: z.number().int(),
+  })
+  .strict();
+const rpcInput = z.union([
+  z.object({ p_scope_hash: z.string(), p_cache_key: z.string() }).strict(),
+  z.object({ p_scope_hash: z.string(), p_cache_key: z.string(), p_evidence: rpcEvidence }).strict(),
+]);
 const clientFor = (fetcher: typeof fetch) =>
   createClient<Database>("https://cache.invalid", "synthetic-key", {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -27,7 +41,7 @@ test("independent server clients reuse validated shared RPC evidence without ano
     calls = 0;
   const records = new Map<string, { evidence: typeof evidence; at: number }>();
   const transport: typeof fetch = async (url, init) => {
-    const sent = JSON.parse(String(init?.body));
+    const sent = rpcInput.parse(JSON.parse(String(init?.body)));
     assert.deepEqual(
       Object.keys(sent).sort(),
       String(url).endsWith("read_agent_match_selection_cache")
@@ -39,6 +53,7 @@ test("independent server clients reuse validated shared RPC evidence without ano
       const row = records.get(identity);
       return Response.json(row ? [{ evidence: row.evidence, age_ms: time - row.at }] : []);
     }
+    assert.ok("p_evidence" in sent);
     if (!records.has(identity)) records.set(identity, { evidence: sent.p_evidence, at: time });
     return Response.json(true);
   };

@@ -121,12 +121,16 @@ try {
     receipts.push(await response.json());
   }
   assert.equal(receipts[0].instanceId, receipts[1].instanceId);
-  assert.ok(receipts[0].partition);
+  assert.match(receipts[0].instanceId, /^[a-f0-9-]{36}$/);
+  assert.match(receipts[0].partition, /^[a-f0-9]{64}$/);
   assert.equal(receipts[0].partition, receipts[1].partition);
   for (const receipt of receipts) {
     assert.equal(receipt.providerRequests, 0);
     assert.equal(receipt.generatorStarted, false);
     assert.equal(receipt.entries, 0);
+    assert.ok(Number.isSafeInteger(receipt.firstObservedAt) && receipt.firstObservedAt > 0);
+    assert.ok(receipt.observedAt >= receipt.firstObservedAt);
+    assert.equal(receipt.ttlMs, 1800000);
   }
   result.receipts = receipts;
   result.passed = true;
