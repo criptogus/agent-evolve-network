@@ -139,15 +139,23 @@ test("provider transport pins endpoint and refuses redirect, invalid JSON and le
     assert.equal(url, "https://api.typesafe.ai/v1/systemone");
     assert.equal(init?.redirect, "manual");
     assert.ok(!String(init?.body).includes(key));
-    return new Response(JSON.stringify(r));
+    const sent = JSON.parse(String(init?.body));
+    return new Response(
+      JSON.stringify({
+        ...r,
+        answers: Object.fromEntries(
+          Object.keys(sent.questions).map((key) => [key, r.answers[key]]),
+        ),
+      }),
+    );
   };
   assert.equal(
     (await deriveFinanceSourceFacts(inputs, key, good)).facts.totals.current_cash.minor_units,
     "249990",
   );
-  assert.equal(calls, 1);
+  assert.equal(calls, 2);
   await assert.rejects(deriveFinanceSourceFacts(inputs, "", good));
-  assert.equal(calls, 1);
+  assert.equal(calls, 2);
   await assert.rejects(
     deriveFinanceSourceFacts(
       inputs,

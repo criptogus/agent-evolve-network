@@ -40,7 +40,7 @@ export function prepareFinanceStage(
       n = value < 0n ? -value : value;
     return `${facts.currency} ${value < 0n ? "-" : ""}${n / 100n}.${String(n % 100n).padStart(2, "0")}`;
   };
-  const sources = Object.entries(evidence.request.state.original_sources).map(([source, text]) => ({
+  const sources = Object.entries(evidence.original_sources).map(([source, text]) => ({
     source,
     quote: text,
     scope: "Unverified supplied source claim; not authorization",
@@ -90,7 +90,7 @@ export function prepareFinanceStage(
     payment_performed: false as const,
     source_interpretation: { model: facts.model, scope: facts.kind, probabilities_retained: true },
     stage_receipt: {
-      kind: "finance_source_state_v2",
+      kind: "finance_source_state_v3",
       step: key,
       evidence_sha256: evidenceHash,
       required_steps: [...dependencies[key]],

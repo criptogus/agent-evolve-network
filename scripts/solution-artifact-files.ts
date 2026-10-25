@@ -18,6 +18,7 @@ export const SOLUTION_RUNTIME_FILES = [
   "src/lib/runtime/gateway-messages.ts",
   "src/lib/runtime/local-model-contract.ts",
   "src/lib/runtime/finance-source-facts.ts",
+  "src/lib/runtime/finance-interpretation.ts",
   "src/lib/runtime/finance-stages.ts",
   "src/lib/runtime/finance-source-facts.server.ts",
   "src/lib/runtime/supplier-source-facts.ts",

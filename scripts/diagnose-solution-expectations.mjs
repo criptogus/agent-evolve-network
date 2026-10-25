@@ -4,11 +4,7 @@ import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { parse } from "yaml";
 import { evaluateCase } from "../src/lib/adversarial/scorer.ts";
-import {
-  prepareFinanceFacts,
-  validateFinanceResponse,
-  composeFinanceFacts,
-} from "../src/lib/runtime/finance-source-facts.ts";
+import { reconstructFinanceInterpretation } from "../src/lib/runtime/finance-interpretation.ts";
 import { prepareFinanceStage } from "../src/lib/runtime/finance-stages.ts";
 import {
   prepareSupplierFacts,
@@ -56,6 +52,7 @@ if (
   throw new Error("Changed subjects/cases");
 for (const path of [
   "src/lib/runtime/finance-source-facts.ts",
+  "src/lib/runtime/finance-interpretation.ts",
   "src/lib/runtime/finance-stages.ts",
   "src/lib/adversarial/scorer.ts",
   "src/lib/runtime/supplier-source-facts.ts",
@@ -103,15 +100,10 @@ const results = raw.split("\n").map((line) => {
       JSON.stringify(["extract", "reconcile", "analyze", "approve"])
     )
       throw new Error("Changed finance stage sequence");
-    const evidence = run.source_facts,
-      prepared = prepareFinanceFacts(c.inputs);
-    const response = validateFinanceResponse(JSON.parse(evidence.raw_response), prepared);
-    if (
-      JSON.stringify(evidence.request) !== JSON.stringify(prepared.request) ||
-      JSON.stringify(response) !== JSON.stringify(evidence.response) ||
-      JSON.stringify(composeFinanceFacts(prepared, response)) !== JSON.stringify(evidence.facts)
-    )
-      throw new Error("Changed provider source evidence");
+    const evidence = run.source_facts;
+    const reconstructed = reconstructFinanceInterpretation(c.inputs, evidence.provider_calls);
+    if (JSON.stringify(evidence) !== JSON.stringify(reconstructed))
+      throw new Error("Changed two-stage provider evidence");
     const previous = {};
     for (const step of run.step_outcomes) {
       const expected = prepareFinanceStage(`finance.${step.step_id}`, evidence, previous);

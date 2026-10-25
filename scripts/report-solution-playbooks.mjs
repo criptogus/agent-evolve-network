@@ -4,12 +4,8 @@ import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { parse } from "yaml";
 import { verifySolutionPlaybookSnapshot } from "./solution-artifact-files.ts";
-import {
-  prepareFinanceFacts,
-  validateFinanceResponse,
-  composeFinanceFacts,
-  FINANCE_FACTS_MODEL,
-} from "../src/lib/runtime/finance-source-facts.ts";
+import { FINANCE_FACTS_MODEL } from "../src/lib/runtime/finance-source-facts.ts";
+import { reconstructFinanceInterpretation } from "../src/lib/runtime/finance-interpretation.ts";
 import { prepareFinanceStage } from "../src/lib/runtime/finance-stages.ts";
 import { buildGatewayMessages } from "../src/lib/runtime/gateway-messages.ts";
 import { evaluateCase } from "../src/lib/adversarial/scorer.ts";
@@ -91,7 +87,7 @@ if (JSON.stringify(plan.finance_host) !== JSON.stringify(financeHost))
   throw new Error("Unqualified finance model/host profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v24-record-focused-amounts" ||
+  plan.protocol !== "compiled-playbook-gateway-v25-finance-role-first" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({
@@ -154,6 +150,7 @@ const requiredSources = [
   "src/lib/runtime/gateway-messages.ts",
   "src/lib/runtime/local-model-contract.ts",
   "src/lib/runtime/finance-source-facts.ts",
+  "src/lib/runtime/finance-interpretation.ts",
   "src/lib/runtime/finance-stages.ts",
   "src/lib/runtime/finance-source-facts.server.ts",
   "src/lib/runtime/supplier-source-facts.ts",
@@ -329,19 +326,14 @@ const outcomes = schedule.map(({ s, c }, i) => {
   let workflowFacts;
   if (s.slug === "solution-monthly-finance-close") {
     const evidence = run.source_facts;
-    const prepared = prepareFinanceFacts(c.inputs);
-    const response = validateFinanceResponse(evidence?.response, prepared);
-    sourceFacts = composeFinanceFacts(prepared, response);
+    const reconstructed = reconstructFinanceInterpretation(c.inputs, evidence.provider_calls);
+    const response = reconstructed.response;
+    sourceFacts = reconstructed.facts;
     const end = sourceFactsAttempts.find(
       (a) => a.case_id === c.id && a.event === "source_facts_completed",
     );
     if (
-      JSON.stringify(validateFinanceResponse(JSON.parse(evidence.raw_response), prepared)) !==
-        JSON.stringify(response) ||
-      response.usage.input_tokens <= 0 ||
-      response.usage.output_tokens <= 0 ||
-      JSON.stringify(evidence.request) !== JSON.stringify(prepared.request) ||
-      JSON.stringify(evidence.facts) !== JSON.stringify(sourceFacts) ||
+      JSON.stringify(evidence) !== JSON.stringify(reconstructed) ||
       end.evidence_sha256 !== hash(JSON.stringify(evidence)) ||
       end.model !== FINANCE_FACTS_MODEL ||
       JSON.stringify(end.usage) !== JSON.stringify(response.usage)

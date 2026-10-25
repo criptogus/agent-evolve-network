@@ -1,28 +1,25 @@
+import { validateFinanceResponse } from "./finance-source-facts.ts";
 import {
-  prepareFinanceFacts,
-  validateFinanceResponse,
-  composeFinanceFacts,
-} from "./finance-source-facts.ts";
+  prepareFinanceRoles,
+  prepareFinanceFields,
+  reconstructFinanceInterpretation,
+  type FinanceProviderCall,
+} from "./finance-interpretation.ts";
 export async function deriveFinanceSourceFacts(
   inputs: Record<string, unknown>,
   key: string,
   transport: typeof fetch = fetch,
-  onResponse?: (evidence: {
-    request: ReturnType<typeof prepareFinanceFacts>["request"];
-    status: number;
-    raw_response: string;
-  }) => void,
+  onResponse?: (evidence: FinanceProviderCall) => void,
 ) {
-  const prepared = prepareFinanceFacts(inputs);
-  const { value, raw } = await requestSourceInterpretation(
-    prepared.request,
-    key,
-    transport,
-    onResponse,
-  );
-  const result = validateFinanceResponse(value, prepared);
-  const facts = composeFinanceFacts(prepared, result);
-  return { request: prepared.request, response: result, facts, raw_response: raw };
+  const roles = prepareFinanceRoles(inputs);
+  const first = await requestSourceInterpretation(roles.request, key, transport, onResponse);
+  const roleResponse = validateFinanceResponse(first.value, roles);
+  const fields = prepareFinanceFields(roles, roleResponse);
+  const second = await requestSourceInterpretation(fields, key, transport, onResponse);
+  return reconstructFinanceInterpretation(inputs, [
+    { request: roles.request, status: first.status, raw_response: first.raw },
+    { request: fields, status: second.status, raw_response: second.raw },
+  ]);
 }
 
 export async function requestSourceInterpretation<
@@ -40,7 +37,7 @@ export async function requestSourceInterpretation<
     status: number;
     raw_response: string;
   }) => void,
-): Promise<{ value: unknown; raw: string }> {
+): Promise<{ value: unknown; raw: string; status: number }> {
   const body = JSON.stringify(request);
   if (!key.trim() || body.includes(key)) throw new Error("Source-facts credential boundary failed");
   let response: Response;
@@ -66,5 +63,5 @@ export async function requestSourceInterpretation<
   } catch {
     throw new Error("Source-facts provider JSON invalid");
   }
-  return { value, raw };
+  return { value, raw, status: response.status };
 }

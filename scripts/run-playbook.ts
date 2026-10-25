@@ -57,13 +57,13 @@ if (args.gateway && existsSync(contractPath)) {
   try {
     localContract = JSON.parse(readFileSync(contractPath, "utf8"));
     if (
-      ["finance-source-state-v2", "supplier-source-state-v1", "security-source-state-v1"].includes(
+      ["finance-source-state-v3", "supplier-source-state-v1", "security-source-state-v1"].includes(
         localContract.execution,
       )
     ) {
       const expected =
         args.playbook === "solution-monthly-finance-close"
-          ? "finance-source-state-v2"
+          ? "finance-source-state-v3"
           : args.playbook === "solution-supplier-selection"
             ? "supplier-source-state-v1"
             : args.playbook === "solution-secure-agent-launch"
@@ -124,6 +124,7 @@ if (args["semantic-source-facts"] && !interpretedPlaybook && !generatedSolution)
 }
 let sourceFacts;
 let sourceFactsProviderEvidence;
+const sourceFactsProviderCalls = [];
 if (args["semantic-source-facts"] && interpretedPlaybook) {
   if (
     !args.gateway ||
@@ -151,11 +152,13 @@ if (args["semantic-source-facts"] && interpretedPlaybook) {
               .deriveFinanceSourceFacts;
     sourceFacts = await derive(inputs, process.env.TYPESAFE_API_KEY, fetch, (evidence) => {
       sourceFactsProviderEvidence = evidence;
+      sourceFactsProviderCalls.push(evidence);
     });
   } catch {
     const failureOutput = JSON.stringify({
       status: "error",
       stage: "source_facts",
+      source_facts_provider_calls: sourceFactsProviderCalls,
       error: "Source-facts extraction failed; no graph stage started",
       ...(sourceFactsProviderEvidence
         ? { source_facts_provider_evidence: sourceFactsProviderEvidence }
@@ -196,6 +199,7 @@ if (args.gateway && generatedSolution) {
       fetch,
       (evidence) => {
         sourceFactsProviderEvidence = evidence;
+        sourceFactsProviderCalls.push(evidence);
       },
     );
   } catch {
@@ -235,7 +239,7 @@ const sourceExecution =
   args.gateway && interpretedPlaybook
     ? {
         execution: financeMode
-          ? "finance-source-state-v2"
+          ? "finance-source-state-v3"
           : securityMode
             ? "security-source-state-v1"
             : "supplier-source-state-v1",

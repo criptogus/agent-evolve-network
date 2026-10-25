@@ -65,6 +65,7 @@ const sourcePaths = [
   "src/lib/runtime/gateway-messages.ts",
   "src/lib/runtime/local-model-contract.ts",
   "src/lib/runtime/finance-source-facts.ts",
+  "src/lib/runtime/finance-interpretation.ts",
   "src/lib/runtime/finance-stages.ts",
   "src/lib/runtime/finance-source-facts.server.ts",
   "src/lib/runtime/supplier-source-facts.ts",
@@ -151,7 +152,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v24-record-focused-amounts",
+    protocol: "compiled-playbook-gateway-v25-finance-role-first",
     python,
     modelPath,
     model: profileFor(modelPath).model,
