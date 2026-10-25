@@ -5,7 +5,7 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText, Output } from "ai";
 import { matchGenerationOptions, MATCH_PROVIDER_OPTIONS } from "./match-generation.ts";
 import { streamMatchResult } from "./result-stream.ts";
-import { preselectAgentMatch } from "./jev-agent-match.server.ts";
+import { preselectAgentMatch, selectionCacheDiagnostics } from "./jev-agent-match.server.ts";
 import { selectionScope } from "./jev-selection-cache.server.ts";
 import { z } from "zod";
 import {
@@ -280,6 +280,7 @@ export const getBenchmarkReadiness = createServerFn({ method: "GET" })
       jevMode: process.env.JEV_AGENT_MATCH_MODE ?? "shadow",
       provider: "lovable-ai",
       model: BENCHMARK_MODEL,
+      selectionCache: selectionCacheDiagnostics(getRequest(), "match-benchmark:continuity-probe"),
     };
   });
 

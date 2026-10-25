@@ -6,7 +6,10 @@ import {
   selectionCacheKey,
   selectionScope,
 } from "../src/lib/match/jev-selection-cache.server.ts";
-import { preselectAgentMatch } from "../src/lib/match/jev-agent-match.server.ts";
+import {
+  preselectAgentMatch,
+  selectionCacheDiagnostics,
+} from "../src/lib/match/jev-agent-match.server.ts";
 import { JEV_MATCH_MODEL, buildJevRequest } from "../src/lib/match/jev-selection.ts";
 const catalog = Array.from({ length: 5 }, (_, i) => ({
   slug: `s-${i}`,
@@ -28,6 +31,36 @@ const entry = {
   outputTokens: 10,
 };
 const options = { apiKey: "synthetic-secret", mode: "filter", cacheScope: "opaque-owner-scope" };
+test("continuity diagnosis observes the selector instance without calls, secrets or synthetic evidence", () => {
+  const token = "synthetic-bearer-".repeat(4);
+  const request = new Request("https://example.com", {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  const first = selectionCacheDiagnostics(request, "cohort"),
+    second = selectionCacheDiagnostics(request, "cohort");
+  assert.equal(first.instanceId, second.instanceId);
+  assert.equal(first.instanceStartedAt, second.instanceStartedAt);
+  assert.equal(first.partition, second.partition);
+  assert.notEqual(first.partition, selectionCacheDiagnostics(request, "other-cohort").partition);
+  assert.notEqual(
+    first.partition,
+    selectionCacheDiagnostics(
+      new Request("https://example.com", {
+        headers: { authorization: `Bearer ${"rotated-bearer-".repeat(4)}` },
+      }),
+      "cohort",
+    ).partition,
+  );
+  assert.equal(
+    selectionCacheDiagnostics(new Request("https://example.com"), "cohort").partition,
+    null,
+  );
+  assert.equal(first.entries, second.entries);
+  assert.equal(first.providerRequests, 0);
+  assert.equal(first.generatorStarted, false);
+  assert.equal(first.ttlMs, SELECTION_CACHE_TTL_MS);
+  assert.ok(!JSON.stringify(first).includes(token));
+});
 function responder(counter: { calls: number }): typeof fetch {
   return async () => {
     counter.calls++;

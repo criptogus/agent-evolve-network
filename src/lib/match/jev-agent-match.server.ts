@@ -13,8 +13,27 @@ import {
   type DesiredKit,
   type MatchCandidate,
 } from "./jev-selection.ts";
+import { randomUUID } from "node:crypto";
+import { selectionScope, SELECTION_CACHE_TTL_MS } from "./jev-selection-cache.server.ts";
 
 const sharedCache = createSelectionCache();
+const cacheInstanceId = randomUUID();
+const cacheInstanceStartedAt = Date.now();
+
+// Only exposed by the preview's authenticated administrator preflight. This
+// observes the actual selector module, without inserting synthetic model evidence.
+export function selectionCacheDiagnostics(request: Request, namespace: string) {
+  return {
+    instanceId: cacheInstanceId,
+    instanceStartedAt: cacheInstanceStartedAt,
+    observedAt: Date.now(),
+    entries: sharedCache.size,
+    ttlMs: SELECTION_CACHE_TTL_MS,
+    partition: selectionScope(request, namespace) ?? null,
+    providerRequests: 0,
+    generatorStarted: false,
+  };
+}
 const ENDPOINT = "https://api.typesafe.ai/v1/systemone";
 const MAX_CATALOG = 800;
 const MAX_BODY = 48000;
