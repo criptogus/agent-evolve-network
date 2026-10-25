@@ -1,7 +1,7 @@
 slug: solution-monthly-finance-close
 name: Close the financial month
 type: playbook
-version: 0.1.21
+version: 0.1.22
 description: A reconciled ledger, explained variances and an owner-reviewed closing pack.
 trigger: When the user requests close the financial month and provides authorized source inputs.
 inputs:

@@ -147,3 +147,10 @@ test("real gateway rejects structured model tool calls even with a stop finish a
   assert.equal(r.code, 2, "No structured tool call may be accepted as an instruction draft");
   assert.equal(r.requests.length, 1);
 });
+
+test("real CLI includes the parent workflow objective, not only its current phase", async () => {
+  const r = await runFixture();
+  assert.equal(r.code, 0, r.stderr);
+  assert.match(r.requests[0].messages[0].content, /Launch an agent with scoped permissions/);
+  assert.match(r.requests[3].messages[1].content, /solution-secure-agent-launch/);
+});

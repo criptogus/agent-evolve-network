@@ -422,6 +422,7 @@ const outcomes = schedule.map(({ s, c }, i) => {
         ...(workflowFacts ? { source_context: workflowFacts } : {}),
       },
       workflowFacts?.attachment_safety_response ?? "",
+      { slug: yaml.slug, name: yaml.name },
     );
     if (
       t.request.model !== plan.modelPath ||

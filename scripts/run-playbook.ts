@@ -318,7 +318,10 @@ async function gatewayAdapters() {
       },
       body: JSON.stringify({
         model: AI_GATEWAY_MODEL,
-        messages: buildGatewayMessages(prompt, data, safetyResponse),
+        messages: buildGatewayMessages(prompt, data, safetyResponse, {
+          slug: yaml.slug,
+          name: yaml.name,
+        }),
         temperature: 0,
         tools: [],
         tool_choice: "none",

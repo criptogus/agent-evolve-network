@@ -176,6 +176,7 @@ const results = raw.split("\n").map((line) => {
         workflow.steps[i].with.prompt,
         { inputs: facts.original_sources, steps: previous, source_context: facts },
         facts.attachment_safety_response,
+        { slug: workflow.slug, name: workflow.name },
       );
       if (
         t.planHash !== planHash ||
