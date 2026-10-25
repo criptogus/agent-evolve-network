@@ -297,3 +297,13 @@ This is a transport/provenance fix. It changes none of the 72 case inputs,
 expectations, severities, numerical thresholds or primary review requirements.
 The prior incomplete output and unknown interpretation attempt remain preserved;
 a fresh real run is required. No Lovable inference or builder action was used.
+
+### Security source-state implementation core (not yet wired or qualified)
+
+The 0.1.24 generated cohort stopped after 38/72 original cases, with observed MLX shutdown. Primary valid-domain review found a data-export fixture incorrectly relying on a production-write prohibition and a release phase omitting rollback. The exact raw responses, eight model transports and rejected review remain in `run-0.1.24-source-negation-v22-full`; no output was repaired.
+
+The new security modules reuse the existing bounded source preparation, exact candidate choices, pinned Jev validation and fixed provider transport. `security-stages.ts` constructs four distinct preparation deliverables: inventory, offline fixtures, explicit unexecuted test record, and blocked release with a fail-closed rollback plan. Read isolation, source-instruction rejection and external-send prohibition are distinct controls. Owner, principal and release approver remain distinct source-selected roles; no source claim grants execution or approval. Every phase retains source quotations, uncertainties, original probabilities and an evidence-bound predecessor receipt.
+
+Five independent fixture regressions passed, covering different tool/owner/scope names, actual dependencies, correct action/control pairing, quarantined fake approvals, unknown identities, malformed choices and the fixed-provider server transport. TypeScript and targeted zero-warning ESLint passed. One real 14-question Jev source probe returned actual `jev-1.14.0`, 2,661 input/809 output tokens, selecting the source owners, principal, release approver, workspaces, permission and policy correctly. The local composition prototype reserialized that helper response for its evidence shape; it is explicitly not an original HTTP receipt or qualification artifact.
+
+Integration into the actual CLI, archive allowlist, source snapshots, separate Jev/Node compatibility profile, evaluator and strict reporter is still required. Then run a fresh immutable complete 72-case cohort with actual raw transport and primary reviews. Do not transfer Qwen, finance, supplier or individual-skill approval to this implementation. No new Lovable calls or registry/publication changes occurred.
