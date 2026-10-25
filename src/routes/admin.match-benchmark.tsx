@@ -51,6 +51,9 @@ export const Route = createFileRoute("/admin/match-benchmark")({ component: Benc
 function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);
   const readiness = useServerFn(getBenchmarkReadiness);
+  const [cachePreflights, setCachePreflights] = useState<Awaited<ReturnType<typeof readiness>>[]>(
+    [],
+  );
   const probe = useServerFn(probeBenchmarkTransport);
   const probeJev = useServerFn(probeBenchmarkJev);
   const [batch, setBatch] = useState<z.infer<typeof schema> | null>(null);
@@ -273,6 +276,7 @@ function Benchmark() {
         onClick={async () => {
           try {
             const r = await readiness();
+            setCachePreflights((previous) => [...previous.slice(-2), r]);
             setMessage(
               r.ready
                 ? `Backend ready: authenticated admin and managed Lovable AI configured. TypeSafe configured: ${r.jevConfigured}. Mode: ${r.jevMode}. Zero inference calls.`
@@ -285,6 +289,18 @@ function Benchmark() {
       >
         Check backend readiness (no inference)
       </button>
+      {cachePreflights.length > 0 && (
+        <label className="block">
+          Cache continuity preflight (last three reads; no inference)
+          <textarea
+            className="block w-full border rounded p-2 font-mono text-xs"
+            aria-label="Cache continuity preflight"
+            readOnly
+            rows={12}
+            value={JSON.stringify(cachePreflights, null, 2)}
+          />
+        </label>
+      )}
       <button
         className="border rounded p-2"
         disabled={busy}
