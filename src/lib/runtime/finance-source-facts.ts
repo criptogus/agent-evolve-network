@@ -258,10 +258,9 @@ export function composeFinanceFacts(
     };
     if (kind === "invoice")
       return [{ ...base, direction: "none", invoiceId: null as string | null }];
-    const direction = choice(`direction_${i}`),
+    const direction = kind === "cash" ? choice(`direction_${i}`) : "none",
       link = choice(`invoice_${i}`);
     if (kind === "cash" && direction !== "outflow" && direction !== "inflow") return fail();
-    if (kind === "ledger" && direction !== "none") return fail();
     const invoiceId = link === "none" ? null : prepared.ids[Number(link.slice(2))];
     if (link !== "none" && (!/^id\d+$/.test(link) || !invoiceId)) return fail();
     return [{ ...base, direction, invoiceId }];

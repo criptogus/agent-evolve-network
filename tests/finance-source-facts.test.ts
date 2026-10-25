@@ -195,3 +195,80 @@ test("ambiguous or absent textual evidence never invents a unique source citatio
     assert.equal(facts.textual_evidence.ledger_absence.source_quote, null);
   }
 });
+
+test("ledger direction answers are irrelevant after record type dispatch and cannot double-count cash", () => {
+  const { p, r } = fixture();
+  const index = p.ids.indexOf("LED-9");
+  r.answers[`direction_${index}`] = {
+    type: "choice",
+    choice: "outflow",
+    confidence: 0.58,
+    probabilities: { outflow: 0.72, inflow: 0, none: 0.28 },
+  };
+  const validated = validateFinanceResponse(r, p);
+  const facts = composeFinanceFacts(p, validated);
+  assert.equal(facts.totals.documented_outflows.minor_units, "50010");
+  assert.equal(facts.totals.current_cash.display, "BRL 2499.90");
+  assert.equal(facts.records.find((rec) => rec.id === "LED-9")?.direction, "none");
+  assert.equal(
+    (validated.answers[`direction_${index}`] as { choice: string }).choice,
+    "outflow",
+    "Raw provider answer remains unchanged",
+  );
+});
+
+test("provider response evidence survives invalid interpretation without exposing authorization", async () => {
+  let captured: unknown;
+  await assert.rejects(
+    deriveFinanceSourceFacts(
+      inputs,
+      "synthetic-test-credential",
+      async () => new Response('{"model":"wrong-model"}'),
+      (e) => {
+        captured = e;
+      },
+    ),
+  );
+  assert.ok(captured);
+  assert.ok(!JSON.stringify(captured).includes("synthetic-test-credential"));
+  assert.match(JSON.stringify(captured), /wrong-model/);
+  captured = undefined;
+  await assert.rejects(
+    deriveFinanceSourceFacts(
+      inputs,
+      "synthetic-test-credential",
+      async () => new Response('{"key":"synthetic-test-credential"}'),
+      (e) => {
+        captured = e;
+      },
+    ),
+  );
+  assert.equal(captured, undefined, "Credential-bearing responses are never copied into evidence");
+});
+
+test("explicit false or string-valued consent flags cannot start source upload", async () => {
+  const { spawnSync } = await import("node:child_process");
+  for (const flag of ["gateway", "semantic-source-facts", "allow-typesafe-source-upload"]) {
+    const flags = ["gateway", "semantic-source-facts", "allow-typesafe-source-upload"].flatMap(
+      (name) => (name === flag ? [`--${name}`, "false"] : [`--${name}`]),
+    );
+    const child = spawnSync(
+      process.execPath,
+      [
+        "--import",
+        'data:text/javascript,globalThis.fetch=async()=>{throw new Error("fixture-network-forbidden")};',
+        "--experimental-strip-types",
+        "scripts/run-playbook.ts",
+        "--playbook",
+        "solution-monthly-finance-close",
+        "--inputs",
+        JSON.stringify(inputs),
+        ...flags,
+      ],
+      { encoding: "utf8", env: { ...process.env, TYPESAFE_API_KEY: "synthetic-test-credential" } },
+    );
+    assert.equal(child.status, 2);
+    assert.match(child.stderr, /Boolean execution\/consent flags require bare presence/);
+    assert.equal(child.stdout, "");
+  }
+});

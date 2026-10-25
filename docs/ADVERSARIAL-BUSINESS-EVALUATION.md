@@ -244,3 +244,33 @@ revalidates raw TypeSafe responses, rejects finance generation transports, and
 recomputes each actual accounting-tool output. Reports declare per-package model
 and execution scopes; a finance result is never called Gemma qualification. Full
 qualification and authenticated registry publication remain pending.
+
+### V10 intake failure and v11 audit (0.1.13 candidate)
+
+The first real source-state pilot stopped before any graph stage. The older error
+path retained its failed attempt but not the provider response/usage, so the exact
+cause of that particular call remains unproven and its source attempt unaccounted;
+it was not replayed. A separate diagnostic reproduced a composition failure using
+the ledger-direction pattern present in two earlier real responses: TypeSafe
+classified L-1 as a ledger record but selected an outflow in its conditional cash
+question. Cash direction is inapplicable after dispatching that record as ledger.
+
+V11 retains ledger rows, ignores their inapplicable cash-direction answers and
+continues counting only actual cash-classified movements in balances. The original
+provider answers remain unchanged in evidence. The fast regression was red before
+this change and green afterward, including the unchanged cash totals. This is typed
+record dispatch, not a repair of a generated closing pack or an approval override.
+
+The source client now captures credential-checked HTTP response evidence before
+interpretation/composition. Failed CLI output can retain this request/status/raw
+response for diagnosis without authorization headers. Credential-bearing responses
+are rejected before evidence capture; transport-unknown attempts remain unknown.
+No retry or output repair was added. Original cases, thresholds and approval rules
+remain unchanged. Fresh real source-state execution and the complete 72-case cohort
+are still pending; no package has been published from these candidates.
+
+Consent booleans also reject string values such as `--allow-typesafe-source-upload false`
+before any source upload. Only bare boolean execution/consent flags are accepted.
+The regression reproduced the prior parsing issue with a network-forbidden fixture
+and passed after the fix. These are deterministic transport/authority regressions,
+not model qualification or publication evidence.

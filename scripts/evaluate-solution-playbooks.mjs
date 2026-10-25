@@ -138,7 +138,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v10-finance-state",
+    protocol: "compiled-playbook-gateway-v11-finance-audit",
     python,
     modelPath,
     model: profileFor(modelPath).model,

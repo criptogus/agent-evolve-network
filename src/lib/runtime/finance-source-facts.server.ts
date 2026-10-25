@@ -7,6 +7,11 @@ export async function deriveFinanceSourceFacts(
   inputs: Record<string, unknown>,
   key: string,
   transport: typeof fetch = fetch,
+  onResponse?: (evidence: {
+    request: ReturnType<typeof prepareFinanceFacts>["request"];
+    status: number;
+    raw_response: string;
+  }) => void,
 ) {
   const prepared = prepareFinanceFacts(inputs);
   const body = JSON.stringify(prepared.request);
@@ -23,10 +28,11 @@ export async function deriveFinanceSourceFacts(
   } catch {
     throw new Error("Source-facts provider transport failed");
   }
-  if (!response.ok) throw new Error(`Source-facts provider HTTP ${response.status}`);
   const raw = await response.text();
   if (Buffer.byteLength(raw) > 2000000 || raw.includes(key))
     throw new Error("Source-facts response boundary failed");
+  onResponse?.({ request: prepared.request, status: response.status, raw_response: raw });
+  if (!response.ok) throw new Error(`Source-facts provider HTTP ${response.status}`);
   let value: unknown;
   try {
     value = JSON.parse(raw);

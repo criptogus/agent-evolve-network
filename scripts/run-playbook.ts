@@ -12,6 +12,14 @@ import { parse as parseYaml } from "yaml";
 import { buildGatewayMessages } from "../src/lib/runtime/gateway-messages.ts";
 
 const args = parseArgs(process.argv.slice(2));
+for (const flag of ["gateway", "semantic-source-facts", "allow-typesafe-source-upload"]) {
+  if (Object.hasOwn(args, flag) && args[flag] !== true) {
+    console.error(
+      "Boolean execution/consent flags require bare presence; string values are rejected",
+    );
+    process.exit(2);
+  }
+}
 if (!args.playbook) {
   console.error("Usage: --playbook <slug> [--inputs '{...}'] [--inputs-file path] [--gateway]");
   process.exit(1);
@@ -91,6 +99,7 @@ if (args.gateway && existsSync(contractPath)) {
   }
 }
 let sourceFacts;
+let sourceFactsProviderEvidence;
 if (args["semantic-source-facts"]) {
   if (
     !args.gateway ||
@@ -107,13 +116,23 @@ if (args["semantic-source-facts"]) {
     const { deriveFinanceSourceFacts } = await import(
       `${ROOT}/src/lib/runtime/finance-source-facts.server.ts`
     );
-    sourceFacts = await deriveFinanceSourceFacts(inputs, process.env.TYPESAFE_API_KEY);
+    sourceFacts = await deriveFinanceSourceFacts(
+      inputs,
+      process.env.TYPESAFE_API_KEY,
+      fetch,
+      (evidence) => {
+        sourceFactsProviderEvidence = evidence;
+      },
+    );
   } catch {
     console.log(
       JSON.stringify({
         status: "error",
         stage: "source_facts",
-        error: "Source-facts extraction failed; no generation started",
+        error: "Source-facts extraction failed; no graph stage started",
+        ...(sourceFactsProviderEvidence
+          ? { source_facts_provider_evidence: sourceFactsProviderEvidence }
+          : {}),
       }),
     );
     process.exit(2);
