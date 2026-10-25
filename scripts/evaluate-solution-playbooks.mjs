@@ -39,6 +39,7 @@ if (
 const sourcePaths = [
   CONTRACT,
   "content/expansion/playbook-model-profiles.json",
+  "content/expansion/playbook-local-contract.json",
   "scripts/run-playbook.ts",
   "scripts/evaluate-solution-playbooks.mjs",
   "scripts/solution-artifact-files.ts",
@@ -55,6 +56,7 @@ const sourcePaths = [
   "src/lib/runtime/types.ts",
   "src/lib/runtime/expr.ts",
   "src/lib/runtime/gateway-messages.ts",
+  "src/lib/runtime/local-model-contract.ts",
   "src/lib/runtime/finance-source-facts.ts",
   "src/lib/runtime/finance-source-facts.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
@@ -130,7 +132,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v5-finance-facts",
+    protocol: "compiled-playbook-gateway-v6-local-contract",
     python,
     modelPath,
     model: profileFor(modelPath).model,
@@ -267,6 +269,14 @@ if (mode === "prepare") {
       planHash,
     });
     proxy = createServer(async (req, res) => {
+      if (req.method === "GET" && req.url === "/health") {
+        const upstream = await fetch(`http://127.0.0.1:${port}/health`, {
+          signal: AbortSignal.timeout(5000),
+        });
+        res.writeHead(upstream.status, { "content-type": "application/json" });
+        res.end(await upstream.text());
+        return;
+      }
       if (!active || req.method !== "POST" || req.url !== "/chat/completions") {
         res.writeHead(400);
         res.end();
@@ -370,6 +380,7 @@ if (mode === "prepare") {
             AI_GATEWAY_BASE_URL: `http://127.0.0.1:${proxyPort}`,
             AI_GATEWAY_API_KEY: "offline-loopback-only",
             AI_GATEWAY_MODEL: plan.modelPath,
+            LOCAL_MODEL_PYTHON: plan.python,
           },
           cwd: join(dir, "package-snapshots", subject.slug, "skills", subject.slug),
         },

@@ -6,7 +6,7 @@
 //   node scripts/run-playbook.ts --playbook bug-triage --inputs '{"report":"...","repo_context":"node"}'
 //   node scripts/run-playbook.ts --playbook bug-triage --inputs-file ./inputs.json --gateway
 
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { parse as parseYaml } from "yaml";
 import { buildGatewayMessages } from "../src/lib/runtime/gateway-messages.ts";
@@ -30,6 +30,47 @@ const inputs = args.inputs
 const { compilePlaybook } = await import(`${ROOT}/src/lib/runtime/compile.ts`);
 const { runPlaybook } = await import(`${ROOT}/src/lib/runtime/run.ts`);
 
+let localContract;
+let localEvidence;
+const contractPath = join(ROOT, "references/runtime-profile.json");
+if (args.gateway && existsSync(contractPath)) {
+  try {
+    localContract = JSON.parse(readFileSync(contractPath, "utf8"));
+    const { localGatewayUrl, verifyLocalModel } = await import(
+      `${ROOT}/src/lib/runtime/local-model-contract.ts`
+    );
+    const origin = localGatewayUrl(process.env.AI_GATEWAY_BASE_URL ?? "");
+    localEvidence = await verifyLocalModel(
+      localContract,
+      process.env.AI_GATEWAY_MODEL ?? "",
+      process.env.LOCAL_MODEL_PYTHON ?? "",
+    );
+    const healthResponse = await fetch(`${origin}/health`, {
+      redirect: "error",
+      signal: AbortSignal.timeout(5000),
+    });
+    const health = await healthResponse.json();
+    if (
+      !healthResponse.ok ||
+      health.status !== "healthy" ||
+      health.loaded_model !== process.env.AI_GATEWAY_MODEL ||
+      health.loaded_adapter !== null ||
+      health.loaded_tool_parser !== null
+    )
+      throw new Error("Local gateway health/model mismatch");
+    if (
+      args.playbook === "solution-monthly-finance-close" &&
+      (!args["semantic-source-facts"] || !args["allow-typesafe-source-upload"])
+    )
+      throw new Error("Packaged finance requires original qualified source-facts protocol");
+    localEvidence = { ...localEvidence, health };
+  } catch {
+    console.error(
+      "Packaged local model/runtime contract rejected before source upload or generation",
+    );
+    process.exit(2);
+  }
+}
 let sourceFacts;
 if (args["semantic-source-facts"]) {
   if (
@@ -63,7 +104,15 @@ const adapters = args.gateway ? await gatewayAdapters() : mockAdapters();
 const result = await runPlaybook(compilePlaybook(yaml), inputs, adapters);
 
 console.log(
-  JSON.stringify(sourceFacts ? { ...result, source_facts: sourceFacts } : result, null, 2),
+  JSON.stringify(
+    {
+      ...result,
+      ...(sourceFacts ? { source_facts: sourceFacts } : {}),
+      ...(localEvidence ? { local_model_evidence: localEvidence } : {}),
+    },
+    null,
+    2,
+  ),
 );
 process.exit(result.status === "error" ? 2 : 0);
 
@@ -114,10 +163,26 @@ async function gatewayAdapters() {
         model: AI_GATEWAY_MODEL,
         messages: buildGatewayMessages(prompt, data),
         temperature: 0,
+        ...(localContract
+          ? {
+              max_tokens: localContract.max_tokens,
+              chat_template_kwargs: { enable_thinking: false },
+            }
+          : {}),
       }),
     });
     if (!r.ok) throw new Error(`gateway ${r.status}`);
     const j = await r.json();
+    if (
+      localContract &&
+      (j.model !== AI_GATEWAY_MODEL ||
+        !Number.isInteger(j.usage?.prompt_tokens) ||
+        j.usage.prompt_tokens <= 0 ||
+        !Number.isInteger(j.usage?.completion_tokens) ||
+        j.usage.completion_tokens <= 0 ||
+        j.usage.completion_tokens >= localContract.max_tokens)
+    )
+      throw new Error("Packaged response model or usage mismatch");
     const choice = j.choices?.[0];
     if (choice?.finish_reason !== "stop") throw new Error("gateway incomplete generation");
     const content = choice.message?.content;

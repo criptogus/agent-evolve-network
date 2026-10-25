@@ -39,7 +39,7 @@ const profile = read("content/expansion/playbook-model-profiles.json").find(
 if (!profile) throw new Error("Unsupported exact model/runtime profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v5-finance-facts" ||
+  plan.protocol !== "compiled-playbook-gateway-v6-local-contract" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({
@@ -78,6 +78,7 @@ if (
 const requiredSources = [
   contractPath,
   "content/expansion/playbook-model-profiles.json",
+  "content/expansion/playbook-local-contract.json",
   "scripts/run-playbook.ts",
   "scripts/evaluate-solution-playbooks.mjs",
   "scripts/solution-artifact-files.ts",
@@ -94,6 +95,7 @@ const requiredSources = [
   "src/lib/runtime/types.ts",
   "src/lib/runtime/expr.ts",
   "src/lib/runtime/gateway-messages.ts",
+  "src/lib/runtime/local-model-contract.ts",
   "src/lib/runtime/finance-source-facts.ts",
   "src/lib/runtime/finance-source-facts.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
@@ -209,6 +211,14 @@ const outcomes = schedule.map(({ s, c }, i) => {
   const trace = transports.filter((t) => t.value.case_id === c.id);
   if (
     run.status !== "ok" ||
+    run.local_model_evidence?.model !== plan.model ||
+    run.local_model_evidence?.modelPath !== plan.modelPath ||
+    JSON.stringify(run.local_model_evidence?.runtime) !==
+      JSON.stringify(
+        Object.fromEntries(Object.entries(plan.runtime).filter(([key]) => key !== "files")),
+      ) ||
+    JSON.stringify(run.local_model_evidence?.files) !== JSON.stringify(plan.runtime.files) ||
+    run.local_model_evidence?.health?.loaded_model !== plan.modelPath ||
     run.playbook_slug !== s.slug ||
     run.version !== s.version ||
     run.step_outcomes.length !== yaml.steps.length ||
@@ -261,6 +271,8 @@ const outcomes = schedule.map(({ s, c }, i) => {
     if (
       t.request.model !== plan.modelPath ||
       t.request.temperature !== 0 ||
+      t.request.max_tokens !== 768 ||
+      t.request.chat_template_kwargs?.enable_thinking !== false ||
       JSON.stringify(t.request.messages) !== JSON.stringify(expectedMessages)
     )
       throw new Error("Wrong source context, omitted prior outputs or altered prompt");

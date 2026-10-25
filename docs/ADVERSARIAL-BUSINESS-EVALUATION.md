@@ -112,3 +112,24 @@ and zero high/critical requirements remain mandatory. Synthetic transport tests 
 correct arithmetic do not qualify any model or authorize publication. Exact
 runtime/model compatibility enforcement and a fresh complete real cohort remain
 pending; candidate profile metadata alone is not an enforcement boundary.
+
+### Packaged local runtime contract (0.1.8 candidate)
+
+The v6 packaged gateway requires `LOCAL_MODEL_PYTHON` and an absolute
+`AI_GATEWAY_MODEL` snapshot path. `references/runtime-profile.json` pins the Gemma
+revision, all model/config/tokenizer file hashes, Python/MLX/MLX-VLM versions,
+architecture and the aggregate hash of the installed MLX-VLM Python sources. The
+CLI verifies these before source upload or generation, accepts only an explicit
+`http://127.0.0.1:PORT` gateway, checks its live model health (no adapter/tool parser),
+and rejects responses naming another model or missing/truncated usage. Requests
+explicitly set temperature zero, 768 maximum tokens and thinking disabled. Finance
+requires the source-facts opt-in; silently omitting this component is rejected.
+
+This is an honest-configuration boundary, not cryptographic remote attestation of
+an arbitrary loopback server. A hostile owner who edits an archive or impersonates
+the local server is outside that guarantee; immutable artifact digests and the
+existing publication binding remain necessary. Candidate profiles still confer no
+approval. Every v6 graph case includes the verified model/runtime receipt; the
+report checks it against the frozen evaluation plan. Prior v5 pilot responses
+remain separate and cannot qualify this revised artifact. Mock execution remains
+explicit transport-only evidence; no model or financial qualification is inherited.

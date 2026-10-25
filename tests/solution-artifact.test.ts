@@ -98,6 +98,31 @@ test("all four standalone archives execute their actual CLI outside the reposito
           ),
           "Transport fixtures never qualify model outputs",
         );
+        const denied = spawnSync(
+          process.execPath,
+          [
+            "--experimental-strip-types",
+            "scripts/run-playbook.ts",
+            "--playbook",
+            slug,
+            "--gateway",
+          ],
+          {
+            cwd: root,
+            encoding: "utf8",
+            timeout: 10000,
+            env: {
+              ...process.env,
+              AI_GATEWAY_BASE_URL: "",
+              AI_GATEWAY_MODEL: "",
+              LOCAL_MODEL_PYTHON: "",
+              TYPESAFE_API_KEY: "synthetic-never-transmitted",
+            },
+          },
+        );
+        assert.equal(denied.status, 2);
+        assert.match(denied.stderr, /Packaged local model\/runtime contract rejected/);
+        assert.equal(denied.stdout, "");
         observations.push({
           slug,
           passed: true,
