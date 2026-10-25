@@ -1,0 +1,11 @@
+{
+  "spec": "sak-signing-keyring/v1",
+  "keys": [
+    {
+      "id": "6e27e704bddfc12f",
+      "public_key": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApy+u+KWgyQFfb6eVB1E9k4UPlLksuqIKAJNNehEh4I8=\n-----END PUBLIC KEY-----\n",
+      "status": "active",
+      "not_before": "2026-10-25T17:28:07.118Z"
+    }
+  ]
+}

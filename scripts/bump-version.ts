@@ -190,6 +190,13 @@ const pkg = JSON.parse(readFileSync(PKG_FILE, "utf8"));
 pkg.version = nextVersion;
 writeFileSync(PKG_FILE, JSON.stringify(pkg, null, 2) + "\n");
 
+// Keep npm metadata synchronized with every automated platform bump.
+const lockFile = resolve(ROOT, "package-lock.json");
+const lock = JSON.parse(readFileSync(lockFile, "utf8"));
+lock.version = nextVersion;
+lock.packages[""].version = nextVersion;
+writeFileSync(lockFile, JSON.stringify(lock, null, 2) + "\n");
+
 // ---------- rewrite CHANGELOG.md ----------
 const md = readFileSync(CHANGELOG_FILE, "utf8");
 const mdEntry =

@@ -1,3 +1,5 @@
+import configuredKeyring from "../../../security/signing-keys.json" with { type: "json" };
+import { parseKeyring, assertTrustedKey } from "./keyring.ts";
 import { createHash, createPrivateKey, createPublicKey, sign, verify } from "node:crypto";
 
 // Canonicalization: stable key ordering so two equivalent YAML payloads hash identically.
@@ -29,6 +31,8 @@ export function signRelease(
   privateKeyPem: string,
   publicKeyPem: string,
 ): SignedRelease {
+  const ring = parseKeyring(configuredKeyring);
+  if (ring.keys.length) assertTrustedKey(ring, publicKeyPem, "sign");
   const hash = contentHash(payload);
   const key = createPrivateKey(privateKeyPem);
   // Ed25519 signs the data directly (no separate hash function arg).
@@ -46,6 +50,14 @@ export function verifyRelease(
   release: SignedRelease,
   publicKeyPem: string,
 ): boolean {
+  const ring = parseKeyring(configuredKeyring);
+  if (ring.keys.length) {
+    try {
+      assertTrustedKey(ring, publicKeyPem, "verify");
+    } catch {
+      return false;
+    }
+  }
   const hash = contentHash(payload);
   if (hash !== release.content_hash) return false;
   if (keyFingerprint(publicKeyPem) !== release.signing_key_id) return false;

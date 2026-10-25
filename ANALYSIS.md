@@ -1,5 +1,7 @@
 # Super Agent Skill: Architecture Analysis & Evolution Roadmap
 
+> Historical architecture snapshot. Consult [current implementation and activation status](docs/ROADMAP-STATUS.md) before scheduling these proposals.
+
 ## 1. Current Architecture Overview
 
 Super Agent Skill is a platform for distributing AI agent capabilities (skills, playbooks, souls, guardrails) with a strong emphasis on security, adversarial robustness, and trust scoring.

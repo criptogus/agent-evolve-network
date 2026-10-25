@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const checks = [
   "test:all",
+  "check:cli",
   "check:types",
   "check:types:sdk",
   "check:dependencies",

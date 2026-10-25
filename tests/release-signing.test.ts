@@ -95,3 +95,28 @@ test("wrong public key is rejected by fingerprint check", () => {
   assert.notEqual(verify.status, 0);
   assert.match(verify.stderr, /fingerprint mismatch/);
 });
+
+test("removing a file from the signature manifest is rejected", () => {
+  const dir = makeBundle();
+  const { pub, priv } = keys();
+  const signed = spawnSync(
+    process.execPath,
+    ["--experimental-strip-types", "scripts/sign-release-bundle.ts", "--dir", dir],
+    {
+      cwd: ROOT,
+      encoding: "utf8",
+      env: { ...process.env, SIGNING_PRIVATE_KEY: priv, SIGNING_PUBLIC_KEY: pub },
+    },
+  );
+  assert.equal(signed.status, 0, signed.stderr);
+  const manifest = JSON.parse(readFileSync(join(dir, "SIGNATURES.json"), "utf8"));
+  manifest.files.pop();
+  writeFileSync(join(dir, "SIGNATURES.json"), JSON.stringify(manifest));
+  const checked = spawnSync(
+    process.execPath,
+    ["--experimental-strip-types", "scripts/verify-release-bundle.ts", "--dir", dir],
+    { cwd: ROOT, encoding: "utf8" },
+  );
+  assert.notEqual(checked.status, 0);
+  assert.match(checked.stderr, /manifest was modified/);
+});

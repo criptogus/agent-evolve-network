@@ -27,6 +27,8 @@ import { createHash, randomBytes } from "node:crypto";
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { createInterface } from "node:readline";
+import { parseAuthoredDocument } from "../src/lib/authoring/document.ts";
+import { stringify as stringifyYaml } from "yaml";
 
 const REGISTRY = (process.env.SUPER_AGENT_REGISTRY ?? "https://superagentskill.com").replace(
   /\/+$/,
@@ -53,6 +55,7 @@ try {
   else if (cmd === "info") await cmdInfo(rest);
   else if (cmd === "init") await cmdInit(rest);
   else if (cmd === "publish") await cmdPublish(rest);
+  else if (cmd === "eval") await cmdEval(rest);
   else if (cmd === "connect") await cmdConnect(rest);
   else if (cmd === "login") await cmdLogin();
   else if (cmd === "status") await cmdStatus();
@@ -82,7 +85,8 @@ Skill install & creation:
   search <q>
   info   <slug>
   init   <slug>                    Create a new skill template in the current directory
-  publish <slug>                   Publish a skill to the registry (requires login)
+  publish <slug>                   Submit an immutable private draft for review (requires login)
+  eval <slug> [--out report.json]   Validate schema and security locally; no model qualification
 
 MCP connection (plug and play):
   connect [--client <id>]   OAuth login + auto-wire a client in one step
@@ -199,48 +203,100 @@ async function cmdInit(args) {
   const file = `${slug}.yaml`;
   if (existsSync(file)) throw new Error(`${file} already exists`);
 
-  const template = `id: ${slug}
-name: ${slug.replace(/-/g, " ")}
-type: skill
-version: 0.1.0
-schema_version: v1
-description: A short description of this skill
-author:
-  name: Your Name
-  contact: "@yourhandle"
-when_to_use: Use this skill when...
-system_prompt: |
-  You are an expert...
-contract:
-  expected_output: "A well-formatted response."
-  must:
-    - "Follow the instructions carefully."
-  must_not:
-    - "Hallucinate facts."
-examples:
-  - title: Basic usage
-    input: "Do the thing"
-    expected_output: "I did the thing."
-`;
+  if (!/^[a-z0-9][a-z0-9-]{1,63}$/.test(slug)) throw new Error("Invalid slug");
+  const template = stringifyYaml({
+    slug,
+    name: slug.replace(/-/g, " "),
+    type: "skill",
+    version: "0.1.0",
+    description: "Summarizes supplied notes into a concise, source-grounded response.",
+    long_description:
+      "Use this skill to summarize supplied notes. It preserves the source facts, identifies missing information, and does not infer actions or approvals that are absent from the source.",
+    system_prompt:
+      "Summarize only the supplied notes in one sentence. Preserve explicit uncertainty and negation. If no notes are supplied, ask for them. Never invent facts, claim external actions, or grant approval.",
+    rules: { must: ["Use only supplied facts"], must_not: ["Invent missing information"] },
+    examples: [
+      {
+        title: "Complete source",
+        input: "The meeting starts at 10:00. The location is Room A.",
+        expected_output: "The meeting starts at 10:00 in Room A.",
+      },
+      {
+        title: "Missing source",
+        input: "Please summarize the notes.",
+        expected_output: "Please supply the notes to summarize.",
+      },
+    ],
+    license: "CC-BY-SA-4.0",
+    authors: ["Your Name"],
+    compatibility: [],
+    scopes: ["registry:read"],
+  });
 
   writeFileSync(file, template);
   console.log(`✓ Created ${file}`);
 }
 
-async function cmdPublish(args) {
+function localDocument(args) {
   const slug = args[0];
-  if (!slug) throw new Error("publish requires <slug>");
-  const creds = await ensureToken();
-  if (!creds?.access_token)
-    throw new Error("publish requires login. Run `super-agent login` first.");
+  if (!slug || !/^[a-z0-9][a-z0-9-]{1,63}$/.test(slug))
+    throw new Error("A valid package slug is required");
+  const source = readFileSync(`${slug}.yaml`, "utf8");
+  const document = parseAuthoredDocument(source);
+  if (document.slug !== slug) throw new Error("Filename and document slug differ");
+  return { source, document };
+}
 
-  const file = `${slug}.yaml`;
-  if (!existsSync(file)) throw new Error(`Could not find ${file} in current directory.`);
+async function cmdEval(args) {
+  const { source, document } = localDocument(args);
+  const report = {
+    spec: "sak-author-preflight/v1",
+    package: { slug: document.slug, version: document.version },
+    source_sha256: createHash("sha256").update(source).digest("hex"),
+    schema_valid: true,
+    security_preflight: "passed",
+    examples: document.examples.length,
+    model_calls: 0,
+    qualified: false,
+    next_step: "Submit for independent model-specific evaluation and administrator review.",
+  };
+  const outIndex = args.indexOf("--out");
+  if (outIndex >= 0) {
+    const out = args[outIndex + 1];
+    if (!out) throw new Error("--out requires a fresh report path");
+    writeFileSync(out, JSON.stringify(report, null, 2) + "\n", { flag: "wx" });
+  }
+  console.log(JSON.stringify(report, null, 2));
+}
 
-  console.log(`→ Publishing ${slug}... (not fully implemented in backend yet, scaffold only)`);
-  // Scaffold: this would read the yaml and POST to the registry API using creds.access_token
+async function cmdPublish(args) {
+  const { source, document } = localDocument(args);
+  const target = new URL(REGISTRY);
+  if (target.protocol !== "https:" && !["127.0.0.1", "localhost"].includes(target.hostname))
+    throw new Error("Publishing requires HTTPS");
+  const creds = process.env.SUPER_AGENT_TOKEN
+    ? { access_token: process.env.SUPER_AGENT_TOKEN }
+    : await ensureToken();
+  if (!creds?.access_token) throw new Error("Run super-agent login first");
+  const response = await fetch(`${REGISTRY}/api/public/packages/drafts`, {
+    method: "POST",
+    redirect: "error",
+    signal: AbortSignal.timeout(20000),
+    headers: { Authorization: `Bearer ${creds.access_token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ source }),
+  });
+  if (!response.ok)
+    throw new Error(`Draft submission failed (HTTP ${response.status}); no automatic retry`);
+  const result = await response.json();
+  if (
+    result.slug !== document.slug ||
+    result.version !== document.version ||
+    result.visibility !== "private_draft" ||
+    result.review_status !== "draft"
+  )
+    throw new Error("Server did not confirm a private draft awaiting review");
   console.log(
-    `✓ Publish scaffold reached. Ensure backend API is ready to accept POST /api/public/packages`,
+    `Uploaded ${result.slug}@${result.version} as a private draft. Open ${REGISTRY}/account/packages to submit for review; only an administrator can approve a public release.`,
   );
 }
 

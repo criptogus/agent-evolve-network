@@ -41,6 +41,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RefundsRouteImport } from './routes/refunds'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -59,6 +60,7 @@ import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes
 import { Route as AccountAgentsRouteImport } from './routes/account.agents'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as AccountCloudSkillsRouteImport } from './routes/account.cloud-skills'
+import { Route as AccountCollectionsRouteImport } from './routes/account.collections'
 import { Route as AccountConnectionsRouteImport } from './routes/account.connections'
 import { Route as AccountCreditsRouteImport } from './routes/account.credits'
 import { Route as AccountEarningsRouteImport } from './routes/account.earnings'
@@ -96,6 +98,7 @@ import { Route as ApiReviewRouteImport } from './routes/api/review'
 import { Route as ApiTelemetryRouteImport } from './routes/api/telemetry'
 import { Route as BountiesIdRouteImport } from './routes/bounties.$id'
 import { Route as BountiesNewRouteImport } from './routes/bounties.new'
+import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as CompareIndexRouteImport } from './routes/compare.index'
 import { Route as ComparePairRouteImport } from './routes/compare.$pair'
@@ -124,6 +127,7 @@ import { Route as ApiJobsDrainUploadQueueRouteImport } from './routes/api/jobs/d
 import { Route as ApiMcpHealthRouteImport } from './routes/api/mcp/health'
 import { Route as ApiPackagesUploadRouteImport } from './routes/api/packages.upload'
 import { Route as ApiPublicCertifyRouteImport } from './routes/api/public/certify'
+import { Route as ApiPublicContentSigningKeysDotjsonRouteImport } from './routes/api/public/content-signing-keys[.]json'
 import { Route as ApiPublicDiagRouteImport } from './routes/api/public/diag'
 import { Route as ApiPublicInstallDothermesDotshRouteImport } from './routes/api/public/install[.]hermes[.]sh'
 import { Route as ApiPublicMcpRouteImport } from './routes/api/public/mcp'
@@ -133,6 +137,7 @@ import { Route as ApiPublicPluginsDotjsonRouteImport } from './routes/api/public
 import { Route as ApiPublicReviewRouteImport } from './routes/api/public/review'
 import { Route as ApiPublicSearchRouteImport } from './routes/api/public/search'
 import { Route as ApiPublicSigningKeyDotpemRouteImport } from './routes/api/public/signing-key[.]pem'
+import { Route as ApiPublicSigningKeysDotjsonRouteImport } from './routes/api/public/signing-keys[.]json'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
 import { Route as ForgeReportSlugRouteImport } from './routes/forge.report.$slug'
@@ -161,6 +166,7 @@ import { Route as ApiPublicOauthRegisterRouteImport } from './routes/api/public/
 import { Route as ApiPublicOauthRevokeRouteImport } from './routes/api/public/oauth/revoke'
 import { Route as ApiPublicOauthTokenRouteImport } from './routes/api/public/oauth/token'
 import { Route as ApiPublicPackagesSlugRouteImport } from './routes/api/public/packages.$slug'
+import { Route as ApiPublicPackagesDraftsRouteImport } from './routes/api/public/packages.drafts'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicPluginsSlugDotzipRouteImport } from './routes/api/public/plugins.$slug[.]zip'
 import { Route as ApiPublicReviewBatchRouteImport } from './routes/api/public/review.batch'
@@ -343,6 +349,11 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SecurityRoute = SecurityRouteImport.update({
   id: '/security',
   path: '/security',
@@ -433,6 +444,11 @@ const AccountBillingRoute = AccountBillingRouteImport.update({
 const AccountCloudSkillsRoute = AccountCloudSkillsRouteImport.update({
   id: '/account/cloud-skills',
   path: '/account/cloud-skills',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountCollectionsRoute = AccountCollectionsRouteImport.update({
+  id: '/account/collections',
+  path: '/account/collections',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountConnectionsRoute = AccountConnectionsRouteImport.update({
@@ -620,6 +636,11 @@ const BountiesNewRoute = BountiesNewRouteImport.update({
   path: '/new',
   getParentRoute: () => BountiesRoute,
 } as any)
+const CollectionsIndexRoute = CollectionsIndexRouteImport.update({
+  id: '/collections/',
+  path: '/collections/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CollectionsSlugRoute = CollectionsSlugRouteImport.update({
   id: '/collections/$slug',
   path: '/collections/$slug',
@@ -760,6 +781,12 @@ const ApiPublicCertifyRoute = ApiPublicCertifyRouteImport.update({
   path: '/api/public/certify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicContentSigningKeysDotjsonRoute =
+  ApiPublicContentSigningKeysDotjsonRouteImport.update({
+    id: '/api/public/content-signing-keys.json',
+    path: '/api/public/content-signing-keys.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicDiagRoute = ApiPublicDiagRouteImport.update({
   id: '/api/public/diag',
   path: '/api/public/diag',
@@ -805,6 +832,12 @@ const ApiPublicSigningKeyDotpemRoute =
   ApiPublicSigningKeyDotpemRouteImport.update({
     id: '/api/public/signing-key.pem',
     path: '/api/public/signing-key.pem',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicSigningKeysDotjsonRoute =
+  ApiPublicSigningKeysDotjsonRouteImport.update({
+    id: '/api/public/signing-keys.json',
+    path: '/api/public/signing-keys.json',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicTelemetryRoute = ApiPublicTelemetryRouteImport.update({
@@ -953,6 +986,11 @@ const ApiPublicOauthTokenRoute = ApiPublicOauthTokenRouteImport.update({
 const ApiPublicPackagesSlugRoute = ApiPublicPackagesSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
+  getParentRoute: () => ApiPublicPackagesRoute,
+} as any)
+const ApiPublicPackagesDraftsRoute = ApiPublicPackagesDraftsRouteImport.update({
+  id: '/drafts',
+  path: '/drafts',
   getParentRoute: () => ApiPublicPackagesRoute,
 } as any)
 const ApiPublicPaymentsWebhookRoute =
@@ -1108,6 +1146,7 @@ export interface FileRoutesByFullPath {
   '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/search': typeof SearchRoute
   '/security': typeof SecurityRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -1126,6 +1165,7 @@ export interface FileRoutesByFullPath {
   '/account/agents': typeof AccountAgentsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
+  '/account/collections': typeof AccountCollectionsRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
   '/account/earnings': typeof AccountEarningsRoute
@@ -1179,6 +1219,7 @@ export interface FileRoutesByFullPath {
   '/u/$handle': typeof UHandleRoute
   '/admin/': typeof AdminIndexRoute
   '/agents/': typeof AgentsIndexRoute
+  '/collections/': typeof CollectionsIndexRoute
   '/compare/': typeof CompareIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/packs/': typeof PacksIndexRoute
@@ -1191,6 +1232,7 @@ export interface FileRoutesByFullPath {
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/certify': typeof ApiPublicCertifyRoute
+  '/api/public/content-signing-keys.json': typeof ApiPublicContentSigningKeysDotjsonRoute
   '/api/public/diag': typeof ApiPublicDiagRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
@@ -1200,6 +1242,7 @@ export interface FileRoutesByFullPath {
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/signing-key.pem': typeof ApiPublicSigningKeyDotpemRoute
+  '/api/public/signing-keys.json': typeof ApiPublicSigningKeysDotjsonRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
@@ -1228,6 +1271,7 @@ export interface FileRoutesByFullPath {
   '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
+  '/api/public/packages/drafts': typeof ApiPublicPackagesDraftsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/plugins/$slug.zip': typeof ApiPublicPluginsSlugDotzipRoute
   '/api/public/review/batch': typeof ApiPublicReviewBatchRoute
@@ -1282,6 +1326,7 @@ export interface FileRoutesByTo {
   '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/search': typeof SearchRoute
   '/security': typeof SecurityRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -1300,6 +1345,7 @@ export interface FileRoutesByTo {
   '/account/agents': typeof AccountAgentsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
+  '/account/collections': typeof AccountCollectionsRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
   '/account/earnings': typeof AccountEarningsRoute
@@ -1353,6 +1399,7 @@ export interface FileRoutesByTo {
   '/u/$handle': typeof UHandleRoute
   '/admin': typeof AdminIndexRoute
   '/agents': typeof AgentsIndexRoute
+  '/collections': typeof CollectionsIndexRoute
   '/compare': typeof CompareIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
   '/packs': typeof PacksIndexRoute
@@ -1365,6 +1412,7 @@ export interface FileRoutesByTo {
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/certify': typeof ApiPublicCertifyRoute
+  '/api/public/content-signing-keys.json': typeof ApiPublicContentSigningKeysDotjsonRoute
   '/api/public/diag': typeof ApiPublicDiagRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
@@ -1374,6 +1422,7 @@ export interface FileRoutesByTo {
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/signing-key.pem': typeof ApiPublicSigningKeyDotpemRoute
+  '/api/public/signing-keys.json': typeof ApiPublicSigningKeysDotjsonRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
@@ -1402,6 +1451,7 @@ export interface FileRoutesByTo {
   '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
+  '/api/public/packages/drafts': typeof ApiPublicPackagesDraftsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/plugins/$slug.zip': typeof ApiPublicPluginsSlugDotzipRoute
   '/api/public/review/batch': typeof ApiPublicReviewBatchRoute
@@ -1458,6 +1508,7 @@ export interface FileRoutesById {
   '/refunds': typeof RefundsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/search': typeof SearchRoute
   '/security': typeof SecurityRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -1476,6 +1527,7 @@ export interface FileRoutesById {
   '/account/agents': typeof AccountAgentsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
+  '/account/collections': typeof AccountCollectionsRoute
   '/account/connections': typeof AccountConnectionsRoute
   '/account/credits': typeof AccountCreditsRoute
   '/account/earnings': typeof AccountEarningsRoute
@@ -1529,6 +1581,7 @@ export interface FileRoutesById {
   '/u/$handle': typeof UHandleRoute
   '/admin/': typeof AdminIndexRoute
   '/agents/': typeof AgentsIndexRoute
+  '/collections/': typeof CollectionsIndexRoute
   '/compare/': typeof CompareIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
   '/packs/': typeof PacksIndexRoute
@@ -1541,6 +1594,7 @@ export interface FileRoutesById {
   '/api/mcp/health': typeof ApiMcpHealthRoute
   '/api/packages/upload': typeof ApiPackagesUploadRoute
   '/api/public/certify': typeof ApiPublicCertifyRoute
+  '/api/public/content-signing-keys.json': typeof ApiPublicContentSigningKeysDotjsonRoute
   '/api/public/diag': typeof ApiPublicDiagRoute
   '/api/public/install.hermes.sh': typeof ApiPublicInstallDothermesDotshRoute
   '/api/public/mcp': typeof ApiPublicMcpRouteWithChildren
@@ -1550,6 +1604,7 @@ export interface FileRoutesById {
   '/api/public/review': typeof ApiPublicReviewRouteWithChildren
   '/api/public/search': typeof ApiPublicSearchRoute
   '/api/public/signing-key.pem': typeof ApiPublicSigningKeyDotpemRoute
+  '/api/public/signing-keys.json': typeof ApiPublicSigningKeysDotjsonRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/forge/report/$slug': typeof ForgeReportSlugRoute
@@ -1578,6 +1633,7 @@ export interface FileRoutesById {
   '/api/public/oauth/revoke': typeof ApiPublicOauthRevokeRoute
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
   '/api/public/packages/$slug': typeof ApiPublicPackagesSlugRoute
+  '/api/public/packages/drafts': typeof ApiPublicPackagesDraftsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/plugins/$slug.zip': typeof ApiPublicPluginsSlugDotzipRoute
   '/api/public/review/batch': typeof ApiPublicReviewBatchRoute
@@ -1635,6 +1691,7 @@ export interface FileRouteTypes {
     | '/refunds'
     | '/reset-password'
     | '/robots.txt'
+    | '/search'
     | '/security'
     | '/signup'
     | '/sitemap.xml'
@@ -1653,6 +1710,7 @@ export interface FileRouteTypes {
     | '/account/agents'
     | '/account/billing'
     | '/account/cloud-skills'
+    | '/account/collections'
     | '/account/connections'
     | '/account/credits'
     | '/account/earnings'
@@ -1706,6 +1764,7 @@ export interface FileRouteTypes {
     | '/u/$handle'
     | '/admin/'
     | '/agents/'
+    | '/collections/'
     | '/compare/'
     | '/marketplace/'
     | '/packs/'
@@ -1718,6 +1777,7 @@ export interface FileRouteTypes {
     | '/api/mcp/health'
     | '/api/packages/upload'
     | '/api/public/certify'
+    | '/api/public/content-signing-keys.json'
     | '/api/public/diag'
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
@@ -1727,6 +1787,7 @@ export interface FileRouteTypes {
     | '/api/public/review'
     | '/api/public/search'
     | '/api/public/signing-key.pem'
+    | '/api/public/signing-keys.json'
     | '/api/public/telemetry'
     | '/api/public/version'
     | '/forge/report/$slug'
@@ -1755,6 +1816,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/revoke'
     | '/api/public/oauth/token'
     | '/api/public/packages/$slug'
+    | '/api/public/packages/drafts'
     | '/api/public/payments/webhook'
     | '/api/public/plugins/$slug.zip'
     | '/api/public/review/batch'
@@ -1809,6 +1871,7 @@ export interface FileRouteTypes {
     | '/refunds'
     | '/reset-password'
     | '/robots.txt'
+    | '/search'
     | '/security'
     | '/signup'
     | '/sitemap.xml'
@@ -1827,6 +1890,7 @@ export interface FileRouteTypes {
     | '/account/agents'
     | '/account/billing'
     | '/account/cloud-skills'
+    | '/account/collections'
     | '/account/connections'
     | '/account/credits'
     | '/account/earnings'
@@ -1880,6 +1944,7 @@ export interface FileRouteTypes {
     | '/u/$handle'
     | '/admin'
     | '/agents'
+    | '/collections'
     | '/compare'
     | '/marketplace'
     | '/packs'
@@ -1892,6 +1957,7 @@ export interface FileRouteTypes {
     | '/api/mcp/health'
     | '/api/packages/upload'
     | '/api/public/certify'
+    | '/api/public/content-signing-keys.json'
     | '/api/public/diag'
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
@@ -1901,6 +1967,7 @@ export interface FileRouteTypes {
     | '/api/public/review'
     | '/api/public/search'
     | '/api/public/signing-key.pem'
+    | '/api/public/signing-keys.json'
     | '/api/public/telemetry'
     | '/api/public/version'
     | '/forge/report/$slug'
@@ -1929,6 +1996,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/revoke'
     | '/api/public/oauth/token'
     | '/api/public/packages/$slug'
+    | '/api/public/packages/drafts'
     | '/api/public/payments/webhook'
     | '/api/public/plugins/$slug.zip'
     | '/api/public/review/batch'
@@ -1984,6 +2052,7 @@ export interface FileRouteTypes {
     | '/refunds'
     | '/reset-password'
     | '/robots.txt'
+    | '/search'
     | '/security'
     | '/signup'
     | '/sitemap.xml'
@@ -2002,6 +2071,7 @@ export interface FileRouteTypes {
     | '/account/agents'
     | '/account/billing'
     | '/account/cloud-skills'
+    | '/account/collections'
     | '/account/connections'
     | '/account/credits'
     | '/account/earnings'
@@ -2055,6 +2125,7 @@ export interface FileRouteTypes {
     | '/u/$handle'
     | '/admin/'
     | '/agents/'
+    | '/collections/'
     | '/compare/'
     | '/marketplace/'
     | '/packs/'
@@ -2067,6 +2138,7 @@ export interface FileRouteTypes {
     | '/api/mcp/health'
     | '/api/packages/upload'
     | '/api/public/certify'
+    | '/api/public/content-signing-keys.json'
     | '/api/public/diag'
     | '/api/public/install.hermes.sh'
     | '/api/public/mcp'
@@ -2076,6 +2148,7 @@ export interface FileRouteTypes {
     | '/api/public/review'
     | '/api/public/search'
     | '/api/public/signing-key.pem'
+    | '/api/public/signing-keys.json'
     | '/api/public/telemetry'
     | '/api/public/version'
     | '/forge/report/$slug'
@@ -2104,6 +2177,7 @@ export interface FileRouteTypes {
     | '/api/public/oauth/revoke'
     | '/api/public/oauth/token'
     | '/api/public/packages/$slug'
+    | '/api/public/packages/drafts'
     | '/api/public/payments/webhook'
     | '/api/public/plugins/$slug.zip'
     | '/api/public/review/batch'
@@ -2160,6 +2234,7 @@ export interface RootRouteChildren {
   RefundsRoute: typeof RefundsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SearchRoute: typeof SearchRoute
   SecurityRoute: typeof SecurityRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -2178,6 +2253,7 @@ export interface RootRouteChildren {
   AccountAgentsRoute: typeof AccountAgentsRoute
   AccountBillingRoute: typeof AccountBillingRoute
   AccountCloudSkillsRoute: typeof AccountCloudSkillsRoute
+  AccountCollectionsRoute: typeof AccountCollectionsRoute
   AccountConnectionsRoute: typeof AccountConnectionsRoute
   AccountCreditsRoute: typeof AccountCreditsRoute
   AccountEarningsRoute: typeof AccountEarningsRoute
@@ -2209,6 +2285,7 @@ export interface RootRouteChildren {
   SoulsSlugRoute: typeof SoulsSlugRoute
   UHandleRoute: typeof UHandleRoute
   AgentsIndexRoute: typeof AgentsIndexRoute
+  CollectionsIndexRoute: typeof CollectionsIndexRoute
   CompareIndexRoute: typeof CompareIndexRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
   PacksIndexRoute: typeof PacksIndexRoute
@@ -2217,6 +2294,7 @@ export interface RootRouteChildren {
   ApiJobsDrainUploadQueueRoute: typeof ApiJobsDrainUploadQueueRoute
   ApiPackagesUploadRoute: typeof ApiPackagesUploadRoute
   ApiPublicCertifyRoute: typeof ApiPublicCertifyRoute
+  ApiPublicContentSigningKeysDotjsonRoute: typeof ApiPublicContentSigningKeysDotjsonRoute
   ApiPublicDiagRoute: typeof ApiPublicDiagRoute
   ApiPublicInstallDothermesDotshRoute: typeof ApiPublicInstallDothermesDotshRoute
   ApiPublicMcpRoute: typeof ApiPublicMcpRouteWithChildren
@@ -2226,6 +2304,7 @@ export interface RootRouteChildren {
   ApiPublicReviewRoute: typeof ApiPublicReviewRouteWithChildren
   ApiPublicSearchRoute: typeof ApiPublicSearchRoute
   ApiPublicSigningKeyDotpemRoute: typeof ApiPublicSigningKeyDotpemRoute
+  ApiPublicSigningKeysDotjsonRoute: typeof ApiPublicSigningKeysDotjsonRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -2493,6 +2572,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/security': {
       id: '/security'
       path: '/security'
@@ -2617,6 +2703,13 @@ declare module '@tanstack/react-router' {
       path: '/account/cloud-skills'
       fullPath: '/account/cloud-skills'
       preLoaderRoute: typeof AccountCloudSkillsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/collections': {
+      id: '/account/collections'
+      path: '/account/collections'
+      fullPath: '/account/collections'
+      preLoaderRoute: typeof AccountCollectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account/connections': {
@@ -2878,6 +2971,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BountiesNewRouteImport
       parentRoute: typeof BountiesRoute
     }
+    '/collections/': {
+      id: '/collections/'
+      path: '/collections'
+      fullPath: '/collections/'
+      preLoaderRoute: typeof CollectionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/collections/$slug': {
       id: '/collections/$slug'
       path: '/collections/$slug'
@@ -3074,6 +3174,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCertifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/content-signing-keys.json': {
+      id: '/api/public/content-signing-keys.json'
+      path: '/api/public/content-signing-keys.json'
+      fullPath: '/api/public/content-signing-keys.json'
+      preLoaderRoute: typeof ApiPublicContentSigningKeysDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/diag': {
       id: '/api/public/diag'
       path: '/api/public/diag'
@@ -3135,6 +3242,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/signing-key.pem'
       fullPath: '/api/public/signing-key.pem'
       preLoaderRoute: typeof ApiPublicSigningKeyDotpemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/signing-keys.json': {
+      id: '/api/public/signing-keys.json'
+      path: '/api/public/signing-keys.json'
+      fullPath: '/api/public/signing-keys.json'
+      preLoaderRoute: typeof ApiPublicSigningKeysDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/telemetry': {
@@ -3331,6 +3445,13 @@ declare module '@tanstack/react-router' {
       path: '/$slug'
       fullPath: '/api/public/packages/$slug'
       preLoaderRoute: typeof ApiPublicPackagesSlugRouteImport
+      parentRoute: typeof ApiPublicPackagesRoute
+    }
+    '/api/public/packages/drafts': {
+      id: '/api/public/packages/drafts'
+      path: '/drafts'
+      fullPath: '/api/public/packages/drafts'
+      preLoaderRoute: typeof ApiPublicPackagesDraftsRouteImport
       parentRoute: typeof ApiPublicPackagesRoute
     }
     '/api/public/payments/webhook': {
@@ -3663,10 +3784,12 @@ const ApiPublicMcpRouteWithChildren = ApiPublicMcpRoute._addFileChildren(
 
 interface ApiPublicPackagesRouteChildren {
   ApiPublicPackagesSlugRoute: typeof ApiPublicPackagesSlugRoute
+  ApiPublicPackagesDraftsRoute: typeof ApiPublicPackagesDraftsRoute
 }
 
 const ApiPublicPackagesRouteChildren: ApiPublicPackagesRouteChildren = {
   ApiPublicPackagesSlugRoute: ApiPublicPackagesSlugRoute,
+  ApiPublicPackagesDraftsRoute: ApiPublicPackagesDraftsRoute,
 }
 
 const ApiPublicPackagesRouteWithChildren =
@@ -3717,6 +3840,7 @@ const rootRouteChildren: RootRouteChildren = {
   RefundsRoute: RefundsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
+  SearchRoute: SearchRoute,
   SecurityRoute: SecurityRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -3737,6 +3861,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountAgentsRoute: AccountAgentsRoute,
   AccountBillingRoute: AccountBillingRoute,
   AccountCloudSkillsRoute: AccountCloudSkillsRoute,
+  AccountCollectionsRoute: AccountCollectionsRoute,
   AccountConnectionsRoute: AccountConnectionsRoute,
   AccountCreditsRoute: AccountCreditsRoute,
   AccountEarningsRoute: AccountEarningsRoute,
@@ -3768,6 +3893,7 @@ const rootRouteChildren: RootRouteChildren = {
   SoulsSlugRoute: SoulsSlugRoute,
   UHandleRoute: UHandleRoute,
   AgentsIndexRoute: AgentsIndexRoute,
+  CollectionsIndexRoute: CollectionsIndexRoute,
   CompareIndexRoute: CompareIndexRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
   PacksIndexRoute: PacksIndexRoute,
@@ -3776,6 +3902,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiJobsDrainUploadQueueRoute: ApiJobsDrainUploadQueueRoute,
   ApiPackagesUploadRoute: ApiPackagesUploadRoute,
   ApiPublicCertifyRoute: ApiPublicCertifyRoute,
+  ApiPublicContentSigningKeysDotjsonRoute:
+    ApiPublicContentSigningKeysDotjsonRoute,
   ApiPublicDiagRoute: ApiPublicDiagRoute,
   ApiPublicInstallDothermesDotshRoute: ApiPublicInstallDothermesDotshRoute,
   ApiPublicMcpRoute: ApiPublicMcpRouteWithChildren,
@@ -3785,6 +3913,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicReviewRoute: ApiPublicReviewRouteWithChildren,
   ApiPublicSearchRoute: ApiPublicSearchRoute,
   ApiPublicSigningKeyDotpemRoute: ApiPublicSigningKeyDotpemRoute,
+  ApiPublicSigningKeysDotjsonRoute: ApiPublicSigningKeysDotjsonRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,

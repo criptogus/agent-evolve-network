@@ -229,11 +229,13 @@ Your work isn't just merged — it's *amplified*.
 - [x] Public **Trust Score**, model compatibility matrix, drift detection
 - [x] Hundreds of packages live in the hosted registry (live count on the site)
 - [x] CLI installation and connection commands (see `cli/`)
-- [ ] Expand CLI publishing and evaluation workflows
+- [x] CLI authoring preflight and immutable private draft upload (public approval remains gated)
 - [x] Cryptographic signing and verification tooling
 - [ ] Expand hosted signature and evaluation coverage with version-specific receipts
-- [ ] Versioned downloadable registry bundles
-- [ ] Community-curated **collections** (curated bundles around a use case)
+- [x] Versioned registry bundle builder and signed release pipeline (first hosted release/configuration pending)
+- [x] Community collection creation, editing, ordering, following and public browsing (deployment pending)
+
+See [implementation and activation status](docs/ROADMAP-STATUS.md) before treating a checkbox as production evidence.
 
 Track everything on the [public board](https://github.com/criptogus/agent-evolve-network/projects).
 

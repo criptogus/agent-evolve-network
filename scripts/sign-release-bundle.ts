@@ -10,6 +10,7 @@
 import { createHash, createPrivateKey, createPublicKey, sign } from "node:crypto";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { parseKeyring, assertTrustedKey } from "../src/lib/trust/keyring.ts";
 
 const args = parse(process.argv.slice(2));
 const dir = args.dir ?? "dist/release";
@@ -19,12 +20,30 @@ if (!SIGNING_PRIVATE_KEY || !SIGNING_PUBLIC_KEY) {
   process.exit(1);
 }
 const priv = createPrivateKey(SIGNING_PRIVATE_KEY);
+const derived = createPublicKey(priv).export({ format: "pem", type: "spki" });
+if (
+  String(derived).trim() !==
+  String(createPublicKey(SIGNING_PUBLIC_KEY).export({ format: "pem", type: "spki" })).trim()
+)
+  throw new Error("Signing key pair does not match");
+if (priv.asymmetricKeyType !== "ed25519") throw new Error("Ed25519 signing key required");
 const pubDer = createPublicKey(SIGNING_PUBLIC_KEY).export({ format: "der", type: "spki" });
 const keyId = createHash("sha256").update(pubDer).digest("hex").slice(0, 16);
 
+const candidates = readdirSync(dir).filter(
+  (entry) => /\.(zip|tar\.gz|json|mjs)$/.test(entry) && entry !== "SIGNATURES.json",
+);
+if (!candidates.some((entry) => /\.(zip|tar\.gz)$/.test(entry)))
+  throw new Error("No release archives to sign");
+if (args.keyring)
+  assertTrustedKey(
+    parseKeyring(JSON.parse(readFileSync(args.keyring, "utf8"))),
+    SIGNING_PUBLIC_KEY,
+    "sign",
+  );
 const sigs = [];
 for (const entry of readdirSync(dir)) {
-  if (!/\.(zip|tar\.gz|json)$/.test(entry)) continue;
+  if (!/\.(zip|tar\.gz|json|mjs)$/.test(entry)) continue;
   if (entry === "SIGNATURES.json") continue;
   const full = join(dir, entry);
   if (!statSync(full).isFile()) continue;
@@ -48,6 +67,13 @@ writeFileSync(
     null,
     2,
   ),
+);
+const manifestHash = createHash("sha256")
+  .update(readFileSync(join(dir, "SIGNATURES.json")))
+  .digest("hex");
+writeFileSync(
+  join(dir, "SIGNATURES.json.sig"),
+  sign(null, Buffer.from(manifestHash), priv).toString("base64") + "\n",
 );
 writeFileSync(join(dir, "SIGNING_PUBLIC_KEY.pem"), SIGNING_PUBLIC_KEY);
 console.log(

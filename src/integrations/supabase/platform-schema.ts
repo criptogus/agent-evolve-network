@@ -41,6 +41,15 @@ export type EvidenceRow = {
   total_tokens: number | null;
 };
 export type PlatformTables = {
+  package_embeddings: Table<{
+    package_id: string;
+    version: string;
+    model: string;
+    embedding: string;
+    source_sha256: string;
+    created_at?: string;
+  }>;
+  semantic_query_budget: Table<{ actor: string; day: string; queries: number }>;
   package_artifacts: Table<
     {
       version_id: string;
@@ -83,6 +92,20 @@ export type PlatformTables = {
   }>;
 };
 export type PlatformFunctions = {
+  reserve_semantic_query: { Args: { _actor: string }; Returns: boolean };
+  search_packages_semantic: {
+    Args: { _query: string; _model: string; _limit?: number; _offset?: number; _type?: string };
+    Returns: {
+      slug: string;
+      name: string;
+      type: string;
+      score: number;
+      snippet: string;
+      latest_version: string;
+    }[];
+  };
+  manage_collection: { Args: { _payload: Json }; Returns: Json };
+  submit_authored_package: { Args: { _author: string; _document: Json }; Returns: Json };
   team_role: { Args: { _workspace: string }; Returns: TeamRole | null };
   team_action: { Args: { _action: string; _workspace?: string; _payload?: Json }; Returns: Json };
   skill_evidence: {
