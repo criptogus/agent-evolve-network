@@ -89,3 +89,9 @@ test("actual XML CLI rejects a host outside its exact declared runtime before pu
     assert.deepEqual(JSON.parse(r.stdout).runtime, BRAZIL_XML_RUNTIME);
   }
 });
+
+test("unsupported XML documents outside recognized invoice roots cannot be silently omitted", () => {
+  const r = pure(invoice() + " narrative <unknownDocument/> ");
+  assert.equal(r.status, 2, "Every supplied XML document must be parsed or explicitly rejected");
+  assert.equal(r.stdout, "");
+});

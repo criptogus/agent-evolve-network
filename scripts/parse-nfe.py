@@ -68,6 +68,12 @@ def parse_root(text, start):
         raise ValueError("Unbound XML document boundary")
     return builder.close(), start + len(raw[:end].decode("utf8"))
 
+def require_plain_gap(gap):
+    # Only narrative, XML declarations and complete comments may surround an embedded export.
+    plain = re.sub(r"<\?xml\b[^?]*\?>|<!--[\s\S]*?-->", "", gap)
+    if re.search(r"<[^\s>]", plain):
+        raise ValueError("Unsupported or unparsed XML document outside invoice roots")
+
 def evaluate(text):
     if not isinstance(text, str) or not text.strip() or len(text.encode("utf8")) > MAX_BYTES:
         raise ValueError("Nonempty bounded XML source required")
@@ -79,7 +85,9 @@ def evaluate(text):
     while True:
         match = root_pattern.search(text, cursor)
         if match is None:
+            require_plain_gap(text[cursor:])
             break
+        require_plain_gap(text[cursor:match.start()])
         root, cursor = parse_root(text, match.start())
         if local(root.tag) not in ("nfeProc", "NFe"):
             raise ValueError("Unsupported XML document root")
