@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import type { AppDatabaseClient } from "../../integrations/supabase/database.ts";
-import { embedQuery } from "./embedding.ts";
+import { embedQuery, resolveEmbeddingConfig } from "./embedding.ts";
 const cache = new Map<string, { expires: number; vector: number[] }>();
 export async function semanticSearch(
   client: AppDatabaseClient,
@@ -10,11 +10,10 @@ export async function semanticSearch(
   offset: number,
   type?: string | null,
 ) {
-  const endpoint = process.env.SEARCH_EMBEDDING_ENDPOINT;
-  const key = process.env.SEARCH_EMBEDDING_API_KEY;
-  const model = process.env.SEARCH_EMBEDDING_MODEL;
-  if (process.env.SEMANTIC_SEARCH_ENABLED !== "true" || !endpoint || !key || !model)
+  if (process.env.SEMANTIC_SEARCH_ENABLED !== "true")
     throw new Error("Semantic search is not configured");
+  const config = resolveEmbeddingConfig(process.env);
+  const { endpoint, key, model } = config;
   const identity = createHash("sha256")
     .update(JSON.stringify([actor, query, endpoint, key, model]))
     .digest("hex");
@@ -24,7 +23,7 @@ export async function semanticSearch(
   if (!vector) {
     const { data: allowed, error } = await client.rpc("reserve_semantic_query", { _actor: actor });
     if (error || !allowed) throw new Error("Daily semantic query allowance reached");
-    vector = await embedQuery(query, { endpoint, key, model });
+    vector = await embedQuery(query, config);
     if (cache.size >= 64) cache.delete(cache.keys().next().value!);
     cache.set(identity, { expires: now + 300000, vector });
   }

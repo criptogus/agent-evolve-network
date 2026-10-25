@@ -2,7 +2,7 @@
 import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../src/integrations/supabase/database.ts";
-import { embedQuery } from "../src/lib/search/embedding.ts";
+import { embedQuery, resolveEmbeddingConfig } from "../src/lib/search/embedding.ts";
 const args = process.argv.slice(2);
 const bound = Number(args[args.indexOf("--max-requests") + 1]);
 if (
@@ -17,11 +17,9 @@ if (
   );
 const url = process.env.SUPABASE_URL,
   key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const endpoint = process.env.SEARCH_EMBEDDING_ENDPOINT,
-  apiKey = process.env.SEARCH_EMBEDDING_API_KEY,
-  model = process.env.SEARCH_EMBEDDING_MODEL;
-if (!url || !key || !endpoint || !apiKey || !model)
-  throw new Error("Private database and embedding configuration required");
+if (!url || !key) throw new Error("Private database configuration required");
+const config = resolveEmbeddingConfig(process.env);
+const { model } = config;
 const client = createClient<Database>(url, key, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
@@ -59,7 +57,7 @@ if (!pending.length || pending.length > bound)
   );
 let completed = 0;
 for (const { p, input, hash } of pending) {
-  const vector = await embedQuery(input, { endpoint, key: apiKey, model });
+  const vector = await embedQuery(input, config);
   const { error: writeError } = await client.from("package_embeddings").upsert({
     package_id: p.id,
     version: p.latest_version,

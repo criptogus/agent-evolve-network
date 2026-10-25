@@ -58,3 +58,13 @@ proof of production activation or a qualified cohort. No inference was invoked f
 Historical strategy documents describe earlier snapshots. Trust Score v2, team workspaces,
 telemetry and collection storage have implementations; they should not be repeatedly scheduled
 as new features solely because an older analysis calls them proposals.
+
+
+Owner selected the built-in Lovable embedding provider on 2026-10-25. The default
+configuration now resolves the server-only project-managed LOVABLE_API_KEY and the
+fixed Lovable gateway with openai/text-embedding-3-small (1536 dimensions). A custom
+embedding endpoint cannot receive that managed key; external providers require an
+explicit openai-compatible selection and their own credential. Search and indexing
+share this resolver. Transport fixtures pass, but the managed endpoint still needs a
+real provider receipt and complete matching index before activation. No provider call
+or production activation is claimed by this configuration change.

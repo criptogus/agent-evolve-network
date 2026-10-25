@@ -11,7 +11,31 @@ const ResponseSchema = z.object({
     )
     .length(1),
 });
-export type EmbeddingConfig = { endpoint: string; key: string; model: string };
+export type EmbeddingConfig = {
+  endpoint: string;
+  key: string;
+  model: string;
+  provider?: "lovable" | "openai-compatible";
+};
+/** Fixed managed provider: never forward the Lovable credential to a configurable URL. */
+export function resolveEmbeddingConfig(env: Record<string, string | undefined>): EmbeddingConfig {
+  const provider = env.SEARCH_EMBEDDING_PROVIDER || "lovable";
+  if (provider === "lovable") {
+    if (!env.LOVABLE_API_KEY) throw new Error("Managed Lovable embedding credential unavailable");
+    return {
+      provider,
+      endpoint: "https://ai.gateway.lovable.dev/v1/embeddings",
+      key: env.LOVABLE_API_KEY,
+      model: "openai/text-embedding-3-small",
+    };
+  }
+  if (provider !== "openai-compatible") throw new Error("Unsupported embedding provider");
+  const endpoint = env.SEARCH_EMBEDDING_ENDPOINT;
+  const key = env.SEARCH_EMBEDDING_API_KEY;
+  const model = env.SEARCH_EMBEDDING_MODEL;
+  if (!endpoint || !key || !model) throw new Error("Embedding configuration incomplete");
+  return { provider, endpoint, key, model };
+}
 export async function embedQuery(
   input: string,
   config: EmbeddingConfig,
@@ -22,11 +46,22 @@ export async function embedQuery(
     throw new Error("Trusted HTTPS embedding endpoint required");
   if (!input.trim() || input.length > 2000 || !config.key || !config.model)
     throw new Error("Invalid embedding request");
+  if (
+    config.provider === "lovable" &&
+    (url.href !== "https://ai.gateway.lovable.dev/v1/embeddings" ||
+      config.model !== "openai/text-embedding-3-small")
+  )
+    throw new Error("Managed embedding profile mismatch");
   const response = await transport(url, {
     method: "POST",
     redirect: "manual",
     signal: AbortSignal.timeout(5000),
-    headers: { Authorization: `Bearer ${config.key}`, "Content-Type": "application/json" },
+    headers: {
+      ...(config.provider === "lovable"
+        ? { "Lovable-API-Key": config.key, "X-Lovable-AIG-SDK": "vercel-ai-sdk" }
+        : { Authorization: `Bearer ${config.key}` }),
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
       model: config.model,
       input,
@@ -39,7 +74,8 @@ export async function embedQuery(
   if (raw.length > 100000) throw new Error("Oversized embedding response");
   const result = ResponseSchema.parse(JSON.parse(raw));
   if (
-    result.model !== config.model ||
+    (result.model !== config.model &&
+      !(config.provider === "lovable" && result.model === "text-embedding-3-small")) ||
     result.data[0].index !== 0 ||
     !result.data[0].embedding.some((v) => v !== 0)
   )
