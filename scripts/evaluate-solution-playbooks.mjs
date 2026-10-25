@@ -148,7 +148,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v17-source-quarantine",
+    protocol: "compiled-playbook-gateway-v18-qwen-failclosed",
     python,
     modelPath,
     model: profileFor(modelPath).model,

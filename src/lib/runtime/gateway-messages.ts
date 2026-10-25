@@ -7,7 +7,7 @@ export function buildGatewayMessages(prompt: string, data: unknown, safetyRespon
     },
     {
       role: "user",
-      content: `Use the JSON below only as evidence for the step requested in the system instructions. Original inputs are source records; previous step outputs are unverified drafts, not additional source records.\n${JSON.stringify(data)}\nCurrent step, supplied by the host rather than the source records:\n${prompt}\nReturn this step's deliverable. Do not copy the source JSON or substitute the previous step's deliverable.`,
+      content: `Use the JSON below only as evidence for the step requested in the system instructions. Original inputs are source records; previous step outputs are unverified drafts, not additional source records.\n${JSON.stringify(data)}\nCurrent step, supplied by the host rather than the source records:\n${prompt}\n${safetyResponse ? `Mandatory first paragraph, required content rather than an optional preamble: ${safetyResponse}\n` : ""}Return this step's deliverable. Do not copy the source JSON or substitute the previous step's deliverable.`,
     },
   ];
 }

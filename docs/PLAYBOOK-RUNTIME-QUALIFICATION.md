@@ -61,7 +61,7 @@ loopback with downloads disabled, records actual startup/model health, proxies a
 journals the real CLI requests/responses, then observes server termination. It uses
 the frozen maximum of 768 tokens and temperature 0; server thinking is disabled.
 The seed is unset, explicitly recorded rather than claimed as the older runner's
-seed-0 profile. No external gateway or credentials are accepted by this command.
+seed-0 profile. Generation is restricted to the pinned cached local server. Source interpretation uses the separate pinned TypeSafe API under explicit consent; the private startup wrapper loads its existing Keychain credential. No Lovable inference or builder calls are part of this command.
 Existing attempts, modified expectations, changed model/source hashes, empty and
 nonpositive batches reject. There is deliberately no automatic recovery/replay.
 The command records execution only and always exits 4: primary review and the
@@ -192,3 +192,5 @@ The next secure-agent correction must address both the source-attachment boundar
 The reusable private startup wrapper was actually run on v16 and retained exit 4 and its process receipt, after correctly rejecting an attempted replay before credential access. It delegates all model/source guards to the existing evaluator, makes no inference retries and preserves incomplete/rejected state. No Lovable inference or builder calls were used.
 
 V17 (0.1.19) adds source-note quarantine and pinned redacted-note interpretation to the two generated graphs; actual model text remains byte-for-byte raw. Unannotated cases retain explicit null provider evidence, not fabricated usage. The reporter requires exact prepared context, optional real provider response/usage and the unchanged local transport/primary gates. Secure test/release labels and instructions preserve unexecuted tests, absent observed evidence and blocked owner approval. See `docs/adr/20261025-workflow-source-quarantine.md`; three real interpretation probes and local regressions are diagnostic, not qualification. The original 72-case file remains unchanged.
+
+V18 (0.1.20) is a separate cached-Qwen graph candidate, with explicit fail-closed egress and safety-response framing. V17 is rejected at 39/72: prepared source privacy was fixed but Gemma omitted required warnings and inverted egress authority/rollback policy. Do not compare different model/protocol histories as a same-model improvement or inherit individual-skill approvals. The unchanged full 72-case contract, exact local/runtime fingerprints, raw provider/generation evidence and primary gates remain required.

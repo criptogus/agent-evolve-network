@@ -16,6 +16,12 @@ import {
   composeSupplierFacts,
 } from "../src/lib/runtime/supplier-source-facts.ts";
 import { prepareSupplierStage } from "../src/lib/runtime/supplier-stages.ts";
+import {
+  prepareWorkflowContext,
+  validateWorkflowResponse,
+  composeWorkflowContext,
+} from "../src/lib/runtime/workflow-source-context.ts";
+import { buildGatewayMessages } from "../src/lib/runtime/gateway-messages.ts";
 const [dir, output] = process.argv.slice(2);
 if (process.argv.length !== 4 || !dir || !output || existsSync(output))
   throw new Error("Supply EVIDENCE_DIR NEW_REPORT; reports are never overwritten");
@@ -48,6 +54,8 @@ for (const path of [
   "src/lib/adversarial/scorer.ts",
   "src/lib/runtime/supplier-source-facts.ts",
   "src/lib/runtime/supplier-stages.ts",
+  "src/lib/runtime/workflow-source-context.ts",
+  "src/lib/runtime/gateway-messages.ts",
 ])
   if (hash(readFileSync(path)) !== plan.sourceHashes[path])
     throw new Error("Current diagnostic runtime differs from frozen evidence");
@@ -135,6 +143,52 @@ const results = raw.split("\n").map((line) => {
     }
     supplierFacts = true;
   }
+  let workflowContext = false;
+  if (["solution-secure-agent-launch", "solution-brazil-reconciliation"].includes(subject.slug)) {
+    const evidence = run.workflow_context,
+      prepared = prepareWorkflowContext(c.inputs);
+    if (!evidence || JSON.stringify(evidence.request) !== JSON.stringify(prepared.request))
+      throw new Error("Changed generated-workflow source context");
+    const response = validateWorkflowResponse(
+      prepared.request ? JSON.parse(evidence.raw_response) : null,
+      prepared,
+    );
+    const facts = composeWorkflowContext(prepared, response);
+    if (
+      JSON.stringify(evidence.response) !== JSON.stringify(response) ||
+      JSON.stringify(evidence.facts) !== JSON.stringify(facts) ||
+      (!prepared.request && evidence.raw_response !== null)
+    )
+      throw new Error("Changed workflow interpretation or provider evidence");
+    const transports = readFileSync(join(dir, "transport.jsonl"), "utf8")
+      .trim()
+      .split("\n")
+      .map(JSON.parse)
+      .filter((t) => t.case_id === c.id);
+    if (transports.length !== workflow.steps.length)
+      throw new Error("Incomplete generated-workflow transports");
+    const previous = {};
+    transports.forEach((t, i) => {
+      const step = run.step_outcomes[i],
+        raw = JSON.parse(t.raw),
+        content = raw.choices?.[0]?.message?.content;
+      const messages = buildGatewayMessages(
+        workflow.steps[i].with.prompt,
+        { inputs: facts.original_sources, steps: previous, source_context: facts },
+        facts.attachment_safety_response,
+      );
+      if (
+        t.planHash !== planHash ||
+        JSON.stringify(t.request.messages) !== JSON.stringify(messages) ||
+        step.status !== "ok" ||
+        step.output !== content ||
+        run.outputs[step.step_id] !== content
+      )
+        throw new Error("Changed prepared sources, previous drafts or raw generation");
+      previous[step.step_id] = { output: content, status: "ok" };
+    });
+    workflowContext = true;
+  }
   const text = run.step_outcomes
     .map((s) => (typeof s.output === "string" ? s.output : s.output.body))
     .join("\n");
@@ -143,6 +197,7 @@ const results = raw.split("\n").map((line) => {
     output_sha256: hash(line),
     finance_receipts_recomputed: financeReceipts,
     supplier_facts_and_stages_recomputed: supplierFacts,
+    workflow_context_and_requests_recomputed: workflowContext,
     generative_transport_qualification: "requires complete strict reporter, not this diagnostic",
     literal: c.original_case ? evaluateCase(c.original_case, text) : null,
   };
