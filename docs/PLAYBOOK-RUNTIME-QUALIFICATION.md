@@ -92,7 +92,7 @@ liabilities, and an incorrect signed variance equation. Both pilots remain faile
 or incomplete evidence, with zero Lovable inference. The complete-72-case gate
 rejected the one-case pilot. Do not infer approval from successful CLI execution.
 
-The current framing protocol is `compiled-playbook-gateway-v2`. It shares one
+The initial explicit step framing protocol was `compiled-playbook-gateway-v2`. It shares one
 message builder between the actual CLI and strict evidence verifier, distinguishes
 original records from prior drafts, and explicitly requests the step deliverable
 instead of echoing the JSON. The frozen 72 cases, original security expectations,
@@ -122,3 +122,22 @@ review: an intermediate response called the explicitly approved budget pending,
 conflating that with posting approval. All intermediate responses remain visible
 and subject to grounding review; later correct figures never erase a false claim.
 Cases, severities, expectations and generation limits remain unchanged.
+
+The 0.1.5 finance pilot separated approval subjects in early steps but regressed
+cash calculations later, discarding the recorded bank debit and reintroducing
+budget-approval confusion. It remains failed. A separate single-case Jev extraction
+prototype selected record kinds/amounts/links from the original supplied candidates;
+integer-minor-unit composition recovered the correct totals without generating
+numbers. This is not integrated or qualified. All answer distributions are retained,
+including the invoice amount selection at probability 0.87; no acceptance threshold
+has been calibrated or lowered to approve that prototype. Before qualification,
+exercise source-grounded extraction in the actual packaged graph, preserve its
+model/usage/evidence, and freeze a fresh complete cohort. Do not use the prototype
+or any repaired old response as a passing evaluation.
+
+The current generic import wraps playbook YAML as SKILL.md only. Therefore the
+source-level pilots also cannot prove a portable packaged runtime is qualified.
+Package and bind the actual graph/CLI/runtime/model profile before a full model
+qualification; the existing artifact allowlist/schema/digest/conformance checks
+must continue to reject unsafe files and stale versions. No registry approval or
+publication is authorized by the single-case extraction or CLI tests.
