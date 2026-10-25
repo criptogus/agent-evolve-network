@@ -1,7 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { withTimeout } from "../src/lib/server/response-deadline.ts";
-import { readMatchResult, streamMatchResult } from "../src/lib/match/result-stream.ts";
+import {
+  readMatchResult,
+  streamMatchResult,
+  bufferMatchProviderResponse,
+} from "../src/lib/match/result-stream.ts";
 test("Agent Match returns its transport before the handler deadline while inference remains pending", async () => {
   let release: (value: { ok: boolean }) => void = () => {};
   const inference = new Promise<{ ok: boolean }>((resolve) => {
@@ -100,5 +104,59 @@ test("client deadline ends a stalled reader without awaiting its cleanup", async
     },
   });
   await assert.rejects(readMatchResult(stream, { timeoutMs: 5 }), /client deadline exceeded/);
+  assert.equal(canceled, true);
+});
+
+test("provider evidence and SDK receive identical chunked bytes without cloning", async () => {
+  const raw = JSON.stringify({ content: "á🌍".repeat(40000), usage: { input: 123, output: 456 } });
+  const bytes = new TextEncoder().encode(raw);
+  let offset = 0;
+  const response = new Response(
+    new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (offset >= bytes.length) {
+          controller.close();
+          return;
+        }
+        controller.enqueue(bytes.slice(offset, offset + 4093));
+        offset += 4093;
+      },
+    }),
+    {
+      status: 200,
+      headers: {
+        "content-type": "application/json",
+        "content-length": String(bytes.length),
+        "content-encoding": "gzip",
+      },
+    },
+  );
+  response.clone = () => {
+    throw new Error("An unconsumed tee branch must not be created");
+  };
+  const buffered = await bufferMatchProviderResponse(response);
+  assert.equal(buffered.text, raw);
+  assert.equal(await buffered.response.text(), raw);
+  assert.equal(buffered.response.status, 200);
+  assert.equal(buffered.response.headers.get("content-type"), "application/json");
+  assert.equal(buffered.response.headers.has("content-length"), false);
+  assert.equal(buffered.response.headers.has("content-encoding"), false);
+  assert.equal(response.bodyUsed, true);
+});
+
+test("provider body bound stops oversized input without waiting for stalled cleanup", async () => {
+  let canceled = false;
+  const response = new Response(
+    new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array(2000001));
+      },
+      cancel() {
+        canceled = true;
+        return new Promise<void>(() => {});
+      },
+    }),
+  );
+  await assert.rejects(bufferMatchProviderResponse(response), /Oversized/);
   assert.equal(canceled, true);
 });

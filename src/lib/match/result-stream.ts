@@ -83,3 +83,45 @@ export async function readMatchResult<T>(
     }
   }
 }
+
+// Consume the provider body once. A tee/clone can leave one branch unread while
+// evidence capture waits for EOF in a managed Worker. Replay the same bytes to
+// the SDK instead; the finite bound is well above the pinned 4096-token output.
+export async function bufferMatchProviderResponse(response: Response) {
+  const reader = response.body?.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    if (reader) {
+      while (true) {
+        const next = await reader.read();
+        if (next.done) break;
+        size += next.value.byteLength;
+        if (size > 2000000) throw new Error("Oversized Agent Match provider response");
+        chunks.push(next.value);
+      }
+    }
+  } finally {
+    if (reader) {
+      void reader.cancel().catch(() => {});
+      reader.releaseLock();
+    }
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  const headers = new Headers(response.headers);
+  for (const name of ["content-length", "content-encoding", "transfer-encoding"])
+    headers.delete(name);
+  return {
+    text: new TextDecoder().decode(bytes),
+    response: new Response([204, 205, 304].includes(response.status) ? null : bytes, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    }),
+  };
+}

@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText, Output } from "ai";
 import { matchGenerationOptions, MATCH_PROVIDER_OPTIONS } from "./match-generation.ts";
-import { streamMatchResult } from "./result-stream.ts";
+import { streamMatchResult, bufferMatchProviderResponse } from "./result-stream.ts";
 import { preselectAgentMatch, selectionCacheDiagnostics } from "./jev-agent-match.server.ts";
 import { selectionScope } from "./jev-selection-cache.server.ts";
 import { createPersistentSelectionCache } from "./jev-persistent-cache.server.ts";
@@ -101,7 +101,7 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
           cacheScope,
           cache: cacheScope ? createPersistentSelectionCache(supabaseAdmin, cacheScope) : undefined,
           fetch: async (url, init) => {
-            const response = await fetch(url, init);
+            const response = await fetch(url, { ...init, redirect: "manual" });
             if (response.ok) {
               const sent = z
                 .object({
@@ -165,10 +165,11 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
         baseURL: "https://ai.gateway.lovable.dev/v1",
         headers: { "Lovable-API-Key": key, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
         fetch: async (url, init) => {
-          const response = await fetch(url, init);
+          const response = await fetch(url, { ...init, redirect: "manual" });
           transportStatus = response.status;
+          const buffered = await bufferMatchProviderResponse(response);
+          const text = buffered.text;
           if (response.ok) {
-            const text = await response.clone().text();
             if (text.includes(key)) throw new Error("Rejected provider response");
             const parsed = z
               .object({
@@ -188,7 +189,6 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
             if (parsed.success) transportEvidence = JSON.stringify(parsed.data);
           }
           if (!response.ok) {
-            const text = await response.clone().text();
             if (!text.includes(key)) {
               const error = z
                 .object({ error: z.object({ message: z.string().max(1000) }) })
@@ -196,7 +196,7 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
               if (error.success) transportEvidence = JSON.stringify(error.data);
             }
           }
-          return response;
+          return buffered.response;
         },
       });
       try {
@@ -329,7 +329,57 @@ export const probeBenchmarkTransport = createServerFn({ method: "GET" })
             { once: true },
           );
         });
-        return { elapsedMs: Date.now() - started, payload: "synthetic".repeat(16384) };
+        const payload = "synthetic".repeat(16384);
+        let fixtureResponses = 0;
+        const fixtureProvider = createOpenAICompatible({
+          name: "transport-fixture",
+          ...MATCH_PROVIDER_OPTIONS,
+          baseURL: "https://fixture.invalid/v1",
+          // This transport is entirely synthetic: no global fetch, key or provider call.
+          fetch: async () => {
+            fixtureResponses++;
+            const raw = JSON.stringify({
+              id: "synthetic-transport-only",
+              model: "fixture",
+              created: 1,
+              choices: [
+                {
+                  index: 0,
+                  message: { role: "assistant", content: JSON.stringify({ payload }) },
+                  finish_reason: "stop",
+                },
+              ],
+              usage: {
+                prompt_tokens: 1,
+                completion_tokens: 1,
+                total_tokens: 2,
+                prompt_tokens_details: { cached_tokens: 0 },
+              },
+            });
+            const buffered = await bufferMatchProviderResponse(
+              new Response(raw, { headers: { "content-type": "application/json" } }),
+            );
+            if (buffered.text !== raw) throw new Error("Fixture evidence mismatch");
+            return buffered.response;
+          },
+        });
+        const fixture = await generateText({
+          model: fixtureProvider("fixture"),
+          output: Output.object({
+            schema: z.object({ payload: z.string().length(payload.length) }),
+          }),
+          prompt: "Synthetic transport fixture only; no provider call",
+          maxRetries: 0,
+          abortSignal: signal,
+        });
+        if (fixtureResponses !== 1 || fixture.output.payload !== payload)
+          throw new Error("Fixture SDK round trip failed");
+        return {
+          elapsedMs: Date.now() - started,
+          payload: fixture.output.payload,
+          sdkRoundTrip: true,
+          inferenceCalls: 0,
+        };
       },
       { timeoutMs: 35000 },
     );
@@ -376,7 +426,7 @@ export const probeBenchmarkJev = createServerFn({ method: "POST" })
         cacheScope,
         cache: persistentCache,
         fetch: async (url, init) => {
-          const response = await fetch(url, init);
+          const response = await fetch(url, { ...init, redirect: "manual" });
           if (response.ok) {
             const receipt = z
               .object({

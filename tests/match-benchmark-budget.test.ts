@@ -5,6 +5,7 @@ import {
   BENCHMARK_RECONCILED_HISTORICAL_HELD_USD,
   BENCHMARK_V33_UNKNOWN_HELD_USD,
   BENCHMARK_V33_DIAGNOSTIC_HELD_USD,
+  BENCHMARK_V34_RETAINED_ATTEMPT_USD,
   BENCHMARK_PRIOR_HELD_USD,
   BENCHMARK_PRIOR_SPEND_UPPER_USD,
   generatorCost,
@@ -81,11 +82,11 @@ test("a verified no-generator reservation releases only that hold while retainin
   assert.equal(BENCHMARK_USD_LIMIT, 20);
   assert.equal(BENCHMARK_PRIOR_SPEND_UPPER_USD, 7.07125);
   assert.ok(Math.abs(BENCHMARK_RECONCILED_HISTORICAL_HELD_USD - 0.82931275) < 1e-12);
-  assert.doesNotThrow(() => reserveGeneration("s", "p", "{}", 11.77378074));
+  assert.doesNotThrow(() => reserveGeneration("s", "p", "{}", 11.44514124));
 });
 
 test("rejected immutable cohorts cannot resume inference after a preview rebuild", () => {
-  for (const prefix of ["11b307c9", "ecd633f7", "b42da394"]) {
+  for (const prefix of ["11b307c9", "ecd633f7", "b42da394", "62b5c0b4"]) {
     assert.equal(isClosedBenchmarkCohort(prefix + "0".repeat(56)), true);
     assert.throws(() => requireOpenBenchmarkCohort(`${prefix}:nfe-pt:1:jev`), /cohort is closed/);
   }
@@ -100,7 +101,13 @@ test("v33 schema failure and finite diagnostic remain reserved across a new coho
     BENCHMARK_PRIOR_HELD_USD,
     BENCHMARK_RECONCILED_HISTORICAL_HELD_USD +
       BENCHMARK_V33_UNKNOWN_HELD_USD +
-      BENCHMARK_V33_DIAGNOSTIC_HELD_USD,
+      BENCHMARK_V33_DIAGNOSTIC_HELD_USD +
+      BENCHMARK_V34_RETAINED_ATTEMPT_USD,
   );
   assert.throws(() => reserveGeneration("s", "p", "{}", 12.09943724));
+});
+
+test("v34 client-delivery failure keeps its full first-attempt reservation", () => {
+  assert.equal(BENCHMARK_V34_RETAINED_ATTEMPT_USD, 0.3286395);
+  assert.throws(() => reserveGeneration("s", "p", "{}", 11.77378074));
 });

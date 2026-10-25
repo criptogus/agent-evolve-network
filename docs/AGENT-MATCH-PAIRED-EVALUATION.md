@@ -1,6 +1,6 @@
 # Comparação pareada do Agent Match
 
-Estado em 2026-10-25: **nova comparação pendente; nenhuma aprovação de eficiência**. O proprietário ampliou explicitamente o teto acumulado para US$20, após o teto anterior de US$10. Mantêm-se US$7,07125 de cobranças anteriores e US$0,82931275 de reservas desconhecidas: saldo máximo US$12,09943725. A autorização abrange inferência; o agente construtor não deve ser usado. Os históricos abaixo conservam seus tetos e reprovações originais. Não solicitar novamente essa mesma autorização.
+Estado em 2026-10-25: **nova comparação pendente; nenhuma aprovação de eficiência**. O proprietário ampliou explicitamente o teto acumulado para US$20, após o teto anterior de US$10. Mantêm-se US$7,07125 de cobranças históricas e US$1,48360875 de reservas/encargos conservadores, incluindo a tentativa v34 sem dupla contagem: saldo máximo US$11,44514125. A autorização abrange inferência; o agente construtor não deve ser usado. Os históricos abaixo conservam seus tetos e reprovações originais. Não solicitar novamente essa mesma autorização.
 
 ## Evidência atual
 
@@ -393,3 +393,28 @@ The actual SDK wire regression failed before correction and passed after constru
 tightened why/role strings once, preserving min/max15/120 and5/60 without duplicate
 max constraints. No output was repaired and no quality criterion changed. New v34
 plan `62b5c0b49e2bd9cc2b1179396cb8d2be88405d79009031415d69aff8d1deb644` retains all six original plan fields and a separate journal.
+
+
+V34 stopped on its first baseline at the client deadline, with zero delivered
+observations. Native counter675→676 records Cancelled/Truncated,32723 input tokens,
+1358 output tokens,15.2seconds and0.31displayed credits (USD0.07625–0.07875 under
+the existing Pro conversion/rounding convention). Native text identifies the exact
+original NF-e brief. This is diagnostic evidence only, not an original paired receipt.
+The full USD0.3286395 attempt reservation stays encumbered, covering that charge;
+it is not counted a second time as paid plus held. V34 is closed and its frozen
+6466a94a validator rejected the empty/inflight cohort. Maximum remaining authority
+is USD11.44514125; all older holds remain intact.
+
+The v35 candidate reads the generator HTTP body once, bounds it at2MB and replays
+identical bytes to the SDK instead of waiting on an unconsumed cloned branch.
+Chunked Unicode/body-bound tests passed. An actual workerd+SDK synthetic fixture
+recovered240276bytes across60reads exactly, with zero provider calls. This validates
+the proposed transport path, not the root cause or live qualification. The managed
+25-second probe now also exercises SDK parsing and receipt buffering without any
+external fetch or key. It must report sdkRoundTrip=true and inferenceCalls=0 before
+another paid observation. Plan `94e763285279f1c1299b9f83ca99e568140207d392a70ae838d3f596b7b3e332` preserves all six original plan
+fields and uses a fresh journal; no old output is replayed as a new observation.
+
+A preparação v35 não executou inferência e foi sucedida antes de uso pela v36, que também fixa redirect=manual no transporte de diagnóstico/geração. Respostas de redirecionamento seguem rejeitadas como não-2xx, sem encaminhar credenciais.
+
+Plano v36: `2f979881aae792982de6c312529fc38e5d4a71a4c0b9fe7d560707dbe3e577bf`. Os seis campos originais permanecem idênticos e o armazenamento é separado.

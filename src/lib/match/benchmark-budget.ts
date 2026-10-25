@@ -19,10 +19,15 @@ export const BENCHMARK_V33_UNKNOWN_HELD_USD = 0.3246565;
 // One v33 diagnostic: 472 input/21 output tokens. Conservatively retain USD0.001
 // separately from actual native generator bills; this is a hold, not an invoice.
 export const BENCHMARK_V33_DIAGNOSTIC_HELD_USD = 0.001;
+// v34's first baseline generated upstream but failed client delivery. Its complete
+// USD0.3286395 reservation stays encumbered; the native display alone is not a
+// replayable paired receipt. This hold already covers the observed native charge.
+export const BENCHMARK_V34_RETAINED_ATTEMPT_USD = 0.3286395;
 export const BENCHMARK_PRIOR_HELD_USD =
   BENCHMARK_RECONCILED_HISTORICAL_HELD_USD +
   BENCHMARK_V33_UNKNOWN_HELD_USD +
-  BENCHMARK_V33_DIAGNOSTIC_HELD_USD;
+  BENCHMARK_V33_DIAGNOSTIC_HELD_USD +
+  BENCHMARK_V34_RETAINED_ATTEMPT_USD;
 // Prior checkpoints and complete v26 total US$5.48125 upper; the rejected v29
 // four-request prefix adds US$0.205 and the rejected v30 44-request prefix
 // adds US$1.385 native upper. Rejection never refunds inference. Holds stay intact.
@@ -30,7 +35,7 @@ export const BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD = 0.205 + 1.385;
 export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 5.48125 + BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD;
 // These immutable cohorts terminated with high failures or unknown schema-error usage. Rebuilding the preview
 // cannot reopen them or make a changed-source continuation valid.
-const CLOSED_COHORT_PREFIXES = new Set(["11b307c9", "ecd633f7", "b42da394"]);
+const CLOSED_COHORT_PREFIXES = new Set(["11b307c9", "ecd633f7", "b42da394", "62b5c0b4"]);
 export function isClosedBenchmarkCohort(attemptOrPlanHash: string) {
   return CLOSED_COHORT_PREFIXES.has(attemptOrPlanHash.slice(0, 8));
 }
