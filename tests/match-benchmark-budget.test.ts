@@ -7,6 +7,8 @@ import {
   generatorCost,
   reserveGeneration,
   requireBenchmarkPreview,
+  isClosedBenchmarkCohort,
+  requireOpenBenchmarkCohort,
 } from "../src/lib/match/benchmark-budget.ts";
 test("benchmark metering rejects unknown/negative/cache inconsistencies", () => {
   assert.equal(generatorCost(1000000, 0, 0), 1.75);
@@ -68,4 +70,13 @@ test("a new cohort retains the rejected v29 and v30 native charges", () => {
   assert.equal(BENCHMARK_PRIOR_SPEND_UPPER_USD, 7.07125);
   assert.throws(() => reserveGeneration("s", "p", "{}", 1.84758426));
   assert.doesNotThrow(() => reserveGeneration("s", "p", "{}", 1.84758424));
+});
+
+test("rejected immutable cohorts cannot resume inference after a preview rebuild", () => {
+  for (const prefix of ["11b307c9", "ecd633f7"]) {
+    assert.equal(isClosedBenchmarkCohort(prefix + "0".repeat(56)), true);
+    assert.throws(() => requireOpenBenchmarkCohort(`${prefix}:nfe-pt:1:jev`), /cohort is closed/);
+  }
+  // This helper is a terminal-cohort guard, not authorization for unknown plans.
+  assert.equal(isClosedBenchmarkCohort("new-plan"), false);
 });

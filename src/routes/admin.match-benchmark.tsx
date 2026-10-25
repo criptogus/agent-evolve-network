@@ -15,6 +15,7 @@ import {
   BENCHMARK_PRIOR_HELD_USD,
   BENCHMARK_PRIOR_SPEND_UPPER_USD,
   requireBenchmarkPreview,
+  isClosedBenchmarkCohort,
   reconcileBenchmarkBudget,
 } from "@/lib/match/benchmark-budget";
 const schema = z.object({
@@ -67,6 +68,12 @@ function Benchmark() {
   const [batchLimit, setBatchLimit] = useState(4);
   async function run() {
     if (!batch || busy) return;
+    if (isClosedBenchmarkCohort(batch.planHash)) {
+      setMessage(
+        "Rejected cohort is closed. Only diagnostics are available; no inference started.",
+      );
+      return;
+    }
     setBusy(true);
     try {
       requireBenchmarkPreview(window.location.href);
@@ -267,7 +274,12 @@ function Benchmark() {
           }}
         />
       </label>
-      <button className="border rounded p-2" disabled={!batch || busy} onClick={run}>
+      <p>V30 is rejected and closed. Use a new frozen comparison for any future generation.</p>
+      <button
+        className="border rounded p-2"
+        disabled={!batch || busy || isClosedBenchmarkCohort(batch.planHash)}
+        onClick={run}
+      >
         Run next batch (up to 4 observations)
       </button>
       <button

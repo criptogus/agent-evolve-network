@@ -12,6 +12,16 @@ export const BENCHMARK_PRIOR_HELD_USD = 1.08116575;
 // adds US$1.385 native upper. Rejection never refunds inference. Holds stay intact.
 export const BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD = 0.205 + 1.385;
 export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 5.48125 + BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD;
+// These immutable cohorts terminated with high failures. Rebuilding the preview
+// cannot reopen them or make a changed-source continuation valid.
+const CLOSED_COHORT_PREFIXES = new Set(["11b307c9", "ecd633f7"]);
+export function isClosedBenchmarkCohort(attemptOrPlanHash: string) {
+  return CLOSED_COHORT_PREFIXES.has(attemptOrPlanHash.slice(0, 8));
+}
+export function requireOpenBenchmarkCohort(attempt: string) {
+  if (isClosedBenchmarkCohort(attempt))
+    throw new Error("Rejected cohort is closed; prepare a new frozen comparison before inference");
+}
 export function generatorCost(input: number, cached: number, output: number) {
   if (![input, cached, output].every((n) => Number.isSafeInteger(n) && n >= 0) || cached > input)
     throw new Error("Missing or invalid usage");

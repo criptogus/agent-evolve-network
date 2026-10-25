@@ -18,6 +18,7 @@ import {
   BENCHMARK_MODEL,
   generatorCost,
   requireBenchmarkPreview,
+  requireOpenBenchmarkCohort,
   reserveGeneration,
 } from "./benchmark-budget";
 const candidate = z.object({
@@ -55,6 +56,7 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
       .eq("role", "admin")
       .maybeSingle();
     if (role.error || !role.data) throw new Response("Forbidden", { status: 403 });
+    requireOpenBenchmarkCohort(data.attempt);
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Managed Lovable AI is unavailable; no request started");
     if (data.arm === "jev" && !process.env.TYPESAFE_API_KEY)
