@@ -48,16 +48,20 @@ export function selectionCacheKey(input: {
 }
 export const selectionEvidenceHash = (value: Evidence) => digest(value);
 
+// Exact semantic inputs and current eligibility remain part of every lookup.
+// Fixed expiry is not extended by reads; no permissions or generated answers are retained.
+export const SELECTION_CACHE_TTL_MS = 30 * 60 * 1000;
+
 export function createSelectionCache(
   options: { now?: () => number; ttlMs?: number; maxEntries?: number } = {},
 ) {
   const now = options.now ?? Date.now,
-    ttl = options.ttlMs ?? 300000,
+    ttl = options.ttlMs ?? SELECTION_CACHE_TTL_MS,
     max = options.maxEntries ?? 64;
   if (
     !Number.isSafeInteger(ttl) ||
     ttl <= 0 ||
-    ttl > 300000 ||
+    ttl > SELECTION_CACHE_TTL_MS ||
     !Number.isSafeInteger(max) ||
     max <= 0 ||
     max > 64

@@ -9,6 +9,7 @@ import {
   PAIRED_CRITERIA,
   type PairedObservation,
 } from "../src/lib/match/paired-evaluation.ts";
+import { SELECTION_CACHE_TTL_MS } from "../src/lib/match/jev-selection-cache.server.ts";
 const [planFile, journalFile, reviewFile, billingFile, reportFile] = process.argv.slice(2);
 if (
   !planFile ||
@@ -167,7 +168,7 @@ for (const row of journal.rows) {
     if (cached?.status === "hit") {
       if (
         !selectorSources.has(source) ||
-        cached.age_ms >= 300000 ||
+        cached.age_ms >= SELECTION_CACHE_TTL_MS ||
         trace.requests !== 0 ||
         trace.input_tokens !== 0 ||
         trace.output_tokens !== 0 ||

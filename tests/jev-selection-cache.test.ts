@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   createSelectionCache,
+  SELECTION_CACHE_TTL_MS,
   selectionCacheKey,
   selectionScope,
 } from "../src/lib/match/jev-selection-cache.server.ts";
@@ -119,6 +120,7 @@ test("cache expires, bounds memory, rejects invalid evidence and clones records"
   assert.equal(cache.size, 0);
   assert.throws(() => cache.set("invalid", { ...entry, probabilities: [NaN] }));
   assert.throws(() => createSelectionCache({ maxEntries: 0 }));
+  assert.throws(() => createSelectionCache({ ttlMs: SELECTION_CACHE_TTL_MS + 1 }));
 });
 test("cache identities bind every semantic input and never expose bearer, key or private brief", () => {
   const token = "a".repeat(48);
@@ -160,4 +162,21 @@ test("compact relevance questions keep every named candidate and policy without 
   catalog.forEach((c, i) => assert.deepEqual(request.questions[`c${i}`].instructions.candidate, c));
   assert.match(request.state.relevance_policy, /untrusted/);
   assert.match(request.state.relevance_policy, /partial/);
+});
+
+test("unchanged scoped selection survives a normal seven-minute comparison interval and expires at thirty minutes", async () => {
+  let time = 0;
+  const counter = { calls: 0 },
+    cache = createSelectionCache({ now: () => time });
+  const opts = { ...options, cache, fetch: responder(counter) };
+  await preselectAgentMatch(input, opts);
+  time = 7 * 60 * 1000;
+  const reused = await preselectAgentMatch(input, opts);
+  assert.equal(counter.calls, 1);
+  assert.equal(reused.trace.cache?.status, "hit");
+  assert.equal(reused.trace.cache?.age_ms, time);
+  time = 30 * 60 * 1000;
+  const expired = await preselectAgentMatch(input, opts);
+  assert.equal(counter.calls, 2);
+  assert.notEqual(expired.trace.cache?.status, "hit");
 });

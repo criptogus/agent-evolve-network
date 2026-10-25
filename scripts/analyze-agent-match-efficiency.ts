@@ -8,6 +8,7 @@ import {
   BENCHMARK_PRIOR_SPEND_UPPER_USD,
   generatorCost,
 } from "../src/lib/match/benchmark-budget.ts";
+import { SELECTION_CACHE_TTL_MS } from "../src/lib/match/jev-selection-cache.server.ts";
 const args = process.argv.slice(2);
 if (args.length !== 5 || args.some((a) => !a.trim()))
   throw new Error(
@@ -149,6 +150,29 @@ const drift = plan.cases.map((c) => {
     forwarded: rows.map((r) => r.result.forwardedSlugs.length),
   };
 });
+// The benchmark UI awaits each response before starting the next scheduled observation.
+// Intervening client durations alone are a conservative lower bound, excluding UI,
+// reconciliation pauses and both endpoint observations; they cannot prove cache hits.
+const selectionReuseIntervals = journal.rows.flatMap((row, index) => {
+  if (row.arm !== "jev" || row.repeat === 0) return [];
+  const prior = journal.rows.findIndex(
+    (candidate) =>
+      candidate.arm === "jev" &&
+      candidate.caseId === row.caseId &&
+      candidate.repeat === row.repeat - 1,
+  );
+  if (prior < 0 || prior >= index) throw new Error("Missing ordered previous repetition");
+  return [
+    {
+      caseId: row.caseId,
+      repeat: row.repeat,
+      interveningClientElapsedLowerBoundMs: journal.rows
+        .slice(prior + 1, index)
+        .reduce((sum, observation) => sum + observation.clientElapsedMs, 0),
+    },
+  ];
+});
+if (selectionReuseIntervals.length !== 24) throw new Error("Incomplete repeated selection timing");
 const available = BENCHMARK_USD_LIMIT - BENCHMARK_PRIOR_HELD_USD - BENCHMARK_PRIOR_SPEND_UPPER_USD;
 if (available < 0) throw new Error("Accumulated authority already exceeded");
 const report = {
@@ -163,6 +187,20 @@ const report = {
   arms,
   subsetDrift: drift,
   casesWithSubsetDrift: drift.filter((d) => d.distinctForwardedSets > 1).length,
+  selectionCacheTiming: {
+    scope: "Sequential observed-call lower bounds only; no future cache-hit or performance claim",
+    legacyTtlMs: 300000,
+    guaranteedLegacyExpirations: selectionReuseIntervals.filter(
+      (r) => r.interveningClientElapsedLowerBoundMs >= 300000,
+    ).length,
+    candidateTtlMs: SELECTION_CACHE_TTL_MS,
+    candidateSourceSha256: evidenceHash(
+      readFileSync("src/lib/match/jev-selection-cache.server.ts", "utf8"),
+    ),
+    warmWorkerRequired: true,
+    pausesAndEndpointObservationsExcluded: true,
+    intervals: selectionReuseIntervals,
+  },
   budget: {
     limitUsd: BENCHMARK_USD_LIMIT,
     priorBilledUpperUsd: BENCHMARK_PRIOR_SPEND_UPPER_USD,
