@@ -31,7 +31,7 @@ async function runFixture(finishReason = "stop", content = "LOCAL_DRAFT") {
         "--experimental-strip-types",
         "scripts/run-playbook.ts",
         "--playbook",
-        "solution-monthly-finance-close",
+        "solution-supplier-selection",
         "--inputs",
         JSON.stringify({
           source_1: "INVOICE_SENTINEL_93",

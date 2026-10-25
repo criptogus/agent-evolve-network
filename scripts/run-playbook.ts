@@ -36,34 +36,53 @@ const contractPath = join(ROOT, "references/runtime-profile.json");
 if (args.gateway && existsSync(contractPath)) {
   try {
     localContract = JSON.parse(readFileSync(contractPath, "utf8"));
-    const { localGatewayUrl, verifyLocalModel } = await import(
-      `${ROOT}/src/lib/runtime/local-model-contract.ts`
-    );
-    const origin = localGatewayUrl(process.env.AI_GATEWAY_BASE_URL ?? "");
-    localEvidence = await verifyLocalModel(
-      localContract,
-      process.env.AI_GATEWAY_MODEL ?? "",
-      process.env.LOCAL_MODEL_PYTHON ?? "",
-    );
-    const healthResponse = await fetch(`${origin}/health`, {
-      redirect: "error",
-      signal: AbortSignal.timeout(5000),
-    });
-    const health = await healthResponse.json();
-    if (
-      !healthResponse.ok ||
-      health.status !== "healthy" ||
-      health.loaded_model !== process.env.AI_GATEWAY_MODEL ||
-      health.loaded_adapter !== null ||
-      health.loaded_tool_parser !== null
-    )
-      throw new Error("Local gateway health/model mismatch");
+    if (localContract.execution === "finance-source-state-v1") {
+      if (
+        process.versions.node !== localContract.node ||
+        process.arch !== localContract.architecture
+      )
+        throw new Error("Finance host runtime mismatch");
+      localEvidence = {
+        execution: localContract.execution,
+        model: localContract.model,
+        node: process.versions.node,
+        architecture: process.arch,
+      };
+    } else {
+      const { localGatewayUrl, verifyLocalModel } = await import(
+        `${ROOT}/src/lib/runtime/local-model-contract.ts`
+      );
+      const origin = localGatewayUrl(process.env.AI_GATEWAY_BASE_URL ?? "");
+      localEvidence = await verifyLocalModel(
+        localContract,
+        process.env.AI_GATEWAY_MODEL ?? "",
+        process.env.LOCAL_MODEL_PYTHON ?? "",
+      );
+      const healthResponse = await fetch(`${origin}/health`, {
+        redirect: "error",
+        signal: AbortSignal.timeout(5000),
+      });
+      const health = await healthResponse.json();
+      if (
+        !healthResponse.ok ||
+        health.status !== "healthy" ||
+        health.loaded_model !== process.env.AI_GATEWAY_MODEL ||
+        health.loaded_adapter !== null ||
+        health.loaded_tool_parser !== null
+      )
+        throw new Error("Local gateway health/model mismatch");
+      if (
+        args.playbook === "solution-monthly-finance-close" &&
+        (!args["semantic-source-facts"] || !args["allow-typesafe-source-upload"])
+      )
+        throw new Error("Packaged finance requires original qualified source-facts protocol");
+      localEvidence = { ...localEvidence, health };
+    }
     if (
       args.playbook === "solution-monthly-finance-close" &&
       (!args["semantic-source-facts"] || !args["allow-typesafe-source-upload"])
     )
-      throw new Error("Packaged finance requires original qualified source-facts protocol");
-    localEvidence = { ...localEvidence, health };
+      throw new Error("Finance source-state execution requires explicit source upload consent");
   } catch {
     console.error(
       "Packaged local model/runtime contract rejected before source upload or generation",
@@ -100,7 +119,30 @@ if (args["semantic-source-facts"]) {
     process.exit(2);
   }
 }
-const adapters = args.gateway ? await gatewayAdapters() : mockAdapters();
+const financeMode = args.gateway && args.playbook === "solution-monthly-finance-close";
+if (financeMode && !sourceFacts) {
+  console.error(
+    "Finance source-state execution requires --semantic-source-facts and explicit source upload consent",
+  );
+  process.exit(2);
+}
+if (financeMode && localContract && sourceFacts.response.model !== localContract.model) {
+  console.error("Finance source interpreter model mismatch");
+  process.exit(2);
+}
+const financeExecution = financeMode
+  ? {
+      execution: "finance-source-state-v1",
+      model: sourceFacts.response.model,
+      node: process.versions.node,
+      architecture: process.arch,
+    }
+  : null;
+const adapters = financeMode
+  ? await financeAdapters()
+  : args.gateway
+    ? await gatewayAdapters()
+    : mockAdapters();
 const result = await runPlaybook(compilePlaybook(yaml), inputs, adapters);
 
 console.log(
@@ -109,6 +151,7 @@ console.log(
       ...result,
       ...(sourceFacts ? { source_facts: sourceFacts } : {}),
       ...(localEvidence ? { local_model_evidence: localEvidence } : {}),
+      ...(financeExecution ? { finance_execution: financeExecution } : {}),
     },
     null,
     2,
@@ -137,7 +180,22 @@ function mockAdapters() {
     invokeInstruction: async ({ prompt }) => `[mock-llm] ${prompt.slice(0, 80)}...`,
     invokeSkill: async ({ slug, inputs }) =>
       `[mock-skill:${slug}] ${JSON.stringify(inputs).slice(0, 80)}`,
-    invokeTool: async ({ name, inputs }) => ({ name, inputs }),
+    invokeTool: async ({ name, inputs }) =>
+      name.startsWith("finance.") ? `[mock-tool] ${name}` : { name, inputs },
+    onTelemetry: (e) => console.error(`[telemetry] ${JSON.stringify(e)}`),
+  };
+}
+
+async function financeAdapters() {
+  const { prepareFinanceStage } = await import(`${ROOT}/src/lib/runtime/finance-stages.ts`);
+  return {
+    invokeInstruction: async () => {
+      throw new Error("Unexpected free-form finance generation");
+    },
+    invokeSkill: async () => {
+      throw new Error("Unexpected finance delegation");
+    },
+    invokeTool: async ({ name, context }) => prepareFinanceStage(name, sourceFacts, context.steps),
     onTelemetry: (e) => console.error(`[telemetry] ${JSON.stringify(e)}`),
   };
 }

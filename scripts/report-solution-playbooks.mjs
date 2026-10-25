@@ -10,6 +10,7 @@ import {
   composeFinanceFacts,
   FINANCE_FACTS_MODEL,
 } from "../src/lib/runtime/finance-source-facts.ts";
+import { prepareFinanceStage } from "../src/lib/runtime/finance-stages.ts";
 import { buildGatewayMessages } from "../src/lib/runtime/gateway-messages.ts";
 import { evaluateCase } from "../src/lib/adversarial/scorer.ts";
 import { eligibleForPublication } from "./adversarial-approval.mjs";
@@ -37,9 +38,12 @@ const profile = read("content/expansion/playbook-model-profiles.json").find(
   (p) => p.model === plan.model,
 );
 if (!profile) throw new Error("Unsupported exact model/runtime profile");
+const financeHost = read("content/expansion/playbook-local-contract.json").finance_host;
+if (JSON.stringify(plan.finance_host) !== JSON.stringify(financeHost))
+  throw new Error("Unqualified finance model/host profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v9-textual-evidence" ||
+  plan.protocol !== "compiled-playbook-gateway-v10-finance-state" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({
@@ -98,6 +102,7 @@ const requiredSources = [
   "src/lib/runtime/gateway-messages.ts",
   "src/lib/runtime/local-model-contract.ts",
   "src/lib/runtime/finance-source-facts.ts",
+  "src/lib/runtime/finance-stages.ts",
   "src/lib/runtime/finance-source-facts.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
   ...contract.subjects.map((s) => `content/playbooks/${s.slug}.yaml`),
@@ -210,8 +215,22 @@ const outcomes = schedule.map(({ s, c }, i) => {
   const run = JSON.parse(row.stdout);
   const yaml = parse(readFileSync(`content/playbooks/${s.slug}.yaml`, "utf8"));
   const trace = transports.filter((t) => t.value.case_id === c.id);
+  const finance = s.slug === "solution-monthly-finance-close";
   if (
     run.status !== "ok" ||
+    run.playbook_slug !== s.slug ||
+    run.version !== s.version ||
+    run.step_outcomes.length !== yaml.steps.length ||
+    trace.length !== (finance ? 0 : yaml.steps.length)
+  )
+    throw new Error("Incomplete graph or unexpected finance generation");
+  if (finance) {
+    if (
+      JSON.stringify(run.finance_execution) !== JSON.stringify(financeHost) ||
+      JSON.stringify(run.local_model_evidence) !== JSON.stringify(financeHost)
+    )
+      throw new Error("Unbound finance interpreter or host runtime");
+  } else if (
     run.local_model_evidence?.model !== plan.model ||
     run.local_model_evidence?.modelPath !== plan.modelPath ||
     JSON.stringify(run.local_model_evidence?.runtime) !==
@@ -219,13 +238,9 @@ const outcomes = schedule.map(({ s, c }, i) => {
         Object.fromEntries(Object.entries(plan.runtime).filter(([key]) => key !== "files")),
       ) ||
     JSON.stringify(run.local_model_evidence?.files) !== JSON.stringify(plan.runtime.files) ||
-    run.local_model_evidence?.health?.loaded_model !== plan.modelPath ||
-    run.playbook_slug !== s.slug ||
-    run.version !== s.version ||
-    run.step_outcomes.length !== yaml.steps.length ||
-    trace.length !== yaml.steps.length
+    run.local_model_evidence?.health?.loaded_model !== plan.modelPath
   )
-    throw new Error("Incomplete graph");
+    throw new Error("Unbound local generative runtime");
   let sourceFacts;
   if (s.slug === "solution-monthly-finance-close") {
     const evidence = run.source_facts;
@@ -236,6 +251,10 @@ const outcomes = schedule.map(({ s, c }, i) => {
       (a) => a.case_id === c.id && a.event === "source_facts_completed",
     );
     if (
+      JSON.stringify(validateFinanceResponse(JSON.parse(evidence.raw_response), prepared)) !==
+        JSON.stringify(response) ||
+      response.usage.input_tokens <= 0 ||
+      response.usage.output_tokens <= 0 ||
       JSON.stringify(evidence.request) !== JSON.stringify(prepared.request) ||
       JSON.stringify(evidence.facts) !== JSON.stringify(sourceFacts) ||
       end.evidence_sha256 !== hash(JSON.stringify(evidence)) ||
@@ -246,6 +265,23 @@ const outcomes = schedule.map(({ s, c }, i) => {
   } else if (run.source_facts) throw new Error("Unscheduled source-facts interpretation");
   const previous = {};
   let combined = "";
+  if (finance)
+    yaml.steps.forEach((definition, j) => {
+      if (definition.action !== `tool:finance.${definition.id}`)
+        throw new Error("Unqualified finance graph action");
+      const expected = prepareFinanceStage(definition.action.slice(5), run.source_facts, previous);
+      const step = run.step_outcomes[j];
+      if (
+        step.step_id !== definition.id ||
+        step.status !== "ok" ||
+        step.attempts !== 1 ||
+        JSON.stringify(step.output) !== JSON.stringify(expected) ||
+        JSON.stringify(run.outputs[definition.id]) !== JSON.stringify(expected)
+      )
+        throw new Error("Repaired, missing or unbound accounting preparation stage");
+      previous[definition.id] = { output: expected, status: "ok" };
+      combined += expected.body + "\n";
+    });
   trace.forEach(({ value: t }, j) => {
     const r = JSON.parse(t.raw),
       choice = r.choices?.[0],
@@ -322,6 +358,12 @@ const reports = plan.subjects.map((s) => {
   const report = {
     slug: s.slug,
     version: s.version,
+    model:
+      s.slug === "solution-monthly-finance-close"
+        ? `typesafe/${financeHost.model}/${financeHost.execution}@node-${financeHost.node}-${financeHost.architecture}`
+        : plan.model,
+    execution_protocol:
+      s.slug === "solution-monthly-finance-close" ? financeHost.execution : plan.protocol,
     source_sha256: plan.sourceHashes[`content/playbooks/${s.slug}.yaml`],
     artifact_sha256: s.artifact.sha256,
     total: os.length,
@@ -339,6 +381,9 @@ writeFileSync(
     {
       planHash,
       model: plan.model,
+      finance_host: financeHost,
+      model_scope:
+        "Per-package models and execution protocols are recorded in reports; finance uses TypeSafe interpretation plus real accounting tools, other graphs use the pinned local generator.",
       protocol: plan.protocol,
       total: 72,
       reports,

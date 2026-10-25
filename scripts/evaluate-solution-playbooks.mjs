@@ -60,6 +60,7 @@ const sourcePaths = [
   "src/lib/runtime/gateway-messages.ts",
   "src/lib/runtime/local-model-contract.ts",
   "src/lib/runtime/finance-source-facts.ts",
+  "src/lib/runtime/finance-stages.ts",
   "src/lib/runtime/finance-source-facts.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
   ...cases.subjects.map((s) => `content/playbooks/${s.slug}.yaml`),
@@ -107,6 +108,9 @@ if (mode === "prepare") {
     throw new Error("Explicit Python, cached model and fresh evidence directory required");
   const [python, modelPath] = args.map((p) => resolve(p));
   const runtime = await fingerprint(python, modelPath);
+  const financeHost = load("content/expansion/playbook-local-contract.json").finance_host;
+  if (financeHost.node !== process.versions.node || financeHost.architecture !== process.arch)
+    throw new Error("Exact finance Node/architecture required");
   mkdirSync(dir, { recursive: true });
   for (const source of sourcePaths) {
     const snapshot = join(dir, "source-snapshot", source);
@@ -134,10 +138,11 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v9-textual-evidence",
+    protocol: "compiled-playbook-gateway-v10-finance-state",
     python,
     modelPath,
     model: profileFor(modelPath).model,
+    finance_host: financeHost,
     runtime,
     sourceHashes,
     thresholds: cases.thresholds,

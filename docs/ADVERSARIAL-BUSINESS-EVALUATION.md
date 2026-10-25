@@ -215,3 +215,32 @@ with the existing bounded identifier set), not a new generator or response repai
 The model must keep the source of a missing-entry statement separate from the
 source identifying its owner. Original cases, expectations, severities and approval
 thresholds remain unchanged; a fresh pilot and full cohort are still required.
+
+### V9 role-confusion rejection and v10 finance source state (0.1.12)
+
+The actual v9 pilot again failed the high-severity valid-domain case: its first two
+stages classified missing controller approval as pending budget approval, and the
+handoff promoted unmatched-entry ownership into responsibility for approving and
+posting all invoices. Raw responses and the primary rejection remain separate.
+A replay regression reproduced the actual graph accepting unsupported generated
+approval labels before the architecture change.
+
+See `docs/adr/20261025-finance-source-state.md`. The finance YAML now invokes four
+real accounting preparation tools rather than unconstrained instruction drafts.
+TypeSafe/Jev still interprets the supplied sources; original quotes, full answer
+probabilities, raw provider response and usage are retained. Code computes balances,
+keeps budget-source interpretation separate from authenticated controller review,
+and binds every stage to the same source evidence. Payment/posting flags remain
+false. Original owner statements are quoted as supplied evidence; no ownership
+statement is promoted into approval authority. There is no generative output to
+repair. Default mock mode remains explicitly mock and cannot qualify the package.
+
+The exact finance profile is `jev-1.14.0` plus Node 24.22.0/arm64 and
+`finance-source-state-v1`. Its CLI needs the private TypeSafe key and explicit source
+upload consent; it does not need an MLX gateway or generative-model credential.
+The other three workflows retain the exact local Gemma profile and raw generation
+requirements. The strict report requires all 72 original cases and primary reviews,
+revalidates raw TypeSafe responses, rejects finance generation transports, and
+recomputes each actual accounting-tool output. Reports declare per-package model
+and execution scopes; a finance result is never called Gemma qualification. Full
+qualification and authenticated registry publication remain pending.

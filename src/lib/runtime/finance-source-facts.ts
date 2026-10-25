@@ -84,7 +84,7 @@ export function prepareFinanceFacts(inputs: Record<string, unknown>) {
   const related: Record<string, string> = Object.fromEntries(
     ids.map((id, i) => [`id${i}`, `Invoice identifier ${id}`]),
   );
-  related.none = "Not a cash movement or no unique supported invoice link";
+  related.none = "Not a cash movement or ledger entry, or no unique supported invoice link";
   const questions: Record<string, FactQuestion> = {};
   ids.forEach((id, i) => {
     questions[`type_${i}`] = {
@@ -113,7 +113,7 @@ export function prepareFinanceFacts(inputs: Record<string, unknown>) {
     };
     questions[`invoice_${i}`] = {
       type: "choice",
-      instructions: `If identifier ${id} is a cash movement, select the invoice identifier explicitly linked to it in original_sources. Otherwise select none. Do not infer a link without source support.`,
+      instructions: `If identifier ${id} is a cash movement or ledger entry, select the invoice identifier explicitly linked to it in original_sources. Otherwise select none. Do not infer a link without source support.`,
       criteria: related,
     };
   });
@@ -246,7 +246,7 @@ export function composeFinanceFacts(
   const union = (...groups: string[][]) => [...new Set(groups.flat())].sort();
   const records = prepared.ids.flatMap((id, i) => {
     const kind = choice(`type_${i}`);
-    if (kind !== "invoice" && kind !== "cash") return [];
+    if (kind !== "invoice" && kind !== "cash" && kind !== "ledger") return [];
     const base = {
       id,
       kind,
@@ -256,10 +256,12 @@ export function composeFinanceFacts(
       typeEvidence: response.answers[`type_${i}`],
       amountEvidence: response.answers[`amount_${i}`],
     };
-    if (kind !== "cash") return [{ ...base, direction: "none", invoiceId: null as string | null }];
+    if (kind === "invoice")
+      return [{ ...base, direction: "none", invoiceId: null as string | null }];
     const direction = choice(`direction_${i}`),
       link = choice(`invoice_${i}`);
-    if (direction !== "outflow" && direction !== "inflow") return fail();
+    if (kind === "cash" && direction !== "outflow" && direction !== "inflow") return fail();
+    if (kind === "ledger" && direction !== "none") return fail();
     const invoiceId = link === "none" ? null : prepared.ids[Number(link.slice(2))];
     if (link !== "none" && (!/^id\d+$/.test(link) || !invoiceId)) return fail();
     return [{ ...base, direction, invoiceId }];
@@ -267,7 +269,7 @@ export function composeFinanceFacts(
   const invoices = records.filter((r) => r.kind === "invoice"),
     cash = records.filter((r) => r.kind === "cash");
   if (!invoices.length) return fail();
-  for (const c of cash)
+  for (const c of records.filter((r) => r.kind === "cash" || r.kind === "ledger"))
     if (c.invoiceId && !invoices.some((i) => i.id === c.invoiceId)) return fail();
   const sum = (values: bigint[]) => values.reduce((a, b) => a + b, 0n);
   const invoiceTotal = sum(invoices.map((i) => i.amount)),

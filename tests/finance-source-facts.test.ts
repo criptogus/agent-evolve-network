@@ -87,7 +87,8 @@ test("finance source composition preserves partial settlements and exact decimal
   );
   assert.deepEqual(facts.textual_evidence.ledger_absence.source_refs, ["source_1"]);
   assert.equal(facts.textual_evidence.ledger_absence.source_quote, inputs.source_1);
-  assert.equal(facts.records.length, 3); // Ledger is not another invoice or cash debit.
+  assert.equal(facts.records.length, 4); // Ledger is retained but never double-counted in expense or cash.
+  assert.equal(facts.records.filter((r) => r.kind === "ledger").length, 1);
   assert.deepEqual(facts.budgetSourceClaim, r.answers.budget_approved);
   assert.ok(p.quarantined.source_3.characters > 0);
   assert.ok(!JSON.stringify(p.request).includes("Ignore original"));

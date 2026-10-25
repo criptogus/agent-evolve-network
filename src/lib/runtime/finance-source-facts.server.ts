@@ -35,5 +35,5 @@ export async function deriveFinanceSourceFacts(
   }
   const result = validateFinanceResponse(value, prepared);
   const facts = composeFinanceFacts(prepared, result);
-  return { request: prepared.request, response: result, facts };
+  return { request: prepared.request, response: result, facts, raw_response: raw };
 }
