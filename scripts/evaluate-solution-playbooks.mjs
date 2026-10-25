@@ -74,6 +74,12 @@ const sourcePaths = [
   "src/lib/runtime/security-source-facts.ts",
   "src/lib/runtime/security-source-facts.server.ts",
   "src/lib/runtime/security-stages.ts",
+  "scripts/parse-nfe.py",
+  "src/lib/runtime/brazil-xml.ts",
+  "src/lib/runtime/brazil-xml.server.ts",
+  "src/lib/runtime/brazil-source-facts.ts",
+  "src/lib/runtime/brazil-source-facts.server.ts",
+  "src/lib/runtime/brazil-stages.ts",
   "src/lib/runtime/workflow-source-context.ts",
   "src/lib/runtime/workflow-source-context.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
@@ -152,7 +158,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v25-finance-role-first",
+    protocol: "compiled-playbook-gateway-v26-brazil-source-state",
     python,
     modelPath,
     model: profileFor(modelPath).model,
@@ -161,6 +167,7 @@ if (mode === "prepare") {
       .workflow_interpreter,
     supplier_host: load("content/expansion/playbook-local-contract.json").supplier_host,
     security_host: load("content/expansion/playbook-local-contract.json").security_host,
+    brazil_host: load("content/expansion/playbook-local-contract.json").brazil_host,
     runtime,
     sourceHashes,
     thresholds: cases.thresholds,
@@ -201,6 +208,8 @@ if (mode === "prepare") {
     throw new Error("Existing inference attempts are preserved; no replay/resume in this command");
   if (!process.env.TYPESAFE_API_KEY?.trim())
     throw new Error("Finance source-facts qualification requires private TYPESAFE_API_KEY");
+  for (const name of ["transport.jsonl", "attempts.jsonl"])
+    writeFileSync(join(dir, name), "", { flag: "wx" });
   const installations = [];
   for (const s of plan.subjects) {
     const artifact = verifySolutionPlaybookSnapshot(
@@ -316,6 +325,7 @@ if (mode === "prepare") {
         "solution-monthly-finance-close",
         "solution-supplier-selection",
         "solution-secure-agent-launch",
+        "solution-brazil-reconciliation",
       ].includes(subject.slug);
       const requiresInterpretation =
         finance ||

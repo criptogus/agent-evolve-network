@@ -117,7 +117,7 @@ for (const s of SOLUTIONS) {
       slug: `solution-${s.id}`,
       name: s.title,
       type: "playbook",
-      version: "0.1.27",
+      version: "0.1.28",
       description: s.outcome,
       trigger: `When the user requests ${s.title.toLowerCase()} and provides authorized source inputs.`,
       inputs: Object.fromEntries(
@@ -125,19 +125,27 @@ for (const s of SOLUTIONS) {
       ),
       outputs: {
         deliverable: {
-          type: ["monthly-finance-close", "supplier-selection", "secure-agent-launch"].includes(
-            s.id,
-          )
+          type: [
+            "monthly-finance-close",
+            "supplier-selection",
+            "secure-agent-launch",
+            "brazil-reconciliation",
+          ].includes(s.id)
             ? "object"
             : "string",
           description: s.done.join("; "),
         },
       },
       steps: s.steps.map((x) =>
-        ["monthly-finance-close", "supplier-selection", "secure-agent-launch"].includes(s.id)
+        [
+          "monthly-finance-close",
+          "supplier-selection",
+          "secure-agent-launch",
+          "brazil-reconciliation",
+        ].includes(s.id)
           ? {
               id: x.id,
-              action: `tool:${s.id === "monthly-finance-close" ? "finance" : s.id === "secure-agent-launch" ? "security" : "supplier"}.${x.id}`,
+              action: `tool:${s.id === "monthly-finance-close" ? "finance" : s.id === "secure-agent-launch" ? "security" : s.id === "brazil-reconciliation" ? "brazil" : "supplier"}.${x.id}`,
               with: { requires: x.depends_on },
             }
           : {

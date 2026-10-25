@@ -99,6 +99,7 @@ test("all four standalone archives execute their actual CLI outside the reposito
                 "solution-monthly-finance-close",
                 "solution-supplier-selection",
                 "solution-secure-agent-launch",
+                "solution-brazil-reconciliation",
               ].includes(slug)
                 ? "[mock-tool]"
                 : "[mock-llm]",

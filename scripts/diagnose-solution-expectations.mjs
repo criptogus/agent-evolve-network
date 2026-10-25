@@ -24,6 +24,10 @@ import {
   composeSecurityFacts,
 } from "../src/lib/runtime/security-source-facts.ts";
 import { prepareSecurityStage } from "../src/lib/runtime/security-stages.ts";
+import { reconstructBrazilInterpretation } from "../src/lib/runtime/brazil-source-facts.ts";
+import { prepareBrazilStage } from "../src/lib/runtime/brazil-stages.ts";
+import { parseBrazilXml } from "../src/lib/runtime/brazil-xml.server.ts";
+import { prepareSourceContext } from "../src/lib/runtime/finance-source-facts.ts";
 const [dir, output] = process.argv.slice(2);
 if (process.argv.length !== 4 || !dir || !output || existsSync(output))
   throw new Error("Supply EVIDENCE_DIR NEW_REPORT; reports are never overwritten");
@@ -59,6 +63,12 @@ for (const path of [
   "src/lib/runtime/supplier-stages.ts",
   "src/lib/runtime/security-source-facts.ts",
   "src/lib/runtime/security-stages.ts",
+  "scripts/parse-nfe.py",
+  "src/lib/runtime/brazil-xml.ts",
+  "src/lib/runtime/brazil-xml.server.ts",
+  "src/lib/runtime/brazil-source-facts.ts",
+  "src/lib/runtime/brazil-source-facts.server.ts",
+  "src/lib/runtime/brazil-stages.ts",
   "src/lib/runtime/workflow-source-context.ts",
   "src/lib/runtime/gateway-messages.ts",
 ])
@@ -168,8 +178,29 @@ const results = raw.split("\n").map((line) => {
     }
     securityFacts = true;
   }
+  let brazilFacts = false;
+  if (subject.slug === "solution-brazil-reconciliation") {
+    const evidence = run.source_facts;
+    const xml = parseBrazilXml(prepareSourceContext(c.inputs).sources.source_1, plan.python);
+    const reconstructed = reconstructBrazilInterpretation(c.inputs, xml, evidence.provider_calls);
+    if (JSON.stringify(evidence) !== JSON.stringify(reconstructed))
+      throw new Error("Changed Brazil original parser/provider evidence");
+    const previous = {};
+    for (const step of run.step_outcomes) {
+      const expected = prepareBrazilStage(`brazil.${step.step_id}`, evidence, previous);
+      if (
+        step.status !== "ok" ||
+        step.attempts !== 1 ||
+        JSON.stringify(step.output) !== JSON.stringify(expected) ||
+        JSON.stringify(run.outputs[step.step_id]) !== JSON.stringify(expected)
+      )
+        throw new Error("Changed Brazil stage output");
+      previous[step.step_id] = { output: expected, status: "ok" };
+    }
+    brazilFacts = true;
+  }
   let workflowContext = false;
-  if (["solution-brazil-reconciliation"].includes(subject.slug)) {
+  if (false) {
     const evidence = run.workflow_context,
       prepared = prepareWorkflowContext(c.inputs);
     if (!evidence || JSON.stringify(evidence.request) !== JSON.stringify(prepared.request))
@@ -224,6 +255,7 @@ const results = raw.split("\n").map((line) => {
     finance_receipts_recomputed: financeReceipts,
     supplier_facts_and_stages_recomputed: supplierFacts,
     security_facts_and_stages_recomputed: securityFacts,
+    brazil_parser_facts_and_stages_recomputed: brazilFacts,
     workflow_context_and_requests_recomputed: workflowContext,
     generative_transport_qualification: "requires complete strict reporter, not this diagnostic",
     literal: c.original_case ? evaluateCase(c.original_case, text) : null,

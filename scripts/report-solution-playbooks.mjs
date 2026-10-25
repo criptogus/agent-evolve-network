@@ -31,16 +31,20 @@ import {
   composeSecurityFacts,
 } from "../src/lib/runtime/security-source-facts.ts";
 import { prepareSecurityStage } from "../src/lib/runtime/security-stages.ts";
+import { reconstructBrazilInterpretation } from "../src/lib/runtime/brazil-source-facts.ts";
+import { prepareBrazilStage } from "../src/lib/runtime/brazil-stages.ts";
+import { parseBrazilXml } from "../src/lib/runtime/brazil-xml.server.ts";
+import { BRAZIL_XML_RUNTIME } from "../src/lib/runtime/brazil-xml.ts";
+import { prepareSourceContext } from "../src/lib/runtime/finance-source-facts.ts";
 const [dir, reviewsPath, output] = process.argv.slice(2);
 if (!dir || !reviewsPath || !output || process.argv.length !== 5 || existsSync(output))
   throw new Error("Supply EVIDENCE_DIR PRIMARY_REVIEWS NEW_REPORT; existing reports are preserved");
 const hash = (s) => createHash("sha256").update(s).digest("hex");
 const read = (p) => JSON.parse(readFileSync(p, "utf8"));
-const lines = (p) =>
-  readFileSync(p, "utf8")
-    .trim()
-    .split("\n")
-    .map((line) => ({ raw: line, value: JSON.parse(line) }));
+const lines = (p) => {
+  const raw = readFileSync(p, "utf8").trim();
+  return raw ? raw.split("\n").map((line) => ({ raw: line, value: JSON.parse(line) })) : [];
+};
 const { planHash, ...plan } = read(join(dir, "plan.json"));
 if (hash(JSON.stringify(plan)) !== planHash) throw new Error("Changed plan");
 const contractPath = "content/expansion/playbook-adversarial-cases.json";
@@ -66,6 +70,16 @@ if (
   securityHost.architecture !== financeHost.architecture
 )
   throw new Error("Unqualified security interpreter/host");
+const brazilHost = read("content/expansion/playbook-local-contract.json").brazil_host;
+if (
+  JSON.stringify(plan.brazil_host) !== JSON.stringify(brazilHost) ||
+  brazilHost.model !== FINANCE_FACTS_MODEL ||
+  brazilHost.execution !== "brazil-source-state-v1" ||
+  brazilHost.node !== financeHost.node ||
+  brazilHost.architecture !== financeHost.architecture ||
+  JSON.stringify(brazilHost.xml_runtime) !== JSON.stringify(BRAZIL_XML_RUNTIME)
+)
+  throw new Error("Unqualified Brazil interpreter/XML runtime");
 const workflowInterpreter = read(
   "content/expansion/playbook-local-contract.json",
 ).workflow_interpreter;
@@ -87,7 +101,7 @@ if (JSON.stringify(plan.finance_host) !== JSON.stringify(financeHost))
   throw new Error("Unqualified finance model/host profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v25-finance-role-first" ||
+  plan.protocol !== "compiled-playbook-gateway-v26-brazil-source-state" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({
@@ -159,6 +173,12 @@ const requiredSources = [
   "src/lib/runtime/security-source-facts.ts",
   "src/lib/runtime/security-source-facts.server.ts",
   "src/lib/runtime/security-stages.ts",
+  "scripts/parse-nfe.py",
+  "src/lib/runtime/brazil-xml.ts",
+  "src/lib/runtime/brazil-xml.server.ts",
+  "src/lib/runtime/brazil-source-facts.ts",
+  "src/lib/runtime/brazil-source-facts.server.ts",
+  "src/lib/runtime/brazil-stages.ts",
   "src/lib/runtime/workflow-source-context.ts",
   "src/lib/runtime/workflow-source-context.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
@@ -248,6 +268,7 @@ const financeSchedule = schedule.filter(
       "solution-monthly-finance-close",
       "solution-supplier-selection",
       "solution-secure-agent-launch",
+      "solution-brazil-reconciliation",
     ].includes(s.slug) ||
     Object.values(c.inputs).some(
       (value) => typeof value === "string" && /\nSOURCE (?:NOTE|ATTACHMENT):/.test(value),
@@ -287,7 +308,8 @@ const outcomes = schedule.map(({ s, c }, i) => {
   const finance = s.slug === "solution-monthly-finance-close";
   const supplier = s.slug === "solution-supplier-selection";
   const security = s.slug === "solution-secure-agent-launch";
-  const sourceState = finance || supplier || security;
+  const brazil = s.slug === "solution-brazil-reconciliation";
+  const sourceState = finance || supplier || security || brazil;
   if (
     run.status !== "ok" ||
     run.playbook_slug !== s.slug ||
@@ -297,14 +319,22 @@ const outcomes = schedule.map(({ s, c }, i) => {
   )
     throw new Error("Incomplete graph or unexpected finance generation");
   if (sourceState) {
-    const host = finance ? financeHost : security ? securityHost : supplierHost;
+    const host = finance
+      ? financeHost
+      : security
+        ? securityHost
+        : brazil
+          ? brazilHost
+          : supplierHost;
     if (
       JSON.stringify(
         finance
           ? run.finance_execution
           : security
             ? run.security_execution
-            : run.supplier_execution,
+            : brazil
+              ? run.brazil_execution
+              : run.supplier_execution,
       ) !== JSON.stringify(host) ||
       JSON.stringify(run.local_model_evidence) !== JSON.stringify(host)
     )
@@ -377,6 +407,22 @@ const outcomes = schedule.map(({ s, c }, i) => {
       JSON.stringify(end.usage) !== JSON.stringify(response.usage)
     )
       throw new Error("Changed security source facts or usage");
+  } else if (brazil) {
+    const evidence = run.source_facts;
+    const xml = parseBrazilXml(prepareSourceContext(c.inputs).sources.source_1, plan.python);
+    const reconstructed = reconstructBrazilInterpretation(c.inputs, xml, evidence.provider_calls);
+    sourceFacts = reconstructed.facts;
+    const end = sourceFactsAttempts.find(
+      (a) => a.case_id === c.id && a.event === "source_facts_completed",
+    );
+    if (
+      JSON.stringify(evidence) !== JSON.stringify(reconstructed) ||
+      !end ||
+      end.evidence_sha256 !== hash(JSON.stringify(evidence)) ||
+      end.model !== FINANCE_FACTS_MODEL ||
+      JSON.stringify(end.usage) !== JSON.stringify(reconstructed.response.usage)
+    )
+      throw new Error("Changed Brazil parser/provider evidence or reconciliation");
   } else {
     if (run.source_facts) throw new Error("Unscheduled source-facts interpretation");
     const evidence = run.workflow_context,
@@ -417,11 +463,17 @@ const outcomes = schedule.map(({ s, c }, i) => {
     yaml.steps.forEach((definition, j) => {
       if (
         definition.action !==
-        `tool:${finance ? "finance" : security ? "security" : "supplier"}.${definition.id}`
+        `tool:${finance ? "finance" : security ? "security" : brazil ? "brazil" : "supplier"}.${definition.id}`
       )
         throw new Error("Unqualified finance graph action");
       const expected = (
-        finance ? prepareFinanceStage : security ? prepareSecurityStage : prepareSupplierStage
+        finance
+          ? prepareFinanceStage
+          : security
+            ? prepareSecurityStage
+            : brazil
+              ? prepareBrazilStage
+              : prepareSupplierStage
       )(definition.action.slice(5), run.source_facts, previous);
       const step = run.step_outcomes[j];
       if (
@@ -527,7 +579,9 @@ const reports = plan.subjects.map((s) => {
           ? `typesafe/${supplierHost.model}/${supplierHost.execution}@node-${supplierHost.node}-${supplierHost.architecture}`
           : s.slug === "solution-secure-agent-launch"
             ? `typesafe/${securityHost.model}/${securityHost.execution}@node-${securityHost.node}-${securityHost.architecture}`
-            : `${plan.model}+typesafe/${workflowInterpreter.model}/${workflowInterpreter.protocol}`,
+            : s.slug === "solution-brazil-reconciliation"
+              ? `typesafe/${brazilHost.model}/${brazilHost.execution}@node-${brazilHost.node}-${brazilHost.architecture}+xml-python-${brazilHost.xml_runtime.python}-${brazilHost.xml_runtime.expat}`
+              : `${plan.model}+typesafe/${workflowInterpreter.model}/${workflowInterpreter.protocol}`,
     execution_protocol:
       s.slug === "solution-monthly-finance-close"
         ? financeHost.execution
@@ -535,7 +589,9 @@ const reports = plan.subjects.map((s) => {
           ? supplierHost.execution
           : s.slug === "solution-secure-agent-launch"
             ? securityHost.execution
-            : plan.protocol,
+            : s.slug === "solution-brazil-reconciliation"
+              ? brazilHost.execution
+              : plan.protocol,
     source_sha256: plan.sourceHashes[`content/playbooks/${s.slug}.yaml`],
     artifact_sha256: s.artifact.sha256,
     total: os.length,
@@ -552,13 +608,16 @@ writeFileSync(
   JSON.stringify(
     {
       planHash,
-      model: plan.model,
+      model: FINANCE_FACTS_MODEL,
+      harness_model: plan.model,
+      generative_model_qualified: false,
       finance_host: financeHost,
       supplier_host: supplierHost,
       security_host: securityHost,
+      brazil_host: brazilHost,
       workflow_interpreter: workflowInterpreter,
       model_scope:
-        "Per-package models and execution protocols are recorded in reports; finance, supplier and security use pinned TypeSafe interpretation plus real domain tools; the remaining graph uses the pinned local generator plus separately recorded redacted-note interpretation.",
+        "Per-package models and execution protocols are recorded in reports. All four graphs use pinned TypeSafe interpretation and real source-state tools; Brazil additionally pins its local XML runtime. The fingerprinted MLX server is harness-only; zero generation does not qualify that model.",
       protocol: plan.protocol,
       total: 72,
       reports,

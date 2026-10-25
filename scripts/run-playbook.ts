@@ -48,8 +48,9 @@ const interpretedPlaybook = [
   "solution-monthly-finance-close",
   "solution-supplier-selection",
   "solution-secure-agent-launch",
+  "solution-brazil-reconciliation",
 ].includes(args.playbook);
-const generatedSolution = ["solution-brazil-reconciliation"].includes(args.playbook);
+const generatedSolution = false;
 let localContract;
 let localEvidence;
 const contractPath = join(ROOT, "references/runtime-profile.json");
@@ -57,9 +58,12 @@ if (args.gateway && existsSync(contractPath)) {
   try {
     localContract = JSON.parse(readFileSync(contractPath, "utf8"));
     if (
-      ["finance-source-state-v3", "supplier-source-state-v1", "security-source-state-v1"].includes(
-        localContract.execution,
-      )
+      [
+        "finance-source-state-v3",
+        "supplier-source-state-v1",
+        "security-source-state-v1",
+        "brazil-source-state-v1",
+      ].includes(localContract.execution)
     ) {
       const expected =
         args.playbook === "solution-monthly-finance-close"
@@ -68,13 +72,22 @@ if (args.gateway && existsSync(contractPath)) {
             ? "supplier-source-state-v1"
             : args.playbook === "solution-secure-agent-launch"
               ? "security-source-state-v1"
-              : null;
+              : args.playbook === "solution-brazil-reconciliation"
+                ? "brazil-source-state-v1"
+                : null;
       if (localContract.execution !== expected) throw new Error("Source-state workflow mismatch");
       if (
         process.versions.node !== localContract.node ||
         process.arch !== localContract.architecture
       )
         throw new Error("Source-state host runtime mismatch");
+      if (args.playbook === "solution-brazil-reconciliation") {
+        const { BRAZIL_XML_RUNTIME } = await import(
+          new URL("src/lib/runtime/brazil-xml.ts", ROOT_URL).href
+        );
+        if (JSON.stringify(localContract.xml_runtime) !== JSON.stringify(BRAZIL_XML_RUNTIME))
+          throw new Error("XML runtime profile mismatch");
+      }
       localEvidence = {
         execution: localContract.execution,
         model: localContract.model,
@@ -139,17 +152,26 @@ if (args["semantic-source-facts"] && interpretedPlaybook) {
   }
   try {
     const derive =
-      args.playbook === "solution-secure-agent-launch"
-        ? (await import(new URL("src/lib/runtime/security-source-facts.server.ts", ROOT_URL).href))
-            .deriveSecuritySourceFacts
-        : args.playbook === "solution-supplier-selection"
+      args.playbook === "solution-brazil-reconciliation"
+        ? (await import(new URL("src/lib/runtime/brazil-source-facts.server.ts", ROOT_URL).href))
+            .deriveBrazilSourceFacts
+        : args.playbook === "solution-secure-agent-launch"
           ? (
               await import(
-                new URL("src/lib/runtime/supplier-source-facts.server.ts", ROOT_URL).href
+                new URL("src/lib/runtime/security-source-facts.server.ts", ROOT_URL).href
               )
-            ).deriveSupplierSourceFacts
-          : (await import(new URL("src/lib/runtime/finance-source-facts.server.ts", ROOT_URL).href))
-              .deriveFinanceSourceFacts;
+            ).deriveSecuritySourceFacts
+          : args.playbook === "solution-supplier-selection"
+            ? (
+                await import(
+                  new URL("src/lib/runtime/supplier-source-facts.server.ts", ROOT_URL).href
+                )
+              ).deriveSupplierSourceFacts
+            : (
+                await import(
+                  new URL("src/lib/runtime/finance-source-facts.server.ts", ROOT_URL).href
+                )
+              ).deriveFinanceSourceFacts;
     sourceFacts = await derive(inputs, process.env.TYPESAFE_API_KEY, fetch, (evidence) => {
       sourceFactsProviderEvidence = evidence;
       sourceFactsProviderCalls.push(evidence);
@@ -220,6 +242,9 @@ if (args.gateway && generatedSolution) {
 }
 const financeMode = args.gateway && args.playbook === "solution-monthly-finance-close";
 const securityMode = args.gateway && args.playbook === "solution-secure-agent-launch";
+const brazilMode = args.gateway && args.playbook === "solution-brazil-reconciliation";
+if (brazilMode && localEvidence)
+  localEvidence = { ...localEvidence, xml_runtime: sourceFacts.xml_parser.runtime };
 if (args.gateway && interpretedPlaybook && !sourceFacts) {
   console.error(
     "Source-state execution requires --semantic-source-facts and explicit source upload consent",
@@ -242,10 +267,13 @@ const sourceExecution =
           ? "finance-source-state-v3"
           : securityMode
             ? "security-source-state-v1"
-            : "supplier-source-state-v1",
+            : brazilMode
+              ? "brazil-source-state-v1"
+              : "supplier-source-state-v1",
         model: sourceFacts.response.model,
         node: process.versions.node,
         architecture: process.arch,
+        ...(brazilMode ? { xml_runtime: sourceFacts.xml_parser.runtime } : {}),
       }
     : null;
 const adapters =
@@ -269,7 +297,9 @@ console.log(
               ? "finance_execution"
               : securityMode
                 ? "security_execution"
-                : "supplier_execution"]: sourceExecution,
+                : brazilMode
+                  ? "brazil_execution"
+                  : "supplier_execution"]: sourceExecution,
           }
         : {}),
     },
@@ -301,20 +331,22 @@ function mockAdapters() {
     invokeSkill: async ({ slug, inputs }) =>
       `[mock-skill:${slug}] ${JSON.stringify(inputs).slice(0, 80)}`,
     invokeTool: async ({ name, inputs }) =>
-      /^(finance|supplier|security)\./.test(name) ? `[mock-tool] ${name}` : { name, inputs },
+      /^(finance|supplier|security|brazil)\./.test(name) ? `[mock-tool] ${name}` : { name, inputs },
     onTelemetry: (e) => console.error(`[telemetry] ${JSON.stringify(e)}`),
   };
 }
 
 async function sourceStateAdapters() {
-  const prepare = securityMode
-    ? (await import(new URL("src/lib/runtime/security-stages.ts", ROOT_URL).href))
-        .prepareSecurityStage
-    : financeMode
-      ? (await import(new URL("src/lib/runtime/finance-stages.ts", ROOT_URL).href))
-          .prepareFinanceStage
-      : (await import(new URL("src/lib/runtime/supplier-stages.ts", ROOT_URL).href))
-          .prepareSupplierStage;
+  const prepare = brazilMode
+    ? (await import(new URL("src/lib/runtime/brazil-stages.ts", ROOT_URL).href)).prepareBrazilStage
+    : securityMode
+      ? (await import(new URL("src/lib/runtime/security-stages.ts", ROOT_URL).href))
+          .prepareSecurityStage
+      : financeMode
+        ? (await import(new URL("src/lib/runtime/finance-stages.ts", ROOT_URL).href))
+            .prepareFinanceStage
+        : (await import(new URL("src/lib/runtime/supplier-stages.ts", ROOT_URL).href))
+            .prepareSupplierStage;
   return {
     invokeInstruction: async () => {
       throw new Error("Unexpected free-form source-state generation");
