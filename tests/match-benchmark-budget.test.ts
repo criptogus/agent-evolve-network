@@ -2,6 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   BENCHMARK_USD_LIMIT,
+  BENCHMARK_PRIOR_HELD_USD,
+  BENCHMARK_PRIOR_SPEND_UPPER_USD,
   generatorCost,
   reserveGeneration,
   requireBenchmarkPreview,
@@ -13,7 +15,12 @@ test("benchmark metering rejects unknown/negative/cache inconsistencies", () => 
   assert.throws(() => generatorCost(NaN, 0, 1));
 });
 test("benchmark reserves output and byte bound before any paid call", () => {
-  const result = reserveGeneration("s", "p", "{}", BENCHMARK_USD_LIMIT);
+  const result = reserveGeneration(
+    "s",
+    "p",
+    "{}",
+    BENCHMARK_USD_LIMIT - BENCHMARK_PRIOR_HELD_USD - BENCHMARK_PRIOR_SPEND_UPPER_USD,
+  );
   assert.ok(result.reserve > 0);
   assert.throws(() => reserveGeneration("s", "p", "{}", result.reserve - 0.00001));
   assert.throws(() => reserveGeneration("s", "p", "{}", BENCHMARK_USD_LIMIT + 1));
@@ -51,4 +58,8 @@ test("native reconciliation cannot reset spending or release unaccounted reserva
     }),
     BENCHMARK_USD_LIMIT - BENCHMARK_PRIOR_HELD_USD - BENCHMARK_PRIOR_SPEND_UPPER_USD - 0.2,
   );
+});
+
+test("caller cannot reset remaining authority to the original USD 7 after reconciled cohorts", () => {
+  assert.throws(() => reserveGeneration("s", "p", "{}", BENCHMARK_USD_LIMIT));
 });

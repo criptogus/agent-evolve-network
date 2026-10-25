@@ -1,4 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
+import { selectionScope } from "./jev-selection-cache.server.ts";
 import { z } from "zod";
 import { generateText, Output } from "ai";
 import { streamMatchResult, type MatchStreamEvent } from "./result-stream.ts";
@@ -62,13 +64,16 @@ export const matchAgentToPackages = createServerFn({ method: "POST" })
       if (error) throw new Response(`Catalog read failed: ${error.message}`, { status: 500 });
       const catalog = (rows ?? []) as CatalogRow[];
 
-      const { candidates, trace: selection } = await preselectAgentMatch({
-        brief: data.brief,
-        vertical: data.vertical,
-        catalog,
-        desired: data.desired,
-        consent: data.semantic_selection,
-      });
+      const { candidates, trace: selection } = await preselectAgentMatch(
+        {
+          brief: data.brief,
+          vertical: data.vertical,
+          catalog,
+          desired: data.desired,
+          consent: data.semantic_selection,
+        },
+        { cacheScope: selectionScope(getRequest()) },
+      );
 
       const { system, prompt } = buildMatchPrompt({
         ...data,

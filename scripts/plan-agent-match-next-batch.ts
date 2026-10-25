@@ -5,9 +5,8 @@ import { z } from "zod";
 import { evidenceHash } from "../src/lib/match/paired-evaluation.ts";
 import { buildMatchPrompt, buildMatchWireSchema } from "../src/lib/match/match-contract.ts";
 import {
-  BENCHMARK_USD_LIMIT,
   reconcileBenchmarkBudget,
-  reserveGeneration,
+  generationReservation,
 } from "../src/lib/match/benchmark-budget.ts";
 const args = process.argv.slice(2);
 if (args.length !== 4 || args.some((a) => !a.trim()))
@@ -99,7 +98,7 @@ for (const c of plan.cases) {
     catalogSize: plan.catalog.length,
     desired: plan.desired,
   });
-  reservations.set(c.id, reserveGeneration(p.system, p.prompt, wire, BENCHMARK_USD_LIMIT));
+  reservations.set(c.id, generationReservation(p.system, p.prompt, wire));
 }
 for (let i = 0; i < journal.rows.length; i++) {
   const row = journal.rows[i],

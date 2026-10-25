@@ -58,7 +58,12 @@ test("Jev adapter uses only fixed TypeSafe endpoint, rejects redirects and recor
     assert.equal(new Headers(init?.headers).get("authorization"), `Bearer ${options.apiKey}`);
     const body = JSON.parse(String(init?.body));
     assert.equal(body.model, JEV_MATCH_MODEL);
-    assert.equal(body.state.candidates.length, catalog.length);
+    assert.equal(
+      Object.values(body.questions).map(
+        (q: { instructions: { candidate: { slug: string } } }) => q.instructions.candidate,
+      ).length,
+      catalog.length,
+    );
     assert.equal(Object.keys(body.questions).length, catalog.length);
     assert.ok(!String(init?.body).includes(options.apiKey));
     return new Response(JSON.stringify(response()));
@@ -175,10 +180,22 @@ test("bounded batching preserves catalog order and never sends over forty candid
     active++;
     maxActive = Math.max(active, maxActive);
     const body = JSON.parse(String(init?.body));
-    assert.ok(body.state.candidates.length <= 40);
+    assert.ok(
+      Object.values(body.questions).map(
+        (q: { instructions: { candidate: { slug: string } } }) => q.instructions.candidate,
+      ).length <= 40,
+    );
     await new Promise((resolve) => setTimeout(resolve, 2));
     active--;
-    return new Response(JSON.stringify(response(body.state.candidates.map(() => 0.99))));
+    return new Response(
+      JSON.stringify(
+        response(
+          Object.values(body.questions)
+            .map((q: { instructions: { candidate: { slug: string } } }) => q.instructions.candidate)
+            .map(() => 0.99),
+        ),
+      ),
+    );
   };
   const result = await preselectAgentMatch(
     { ...input, catalog: large },
@@ -214,8 +231,21 @@ test("a single failed batch never produces a partial filtered catalog", async ()
   const large = Array.from({ length: 90 }, (_, i) => ({ ...catalog[0], slug: `candidate-${i}` }));
   const fetcher: typeof fetch = async (_, init) => {
     const body = JSON.parse(String(init?.body));
-    if (body.state.candidates[0].slug === "candidate-40") return new Response("bad JSON");
-    return new Response(JSON.stringify(response(body.state.candidates.map(() => 0.01))));
+    if (
+      Object.values(body.questions).map(
+        (q: { instructions: { candidate: { slug: string } } }) => q.instructions.candidate,
+      )[0].slug === "candidate-40"
+    )
+      return new Response("bad JSON");
+    return new Response(
+      JSON.stringify(
+        response(
+          Object.values(body.questions)
+            .map((q: { instructions: { candidate: { slug: string } } }) => q.instructions.candidate)
+            .map(() => 0.01),
+        ),
+      ),
+    );
   };
   const result = await preselectAgentMatch(
     { ...input, catalog: large },
@@ -229,8 +259,8 @@ test("a single failed batch never produces a partial filtered catalog", async ()
 test("question identity is explicit rather than relying on numeric array indirection", () => {
   const request = buildJevRequest(input.brief, undefined, catalog);
   catalog.forEach((candidate, i) => {
-    assert.ok(request.questions[`c${i}`].instructions.includes(candidate.name));
-    assert.ok(request.questions[`c${i}`].instructions.includes(candidate.slug));
+    assert.ok(JSON.stringify(request.questions[`c${i}`].instructions).includes(candidate.name));
+    assert.ok(JSON.stringify(request.questions[`c${i}`].instructions).includes(candidate.slug));
   });
 });
 

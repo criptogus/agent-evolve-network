@@ -6,6 +6,7 @@ import { generateText, Output } from "ai";
 import { matchGenerationOptions, MATCH_PROVIDER_OPTIONS } from "./match-generation.ts";
 import { streamMatchResult } from "./result-stream.ts";
 import { preselectAgentMatch } from "./jev-agent-match.server.ts";
+import { selectionScope } from "./jev-selection-cache.server.ts";
 import { z } from "zod";
 import {
   buildMatchOutputSchema,
@@ -88,14 +89,23 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
         },
         {
           mode: data.arm === "jev" ? "filter" : "off",
+          cacheScope: selectionScope(getRequest(), `match-benchmark:${data.attempt.split(":")[0]}`),
           fetch: async (url, init) => {
             const response = await fetch(url, init);
             if (response.ok) {
               const sent = z
                 .object({
-                  state: z.object({ candidates: z.array(z.object({ slug: z.string() })).min(1) }),
+                  questions: z.record(
+                    z.string(),
+                    z.object({
+                      instructions: z.object({ candidate: z.object({ slug: z.string() }) }),
+                    }),
+                  ),
                 })
                 .parse(JSON.parse(String(init?.body)));
+              const sentCandidates = Object.values(sent.questions).map(
+                (q) => q.instructions.candidate,
+              );
               const parsed = z
                 .object({
                   model: z.literal("jev-1.14.0"),
@@ -111,11 +121,9 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
                 .safeParse(await response.clone().json());
               if (parsed.success)
                 selectionBatches.push({
-                  offset: data.candidates.findIndex(
-                    (c) => c.slug === sent.state.candidates[0].slug,
-                  ),
+                  offset: data.candidates.findIndex((c) => c.slug === sentCandidates[0].slug),
                   model: parsed.data.model,
-                  probabilities: sent.state.candidates.map(
+                  probabilities: sentCandidates.map(
                     (_, i) => parsed.data.answers[`c${i}`]?.noul ?? -1,
                   ),
                   inputTokens: parsed.data.usage.input_tokens,

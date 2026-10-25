@@ -1,3 +1,9 @@
+import {
+  createSelectionCache,
+  selectionCacheKey,
+  selectionEvidenceHash,
+  type SelectionCache,
+} from "./jev-selection-cache.server.ts";
 import { z } from "zod";
 import {
   buildJevRequest,
@@ -8,6 +14,7 @@ import {
   type MatchCandidate,
 } from "./jev-selection.ts";
 
+const sharedCache = createSelectionCache();
 const ENDPOINT = "https://api.typesafe.ai/v1/systemone";
 const MAX_CATALOG = 800;
 const MAX_BODY = 48000;
@@ -37,6 +44,14 @@ export type MatchSelectionTrace = {
   output_tokens: number;
   usage_complete: boolean;
   elapsed_ms: number;
+  cache?: {
+    status: "hit" | "miss";
+    age_ms: number;
+    source_input_tokens: number;
+    source_output_tokens: number;
+    source_requests: number;
+    source_hash: string;
+  };
   failures?: Array<{ stage: string; http_status?: number; category?: string }>;
 };
 export type JevMatchOptions = {
@@ -44,6 +59,8 @@ export type JevMatchOptions = {
   mode?: string;
   fetch?: typeof fetch;
   timeoutMs?: number;
+  cacheScope?: string;
+  cache?: SelectionCache;
 };
 
 // No gateway fallback: this module talks only to TypeSafe. Nothing here can
@@ -99,6 +116,27 @@ export async function preselectAgentMatch(
     trace.status = "fallback";
     trace.reason = "invalid_catalog";
     return finish();
+  }
+  const cache = options.cache ?? sharedCache;
+  const cacheKey = options.cacheScope
+    ? selectionCacheKey({ ...input, scope: options.cacheScope, apiKey: key })
+    : undefined;
+  const cached = cacheKey ? cache.get(cacheKey) : undefined;
+  if (cached && cached.value.probabilities.length === catalog.length) {
+    const result = selectMatchCandidates(catalog, cached.value.probabilities, input.desired);
+    trace.status = "complete";
+    trace.reason = result.reason;
+    trace.model = cached.value.model;
+    trace.selected_count = result.candidates.length;
+    trace.cache = {
+      status: "hit",
+      age_ms: cached.ageMs,
+      source_input_tokens: cached.value.inputTokens,
+      source_output_tokens: cached.value.outputTokens,
+      source_requests: cached.value.requests,
+      source_hash: selectionEvidenceHash(cached.value),
+    };
+    return finish(mode === "filter" ? result.candidates : catalog);
   }
   const controller = new AbortController();
   const timeout = setTimeout(
@@ -211,6 +249,29 @@ export async function preselectAgentMatch(
     trace.reason = result.reason;
     trace.model = JEV_MATCH_MODEL;
     trace.selected_count = result.candidates.length;
+    if (cacheKey) {
+      cache.set(cacheKey, {
+        probabilities,
+        model: JEV_MATCH_MODEL,
+        requests: trace.requests,
+        inputTokens: trace.input_tokens,
+        outputTokens: trace.output_tokens,
+      });
+      trace.cache = {
+        status: "miss",
+        age_ms: 0,
+        source_input_tokens: trace.input_tokens,
+        source_output_tokens: trace.output_tokens,
+        source_requests: trace.requests,
+        source_hash: selectionEvidenceHash({
+          probabilities,
+          model: JEV_MATCH_MODEL,
+          requests: trace.requests,
+          inputTokens: trace.input_tokens,
+          outputTokens: trace.output_tokens,
+        }),
+      };
+    }
     return finish(mode === "filter" ? result.candidates : catalog);
   } finally {
     clearTimeout(timeout);

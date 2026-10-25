@@ -76,6 +76,7 @@ if (
 )
   throw new Error("Incomplete frozen fixtures/catalog");
 const sourceFiles = [
+  "scripts/evaluate-agent-match-comparison.ts",
   "src/lib/match/match-contract.ts",
   "src/lib/match/result-stream.ts",
   "src/lib/server/response-deadline.ts",
@@ -89,6 +90,7 @@ const sourceFiles = [
   "src/lib/ai-gateway.ts",
   "src/lib/match/mcp-registry.ts",
   "src/lib/match/jev-selection.ts",
+  "src/lib/match/jev-selection-cache.server.ts",
   "src/lib/match/jev-agent-match.server.ts",
   "src/lib/match/paired-evaluation.ts",
   "package.json",

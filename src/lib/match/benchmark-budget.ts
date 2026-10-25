@@ -5,14 +5,18 @@ export const BENCHMARK_OUTPUT_LIMIT = MATCH_MAX_OUTPUT_TOKENS;
 export const BENCHMARK_USD_LIMIT = 7;
 // Hold the original client error, v8 Jev reservation, v15 schema error and interrupted v16 attempt; never reset the owner cap.
 export const BENCHMARK_PRIOR_HELD_USD = 1.08116575;
-// Prior native AI checkpoints displayed 0.24 credits (RPC delivery failed)
-// and 0.26 credits (completed baseline with a primary quality failure).
-// Sixty-one successful native billing checkpoints total 12.10 displayed credits; upper bound (12.10 + 61*0.005) * USD 0.25.
-export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 3.10125;
+// Prior 61 checkpoints (US$3.10125 upper) plus the fully reconciled v26
+// 72-request cohort (US$2.38 upper). Unknown holds stay separate and unchanged.
+export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 5.48125;
 export function generatorCost(input: number, cached: number, output: number) {
   if (![input, cached, output].every((n) => Number.isSafeInteger(n) && n >= 0) || cached > input)
     throw new Error("Missing or invalid usage");
   return ((input - cached) * 1.75 + cached * 0.175 + output * 14) / 1e6;
+}
+export function generationReservation(system: string, prompt: string, schema: string) {
+  // Pure estimate, never authority: no average chars/token assumption.
+  const inputUpperBound = new TextEncoder().encode(system + prompt + schema).length + 4096;
+  return { inputUpperBound, reserve: generatorCost(inputUpperBound, 0, BENCHMARK_OUTPUT_LIMIT) };
 }
 export function reserveGeneration(
   system: string,
@@ -20,12 +24,12 @@ export function reserveGeneration(
   schema: string,
   remaining: number,
 ) {
-  // Byte upper bound plus framing allowance; no average chars/token assumption.
-  const inputUpperBound = new TextEncoder().encode(system + prompt + schema).length + 4096;
-  const reserve = generatorCost(inputUpperBound, 0, BENCHMARK_OUTPUT_LIMIT);
-  if (!Number.isFinite(remaining) || remaining < reserve || remaining > BENCHMARK_USD_LIMIT)
+  const reservation = generationReservation(system, prompt, schema);
+  const available =
+    BENCHMARK_USD_LIMIT - BENCHMARK_PRIOR_HELD_USD - BENCHMARK_PRIOR_SPEND_UPPER_USD;
+  if (!Number.isFinite(remaining) || remaining < reservation.reserve || remaining > available)
     throw new Error("Insufficient authorized budget");
-  return { inputUpperBound, reserve };
+  return reservation;
 }
 export function requireBenchmarkPreview(url: string) {
   if (

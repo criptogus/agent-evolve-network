@@ -60,6 +60,16 @@ const rowSchema = z.object({
         model: z.string().nullable(),
         mode: z.enum(["off", "shadow", "filter"]),
         usage_complete: z.boolean(),
+        cache: z
+          .object({
+            status: z.enum(["hit", "miss"]),
+            age_ms: number,
+            source_input_tokens: number,
+            source_output_tokens: number,
+            source_requests: number,
+            source_hash: z.string().regex(/^[a-f0-9]{64}$/),
+          })
+          .optional(),
         requests: number,
         input_tokens: number,
         output_tokens: number,
@@ -113,7 +123,8 @@ const { planHash: declaredHash, ...planPayload } = rawPlan;
 if (evidenceHash(planPayload) !== declaredHash) throw new Error("Invalid frozen plan hash");
 for (const [path, hash] of Object.entries(plan.sources)) {
   if (
-    !/^(src\/[\w./-]+\.(?:ts|tsx)|package(?:-lock)?\.json)$/.test(path) ||
+    (path !== "scripts/evaluate-agent-match-comparison.ts" &&
+      !/^(src\/[\w./-]+\.(?:ts|tsx)|package(?:-lock)?\.json)$/.test(path)) ||
     path.split("/").includes("..")
   )
     throw new Error("Invalid source path");
@@ -121,6 +132,7 @@ for (const [path, hash] of Object.entries(plan.sources)) {
     missing.push(`stale_source:${path}`);
 }
 
+const selectorSources = new Set<string>();
 for (const row of journal.rows) {
   const r = row.result;
   const billed = billing.find((b) => b.attempt === r.attempt && b.responseId === r.responseId);
@@ -135,6 +147,35 @@ for (const row of journal.rows) {
   }
   const usage = r.usage;
   const trace = r.selection;
+  if (trace && row.arm === "jev") {
+    const cached = trace.cache;
+    const source = cached ? `${row.caseId}:${cached.source_hash}` : "";
+    if (cached?.status === "miss") {
+      if (
+        trace.model !== "jev-1.14.0" ||
+        trace.mode !== "filter" ||
+        !trace.usage_complete ||
+        !trace.requests ||
+        cached.age_ms !== 0 ||
+        cached.source_requests !== trace.requests ||
+        cached.source_input_tokens !== trace.input_tokens ||
+        cached.source_output_tokens !== trace.output_tokens
+      )
+        missing.push(`invalid_selector_cache_source:${r.attempt}`);
+      else selectorSources.add(source);
+    }
+    if (cached?.status === "hit") {
+      if (
+        !selectorSources.has(source) ||
+        cached.age_ms >= 300000 ||
+        trace.requests !== 0 ||
+        trace.input_tokens !== 0 ||
+        trace.output_tokens !== 0 ||
+        !cached.source_requests
+      )
+        missing.push(`unverified_selector_cache_hit:${r.attempt}`);
+    } else if (trace.requests === 0) missing.push(`selector_usage_without_source:${r.attempt}`);
+  }
   const usageComplete =
     !!usage &&
     Object.values(usage).every((v) => v !== null) &&
