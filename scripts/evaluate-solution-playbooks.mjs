@@ -95,7 +95,7 @@ if (mode === "prepare") {
     writeFileSync(snapshot, readFileSync(source), { flag: "wx" });
   }
   const payload = {
-    protocol: "compiled-playbook-gateway-v2",
+    protocol: "compiled-playbook-gateway-v3",
     python,
     modelPath,
     model: profileFor(modelPath).model,

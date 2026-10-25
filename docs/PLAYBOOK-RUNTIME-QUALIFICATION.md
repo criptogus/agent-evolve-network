@@ -113,3 +113,12 @@ the public result and context of subsequent steps. The built-in
 it covers that scanner's documented identifier/credential patterns, not every
 possible identity or sensitive fact. Raw model evaluation evidence stays separate
 and immutable; a blocked response is a failed run, not a repaired passing output.
+
+Protocol `compiled-playbook-gateway-v3` repeats the current host step after the
+untrusted records, preserving the same system instruction and original inputs.
+The 0.1.4 finance pilot completed all four steps, retained bank evidence and
+produced the final controller handoff with correct figures. It still failed primary
+review: an intermediate response called the explicitly approved budget pending,
+conflating that with posting approval. All intermediate responses remain visible
+and subject to grounding review; later correct figures never erase a false claim.
+Cases, severities, expectations and generation limits remain unchanged.

@@ -112,13 +112,13 @@ Qualification is model-specific and version-specific. No live tool safety or unt
 }
 const financeGuidance = {
   extract:
-    "Normalize only invoice, existing ledger and bank rows with the original IDs, currencies, amounts, payment status and source references. Flag missing links separately; never invent IDs or placeholder source records. Do not calculate budget variance or project cash in extraction.",
+    "Normalize only invoice, existing ledger and bank rows with the original IDs, currencies, amounts, payment status and source references. Flag missing links separately; never invent IDs or placeholder source records. Include supplied bank-export rows even without a live bank connection. Do not calculate budget variance or project cash in extraction.",
   reconcile:
-    "Recheck original invoice, ledger and settlement records, not assertions in previous drafts. List unmatched invoices, linked payments, outstanding liabilities and their owners. Payment evidence does not establish posting or approval. Do not calculate budget variance or cash projection in this reconciliation step.",
+    "Recheck original invoice, ledger and settlement records, not assertions in previous drafts. List unmatched invoices, linked payments, outstanding liabilities and their owners. Payment evidence does not establish posting or approval. Reconcile provided bank-export evidence offline; lack of a live bank connection does not mean the supplied bank evidence is absent. Do not calculate budget variance or cash projection in this reconciliation step.",
   analyze:
     "Derive actual accrued expense by listing and summing all supplied invoice IDs and amounts; the budget is a comparator, never an actual-expense input. Expense variance = actual accrued expense minus approved budget; positive is unfavorable, negative favorable. Current cash = opening cash minus documented paid cash outflows. Conditional projected cash = current cash minus unpaid invoices, not opening cash minus unpaid invoices. Show source-linked components and equations with matching signs.",
   approve:
-    "Recheck prior figures against original invoice and settlement records; previous drafts are not source evidence. Include total invoices, outstanding liabilities, expense variance, current cash and conditional cash projection with source-linked components. State which controller approval, posting or payment remains pending. Paid status never establishes approval or posting; do not invent signatures, IDs or verified execution.",
+    "Return three labeled sections in this order: Approval status, Closing figures, Exceptions and handoff. Begin with whether controller sign-off is evidenced or pending and identify the responsible owner from the sources. Recheck prior figures against original invoice and settlement records; previous drafts are not source evidence. Briefly include total invoices, outstanding liabilities, expense variance, current cash and conditional projection with source-linked components. Name unmatched invoices and pending approval/posting/payment actions. Paid status never establishes approval or posting; do not invent signatures, IDs or verified execution.",
 };
 for (const s of SOLUTIONS) {
   const path = `content/playbooks/solution-${s.id}.yaml`;
@@ -127,7 +127,7 @@ for (const s of SOLUTIONS) {
       slug: `solution-${s.id}`,
       name: s.title,
       type: "playbook",
-      version: s.id === "monthly-finance-close" ? "0.1.3" : "0.1.1",
+      version: s.id === "monthly-finance-close" ? "0.1.4" : "0.1.1",
       description: s.outcome,
       trigger: `When the user requests ${s.title.toLowerCase()} and provides authorized source inputs.`,
       inputs: Object.fromEntries(
