@@ -39,7 +39,7 @@ test("continuity diagnosis observes the selector instance without calls, secrets
   const first = selectionCacheDiagnostics(request, "cohort"),
     second = selectionCacheDiagnostics(request, "cohort");
   assert.equal(first.instanceId, second.instanceId);
-  assert.equal(first.instanceStartedAt, second.instanceStartedAt);
+  assert.equal(first.firstObservedAt, second.firstObservedAt);
   assert.equal(first.partition, second.partition);
   assert.notEqual(first.partition, selectionCacheDiagnostics(request, "other-cohort").partition);
   assert.notEqual(
