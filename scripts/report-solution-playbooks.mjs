@@ -39,7 +39,7 @@ const profile = read("content/expansion/playbook-model-profiles.json").find(
 if (!profile) throw new Error("Unsupported exact model/runtime profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v6-local-contract" ||
+  plan.protocol !== "compiled-playbook-gateway-v7-cash-scenarios" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({
@@ -81,6 +81,7 @@ const requiredSources = [
   "content/expansion/playbook-local-contract.json",
   "scripts/run-playbook.ts",
   "scripts/evaluate-solution-playbooks.mjs",
+  "scripts/playbook-evaluation-proxy.mjs",
   "scripts/solution-artifact-files.ts",
   "src/lib/solutions/catalog.ts",
   "src/lib/plugins/agent-plugins.ts",

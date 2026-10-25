@@ -70,6 +70,13 @@ test("finance source composition preserves partial settlements and exact decimal
   assert.equal(facts.totals.current_cash.display, "BRL 2499.90");
   assert.equal(facts.totals.outstanding.minor_units, "44505");
   assert.equal(facts.totals.conditional_projected_cash.display, "BRL 2054.85");
+  assert.equal(facts.cash_scenarios.no_new_payments.minor_units, "249990");
+  assert.equal(facts.cash_scenarios.settle_all_outstanding.minor_units, "205485");
+  assert.equal(facts.cash_scenarios.settle_all_outstanding.requires_new_payments, true);
+  assert.match(
+    facts.cash_scenarios.settle_all_outstanding.condition,
+    /If all outstanding invoice liabilities are paid/,
+  );
   assert.equal(facts.records.length, 3); // Ledger is not another invoice or cash debit.
   assert.deepEqual(facts.budgetSourceClaim, r.answers.budget_approved);
   assert.ok(p.quarantined.source_3.characters > 0);

@@ -69,6 +69,7 @@ test("primary report rejects a partial cohort even with all runtime bindings", (
       "content/expansion/playbook-local-contract.json",
       "scripts/run-playbook.ts",
       "scripts/evaluate-solution-playbooks.mjs",
+      "scripts/playbook-evaluation-proxy.mjs",
       "scripts/solution-artifact-files.ts",
       "src/lib/solutions/catalog.ts",
       "src/lib/plugins/agent-plugins.ts",
@@ -90,7 +91,7 @@ test("primary report rejects a partial cohort even with all runtime bindings", (
       ...contract.subjects.map((s: { slug: string }) => `content/playbooks/${s.slug}.yaml`),
     ];
     const payload = {
-      protocol: "compiled-playbook-gateway-v6-local-contract",
+      protocol: "compiled-playbook-gateway-v7-cash-scenarios",
       model: profile.model,
       modelPath: `/local/${profile.revision}`,
       runtime: {

@@ -133,3 +133,35 @@ approval. Every v6 graph case includes the verified model/runtime receipt; the
 report checks it against the frozen evaluation plan. Prior v5 pilot responses
 remain separate and cannot qualify this revised artifact. Mock execution remains
 explicit transport-only evidence; no model or financial qualification is inherited.
+
+### V6 rejection and v7 cash scenarios (0.1.9 candidate)
+
+The real v6 valid-domain graph completed four non-truncated generations but failed
+primary review at high severity: the analysis correctly subtracted outstanding
+invoices while explicitly saying that the resulting cash projection excluded their
+payment. Later correct figures did not repair that earlier contradiction. The
+original outputs and hash-bound failure remain in the v6 evidence directory.
+The next CLI was stopped after this verdict; its partial work remains unknown and
+cannot be resumed or counted as qualified. The evaluator hit a mutable-active-case
+race while draining its proxy; the exec process terminated and independent OS
+inspection confirmed the model server terminal. No normal shutdown receipt was
+fabricated; an external inspection receipt records the distinction.
+
+The v7 candidate retains both original cash scenarios explicitly in source facts:
+no new payments retains current cash; paying all outstanding invoices yields the
+conditional reduced balance. The instruction requires each condition beside its
+own amount instead of allowing incompatible free-form assumptions. Arithmetic,
+case inputs, expectations, severities and approval thresholds remain unchanged.
+The actual evaluation proxy is now shared with a real loopback regression that
+clears the active case while a request drains and verifies the original case/hash
+binding survives. This fixes execution evidence handling, not model correctness.
+
+Use `node scripts/inspect-solution-evaluation.mjs EVIDENCE_DIR NEW_REPORT_JSON`
+for repeatable progress diagnostics. It writes an aggregate report without model
+calls or publication actions; exit 4 is diagnostic/incomplete, exit 2 records errors
+or unknown attempts. It rejects empty preparations and substituted case records.
+Its recorded in-flight counts do not establish process liveness. The actual run on
+the rejected v6 directory recorded two case rows (one cancelled), 70 pending, and
+no publication approval; primary failure and unknown source-fact work are retained.
+A new complete real cohort remains mandatory for v7, with all 72 cases and primary
+review. No inference or builder call in this local workflow uses Lovable.

@@ -282,6 +282,21 @@ export function composeFinanceFacts(
         { minor_units: v.toString(), display: `${prepared.currency} ${display(v)}` },
       ]),
     ),
+    cash_scenarios: {
+      no_new_payments: {
+        condition:
+          "If no new payments or inflows occur, retain current cash after source-recorded movements.",
+        minor_units: current.toString(),
+        display: `${prepared.currency} ${display(current)}`,
+      },
+      settle_all_outstanding: {
+        condition:
+          "If all outstanding invoice liabilities are paid, subtract those liabilities from current cash; this is conditional analysis, not payment execution or authorization.",
+        minor_units: (current - outstanding).toString(),
+        display: `${prepared.currency} ${display(current - outstanding)}`,
+        requires_new_payments: outstanding > 0n,
+      },
+    },
     budgetSourceClaim: response.answers.budget_approved,
     model: response.model,
     usage: response.usage,

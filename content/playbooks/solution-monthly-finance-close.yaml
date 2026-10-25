@@ -1,7 +1,7 @@
 slug: solution-monthly-finance-close
 name: Close the financial month
 type: playbook
-version: 0.1.8
+version: 0.1.9
 description: A reconciled ledger, explained variances and an owner-reviewed closing pack.
 trigger: When the user requests close the financial month and provides authorized source inputs.
 inputs:
@@ -106,7 +106,12 @@ steps:
         approved budget; positive is unfavorable, negative favorable. Current cash = opening cash
         minus documented paid cash outflows. Conditional projected cash = current cash minus unpaid
         invoices, not opening cash minus unpaid invoices. Show source-linked components and
-        equations with matching signs."
+        equations with matching signs. Label both cash scenarios from source_facts.cash_scenarios:
+        no new payments retains current cash; settling all outstanding invoices gives conditional
+        projected cash. State each scenario condition exactly with its corresponding amount. The
+        projected reduction assumes paying outstanding invoices; it cannot exclude those payments.
+        Do not add assumptions about future invoices, inflows or payment status that change those
+        scenario conditions."
   - id: approve
     action: instruction
     with:

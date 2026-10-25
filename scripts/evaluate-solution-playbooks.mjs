@@ -1,4 +1,5 @@
 /** Finite offline execution of real compiled workflows. No automated semantic verdict or publishing. */
+import { createPlaybookEvaluationProxy } from "./playbook-evaluation-proxy.mjs";
 import { createHash } from "node:crypto";
 import {
   createReadStream,
@@ -42,6 +43,7 @@ const sourcePaths = [
   "content/expansion/playbook-local-contract.json",
   "scripts/run-playbook.ts",
   "scripts/evaluate-solution-playbooks.mjs",
+  "scripts/playbook-evaluation-proxy.mjs",
   "scripts/solution-artifact-files.ts",
   "src/lib/solutions/catalog.ts",
   "src/lib/plugins/agent-plugins.ts",
@@ -132,7 +134,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v6-local-contract",
+    protocol: "compiled-playbook-gateway-v7-cash-scenarios",
     python,
     modelPath,
     model: profileFor(modelPath).model,
@@ -268,79 +270,12 @@ if (mode === "prepare") {
       network: "loopback only; HF offline; no tools",
       planHash,
     });
-    proxy = createServer(async (req, res) => {
-      if (req.method === "GET" && req.url === "/health") {
-        const upstream = await fetch(`http://127.0.0.1:${port}/health`, {
-          signal: AbortSignal.timeout(5000),
-        });
-        res.writeHead(upstream.status, { "content-type": "application/json" });
-        res.end(await upstream.text());
-        return;
-      }
-      if (!active || req.method !== "POST" || req.url !== "/chat/completions") {
-        res.writeHead(400);
-        res.end();
-        return;
-      }
-      let body = "";
-      for await (const chunk of req) body += chunk;
-      const step = ++requestCount;
-      appendFileSync(
-        join(dir, "attempts.jsonl"),
-        JSON.stringify({
-          event: "step_started",
-          case_id: active.id,
-          step,
-          request_sha256: hash(body),
-          planHash,
-        }) + "\n",
-      );
-      const started = Date.now();
-      try {
-        const response = await fetch(`http://127.0.0.1:${port}/chat/completions`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body,
-          redirect: "error",
-          signal: AbortSignal.timeout(180000),
-        });
-        const raw = await response.text();
-        const record = {
-          case_id: active.id,
-          step,
-          request: JSON.parse(body),
-          status: response.status,
-          raw,
-          duration_ms: Date.now() - started,
-          planHash,
-        };
-        appendFileSync(join(dir, "transport.jsonl"), JSON.stringify(record) + "\n");
-        appendFileSync(
-          join(dir, "attempts.jsonl"),
-          JSON.stringify({
-            event: "step_completed",
-            case_id: active.id,
-            step,
-            transport_sha256: hash(JSON.stringify(record)),
-            planHash,
-          }) + "\n",
-        );
-        res.writeHead(response.status, { "content-type": "application/json" });
-        res.end(raw);
-      } catch (error) {
-        appendFileSync(
-          join(dir, "attempts.jsonl"),
-          JSON.stringify({
-            event: "step_unknown",
-            case_id: active.id,
-            step,
-            error: error.name,
-            planHash,
-          }) + "\n",
-        );
-        res.writeHead(502);
-        res.end("{}");
-      }
+    proxy = createPlaybookEvaluationProxy({
+      upstreamUrl: `http://127.0.0.1:${port}`,
+      getActive: () => active,
+      nextStep: () => ++requestCount,
+      dir,
+      planHash,
     });
     const proxyPort = await bind(proxy);
     const schedule = plan.subjects.flatMap((s) => s.cases.map((c) => ({ subject: s, c })));
