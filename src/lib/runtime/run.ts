@@ -9,6 +9,20 @@ import type {
   GuardrailFn,
 } from "./types";
 import { evaluateCondition, interpolate } from "./expr.ts";
+import { scanForLeaks } from "../adversarial/leak-scanner.ts";
+
+// Only named, implemented policies may execute. This existing scanner detects
+// its documented identifier/credential patterns; it is not a universal PII detector.
+const builtInGuardrails: Readonly<Record<string, GuardrailFn>> = Object.freeze({
+  "no-pii-in-output": async ({ phase, payload }) => {
+    if (phase !== "post") return { pass: true };
+    const text = typeof payload === "string" ? payload : JSON.stringify(payload);
+    if (typeof text !== "string") return { pass: false, reason: "Uninspectable output" };
+    return scanForLeaks(text).length
+      ? { pass: false, reason: "Sensitive output detected" }
+      : { pass: true };
+  },
+});
 
 const inMemoryMemory = (): MemoryStore => {
   const store = new Map<string, unknown>();
@@ -42,8 +56,18 @@ async function runGuardrails(
   let payload = args.payload;
   for (const name of names) {
     const fn = registry[name];
-    if (!fn) continue;
-    const res = await fn({ ...args, payload });
+    if (!Object.hasOwn(registry, name) || typeof fn !== "function") {
+      triggered.push(name);
+      return { pass: false, reason: `${name}: guardrail unavailable`, triggered, payload };
+    }
+    let res: Awaited<ReturnType<GuardrailFn>>;
+    try {
+      res = await fn({ ...args, payload });
+      if (!res || typeof res.pass !== "boolean") throw new Error("Invalid guardrail result");
+    } catch {
+      triggered.push(name);
+      return { pass: false, reason: `${name}: guardrail execution failed`, triggered, payload };
+    }
     if (res.mutated !== undefined) payload = res.mutated;
     if (!res.pass) {
       triggered.push(name);
@@ -60,7 +84,7 @@ export async function runPlaybook(
 ): Promise<RunResult> {
   const memory = adapters.memory ?? inMemoryMemory();
   const tracer = adapters.tracer ?? noopTracer;
-  const guardrails = adapters.guardrails ?? {};
+  const guardrails = { ...builtInGuardrails, ...adapters.guardrails };
   const trace_id = newTraceId();
   const t0 = Date.now();
 
@@ -172,6 +196,8 @@ export async function runPlaybook(
       if (!post.pass) {
         status = "error";
         error = post.reason;
+        // Blocked output must not escape via the public result or later context.
+        output = undefined;
       } else {
         output = post.payload;
       }

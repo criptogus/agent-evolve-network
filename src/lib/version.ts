@@ -12,10 +12,10 @@
  * We are still pre-1.0: rapid evolution, no stability guarantees.
  */
 
-export const PLATFORM_VERSION = "0.7.0" as const;
+export const PLATFORM_VERSION = "0.7.1" as const;
 export const PLATFORM_CODENAME = "Genesis" as const;
 export const PLATFORM_STAGE: "alpha" | "beta" | "ga" = "alpha";
-export const PLATFORM_BUILD_DATE = "2026-10-24" as const;
+export const PLATFORM_BUILD_DATE = "2026-10-25" as const;
 
 export type ChangelogEntry = {
   version: string;
@@ -31,13 +31,32 @@ export type ChangelogEntry = {
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.7.1",
+    date: "2026-10-25",
+    kind: "patch",
+    title: "Maintenance release",
+    highlights: ["show qualified runtimes and complete package setup (#76)"],
+  },
+  {
     version: "0.7.0",
-    date: "2026-10-24",
+    date: "2026-10-25",
     kind: "minor",
-    title: "Optional Jev selection for Agent Match",
-    highlights: [
-      "Add consent-based TypeSafe discovery with shadow measurement, bounded requests and full-catalog recovery.",
-    ],
+    title: "Feature update",
+    highlights: ["ship qualified source-state solution playbooks (#75)"],
+  },
+  {
+    version: "0.6.10",
+    date: "2026-10-25",
+    kind: "patch",
+    title: "Maintenance release",
+    highlights: ["drain complete playbook CLI output before exiting"],
+  },
+  {
+    version: "0.6.9",
+    date: "2026-10-25",
+    kind: "patch",
+    title: "Maintenance release",
+    highlights: ["Fix playbook context delivery and guardrail output leaks (#73)"],
   },
   {
     version: "0.6.8",

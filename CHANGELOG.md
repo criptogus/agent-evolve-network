@@ -11,11 +11,29 @@ Component artifacts are versioned and released independently via git tags:
 - **`super-agent` CLI** — `cli-v*` tags publish cross-platform binaries.
 - **`@superagentskill/sdk`** — versioned in `packages/sdk-ts/package.json`.
 
-## [0.7.0] — 2026-10-24 — *Genesis* (alpha) — Optional Jev selection for Agent Match
+## [0.7.1] — 2026-10-25 — *Genesis* (alpha) — Maintenance release
 
 ### Changed
 
-- Add consent-based TypeSafe discovery with shadow measurement, bounded requests and full-catalog recovery.
+- show qualified runtimes and complete package setup (#76)
+
+## [0.7.0] — 2026-10-25 — *Genesis* (alpha) — Feature update
+
+### Changed
+
+- ship qualified source-state solution playbooks (#75)
+
+## [0.6.10] — 2026-10-25 — *Genesis* (alpha) — Maintenance release
+
+### Changed
+
+- drain complete playbook CLI output before exiting
+
+## [0.6.9] — 2026-10-25 — *Genesis* (alpha) — Maintenance release
+
+### Changed
+
+- Fix playbook context delivery and guardrail output leaks (#73)
 
 ## [0.6.8] — 2026-10-24 — *Genesis* (alpha) — Deduplicate admin page navigation
 

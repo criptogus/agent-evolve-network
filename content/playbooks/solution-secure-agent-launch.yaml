@@ -1,7 +1,7 @@
 slug: solution-secure-agent-launch
 name: Launch an agent with scoped permissions
 type: playbook
-version: 0.1.0
+version: 0.1.31
 description: A reviewed tool inventory, tested abuse cases and a controlled release decision.
 trigger: When the user requests launch an agent with scoped permissions and provides authorized
   source inputs.
@@ -17,34 +17,29 @@ inputs:
     description: Synthetic fixtures and release criteria
 outputs:
   deliverable:
-    type: string
+    type: object
     description: Every tool has an owner and minimum scope; Abuse tests distinguish observed results
       from plans; Release owner accepts remaining risks
 steps:
   - id: inventory
-    action: instruction
+    action: tool:security.inventory
     with:
-      prompt: "Inventory tools and permissions. Produce: Tool/resource/actor permission matrix. Requires
-        completed steps: none. Preserve source evidence, permissions and owner approval. Never infer
-        completion from input validation."
+      requires: []
   - id: fixtures
-    action: instruction
+    action: tool:security.fixtures
     with:
-      prompt: "Create authorized offline abuse cases. Produce: Synthetic injection and exfiltration
-        fixtures. Requires completed steps: inventory. Preserve source evidence, permissions and
-        owner approval. Never infer completion from input validation."
+      requires:
+        - inventory
   - id: test
-    action: instruction
+    action: tool:security.test
     with:
-      prompt: "Run and inspect the tests. Produce: Captured traces and pass/fail evidence. Requires
-        completed steps: fixtures. Preserve source evidence, permissions and owner approval. Never
-        infer completion from input validation."
+      requires:
+        - fixtures
   - id: release
-    action: instruction
+    action: tool:security.release
     with:
-      prompt: "Release review. Produce: Owner-approved deployment and rollback plan. Requires completed
-        steps: test. Preserve source evidence, permissions and owner approval. Never infer
-        completion from input validation."
+      requires:
+        - test
 tags:
   - Agent security
   - business-solution

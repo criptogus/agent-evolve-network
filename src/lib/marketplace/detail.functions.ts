@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { loadPublicEvaluationCompatibility } from "@/lib/plugins/public-compatibility-loader.server";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin;
 import { createTtlCache } from "@/lib/cache/ttl-cache";
@@ -70,13 +71,14 @@ export const getPackageDetail = createServerFn({ method: "GET" })
       const { data: versions } = await supabaseAdmin
         .from("package_versions")
         .select(
-          "version, status, notes, created_at, examples, compatibility, rules, permissions, system_prompt",
+          "id, version, status, notes, created_at, examples, compatibility, rules, permissions, system_prompt",
         )
         .eq("package_id", pkg.id)
         .order("created_at", { ascending: false });
 
       const vers = versions ?? [];
-      const latest = vers.find((v) => v.version === pkg.latest_version) ?? vers[0];
+      const latest = vers.find((v) => v.version === pkg.latest_version);
+      if (!latest) return null;
 
       const versionList: PackageVersion[] = vers.map((v) => ({
         version: v.version,
@@ -85,7 +87,11 @@ export const getPackageDetail = createServerFn({ method: "GET" })
         notes: (v.notes as string) ?? "",
       }));
 
-      const compatibility = latest ? normCompat(latest.compatibility) : [];
+      const [compatibilityData, { data: rs }] = await Promise.all([
+        loadPublicEvaluationCompatibility(pkg.id, latest),
+        supabaseAdmin.from("reviews").select("rating").eq("package_id", pkg.id),
+      ]);
+      const compatibility = normCompat(compatibilityData);
       const examples = latest ? normExamples(latest.examples) : [];
       const rules = (latest?.rules ?? {}) as Record<string, unknown>;
       const versionPerms = asArr<string>(latest?.permissions).filter(
@@ -95,10 +101,6 @@ export const getPackageDetail = createServerFn({ method: "GET" })
       const scopes = versionPerms.length ? versionPerms : pkgScopes;
 
       // ratings + reviews count via reviews aggregate
-      const { data: rs } = await supabaseAdmin
-        .from("reviews")
-        .select("rating")
-        .eq("package_id", pkg.id);
       const reviewCount = rs?.length ?? 0;
       const ratingAvg =
         reviewCount > 0

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { loadPublicEvaluationCompatibility } from "@/lib/plugins/public-compatibility-loader.server";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin;
 
@@ -40,12 +41,12 @@ export const Route = createFileRoute("/api/public/packages/$slug")({
         }
         const { data: ver } = await supabaseAdmin
           .from("package_versions")
-          .select("version,status,system_prompt,rules,examples,compatibility,notes")
+          .select("id,version,status,system_prompt,rules,examples,compatibility,notes")
           .eq("package_id", pkg.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
+          .eq("version", pkg.latest_version)
           .maybeSingle();
 
+        const scopedCompatibility = ver ? await loadPublicEvaluationCompatibility(pkg.id, ver) : [];
         const { id: _omit, is_published: _p, review_status: _r, ...rest } = pkg;
         return new Response(
           JSON.stringify({
@@ -54,7 +55,7 @@ export const Route = createFileRoute("/api/public/packages/$slug")({
             version: ver?.version ?? pkg.latest_version,
             rules: ver?.rules ?? null,
             examples: ver?.examples ?? [],
-            compatibility: ver?.compatibility ?? [],
+            compatibility: scopedCompatibility,
           }),
           {
             status: 200,

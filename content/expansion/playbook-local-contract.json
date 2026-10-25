@@ -1,0 +1,42 @@
+{
+  "model": "mlx-community/Qwen3.5-9B-4bit@8b2b98c00a6b4d291155e4890773ca8f769aee53",
+  "server_sources_sha256": "dd806f27bb2d6f2e6fdad1c006f6b9d808f11ba74163d4b0057a18c0706aeefd",
+  "protocol": "compiled-playbook-gateway-v29-structural-record-identities",
+  "approval": "candidate_only_requires_complete_72_case_qualification",
+  "max_tokens": 768,
+  "temperature": 0,
+  "enable_thinking": false,
+  "finance_host": {
+    "execution": "finance-source-state-v3",
+    "model": "jev-1.14.0",
+    "node": "24.22.0",
+    "architecture": "arm64"
+  },
+  "supplier_host": {
+    "execution": "supplier-source-state-v1",
+    "model": "jev-1.14.0",
+    "node": "24.22.0",
+    "architecture": "arm64"
+  },
+  "workflow_interpreter": {
+    "model": "jev-1.14.0",
+    "protocol": "quarantine-source-notes-v1"
+  },
+  "security_host": {
+    "execution": "security-source-state-v1",
+    "model": "jev-1.14.0",
+    "node": "24.22.0",
+    "architecture": "arm64"
+  },
+  "brazil_host": {
+    "execution": "brazil-source-state-v1",
+    "model": "jev-1.14.0",
+    "node": "24.22.0",
+    "architecture": "arm64",
+    "xml_runtime": {
+      "python": "3.12.15",
+      "architecture": "arm64",
+      "expat": "expat_2.7.4"
+    }
+  }
+}

@@ -1,0 +1,54 @@
+[
+  {
+    "model": "mlx-community/Qwen3.5-9B-4bit@8b2b98c00a6b4d291155e4890773ca8f769aee53",
+    "revision": "8b2b98c00a6b4d291155e4890773ca8f769aee53",
+    "python": "3.12.15",
+    "architecture": "arm64",
+    "mlx": "0.32.0",
+    "mlx_vlm": "0.6.13",
+    "weights_sha256": {
+      "model-00001-of-00002.safetensors": "a68b87558c6ef43f74c2bd63ce7e9092ceddc3101f3def0030774bae5f42aadd",
+      "model-00002-of-00002.safetensors": "b0a770bf8469c7f3f18756a0e0283f1c1174344a83e059a4e483f6af4907352d"
+    },
+    "model_files_sha256": {
+      "tokenizer_config.json": "e98f1901ac6f0adff67b1d540bfa0c36ac1a0cf59eb72ed78146ef89aafa1182",
+      "config.json": "a96942cb6a8a1d3f1d17514d81a1925d04362a6a3233b389d13012211baaa9f8",
+      "tokenizer.json": "87a7830d63fcf43bf241c3c5242e96e62dd3fdc29224ca26fed8ea333db72de4",
+      "processor_config.json": "14932921ca485d458a04dafd8069fbb0a4505622a48208d19ed247115801385b",
+      "chat_template.jinja": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715",
+      "vocab.json": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003",
+      "model.safetensors.index.json": "dd023913fb87cfdae27fb11dcf695117c925833796ccac3c64117d6652d8ff1e",
+      "video_preprocessor_config.json": "7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13",
+      "preprocessor_config.json": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516"
+    },
+    "scope": "Candidate only for compiled playbook graphs; existing individual-skill qualification is a different protocol.",
+    "tool_parser_capability": "qwen3_coder"
+  },
+  {
+    "model": "mlx-community/gemma-3-12b-it-4bit@86cc6a8dedbc456dd0e4af01a9d09f396f77e558",
+    "revision": "86cc6a8dedbc456dd0e4af01a9d09f396f77e558",
+    "python": "3.12.15",
+    "architecture": "arm64",
+    "mlx": "0.32.0",
+    "mlx_vlm": "0.6.13",
+    "weights_sha256": {
+      "model-00001-of-00002.safetensors": "995cbd05b7bfd8f5ab5307b476eb5496b5ec3f5256a9dd26366236ce8816c93f",
+      "model-00002-of-00002.safetensors": "8b7af7eb5ff32109fc65cbcd0af5b8016ac0de46df17f40705f043f899495333"
+    },
+    "model_files_sha256": {
+      "added_tokens.json": "50b2f405ba56a26d4913fd772089992252d7f942123cc0a034d96424221ba946",
+      "chat_template.json": "fe16baf728db49457cde32802cd7efc0ac8a7a9877dbe22fe3322b2d9dc6ccd9",
+      "config.json": "73ed96a3f1d596fcf3c07f17ed7e4358fd99be688c97da45f2464fd48dd069ed",
+      "generation_config.json": "e04ecb65db447404710114fb282baaac482d22a95e2244ecaab428b81672ba78",
+      "model.safetensors.index.json": "788cc42a1a92835df62d9a3791f47105f63504c7c404637a73288e9b11bc7b82",
+      "preprocessor_config.json": "f688d6bb20c5017601c4011de7ca656da8485b540b05013efdaf986c0fcc918d",
+      "processor_config.json": "3ffd5f11778dc73e2b69b3c00535e4121e1badf7018136263cd17b5b34fbaa53",
+      "special_tokens_map.json": "2f7b0adf4fb469770bb1490e3e35df87b1dc578246c5e7e6fc76ecf33213a397",
+      "tokenizer.json": "4667f2089529e8e7657cfb6d1c19910ae71ff5f28aa7ab2ff2763330affad795",
+      "tokenizer.model": "1299c11d7cf632ef3b4e11937501358ada021bbdf7c47638d13c0ee982f2e79c",
+      "tokenizer_config.json": "0d95398b39395e5cfb290683a78f3fb0551223c672d8b033333c1a5307473760"
+    },
+    "scope": "Candidate only: requires separate full compiled-playbook evaluation; no approval inherited from any model.",
+    "tool_parser_capability": null
+  }
+]

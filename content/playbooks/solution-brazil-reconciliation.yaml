@@ -1,7 +1,7 @@
 slug: solution-brazil-reconciliation
 name: Reconcile Brazilian order operations
 type: playbook
-version: 0.1.0
+version: 0.1.31
 description: An order-to-invoice-to-payment reconciliation and a human exception queue.
 trigger: When the user requests reconcile brazilian order operations and provides authorized source inputs.
 inputs:
@@ -16,28 +16,24 @@ inputs:
     description: Pix settlement export and support consent policy
 outputs:
   deliverable:
-    type: string
+    type: object
     description: Each document and payment is linked or flagged; Duplicates and mismatches are retained;
       Finance owns posting and payment decisions
 steps:
   - id: invoices
-    action: instruction
+    action: tool:brazil.invoices
     with:
-      prompt: "Reconcile invoices to orders. Produce: Invoice/order matching and document exceptions.
-        Requires completed steps: none. Preserve source evidence, permissions and owner approval.
-        Never infer completion from input validation."
+      requires: []
   - id: payments
-    action: instruction
+    action: tool:brazil.payments
     with:
-      prompt: "Reconcile settlement evidence. Produce: Matched payments and unresolved amounts. Requires
-        completed steps: invoices. Preserve source evidence, permissions and owner approval. Never
-        infer completion from input validation."
+      requires:
+        - invoices
   - id: handoff
-    action: instruction
+    action: tool:brazil.handoff
     with:
-      prompt: "Assign exceptions to people. Produce: Owner-specific summaries and reply drafts; no
-        automatic sending. Requires completed steps: payments. Preserve source evidence, permissions
-        and owner approval. Never infer completion from input validation."
+      requires:
+        - payments
 tags:
   - Operações Brasil
   - business-solution

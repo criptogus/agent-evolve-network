@@ -1,7 +1,7 @@
 slug: solution-monthly-finance-close
 name: Close the financial month
 type: playbook
-version: 0.1.0
+version: 0.1.31
 description: A reconciled ledger, explained variances and an owner-reviewed closing pack.
 trigger: When the user requests close the financial month and provides authorized source inputs.
 inputs:
@@ -16,34 +16,29 @@ inputs:
     description: Approved budget and accounting policy
 outputs:
   deliverable:
-    type: string
+    type: object
     description: Unmatched entries have owners; Variance bridge reconciles to source totals; Controller
       approves the closing pack
 steps:
   - id: extract
-    action: instruction
+    action: tool:finance.extract
     with:
-      prompt: "Normalize source records. Produce: Source-linked invoice and ledger table. Requires
-        completed steps: none. Preserve source evidence, permissions and owner approval. Never infer
-        completion from input validation."
+      requires: []
   - id: reconcile
-    action: instruction
+    action: tool:finance.reconcile
     with:
-      prompt: "Reconcile balances and exceptions. Produce: Reconciliation with unresolved items and
-        owners. Requires completed steps: extract. Preserve source evidence, permissions and owner
-        approval. Never infer completion from input validation."
+      requires:
+        - extract
   - id: analyze
-    action: instruction
+    action: tool:finance.analyze
     with:
-      prompt: "Explain variances and cash impact. Produce: Variance bridge and cash projection with
-        assumptions. Requires completed steps: reconcile. Preserve source evidence, permissions and
-        owner approval. Never infer completion from input validation."
+      requires:
+        - reconcile
   - id: approve
-    action: instruction
+    action: tool:finance.approve
     with:
-      prompt: "Controller review. Produce: Signed-off closing pack; no automatic posting or payment.
-        Requires completed steps: analyze. Preserve source evidence, permissions and owner approval.
-        Never infer completion from input validation."
+      requires:
+        - analyze
 tags:
   - Finance operations
   - business-solution

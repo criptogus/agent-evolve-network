@@ -1,7 +1,7 @@
 slug: solution-supplier-selection
 name: Evaluate and select suppliers
 type: playbook
-version: 0.1.0
+version: 0.1.31
 description: Comparable bids, documented risks and a buyer-owned decision.
 trigger: When the user requests evaluate and select suppliers and provides authorized source inputs.
 inputs:
@@ -16,34 +16,29 @@ inputs:
     description: Delivery requirements and contract extracts
 outputs:
   deliverable:
-    type: string
+    type: object
     description: Scope and currencies are comparable; Every score cites a source; Buyer approves award
       and contractual actions
 steps:
   - id: scope
-    action: instruction
+    action: tool:supplier.scope
     with:
-      prompt: "Define scope and mandatory criteria. Produce: Comparable requirements matrix. Requires
-        completed steps: none. Preserve source evidence, permissions and owner approval. Never infer
-        completion from input validation."
+      requires: []
   - id: compare
-    action: instruction
+    action: tool:supplier.compare
     with:
-      prompt: "Normalize bids and exclusions. Produce: Cost, lead time and scope comparison. Requires
-        completed steps: scope. Preserve source evidence, permissions and owner approval. Never
-        infer completion from input validation."
+      requires:
+        - scope
   - id: risk
-    action: instruction
+    action: tool:supplier.risk
     with:
-      prompt: "Review obligations and supplier risks. Produce: Evidence-backed risk and contract exception
-        log. Requires completed steps: compare. Preserve source evidence, permissions and owner
-        approval. Never infer completion from input validation."
+      requires:
+        - compare
   - id: award
-    action: instruction
+    action: tool:supplier.award
     with:
-      prompt: "Buyer decision. Produce: Decision record with required approval; no automatic award.
-        Requires completed steps: risk. Preserve source evidence, permissions and owner approval.
-        Never infer completion from input validation."
+      requires:
+        - risk
 tags:
   - Procurement
   - business-solution
