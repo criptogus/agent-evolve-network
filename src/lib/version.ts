@@ -12,7 +12,7 @@
  * We are still pre-1.0: rapid evolution, no stability guarantees.
  */
 
-export const PLATFORM_VERSION = "0.7.2" as const;
+export const PLATFORM_VERSION = "0.8.0" as const;
 export const PLATFORM_CODENAME = "Genesis" as const;
 export const PLATFORM_STAGE: "alpha" | "beta" | "ga" = "alpha";
 export const PLATFORM_BUILD_DATE = "2026-10-25" as const;
@@ -30,6 +30,16 @@ export type ChangelogEntry = {
  * Every deployed change appends a new entry (or amends the top one before shipping).
  */
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "0.8.0",
+    date: "2026-10-25",
+    kind: "minor",
+    title: "Feature update",
+    highlights: [
+      "integrate public security evidence center (#52)",
+      "Adicionou Trust Center publico",
+    ],
+  },
   {
     version: "0.7.2",
     date: "2026-10-25",
