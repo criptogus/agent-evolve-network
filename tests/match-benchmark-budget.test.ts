@@ -63,3 +63,9 @@ test("native reconciliation cannot reset spending or release unaccounted reserva
 test("caller cannot reset remaining authority to the full authorized ceiling after reconciled cohorts", () => {
   assert.throws(() => reserveGeneration("s", "p", "{}", BENCHMARK_USD_LIMIT));
 });
+
+test("a new cohort retains the rejected v29 and v30 native charges", () => {
+  assert.equal(BENCHMARK_PRIOR_SPEND_UPPER_USD, 7.07125);
+  assert.throws(() => reserveGeneration("s", "p", "{}", 1.84758426));
+  assert.doesNotThrow(() => reserveGeneration("s", "p", "{}", 1.84758424));
+});

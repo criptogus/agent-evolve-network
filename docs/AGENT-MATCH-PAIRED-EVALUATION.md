@@ -319,4 +319,20 @@ The candidate integrated with production 0.7.1 passed 388 tests and 12 project/s
 
 V29 stopped at 4/72 after primary review found an unsupported cross-object role: a knowledge-statement comparator was assigned Pix financial-record matching. A related risk denied PSP availability imprecisely. Three outputs passed; one retained a high failure. All raw outputs, four native bills, primary verdicts, advisory Jev probabilities and the frozen-validator rejection remain preserved. Native counter 626 to 630 and matching input/output metering confirm USD0.205 upper for the four calls. Accumulated billed upper is now USD5.68625, unknown holds USD1.08116575, and remaining authority USD3.23258425. No publication or further v29 calls.
 
+### V30: rejected at the billing checkpoint, 44/72
+
+Frozen commit `a6047c2657934340e1fae55e76ede88d7565054e` and plan `ecd633f7b940da17740973509c09a6d79f27131b0adb13dc2316088195a63100` retain the original 12 cases, 72 observations and criteria. The knowledge-domain restriction passed 389 tests and 12 project/security checks. Actual observation 41 (`compound-procurement`, repeat 1, Jev) nevertheless claimed no PDF/table extraction or OCR candidate was supplied, although `pdf-extractor` and `ocr-pipeline` were forwarded. Primary review retained a high honest-gaps failure; advisory Jev also found the absence contradicted (0.99) and the proposed gap duplicative (0.96). Raw output is unchanged. Further v30 generation stopped at 44.
+
+The frozen validator rejects this incomplete cohort. For the 22 observed pairs, baseline conservative total cost is USD0.5575 versus Jev USD0.843618264, and client p95 is 20,944 ms versus 21,905 ms. These are partial-cohort observations, not a completed qualification or a prediction for all cases. Every repeated Jev selection remained a cache miss; cross-worker persistence, credential partition changes and expiry are hypotheses, not an established root cause. No quality, cost or latency fix is claimed from implementation tests alone.
+
+Native activity counter 630 to 674 and matching per-request input/output usage reconcile USD1.385 upper for v30. Cumulative native upper is USD7.07125; unknown reservations remain USD1.08116575, leaving USD1.84758425 under the owner-authorized USD10 cap. Historical error rows still display a dash rather than numeric zero; no uncertain reserve was released. The prior complete-cohort reference is USD2.38, above current available authority. No new paid cohort or publication was started. Production remains 0.7.1.
+
+Use the frozen replay validator first, then record a terminal rejection without generating verdicts or changing evidence:
+
+```sh
+node --experimental-strip-types scripts/summarize-agent-match-rejection.ts PLAN JOURNAL REVIEWS BILLING REJECTED_REPORT NEW_SUMMARY
+```
+
+This command binds all four input hashes to the rejected report, verifies nonempty/unique native response identities and primary-review bindings, retains cumulative charges and holds, and refuses output overwrite. Exit 4 means a recorded rejection, never approval. The actual v30 execution wrote `run-live-v30/FINAL-SUMMARY.json`; the budget carry-forward regression failed before the fix and passed afterward. Historical cohorts must continue using their archived validator source.
+
 The corrected candidate adds a source-domain discriminator for knowledge-source work alongside operational records and software work. Explicitly knowledge-scoped metadata cannot be decoded as an operational transaction matcher; general-purpose tools remain available, and selecting the wrong work domain still fails primary review. The original protocol criteria, fixtures, generator and 72-observation schedule stay unchanged. A transport-only test reproduced the actual cross-object acceptance, then passed after the schema restriction; 22 contract/economic tests passed. Risk wording now follows the same precise missing-operation and catalog-scope rules as gaps. These are implementation checks, not quality or efficiency approval.
