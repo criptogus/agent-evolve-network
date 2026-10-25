@@ -125,11 +125,7 @@ export function financeRecordExcerpts(sources: Record<string, string>, id: strin
       .map((quote) => ({ source, quote })),
   );
 }
-export function prepareFinanceFacts(inputs: Record<string, unknown>) {
-  const { sources, quarantined, attachmentContext, text } = prepareSourceContext(inputs);
-  const ids = [
-    ...new Set(text.match(/\b[A-Za-z][A-Za-z0-9]*(?:[-_][A-Za-z0-9]+)+\b/g) ?? []),
-  ].sort();
+export function sourceMoneyLiterals(text: string) {
   const rawAmounts = [...text.matchAll(/-?(?:\d{1,3}(?:[.,]\d{3})+[.,]\d{2}|\d+[.,]\d{2})\b/g)].map(
     (m) => m[0],
   );
@@ -137,7 +133,14 @@ export function prepareFinanceFacts(inputs: Record<string, unknown>) {
     v.lastIndexOf(",") > v.lastIndexOf(".")
       ? v.replaceAll(".", "").replace(",", ".")
       : v.replaceAll(",", "");
-  const amounts = [...new Set(rawAmounts.map(normalize))].sort();
+  return [...new Set(rawAmounts.map(normalize))].sort();
+}
+export function prepareFinanceFacts(inputs: Record<string, unknown>) {
+  const { sources, quarantined, attachmentContext, text } = prepareSourceContext(inputs);
+  const ids = [
+    ...new Set(text.match(/\b[A-Za-z][A-Za-z0-9]*(?:[-_][A-Za-z0-9]+)+\b/g) ?? []),
+  ].sort();
+  const amounts = sourceMoneyLiterals(text);
   const currencyCodes = new Set(Intl.supportedValuesOf("currency"));
   const currencies = [
     ...new Set((text.match(/\b[A-Z]{3}\b/g) ?? []).filter((c) => currencyCodes.has(c))),
@@ -246,11 +249,7 @@ export function prepareFinanceFacts(inputs: Record<string, unknown>) {
       amounts.map((amount) => [
         amount,
         Object.entries(sources)
-          .filter(([, source]) =>
-            [...source.matchAll(/-?(?:\d{1,3}(?:[.,]\d{3})+[.,]\d{2}|\d+[.,]\d{2})\b/g)].some(
-              (m) => normalize(m[0]) === amount,
-            ),
-          )
+          .filter(([, source]) => sourceMoneyLiterals(source).includes(amount))
           .map(([key]) => key),
       ]),
     ),
