@@ -1,0 +1,31 @@
+# Supplier arithmetic is computed before local draft generation
+
+Status: implemented candidate; complete qualification and publication pending.
+
+The real v12 supplier graph miscomputed 100 units at BRL 9 plus BRL 150 delivery as BRL 1650, propagated the amount through all four stages and converted the 12-day policy into the two suppliers' offered times. It retained pending buyer approval but failed the unchanged high-severity domain case. The original transport and primary failure remain preserved.
+
+The v14 candidate reuses bounded source/attachment separation, sanitized TypeSafe context and the credential-safe fixed-endpoint transport. Pinned Jev selects literal quote identifiers, quantities, unit prices, delivery charges, lead times, tax statements, payment terms and policy limits. Integer minor-unit arithmetic calculates landed costs, differences and rational percentages in code before generation. Explicitly included delivery is zero additional charge; unknown delivery never becomes zero. Calendar and business days are not silently equated. Missing/ambiguous input, mixed currencies and unsupported monetary precision require review.
+
+All four supplier stages still execute on the pinned local Gemma model with original inputs, prior drafts and source-derived facts. Host prompts require the actual metrics and preserve unverified quote claims, source context and the buyer gate. No generated output is repaired or substituted. A future passing report must bind both the exact local generator/runtime and the actual Jev interpreter/protocol. The 72 original inputs, expectations, severity, numeric gates and zero high/critical bar remain unchanged. Finance continues its separate source-state-v2 tools; its checkpoint is not inherited supplier approval. Agent Match's same-generator experiment and accumulated Lovable cap are unaffected.
+
+The initial real TypeSafe contract probe selected the correct A/B amounts, mandatory 12-day limit, tax and payment terms (jev-1.14.0; 12,086 input / 3,741 output tokens). This is extraction evidence only, not graph quality, approval or publication. Varied decimal-price fixtures verify arithmetic independently of the qualification example. The actual missing-consent CLI regression changed from four generation requests to zero; explicit source-upload consent is required before supplier generation. The generic four-step gateway fixture now uses the secure-agent graph; its transport/error/large-output assertions remain unchanged.
+
+Supported extraction is deliberately bounded: one two-minor-unit currency, up to nine hyphenated candidate identifiers and 40 literal numbers, at most 100 questions and 96KB context. Values outside coverage stop for review. Arithmetic does not independently verify suppliers or establish a contract, award, payment or buyer approval.
+
+## Field attribution and stage objectives (v2 candidate)
+
+The v14 real run corrected all monetary amounts and delivery compliance but failed the original supplier case: payment terms cited the quote-ID source instead of the document actually stating Net 30/prepayment, and compare/risk/award repeated the requirements matrix. The run stopped safely at 19/72 with actual shutdown evidence. No source or model output was repaired.
+
+The v15 candidate therefore asks separate bounded source-attribution questions for pricing, payment terms and the mandatory delivery limit. Selected original document quotes and full probabilities accompany each field. Identifier occurrence is explicitly separate from field attribution; multiple/none yields no invented unique citation and remains unresolved. Host prompts lead with each actual stage's distinct deliverable, with arithmetic/citation guidance afterward. Supplier generation remains real local generation in all four stages; the execution protocol changes to source-interpreted-local-generation-v2 and requires a fresh version/run.
+
+The actual attribution probe selected source_1 for prices, source_3 for both payment terms and source_2 for the mandatory limit (jev-1.14.0, 14,522 input / 4,515 output tokens). This remains an interpretation probe, not generated-stage approval. The unchanged 72-case contract and all original publication gates still apply.
+
+## Supplier source-state tools (v16 candidate)
+
+V15 improved the distinct stage deliverables and payment citations, but real generation still attributed landed costs to the policy document and combined contract/verification statements under an incorrect citation. All four outputs and the primary failure remain preserved; the run ended at 19/72 with observed shutdown. More prompt guidance did not reliably preserve field attribution across every intermediate draft.
+
+Supplier now executes four actual `tool:supplier.*` preparation actions. Jev interprets quote fields, source attribution and explicit procurement precedence; code constructs the requirements, exact cost/delivery comparison, payment/verification risk log and buyer-owned decision proposal. It retains original document quotes and full interpreter evidence. Code never treats a quote identifier's occurrence as field attribution. Custom/ambiguous weighting or unresolved comparability produces an unresolved decision instead of invented scores. No supplier verification, award, signature, payment or authenticated buyer approval is performed.
+
+This is a new execution protocol, `supplier-source-state-v1`, pinned to `jev-1.14.0` and Node 24.22.0/arm64. It makes no Gemma quality claim and inherits no qualification. Finance retains its separate source-state-v2 protocol; the remaining two graphs still require actual pinned local generation. All original 72 cases, severity/numeric gates and primary reviews remain mandatory. The reporter recomputes all four supplier outputs and predecessor receipts and rejects unexpected supplier generation or changed source facts.
+
+A real interpretation plus tool diagnostic produced the correct totals, field citations, 12-day compliance, payment exposure and pending buyer proposal (14,852 input / 4,619 output tokens). That single diagnostic is not packaged cohort qualification. The actual compiled graph regression changed from four unconstrained drafts to zero drafts; varied decimal-value fixtures, changed-evidence rejection and custom-priority non-approval checks also pass.

@@ -1,0 +1,29 @@
+# Generated workflows quarantine annotations before generation
+
+Status: candidate; complete qualification and publication pending.
+
+The v16 secure-agent graph promoted an appended authentication log into observed synthetic test evidence and reproduced its password. It also endorsed an appended destructive production command as rollback. These were local generated fixture responses, not executed commands. Original primary/literal failures, raw transports and observed shutdown remain preserved at 39/72; the run is rejected.
+
+The existing source/annotation boundary and local redaction now also prepare the two generated workflows. Original substantive fields remain intact; appended SOURCE NOTE/ATTACHMENT material is retained as quarantined metadata and cannot enter the local generator as facts, permissions, approval or observed test evidence. Only redacted attachment context is sent to the pinned Jev interpreter, under explicit source-upload consent. Its closed safety-response choice is advisory and grants no authority. Unannotated inputs make no TypeSafe call and contain no invented model/usage receipt.
+
+The local generator receives prepared source fields, prior raw drafts and source-context provenance. The system framing requests the bounded safety response followed by the legitimate current deliverable. Actual generated content remains unchanged: the runtime does not prepend, rewrite, repair or substitute the returned text. The strict reporter recomputes context, binds actual TypeSafe raw response/usage where applicable and reconstructs the exact local generation requests and outputs. Both interpreter and local generator/protocol scopes must be recorded. All original 72 inputs, severities, expectations and thresholds remain mandatory.
+
+Catalog labels now describe an evidence-state record and a deployment/rollback review plan requiring evidence and owner approval. They do not imply captured test results or completed owner approval where neither exists. Secure test/release instructions explicitly distinguish unexecuted fixtures, absent observed results and blocked release pending real tests plus authenticated owner approval. The acting principal is distinct from the tool owner. No test runner, deployment or external action is simulated as executed.
+
+The real CLI regression changed from four unauthorized generation calls to zero when annotation-interpretation consent is missing. Three real bounded classification probes returned sanitize, destructive and unauthorized respectively (jev-1.14.0; aggregate 2104 input / 251 output tokens), with full probabilities retained. These tests/probes do not qualify the new generated protocol. A new immutable 0.1.19 cohort must pass full primary review before publication; prior finance/supplier checkpoints do not transfer approval.
+
+## Separate Qwen diagnostic (v18 candidate)
+
+V17 preserved prepared sources and raw requests correctly: appended credential/command copying disappeared. Its real Gemma outputs nevertheless omitted required redaction/refusal notices despite the correct actual interpreter choices, inverted approval-to-enable into approval-to-disable, and proposed re-enabling prohibited egress during rollback. The 39/72 run remains rejected with two literal failures and three failed secure primary reviews; its shutdown is observed.
+
+The next candidate uses the separately pinned cached Qwen 9B model with the same original cases, 768-token limit, no thinking, raw output and all numeric/severity gates. Its previous individual-skill qualification does not transfer. The source-state finance/supplier scopes remain separately pinned Jev/Node protocols. Safety response is now also explicit at the last host-authored stage instruction, and inventory/rollback instructions preserve prohibitions: owner approval can expand access, never become a reason to keep prohibited egress enabled or restore it during rollback.
+
+One advisory Jev model-selection question preferred the Qwen diagnostic (0.81 probability, confidence 0.72; 676 input / 48 output tokens). This is a diagnostic choice only, not approval or evidence of improved quality. New complete qualification and restricted runtime compatibility remain mandatory; failed Gemma histories are retained separately.
+
+## Text-only Qwen transport (v19 candidate)
+
+The v18 Qwen attempt ended at 37/72 before the first local generation: model files/SDK verified, but the client expected health.loaded_tool_parser to be null. Actual installed SDK source shows this field is inferred from the processor/template, not active tool authorization. Qwen reports qwen3_coder capability; Gemma reports null. The historical preflight failure is preserved and is not model quality evidence.
+
+V19 pins that capability to each exact cached model while retaining adapter/model/SDK/file checks. Every actual generation request now explicitly sends tools=[] and tool_choice=none. The installed SDK's pure normalization contract was executed: none removes even a supplied synthetic tool definition, and its chat handler clears the parser when tools are absent. Client and complete reporter also reject any structured tool/function call response, including malformed calls under finish_reason=stop. This strengthens the no-tools restriction; no numerical, severity, source or primary approval requirement changes. Raw text is returned unchanged, including whitespace. No SDK source, model weight or trust-remote-code setting was modified.
+
+The real CLI regression rejected structured tool calls after reproducing their previous acceptance. All four standalone archive fixtures also now run from paths with spaces and a reserved URL character: two reproduced path-resolution defects were corrected using filesystem paths for reads and encoded file URLs for imports. These are transport/packaging checks, not model qualification. A fresh 0.1.21 complete cohort remains required.

@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createHash } from "node:crypto";
+import { publicCompatibility } from "@/lib/plugins/public-compatibility.server";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 const supabaseAdmin = _supabaseAdmin;
 
@@ -40,12 +42,45 @@ export const Route = createFileRoute("/api/public/packages/$slug")({
         }
         const { data: ver } = await supabaseAdmin
           .from("package_versions")
-          .select("version,status,system_prompt,rules,examples,compatibility,notes")
+          .select("id,version,status,system_prompt,rules,examples,compatibility,notes")
           .eq("package_id", pkg.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
+          .eq("version", pkg.latest_version)
           .maybeSingle();
 
+        const [compat, latestRun, artifact] = ver
+          ? await Promise.all([
+              supabaseAdmin
+                .from("skill_compatibility")
+                .select("package_id,version,model,status,pass_rate,total_cases,passed_cases")
+                .eq("package_id", pkg.id)
+                .eq("version", ver.version),
+              supabaseAdmin
+                .from("adversarial_runs")
+                .select(
+                  "package_id,version_id,model,total,passed,failed,pass_rate,severity_weighted_score,by_severity,outcomes",
+                )
+                .eq("package_id", pkg.id)
+                .eq("version_id", ver.id)
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle(),
+              supabaseAdmin
+                .from("package_artifacts")
+                .select("sha256")
+                .eq("version_id", ver.id)
+                .maybeSingle(),
+            ])
+          : [];
+        const scopedCompatibility =
+          ver && !compat?.error && !latestRun?.error && !artifact?.error && artifact?.data
+            ? publicCompatibility(ver.compatibility, compat?.data, latestRun?.data, {
+                packageId: pkg.id,
+                versionId: ver.id,
+                version: ver.version,
+                promptSha256: createHash("sha256").update(ver.system_prompt).digest("hex"),
+                archiveSha256: artifact.data.sha256,
+              })
+            : (ver?.compatibility ?? []);
         const { id: _omit, is_published: _p, review_status: _r, ...rest } = pkg;
         return new Response(
           JSON.stringify({
@@ -54,7 +89,7 @@ export const Route = createFileRoute("/api/public/packages/$slug")({
             version: ver?.version ?? pkg.latest_version,
             rules: ver?.rules ?? null,
             examples: ver?.examples ?? [],
-            compatibility: ver?.compatibility ?? [],
+            compatibility: scopedCompatibility,
           }),
           {
             status: 200,

@@ -9,6 +9,8 @@ import { join } from "node:path";
 import { parse } from "yaml";
 import { z } from "zod";
 import { BUSINESS_ARTIFACT_FILES } from "./business-artifact-files.mjs";
+import { buildSolutionPlaybookFiles } from "./solution-artifact-files.ts";
+import { SOLUTIONS } from "../src/lib/solutions/catalog.ts";
 import { buildSkillPluginManifest } from "../src/lib/plugins/agent-plugins.ts";
 import { runPluginConformance } from "../src/lib/plugins/conformance.ts";
 import { ArtifactFilesSchema, artifactDigest } from "../src/lib/plugins/artifacts.ts";
@@ -77,7 +79,7 @@ for (const slug of slugs) {
     authorHandle: "super-agent-skill",
     tags: p.tags ?? [],
   });
-  const files: Record<string, string> = { "plugin.json": JSON.stringify(manifest, null, 2) };
+  let files: Record<string, string> = { "plugin.json": JSON.stringify(manifest, null, 2) };
   if (p.type === "skill") {
     const walk = (dir: string, prefix: string) => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -93,6 +95,8 @@ for (const slug of slugs) {
       for (const relative of BUSINESS_ARTIFACT_FILES)
         files[`skills/${slug}/${relative}`] = readFileSync(`skills/${slug}/${relative}`, "utf8");
     } else walk(`skills/${slug}`, `skills/${slug}`);
+  } else if (p.type === "playbook" && SOLUTIONS.some((s) => slug === `solution-${s.id}`)) {
+    files = buildSolutionPlaybookFiles(source).files;
   } else
     files[`skills/${slug}/SKILL.md`] =
       `---\nname: ${slug}\ndescription: ${JSON.stringify(p.description)}\nlicense: ${p.license}\n---\n\n# ${p.name}\n\nFollow this source workflow in order. Preserve its inputs, source references and human approval gates. Candidate content; public adversarial evaluation remains pending.\n\n\`\`\`yaml\n${source}\n\`\`\`\n`;
