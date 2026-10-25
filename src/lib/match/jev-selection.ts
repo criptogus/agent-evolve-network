@@ -1,5 +1,5 @@
 export const JEV_MATCH_MODEL = "jev-1.14.0";
-export const JEV_MATCH_PROTOCOL = "agent-match-v6";
+export const JEV_MATCH_PROTOCOL = "agent-match-v7";
 export const MATCH_TYPES = ["skill", "playbook", "soul", "guardrail"] as const;
 export type MatchType = (typeof MATCH_TYPES)[number];
 export type MatchCandidate = { slug: string; name: string; type: MatchType; description: string };

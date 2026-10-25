@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { selectionScope } from "./jev-selection-cache.server.ts";
+import { createPersistentSelectionCache } from "./jev-persistent-cache.server.ts";
 import { z } from "zod";
 import { generateText, Output } from "ai";
 import { streamMatchResult, type MatchStreamEvent } from "./result-stream.ts";
@@ -64,6 +65,7 @@ export const matchAgentToPackages = createServerFn({ method: "POST" })
       if (error) throw new Response(`Catalog read failed: ${error.message}`, { status: 500 });
       const catalog = (rows ?? []) as CatalogRow[];
 
+      const cacheScope = selectionScope(getRequest());
       const { candidates, trace: selection } = await preselectAgentMatch(
         {
           brief: data.brief,
@@ -72,7 +74,10 @@ export const matchAgentToPackages = createServerFn({ method: "POST" })
           desired: data.desired,
           consent: data.semantic_selection,
         },
-        { cacheScope: selectionScope(getRequest()) },
+        {
+          cacheScope,
+          cache: cacheScope ? createPersistentSelectionCache(supabaseAdmin, cacheScope) : undefined,
+        },
       );
 
       const { system, prompt } = buildMatchPrompt({

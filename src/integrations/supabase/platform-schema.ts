@@ -83,6 +83,14 @@ export type PlatformTables = {
   }>;
 };
 export type PlatformFunctions = {
+  read_agent_match_selection_cache: {
+    Args: { p_scope_hash: string; p_cache_key: string };
+    Returns: { evidence: Json; age_ms: number }[];
+  };
+  write_agent_match_selection_cache: {
+    Args: { p_scope_hash: string; p_cache_key: string; p_evidence: Json };
+    Returns: boolean;
+  };
   team_role: { Args: { _workspace: string }; Returns: TeamRole | null };
   team_action: { Args: { _action: string; _workspace?: string; _payload?: Json }; Returns: Json };
   skill_evidence: {

@@ -6,7 +6,7 @@ import {
   type DesiredKit,
 } from "./jev-selection.ts";
 
-type Evidence = {
+export type SelectionEvidence = {
   probabilities: number[];
   model: typeof JEV_MATCH_MODEL;
   requests: number;
@@ -46,7 +46,7 @@ export function selectionCacheKey(input: {
     desired: input.desired,
   });
 }
-export const selectionEvidenceHash = (value: Evidence) => digest(value);
+export const selectionEvidenceHash = (value: SelectionEvidence) => digest(value);
 
 // Exact semantic inputs and current eligibility remain part of every lookup.
 // Fixed expiry is not extended by reads; no permissions or generated answers are retained.
@@ -67,8 +67,8 @@ export function createSelectionCache(
     max > 64
   )
     throw new Error("Invalid selection cache bounds");
-  const records = new Map<string, { created: number; value: Evidence }>();
-  const copy = (value: Evidence): Evidence => ({
+  const records = new Map<string, { created: number; value: SelectionEvidence }>();
+  const copy = (value: SelectionEvidence): SelectionEvidence => ({
     ...value,
     probabilities: [...value.probabilities],
   });
@@ -90,7 +90,7 @@ export function createSelectionCache(
       records.set(key, record);
       return { value: copy(record.value), ageMs: now() - record.created };
     },
-    set(key: string, value: Evidence) {
+    set(key: string, value: SelectionEvidence) {
       if (
         !key ||
         value.model !== JEV_MATCH_MODEL ||
@@ -114,3 +114,10 @@ export function createSelectionCache(
   };
 }
 export type SelectionCache = ReturnType<typeof createSelectionCache>;
+export type SelectionCacheStore = {
+  get(
+    key: string,
+    signal?: AbortSignal,
+  ): ReturnType<SelectionCache["get"]> | Promise<ReturnType<SelectionCache["get"]>>;
+  set(key: string, value: SelectionEvidence, signal?: AbortSignal): void | Promise<void>;
+};

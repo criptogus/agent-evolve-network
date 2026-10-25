@@ -7,6 +7,8 @@ import { matchGenerationOptions, MATCH_PROVIDER_OPTIONS } from "./match-generati
 import { streamMatchResult } from "./result-stream.ts";
 import { preselectAgentMatch, selectionCacheDiagnostics } from "./jev-agent-match.server.ts";
 import { selectionScope } from "./jev-selection-cache.server.ts";
+import { createPersistentSelectionCache } from "./jev-persistent-cache.server.ts";
+import { supabaseAdmin } from "../../integrations/supabase/client.server.ts";
 import { z } from "zod";
 import {
   buildMatchOutputSchema,
@@ -82,6 +84,10 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
         inputTokens: number;
         outputTokens: number;
       }> = [];
+      const cacheScope = selectionScope(
+        getRequest(),
+        `match-benchmark:${data.attempt.split(":")[0]}`,
+      );
       const selection = await preselectAgentMatch(
         {
           brief: data.brief,
@@ -91,7 +97,8 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
         },
         {
           mode: data.arm === "jev" ? "filter" : "off",
-          cacheScope: selectionScope(getRequest(), `match-benchmark:${data.attempt.split(":")[0]}`),
+          cacheScope,
+          cache: cacheScope ? createPersistentSelectionCache(supabaseAdmin, cacheScope) : undefined,
           fetch: async (url, init) => {
             const response = await fetch(url, init);
             if (response.ok) {
@@ -276,9 +283,19 @@ export const getBenchmarkReadiness = createServerFn({ method: "GET" })
       .eq("role", "admin")
       .maybeSingle();
     if (role.error || !role.data) throw new Response("Forbidden", { status: 403 });
+    const scope = selectionScope(getRequest(), "match-benchmark:readiness");
+    const cacheProbe =
+      scope && process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? createPersistentSelectionCache(supabaseAdmin, scope)
+        : undefined;
+    // A read of an unused opaque key checks the real service RPC path. It
+    // creates no cache evidence and cannot call either model provider.
+    if (cacheProbe) await cacheProbe.get("0".repeat(64));
     return {
       ready: !!process.env.LOVABLE_API_KEY,
       jevConfigured: !!process.env.TYPESAFE_API_KEY,
+      persistentCacheConfigured: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      persistentCacheReady: !!cacheProbe && cacheProbe.metrics.unavailable === 0,
       jevMode: process.env.JEV_AGENT_MATCH_MODE ?? "shadow",
       provider: "lovable-ai",
       model: BENCHMARK_MODEL,
@@ -335,6 +352,10 @@ export const probeBenchmarkJev = createServerFn({ method: "POST" })
       answers: { c0: { type: "noul"; noul: number } };
       usage: { input_tokens: number; output_tokens: number };
     }> = [];
+    const cacheScope = selectionScope(getRequest(), "match-benchmark:synthetic-continuity");
+    const persistentCache = cacheScope
+      ? createPersistentSelectionCache(supabaseAdmin, cacheScope)
+      : undefined;
     const result = await preselectAgentMatch(
       {
         brief: "Verify citations against source evidence",
@@ -351,7 +372,8 @@ export const probeBenchmarkJev = createServerFn({ method: "POST" })
       },
       {
         mode: "shadow",
-        cacheScope: selectionScope(getRequest(), "match-benchmark:synthetic-continuity"),
+        cacheScope,
+        cache: persistentCache,
         fetch: async (url, init) => {
           const response = await fetch(url, init);
           if (response.ok) {
@@ -376,6 +398,7 @@ export const probeBenchmarkJev = createServerFn({ method: "POST" })
     return {
       trace: result.trace,
       providerReceipt: providerReceipts[0] ?? null,
+      persistentCache: persistentCache?.metrics ?? null,
       generatorStarted: false,
       selectionCache: selectionCacheDiagnostics(
         getRequest(),

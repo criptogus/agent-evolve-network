@@ -2,6 +2,10 @@
 
 Status: implemented on the draft branch; filtered rollout rejected by the complete v26 paired evaluation. No production publication.
 
+The v7 candidate replaces process-local reuse on the authenticated production/benchmark paths with service-only Supabase probability evidence. The original scope, exact eligible catalog, provider key, model and protocol remain in the opaque cache identity; no briefing text, credentials or generator output is stored. The private RPCs keep a fixed thirty-minute expiry and a global 64-entry bound. Duplicate writers cannot replace the first evidence or extend expiry. Missing/malformed/expired cache data is a miss; database calls are bounded at 500 ms and share the selector's original three-second total deadline (maximum five seconds when explicitly configured). Provider requests still have no automatic retry. This candidate is not qualified or published.
+
+This change follows an actual managed-instance replacement after 426,396 ms that lost v6's in-memory evidence while the credential partition remained identical. A short repeat hit first; then the same probe required a second real Jev request despite the thirty-minute expiry. The v7 adapter's independent-client HTTP regressions and twelve native SQL rollback checks passed, including real anon/authenticated denials, actual service-role access, unchanged expiry, strict evidence validation and the global bound. The additive private migration is installed but unused by the production0.7.1 app. Full qualification and public activation remain blocked until all original paired quality, conservative total-cost and client-p95 gates pass within the owner's cumulative USD10 cap.
+
 Agent Match currently supplies up to 800 approved, published package metadata records to its generator. A separate TypeSafe client now scores task relevance before that call. It does not generate the kit, approve a package, change model compatibility or weaken any existing output validation.
 
 ## Data and authority

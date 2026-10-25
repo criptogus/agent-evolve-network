@@ -213,3 +213,35 @@ test("unchanged scoped selection survives a normal seven-minute comparison inter
   assert.equal(counter.calls, 2);
   assert.notEqual(expired.trace.cache?.status, "hit");
 });
+
+test("fresh selector instances await shared storage and reuse the original provider evidence", async () => {
+  const records = new Map<string, typeof entry>();
+  const persistentStore = () => ({
+    async get(key: string) {
+      const value = records.get(key);
+      return value ? { value: structuredClone(value), ageMs: 426396 } : undefined;
+    },
+    async set(key: string, value: typeof entry) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 1));
+      records.set(key, structuredClone(value));
+    },
+  });
+  const counter = { calls: 0 };
+  const first = await preselectAgentMatch(input, {
+    ...options,
+    cache: persistentStore(),
+    fetch: responder(counter),
+  });
+  assert.equal(records.size, 1, "provider evidence must finish committing before return");
+  const afterReplacement = await preselectAgentMatch(input, {
+    ...options,
+    cache: persistentStore(),
+    fetch: responder(counter),
+  });
+  assert.equal(counter.calls, 1);
+  assert.deepEqual(afterReplacement.candidates, first.candidates);
+  assert.equal(afterReplacement.trace.cache?.status, "hit");
+  assert.equal(afterReplacement.trace.cache?.age_ms, 426396);
+  assert.equal(afterReplacement.trace.cache?.source_hash, first.trace.cache?.source_hash);
+  assert.equal(afterReplacement.trace.requests, 0);
+});

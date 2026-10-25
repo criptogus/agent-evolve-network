@@ -2,7 +2,7 @@ import {
   createSelectionCache,
   selectionCacheKey,
   selectionEvidenceHash,
-  type SelectionCache,
+  type SelectionCacheStore,
 } from "./jev-selection-cache.server.ts";
 import { z } from "zod";
 import {
@@ -81,7 +81,7 @@ export type JevMatchOptions = {
   fetch?: typeof fetch;
   timeoutMs?: number;
   cacheScope?: string;
-  cache?: SelectionCache;
+  cache?: SelectionCacheStore;
 };
 
 // No gateway fallback: this module talks only to TypeSafe. Nothing here can
@@ -138,126 +138,131 @@ export async function preselectAgentMatch(
     trace.reason = "invalid_catalog";
     return finish();
   }
-  const cache = options.cache ?? sharedCache;
-  const cacheKey = options.cacheScope
-    ? selectionCacheKey({ ...input, scope: options.cacheScope, apiKey: key })
-    : undefined;
-  const cached = cacheKey ? cache.get(cacheKey) : undefined;
-  if (cached && cached.value.probabilities.length === catalog.length) {
-    const result = selectMatchCandidates(catalog, cached.value.probabilities, input.desired);
-    trace.status = "complete";
-    trace.reason = result.reason;
-    trace.model = cached.value.model;
-    trace.selected_count = result.candidates.length;
-    trace.cache = {
-      status: "hit",
-      age_ms: cached.ageMs,
-      source_input_tokens: cached.value.inputTokens,
-      source_output_tokens: cached.value.outputTokens,
-      source_requests: cached.value.requests,
-      source_hash: selectionEvidenceHash(cached.value),
-    };
-    return finish(mode === "filter" ? result.candidates : catalog);
-  }
   const controller = new AbortController();
   const timeout = setTimeout(
     () => controller.abort(),
-    Math.min(5000, Math.max(1, options.timeoutMs ?? 3000)),
+    Math.max(1, Math.min(5000, Math.max(1, options.timeoutMs ?? 3000)) - (Date.now() - started)),
   );
-  const transport = options.fetch ?? fetch;
-  const probabilities = new Array<number>(catalog.length);
-  const batches = Array.from({ length: Math.ceil(catalog.length / 40) }, (_, i) => ({
-    offset: i * 40,
-    candidates: catalog.slice(i * 40, i * 40 + 40),
-  }));
-  let next = 0;
-  let failed = false;
-  async function worker() {
-    while (!failed && next < batches.length) {
-      const batch = batches[next++];
-      let stage = "request_validation";
-      let httpStatus: number | undefined;
-      try {
-        const request = buildJevRequest(input.brief, input.vertical, batch.candidates);
-        const body = JSON.stringify(request);
-        if (new TextEncoder().encode(body).byteLength > MAX_BODY || body.includes(key!))
-          throw new Error("Input rejected");
-        trace.requests++;
-        stage = "transport";
-        const response = await transport(ENDPOINT, {
-          method: "POST",
-          headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
-          body,
-          // Manual mode is supported by the managed transport; 3xx fails below.
-          // Never follow a redirect or forward the credential to another origin.
-          redirect: "manual",
-          signal: controller.signal,
-        });
-        httpStatus = response.status;
-        stage = "http_response";
-        if (!response.ok) throw new Error("Provider unavailable");
-        stage = "response_body";
-        const reader = response.body?.getReader();
-        if (!reader) throw new Error("Empty response");
-        const chunks: Uint8Array[] = [];
-        let size = 0;
+  try {
+    const cache: SelectionCacheStore = options.cache ?? sharedCache;
+    const cacheKey = options.cacheScope
+      ? selectionCacheKey({ ...input, scope: options.cacheScope, apiKey: key })
+      : undefined;
+    const cached = cacheKey ? await cache.get(cacheKey, controller.signal) : undefined;
+    if (controller.signal.aborted) {
+      trace.status = "fallback";
+      trace.reason = "cache_deadline";
+      return finish();
+    }
+    if (cached && cached.value.probabilities.length === catalog.length) {
+      const result = selectMatchCandidates(catalog, cached.value.probabilities, input.desired);
+      trace.status = "complete";
+      trace.reason = result.reason;
+      trace.model = cached.value.model;
+      trace.selected_count = result.candidates.length;
+      trace.cache = {
+        status: "hit",
+        age_ms: cached.ageMs,
+        source_input_tokens: cached.value.inputTokens,
+        source_output_tokens: cached.value.outputTokens,
+        source_requests: cached.value.requests,
+        source_hash: selectionEvidenceHash(cached.value),
+      };
+      return finish(mode === "filter" ? result.candidates : catalog);
+    }
+    const transport = options.fetch ?? fetch;
+    const probabilities = new Array<number>(catalog.length);
+    const batches = Array.from({ length: Math.ceil(catalog.length / 40) }, (_, i) => ({
+      offset: i * 40,
+      candidates: catalog.slice(i * 40, i * 40 + 40),
+    }));
+    let next = 0;
+    let failed = false;
+    async function worker() {
+      while (!failed && next < batches.length) {
+        const batch = batches[next++];
+        let stage = "request_validation";
+        let httpStatus: number | undefined;
         try {
-          while (true) {
-            const part = await reader.read();
-            if (part.done) break;
-            size += part.value.byteLength;
-            if (size > MAX_RESPONSE) throw new Error("Oversized response");
-            chunks.push(part.value);
+          const request = buildJevRequest(input.brief, input.vertical, batch.candidates);
+          const body = JSON.stringify(request);
+          if (new TextEncoder().encode(body).byteLength > MAX_BODY || body.includes(key!))
+            throw new Error("Input rejected");
+          trace.requests++;
+          stage = "transport";
+          const response = await transport(ENDPOINT, {
+            method: "POST",
+            headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
+            body,
+            // Manual mode is supported by the managed transport; 3xx fails below.
+            // Never follow a redirect or forward the credential to another origin.
+            redirect: "manual",
+            signal: controller.signal,
+          });
+          httpStatus = response.status;
+          stage = "http_response";
+          if (!response.ok) throw new Error("Provider unavailable");
+          stage = "response_body";
+          const reader = response.body?.getReader();
+          if (!reader) throw new Error("Empty response");
+          const chunks: Uint8Array[] = [];
+          let size = 0;
+          try {
+            while (true) {
+              const part = await reader.read();
+              if (part.done) break;
+              size += part.value.byteLength;
+              if (size > MAX_RESPONSE) throw new Error("Oversized response");
+              chunks.push(part.value);
+            }
+          } finally {
+            await reader.cancel().catch(() => {});
+            reader.releaseLock();
           }
-        } finally {
-          await reader.cancel().catch(() => {});
-          reader.releaseLock();
+          const bytes = new Uint8Array(size);
+          let offset = 0;
+          for (const chunk of chunks) {
+            bytes.set(chunk, offset);
+            offset += chunk.byteLength;
+          }
+          const raw = new TextDecoder().decode(bytes);
+          if (raw.includes(key!)) throw new Error("Response rejected");
+          stage = "response_schema";
+          const parsed = ResponseSchema.parse(JSON.parse(raw));
+          if (
+            Object.keys(parsed.answers).length !== batch.candidates.length ||
+            batch.candidates.some((_, i) => !parsed.answers[`c${i}`])
+          )
+            throw new Error("Incomplete answers");
+          batch.candidates.forEach((_, i) => {
+            probabilities[batch.offset + i] = parsed.answers[`c${i}`].noul;
+          });
+          trace.input_tokens += parsed.usage.input_tokens;
+          trace.output_tokens += parsed.usage.output_tokens;
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "";
+          // Fixed categories only; provider/runtime messages may contain credentials.
+          const category = /header|ByteString|character|token/i.test(message)
+            ? "invalid_header"
+            : /redirect/i.test(message)
+              ? "redirect_rejected"
+              : /blocked|not allowed|allowlist|denied|outbound/i.test(message)
+                ? "egress_rejected"
+                : /abort|timeout/i.test(message)
+                  ? "aborted"
+                  : /fetch|network|DNS|connect/i.test(message)
+                    ? "network"
+                    : "unclassified";
+          (trace.failures ??= []).push({
+            stage,
+            ...(stage === "transport" ? { category } : {}),
+            ...(httpStatus === undefined ? {} : { http_status: httpStatus }),
+          });
+          failed = true;
+          controller.abort();
         }
-        const bytes = new Uint8Array(size);
-        let offset = 0;
-        for (const chunk of chunks) {
-          bytes.set(chunk, offset);
-          offset += chunk.byteLength;
-        }
-        const raw = new TextDecoder().decode(bytes);
-        if (raw.includes(key!)) throw new Error("Response rejected");
-        stage = "response_schema";
-        const parsed = ResponseSchema.parse(JSON.parse(raw));
-        if (
-          Object.keys(parsed.answers).length !== batch.candidates.length ||
-          batch.candidates.some((_, i) => !parsed.answers[`c${i}`])
-        )
-          throw new Error("Incomplete answers");
-        batch.candidates.forEach((_, i) => {
-          probabilities[batch.offset + i] = parsed.answers[`c${i}`].noul;
-        });
-        trace.input_tokens += parsed.usage.input_tokens;
-        trace.output_tokens += parsed.usage.output_tokens;
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "";
-        // Fixed categories only; provider/runtime messages may contain credentials.
-        const category = /header|ByteString|character|token/i.test(message)
-          ? "invalid_header"
-          : /redirect/i.test(message)
-            ? "redirect_rejected"
-            : /blocked|not allowed|allowlist|denied|outbound/i.test(message)
-              ? "egress_rejected"
-              : /abort|timeout/i.test(message)
-                ? "aborted"
-                : /fetch|network|DNS|connect/i.test(message)
-                  ? "network"
-                  : "unclassified";
-        (trace.failures ??= []).push({
-          stage,
-          ...(stage === "transport" ? { category } : {}),
-          ...(httpStatus === undefined ? {} : { http_status: httpStatus }),
-        });
-        failed = true;
-        controller.abort();
       }
     }
-  }
-  try {
     await Promise.all(Array.from({ length: Math.min(4, batches.length) }, worker));
     if (failed) {
       trace.status = "fallback";
@@ -271,13 +276,17 @@ export async function preselectAgentMatch(
     trace.model = JEV_MATCH_MODEL;
     trace.selected_count = result.candidates.length;
     if (cacheKey) {
-      cache.set(cacheKey, {
-        probabilities,
-        model: JEV_MATCH_MODEL,
-        requests: trace.requests,
-        inputTokens: trace.input_tokens,
-        outputTokens: trace.output_tokens,
-      });
+      await cache.set(
+        cacheKey,
+        {
+          probabilities,
+          model: JEV_MATCH_MODEL,
+          requests: trace.requests,
+          inputTokens: trace.input_tokens,
+          outputTokens: trace.output_tokens,
+        },
+        controller.signal,
+      );
       trace.cache = {
         status: "miss",
         age_ms: 0,
