@@ -154,3 +154,12 @@ test("real CLI includes the parent workflow objective, not only its current phas
   assert.match(r.requests[0].messages[0].content, /Launch an agent with scoped permissions/);
   assert.match(r.requests[3].messages[1].content, /solution-secure-agent-launch/);
 });
+
+test("real CLI requires source negation and literal support for attributed claims in every phase", async () => {
+  const r = await runFixture();
+  assert.equal(r.code, 0, r.stderr);
+  for (const request of r.requests) {
+    assert.match(request.messages[0].content, /Preserve source negation/);
+    assert.match(request.messages[1].content, /supporting verbatim original-source excerpt/);
+  }
+});

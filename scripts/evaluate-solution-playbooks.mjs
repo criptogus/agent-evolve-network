@@ -148,7 +148,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v21-quotation-identity",
+    protocol: "compiled-playbook-gateway-v22-source-negation",
     python,
     modelPath,
     model: profileFor(modelPath).model,
