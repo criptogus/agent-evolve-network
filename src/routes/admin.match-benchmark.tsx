@@ -58,6 +58,7 @@ function Benchmark() {
   const probe = useServerFn(probeBenchmarkTransport);
   const probeJev = useServerFn(probeBenchmarkJev);
   const [batch, setBatch] = useState<z.infer<typeof schema> | null>(null);
+  const [batchSource, setBatchSource] = useState("");
   const [message, setMessage] = useState(
     "Import the frozen synthetic batch. This preview-only runner never publishes.",
   );
@@ -66,6 +67,14 @@ function Benchmark() {
   const [billedUsd, setBilledUsd] = useState(0);
   const [billedObservations, setBilledObservations] = useState(0);
   const [batchLimit, setBatchLimit] = useState(4);
+  async function importBatch(source: string) {
+    if (new TextEncoder().encode(source).length > 2000000) throw new Error("Oversized batch");
+    const parsed = schema.parse(JSON.parse(source));
+    const stored = (await readBenchmarkJournal(STORAGE)) ?? "";
+    setBatch(parsed);
+    setReport(stored);
+    setMessage("Frozen batch loaded; no inference started.");
+  }
   async function run() {
     if (!batch || busy) return;
     if (isClosedBenchmarkCohort(batch.planHash)) {
@@ -265,16 +274,40 @@ function Benchmark() {
             try {
               const f = e.target.files?.[0];
               if (!f || f.size > 2000000) throw new Error("Missing or oversized batch");
-              setBatch(schema.parse(JSON.parse(await f.text())));
-              setMessage("Frozen batch loaded; no inference started.");
-              setReport((await readBenchmarkJournal(STORAGE)) ?? "");
+              await importBatch(await f.text());
             } catch {
               setMessage("Invalid batch");
             }
           }}
         />
       </label>
-      <p>V30 is rejected and closed. Use a new frozen comparison for any future generation.</p>
+      <label className="block">
+        Or paste frozen batch JSON
+        <textarea
+          aria-label="Frozen batch JSON"
+          className="block w-full border rounded p-2 font-mono text-xs"
+          rows={4}
+          maxLength={2000000}
+          value={batchSource}
+          disabled={busy}
+          onChange={(e) => setBatchSource(e.target.value)}
+        />
+      </label>
+      <button
+        className="border rounded p-2"
+        disabled={busy || !batchSource.trim()}
+        onClick={async () => {
+          try {
+            await importBatch(batchSource);
+            setBatchSource("");
+          } catch {
+            setMessage("Invalid batch");
+          }
+        }}
+      >
+        Import pasted frozen batch
+      </button>
+      <p>Rejected cohorts are closed. Use a new frozen comparison for any future generation.</p>
       <button
         className="border rounded p-2"
         disabled={!batch || busy || isClosedBenchmarkCohort(batch.planHash)}
