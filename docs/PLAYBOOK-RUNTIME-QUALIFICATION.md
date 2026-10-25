@@ -32,7 +32,7 @@ business calculations and each source-injection and authority attack against the
 frozen expectations. Do not repair evaluated responses or transfer approvals
 from the individual skills. A pilot remains a pilot.
 
-Use the existing cached 9B model only after verifying its recorded fingerprints.
+Use only an existing cached model listed in `content/expansion/playbook-model-profiles.json`, after verifying its recorded fingerprints. The listed 9B Qwen and 12B Gemma profiles are candidates for graph evaluation, not approvals.
 Bind the server to loopback, disable downloads and live tools, and retain its
 process and shutdown evidence. The old `redact-route-generate-v1` qualification
 belongs to the individual skill runner; it does not cover this different graph.
@@ -91,3 +91,25 @@ for invented posting/approval status, conflating budget variance with unpaid
 liabilities, and an incorrect signed variance equation. Both pilots remain failed
 or incomplete evidence, with zero Lovable inference. The complete-72-case gate
 rejected the one-case pilot. Do not infer approval from successful CLI execution.
+
+The current framing protocol is `compiled-playbook-gateway-v2`. It shares one
+message builder between the actual CLI and strict evidence verifier, distinguishes
+original records from prior drafts, and explicitly requests the step deliverable
+instead of echoing the JSON. The frozen 72 cases, original security expectations,
+768-token cap and numeric/severity gates are unchanged. Source snapshots are saved
+at preparation and required for a complete report; they supplement hashes rather
+than allowing replay of missing or unknown inference attempts.
+
+The Gemma `86cc6a8dedbc456dd0e4af01a9d09f396f77e558` v1 pilot also failed:
+incorrect cash projection, JSON echo instead of reconciliation, then truncation at
+768 tokens. Preserve it separately from Qwen and the v2 candidate. Model migration
+does not carry over any approval, and version 0.1.3 remains a candidate until its
+own complete graph evidence and primary reviews pass.
+
+Runtime protections now reject unavailable named guardrails, convert guardrail
+exceptions to sanitized recorded failures, and remove blocked output from both
+the public result and context of subsequent steps. The built-in
+`no-pii-in-output` implementation reuses the existing deterministic leak scanner;
+it covers that scanner's documented identifier/credential patterns, not every
+possible identity or sensitive fact. Raw model evaluation evidence stays separate
+and immutable; a blocked response is a failed run, not a repaired passing output.

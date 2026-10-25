@@ -2,6 +2,7 @@
 import { createHash } from "node:crypto";
 import {
   createReadStream,
+  readdirSync,
   createWriteStream,
   existsSync,
   mkdirSync,
@@ -33,12 +34,15 @@ if (
   throw new Error("Changed frozen 4-playbook/72-case contract");
 const sourcePaths = [
   CONTRACT,
+  "content/expansion/playbook-model-profiles.json",
   "scripts/run-playbook.ts",
   "scripts/evaluate-solution-playbooks.mjs",
   "src/lib/runtime/compile.ts",
   "src/lib/runtime/run.ts",
   "src/lib/runtime/types.ts",
   "src/lib/runtime/expr.ts",
+  "src/lib/runtime/gateway-messages.ts",
+  "src/lib/adversarial/leak-scanner.ts",
   ...cases.subjects.map((s) => `content/playbooks/${s.slug}.yaml`),
 ];
 const sourceHashes = Object.fromEntries(sourcePaths.map((p) => [p, hash(readFileSync(p))]));
@@ -47,10 +51,20 @@ async function fileHash(path) {
   for await (const chunk of createReadStream(path)) digest.update(chunk);
   return digest.digest("hex");
 }
+function profileFor(modelPath) {
+  const profile = load("content/expansion/playbook-model-profiles.json").find((p) =>
+    modelPath.endsWith(`/${p.revision}`),
+  );
+  if (!profile) throw new Error("Cached exact model revision required");
+  return profile;
+}
 async function fingerprint(python, modelPath) {
-  const profile = load("content/expansion/model-profile.json");
-  if (!modelPath.endsWith(`/${profile.revision}`))
-    throw new Error("Cached exact model revision required");
+  const profile = profileFor(modelPath);
+  const weightNames = readdirSync(modelPath)
+    .filter((p) => p.endsWith(".safetensors"))
+    .sort();
+  if (JSON.stringify(weightNames) !== JSON.stringify(Object.keys(profile.weights_sha256).sort()))
+    throw new Error("Changed model weight file set");
   const result = spawnSync(
     python,
     [
@@ -75,11 +89,16 @@ if (mode === "prepare") {
   const [python, modelPath] = args.map((p) => resolve(p));
   const runtime = await fingerprint(python, modelPath);
   mkdirSync(dir, { recursive: true });
+  for (const source of sourcePaths) {
+    const snapshot = join(dir, "source-snapshot", source);
+    mkdirSync(resolve(snapshot, ".."), { recursive: true });
+    writeFileSync(snapshot, readFileSync(source), { flag: "wx" });
+  }
   const payload = {
-    protocol: "compiled-playbook-gateway-v1",
+    protocol: "compiled-playbook-gateway-v2",
     python,
     modelPath,
-    model: load("content/expansion/model-profile.json").model,
+    model: profileFor(modelPath).model,
     runtime,
     sourceHashes,
     thresholds: cases.thresholds,

@@ -65,16 +65,19 @@ test("primary report rejects a partial cohort even with all runtime bindings", (
     const profile = JSON.parse(readFileSync("content/expansion/model-profile.json", "utf8"));
     const paths = [
       contractPath,
+      "content/expansion/playbook-model-profiles.json",
       "scripts/run-playbook.ts",
       "scripts/evaluate-solution-playbooks.mjs",
       "src/lib/runtime/compile.ts",
       "src/lib/runtime/run.ts",
       "src/lib/runtime/types.ts",
       "src/lib/runtime/expr.ts",
+      "src/lib/runtime/gateway-messages.ts",
+      "src/lib/adversarial/leak-scanner.ts",
       ...contract.subjects.map((s: { slug: string }) => `content/playbooks/${s.slug}.yaml`),
     ];
     const payload = {
-      protocol: "compiled-playbook-gateway-v1",
+      protocol: "compiled-playbook-gateway-v2",
       model: profile.model,
       modelPath: `/local/${profile.revision}`,
       runtime: {
@@ -118,6 +121,45 @@ test("primary report rejects a partial cohort even with all runtime bindings", (
     );
     assert.equal(result.status, 1);
     assert.match(result.stderr, /Incomplete 72-case/);
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
+});
+
+test("compiled graph evaluation rejects an unlisted model before runtime execution", () => {
+  const dir = mkdtempSync(join(tmpdir(), "playbook-model-"));
+  try {
+    const result = execute([
+      "prepare",
+      join(dir, "new-evidence"),
+      "/nonexistent-python",
+      "/local/unlisted-revision",
+    ]);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Cached exact model revision/);
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
+});
+
+test("compiled graph evaluation rejects extra model weights even with a listed revision", () => {
+  const dir = mkdtempSync(join(tmpdir(), "playbook-weights-"));
+  try {
+    const profile = JSON.parse(
+      readFileSync("content/expansion/playbook-model-profiles.json", "utf8"),
+    )[0];
+    const modelPath = join(dir, profile.revision);
+    mkdirSync(modelPath);
+    for (const name of [...Object.keys(profile.weights_sha256), "alien.safetensors"])
+      writeFileSync(join(modelPath, name), "fixture-not-a-model");
+    const result = execute([
+      "prepare",
+      join(dir, "new-evidence"),
+      "/nonexistent-python",
+      modelPath,
+    ]);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Changed model weight file set/);
   } finally {
     rmSync(dir, { recursive: true });
   }
