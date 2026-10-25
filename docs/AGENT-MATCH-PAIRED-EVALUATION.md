@@ -377,3 +377,5 @@ integralmente catálogo, critérios, casos, agenda, contagens e perfil do gerado
 observações novas; nenhuma inferência foi executada nesta preparação. A mudança do teto
 não altera o saldo histórico nem libera reservas desconhecidas. O journal usa um espaço
 novo e as observações continuam limitadas a quatro por ação, com reconciliação nativa.
+
+A preparação v32 não executou inferência e foi sucedida pela v33 `b42da3942496ca2f1ff81bb67dcda2e5493ede7a1ca986a843cd33aa3e97ff2f` após integrar main 0.9.3 com o provedor Lovable de embeddings. Todos os seis campos originais continuam idênticos ao plano v31 recuperado. O journal v33 usa armazenamento separado.
