@@ -14,6 +14,11 @@ import { prepareFinanceStage } from "../src/lib/runtime/finance-stages.ts";
 import { buildGatewayMessages } from "../src/lib/runtime/gateway-messages.ts";
 import { evaluateCase } from "../src/lib/adversarial/scorer.ts";
 import { eligibleForPublication } from "./adversarial-approval.mjs";
+import {
+  prepareSupplierFacts,
+  validateSupplierResponse,
+  composeSupplierFacts,
+} from "../src/lib/runtime/supplier-source-facts.ts";
 const [dir, reviewsPath, output] = process.argv.slice(2);
 if (!dir || !reviewsPath || !output || process.argv.length !== 5 || existsSync(output))
   throw new Error("Supply EVIDENCE_DIR PRIMARY_REVIEWS NEW_REPORT; existing reports are preserved");
@@ -39,11 +44,20 @@ const profile = read("content/expansion/playbook-model-profiles.json").find(
 );
 if (!profile) throw new Error("Unsupported exact model/runtime profile");
 const financeHost = read("content/expansion/playbook-local-contract.json").finance_host;
+const supplierInterpreter = read(
+  "content/expansion/playbook-local-contract.json",
+).supplier_interpreter;
+if (
+  JSON.stringify(plan.supplier_interpreter) !== JSON.stringify(supplierInterpreter) ||
+  supplierInterpreter.model !== FINANCE_FACTS_MODEL ||
+  supplierInterpreter.execution !== "source-interpreted-local-generation-v1"
+)
+  throw new Error("Unqualified supplier interpreter");
 if (JSON.stringify(plan.finance_host) !== JSON.stringify(financeHost))
   throw new Error("Unqualified finance model/host profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v13-attachment-safety" ||
+  plan.protocol !== "compiled-playbook-gateway-v14-supplier-facts" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({
@@ -108,6 +122,8 @@ const requiredSources = [
   "src/lib/runtime/finance-source-facts.ts",
   "src/lib/runtime/finance-stages.ts",
   "src/lib/runtime/finance-source-facts.server.ts",
+  "src/lib/runtime/supplier-source-facts.ts",
+  "src/lib/runtime/supplier-source-facts.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
   ...contract.subjects.map((s) => `content/playbooks/${s.slug}.yaml`),
 ];
@@ -188,7 +204,9 @@ const expectedIds = new Set(schedule.map(({ c }) => c.id));
 if (transports.some((t) => !expectedIds.has(t.value.case_id)))
   throw new Error("Unscheduled transport");
 const sourceFactsAttempts = lines(join(dir, "source-facts-attempts.jsonl")).map((r) => r.value);
-const financeSchedule = schedule.filter(({ s }) => s.slug === "solution-monthly-finance-close");
+const financeSchedule = schedule.filter(({ s }) =>
+  ["solution-monthly-finance-close", "solution-supplier-selection"].includes(s.slug),
+);
 if (sourceFactsAttempts.length !== financeSchedule.length * 2)
   throw new Error("Incomplete source-facts attempt journal");
 financeSchedule.forEach(({ c }, i) => {
@@ -267,6 +285,25 @@ const outcomes = schedule.map(({ s, c }, i) => {
       JSON.stringify(end.usage) !== JSON.stringify(response.usage)
     )
       throw new Error("Changed source-facts evidence, arithmetic, model or usage");
+  } else if (s.slug === "solution-supplier-selection") {
+    const evidence = run.source_facts;
+    const prepared = prepareSupplierFacts(c.inputs);
+    const response = validateSupplierResponse(JSON.parse(evidence.raw_response), prepared);
+    sourceFacts = composeSupplierFacts(prepared, response);
+    const end = sourceFactsAttempts.find(
+      (a) => a.case_id === c.id && a.event === "source_facts_completed",
+    );
+    if (
+      response.usage.input_tokens <= 0 ||
+      response.usage.output_tokens <= 0 ||
+      JSON.stringify(evidence.response) !== JSON.stringify(response) ||
+      JSON.stringify(evidence.request) !== JSON.stringify(prepared.request) ||
+      JSON.stringify(evidence.facts) !== JSON.stringify(sourceFacts) ||
+      end.evidence_sha256 !== hash(JSON.stringify(evidence)) ||
+      end.model !== FINANCE_FACTS_MODEL ||
+      JSON.stringify(end.usage) !== JSON.stringify(response.usage)
+    )
+      throw new Error("Changed supplier source facts or usage");
   } else if (run.source_facts) throw new Error("Unscheduled source-facts interpretation");
   const previous = {};
   let combined = "";
@@ -366,7 +403,9 @@ const reports = plan.subjects.map((s) => {
     model:
       s.slug === "solution-monthly-finance-close"
         ? `typesafe/${financeHost.model}/${financeHost.execution}@node-${financeHost.node}-${financeHost.architecture}`
-        : plan.model,
+        : s.slug === "solution-supplier-selection"
+          ? `${plan.model}+typesafe/${supplierInterpreter.model}/${supplierInterpreter.execution}`
+          : plan.model,
     execution_protocol:
       s.slug === "solution-monthly-finance-close" ? financeHost.execution : plan.protocol,
     source_sha256: plan.sourceHashes[`content/playbooks/${s.slug}.yaml`],

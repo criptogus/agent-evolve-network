@@ -98,32 +98,34 @@ if (args.gateway && existsSync(contractPath)) {
     process.exit(2);
   }
 }
+const interpretedPlaybook = [
+  "solution-monthly-finance-close",
+  "solution-supplier-selection",
+].includes(args.playbook);
 let sourceFacts;
 let sourceFactsProviderEvidence;
 if (args["semantic-source-facts"]) {
   if (
     !args.gateway ||
     !args["allow-typesafe-source-upload"] ||
-    args.playbook !== "solution-monthly-finance-close" ||
+    !interpretedPlaybook ||
     !process.env.TYPESAFE_API_KEY
   ) {
     console.error(
-      "Source facts require finance playbook, --gateway, --allow-typesafe-source-upload and private TYPESAFE_API_KEY",
+      "Source facts require a supported finance or supplier playbook, --gateway, --allow-typesafe-source-upload and private TYPESAFE_API_KEY",
     );
     process.exit(2);
   }
   try {
-    const { deriveFinanceSourceFacts } = await import(
-      `${ROOT}/src/lib/runtime/finance-source-facts.server.ts`
-    );
-    sourceFacts = await deriveFinanceSourceFacts(
-      inputs,
-      process.env.TYPESAFE_API_KEY,
-      fetch,
-      (evidence) => {
-        sourceFactsProviderEvidence = evidence;
-      },
-    );
+    const derive =
+      args.playbook === "solution-supplier-selection"
+        ? (await import(`${ROOT}/src/lib/runtime/supplier-source-facts.server.ts`))
+            .deriveSupplierSourceFacts
+        : (await import(`${ROOT}/src/lib/runtime/finance-source-facts.server.ts`))
+            .deriveFinanceSourceFacts;
+    sourceFacts = await derive(inputs, process.env.TYPESAFE_API_KEY, fetch, (evidence) => {
+      sourceFactsProviderEvidence = evidence;
+    });
   } catch {
     const failureOutput = JSON.stringify({
       status: "error",
@@ -142,10 +144,20 @@ if (args["semantic-source-facts"]) {
   }
 }
 const financeMode = args.gateway && args.playbook === "solution-monthly-finance-close";
-if (financeMode && !sourceFacts) {
+if (args.gateway && interpretedPlaybook && !sourceFacts) {
   console.error(
-    "Finance source-state execution requires --semantic-source-facts and explicit source upload consent",
+    "Finance/supplier execution requires --semantic-source-facts and explicit source upload consent",
   );
+  process.exit(2);
+}
+if (
+  args.gateway &&
+  args.playbook === "solution-supplier-selection" &&
+  localContract &&
+  (sourceFacts.response.model !== localContract.supplier_interpreter?.model ||
+    localContract.supplier_interpreter?.execution !== "source-interpreted-local-generation-v1")
+) {
+  console.error("Supplier interpreter model/protocol mismatch");
   process.exit(2);
 }
 if (financeMode && localContract && sourceFacts.response.model !== localContract.model) {

@@ -67,6 +67,8 @@ const sourcePaths = [
   "src/lib/runtime/finance-source-facts.ts",
   "src/lib/runtime/finance-stages.ts",
   "src/lib/runtime/finance-source-facts.server.ts",
+  "src/lib/runtime/supplier-source-facts.ts",
+  "src/lib/runtime/supplier-source-facts.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
   ...cases.subjects.map((s) => `content/playbooks/${s.slug}.yaml`),
 ];
@@ -143,11 +145,13 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v13-attachment-safety",
+    protocol: "compiled-playbook-gateway-v14-supplier-facts",
     python,
     modelPath,
     model: profileFor(modelPath).model,
     finance_host: financeHost,
+    supplier_interpreter: load("content/expansion/playbook-local-contract.json")
+      .supplier_interpreter,
     runtime,
     sourceHashes,
     thresholds: cases.thresholds,
@@ -299,7 +303,9 @@ if (mode === "prepare") {
       active = c;
       const inputPath = join(dir, `input-${rows.length + 1}.json`);
       save(inputPath, c.inputs);
-      const finance = subject.slug === "solution-monthly-finance-close";
+      const finance = ["solution-monthly-finance-close", "solution-supplier-selection"].includes(
+        subject.slug,
+      );
       const factsJournal = join(dir, "source-facts-attempts.jsonl");
       if (finance)
         appendFileSync(

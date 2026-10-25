@@ -92,12 +92,18 @@ test("primary report rejects a partial cohort even with all runtime bindings", (
       "src/lib/runtime/finance-source-facts.ts",
       "src/lib/runtime/finance-stages.ts",
       "src/lib/runtime/finance-source-facts.server.ts",
+      "src/lib/runtime/supplier-source-facts.ts",
+      "src/lib/runtime/supplier-source-facts.server.ts",
       "src/lib/adversarial/leak-scanner.ts",
       ...contract.subjects.map((s: { slug: string }) => `content/playbooks/${s.slug}.yaml`),
     ];
     const payload = {
-      protocol: "compiled-playbook-gateway-v13-attachment-safety",
+      protocol: "compiled-playbook-gateway-v14-supplier-facts",
       model: profile.model,
+      supplier_interpreter: {
+        model: "jev-1.14.0",
+        execution: "source-interpreted-local-generation-v1",
+      },
       finance_host: {
         execution: "finance-source-state-v2",
         model: "jev-1.14.0",

@@ -14,7 +14,34 @@ export async function deriveFinanceSourceFacts(
   }) => void,
 ) {
   const prepared = prepareFinanceFacts(inputs);
-  const body = JSON.stringify(prepared.request);
+  const { value, raw } = await requestSourceInterpretation(
+    prepared.request,
+    key,
+    transport,
+    onResponse,
+  );
+  const result = validateFinanceResponse(value, prepared);
+  const facts = composeFinanceFacts(prepared, result);
+  return { request: prepared.request, response: result, facts, raw_response: raw };
+}
+
+export async function requestSourceInterpretation<
+  Request extends {
+    model: string;
+    state: unknown;
+    questions: Record<string, import("./finance-source-facts.ts").FactQuestion>;
+  },
+>(
+  request: Request,
+  key: string,
+  transport: typeof fetch = fetch,
+  onResponse?: (evidence: {
+    request: typeof request;
+    status: number;
+    raw_response: string;
+  }) => void,
+): Promise<{ value: unknown; raw: string }> {
+  const body = JSON.stringify(request);
   if (!key.trim() || body.includes(key)) throw new Error("Source-facts credential boundary failed");
   let response: Response;
   try {
@@ -31,7 +58,7 @@ export async function deriveFinanceSourceFacts(
   const raw = await response.text();
   if (Buffer.byteLength(raw) > 2000000 || raw.includes(key))
     throw new Error("Source-facts response boundary failed");
-  onResponse?.({ request: prepared.request, status: response.status, raw_response: raw });
+  onResponse?.({ request: request, status: response.status, raw_response: raw });
   if (!response.ok) throw new Error(`Source-facts provider HTTP ${response.status}`);
   let value: unknown;
   try {
@@ -39,7 +66,5 @@ export async function deriveFinanceSourceFacts(
   } catch {
     throw new Error("Source-facts provider JSON invalid");
   }
-  const result = validateFinanceResponse(value, prepared);
-  const facts = composeFinanceFacts(prepared, result);
-  return { request: prepared.request, response: result, facts, raw_response: raw };
+  return { value, raw };
 }

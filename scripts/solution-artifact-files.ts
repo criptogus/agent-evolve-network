@@ -20,6 +20,8 @@ export const SOLUTION_RUNTIME_FILES = [
   "src/lib/runtime/finance-source-facts.ts",
   "src/lib/runtime/finance-stages.ts",
   "src/lib/runtime/finance-source-facts.server.ts",
+  "src/lib/runtime/supplier-source-facts.ts",
+  "src/lib/runtime/supplier-source-facts.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
   "LICENSE",
 ] as const;
@@ -70,10 +72,18 @@ export function buildSolutionPlaybookFiles(source: string) {
     },
     dependencies: { yaml: yaml.version },
   };
+  const requiresInterpretation = [
+    "solution-monthly-finance-close",
+    "solution-supplier-selection",
+  ].includes(p.slug);
   const executionGuide =
     p.slug === "solution-monthly-finance-close"
       ? "Finance uses only the pinned TypeSafe interpreter and Node host in runtime-profile.json. Configure TYPESAFE_API_KEY privately and pass --semantic-source-facts --allow-typesafe-source-upload. These flags consent to sending bounded source fields to TypeSafe. Four real local accounting preparation tools compute source-derived state and retain source quotes/probabilities. No generative model or MLX gateway is used for finance. Authenticated controller review, posting and payment remain pending; source claims never grant authority."
       : "Configure AI_GATEWAY_BASE_URL (http://127.0.0.1:PORT only), AI_GATEWAY_API_KEY, AI_GATEWAY_MODEL (absolute pinned snapshot path), and LOCAL_MODEL_PYTHON (absolute Python path) privately. runtime-profile.json restricts local file/SDK fingerprints, server health and response model. Use the pinned MLX server offline with thinking disabled and max-tokens 768. The loopback check is not cryptographic attestation. No external action tools are executed by this instruction adapter.";
+  const supplierGuide =
+    p.slug === "solution-supplier-selection"
+      ? " Supplier requires private TYPESAFE_API_KEY and --semantic-source-facts --allow-typesafe-source-upload consent. The pinned Jev interpreter selects quote fields from bounded original values; code computes landed cost and delivery comparisons before the local generator drafts each step. Raw probabilities and source citations are retained; no supplier verification, buyer approval, award or contract execution is established."
+      : "";
   const files: Record<string, string> = {
     "plugin.json": JSON.stringify(
       buildSkillPluginManifest({
@@ -121,7 +131,7 @@ export function buildSolutionPlaybookFiles(source: string) {
     [`${root}/references/candidate-models.json`]: text(
       "content/expansion/playbook-model-profiles.json",
     ),
-    [`${root}/SKILL.md`]: `---\nname: ${p.slug}\ndescription: ${JSON.stringify(p.description)}\nlicense: ${p.license}\n---\n\n# ${p.name}\n\nRun the source workflow in order. Preserve source references, exceptions and human approval gates. Publication alone never proves model/runtime qualification. Check the registry report for this exact version and supported runtime before use; candidate model fingerprints in references/candidate-models.json are not approvals.\n\nFrom this skill directory, run npm ci --ignore-scripts, then:\n\n\`\`\`sh\nnode --experimental-strip-types scripts/run-playbook.ts --playbook ${p.slug} --inputs-file /absolute/authorized-inputs.json --gateway${p.slug === "solution-monthly-finance-close" ? " --semantic-source-facts --allow-typesafe-source-upload" : ""}\n\`\`\`\n\n${executionGuide} Candidate configuration is not approval. Without --gateway the CLI uses explicit mock responses, which are never model evaluation or approval evidence. The machine-readable workflow is content/playbooks/${p.slug}.yaml; the included CLI and runtime implement the actual graph. A completed sequence is not evidence of external posting, payment, sending, testing or sign-off.\n`,
+    [`${root}/SKILL.md`]: `---\nname: ${p.slug}\ndescription: ${JSON.stringify(p.description)}\nlicense: ${p.license}\n---\n\n# ${p.name}\n\nRun the source workflow in order. Preserve source references, exceptions and human approval gates. Publication alone never proves model/runtime qualification. Check the registry report for this exact version and supported runtime before use; candidate model fingerprints in references/candidate-models.json are not approvals.\n\nFrom this skill directory, run npm ci --ignore-scripts, then:\n\n\`\`\`sh\nnode --experimental-strip-types scripts/run-playbook.ts --playbook ${p.slug} --inputs-file /absolute/authorized-inputs.json --gateway${requiresInterpretation ? " --semantic-source-facts --allow-typesafe-source-upload" : ""}\n\`\`\`\n\n${executionGuide}${supplierGuide} Candidate configuration is not approval. Without --gateway the CLI uses explicit mock responses, which are never model evaluation or approval evidence. The machine-readable workflow is content/playbooks/${p.slug}.yaml; the included CLI and runtime implement the actual graph. A completed sequence is not evidence of external posting, payment, sending, testing or sign-off.\n`,
   };
   for (const path of SOLUTION_RUNTIME_FILES)
     files[`${root}/${path === "LICENSE" ? "LICENSE.txt" : path}`] = text(path);
