@@ -357,7 +357,7 @@ function Benchmark() {
           }
         }}
       >
-        Test TypeSafe transport (one synthetic request)
+        Test TypeSafe transport (up to one synthetic request)
       </button>
       <button
         className="border rounded p-2"

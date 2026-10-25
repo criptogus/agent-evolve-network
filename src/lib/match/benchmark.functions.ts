@@ -315,7 +315,8 @@ export const probeBenchmarkTransport = createServerFn({ method: "GET" })
     );
   });
 
-// Finite provider diagnosis: one public synthetic candidate, no generator or retry.
+// Finite provider diagnosis: at most one public synthetic question, no generator
+// or retry. Repeated exact calls can verify actual selector cache reuse.
 export const probeBenchmarkJev = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -327,6 +328,11 @@ export const probeBenchmarkJev = createServerFn({ method: "POST" })
       .eq("role", "admin")
       .maybeSingle();
     if (role.error || !role.data) throw new Response("Forbidden", { status: 403 });
+    const providerReceipts: Array<{
+      model: "jev-1.14.0";
+      answers: { c0: { type: "noul"; noul: number } };
+      usage: { input_tokens: number; output_tokens: number };
+    }> = [];
     const result = await preselectAgentMatch(
       {
         brief: "Verify citations against source evidence",
@@ -341,7 +347,37 @@ export const probeBenchmarkJev = createServerFn({ method: "POST" })
         desired: { skills: 1, playbooks: 0, souls: 0, guardrails: 0 },
         consent: true,
       },
-      { mode: "shadow" },
+      {
+        mode: "shadow",
+        cacheScope: selectionScope(getRequest(), "match-benchmark:synthetic-continuity"),
+        fetch: async (url, init) => {
+          const response = await fetch(url, init);
+          if (response.ok) {
+            const receipt = z
+              .object({
+                model: z.literal("jev-1.14.0"),
+                answers: z.object({
+                  c0: z.object({ type: z.literal("noul"), noul: z.number().min(0).max(1) }),
+                }),
+                usage: z.object({
+                  input_tokens: z.number().int().nonnegative(),
+                  output_tokens: z.number().int().nonnegative(),
+                }),
+              })
+              .safeParse(await response.clone().json());
+            if (receipt.success) providerReceipts.push(receipt.data);
+          }
+          return response;
+        },
+      },
     );
-    return { trace: result.trace, generatorStarted: false };
+    return {
+      trace: result.trace,
+      providerReceipt: providerReceipts[0] ?? null,
+      generatorStarted: false,
+      selectionCache: selectionCacheDiagnostics(
+        getRequest(),
+        "match-benchmark:synthetic-continuity",
+      ),
+    };
   });
