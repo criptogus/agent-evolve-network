@@ -4,6 +4,7 @@ import { z } from "zod";
 import { evidenceHash, PAIRED_CRITERIA } from "../src/lib/match/paired-evaluation.ts";
 import {
   BENCHMARK_USD_LIMIT,
+  BENCHMARK_PRIOR_LIMIT_USD,
   BENCHMARK_PRIOR_HELD_USD,
   BENCHMARK_PRIOR_SPEND_UPPER_USD,
   generatorCost,
@@ -117,7 +118,7 @@ if (
   Math.abs(summary.runBilledUpperUsd - billed) > 1e-9 ||
   Math.abs(summary.accumulatedBilledUpperUsd - BENCHMARK_PRIOR_SPEND_UPPER_USD) > 1e-9 ||
   summary.priorUnknownHeldUsd !== BENCHMARK_PRIOR_HELD_USD ||
-  summary.ownerAccumulatedLimitUsd !== BENCHMARK_USD_LIMIT
+  summary.ownerAccumulatedLimitUsd !== BENCHMARK_PRIOR_LIMIT_USD
 )
   throw new Error("Unreconciled accumulated authority");
 const p95 = (values: number[]) => {

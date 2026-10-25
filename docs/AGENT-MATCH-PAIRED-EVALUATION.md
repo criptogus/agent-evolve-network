@@ -1,6 +1,6 @@
 # Comparação pareada do Agent Match
 
-Estado em 2026-10-24: **preparada, não executada e não aprovada para publicação**. O proprietário autorizou explicitamente até US$ 5 no total para as 72 gerações Lovable AI. A autorização abrange inferência; o agente construtor não deve ser usado. Não solicitar novamente essa mesma autorização.
+Estado em 2026-10-25: **nova comparação pendente; nenhuma aprovação de eficiência**. O proprietário ampliou explicitamente o teto acumulado para US$10. Mantêm-se US$5,48125 de cobranças anteriores e US$1,08116575 de reservas desconhecidas: saldo máximo US$3,43758425. A autorização abrange inferência; o agente construtor não deve ser usado. Os históricos abaixo conservam seus tetos e reprovações originais. Não solicitar novamente essa mesma autorização.
 
 ## Evidência atual
 

@@ -60,6 +60,6 @@ test("native reconciliation cannot reset spending or release unaccounted reserva
   );
 });
 
-test("caller cannot reset remaining authority to the original USD 7 after reconciled cohorts", () => {
+test("caller cannot reset remaining authority to the full authorized ceiling after reconciled cohorts", () => {
   assert.throws(() => reserveGeneration("s", "p", "{}", BENCHMARK_USD_LIMIT));
 });

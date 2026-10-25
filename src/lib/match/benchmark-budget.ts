@@ -2,7 +2,9 @@
 import { MATCH_GENERATOR_MODEL, MATCH_MAX_OUTPUT_TOKENS } from "./match-generation.ts";
 export const BENCHMARK_MODEL = MATCH_GENERATOR_MODEL;
 export const BENCHMARK_OUTPUT_LIMIT = MATCH_MAX_OUTPUT_TOKENS;
-export const BENCHMARK_USD_LIMIT = 7;
+// Owner explicitly raised the accumulated ceiling from USD7 to USD10 on 2026-10-25.
+export const BENCHMARK_PRIOR_LIMIT_USD = 7;
+export const BENCHMARK_USD_LIMIT = 10;
 // Hold the original client error, v8 Jev reservation, v15 schema error and interrupted v16 attempt; never reset the owner cap.
 export const BENCHMARK_PRIOR_HELD_USD = 1.08116575;
 // Prior 61 checkpoints (US$3.10125 upper) plus the fully reconciled v26
