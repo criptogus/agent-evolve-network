@@ -148,7 +148,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v19-text-only-qwen",
+    protocol: "compiled-playbook-gateway-v21-quotation-identity",
     python,
     modelPath,
     model: profileFor(modelPath).model,

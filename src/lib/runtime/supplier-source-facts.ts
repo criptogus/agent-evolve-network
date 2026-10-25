@@ -72,10 +72,12 @@ export function prepareSupplierFacts(inputs: Record<string, unknown>) {
   ids.forEach((id, i) => {
     questions[`kind_${i}`] = {
       type: "choice",
-      instructions: `Does identifier ${id} name a supplier quotation in original_sources? Source/export and specification IDs are other, even if they mention bids.`,
+      instructions: `Classify the exact referent of identifier ${id} in original_sources, not the contents of a document bearing that label. Does this identifier itself name one supplier's individual quotation? A procurement memo/source-record identifier remains other even when its paragraph lists supplier quotations, prices and quantities. Nearby quotations have their own identifiers; do not transfer their identity to the enclosing document. Workspace, policy, export and specification IDs are other.`,
       criteria: {
-        quote: "Identifier names a supplier quote",
-        other: "Source, specification, metadata, or not a unique quote",
+        quote:
+          "This exact identifier names one supplier's individual offer, not an enclosing source document that describes offers",
+        other:
+          "This exact identifier labels a source document, procurement memo, policy, workspace, specification or metadata, or does not uniquely name a supplier offer",
       },
     };
     for (const [key, meaning] of Object.entries({
