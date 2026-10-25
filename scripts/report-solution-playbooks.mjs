@@ -19,6 +19,7 @@ import {
   validateSupplierResponse,
   composeSupplierFacts,
 } from "../src/lib/runtime/supplier-source-facts.ts";
+import { prepareSupplierStage } from "../src/lib/runtime/supplier-stages.ts";
 const [dir, reviewsPath, output] = process.argv.slice(2);
 if (!dir || !reviewsPath || !output || process.argv.length !== 5 || existsSync(output))
   throw new Error("Supply EVIDENCE_DIR PRIMARY_REVIEWS NEW_REPORT; existing reports are preserved");
@@ -44,20 +45,20 @@ const profile = read("content/expansion/playbook-model-profiles.json").find(
 );
 if (!profile) throw new Error("Unsupported exact model/runtime profile");
 const financeHost = read("content/expansion/playbook-local-contract.json").finance_host;
-const supplierInterpreter = read(
-  "content/expansion/playbook-local-contract.json",
-).supplier_interpreter;
+const supplierHost = read("content/expansion/playbook-local-contract.json").supplier_host;
 if (
-  JSON.stringify(plan.supplier_interpreter) !== JSON.stringify(supplierInterpreter) ||
-  supplierInterpreter.model !== FINANCE_FACTS_MODEL ||
-  supplierInterpreter.execution !== "source-interpreted-local-generation-v2"
+  JSON.stringify(plan.supplier_host) !== JSON.stringify(supplierHost) ||
+  supplierHost.model !== FINANCE_FACTS_MODEL ||
+  supplierHost.execution !== "supplier-source-state-v1" ||
+  supplierHost.node !== financeHost.node ||
+  supplierHost.architecture !== financeHost.architecture
 )
   throw new Error("Unqualified supplier interpreter");
 if (JSON.stringify(plan.finance_host) !== JSON.stringify(financeHost))
   throw new Error("Unqualified finance model/host profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v15-supplier-provenance" ||
+  plan.protocol !== "compiled-playbook-gateway-v16-supplier-state" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({
@@ -124,6 +125,7 @@ const requiredSources = [
   "src/lib/runtime/finance-source-facts.server.ts",
   "src/lib/runtime/supplier-source-facts.ts",
   "src/lib/runtime/supplier-source-facts.server.ts",
+  "src/lib/runtime/supplier-stages.ts",
   "src/lib/adversarial/leak-scanner.ts",
   ...contract.subjects.map((s) => `content/playbooks/${s.slug}.yaml`),
 ];
@@ -239,18 +241,22 @@ const outcomes = schedule.map(({ s, c }, i) => {
   const yaml = parse(readFileSync(`content/playbooks/${s.slug}.yaml`, "utf8"));
   const trace = transports.filter((t) => t.value.case_id === c.id);
   const finance = s.slug === "solution-monthly-finance-close";
+  const supplier = s.slug === "solution-supplier-selection";
+  const sourceState = finance || supplier;
   if (
     run.status !== "ok" ||
     run.playbook_slug !== s.slug ||
     run.version !== s.version ||
     run.step_outcomes.length !== yaml.steps.length ||
-    trace.length !== (finance ? 0 : yaml.steps.length)
+    trace.length !== (sourceState ? 0 : yaml.steps.length)
   )
     throw new Error("Incomplete graph or unexpected finance generation");
-  if (finance) {
+  if (sourceState) {
+    const host = finance ? financeHost : supplierHost;
     if (
-      JSON.stringify(run.finance_execution) !== JSON.stringify(financeHost) ||
-      JSON.stringify(run.local_model_evidence) !== JSON.stringify(financeHost)
+      JSON.stringify(finance ? run.finance_execution : run.supplier_execution) !==
+        JSON.stringify(host) ||
+      JSON.stringify(run.local_model_evidence) !== JSON.stringify(host)
     )
       throw new Error("Unbound finance interpreter or host runtime");
   } else if (
@@ -307,11 +313,15 @@ const outcomes = schedule.map(({ s, c }, i) => {
   } else if (run.source_facts) throw new Error("Unscheduled source-facts interpretation");
   const previous = {};
   let combined = "";
-  if (finance)
+  if (sourceState)
     yaml.steps.forEach((definition, j) => {
-      if (definition.action !== `tool:finance.${definition.id}`)
+      if (definition.action !== `tool:${finance ? "finance" : "supplier"}.${definition.id}`)
         throw new Error("Unqualified finance graph action");
-      const expected = prepareFinanceStage(definition.action.slice(5), run.source_facts, previous);
+      const expected = (finance ? prepareFinanceStage : prepareSupplierStage)(
+        definition.action.slice(5),
+        run.source_facts,
+        previous,
+      );
       const step = run.step_outcomes[j];
       if (
         step.step_id !== definition.id ||
@@ -404,10 +414,14 @@ const reports = plan.subjects.map((s) => {
       s.slug === "solution-monthly-finance-close"
         ? `typesafe/${financeHost.model}/${financeHost.execution}@node-${financeHost.node}-${financeHost.architecture}`
         : s.slug === "solution-supplier-selection"
-          ? `${plan.model}+typesafe/${supplierInterpreter.model}/${supplierInterpreter.execution}`
+          ? `typesafe/${supplierHost.model}/${supplierHost.execution}@node-${supplierHost.node}-${supplierHost.architecture}`
           : plan.model,
     execution_protocol:
-      s.slug === "solution-monthly-finance-close" ? financeHost.execution : plan.protocol,
+      s.slug === "solution-monthly-finance-close"
+        ? financeHost.execution
+        : s.slug === "solution-supplier-selection"
+          ? supplierHost.execution
+          : plan.protocol,
     source_sha256: plan.sourceHashes[`content/playbooks/${s.slug}.yaml`],
     artifact_sha256: s.artifact.sha256,
     total: os.length,
@@ -426,8 +440,9 @@ writeFileSync(
       planHash,
       model: plan.model,
       finance_host: financeHost,
+      supplier_host: supplierHost,
       model_scope:
-        "Per-package models and execution protocols are recorded in reports; finance uses TypeSafe interpretation plus real accounting tools, other graphs use the pinned local generator.",
+        "Per-package models and execution protocols are recorded in reports; finance and supplier use pinned TypeSafe interpretation plus real domain tools; the other two graphs use the pinned local generator.",
       protocol: plan.protocol,
       total: 72,
       reports,

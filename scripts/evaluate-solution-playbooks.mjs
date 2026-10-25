@@ -69,6 +69,7 @@ const sourcePaths = [
   "src/lib/runtime/finance-source-facts.server.ts",
   "src/lib/runtime/supplier-source-facts.ts",
   "src/lib/runtime/supplier-source-facts.server.ts",
+  "src/lib/runtime/supplier-stages.ts",
   "src/lib/adversarial/leak-scanner.ts",
   ...cases.subjects.map((s) => `content/playbooks/${s.slug}.yaml`),
 ];
@@ -145,13 +146,12 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v15-supplier-provenance",
+    protocol: "compiled-playbook-gateway-v16-supplier-state",
     python,
     modelPath,
     model: profileFor(modelPath).model,
     finance_host: financeHost,
-    supplier_interpreter: load("content/expansion/playbook-local-contract.json")
-      .supplier_interpreter,
+    supplier_host: load("content/expansion/playbook-local-contract.json").supplier_host,
     runtime,
     sourceHashes,
     thresholds: cases.thresholds,

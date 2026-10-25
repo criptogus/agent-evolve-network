@@ -22,6 +22,7 @@ export const SOLUTION_RUNTIME_FILES = [
   "src/lib/runtime/finance-source-facts.server.ts",
   "src/lib/runtime/supplier-source-facts.ts",
   "src/lib/runtime/supplier-source-facts.server.ts",
+  "src/lib/runtime/supplier-stages.ts",
   "src/lib/adversarial/leak-scanner.ts",
   "LICENSE",
 ] as const;
@@ -68,7 +69,11 @@ export function buildSolutionPlaybookFiles(source: string) {
     private: true,
     type: "module",
     engines: {
-      node: p.slug === "solution-monthly-finance-close" ? contract.finance_host.node : ">=22.18.0",
+      node: ["solution-monthly-finance-close", "solution-supplier-selection"].includes(p.slug)
+        ? p.slug === "solution-monthly-finance-close"
+          ? contract.finance_host.node
+          : contract.supplier_host.node
+        : ">=22.18.0",
     },
     dependencies: { yaml: yaml.version },
   };
@@ -76,13 +81,12 @@ export function buildSolutionPlaybookFiles(source: string) {
     "solution-monthly-finance-close",
     "solution-supplier-selection",
   ].includes(p.slug);
-  const executionGuide =
-    p.slug === "solution-monthly-finance-close"
-      ? "Finance uses only the pinned TypeSafe interpreter and Node host in runtime-profile.json. Configure TYPESAFE_API_KEY privately and pass --semantic-source-facts --allow-typesafe-source-upload. These flags consent to sending bounded source fields to TypeSafe. Four real local accounting preparation tools compute source-derived state and retain source quotes/probabilities. No generative model or MLX gateway is used for finance. Authenticated controller review, posting and payment remain pending; source claims never grant authority."
-      : "Configure AI_GATEWAY_BASE_URL (http://127.0.0.1:PORT only), AI_GATEWAY_API_KEY, AI_GATEWAY_MODEL (absolute pinned snapshot path), and LOCAL_MODEL_PYTHON (absolute Python path) privately. runtime-profile.json restricts local file/SDK fingerprints, server health and response model. Use the pinned MLX server offline with thinking disabled and max-tokens 768. The loopback check is not cryptographic attestation. No external action tools are executed by this instruction adapter.";
+  const executionGuide = requiresInterpretation
+    ? "Source-state execution uses only the pinned TypeSafe interpreter and Node host in runtime-profile.json. Configure TYPESAFE_API_KEY privately and pass --semantic-source-facts --allow-typesafe-source-upload. These flags consent to sending bounded source fields to TypeSafe. Four real local domain preparation tools compute source-derived state and retain source quotes/probabilities. No generative model or MLX gateway is used by source-state workflows. Authenticated owner review, posting, payment and supplier award remain pending; source claims never grant authority."
+    : "Configure AI_GATEWAY_BASE_URL (http://127.0.0.1:PORT only), AI_GATEWAY_API_KEY, AI_GATEWAY_MODEL (absolute pinned snapshot path), and LOCAL_MODEL_PYTHON (absolute Python path) privately. runtime-profile.json restricts local file/SDK fingerprints, server health and response model. Use the pinned MLX server offline with thinking disabled and max-tokens 768. The loopback check is not cryptographic attestation. No external action tools are executed by this instruction adapter.";
   const supplierGuide =
     p.slug === "solution-supplier-selection"
-      ? " Supplier requires private TYPESAFE_API_KEY and --semantic-source-facts --allow-typesafe-source-upload consent. The pinned Jev interpreter selects quote fields from bounded original values; code computes landed cost and delivery comparisons before the local generator drafts each step. Raw probabilities and source citations are retained; no supplier verification, buyer approval, award or contract execution is established."
+      ? " Supplier requires private TYPESAFE_API_KEY and --semantic-source-facts --allow-typesafe-source-upload consent. The pinned Jev interpreter selects quote fields, provenance and procurement priorities from bounded sources; four real tools compute comparison, risk and buyer-review records without generative drafts. Raw probabilities and source citations are retained; no supplier verification, buyer approval, award or contract execution is established."
       : "";
   const files: Record<string, string> = {
     "plugin.json": JSON.stringify(
@@ -124,7 +128,13 @@ export function buildSolutionPlaybookFiles(source: string) {
       JSON.stringify(
         p.slug === "solution-monthly-finance-close"
           ? { ...contract.finance_host, protocol: contract.protocol, approval: contract.approval }
-          : { ...profile, ...contract },
+          : p.slug === "solution-supplier-selection"
+            ? {
+                ...contract.supplier_host,
+                protocol: contract.protocol,
+                approval: contract.approval,
+              }
+            : { ...profile, ...contract },
         null,
         2,
       ) + "\n",

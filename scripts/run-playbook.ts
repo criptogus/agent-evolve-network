@@ -38,13 +38,24 @@ const inputs = args.inputs
 const { compilePlaybook } = await import(`${ROOT}/src/lib/runtime/compile.ts`);
 const { runPlaybook } = await import(`${ROOT}/src/lib/runtime/run.ts`);
 
+const interpretedPlaybook = [
+  "solution-monthly-finance-close",
+  "solution-supplier-selection",
+].includes(args.playbook);
 let localContract;
 let localEvidence;
 const contractPath = join(ROOT, "references/runtime-profile.json");
 if (args.gateway && existsSync(contractPath)) {
   try {
     localContract = JSON.parse(readFileSync(contractPath, "utf8"));
-    if (localContract.execution === "finance-source-state-v2") {
+    if (["finance-source-state-v2", "supplier-source-state-v1"].includes(localContract.execution)) {
+      const expected =
+        args.playbook === "solution-monthly-finance-close"
+          ? "finance-source-state-v2"
+          : args.playbook === "solution-supplier-selection"
+            ? "supplier-source-state-v1"
+            : null;
+      if (localContract.execution !== expected) throw new Error("Source-state workflow mismatch");
       if (
         process.versions.node !== localContract.node ||
         process.arch !== localContract.architecture
@@ -87,7 +98,7 @@ if (args.gateway && existsSync(contractPath)) {
       localEvidence = { ...localEvidence, health };
     }
     if (
-      args.playbook === "solution-monthly-finance-close" &&
+      interpretedPlaybook &&
       (!args["semantic-source-facts"] || !args["allow-typesafe-source-upload"])
     )
       throw new Error("Finance source-state execution requires explicit source upload consent");
@@ -98,10 +109,6 @@ if (args.gateway && existsSync(contractPath)) {
     process.exit(2);
   }
 }
-const interpretedPlaybook = [
-  "solution-monthly-finance-close",
-  "solution-supplier-selection",
-].includes(args.playbook);
 let sourceFacts;
 let sourceFactsProviderEvidence;
 if (args["semantic-source-facts"]) {
@@ -152,31 +159,28 @@ if (args.gateway && interpretedPlaybook && !sourceFacts) {
 }
 if (
   args.gateway &&
-  args.playbook === "solution-supplier-selection" &&
+  interpretedPlaybook &&
   localContract &&
-  (sourceFacts.response.model !== localContract.supplier_interpreter?.model ||
-    localContract.supplier_interpreter?.execution !== "source-interpreted-local-generation-v2")
+  sourceFacts.response.model !== localContract.model
 ) {
-  console.error("Supplier interpreter model/protocol mismatch");
+  console.error("Source-state interpreter model mismatch");
   process.exit(2);
 }
-if (financeMode && localContract && sourceFacts.response.model !== localContract.model) {
-  console.error("Finance source interpreter model mismatch");
-  process.exit(2);
-}
-const financeExecution = financeMode
-  ? {
-      execution: "finance-source-state-v2",
-      model: sourceFacts.response.model,
-      node: process.versions.node,
-      architecture: process.arch,
-    }
-  : null;
-const adapters = financeMode
-  ? await financeAdapters()
-  : args.gateway
-    ? await gatewayAdapters()
-    : mockAdapters();
+const sourceExecution =
+  args.gateway && interpretedPlaybook
+    ? {
+        execution: financeMode ? "finance-source-state-v2" : "supplier-source-state-v1",
+        model: sourceFacts.response.model,
+        node: process.versions.node,
+        architecture: process.arch,
+      }
+    : null;
+const adapters =
+  args.gateway && interpretedPlaybook
+    ? await sourceStateAdapters()
+    : args.gateway
+      ? await gatewayAdapters()
+      : mockAdapters();
 const result = await runPlaybook(compilePlaybook(yaml), inputs, adapters);
 
 console.log(
@@ -185,7 +189,9 @@ console.log(
       ...result,
       ...(sourceFacts ? { source_facts: sourceFacts } : {}),
       ...(localEvidence ? { local_model_evidence: localEvidence } : {}),
-      ...(financeExecution ? { finance_execution: financeExecution } : {}),
+      ...(sourceExecution
+        ? { [financeMode ? "finance_execution" : "supplier_execution"]: sourceExecution }
+        : {}),
     },
     null,
     2,
@@ -215,21 +221,23 @@ function mockAdapters() {
     invokeSkill: async ({ slug, inputs }) =>
       `[mock-skill:${slug}] ${JSON.stringify(inputs).slice(0, 80)}`,
     invokeTool: async ({ name, inputs }) =>
-      name.startsWith("finance.") ? `[mock-tool] ${name}` : { name, inputs },
+      /^(finance|supplier)\./.test(name) ? `[mock-tool] ${name}` : { name, inputs },
     onTelemetry: (e) => console.error(`[telemetry] ${JSON.stringify(e)}`),
   };
 }
 
-async function financeAdapters() {
-  const { prepareFinanceStage } = await import(`${ROOT}/src/lib/runtime/finance-stages.ts`);
+async function sourceStateAdapters() {
+  const prepare = financeMode
+    ? (await import(`${ROOT}/src/lib/runtime/finance-stages.ts`)).prepareFinanceStage
+    : (await import(`${ROOT}/src/lib/runtime/supplier-stages.ts`)).prepareSupplierStage;
   return {
     invokeInstruction: async () => {
-      throw new Error("Unexpected free-form finance generation");
+      throw new Error("Unexpected free-form source-state generation");
     },
     invokeSkill: async () => {
-      throw new Error("Unexpected finance delegation");
+      throw new Error("Unexpected source-state delegation");
     },
-    invokeTool: async ({ name, context }) => prepareFinanceStage(name, sourceFacts, context.steps),
+    invokeTool: async ({ name, context }) => prepare(name, sourceFacts, context.steps),
     onTelemetry: (e) => console.error(`[telemetry] ${JSON.stringify(e)}`),
   };
 }

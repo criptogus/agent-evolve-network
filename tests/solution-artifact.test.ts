@@ -95,7 +95,9 @@ test("all four standalone archives execute their actual CLI outside the reposito
         assert.ok(
           result.step_outcomes.every((step: { output: string }) =>
             step.output.startsWith(
-              slug === "solution-monthly-finance-close" ? "[mock-tool]" : "[mock-llm]",
+              ["solution-monthly-finance-close", "solution-supplier-selection"].includes(slug)
+                ? "[mock-tool]"
+                : "[mock-llm]",
             ),
           ),
           "Transport fixtures never qualify model outputs",

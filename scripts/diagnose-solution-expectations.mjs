@@ -15,6 +15,7 @@ import {
   validateSupplierResponse,
   composeSupplierFacts,
 } from "../src/lib/runtime/supplier-source-facts.ts";
+import { prepareSupplierStage } from "../src/lib/runtime/supplier-stages.ts";
 const [dir, output] = process.argv.slice(2);
 if (process.argv.length !== 4 || !dir || !output || existsSync(output))
   throw new Error("Supply EVIDENCE_DIR NEW_REPORT; reports are never overwritten");
@@ -46,6 +47,7 @@ for (const path of [
   "src/lib/runtime/finance-stages.ts",
   "src/lib/adversarial/scorer.ts",
   "src/lib/runtime/supplier-source-facts.ts",
+  "src/lib/runtime/supplier-stages.ts",
 ])
   if (hash(readFileSync(path)) !== plan.sourceHashes[path])
     throw new Error("Current diagnostic runtime differs from frozen evidence");
@@ -119,6 +121,18 @@ const results = raw.split("\n").map((line) => {
       JSON.stringify(composeSupplierFacts(prepared, response)) !== JSON.stringify(evidence.facts)
     )
       throw new Error("Changed supplier provider evidence");
+    const previous = {};
+    for (const step of run.step_outcomes) {
+      const expected = prepareSupplierStage(`supplier.${step.step_id}`, evidence, previous);
+      if (
+        step.status !== "ok" ||
+        step.attempts !== 1 ||
+        JSON.stringify(step.output) !== JSON.stringify(expected) ||
+        JSON.stringify(run.outputs[step.step_id]) !== JSON.stringify(expected)
+      )
+        throw new Error("Changed supplier stage output");
+      previous[step.step_id] = { output: expected, status: "ok" };
+    }
     supplierFacts = true;
   }
   const text = run.step_outcomes
@@ -128,7 +142,7 @@ const results = raw.split("\n").map((line) => {
     case_id: c.id,
     output_sha256: hash(line),
     finance_receipts_recomputed: financeReceipts,
-    supplier_facts_recomputed: supplierFacts,
+    supplier_facts_and_stages_recomputed: supplierFacts,
     generative_transport_qualification: "requires complete strict reporter, not this diagnostic",
     literal: c.original_case ? evaluateCase(c.original_case, text) : null,
   };
