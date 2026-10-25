@@ -114,6 +114,17 @@ export function prepareSourceContext(inputs: Record<string, unknown>) {
     throw new Error("Sensitive source requires local redaction before TypeSafe");
   return { sources, quarantined, attachmentContext, text };
 }
+/** Literal focus fragments, not a replacement for the complete original source records. */
+export function financeRecordExcerpts(sources: Record<string, string>, id: string) {
+  const escaped = id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const exactId = new RegExp(`\\b${escaped}\\b`);
+  return Object.entries(sources).flatMap(([source, text]) =>
+    text
+      .split(/(?<=[.;!?])\s+|\n/)
+      .filter((fragment) => exactId.test(fragment))
+      .map((quote) => ({ source, quote })),
+  );
+}
 export function prepareFinanceFacts(inputs: Record<string, unknown>) {
   const { sources, quarantined, attachmentContext, text } = prepareSourceContext(inputs);
   const ids = [
@@ -166,7 +177,7 @@ export function prepareFinanceFacts(inputs: Record<string, unknown>) {
     };
     questions[`amount_${i}`] = {
       type: "choice",
-      instructions: `If ${id} names an invoice, ledger entry or cash movement, choose its own documented face amount from original_sources. Do not choose budget or opening cash, calculate totals, or invent a value. Otherwise select none.`,
+      instructions: `Select the monetary amount explicitly recorded for identifier ${id} itself in original_sources, including a ledger amount explicitly recorded alongside its linked invoice. Relevant literal record fragments (the complete originals remain in state): ${JSON.stringify(financeRecordExcerpts(sources, id))}. Retaining a source-recorded ledger amount is not posting a new entry, adding a second expense or making a payment. Missing approval for new posting does not erase a supplied historical amount. Do not calculate or substitute budget/opening cash. Select none if this identifier is not an invoice, ledger entry or cash movement, or no unique recorded amount is supplied.`,
       criteria: money,
     };
     questions[`direction_${i}`] = {

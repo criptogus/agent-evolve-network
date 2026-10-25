@@ -151,7 +151,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v23-security-source-state",
+    protocol: "compiled-playbook-gateway-v24-record-focused-amounts",
     python,
     modelPath,
     model: profileFor(modelPath).model,

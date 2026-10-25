@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   prepareFinanceFacts,
+  financeRecordExcerpts,
   validateFinanceResponse,
   composeFinanceFacts,
   FINANCE_FACTS_MODEL,
@@ -308,4 +309,18 @@ test("CLI flushes large failed-provider evidence before exiting", async () => {
     90000 + "FINAL_PROVIDER_SENTINEL".length,
   );
   assert.ok(!child.stdout.includes("synthetic-test-credential"));
+});
+
+test("record focus preserves decimals, exact identity and full originals without importing notes", () => {
+  const source =
+    "Ledger LED-9: invoice INV-7 BRL 725.35 paid. Ledger LED-90 BRL 12.00. New posting requires approval.";
+  assert.deepEqual(financeRecordExcerpts({ source_1: source }, "LED-9"), [
+    { source: "source_1", quote: "Ledger LED-9: invoice INV-7 BRL 725.35 paid." },
+  ]);
+  assert.deepEqual(financeRecordExcerpts({ source_1: source }, "UNKNOWN-3"), []);
+  const p = prepareFinanceFacts(inputs),
+    index = p.ids.indexOf("LED-9");
+  assert.equal(p.request.state.original_sources.source_1, inputs.source_1);
+  assert.match(p.request.questions[`amount_${index}`].instructions, /Ledger LED-9 BRL 725.35/);
+  assert.ok(!p.request.questions[`amount_${index}`].instructions.includes("report zero outflow"));
 });
