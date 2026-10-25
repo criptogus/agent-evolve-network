@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { parse as parseYaml } from "yaml";
+import type { GuardrailFn } from "../src/lib/runtime/types.ts";
 
 const { compilePlaybook } = await import("../src/lib/runtime/compile.ts");
 const { runPlaybook } = await import("../src/lib/runtime/run.ts");
@@ -182,4 +183,127 @@ test("expression evaluator supports contains / == / && / ||", () => {
     evaluateCondition("${inputs.sev} == 'low' && ${steps.x.status} == 'ok'", ctx),
     false,
   );
+});
+
+test("an unavailable configured guardrail blocks adapters instead of silently succeeding", async () => {
+  const calls = [];
+  const playbook = compilePlaybook({
+    slug: "missing-guardrail",
+    version: "0.1.0",
+    type: "playbook",
+    guardrails: ["required-policy-check"],
+    steps: [{ id: "protected", action: "instruction", with: { prompt: "protected work" } }],
+  });
+  const result = await runPlaybook(playbook, {}, baseAdapters(calls));
+  assert.equal(result.status, "error");
+  assert.equal(calls.length, 0);
+  assert.deepEqual(result.step_outcomes[0].guardrails_triggered, ["required-policy-check"]);
+  assert.match(result.step_outcomes[0].error ?? "", /required-policy-check.*unavailable/);
+});
+
+test("blocked guardrail output is absent from the public result and later context", async () => {
+  const secret = "PRIVATE_BLOCKED_VALUE_921";
+  const laterOutputs: unknown[] = [];
+  const playbook = compilePlaybook({
+    slug: "blocked-output",
+    version: "0.1.0",
+    type: "playbook",
+    guardrails: ["block-sensitive"],
+    steps: [
+      { id: "first", action: "instruction", with: { prompt: "first" }, on_error: "continue" },
+      { id: "second", action: "instruction", with: { prompt: "second" } },
+    ],
+  });
+  const result = await runPlaybook(
+    playbook,
+    {},
+    {
+      invokeSkill: async () => "unused",
+      invokeInstruction: async ({ prompt, context }) => {
+        if (prompt === "first") return secret;
+        laterOutputs.push(context.steps.first.output);
+        return "safe later result";
+      },
+      guardrails: {
+        "block-sensitive": async ({ phase, payload }) => ({
+          pass: phase !== "post" || payload !== secret,
+          reason: "sensitive output blocked",
+        }),
+      },
+    },
+  );
+  assert.equal(result.status, "partial");
+  assert.deepEqual(laterOutputs, [undefined]);
+  assert.ok(!JSON.stringify(result).includes(secret));
+});
+
+test("guardrail exceptions become recorded failures without exposing exception details", async () => {
+  const playbook = compilePlaybook({
+    slug: "guardrail-throws",
+    version: "0.1.0",
+    type: "playbook",
+    guardrails: ["throws"],
+    steps: [{ id: "protected", action: "instruction", with: { prompt: "work" } }],
+  });
+  const calls = [];
+  const result = await runPlaybook(
+    playbook,
+    {},
+    {
+      ...baseAdapters(calls),
+      guardrails: {
+        throws: async () => {
+          throw new Error("PRIVATE_EXCEPTION_771");
+        },
+      },
+    },
+  );
+  assert.equal(result.status, "error");
+  assert.equal(calls.length, 0);
+  assert.deepEqual(result.step_outcomes[0].guardrails_triggered, ["throws"]);
+  assert.ok(!JSON.stringify(result).includes("PRIVATE_EXCEPTION_771"));
+});
+
+test("the built-in output privacy policy runs the real leak scanner", async () => {
+  const playbook = compilePlaybook({
+    slug: "builtin-privacy",
+    version: "0.1.0",
+    type: "playbook",
+    guardrails: ["no-pii-in-output"],
+    steps: [{ id: "protected", action: "instruction", with: { prompt: "work" } }],
+  });
+  const result = await runPlaybook(
+    playbook,
+    {},
+    {
+      invokeSkill: async () => "unused",
+      invokeInstruction: async () => "Private SSN 412-55-8891",
+    },
+  );
+  assert.equal(result.status, "error");
+  assert.deepEqual(result.step_outcomes[0].guardrails_triggered, ["no-pii-in-output"]);
+  assert.ok(!JSON.stringify(result).includes("412-55-8891"));
+});
+
+test("malformed guardrail responses cannot authorize an adapter", async () => {
+  for (const response of [null, {}, { pass: "truthy" }]) {
+    const calls = [];
+    const playbook = compilePlaybook({
+      slug: "malformed-guard",
+      version: "0.1.0",
+      type: "playbook",
+      guardrails: ["malformed"],
+      steps: [{ id: "protected", action: "instruction", with: { prompt: "work" } }],
+    });
+    // Deliberately violate the host boundary to exercise JS adapter integrations.
+    const guard = (async () => response) as unknown as GuardrailFn;
+    const result = await runPlaybook(
+      playbook,
+      {},
+      { ...baseAdapters(calls), guardrails: { malformed: guard } },
+    );
+    assert.equal(result.status, "error");
+    assert.equal(calls.length, 0);
+    assert.deepEqual(result.step_outcomes[0].guardrails_triggered, ["malformed"]);
+  }
 });
