@@ -1,45 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
+import { FollowCollection } from "@/components/collections/FollowCollection";
 import { SitePage } from "@/components/site/SitePage";
-import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
-
-type CollectionRow = {
-  id: string;
-  slug: string;
-  title: string;
-  description: string | null;
-  cover_emoji: string | null;
-  curator_user_id: string;
-  curator_share_bps: number;
-};
-type Item = {
-  package_id: string;
-  position: number;
-  note: string | null;
-  package: { slug: string; name: string; description: string | null } | null;
-};
+import { getPublicCollection } from "@/lib/collections/collections.functions";
 
 export const Route = createFileRoute("/collections/$slug")({
   loader: async ({ params }) => {
-    const { data: c } = await supabaseAdmin
-      .from("skill_collections")
-      .select("id,slug,title,description,cover_emoji,curator_user_id,curator_share_bps,is_public")
-      .eq("slug", params.slug)
-      .maybeSingle();
-    if (!c || !(c as { is_public: boolean }).is_public)
-      throw new Response("not found", { status: 404 });
-
-    const { data: rows } = await supabaseAdmin
-      .from("skill_collection_items")
-      .select("package_id,position,note,packages(slug,name,description)")
-      .eq("collection_id", (c as CollectionRow).id)
-      .order("position", { ascending: true });
-    const items = (rows ?? []).map((r) => ({
-      ...r,
-      package: r.packages,
-    }));
-
-    return { collection: c as CollectionRow, items };
+    const result = await getPublicCollection({ data: { slug: params.slug } });
+    if (!result) throw notFound();
+    return result;
   },
   head: ({ loaderData }) => ({
     meta: [
@@ -62,12 +30,9 @@ function CollectionPage() {
           {collection.description && (
             <p className="text-muted-foreground mt-2">{collection.description}</p>
           )}
-          <p className="text-xs text-muted-foreground mt-3">
-            Curator earns {(collection.curator_share_bps / 100).toFixed(2)}% of every install
-            attributed to this collection.
-          </p>
         </header>
 
+        <FollowCollection id={collection.id} />
         <ol className="space-y-3">
           {items.map(
             (it, i) =>
@@ -78,7 +43,7 @@ function CollectionPage() {
                       <span className="text-muted-foreground mr-2">{i + 1}.</span>
                       <a
                         className="underline"
-                        href={`/packs/${it.package.slug}?from_collection=${collection.slug}`}
+                        href={`/marketplace/${encodeURIComponent(it.package.slug)}?from_collection=${encodeURIComponent(collection.slug)}`}
                       >
                         {it.package.name}
                       </a>
@@ -95,10 +60,10 @@ function CollectionPage() {
           <p>Install all of these with one shell loop:</p>
           <pre className="mt-2 p-3 bg-muted rounded overflow-x-auto">
             <code>
-              {`for s in ${items
-                .map((i) => i.package?.slug)
-                .filter(Boolean)
-                .join(" ")}; do\n  npx super-agent install "$s"\ndone`}
+              {items
+                .filter((i) => i.package && /^[a-z0-9][a-z0-9-]{1,63}$/.test(i.package.slug))
+                .map((i) => `npx super-agent install '${i.package!.slug}'`)
+                .join("\n")}
             </code>
           </pre>
         </section>

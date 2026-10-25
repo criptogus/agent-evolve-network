@@ -12,7 +12,7 @@
  * We are still pre-1.0: rapid evolution, no stability guarantees.
  */
 
-export const PLATFORM_VERSION = "0.7.1" as const;
+export const PLATFORM_VERSION = "0.9.2" as const;
 export const PLATFORM_CODENAME = "Genesis" as const;
 export const PLATFORM_STAGE: "alpha" | "beta" | "ga" = "alpha";
 export const PLATFORM_BUILD_DATE = "2026-10-25" as const;
@@ -30,6 +30,58 @@ export type ChangelogEntry = {
  * Every deployed change appends a new entry (or amends the top one before shipping).
  */
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "0.9.2",
+    date: "2026-10-25",
+    kind: "patch",
+    title: "Maintenance release",
+    highlights: ["record published and independently verified content release"],
+  },
+  {
+    version: "0.9.1",
+    date: "2026-10-25",
+    kind: "patch",
+    title: "Maintenance release",
+    highlights: ["bind semantic embedding consent to the current search text"],
+  },
+  {
+    version: "0.9.0",
+    date: "2026-10-25",
+    kind: "minor",
+    title: "Feature update",
+    highlights: [
+      "version atomic authoring, collection and semantic search migrations",
+      "complete authoring, collections and signed registry distribution",
+    ],
+  },
+  {
+    version: "0.8.1",
+    date: "2026-10-25",
+    kind: "patch",
+    title: "Maintenance release",
+    highlights: ["restrict public release evidence to the current published version"],
+  },
+  {
+    version: "0.8.0",
+    date: "2026-10-25",
+    kind: "minor",
+    title: "Feature update",
+    highlights: [
+      "integrate public security evidence center (#52)",
+      "Adicionou Trust Center publico",
+    ],
+  },
+  {
+    version: "0.7.2",
+    date: "2026-10-25",
+    kind: "patch",
+    title: "Maintenance release",
+    highlights: [
+      "sync root lockfile version with platform 0.7.1",
+      "Bump @tanstack/react-start from ^1.168.33 to 1.168.60",
+      "sync npm lockfile and run canonical test suite",
+    ],
+  },
   {
     version: "0.7.1",
     date: "2026-10-25",

@@ -21,6 +21,7 @@ test("version generator produces lint-compatible TypeScript and consistent relea
       "scripts/bump-version.ts",
       "src/lib/version.ts",
       "package.json",
+      "package-lock.json",
       "CHANGELOG.md",
       ".prettierrc",
     ])
@@ -50,6 +51,9 @@ test("version generator produces lint-compatible TypeScript and consistent relea
       JSON.parse(readFileSync(resolve(fixture, "package.json"), "utf8")).version,
       version,
     );
+    const lock = JSON.parse(readFileSync(resolve(fixture, "package-lock.json"), "utf8"));
+    assert.equal(lock.version, version);
+    assert.equal(lock.packages[""].version, version);
     assert.ok(source.includes(`PLATFORM_VERSION = "${version}"`));
     assert.ok(source.includes("preserve typed release contract"));
     assert.ok(readFileSync(resolve(fixture, "CHANGELOG.md"), "utf8").includes(`## [${version}]`));

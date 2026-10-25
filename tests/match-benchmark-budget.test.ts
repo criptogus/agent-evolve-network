@@ -75,10 +75,10 @@ test("a new cohort retains the rejected v29 and v30 native charges", () => {
 });
 
 test("a verified no-generator reservation releases only that hold while retaining native charges and the owner cap", () => {
-  assert.equal(BENCHMARK_USD_LIMIT, 10);
+  assert.equal(BENCHMARK_USD_LIMIT, 20);
   assert.equal(BENCHMARK_PRIOR_SPEND_UPPER_USD, 7.07125);
   assert.ok(Math.abs(BENCHMARK_PRIOR_HELD_USD - 0.82931275) < 1e-12);
-  assert.doesNotThrow(() => reserveGeneration("s", "p", "{}", 2.09943724));
+  assert.doesNotThrow(() => reserveGeneration("s", "p", "{}", 12.09943724));
 });
 
 test("rejected immutable cohorts cannot resume inference after a preview rebuild", () => {

@@ -1,6 +1,6 @@
 {
   "name": "tanstack_start_ts",
-  "version": "0.7.1",
+  "version": "0.9.2",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -51,7 +51,9 @@
     "eval:business:local": "node --experimental-strip-types scripts/run-business-adversarial.mjs",
     "eval:business:sql": "node scripts/record-business-adversarial.mjs",
     "publish:business:sql": "node --experimental-strip-types scripts/prepare-business-publication.mjs",
-    "check:business-publication": "node scripts/check-business-publication.mjs"
+    "check:business-publication": "node scripts/check-business-publication.mjs",
+    "build:cli": "node scripts/build-cli.mjs",
+    "check:cli": "node scripts/build-cli.mjs --check"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",

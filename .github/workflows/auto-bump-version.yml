@@ -58,7 +58,7 @@ jobs:
           set -euo pipefail
           git config user.name  "lovable-version-bot"
           git config user.email "bot@superagentskill.com"
-          git add src/lib/version.ts package.json CHANGELOG.md plugin.json mcp.json skills/
+          git add src/lib/version.ts package.json package-lock.json CHANGELOG.md plugin.json mcp.json skills/
           git commit -m "chore: bump platform version ${{ steps.bump.outputs.before }} -> ${{ steps.bump.outputs.after }}"
           git tag "v${{ steps.bump.outputs.after }}"
           git push origin HEAD:main --follow-tags

@@ -16,7 +16,7 @@ on:
         type: string
 
 permissions:
-  contents: write   # needed to create the GitHub Release
+  contents: write # needed to create the GitHub Release
 
 jobs:
   release:
@@ -27,6 +27,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -36,12 +40,15 @@ jobs:
 
       - name: Resolve release version
         id: ver
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
             VERSION="${GITHUB_REF#refs/tags/}"
           else
-            VERSION="${{ inputs.version }}"
+            VERSION="$REQUESTED_VERSION"
           fi
+          [[ "$VERSION" =~ ^content-v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Invalid content release version"; exit 2; }
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Resolved version: $VERSION"
 
@@ -56,6 +63,19 @@ jobs:
           node --experimental-strip-types scripts/generate-changelog.ts \
             --version "${{ steps.ver.outputs.version }}" \
             --out dist/release/CHANGELOG.md
+
+      - name: Build standalone offline verifier
+        run: |
+          node scripts/build-release-verifier.mjs
+          cp security/content-signing-keys.json dist/release/SIGNING_KEYS.json
+
+      - name: Sign and verify release artifacts
+        env:
+          SIGNING_PRIVATE_KEY: ${{ secrets.CONTENT_SIGNING_PRIVATE_KEY }}
+          SIGNING_PUBLIC_KEY: ${{ secrets.CONTENT_SIGNING_PUBLIC_KEY }}
+        run: |
+          node --experimental-strip-types scripts/sign-release-bundle.ts --dir dist/release --keyring security/content-signing-keys.json
+          node --experimental-strip-types scripts/verify-release-bundle.ts --dir dist/release --keyring security/content-signing-keys.json
 
       - name: Show release manifest
         run: cat dist/release/manifest.json
@@ -75,3 +95,8 @@ jobs:
             dist/release/guardrails-*.zip
             dist/release/manifest.json
             dist/release/CHANGELOG.md
+            dist/release/*.sig
+            dist/release/SIGNATURES.json
+            dist/release/SIGNING_PUBLIC_KEY.pem
+            dist/release/verify-release-bundle.mjs
+            dist/release/SIGNING_KEYS.json

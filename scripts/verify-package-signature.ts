@@ -11,8 +11,15 @@
  */
 import { createHash, createPublicKey, verify } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { parseKeyring, assertTrustedKey } from "../src/lib/trust/keyring.ts";
 
-const [zipPath, sidecarPath, pemPath] = process.argv.slice(2);
+const keyringIndex = process.argv.indexOf("--keyring");
+const keyringPath = keyringIndex >= 0 ? process.argv[keyringIndex + 1] : undefined;
+if (keyringIndex >= 0 && !keyringPath) throw new Error("--keyring requires a trusted policy file");
+const [zipPath, sidecarPath, pemPath] = process.argv.slice(
+  2,
+  keyringIndex >= 0 ? keyringIndex : undefined,
+);
 if (!zipPath || !sidecarPath) {
   console.error("usage: verify-package-signature.ts <file.zip> <signature.json> [public-key.pem]");
   process.exit(1);
@@ -38,6 +45,8 @@ const pem = pemPath
       return r.text();
     });
 
+if (keyringPath)
+  assertTrustedKey(parseKeyring(JSON.parse(readFileSync(keyringPath, "utf8"))), pem, "verify");
 const pub = createPublicKey(pem);
 const der = pub.export({ format: "der", type: "spki" });
 const keyId = createHash("sha256").update(der).digest("hex").slice(0, 16);

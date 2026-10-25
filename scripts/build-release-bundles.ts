@@ -51,6 +51,8 @@ const versionArg =
   argv.find((a) => a.startsWith("--version="))?.slice("--version=".length) ??
   (argv.includes("--version") ? argv[argv.indexOf("--version") + 1] : undefined);
 const VERSION = (versionArg || process.env.VERSION || `content-v0.0.0-dev.${Date.now()}`).trim();
+if (!/^content-v\d+\.\d+\.\d+(?:-dev\.\d+)?$/.test(VERSION))
+  throw new Error("Expected content-vMAJOR.MINOR.PATCH release version");
 // Filename-friendly form (strip leading "content-" so we don't get "skills-content-v...zip").
 const FILE_VERSION = VERSION.replace(/^content-/, "");
 

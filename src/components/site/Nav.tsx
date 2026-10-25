@@ -178,6 +178,9 @@ export function Nav() {
                     <Link to="/account/teams">Team workspaces</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link to="/account/collections">My collections</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/account/earnings">Earnings</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

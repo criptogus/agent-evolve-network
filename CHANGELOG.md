@@ -11,6 +11,46 @@ Component artifacts are versioned and released independently via git tags:
 - **`super-agent` CLI** — `cli-v*` tags publish cross-platform binaries.
 - **`@superagentskill/sdk`** — versioned in `packages/sdk-ts/package.json`.
 
+## [0.9.2] — 2026-10-25 — *Genesis* (alpha) — Maintenance release
+
+### Changed
+
+- record published and independently verified content release
+
+## [0.9.1] — 2026-10-25 — *Genesis* (alpha) — Maintenance release
+
+### Changed
+
+- bind semantic embedding consent to the current search text
+
+## [0.9.0] — 2026-10-25 — *Genesis* (alpha) — Feature update
+
+### Changed
+
+- version atomic authoring, collection and semantic search migrations
+- complete authoring, collections and signed registry distribution
+
+## [0.8.1] — 2026-10-25 — *Genesis* (alpha) — Maintenance release
+
+### Changed
+
+- restrict public release evidence to the current published version
+
+## [0.8.0] — 2026-10-25 — *Genesis* (alpha) — Feature update
+
+### Changed
+
+- integrate public security evidence center (#52)
+- Adicionou Trust Center publico
+
+## [0.7.2] — 2026-10-25 — *Genesis* (alpha) — Maintenance release
+
+### Changed
+
+- sync root lockfile version with platform 0.7.1
+- Bump @tanstack/react-start from ^1.168.33 to 1.168.60
+- sync npm lockfile and run canonical test suite
+
 ## [0.7.1] — 2026-10-25 — *Genesis* (alpha) — Maintenance release
 
 ### Changed

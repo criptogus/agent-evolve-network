@@ -19,7 +19,7 @@ import {
   reconcileBenchmarkBudget,
 } from "@/lib/match/benchmark-budget";
 const schema = z.object({
-  planHash: z.literal("100ab039f15edc685116be3d33e883724c8b792364e19d0ada05e0156bf28a09"),
+  planHash: z.literal("0034275d1181a29c73dc3e4046932a271403ec5d1560535d5128b76403c16195"),
   catalog: z
     .array(
       z.object({
@@ -47,7 +47,7 @@ const schema = z.object({
     )
     .length(72),
 });
-const STORAGE = "sas-agent-match-paired-v31-usd10";
+const STORAGE = "sas-agent-match-paired-v32-usd20";
 export const Route = createFileRoute("/admin/match-benchmark")({ component: Benchmark });
 function Benchmark() {
   const generate = useServerFn(generateBenchmarkObservation);

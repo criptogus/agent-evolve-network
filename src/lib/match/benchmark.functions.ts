@@ -18,6 +18,7 @@ import {
 } from "./match-contract";
 import {
   BENCHMARK_MODEL,
+  BENCHMARK_USD_LIMIT,
   generatorCost,
   requireBenchmarkPreview,
   requireOpenBenchmarkCohort,
@@ -41,7 +42,7 @@ const input = z.object({
     souls: z.literal(1),
     guardrails: z.literal(2),
   }),
-  remaining: z.number().positive().max(5),
+  remaining: z.number().positive().max(BENCHMARK_USD_LIMIT),
 });
 // Extra process-local protection; the browser's durable inflight journal is authoritative
 // across reloads. Unknown attempts cannot be resumed or retried automatically.

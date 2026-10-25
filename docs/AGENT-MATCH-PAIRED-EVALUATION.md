@@ -1,6 +1,6 @@
 # Comparação pareada do Agent Match
 
-Estado em 2026-10-25: **nova comparação pendente; nenhuma aprovação de eficiência**. O proprietário ampliou explicitamente o teto acumulado para US$10. Mantêm-se US$5,68625 de cobranças anteriores e US$1,08116575 de reservas desconhecidas: saldo máximo US$3,23258425. A autorização abrange inferência; o agente construtor não deve ser usado. Os históricos abaixo conservam seus tetos e reprovações originais. Não solicitar novamente essa mesma autorização.
+Estado em 2026-10-25: **nova comparação pendente; nenhuma aprovação de eficiência**. O proprietário ampliou explicitamente o teto acumulado para US$20, após o teto anterior de US$10. Mantêm-se US$7,07125 de cobranças anteriores e US$0,82931275 de reservas desconhecidas: saldo máximo US$12,09943725. A autorização abrange inferência; o agente construtor não deve ser usado. Os históricos abaixo conservam seus tetos e reprovações originais. Não solicitar novamente essa mesma autorização.
 
 ## Evidência atual
 
@@ -364,3 +364,16 @@ The corrected candidate adds a source-domain discriminator for knowledge-source 
 The next candidate requires literal catalog counterevidence before asserting risks or gaps. An unselected source may be acknowledged as available, while operational roles, rationale and MCP pairings stay selected-kit bound. New output limits enforce the existing120/60-character rationale/role targets. These source checks cannot establish semantic accuracy; fresh original72-observation primary review remains required. No output is repaired.
 
 `reconcile-match-no-generation.ts` verifies only the reviewed v8 early return against frozen source and consecutive native counters482/483, exact usage and preserved bills. The actual receipt released USD0.251853 of generator reservation only. Paid upper remains USD7.07125; other unknown holds total USD0.82931275; availability is USD2.09943725 under the unchanged USD10 cap. Unknown TypeSafe usage remains unknown. The v16 interrupted hold remains reserved despite adjacent metering diagnostics. Earlier ledgers and rejected histories are preserved.
+
+
+## Preparação v32 com autorização de US$20
+
+A integração com main preserva os metadados de seleção e inclui as melhorias do roadmap.
+O snapshot original de 665 itens foi recuperado da consulta pública na ordem de instalações:
+a reconstrução reproduziu exatamente o hash v31 `100ab039f15edc685116be3d33e883724c8b792364e19d0ada05e0156bf28a09`.
+Os quatro playbooks publicados depois permanecem fora deste ensaio. A preparação v32
+`0034275d1181a29c73dc3e4046932a271403ec5d1560535d5128b76403c16195` preserva
+integralmente catálogo, critérios, casos, agenda, contagens e perfil do gerador. São 72
+observações novas; nenhuma inferência foi executada nesta preparação. A mudança do teto
+não altera o saldo histórico nem libera reservas desconhecidas. O journal usa um espaço
+novo e as observações continuam limitadas a quatro por ação, com reconciliação nativa.

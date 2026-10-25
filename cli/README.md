@@ -64,3 +64,22 @@ npx super-agent info   <slug>
 - **One command** to a working, authenticated MCP connection — no hand-edited JSON.
 - **No login** needed for public skill packages; OAuth only when you want write tools.
 - **Cross-IDE** — installs to every agent you use, with a token-injecting bridge fallback.
+
+### Author locally, then request review
+
+```sh
+super-agent init my-summary
+# Edit my-summary.yaml, including the license, author and worked examples.
+super-agent eval my-summary --out my-summary.preflight.json
+super-agent login
+super-agent publish my-summary
+```
+
+`eval` performs schema and instruction-security preflight with zero model calls.
+It reports `qualified:false`: it does not claim adversarial or model compatibility approval.
+`publish` uploads exact authored fields as an immutable private draft, without model rewriting.
+Open `/account/packages` to request review. Neither command can grant approval or publish a
+public listing. Existing versions, public packages and foreign authors cannot be overwritten.
+For CI, a privately supplied `SUPER_AGENT_TOKEN` can replace interactive login. Tokens are
+sent only in the Authorization header to the configured HTTPS registry, without redirects
+or automatic upload retries.

@@ -4,7 +4,7 @@ import { hashToken } from "@/lib/account/tokens.server";
 
 const supabaseAdmin = _supabaseAdmin;
 
-export type BearerAuth = { user_id: string; source: "oauth" | "pat" };
+export type BearerAuth = { user_id: string; source: "oauth" | "pat"; scope?: string };
 
 /**
  * Why a bearer was not honoured. Surfaced via the X-MCP-Auth header and the
@@ -34,8 +34,12 @@ export async function verifyBearerDetailed(token: string): Promise<BearerResult>
   const { data: oauth } = await supabaseAdmin.rpc("mcp_oauth_verify_access", {
     _token_hash: sha256(token),
   } as never);
-  const oauthRow = oauth as { user_id?: string } | null;
-  if (oauthRow?.user_id) return { ok: true, auth: { user_id: oauthRow.user_id, source: "oauth" } };
+  const oauthRow = oauth as { user_id?: string; scope?: string } | null;
+  if (oauthRow?.user_id)
+    return {
+      ok: true,
+      auth: { user_id: oauthRow.user_id, source: "oauth", scope: oauthRow.scope },
+    };
   if (token.startsWith("sas_at_")) {
     // Looked like an OAuth access token but did not verify — explicit signal
     // so the host can trigger the OAuth refresh / re-authorize flow.

@@ -1,10 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { semanticSearch } from "@/lib/search/semantic.server";
+import { searchIdentity } from "@/lib/search/identity.server";
+import { extractBearer } from "@/lib/auth/bearer.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { searchPackages } from "@/lib/search/packages.server";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Accept",
+  "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization, X-Semantic-Consent",
 };
 
 const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>
@@ -33,6 +37,18 @@ export const Route = createFileRoute("/api/public/search")({
         }
 
         try {
+          if (url.searchParams.get("semantic") === "1") {
+            if (request.headers.get("X-Semantic-Consent") !== "query-embedding")
+              return json({ error: "explicit_query_embedding_consent_required" }, 400);
+            const token = extractBearer(request);
+            const actor = await searchIdentity(token);
+            if (!actor) return json({ error: "unauthorized" }, 401);
+            if (q.length > 2000) return json({ error: "query_too_long" }, 400);
+            const results = await semanticSearch(supabaseAdmin, actor, q, limit, offset, type);
+            return json({ query: q, mode: "semantic", count: results.length, results }, 200, {
+              "Cache-Control": "no-store",
+            });
+          }
           const results = await searchPackages({ q, type, limit, offset });
           return json({ query: q, count: results.length, limit, offset, results }, 200, {
             "Cache-Control": "public, max-age=30",

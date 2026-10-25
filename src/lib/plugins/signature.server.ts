@@ -1,4 +1,6 @@
 import { errorField } from "../errors.ts";
+import configuredKeyring from "../../../security/signing-keys.json" with { type: "json" };
+import { parseKeyring, assertTrustedKey } from "../trust/keyring.ts";
 /**
  * Detached Ed25519 signatures for downloadable marketplace packages (.zip).
  *
@@ -52,6 +54,8 @@ export function signingKeyId(): string | null {
   const pub = pem("SIGNING_PUBLIC_KEY");
   if (!pub) return null;
   try {
+    const ring = parseKeyring(configuredKeyring);
+    if (ring.keys.length) assertTrustedKey(ring, pub, "sign");
     const der = createPublicKey(pub).export({ format: "der", type: "spki" }) as Buffer;
     return createHash("sha256").update(der).digest("hex").slice(0, 16);
   } catch {
@@ -80,6 +84,12 @@ export function signBytes(bytes: Uint8Array): PackageSignature {
     return { ...base, unsigned_reason: "signing keys are not configured on this deployment" };
   }
   try {
+    const expected = createPublicKey(pem("SIGNING_PUBLIC_KEY")!).export({
+      format: "der",
+      type: "spki",
+    });
+    const actual = createPublicKey(createPrivateKey(priv)).export({ format: "der", type: "spki" });
+    if (!expected.equals(actual)) throw new Error("Signing key pair mismatch");
     // Ed25519 signs the message directly; we sign the ascii hex digest so the
     // sidecar's sha256 and the signature payload are the same value.
     const signature = sign(null, Buffer.from(sha256), createPrivateKey(priv)).toString("base64");

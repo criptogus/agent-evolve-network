@@ -2,9 +2,10 @@
 import { MATCH_GENERATOR_MODEL, MATCH_MAX_OUTPUT_TOKENS } from "./match-generation.ts";
 export const BENCHMARK_MODEL = MATCH_GENERATOR_MODEL;
 export const BENCHMARK_OUTPUT_LIMIT = MATCH_MAX_OUTPUT_TOKENS;
-// Owner explicitly raised the accumulated ceiling from USD7 to USD10 on 2026-10-25.
+// Owner explicitly raised the accumulated ceiling from USD10 to USD20 on 2026-10-25.
 export const BENCHMARK_PRIOR_LIMIT_USD = 7;
-export const BENCHMARK_USD_LIMIT = 10;
+export const BENCHMARK_PREVIOUS_AUTHORIZED_LIMIT_USD = 10;
+export const BENCHMARK_USD_LIMIT = 20;
 // Preserve historical ledgers unchanged. The v8 no-start branch is now proven
 // against frozen code and contiguous native counters482/483 with exact usage.
 // Only its generator reservation is reconciled; unknown TypeSafe usage remains
