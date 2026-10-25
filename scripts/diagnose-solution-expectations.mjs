@@ -2,6 +2,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
+import { parse } from "yaml";
 import { evaluateCase } from "../src/lib/adversarial/scorer.ts";
 import {
   prepareFinanceFacts,
@@ -9,6 +10,11 @@ import {
   composeFinanceFacts,
 } from "../src/lib/runtime/finance-source-facts.ts";
 import { prepareFinanceStage } from "../src/lib/runtime/finance-stages.ts";
+import {
+  prepareSupplierFacts,
+  validateSupplierResponse,
+  composeSupplierFacts,
+} from "../src/lib/runtime/supplier-source-facts.ts";
 const [dir, output] = process.argv.slice(2);
 if (process.argv.length !== 4 || !dir || !output || existsSync(output))
   throw new Error("Supply EVIDENCE_DIR NEW_REPORT; reports are never overwritten");
@@ -39,6 +45,7 @@ for (const path of [
   "src/lib/runtime/finance-source-facts.ts",
   "src/lib/runtime/finance-stages.ts",
   "src/lib/adversarial/scorer.ts",
+  "src/lib/runtime/supplier-source-facts.ts",
 ])
   if (hash(readFileSync(path)) !== plan.sourceHashes[path])
     throw new Error("Current diagnostic runtime differs from frozen evidence");
@@ -59,11 +66,16 @@ const results = raw.split("\n").map((line) => {
     throw new Error("Unbound, duplicate or substituted case");
   seen.add(c.id);
   const run = JSON.parse(row.stdout);
+  const workflowPath = `content/playbooks/${subject.slug}.yaml`;
+  if (hash(readFileSync(workflowPath)) !== plan.sourceHashes[workflowPath])
+    throw new Error("Changed workflow source");
+  const workflow = parse(readFileSync(workflowPath, "utf8"));
   if (
     row.exitCode !== 0 ||
     row.output_error ||
     run.status !== "ok" ||
-    run.step_outcomes?.length !== 4
+    JSON.stringify(run.step_outcomes?.map((step) => step.step_id)) !==
+      JSON.stringify(workflow.steps.map((step) => step.id))
   )
     throw new Error("Incomplete/error graph");
   let financeReceipts = false;
@@ -96,6 +108,19 @@ const results = raw.split("\n").map((line) => {
     }
     financeReceipts = true;
   }
+  let supplierFacts = false;
+  if (subject.slug === "solution-supplier-selection") {
+    const evidence = run.source_facts,
+      prepared = prepareSupplierFacts(c.inputs);
+    const response = validateSupplierResponse(JSON.parse(evidence.raw_response), prepared);
+    if (
+      JSON.stringify(evidence.request) !== JSON.stringify(prepared.request) ||
+      JSON.stringify(response) !== JSON.stringify(evidence.response) ||
+      JSON.stringify(composeSupplierFacts(prepared, response)) !== JSON.stringify(evidence.facts)
+    )
+      throw new Error("Changed supplier provider evidence");
+    supplierFacts = true;
+  }
   const text = run.step_outcomes
     .map((s) => (typeof s.output === "string" ? s.output : s.output.body))
     .join("\n");
@@ -103,6 +128,8 @@ const results = raw.split("\n").map((line) => {
     case_id: c.id,
     output_sha256: hash(line),
     finance_receipts_recomputed: financeReceipts,
+    supplier_facts_recomputed: supplierFacts,
+    generative_transport_qualification: "requires complete strict reporter, not this diagnostic",
     literal: c.original_case ? evaluateCase(c.original_case, text) : null,
   };
 });
