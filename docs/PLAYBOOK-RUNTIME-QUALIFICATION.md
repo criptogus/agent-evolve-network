@@ -172,3 +172,5 @@ financial grounding failures. Candidate fingerprints are not approval claims.
 Integrate and validate source-derived facts in the actual delivered runtime,
 confirm the exact intended model/runtime scope and complete real qualification
 before importing evidence or publishing. No prepared draft SQL has been applied.
+
+The v13 attachment-safety candidate uses finance-source-state-v2. It classifies locally sanitized attachment context separately from accounting sources and emits a bounded safety response without granting action authority. Retain its exact raw provider answers and usage. The historical v12 full attempt stopped at 19/72 with seven finance baseline failures plus an incorrect supplier landed cost; it remains rejected. Neither fixture-routing tests nor correct finance arithmetic can qualify the new candidate.

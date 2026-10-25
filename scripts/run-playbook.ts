@@ -44,7 +44,7 @@ const contractPath = join(ROOT, "references/runtime-profile.json");
 if (args.gateway && existsSync(contractPath)) {
   try {
     localContract = JSON.parse(readFileSync(contractPath, "utf8"));
-    if (localContract.execution === "finance-source-state-v1") {
+    if (localContract.execution === "finance-source-state-v2") {
       if (
         process.versions.node !== localContract.node ||
         process.arch !== localContract.architecture
@@ -154,7 +154,7 @@ if (financeMode && localContract && sourceFacts.response.model !== localContract
 }
 const financeExecution = financeMode
   ? {
-      execution: "finance-source-state-v1",
+      execution: "finance-source-state-v2",
       model: sourceFacts.response.model,
       node: process.versions.node,
       architecture: process.arch,

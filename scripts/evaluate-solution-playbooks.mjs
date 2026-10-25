@@ -143,7 +143,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v12-complete-output",
+    protocol: "compiled-playbook-gateway-v13-attachment-safety",
     python,
     modelPath,
     model: profileFor(modelPath).model,

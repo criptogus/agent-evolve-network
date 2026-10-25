@@ -96,10 +96,10 @@ test("primary report rejects a partial cohort even with all runtime bindings", (
       ...contract.subjects.map((s: { slug: string }) => `content/playbooks/${s.slug}.yaml`),
     ];
     const payload = {
-      protocol: "compiled-playbook-gateway-v12-complete-output",
+      protocol: "compiled-playbook-gateway-v13-attachment-safety",
       model: profile.model,
       finance_host: {
-        execution: "finance-source-state-v1",
+        execution: "finance-source-state-v2",
         model: "jev-1.14.0",
         node: "24.22.0",
         architecture: "arm64",

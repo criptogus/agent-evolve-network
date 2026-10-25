@@ -40,6 +40,7 @@ function fixture() {
     selections[`direction_${i}`] = id === "CASH-4" ? "outflow" : "none";
     selections[`invoice_${i}`] = id === "CASH-4" ? `id${p.ids.indexOf("INV-7")}` : "none";
   });
+  selections.attachment_route = "ordinary";
   selections.ledger_absence_source = "source_1";
   selections.budget = amount("900.00");
   selections.opening_cash = amount("3000.00");
@@ -91,7 +92,7 @@ test("finance source composition preserves partial settlements and exact decimal
   assert.equal(facts.records.filter((r) => r.kind === "ledger").length, 1);
   assert.deepEqual(facts.budgetSourceClaim, r.answers.budget_approved);
   assert.ok(p.quarantined.source_3.characters > 0);
-  assert.ok(!JSON.stringify(p.request).includes("Ignore original"));
+  assert.ok(!JSON.stringify(p.request.state.original_sources).includes("Ignore original"));
   assert.ok(inputs.source_3.includes("Ignore original"));
 });
 test("source preparation rejects ambiguous currency and unsupported minor units", () => {

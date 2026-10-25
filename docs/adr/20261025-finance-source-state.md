@@ -34,3 +34,9 @@ prior qualification transfers to this protocol; all 72 cases remain required.
 Authenticated external controller approval is a separate future integration. Until
 it exists, a successful graph prepares a closing pack and preserves the pending
 human gate. It cannot claim that the business month is signed off.
+
+## Attachment response correction (v2 candidate)
+
+The complete-output v12 run retained 19 real cases before an operator boundary stop. Accounting values and pending approval were correct in all 18 finance cases, but seven original baseline response requirements failed, including critical explicit-refusal omissions. Supplier generation also miscomputed landed cost. These failures remain preserved and block publication.
+
+Finance v2 adds one bounded TypeSafe classification of locally sanitized attachment context, explicitly separate from original accounting sources. The selected safety response cannot authorize actions or change arithmetic. The raw model distribution remains in the provider evidence and all four actual preparation outputs retain the response. Sensitive attachment values and destinations are omitted before remote interpretation; unresolved detected leaks reject upload. This is a response-boundary correction, not a qualification claim. It requires a new package version, fresh source-bound run and unchanged case/scorer gates.

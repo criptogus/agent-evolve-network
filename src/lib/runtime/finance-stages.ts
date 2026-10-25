@@ -1,6 +1,7 @@
 /** Real accounting preparation tools. No language-model draft can grant authority. */
 import { createHash } from "node:crypto";
 import type { deriveFinanceSourceFacts } from "./finance-source-facts.server.ts";
+import { financeAttachmentNotice } from "./finance-source-facts.ts";
 type Evidence = Awaited<ReturnType<typeof deriveFinanceSourceFacts>>;
 const dependencies = {
   extract: [],
@@ -89,7 +90,7 @@ export function prepareFinanceStage(
     payment_performed: false as const,
     source_interpretation: { model: facts.model, scope: facts.kind, probabilities_retained: true },
     stage_receipt: {
-      kind: "finance_source_state_v1",
+      kind: "finance_source_state_v2",
       step: key,
       evidence_sha256: evidenceHash,
       required_steps: [...dependencies[key]],
@@ -104,7 +105,7 @@ export function prepareFinanceStage(
   }[key];
   return {
     ...common,
-    body,
+    body: [financeAttachmentNotice(evidence.response), body].filter(Boolean).join("\n"),
     totals: facts.totals,
     cash_scenarios: facts.cash_scenarios,
     settlement_ledger: facts.settlementLedger,
