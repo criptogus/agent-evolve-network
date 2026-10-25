@@ -30,10 +30,41 @@ const inputs = args.inputs
 const { compilePlaybook } = await import(`${ROOT}/src/lib/runtime/compile.ts`);
 const { runPlaybook } = await import(`${ROOT}/src/lib/runtime/run.ts`);
 
+let sourceFacts;
+if (args["semantic-source-facts"]) {
+  if (
+    !args.gateway ||
+    !args["allow-typesafe-source-upload"] ||
+    args.playbook !== "solution-monthly-finance-close" ||
+    !process.env.TYPESAFE_API_KEY
+  ) {
+    console.error(
+      "Source facts require finance playbook, --gateway, --allow-typesafe-source-upload and private TYPESAFE_API_KEY",
+    );
+    process.exit(2);
+  }
+  try {
+    const { deriveFinanceSourceFacts } = await import(
+      `${ROOT}/src/lib/runtime/finance-source-facts.server.ts`
+    );
+    sourceFacts = await deriveFinanceSourceFacts(inputs, process.env.TYPESAFE_API_KEY);
+  } catch {
+    console.log(
+      JSON.stringify({
+        status: "error",
+        stage: "source_facts",
+        error: "Source-facts extraction failed; no generation started",
+      }),
+    );
+    process.exit(2);
+  }
+}
 const adapters = args.gateway ? await gatewayAdapters() : mockAdapters();
 const result = await runPlaybook(compilePlaybook(yaml), inputs, adapters);
 
-console.log(JSON.stringify(result, null, 2));
+console.log(
+  JSON.stringify(sourceFacts ? { ...result, source_facts: sourceFacts } : result, null, 2),
+);
 process.exit(result.status === "error" ? 2 : 0);
 
 function parseArgs(argv) {
@@ -95,7 +126,11 @@ async function gatewayAdapters() {
   };
   return {
     invokeInstruction: ({ prompt, context }) =>
-      chat(prompt, { inputs: context.inputs, steps: context.steps }),
+      chat(prompt, {
+        inputs: context.inputs,
+        steps: context.steps,
+        ...(sourceFacts ? { source_facts: sourceFacts.facts } : {}),
+      }),
     invokeSkill: ({ slug, inputs, context }) =>
       chat(`Invoke skill ${slug}.`, { inputs, steps: context.steps }),
     onTelemetry: (e) => console.error(`[telemetry] ${JSON.stringify(e)}`),

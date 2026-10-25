@@ -16,6 +16,8 @@ export const SOLUTION_RUNTIME_FILES = [
   "src/lib/runtime/types.ts",
   "src/lib/runtime/expr.ts",
   "src/lib/runtime/gateway-messages.ts",
+  "src/lib/runtime/finance-source-facts.ts",
+  "src/lib/runtime/finance-source-facts.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
   "LICENSE",
 ] as const;

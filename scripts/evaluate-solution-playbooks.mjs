@@ -55,6 +55,8 @@ const sourcePaths = [
   "src/lib/runtime/types.ts",
   "src/lib/runtime/expr.ts",
   "src/lib/runtime/gateway-messages.ts",
+  "src/lib/runtime/finance-source-facts.ts",
+  "src/lib/runtime/finance-source-facts.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
   ...cases.subjects.map((s) => `content/playbooks/${s.slug}.yaml`),
 ];
@@ -128,7 +130,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v4-packaged",
+    protocol: "compiled-playbook-gateway-v5-finance-facts",
     python,
     modelPath,
     model: profileFor(modelPath).model,
@@ -162,8 +164,14 @@ if (mode === "prepare") {
   )
     throw new Error("Changed model/runtime");
   const outputsPath = join(dir, "outputs.jsonl");
-  if (existsSync(outputsPath) || existsSync(join(dir, "attempts.jsonl")))
+  if (
+    existsSync(outputsPath) ||
+    existsSync(join(dir, "attempts.jsonl")) ||
+    existsSync(join(dir, "source-facts-attempts.jsonl"))
+  )
     throw new Error("Existing inference attempts are preserved; no replay/resume in this command");
+  if (!process.env.TYPESAFE_API_KEY?.trim())
+    throw new Error("Finance source-facts qualification requires private TYPESAFE_API_KEY");
   const installations = [];
   for (const s of plan.subjects) {
     const artifact = verifySolutionPlaybookSnapshot(
@@ -330,6 +338,13 @@ if (mode === "prepare") {
       active = c;
       const inputPath = join(dir, `input-${rows.length + 1}.json`);
       save(inputPath, c.inputs);
+      const finance = subject.slug === "solution-monthly-finance-close";
+      const factsJournal = join(dir, "source-facts-attempts.jsonl");
+      if (finance)
+        appendFileSync(
+          factsJournal,
+          JSON.stringify({ event: "source_facts_started", case_id: c.id, planHash }) + "\n",
+        );
       const child = spawn(
         process.execPath,
         [
@@ -347,6 +362,7 @@ if (mode === "prepare") {
           "--inputs-file",
           inputPath,
           "--gateway",
+          ...(finance ? ["--semantic-source-facts", "--allow-typesafe-source-upload"] : []),
         ],
         {
           env: {
@@ -367,6 +383,28 @@ if (mode === "prepare") {
         stderr += b;
       });
       const [exitCode, signal] = await once(child, "close");
+      let parsed;
+      try {
+        parsed = JSON.parse(stdout);
+      } catch {
+        parsed = null;
+      }
+      if (finance)
+        appendFileSync(
+          factsJournal,
+          JSON.stringify({
+            event: parsed?.source_facts ? "source_facts_completed" : "source_facts_unknown",
+            case_id: c.id,
+            planHash,
+            ...(parsed?.source_facts
+              ? {
+                  evidence_sha256: hash(JSON.stringify(parsed.source_facts)),
+                  model: parsed.source_facts.response.model,
+                  usage: parsed.source_facts.response.usage,
+                }
+              : {}),
+          }) + "\n",
+        );
       const row = {
         slug: subject.slug,
         version: subject.version,
@@ -384,7 +422,7 @@ if (mode === "prepare") {
         JSON.stringify({
           case_id: c.id,
           exitCode,
-          graph_steps: JSON.parse(stdout).step_outcomes.length,
+          graph_steps: parsed?.step_outcomes?.length ?? 0,
           completed_cases: rows.length,
           qualifies: false,
         }),

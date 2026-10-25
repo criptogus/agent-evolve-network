@@ -4,6 +4,12 @@ import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { parse } from "yaml";
 import { verifySolutionPlaybookSnapshot } from "./solution-artifact-files.ts";
+import {
+  prepareFinanceFacts,
+  validateFinanceResponse,
+  composeFinanceFacts,
+  FINANCE_FACTS_MODEL,
+} from "../src/lib/runtime/finance-source-facts.ts";
 import { buildGatewayMessages } from "../src/lib/runtime/gateway-messages.ts";
 import { evaluateCase } from "../src/lib/adversarial/scorer.ts";
 import { eligibleForPublication } from "./adversarial-approval.mjs";
@@ -33,7 +39,7 @@ const profile = read("content/expansion/playbook-model-profiles.json").find(
 if (!profile) throw new Error("Unsupported exact model/runtime profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v4-packaged" ||
+  plan.protocol !== "compiled-playbook-gateway-v5-finance-facts" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({
@@ -88,6 +94,8 @@ const requiredSources = [
   "src/lib/runtime/types.ts",
   "src/lib/runtime/expr.ts",
   "src/lib/runtime/gateway-messages.ts",
+  "src/lib/runtime/finance-source-facts.ts",
+  "src/lib/runtime/finance-source-facts.server.ts",
   "src/lib/adversarial/leak-scanner.ts",
   ...contract.subjects.map((s) => `content/playbooks/${s.slug}.yaml`),
 ];
@@ -167,6 +175,23 @@ if (
 const expectedIds = new Set(schedule.map(({ c }) => c.id));
 if (transports.some((t) => !expectedIds.has(t.value.case_id)))
   throw new Error("Unscheduled transport");
+const sourceFactsAttempts = lines(join(dir, "source-facts-attempts.jsonl")).map((r) => r.value);
+const financeSchedule = schedule.filter(({ s }) => s.slug === "solution-monthly-finance-close");
+if (sourceFactsAttempts.length !== financeSchedule.length * 2)
+  throw new Error("Incomplete source-facts attempt journal");
+financeSchedule.forEach(({ c }, i) => {
+  const start = sourceFactsAttempts[i * 2],
+    end = sourceFactsAttempts[i * 2 + 1];
+  if (
+    start.event !== "source_facts_started" ||
+    end.event !== "source_facts_completed" ||
+    start.case_id !== c.id ||
+    end.case_id !== c.id ||
+    start.planHash !== planHash ||
+    end.planHash !== planHash
+  )
+    throw new Error("Unknown, repeated or reordered source-facts attempt");
+});
 const outcomes = schedule.map(({ s, c }, i) => {
   const row = rows[i].value;
   if (
@@ -190,6 +215,24 @@ const outcomes = schedule.map(({ s, c }, i) => {
     trace.length !== yaml.steps.length
   )
     throw new Error("Incomplete graph");
+  let sourceFacts;
+  if (s.slug === "solution-monthly-finance-close") {
+    const evidence = run.source_facts;
+    const prepared = prepareFinanceFacts(c.inputs);
+    const response = validateFinanceResponse(evidence?.response, prepared);
+    sourceFacts = composeFinanceFacts(prepared, response);
+    const end = sourceFactsAttempts.find(
+      (a) => a.case_id === c.id && a.event === "source_facts_completed",
+    );
+    if (
+      JSON.stringify(evidence.request) !== JSON.stringify(prepared.request) ||
+      JSON.stringify(evidence.facts) !== JSON.stringify(sourceFacts) ||
+      end.evidence_sha256 !== hash(JSON.stringify(evidence)) ||
+      end.model !== FINANCE_FACTS_MODEL ||
+      JSON.stringify(end.usage) !== JSON.stringify(response.usage)
+    )
+      throw new Error("Changed source-facts evidence, arithmetic, model or usage");
+  } else if (run.source_facts) throw new Error("Unscheduled source-facts interpretation");
   const previous = {};
   let combined = "";
   trace.forEach(({ value: t }, j) => {
@@ -213,6 +256,7 @@ const outcomes = schedule.map(({ s, c }, i) => {
     const expectedMessages = buildGatewayMessages(yaml.steps[j].with.prompt, {
       inputs: c.inputs,
       steps: previous,
+      ...(sourceFacts ? { source_facts: sourceFacts } : {}),
     });
     if (
       t.request.model !== plan.modelPath ||

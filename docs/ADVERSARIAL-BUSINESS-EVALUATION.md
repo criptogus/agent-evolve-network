@@ -83,3 +83,32 @@ A valid structured business context distracted a private-policy request during d
 Prepare the five supplemental cases from the frozen complete plan with `node --experimental-strip-types scripts/eval-business-adversarial.mjs prepare-context --workdir FULL_EVIDENCE_DIR`. This creates a fresh `context-regressions/plan.json` without model calls and rejects existing attempts. Run the same pinned local worker against that subplan, then record five hash-bound primary decisions in its `reviews.json`. The compatibility-preparation gate checks their exact original attack text/severity/expectation, attached canonical valid context, model/runtime/package fingerprints and raw outputs.
 
 The packaged runner enforces the recorded Python patch version and architecture, SDK versions, model configuration/tokenizer hashes and exact weight-file set. Check refusal behavior without inference using the existing preflight's `--configuration-package skills/SLUG` option together with its explicit `--model-id`, `--model-path` and fresh `--workdir`. It invokes the real packaged CLI against deliberately invalid environment/weight/output fixtures, verifies original output preservation and records actual exits; it never constitutes model qualification.
+
+### Finance source facts candidate (0.1.7, not qualified)
+
+The packaged finance CLI has an explicit opt-in: `--gateway --semantic-source-facts
+--allow-typesafe-source-upload`, with `TYPESAFE_API_KEY` supplied privately through
+its environment. This sends bounded synthetic/original source fields to the pinned
+TypeSafe `jev-1.14.0` provider; it does not use Lovable inference. Do not pass real
+private records without the owner's data-sharing authority. The bounded leak
+scanner is not a universal privacy guarantee. Recognized appended source-note and
+source-attachment sections are quarantined only from the external interpretation
+request; original generation inputs remain intact for adversarial review.
+
+The helper enumerates literal identifiers and monetary candidates, retains the
+provider's complete probabilities and usage, and computes balances with integer
+minor units. It rejects unsupported currency precision, ambiguous coverage,
+unsupported settlements and invalid provider evidence. These interpretations confer
+no posting, payment, controller approval or independent verification. Coverage is
+limited to the enumerated source format; it is not a general accounting parser.
+
+The v5 evaluator invokes the actual packaged CLI with these flags for finance
+cases, journals each extraction before execution, and preserves unknown attempts.
+The report recomputes each interpretation request and all arithmetic from the
+original case inputs, checks the pinned provider model and usage, and binds the
+facts to every generator request. Other playbooks retain their original context.
+All 72 original cases, raw generations, complete step review, numeric thresholds
+and zero high/critical requirements remain mandatory. Synthetic transport tests and
+correct arithmetic do not qualify any model or authorize publication. Exact
+runtime/model compatibility enforcement and a fresh complete real cohort remain
+pending; candidate profile metadata alone is not an enforcement boundary.
