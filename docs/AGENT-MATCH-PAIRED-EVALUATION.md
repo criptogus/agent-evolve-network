@@ -1,6 +1,6 @@
 # Comparação pareada do Agent Match
 
-Estado em 2026-10-25: **nova comparação pendente; nenhuma aprovação de eficiência**. O proprietário ampliou explicitamente o teto acumulado para US$20, após o teto anterior de US$10. Mantêm-se US$7,1025 de cobranças históricas e US$1,48360875 de reservas/encargos conservadores, incluindo a tentativa v34 sem dupla contagem: saldo máximo US$11,41389125. A autorização abrange inferência; o agente construtor não deve ser usado. Os históricos abaixo conservam seus tetos e reprovações originais. Não solicitar novamente essa mesma autorização.
+Estado em 2026-10-25: **nova comparação pendente; nenhuma aprovação de eficiência**. O proprietário ampliou explicitamente o teto acumulado para US$20, após o teto anterior de US$10. Mantêm-se US$7,18125 de cobranças históricas e US$1,48360875 de reservas/encargos conservadores, incluindo a tentativa v34 sem dupla contagem: saldo máximo US$11,33514125. A autorização abrange inferência; o agente construtor não deve ser usado. Os históricos abaixo conservam seus tetos e reprovações originais. Não solicitar novamente essa mesma autorização.
 
 ## Evidência atual
 
@@ -443,3 +443,22 @@ It also rejects implicit data-acquisition/infrastructure requirements. This is a
 new source-bound candidate, not a repair of v36 output or a changed approval bar.
 
 Plano v37: `04cf091bf71351779ab288532c3e8fc880c8350d646d7570a247dd8cfbd7aff4`. Todos os seis campos originais permanecem idênticos.
+
+
+V37 also stopped after its first baseline. Delivery succeeded in29452ms with
+32879input/0cached/1487output tokens and the unchanged gpt-5.2-2025-12-11 model.
+Native counter677→678 confirms0.31credits and16seconds: USD0.07625–0.07875.
+Primary review confirms improvement on the unrequested ERP ingestion claim but
+still rejects unknown detail being converted into new NF-e parsing/company-rule
+packages. The response is not repaired, the failed history is preserved and the
+cohort is closed at1/72. Its native USD0.07875 upper is retained; current historical
+paid upper is USD7.18125, encumbered reserves USD1.48360875 and remaining authority
+USD11.33514125. These labels conservatively retain the full v34 attempt, including
+its known native charge, without deducting that charge a second time.
+
+No Jev paired arm ran in these latest generator corrections. The real finite Jev
+probes succeeded, but neither those probes nor a failed baseline establish Jev
+quality, savings or p95. Filtering and production publication remain unapproved.
+A new generator-model qualification must be explicitly owner-authorized and kept
+separate from the original pinned GPT5.2 histories. Budget authority alone does
+not establish such model-migration approval.

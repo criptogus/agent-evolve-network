@@ -7,6 +7,7 @@ import {
   BENCHMARK_V33_DIAGNOSTIC_HELD_USD,
   BENCHMARK_V34_RETAINED_ATTEMPT_USD,
   BENCHMARK_V36_NATIVE_SPEND_UPPER_USD,
+  BENCHMARK_V37_NATIVE_SPEND_UPPER_USD,
   BENCHMARK_PRIOR_HELD_USD,
   BENCHMARK_PRIOR_SPEND_UPPER_USD,
   generatorCost,
@@ -72,7 +73,12 @@ test("caller cannot reset remaining authority to the full authorized ceiling aft
 });
 
 test("a new cohort retains the rejected v29 and v30 native charges", () => {
-  assert.equal(BENCHMARK_PRIOR_SPEND_UPPER_USD - BENCHMARK_V36_NATIVE_SPEND_UPPER_USD, 7.07125);
+  assert.equal(
+    BENCHMARK_PRIOR_SPEND_UPPER_USD -
+      BENCHMARK_V36_NATIVE_SPEND_UPPER_USD -
+      BENCHMARK_V37_NATIVE_SPEND_UPPER_USD,
+    7.07125,
+  );
   const available =
     BENCHMARK_USD_LIMIT - BENCHMARK_PRIOR_HELD_USD - BENCHMARK_PRIOR_SPEND_UPPER_USD;
   assert.throws(() => reserveGeneration("s", "p", "{}", available + 0.00000001));
@@ -81,13 +87,18 @@ test("a new cohort retains the rejected v29 and v30 native charges", () => {
 
 test("a verified no-generator reservation releases only that hold while retaining native charges and the owner cap", () => {
   assert.equal(BENCHMARK_USD_LIMIT, 20);
-  assert.equal(BENCHMARK_PRIOR_SPEND_UPPER_USD - BENCHMARK_V36_NATIVE_SPEND_UPPER_USD, 7.07125);
+  assert.equal(
+    BENCHMARK_PRIOR_SPEND_UPPER_USD -
+      BENCHMARK_V36_NATIVE_SPEND_UPPER_USD -
+      BENCHMARK_V37_NATIVE_SPEND_UPPER_USD,
+    7.07125,
+  );
   assert.ok(Math.abs(BENCHMARK_RECONCILED_HISTORICAL_HELD_USD - 0.82931275) < 1e-12);
-  assert.doesNotThrow(() => reserveGeneration("s", "p", "{}", 11.41389124));
+  assert.doesNotThrow(() => reserveGeneration("s", "p", "{}", 11.33514124));
 });
 
 test("rejected immutable cohorts cannot resume inference after a preview rebuild", () => {
-  for (const prefix of ["11b307c9", "ecd633f7", "b42da394", "62b5c0b4", "2f979881"]) {
+  for (const prefix of ["11b307c9", "ecd633f7", "b42da394", "62b5c0b4", "2f979881", "04cf091b"]) {
     assert.equal(isClosedBenchmarkCohort(prefix + "0".repeat(56)), true);
     assert.throws(() => requireOpenBenchmarkCohort(`${prefix}:nfe-pt:1:jev`), /cohort is closed/);
   }
@@ -115,6 +126,12 @@ test("v34 client-delivery failure keeps its full first-attempt reservation", () 
 
 test("v36 rejected quality result retains its actual native upper charge", () => {
   assert.equal(BENCHMARK_V36_NATIVE_SPEND_UPPER_USD, 0.03125);
-  assert.equal(BENCHMARK_PRIOR_SPEND_UPPER_USD, 7.1025);
+  assert.equal(BENCHMARK_PRIOR_SPEND_UPPER_USD - BENCHMARK_V37_NATIVE_SPEND_UPPER_USD, 7.1025);
   assert.throws(() => reserveGeneration("s", "p", "{}", 11.44514124));
+});
+
+test("v37 failed primary quality result retains the new native charge without releasing holds", () => {
+  assert.equal(BENCHMARK_V37_NATIVE_SPEND_UPPER_USD, 0.07875);
+  assert.equal(BENCHMARK_PRIOR_SPEND_UPPER_USD, 7.18125);
+  assert.throws(() => reserveGeneration("s", "p", "{}", 11.41389124));
 });

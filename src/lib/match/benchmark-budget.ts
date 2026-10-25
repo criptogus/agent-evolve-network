@@ -34,8 +34,10 @@ export const BENCHMARK_PRIOR_HELD_USD =
 // v36 delivered one baseline before its primary gap-scope failure. Native upper
 // is0.03125 (0.12displayed Pro credits, preserving the original rounding interval).
 export const BENCHMARK_V36_NATIVE_SPEND_UPPER_USD = 0.03125;
+// v37 delivered one baseline, rejected for the repeated uncertainty-as-gap failure.
+export const BENCHMARK_V37_NATIVE_SPEND_UPPER_USD = 0.07875;
 export const BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD =
-  0.205 + 1.385 + BENCHMARK_V36_NATIVE_SPEND_UPPER_USD;
+  0.205 + 1.385 + BENCHMARK_V36_NATIVE_SPEND_UPPER_USD + BENCHMARK_V37_NATIVE_SPEND_UPPER_USD;
 export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 5.48125 + BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD;
 // These immutable cohorts terminated with high failures or unknown schema-error usage. Rebuilding the preview
 // cannot reopen them or make a changed-source continuation valid.
@@ -45,6 +47,7 @@ const CLOSED_COHORT_PREFIXES = new Set([
   "b42da394",
   "62b5c0b4",
   "2f979881",
+  "04cf091b",
 ]);
 export function isClosedBenchmarkCohort(attemptOrPlanHash: string) {
   return CLOSED_COHORT_PREFIXES.has(attemptOrPlanHash.slice(0, 8));
