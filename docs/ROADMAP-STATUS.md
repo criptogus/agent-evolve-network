@@ -6,11 +6,20 @@ configuration, real model qualification and production publication are separate 
 | Deliverable | Implementation | Remaining activation evidence |
 | --- | --- | --- |
 | CLI authoring | Valid local template, deterministic `eval`, immutable private draft upload, bearer scope and admin publication gates | Published CLI release and a real owner-controlled review |
-| Registry bundles | Versioned builder; release pipeline signs and verifies every archive and manifest; rejects missing keys and empty manifests | Dedicated content-release public key registered and GitHub secrets configured; first signed release is the final integration check |
+| Registry bundles | Versioned builder; release pipeline signs and verifies every archive and manifest; rejects missing keys and empty manifests | Release content-v0.1.0 published; all 8 signed payloads and the signature manifest downloaded and verified against pinned key 6e27e704bddfc12f |
 | Community collections | Public listing, owner CRUD and ordering, follow/unfollow, owner-bound atomic RPC, public-package filtering | Native migration and rollback checks passed; deploy and verify owner/anonymous UI |
 | Signing key lifecycle | Versioned public registry, rotation/retirement/revocation command, validity and fingerprint checks, public registry endpoint, optional offline revocation enforcement | Register actual deployment keys; distribute current policy and configure secure rotation operations |
 | Semantic discovery | pgvector index and RPC, current-version/public/approved gates, metadata indexer, explicit consent UI, authenticated 20/day allowance, bounded provider transport | pgvector migration installed; configure credentials, budget and populate the real index before activation |
 | Agent Match / Jev | Candidate in draft PR #77; unchanged original qualification contract | Fresh complete quality/cost/p95 qualification, sufficient accumulated budget, then separately reviewed release |
+
+## Published distribution evidence
+
+[Content release v0.1.0](https://github.com/criptogus/agent-evolve-network/releases/tag/content-v0.1.0)
+contains five registry archives, the machine-readable index, public key policy, standalone
+Node verifier and detached signatures. Release CI succeeded. A separate download verified
+all eight signed payloads and the signature manifest against pinned key `6e27e704bddfc12f`.
+This authenticates the distributed bytes; it does not grant hosted model qualification.
+The private signing key is stored in the dedicated GitHub secret, not the repository.
 
 ## Production Jev inspection
 

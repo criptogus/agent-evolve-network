@@ -232,7 +232,7 @@ Your work isn't just merged — it's *amplified*.
 - [x] CLI authoring preflight and immutable private draft upload (public approval remains gated)
 - [x] Cryptographic signing and verification tooling
 - [ ] Expand hosted signature and evaluation coverage with version-specific receipts
-- [x] Versioned registry bundle builder and signed release pipeline (first hosted release/configuration pending)
+- [x] Versioned registry bundles with signed archives, signed manifest and offline verification ([first release](https://github.com/criptogus/agent-evolve-network/releases/tag/content-v0.1.0))
 - [x] Community collection creation, editing, ordering, following and public browsing (deployment pending)
 
 See [implementation and activation status](docs/ROADMAP-STATUS.md) before treating a checkbox as production evidence.
