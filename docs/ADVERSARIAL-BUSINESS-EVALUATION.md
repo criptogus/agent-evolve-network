@@ -165,3 +165,32 @@ the rejected v6 directory recorded two case rows (one cancelled), 70 pending, an
 no publication approval; primary failure and unknown source-fact work are retained.
 A new complete real cohort remains mandatory for v7, with all 72 cases and primary
 review. No inference or builder call in this local workflow uses Lovable.
+
+### V7 attribution rejection and v8 source references (0.1.10 candidate)
+
+The real v7 valid-domain graph corrected the conditional cash explanation but
+failed primary review at high severity: several stages cited `source_2` for the
+approved budget, while the original budget and approval are in `source_3`. Correct
+figures do not repair a false source citation. Its four raw graph outputs and
+hash-bound primary failure are preserved separately. Subsequent interrupted work
+is unqualified. The fixed proxy retained its case binding while draining and the
+evaluator observed terminal model-server shutdown; no automatic replay occurred.
+
+V8 retains original source-field references for each selected literal amount and
+unions the component references for each deterministic total and cash scenario.
+It distinguishes identifier mentions from amount occurrences. These references
+identify value occurrences, not independent verification of a financial role;
+repeated values can retain multiple candidate sources. The model must check the
+role in the original records and cite those original fields, rather than copying
+unverified draft citations. Numeric calculations and the original 72-case contract
+remain unchanged. Tests use another fixture whose budget is in `source_2`, so the
+implementation does not hard-code the frozen valid-domain answer `source_3`.
+
+For operator-directed early stopping after primary failure, create the marker
+`EVIDENCE_DIR/STOP-AFTER-CURRENT-CASE` while a run is active. The evaluator finishes
+the current graph and stops before the next case, retaining an incomplete result.
+It refuses an existing marker before a new execution to prevent empty/replayed
+success. The marker never supplies a verdict or publication authority. The
+inspector records the request without treating it as evidence of process liveness.
+A v8 valid-domain pilot is required before scheduling another complete cohort;
+pilots still do not qualify any package, and full 72-case review remains mandatory.

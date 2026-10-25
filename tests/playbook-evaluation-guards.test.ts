@@ -91,7 +91,7 @@ test("primary report rejects a partial cohort even with all runtime bindings", (
       ...contract.subjects.map((s: { slug: string }) => `content/playbooks/${s.slug}.yaml`),
     ];
     const payload = {
-      protocol: "compiled-playbook-gateway-v7-cash-scenarios",
+      protocol: "compiled-playbook-gateway-v8-source-references",
       model: profile.model,
       modelPath: `/local/${profile.revision}`,
       runtime: {
@@ -174,6 +174,18 @@ test("compiled graph evaluation rejects extra model weights even with a listed r
     ]);
     assert.equal(result.status, 1);
     assert.match(result.stderr, /Changed model weight file set/);
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
+});
+
+test("existing owner stop request rejects evaluation before starting a model or replaying work", () => {
+  const dir = mkdtempSync(join(tmpdir(), "playbook-stopped-"));
+  try {
+    writeFileSync(join(dir, "STOP-AFTER-CURRENT-CASE"), "primary review requires correction");
+    const result = execute(["run", dir, "--max-cases", "72"]);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Existing stop request/);
   } finally {
     rmSync(dir, { recursive: true });
   }

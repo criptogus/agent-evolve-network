@@ -66,6 +66,13 @@ test("finance source composition preserves partial settlements and exact decimal
   const { p, r } = fixture();
   const facts = composeFinanceFacts(p, validateFinanceResponse(r, p));
   assert.equal(facts.totals.invoice_total.minor_units, "94515");
+  assert.deepEqual(facts.totals.budget.source_refs, ["source_2"]);
+  assert.deepEqual(facts.totals.invoice_total.source_refs, ["source_1"]);
+  assert.deepEqual(facts.totals.current_cash.source_refs, ["source_1", "source_2"]);
+  assert.deepEqual(facts.cash_scenarios.settle_all_outstanding.source_refs, [
+    "source_1",
+    "source_2",
+  ]);
   assert.equal(facts.totals.unfavorable_variance.minor_units, "4515");
   assert.equal(facts.totals.current_cash.display, "BRL 2499.90");
   assert.equal(facts.totals.outstanding.minor_units, "44505");

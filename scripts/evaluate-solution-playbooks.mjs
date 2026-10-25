@@ -134,7 +134,7 @@ if (mode === "prepare") {
     };
   });
   const payload = {
-    protocol: "compiled-playbook-gateway-v7-cash-scenarios",
+    protocol: "compiled-playbook-gateway-v8-source-references",
     python,
     modelPath,
     model: profileFor(modelPath).model,
@@ -157,6 +157,8 @@ if (mode === "prepare") {
 } else {
   if (args.length !== 2 || args[0] !== "--max-cases" || !/^[1-9]\d*$/.test(args[1]))
     throw new Error("Explicit positive --max-cases N required");
+  if (existsSync(join(dir, "STOP-AFTER-CURRENT-CASE")))
+    throw new Error("Existing stop request; refusing empty or replayed evaluation");
   const { planHash, ...plan } = load(join(dir, "plan.json"));
   if (
     hash(JSON.stringify(plan)) !== planHash ||
@@ -280,6 +282,10 @@ if (mode === "prepare") {
     const proxyPort = await bind(proxy);
     const schedule = plan.subjects.flatMap((s) => s.cases.map((c) => ({ subject: s, c })));
     for (const { subject, c } of schedule.slice(0, Number(args[1]))) {
+      if (existsSync(join(dir, "STOP-AFTER-CURRENT-CASE"))) {
+        if (!rows.length) throw new Error("Stopped before first case; no inference started");
+        break;
+      }
       active = c;
       const inputPath = join(dir, `input-${rows.length + 1}.json`);
       save(inputPath, c.inputs);
@@ -381,6 +387,7 @@ if (mode === "prepare") {
       completed_cases: rows.length,
       model_requests: requestCount,
       error_cases: rows.filter((r) => r.exitCode !== 0).length,
+      owner_stop_requested: existsSync(join(dir, "STOP-AFTER-CURRENT-CASE")),
       primary_review: "pending",
       publicationApproved: false,
       complete: rows.length === 72,

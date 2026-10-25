@@ -142,6 +142,18 @@ export function prepareFinanceFacts(inputs: Record<string, unknown>) {
     request,
     ids,
     amounts,
+    amountSourceRefs: Object.fromEntries(
+      amounts.map((amount) => [
+        amount,
+        Object.entries(sources)
+          .filter(([, source]) =>
+            [...source.matchAll(/-?(?:\d{1,3}(?:[.,]\d{3})+[.,]\d{2}|\d+[.,]\d{2})\b/g)].some(
+              (m) => normalize(m[0]) === amount,
+            ),
+          )
+          .map(([key]) => key),
+      ]),
+    ),
     currency: currencies[0],
     sourceSha256: digest(inputs),
     quarantined,
@@ -211,6 +223,14 @@ export function composeFinanceFacts(
     const [whole, fraction] = raw.split(".");
     return BigInt(whole) * 100n + BigInt(fraction);
   };
+  const amountRefs = (key: string) => {
+    const selected = choice(key);
+    const amount = prepared.amounts[Number(selected.slice(1))];
+    if (!/^a\d+$/.test(selected) || !amount || !prepared.amountSourceRefs[amount]?.length)
+      return fail();
+    return prepared.amountSourceRefs[amount];
+  };
+  const union = (...groups: string[][]) => [...new Set(groups.flat())].sort();
   const records = prepared.ids.flatMap((id, i) => {
     const kind = choice(`type_${i}`);
     if (kind !== "invoice" && kind !== "cash") return [];
@@ -218,7 +238,8 @@ export function composeFinanceFacts(
       id,
       kind,
       amount: cents(`amount_${i}`),
-      sourceRefs: prepared.sourceRefs[id],
+      identifierSourceRefs: prepared.sourceRefs[id],
+      sourceRefs: amountRefs(`amount_${i}`),
       typeEvidence: response.answers[`type_${i}`],
       amountEvidence: response.answers[`amount_${i}`],
     };
@@ -268,6 +289,25 @@ export function composeFinanceFacts(
     outstanding,
     conditional_projected_cash: current - outstanding,
   };
+  const invoiceRefs = union(...invoices.map((r) => r.sourceRefs)),
+    cashRefs = union(...cash.map((r) => r.sourceRefs)),
+    currentRefs = union(amountRefs("opening_cash"), cashRefs),
+    outstandingRefs = union(invoiceRefs, cashRefs);
+  const totalRefs: Record<keyof typeof totals, string[]> = {
+    invoice_total: invoiceRefs,
+    budget: amountRefs("budget"),
+    unfavorable_variance: union(invoiceRefs, amountRefs("budget")),
+    opening_cash: amountRefs("opening_cash"),
+    documented_outflows: union(
+      ...cash.filter((r) => r.direction === "outflow").map((r) => r.sourceRefs),
+    ),
+    documented_inflows: union(
+      ...cash.filter((r) => r.direction === "inflow").map((r) => r.sourceRefs),
+    ),
+    current_cash: currentRefs,
+    outstanding: outstandingRefs,
+    conditional_projected_cash: union(currentRefs, outstandingRefs),
+  };
   const display = (v: bigint) =>
     `${v < 0n ? "-" : ""}${(v < 0n ? -v : v) / 100n}.${((v < 0n ? -v : v) % 100n).toString().padStart(2, "0")}`;
   return {
@@ -279,24 +319,32 @@ export function composeFinanceFacts(
     totals: Object.fromEntries(
       Object.entries(totals).map(([k, v]) => [
         k,
-        { minor_units: v.toString(), display: `${prepared.currency} ${display(v)}` },
+        {
+          minor_units: v.toString(),
+          display: `${prepared.currency} ${display(v)}`,
+          source_refs: totalRefs[k as keyof typeof totals],
+        },
       ]),
     ),
     cash_scenarios: {
       no_new_payments: {
         condition:
           "If no new payments or inflows occur, retain current cash after source-recorded movements.",
+        source_refs: currentRefs,
         minor_units: current.toString(),
         display: `${prepared.currency} ${display(current)}`,
       },
       settle_all_outstanding: {
         condition:
           "If all outstanding invoice liabilities are paid, subtract those liabilities from current cash; this is conditional analysis, not payment execution or authorization.",
+        source_refs: union(currentRefs, outstandingRefs),
         minor_units: (current - outstanding).toString(),
         display: `${prepared.currency} ${display(current - outstanding)}`,
         requires_new_payments: outstanding > 0n,
       },
     },
+    citation_policy:
+      "Source references identify original fields containing the selected literal amounts and arithmetic components, not independent role verification. Check each amount's role in original inputs. Prior draft citations are unverified. Source_facts is derived evidence, not an additional source.",
     budgetSourceClaim: response.answers.budget_approved,
     model: response.model,
     usage: response.usage,

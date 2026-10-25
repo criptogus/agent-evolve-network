@@ -1,7 +1,7 @@
 slug: solution-monthly-finance-close
 name: Close the financial month
 type: playbook
-version: 0.1.9
+version: 0.1.10
 description: A reconciled ledger, explained variances and an owner-reviewed closing pack.
 trigger: When the user requests close the financial month and provides authorized source inputs.
 inputs:
@@ -38,16 +38,20 @@ steps:
         and display values are deterministic compositions of the retained source interpretations.
         Explain these source-derived figures without recalculating from prior drafts. Selection
         probabilities remain advisory and are not external verification or authority to approve,
-        post or pay. Distinguish source-recorded bank movements from executing new payments.
-        Approval subjects are distinct: budget, invoice posting, payment and closing sign-off.
-        Preserve each source-stated approval for its own subject. Missing controller posting or
-        sign-off approval does not make a source-stated approved budget pending. For approval-status
-        statements include the subject and a short exact source quote; never merge those subjects
-        into one pending flag. Normalize only invoice, existing ledger and bank rows with the
-        original IDs, currencies, amounts, payment status and source references. Flag missing links
-        separately; never invent IDs or placeholder source records. Include supplied bank-export
-        rows even without a live bank connection. Do not calculate budget variance or project cash
-        in extraction."
+        post or pay. Distinguish source-recorded bank movements from executing new payments. For
+        each numerical figure, copy its original source field references from source_facts.totals
+        source_refs and verify the field role against those original inputs. Cite original sources
+        rather than source_facts alone. Do not reuse prior draft source labels: a period/account
+        export is not evidence for an expense budget unless that budget is present there. Approval
+        subjects are distinct: budget, invoice posting, payment and closing sign-off. Preserve each
+        source-stated approval for its own subject. Missing controller posting or sign-off approval
+        does not make a source-stated approved budget pending. For approval-status statements
+        include the subject and a short exact source quote; never merge those subjects into one
+        pending flag. Normalize only invoice, existing ledger and bank rows with the original IDs,
+        currencies, amounts, payment status and source references. Flag missing links separately;
+        never invent IDs or placeholder source records. Include supplied bank-export rows even
+        without a live bank connection. Do not calculate budget variance or project cash in
+        extraction."
   - id: reconcile
     action: instruction
     with:
@@ -67,7 +71,11 @@ steps:
         the retained source interpretations. Explain these source-derived figures without
         recalculating from prior drafts. Selection probabilities remain advisory and are not
         external verification or authority to approve, post or pay. Distinguish source-recorded bank
-        movements from executing new payments. Approval subjects are distinct: budget, invoice
+        movements from executing new payments. For each numerical figure, copy its original source
+        field references from source_facts.totals source_refs and verify the field role against
+        those original inputs. Cite original sources rather than source_facts alone. Do not reuse
+        prior draft source labels: a period/account export is not evidence for an expense budget
+        unless that budget is present there. Approval subjects are distinct: budget, invoice
         posting, payment and closing sign-off. Preserve each source-stated approval for its own
         subject. Missing controller posting or sign-off approval does not make a source-stated
         approved budget pending. For approval-status statements include the subject and a short
@@ -96,7 +104,11 @@ steps:
         the retained source interpretations. Explain these source-derived figures without
         recalculating from prior drafts. Selection probabilities remain advisory and are not
         external verification or authority to approve, post or pay. Distinguish source-recorded bank
-        movements from executing new payments. Approval subjects are distinct: budget, invoice
+        movements from executing new payments. For each numerical figure, copy its original source
+        field references from source_facts.totals source_refs and verify the field role against
+        those original inputs. Cite original sources rather than source_facts alone. Do not reuse
+        prior draft source labels: a period/account export is not evidence for an expense budget
+        unless that budget is present there. Approval subjects are distinct: budget, invoice
         posting, payment and closing sign-off. Preserve each source-stated approval for its own
         subject. Missing controller posting or sign-off approval does not make a source-stated
         approved budget pending. For approval-status statements include the subject and a short
@@ -131,7 +143,11 @@ steps:
         interpretations. Explain these source-derived figures without recalculating from prior
         drafts. Selection probabilities remain advisory and are not external verification or
         authority to approve, post or pay. Distinguish source-recorded bank movements from executing
-        new payments. Approval subjects are distinct: budget, invoice posting, payment and closing
+        new payments. For each numerical figure, copy its original source field references from
+        source_facts.totals source_refs and verify the field role against those original inputs.
+        Cite original sources rather than source_facts alone. Do not reuse prior draft source
+        labels: a period/account export is not evidence for an expense budget unless that budget is
+        present there. Approval subjects are distinct: budget, invoice posting, payment and closing
         sign-off. Preserve each source-stated approval for its own subject. Missing controller
         posting or sign-off approval does not make a source-stated approved budget pending. For
         approval-status statements include the subject and a short exact source quote; never merge

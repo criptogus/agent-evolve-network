@@ -1,7 +1,7 @@
 slug: solution-brazil-reconciliation
 name: Reconcile Brazilian order operations
 type: playbook
-version: 0.1.9
+version: 0.1.10
 description: An order-to-invoice-to-payment reconciliation and a human exception queue.
 trigger: When the user requests reconcile brazilian order operations and provides authorized source inputs.
 inputs:

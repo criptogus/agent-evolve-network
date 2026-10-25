@@ -39,7 +39,7 @@ const profile = read("content/expansion/playbook-model-profiles.json").find(
 if (!profile) throw new Error("Unsupported exact model/runtime profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v7-cash-scenarios" ||
+  plan.protocol !== "compiled-playbook-gateway-v8-source-references" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({

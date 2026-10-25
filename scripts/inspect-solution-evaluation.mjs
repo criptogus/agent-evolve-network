@@ -87,6 +87,7 @@ export function inspectSolutionEvaluation(dir) {
   return {
     scope: "Diagnostic progress only; not a qualification or liveness check",
     planHash,
+    stop_requested: existsSync(join(dir, "STOP-AFTER-CURRENT-CASE")),
     scheduled_cases: 72,
     recorded_cases: outputs.length,
     pending_cases: 72 - outputs.length,
