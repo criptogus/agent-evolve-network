@@ -1,6 +1,6 @@
 # Comparação pareada do Agent Match
 
-Estado em 2026-10-25: **nova comparação pendente; nenhuma aprovação de eficiência**. O proprietário ampliou explicitamente o teto acumulado para US$20, após o teto anterior de US$10. Mantêm-se US$7,07125 de cobranças históricas e US$1,48360875 de reservas/encargos conservadores, incluindo a tentativa v34 sem dupla contagem: saldo máximo US$11,44514125. A autorização abrange inferência; o agente construtor não deve ser usado. Os históricos abaixo conservam seus tetos e reprovações originais. Não solicitar novamente essa mesma autorização.
+Estado em 2026-10-25: **nova comparação pendente; nenhuma aprovação de eficiência**. O proprietário ampliou explicitamente o teto acumulado para US$20, após o teto anterior de US$10. Mantêm-se US$7,1025 de cobranças históricas e US$1,48360875 de reservas/encargos conservadores, incluindo a tentativa v34 sem dupla contagem: saldo máximo US$11,41389125. A autorização abrange inferência; o agente construtor não deve ser usado. Os históricos abaixo conservam seus tetos e reprovações originais. Não solicitar novamente essa mesma autorização.
 
 ## Evidência atual
 
@@ -418,3 +418,28 @@ fields and uses a fresh journal; no old output is replayed as a new observation.
 A preparação v35 não executou inferência e foi sucedida antes de uso pela v36, que também fixa redirect=manual no transporte de diagnóstico/geração. Respostas de redirecionamento seguem rejeitadas como não-2xx, sem encaminhar credenciais.
 
 Plano v36: `2f979881aae792982de6c312529fc38e5d4a71a4c0b9fe7d560707dbe3e577bf`. Os seis campos originais permanecem idênticos e o armazenamento é separado.
+
+
+V36 delivered its first baseline in19837ms with gpt-5.2-2025-12-11,32723input,
+32512cached input and1740output tokens. Native counter676→677 confirms0.12credits
+and18.8seconds (USD0.02875–0.03125); delivery is now proven for this observation.
+No claims about other observations or overall savings follow. The managed SDK/144KiB
+probe also passed in25483ms with sdkRoundTrip=true and inferenceCalls=0. One finite
+TypeSafe diagnostic added472input/21output tokens; both recorded diagnostics total
+944input/42output (USD0.000039648 provider equivalent), still within the retained
+USD0.001 diagnostic hold, which is not released or treated as an invoice.
+
+Primary hash-bound review failed honest_gaps: the baseline creates an unrequested
+automatic ERP/spreadsheet ingestion requirement and uses it to claim a missing
+capability. Core metadata quotations were valid; they do not approve this inference.
+The cohort stopped at1/72 without a new observation. The frozen validator rejected
+its incomplete cohort; the separate original-output primary review records the high
+failure. V36 is closed, its USD0.03125 native upper is retained, and remaining
+conservative authority is USD11.41389125. No Jev arm or production promotion occurred.
+
+The next generator prompt removes the contradictory no-hedging instruction and
+explicitly separates unknown implementation details from missing requested jobs.
+It also rejects implicit data-acquisition/infrastructure requirements. This is a
+new source-bound candidate, not a repair of v36 output or a changed approval bar.
+
+Plano v37: `04cf091bf71351779ab288532c3e8fc880c8350d646d7570a247dd8cfbd7aff4`. Todos os seis campos originais permanecem idênticos.

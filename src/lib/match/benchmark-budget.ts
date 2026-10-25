@@ -31,11 +31,21 @@ export const BENCHMARK_PRIOR_HELD_USD =
 // Prior checkpoints and complete v26 total US$5.48125 upper; the rejected v29
 // four-request prefix adds US$0.205 and the rejected v30 44-request prefix
 // adds US$1.385 native upper. Rejection never refunds inference. Holds stay intact.
-export const BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD = 0.205 + 1.385;
+// v36 delivered one baseline before its primary gap-scope failure. Native upper
+// is0.03125 (0.12displayed Pro credits, preserving the original rounding interval).
+export const BENCHMARK_V36_NATIVE_SPEND_UPPER_USD = 0.03125;
+export const BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD =
+  0.205 + 1.385 + BENCHMARK_V36_NATIVE_SPEND_UPPER_USD;
 export const BENCHMARK_PRIOR_SPEND_UPPER_USD = 5.48125 + BENCHMARK_POST_REFERENCE_SPEND_UPPER_USD;
 // These immutable cohorts terminated with high failures or unknown schema-error usage. Rebuilding the preview
 // cannot reopen them or make a changed-source continuation valid.
-const CLOSED_COHORT_PREFIXES = new Set(["11b307c9", "ecd633f7", "b42da394", "62b5c0b4"]);
+const CLOSED_COHORT_PREFIXES = new Set([
+  "11b307c9",
+  "ecd633f7",
+  "b42da394",
+  "62b5c0b4",
+  "2f979881",
+]);
 export function isClosedBenchmarkCohort(attemptOrPlanHash: string) {
   return CLOSED_COHORT_PREFIXES.has(attemptOrPlanHash.slice(0, 8));
 }
