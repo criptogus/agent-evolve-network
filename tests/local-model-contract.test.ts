@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import {
   checkLocalMetadata,
+  validateLocalGatewayHealth,
+  textOnlyContent,
   localGatewayUrl,
   verifyLocalModel,
   type LocalModelContract,
@@ -18,6 +20,7 @@ const profile: LocalModelContract = {
   ...metadata,
   model: "candidate@revision",
   revision: "revision",
+  tool_parser_capability: null,
   weights_sha256: {},
   model_files_sha256: {},
   server_sources_sha256: createHash("sha256")
@@ -49,4 +52,33 @@ test("packaged model rejects relative paths or another revision before reading f
   await assert.rejects(verifyLocalModel(profile, "relative/revision", "/no-python"));
   await assert.rejects(verifyLocalModel(profile, "/model/another-revision", "/no-python"));
   await assert.rejects(verifyLocalModel(profile, "/model/revision", "relative-python"));
+});
+
+test("gateway capability must match the pinned model and never permits tools or adapters", () => {
+  const health = {
+    status: "healthy",
+    loaded_model: "/cached/revision",
+    loaded_adapter: null,
+    loaded_tool_parser: "qwen3_coder",
+  };
+  const q = { ...profile, tool_parser_capability: "qwen3_coder" };
+  assert.doesNotThrow(() => validateLocalGatewayHealth(q, health, "/cached/revision"));
+  for (const altered of [
+    { ...health, loaded_tool_parser: "unlisted" },
+    { ...health, loaded_adapter: "adapter" },
+    { ...health, loaded_model: "different" },
+  ])
+    assert.throws(() => validateLocalGatewayHealth(q, altered, "/cached/revision"));
+  assert.throws(() => validateLocalGatewayHealth(profile, health, "/cached/revision"));
+  for (const message of [
+    { content: "draft", tool_calls: [{}] },
+    { content: "draft", tool_calls: "malformed" },
+    { content: "draft", function_call: {} },
+    { content: "" },
+  ])
+    assert.throws(() => textOnlyContent(message));
+  assert.equal(
+    textOnlyContent({ content: "  unchanged draft  ", tool_calls: [] }),
+    "  unchanged draft  ",
+  );
 });

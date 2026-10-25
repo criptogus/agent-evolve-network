@@ -101,7 +101,7 @@ test("primary report rejects a partial cohort even with all runtime bindings", (
       ...contract.subjects.map((s: { slug: string }) => `content/playbooks/${s.slug}.yaml`),
     ];
     const payload = {
-      protocol: "compiled-playbook-gateway-v18-qwen-failclosed",
+      protocol: "compiled-playbook-gateway-v19-text-only-qwen",
       model: profile.model,
       workflow_interpreter: { model: "jev-1.14.0", protocol: "quarantine-source-notes-v1" },
       supplier_host: {

@@ -46,7 +46,7 @@ test("all four standalone archives execute their actual CLI outside the reposito
   for (const s of SOLUTIONS)
     await t.test(s.id, () => {
       const slug = `solution-${s.id}`;
-      const temp = mkdtempSync(join(tmpdir(), "sas-solution-archive-"));
+      const temp = mkdtempSync(join(tmpdir(), "sas solution #archive-"));
       try {
         const source = readFileSync(`content/playbooks/${slug}.yaml`, "utf8");
         const artifact = buildSolutionPlaybookFiles(source);

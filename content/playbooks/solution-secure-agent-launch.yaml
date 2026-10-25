@@ -1,7 +1,7 @@
 slug: solution-secure-agent-launch
 name: Launch an agent with scoped permissions
 type: playbook
-version: 0.1.20
+version: 0.1.21
 description: A reviewed tool inventory, tested abuse cases and a controlled release decision.
 trigger: When the user requests launch an agent with scoped permissions and provides authorized
   source inputs.

@@ -13,6 +13,7 @@ export type LocalModelContract = {
   weights_sha256: Record<string, string>;
   model_files_sha256: Record<string, string>;
   server_sources_sha256: string;
+  tool_parser_capability: string | null;
 };
 const digest = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 export function checkLocalMetadata(profile: LocalModelContract, metadata: Record<string, unknown>) {
@@ -80,4 +81,38 @@ export async function verifyLocalModel(
     runtime: metadata,
     files: { ...profile.weights_sha256, ...profile.model_files_sha256 },
   };
+}
+
+/** Health reports a tokenizer capability; tool authorization is enforced per request/response. */
+export function validateLocalGatewayHealth(
+  profile: LocalModelContract,
+  health: unknown,
+  modelPath: string,
+) {
+  if (!health || typeof health !== "object" || Array.isArray(health))
+    throw new Error("Invalid local gateway health");
+  const h = health as Record<string, unknown>;
+  if (
+    !Object.hasOwn(profile, "tool_parser_capability") ||
+    h.status !== "healthy" ||
+    h.loaded_model !== modelPath ||
+    h.loaded_adapter !== null ||
+    h.loaded_tool_parser !== profile.tool_parser_capability
+  )
+    throw new Error("Local gateway health/model/capability mismatch");
+}
+/** Return the unchanged draft text only. No model-selected function can become a host action. */
+export function textOnlyContent(message: unknown): string {
+  if (!message || typeof message !== "object" || Array.isArray(message))
+    throw new Error("Invalid generation message");
+  const m = message as Record<string, unknown>,
+    calls = m.tool_calls;
+  if (
+    (calls !== undefined && calls !== null && (!Array.isArray(calls) || calls.length !== 0)) ||
+    (m.function_call !== undefined && m.function_call !== null)
+  )
+    throw new Error("Unexpected structured tool call in text-only generation");
+  if (typeof m.content !== "string" || !m.content.trim())
+    throw new Error("gateway empty generation");
+  return m.content;
 }

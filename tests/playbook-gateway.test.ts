@@ -7,8 +7,13 @@ async function runFixture(
   finishReason = "stop",
   content = "LOCAL_DRAFT",
   suppliedInputs?: Record<string, string>,
+  toolCalls?: unknown[],
 ) {
-  const requests: Array<{ messages: Array<{ role: string; content: string }> }> = [];
+  const requests: Array<{
+    messages: Array<{ role: string; content: string }>;
+    tools?: unknown[];
+    tool_choice?: string;
+  }> = [];
   const server = createServer(async (req, res) => {
     let body = "";
     for await (const chunk of req) body += chunk;
@@ -19,7 +24,10 @@ async function runFixture(
         choices: [
           {
             finish_reason: finishReason,
-            message: { content: content && `${content}_${requests.length}` },
+            message: {
+              content: content && `${content}_${requests.length}`,
+              ...(toolCalls ? { tool_calls: toolCalls } : {}),
+            },
           },
         ],
       }),
@@ -79,6 +87,11 @@ test("real gateway CLI forwards source inputs and previous step outputs as data"
   const result = await runFixture();
   assert.equal(result.code, 0, result.stderr);
   assert.equal(result.requests.length, 4);
+  assert.ok(
+    result.requests.every(
+      (r) => Array.isArray(r.tools) && r.tools.length === 0 && r.tool_choice === "none",
+    ),
+  );
   assert.match(JSON.stringify(result.requests[0].messages), /INVOICE_SENTINEL_93/);
   assert.match(JSON.stringify(result.requests[1].messages), /LOCAL_DRAFT_1/);
   assert.equal(result.requests[0].messages[0].role, "system");
@@ -121,4 +134,16 @@ test("annotated solution requires explicit interpretation consent before generat
     "Untrusted annotation cannot enter the generator without source preparation",
   );
   assert.equal(result.code, 2);
+});
+
+test("real gateway rejects structured model tool calls even with a stop finish and nonempty text", async () => {
+  const r = await runFixture("stop", "UNSAFE_PROVIDER_REPLY", undefined, [
+    {
+      id: "call_fixture",
+      type: "function",
+      function: { name: "unexpected_action", arguments: "{}" },
+    },
+  ]);
+  assert.equal(r.code, 2, "No structured tool call may be accepted as an instruction draft");
+  assert.equal(r.requests.length, 1);
 });

@@ -25,6 +25,10 @@ import {
   validateWorkflowResponse,
   composeWorkflowContext,
 } from "../src/lib/runtime/workflow-source-context.ts";
+import {
+  validateLocalGatewayHealth,
+  textOnlyContent,
+} from "../src/lib/runtime/local-model-contract.ts";
 const [dir, reviewsPath, output] = process.argv.slice(2);
 if (!dir || !reviewsPath || !output || process.argv.length !== 5 || existsSync(output))
   throw new Error("Supply EVIDENCE_DIR PRIMARY_REVIEWS NEW_REPORT; existing reports are preserved");
@@ -72,7 +76,7 @@ if (JSON.stringify(plan.finance_host) !== JSON.stringify(financeHost))
   throw new Error("Unqualified finance model/host profile");
 if (
   plan.model !== profile.model ||
-  plan.protocol !== "compiled-playbook-gateway-v18-qwen-failclosed" ||
+  plan.protocol !== "compiled-playbook-gateway-v19-text-only-qwen" ||
   !plan.modelPath.endsWith(`/${profile.revision}`) ||
   JSON.stringify(plan.settings) !==
     JSON.stringify({
@@ -211,6 +215,7 @@ if (
   execution.lovable_inference_calls !== 0
 )
   throw new Error("Missing exact server lifecycle or complete execution evidence");
+validateLocalGatewayHealth(profile, startup.health, plan.modelPath);
 const reviews = read(reviewsPath);
 if (
   !Array.isArray(reviews) ||
@@ -290,6 +295,8 @@ const outcomes = schedule.map(({ s, c }, i) => {
     run.local_model_evidence?.health?.loaded_model !== plan.modelPath
   )
     throw new Error("Unbound local generative runtime");
+  if (!sourceState)
+    validateLocalGatewayHealth(profile, run.local_model_evidence.health, plan.modelPath);
   let sourceFacts;
   let workflowFacts;
   if (s.slug === "solution-monthly-finance-close") {
@@ -392,7 +399,7 @@ const outcomes = schedule.map(({ s, c }, i) => {
     const r = JSON.parse(t.raw),
       choice = r.choices?.[0],
       step = run.step_outcomes[j];
-    const content = choice?.message?.content;
+    const content = textOnlyContent(choice?.message);
     if (
       t.status !== 200 ||
       r.model !== plan.modelPath ||
@@ -419,6 +426,9 @@ const outcomes = schedule.map(({ s, c }, i) => {
     if (
       t.request.model !== plan.modelPath ||
       t.request.temperature !== 0 ||
+      t.request.tool_choice !== "none" ||
+      !Array.isArray(t.request.tools) ||
+      t.request.tools.length !== 0 ||
       t.request.max_tokens !== 768 ||
       t.request.chat_template_kwargs?.enable_thinking !== false ||
       JSON.stringify(t.request.messages) !== JSON.stringify(expectedMessages)

@@ -8,8 +8,13 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parse as parseYaml } from "yaml";
 import { buildGatewayMessages } from "../src/lib/runtime/gateway-messages.ts";
+import {
+  validateLocalGatewayHealth,
+  textOnlyContent,
+} from "../src/lib/runtime/local-model-contract.ts";
 
 const args = parseArgs(process.argv.slice(2));
 for (const flag of ["gateway", "semantic-source-facts", "allow-typesafe-source-upload"]) {
@@ -25,7 +30,8 @@ if (!args.playbook) {
   process.exit(1);
 }
 
-const ROOT = new URL("..", import.meta.url).pathname;
+const ROOT_URL = new URL("..", import.meta.url);
+const ROOT = fileURLToPath(ROOT_URL);
 const yamlPath = join(ROOT, `content/playbooks/${args.playbook}.yaml`);
 const yaml = parseYaml(readFileSync(yamlPath, "utf8"));
 
@@ -35,8 +41,8 @@ const inputs = args.inputs
     ? JSON.parse(readFileSync(args["inputs-file"], "utf8"))
     : {};
 
-const { compilePlaybook } = await import(`${ROOT}/src/lib/runtime/compile.ts`);
-const { runPlaybook } = await import(`${ROOT}/src/lib/runtime/run.ts`);
+const { compilePlaybook } = await import(new URL("src/lib/runtime/compile.ts", ROOT_URL).href);
+const { runPlaybook } = await import(new URL("src/lib/runtime/run.ts", ROOT_URL).href);
 
 const interpretedPlaybook = [
   "solution-monthly-finance-close",
@@ -73,7 +79,7 @@ if (args.gateway && existsSync(contractPath)) {
       };
     } else {
       const { localGatewayUrl, verifyLocalModel } = await import(
-        `${ROOT}/src/lib/runtime/local-model-contract.ts`
+        new URL("src/lib/runtime/local-model-contract.ts", ROOT_URL).href
       );
       const origin = localGatewayUrl(process.env.AI_GATEWAY_BASE_URL ?? "");
       localEvidence = await verifyLocalModel(
@@ -86,14 +92,9 @@ if (args.gateway && existsSync(contractPath)) {
         signal: AbortSignal.timeout(5000),
       });
       const health = await healthResponse.json();
-      if (
-        !healthResponse.ok ||
-        health.status !== "healthy" ||
-        health.loaded_model !== process.env.AI_GATEWAY_MODEL ||
-        health.loaded_adapter !== null ||
-        health.loaded_tool_parser !== null
-      )
-        throw new Error("Local gateway health/model mismatch");
+      if (!healthResponse.ok) throw new Error("Local gateway health unavailable");
+      validateLocalGatewayHealth(localContract, health, process.env.AI_GATEWAY_MODEL);
+
       if (
         args.playbook === "solution-monthly-finance-close" &&
         (!args["semantic-source-facts"] || !args["allow-typesafe-source-upload"])
@@ -134,9 +135,9 @@ if (args["semantic-source-facts"] && interpretedPlaybook) {
   try {
     const derive =
       args.playbook === "solution-supplier-selection"
-        ? (await import(`${ROOT}/src/lib/runtime/supplier-source-facts.server.ts`))
+        ? (await import(new URL("src/lib/runtime/supplier-source-facts.server.ts", ROOT_URL).href))
             .deriveSupplierSourceFacts
-        : (await import(`${ROOT}/src/lib/runtime/finance-source-facts.server.ts`))
+        : (await import(new URL("src/lib/runtime/finance-source-facts.server.ts", ROOT_URL).href))
             .deriveFinanceSourceFacts;
     sourceFacts = await derive(inputs, process.env.TYPESAFE_API_KEY, fetch, (evidence) => {
       sourceFactsProviderEvidence = evidence;
@@ -162,7 +163,7 @@ let workflowContext;
 if (args.gateway && generatedSolution) {
   try {
     const { prepareWorkflowContext } = await import(
-      `${ROOT}/src/lib/runtime/workflow-source-context.ts`
+      new URL("src/lib/runtime/workflow-source-context.ts", ROOT_URL).href
     );
     const prepared = prepareWorkflowContext(inputs);
     if (
@@ -177,7 +178,7 @@ if (args.gateway && generatedSolution) {
     )
       throw new Error("Workflow interpreter profile mismatch");
     const { deriveWorkflowContext } = await import(
-      `${ROOT}/src/lib/runtime/workflow-source-context.server.ts`
+      new URL("src/lib/runtime/workflow-source-context.server.ts", ROOT_URL).href
     );
     workflowContext = await deriveWorkflowContext(
       inputs,
@@ -282,8 +283,10 @@ function mockAdapters() {
 
 async function sourceStateAdapters() {
   const prepare = financeMode
-    ? (await import(`${ROOT}/src/lib/runtime/finance-stages.ts`)).prepareFinanceStage
-    : (await import(`${ROOT}/src/lib/runtime/supplier-stages.ts`)).prepareSupplierStage;
+    ? (await import(new URL("src/lib/runtime/finance-stages.ts", ROOT_URL).href))
+        .prepareFinanceStage
+    : (await import(new URL("src/lib/runtime/supplier-stages.ts", ROOT_URL).href))
+        .prepareSupplierStage;
   return {
     invokeInstruction: async () => {
       throw new Error("Unexpected free-form source-state generation");
@@ -317,6 +320,8 @@ async function gatewayAdapters() {
         model: AI_GATEWAY_MODEL,
         messages: buildGatewayMessages(prompt, data, safetyResponse),
         temperature: 0,
+        tools: [],
+        tool_choice: "none",
         ...(localContract
           ? {
               max_tokens: localContract.max_tokens,
@@ -339,8 +344,7 @@ async function gatewayAdapters() {
       throw new Error("Packaged response model or usage mismatch");
     const choice = j.choices?.[0];
     if (choice?.finish_reason !== "stop") throw new Error("gateway incomplete generation");
-    const content = choice.message?.content;
-    if (typeof content !== "string" || !content.trim()) throw new Error("gateway empty generation");
+    const content = textOnlyContent(choice.message);
     return content;
   };
   return {

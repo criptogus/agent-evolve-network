@@ -21,7 +21,8 @@
       "video_preprocessor_config.json": "7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13",
       "preprocessor_config.json": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516"
     },
-    "scope": "Candidate only for compiled playbook graphs; existing individual-skill qualification is a different protocol."
+    "scope": "Candidate only for compiled playbook graphs; existing individual-skill qualification is a different protocol.",
+    "tool_parser_capability": "qwen3_coder"
   },
   {
     "model": "mlx-community/gemma-3-12b-it-4bit@86cc6a8dedbc456dd0e4af01a9d09f396f77e558",
@@ -47,6 +48,7 @@
       "tokenizer.model": "1299c11d7cf632ef3b4e11937501358ada021bbdf7c47638d13c0ee982f2e79c",
       "tokenizer_config.json": "0d95398b39395e5cfb290683a78f3fb0551223c672d8b033333c1a5307473760"
     },
-    "scope": "Candidate only: requires separate full compiled-playbook evaluation; no approval inherited from any model."
+    "scope": "Candidate only: requires separate full compiled-playbook evaluation; no approval inherited from any model.",
+    "tool_parser_capability": null
   }
 ]
