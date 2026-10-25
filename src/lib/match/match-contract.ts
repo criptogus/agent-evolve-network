@@ -125,8 +125,8 @@ export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: De
                 "After selecting this slug, copy its entire description field value verbatim, including repeated names or prefixes inside that value. Never copy another candidate or abbreviate. Exclude only the outer name/slug/type fields.",
               ),
             score: z.number().min(7).max(10),
-            why: RecItem.shape.why.max(120),
-            role: RecItem.shape.role.max(60),
+            why: z.string().min(15).max(120).describe(RecItem.shape.why.description!),
+            role: z.string().min(5).max(60).describe(RecItem.shape.role.description!),
           }),
         )
         .max(hasCandidates && count ? count + 1 : 0);

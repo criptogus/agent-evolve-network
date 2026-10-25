@@ -379,3 +379,17 @@ não altera o saldo histórico nem libera reservas desconhecidas. O journal usa 
 novo e as observações continuam limitadas a quatro por ação, com reconciliação nativa.
 
 A preparação v32 não executou inferência e foi sucedida pela v33 `b42da3942496ca2f1ff81bb67dcda2e5493ede7a1ca986a843cd33aa3e97ff2f` após integrar main 0.9.3 com o provedor Lovable de embeddings. Todos os seis campos originais continuam idênticos ao plano v31 recuperado. O journal v33 usa armazenamento separado.
+
+
+V33 stopped at its first baseline attempt: HTTP400 rejected provider-forbidden allOf
+inside why. No generated output or usage receipt was returned. The native AI counter
+advanced674→675, with Client error and unknown credits (dash, not zero). The immutable
+051a0950 validator rejected the preserved attempt/cohort. USD0.3246565 remains fully
+held; a separate USD0.001 conservative hold covers the single diagnostic (472 input,
+21 output tokens, jev-1.14.0). Historical charges/holds remain unchanged. Maximum
+remaining authority is now USD11.77378075. V33 is terminal and cannot be retried.
+
+The actual SDK wire regression failed before correction and passed after constructing
+tightened why/role strings once, preserving min/max15/120 and5/60 without duplicate
+max constraints. No output was repaired and no quality criterion changed. New v34
+plan `62b5c0b49e2bd9cc2b1179396cb8d2be88405d79009031415d69aff8d1deb644` retains all six original plan fields and a separate journal.

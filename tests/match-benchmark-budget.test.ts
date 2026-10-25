@@ -2,6 +2,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   BENCHMARK_USD_LIMIT,
+  BENCHMARK_RECONCILED_HISTORICAL_HELD_USD,
+  BENCHMARK_V33_UNKNOWN_HELD_USD,
+  BENCHMARK_V33_DIAGNOSTIC_HELD_USD,
   BENCHMARK_PRIOR_HELD_USD,
   BENCHMARK_PRIOR_SPEND_UPPER_USD,
   generatorCost,
@@ -77,15 +80,27 @@ test("a new cohort retains the rejected v29 and v30 native charges", () => {
 test("a verified no-generator reservation releases only that hold while retaining native charges and the owner cap", () => {
   assert.equal(BENCHMARK_USD_LIMIT, 20);
   assert.equal(BENCHMARK_PRIOR_SPEND_UPPER_USD, 7.07125);
-  assert.ok(Math.abs(BENCHMARK_PRIOR_HELD_USD - 0.82931275) < 1e-12);
-  assert.doesNotThrow(() => reserveGeneration("s", "p", "{}", 12.09943724));
+  assert.ok(Math.abs(BENCHMARK_RECONCILED_HISTORICAL_HELD_USD - 0.82931275) < 1e-12);
+  assert.doesNotThrow(() => reserveGeneration("s", "p", "{}", 11.77378074));
 });
 
 test("rejected immutable cohorts cannot resume inference after a preview rebuild", () => {
-  for (const prefix of ["11b307c9", "ecd633f7"]) {
+  for (const prefix of ["11b307c9", "ecd633f7", "b42da394"]) {
     assert.equal(isClosedBenchmarkCohort(prefix + "0".repeat(56)), true);
     assert.throws(() => requireOpenBenchmarkCohort(`${prefix}:nfe-pt:1:jev`), /cohort is closed/);
   }
   // This helper is a terminal-cohort guard, not authorization for unknown plans.
   assert.equal(isClosedBenchmarkCohort("new-plan"), false);
+});
+
+test("v33 schema failure and finite diagnostic remain reserved across a new cohort", () => {
+  assert.equal(BENCHMARK_V33_UNKNOWN_HELD_USD, 0.3246565);
+  assert.equal(BENCHMARK_V33_DIAGNOSTIC_HELD_USD, 0.001);
+  assert.equal(
+    BENCHMARK_PRIOR_HELD_USD,
+    BENCHMARK_RECONCILED_HISTORICAL_HELD_USD +
+      BENCHMARK_V33_UNKNOWN_HELD_USD +
+      BENCHMARK_V33_DIAGNOSTIC_HELD_USD,
+  );
+  assert.throws(() => reserveGeneration("s", "p", "{}", 12.09943724));
 });

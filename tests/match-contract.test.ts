@@ -632,3 +632,41 @@ test("operational records cannot inherit knowledge-source capabilities by sharin
   value.recommended_kit.skills = [{ ...item("good"), source_quote: candidates[0].description }];
   assert.equal(schema.safeParse(value).success, true);
 });
+
+test("actual SDK wire schema avoids provider-forbidden allOf while retaining tightened text bounds", async () => {
+  const wire = z
+    .record(z.string(), z.unknown())
+    .parse(await buildMatchWireSchema(candidates, desired).jsonSchema);
+  assert.ok(
+    !JSON.stringify(wire).includes('"allOf"'),
+    "strict provider rejects allOf anywhere in definitions",
+  );
+  const definitions = z.record(z.string(), z.unknown()).parse(wire.definitions);
+  let checked = 0;
+  for (const value of Object.values(definitions)) {
+    const item = z.object({ properties: z.record(z.string(), z.unknown()) }).safeParse(value);
+    if (
+      !item.success ||
+      !("slug" in item.data.properties) ||
+      !("source_quote" in item.data.properties)
+    )
+      continue;
+    const text = z.object({
+      type: z.literal("string"),
+      minLength: z.number(),
+      maxLength: z.number(),
+    });
+    assert.deepEqual(text.parse(item.data.properties.why), {
+      type: "string",
+      minLength: 15,
+      maxLength: 120,
+    });
+    assert.deepEqual(text.parse(item.data.properties.role), {
+      type: "string",
+      minLength: 5,
+      maxLength: 60,
+    });
+    checked++;
+  }
+  assert.ok(checked > 0);
+});
