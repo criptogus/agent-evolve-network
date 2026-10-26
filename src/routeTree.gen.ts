@@ -89,6 +89,7 @@ import { Route as AdminReviewRouteImport } from './routes/admin.review'
 import { Route as AdminReviewAuditRouteImport } from './routes/admin.review-audit'
 import { Route as AdminReviewReportsRouteImport } from './routes/admin.review-reports'
 import { Route as AdminRoiRouteImport } from './routes/admin.roi'
+import { Route as AdminSearchIndexRouteImport } from './routes/admin.search-index'
 import { Route as AgentsIndexRouteImport } from './routes/agents.index'
 import { Route as AgentsSlugRouteImport } from './routes/agents.$slug'
 import { Route as AgentsMdRouteImport } from './routes/agents.md'
@@ -589,6 +590,11 @@ const AdminReviewReportsRoute = AdminReviewReportsRouteImport.update({
 const AdminRoiRoute = AdminRoiRouteImport.update({
   id: '/roi',
   path: '/roi',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSearchIndexRoute = AdminSearchIndexRouteImport.update({
+  id: '/search-index',
+  path: '/search-index',
   getParentRoute: () => AdminRoute,
 } as any)
 const AgentsIndexRoute = AgentsIndexRouteImport.update({
@@ -1193,6 +1199,7 @@ export interface FileRoutesByFullPath {
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/admin/roi': typeof AdminRoiRoute
+  '/admin/search-index': typeof AdminSearchIndexRoute
   '/agents/$slug': typeof AgentsSlugRoute
   '/agents/md': typeof AgentsMdRoute
   '/agents/new': typeof AgentsNewRoute
@@ -1373,6 +1380,7 @@ export interface FileRoutesByTo {
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/admin/roi': typeof AdminRoiRoute
+  '/admin/search-index': typeof AdminSearchIndexRoute
   '/agents/$slug': typeof AgentsSlugRoute
   '/agents/md': typeof AgentsMdRoute
   '/agents/new': typeof AgentsNewRoute
@@ -1555,6 +1563,7 @@ export interface FileRoutesById {
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/admin/roi': typeof AdminRoiRoute
+  '/admin/search-index': typeof AdminSearchIndexRoute
   '/agents/$slug': typeof AgentsSlugRoute
   '/agents/md': typeof AgentsMdRoute
   '/agents/new': typeof AgentsNewRoute
@@ -1738,6 +1747,7 @@ export interface FileRouteTypes {
     | '/admin/review-audit'
     | '/admin/review-reports'
     | '/admin/roi'
+    | '/admin/search-index'
     | '/agents/$slug'
     | '/agents/md'
     | '/agents/new'
@@ -1918,6 +1928,7 @@ export interface FileRouteTypes {
     | '/admin/review-audit'
     | '/admin/review-reports'
     | '/admin/roi'
+    | '/admin/search-index'
     | '/agents/$slug'
     | '/agents/md'
     | '/agents/new'
@@ -2099,6 +2110,7 @@ export interface FileRouteTypes {
     | '/admin/review-audit'
     | '/admin/review-reports'
     | '/admin/roi'
+    | '/admin/search-index'
     | '/agents/$slug'
     | '/agents/md'
     | '/agents/new'
@@ -2908,6 +2920,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRoiRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/search-index': {
+      id: '/admin/search-index'
+      path: '/search-index'
+      fullPath: '/admin/search-index'
+      preLoaderRoute: typeof AdminSearchIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/agents/': {
       id: '/agents/'
       path: '/agents'
@@ -3634,6 +3653,7 @@ interface AdminRouteChildren {
   AdminReviewAuditRoute: typeof AdminReviewAuditRoute
   AdminReviewReportsRoute: typeof AdminReviewReportsRoute
   AdminRoiRoute: typeof AdminRoiRoute
+  AdminSearchIndexRoute: typeof AdminSearchIndexRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminImportGithubRoute: typeof AdminImportGithubRoute
   AdminImportMarkdownRoute: typeof AdminImportMarkdownRoute
@@ -3657,6 +3677,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminReviewAuditRoute: AdminReviewAuditRoute,
   AdminReviewReportsRoute: AdminReviewReportsRoute,
   AdminRoiRoute: AdminRoiRoute,
+  AdminSearchIndexRoute: AdminSearchIndexRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminImportGithubRoute: AdminImportGithubRoute,
   AdminImportMarkdownRoute: AdminImportMarkdownRoute,

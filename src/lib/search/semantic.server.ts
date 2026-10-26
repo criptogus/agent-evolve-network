@@ -10,10 +10,14 @@ export async function semanticSearch(
   offset: number,
   type?: string | null,
 ) {
-  if (process.env.SEMANTIC_SEARCH_ENABLED !== "true")
-    throw new Error("Semantic search is not configured");
+  const mode = process.env.SEMANTIC_SEARCH_ENABLED ?? "auto";
+  if (!["auto", "true"].includes(mode)) throw new Error("Semantic search is not configured");
   const config = resolveEmbeddingConfig(process.env);
   const { endpoint, key, model } = config;
+  const { data: index, error: indexError } = await client.rpc("search_embedding_index_status", {
+    _model: model,
+  });
+  if (indexError || !index?.[0]?.ready) throw new Error("Semantic index is not complete");
   const identity = createHash("sha256")
     .update(JSON.stringify([actor, query, endpoint, key, model]))
     .digest("hex");
