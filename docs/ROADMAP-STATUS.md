@@ -3,14 +3,14 @@
 Audited 2026-10-25 against the main branch and the published site. Code implementation,
 configuration, real model qualification and production publication are separate states.
 
-| Deliverable           | Implementation                                                                                                                                                        | Remaining activation evidence                                                                                                                  |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| CLI authoring         | Valid local template, deterministic `eval`, immutable private draft upload, bearer scope and admin publication gates                                                  | Published CLI release and a real owner-controlled review                                                                                       |
-| Registry bundles      | Versioned builder; release pipeline signs and verifies every archive and manifest; rejects missing keys and empty manifests                                           | Release content-v0.1.0 published; all 8 signed payloads and the signature manifest downloaded and verified against pinned key 6e27e704bddfc12f |
-| Community collections | Public listing, owner CRUD and ordering, follow/unfollow, owner-bound atomic RPC, public-package filtering                                                            | Native migration and rollback checks passed; deploy and verify owner/anonymous UI                                                              |
-| Signing key lifecycle | Versioned public registry, rotation/retirement/revocation command, validity and fingerprint checks, public registry endpoint, optional offline revocation enforcement | Register actual deployment keys; distribute current policy and configure secure rotation operations                                            |
-| Semantic discovery    | pgvector index and RPC, current-version/public/approved gates, metadata indexer, explicit consent UI, authenticated 20/day allowance, bounded provider transport      | pgvector migration installed; configure credentials, budget and populate the real index before activation                                      |
-| Agent Match / Jev     | Candidate in draft PR #77; unchanged original qualification contract                                                                                                  | Owner chose to keep Jev disabled on 2026-10-25; no GPT-5.4 qualification or deployment authorized                                              |
+| Deliverable           | Implementation                                                                                                                                                        | Remaining activation evidence                                                                                                                                    |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CLI authoring         | Valid local template, deterministic `eval`, immutable private draft upload, bearer scope and admin publication gates                                                  | Published CLI release and a real owner-controlled review                                                                                                         |
+| Registry bundles      | Versioned builder; release pipeline signs and verifies every archive and manifest; rejects missing keys and empty manifests                                           | Release content-v0.1.0 published; all 8 signed payloads and the signature manifest downloaded and verified against pinned key 6e27e704bddfc12f                   |
+| Community collections | Public listing, owner CRUD and ordering, follow/unfollow, owner-bound atomic RPC, public-package filtering                                                            | Native migration and rollback checks passed; deploy and verify owner/anonymous UI                                                                                |
+| Signing key lifecycle | Versioned public registry, rotation/retirement/revocation command, validity and fingerprint checks, public registry endpoint, optional offline revocation enforcement | Register actual deployment keys; distribute current policy and configure secure rotation operations                                                              |
+| Semantic discovery    | pgvector index and RPC, current-version/public/approved gates, metadata indexer, explicit consent UI, authenticated 20/day allowance, bounded provider transport      | 669/669 current approved packages indexed with managed Lovable embeddings; two authenticated preview searches verified; public site publication remains separate |
+| Agent Match / Jev     | Candidate in draft PR #77; unchanged original qualification contract                                                                                                  | Owner chose to keep Jev disabled on 2026-10-25; no GPT-5.4 qualification or deployment authorized                                                                |
 
 ## Published distribution evidence
 
@@ -64,9 +64,18 @@ configuration now resolves the server-only project-managed LOVABLE_API_KEY and t
 fixed Lovable gateway with openai/text-embedding-3-small (1536 dimensions). A custom
 embedding endpoint cannot receive that managed key; external providers require an
 explicit openai-compatible selection and their own credential. Search and indexing
-share this resolver. Transport fixtures pass, but the managed endpoint still needs a
-real provider receipt and complete matching index before activation. No provider call
-or production activation is claimed by this configuration change.
+share this resolver. The native index now contains all 669 eligible packages, with 28
+completed provider requests and 23,931 reported input tokens. Every vector matches the
+current approved/public version and source SHA256; no attempt remains active. Anonymous
+roles cannot read vectors or execute the service-only semantic RPC.
+
+The owner requested resolution of the Lovable workspace block. Its existing monthly AI
+limit was raised from 40 to 41 credits, preserving automatic pause and in-app alerts;
+no subscription purchase or unlimited usage was enabled. Two authenticated, explicitly
+consented preview queries returned relevant NF-e reconciliation and prompt-injection
+packages. This is live provider/index/search evidence, not full relevance qualification.
+The main preview was verified at v0.9.4; no public-site deployment was performed. Jev remains
+disabled, and the GPT-5.4 proposal was not executed.
 
 ## Agent Match qualification stopped by owner
 
