@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
+  PRICE_AGENT_PASS,
   PRICE_MONTHLY,
   PRICE_YEARLY,
   PRICE_YEARLY_LIST,
@@ -87,8 +88,10 @@ const ITEMS: { q: string; a: React.ReactNode }[] = [
         Browsing and installing public capabilities is free — no account needed. Pro is{" "}
         <span className="text-muted-foreground line-through">{PRICE_YEARLY_LIST}</span>{" "}
         <span className="font-semibold text-foreground">{PRICE_YEARLY} per year</span> (
-        {PRO_YEARLY_DISCOUNT_PCT}% off) or {PRICE_MONTHLY} per month, and includes everything: the
-        Agent Factory, the University, unlimited reviews and the full registry.{" "}
+        {PRO_YEARLY_DISCOUNT_PCT}% off) or {PRICE_MONTHLY} per month for the human builder seat
+        (Agent Factory, Store, University, unlimited reviews) and includes 1 production agent. Extra
+        agents are Agent Pass at {PRICE_AGENT_PASS} per agent per month (standalone, monthly only —
+        no Pro required).{" "}
         <Link to="/pricing" className="text-primary hover:underline">
           See pricing
         </Link>

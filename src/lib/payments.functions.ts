@@ -1,9 +1,22 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {
+  shouldEnableAdjustableQuantity,
+  validateCheckoutQuantity,
+} from "@/lib/checkout-quantity";
 import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
 
 export type CheckoutSessionResult = { clientSecret: string } | { error: string };
 export type PortalSessionResult = { url: string } | { error: string };
+
+export type CheckoutSessionInput = {
+  priceId: string;
+  quantity?: number;
+  /** When true, Checkout lets the buyer change quantity (1–100). */
+  adjustableQuantity?: boolean;
+  returnUrl: string;
+  environment: StripeEnv;
+};
 
 async function resolveOrCreateCustomer(
   stripe: ReturnType<typeof createStripeClient>,
@@ -40,12 +53,11 @@ async function resolveOrCreateCustomer(
 
 export const createCheckoutSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
-    (data: { priceId: string; quantity?: number; returnUrl: string; environment: StripeEnv }) => {
-      if (!/^[a-zA-Z0-9_-]+$/.test(data.priceId)) throw new Error("Invalid priceId");
-      return data;
-    },
-  )
+  .inputValidator((data: CheckoutSessionInput) => {
+    if (!/^[a-zA-Z0-9_-]+$/.test(data.priceId)) throw new Error("Invalid priceId");
+    const quantity = validateCheckoutQuantity(data.quantity);
+    return { ...data, quantity };
+  })
   .handler(async ({ data, context }): Promise<CheckoutSessionResult> => {
     // Always derive identity from the verified session — never trust client input.
     const { userId, claims } = context as { userId: string; claims?: { email?: string } };
@@ -70,13 +82,31 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
         productDescription = product.name;
       }
 
+      const quantity = data.quantity || 1;
+      const adjustable = shouldEnableAdjustableQuantity({
+        priceId: data.priceId,
+        quantity,
+        adjustableQuantity: data.adjustableQuantity,
+      });
+
       const session = await stripe.checkout.sessions.create({
-        line_items: [{ price: stripePrice.id, quantity: data.quantity || 1 }],
+        line_items: [
+          {
+            price: stripePrice.id,
+            quantity,
+            ...(adjustable &&
+              isRecurring && {
+                adjustable_quantity: { enabled: true, minimum: 1, maximum: 100 },
+              }),
+          },
+        ],
         mode: isRecurring ? "subscription" : "payment",
         // `embedded` was removed by Stripe — sessions 400 with it.
         ui_mode: "embedded_page",
         return_url: data.returnUrl,
         customer: customerId,
+        // Stripe Tax not enabled: GetTaxSettings returns unsupported for this account's country (BR).
+        // Re-enable automatic_tax + billing_address_collection when Stripe Tax is available.
         ...(!isRecurring && { payment_intent_data: { description: productDescription } }),
         metadata: { userId },
         ...(isRecurring && { subscription_data: { metadata: { userId } } }),
