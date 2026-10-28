@@ -135,7 +135,7 @@ Component artifacts are versioned and released independently via git tags:
 - Bind approval writes to the evaluated version and confirm the returned reviewer/status; reject errors and no-op writes.
 - Keep failed server responses from being reported as successful review decisions.
 
-## [0.6.4] — 2026-10-23 — *Genesis* (alpha) — Maintenance release
+## [0.6.4] — 2026-10-23 — *Genesis* (alpha) — Optional Jev selection for Agent Match
 
 ### Changed
 

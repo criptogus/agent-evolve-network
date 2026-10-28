@@ -80,3 +80,5 @@ disabled, and the GPT-5.4 proposal was not executed.
 ## Agent Match qualification stopped by owner
 
 On 2026-10-25 the owner chose to keep Jev disabled after two GPT-5.2 baseline attempts failed primary NF-e gap review. Neither attempt constitutes a passing paired cohort or evidence of a Jev-arm defect. The separate GPT-5.4 proposal remains unpushed and unexecuted. No further paid Agent Match calls are planned. Historical charges and unresolved reservations remain preserved under the previously authorized cumulative US$20 ceiling. Draft PR #77 must not be promoted as qualified.
+
+On 2026-10-28 the owner explicitly requested resuming the original GPT-5.2 Agent Match comparison under an accumulated USD10 limit. This supersedes the prior stop decision for the unpublished candidate only; all historical charges/reservations and failed cohorts remain retained. No GPT-5.4 migration is authorized. Jev filtering stays disabled in production pending complete original qualification.

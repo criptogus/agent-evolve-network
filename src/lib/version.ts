@@ -190,7 +190,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: "0.6.4",
     date: "2026-10-23",
     kind: "patch",
-    title: "Maintenance release",
+    title: "Optional Jev selection for Agent Match",
     highlights: ["package model-scoped local business skill evaluation"],
   },
   {

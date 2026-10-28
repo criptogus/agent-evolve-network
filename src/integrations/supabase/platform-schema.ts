@@ -92,6 +92,14 @@ export type PlatformTables = {
   }>;
 };
 export type PlatformFunctions = {
+  read_agent_match_selection_cache: {
+    Args: { p_scope_hash: string; p_cache_key: string };
+    Returns: { evidence: Json; age_ms: number }[];
+  };
+  write_agent_match_selection_cache: {
+    Args: { p_scope_hash: string; p_cache_key: string; p_evidence: Json };
+    Returns: boolean;
+  };
   get_search_embedding_attempt: {
     Args: { _attempt: string };
     Returns: { status: "active" | "completed"; receipt: Json | null }[];

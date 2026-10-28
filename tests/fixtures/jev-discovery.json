@@ -1,0 +1,42 @@
+[
+  {
+    "id": "nfe-pt",
+    "brief": "Conferir XML de notas fiscais brasileiras contra os pedidos e apontar divergências com referências.",
+    "expected": "br-nfe-order-reconciler"
+  },
+  {
+    "id": "pix-pt",
+    "brief": "Conciliar pagamentos Pix com os recebíveis, identificando faltas e duplicidades sem afirmar liquidação sem evidência.",
+    "expected": "br-pix-reconciler"
+  },
+  {
+    "id": "oee-en",
+    "brief": "Analyze production losses using planned time, downtime, ideal cycle, total units and good units.",
+    "expected": "industrial-oee-analyst"
+  },
+  {
+    "id": "quotes-pt",
+    "brief": "Normalizar propostas de fornecedores com moedas, impostos, quantidades e unidades diferentes antes de comparar os preços.",
+    "expected": "supplier-quote-normalizer"
+  },
+  {
+    "id": "game-en",
+    "brief": "Find frame-time bottlenecks in a game using captured profiler measurements and distinguish CPU and GPU problems.",
+    "expected": "game-frame-time-profiler"
+  },
+  {
+    "id": "contradictions-pt",
+    "brief": "Identificar afirmações contraditórias em fontes da base de conhecimento e preservar referências e incertezas.",
+    "expected": "knowledge-contradiction-auditor"
+  },
+  {
+    "id": "no-match",
+    "brief": "Preciso de uma skill dedicada a escrever e revisar partituras de música orquestral.",
+    "expected": "none"
+  },
+  {
+    "id": "no-match-en",
+    "brief": "I need a skill specifically for translating ancient Sumerian cuneiform tablets.",
+    "expected": "none"
+  }
+]
