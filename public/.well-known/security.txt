@@ -1,0 +1,5 @@
+Contact: mailto:contact@zeroagency.ai
+Expires: 2027-04-28T00:00:00Z
+Canonical: https://superagentskill.com/.well-known/security.txt
+Preferred-Languages: en, pt-BR
+Policy: https://github.com/criptogus/agent-evolve-network/blob/main/SECURITY.md

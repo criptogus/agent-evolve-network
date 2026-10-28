@@ -1,4 +1,6 @@
 import "./lib/error-capture";
+import { withCspNonce } from "./lib/csp-context.server";
+import { responseSecurity } from "./lib/response-security.server";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
@@ -100,7 +102,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | "__timeout
   ]);
 }
 
-export default {
+const server = {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const redirect = canonicalRedirect(request);
@@ -128,5 +130,14 @@ export default {
       console.error(error);
       return brandedErrorResponse();
     }
+  },
+};
+
+export default {
+  async fetch(request: Request, env: unknown, ctx: unknown) {
+    const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(24))));
+    return withCspNonce(nonce, async () =>
+      responseSecurity(await server.fetch(request, env, ctx), nonce, request.url),
+    );
   },
 };
