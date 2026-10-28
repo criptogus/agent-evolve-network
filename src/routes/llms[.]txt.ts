@@ -83,10 +83,11 @@ client-managed: manifests never carry credentials.
 
 ## Pricing
 - Free — $0 · browse and install public capabilities, MCP gateway
-- Pro — $29/mo or $240/yr · human builder seat (Agent Factory, Store, University, unlimited reviews)
-- Agent Pass — $12/agent/mo · production agent seat (unlimited upgrades, SkillForge, weekly report)
+- Pro — $29/mo or $240/yr · human builder seat + 1 production agent included (Agent Factory, Store, University, unlimited reviews)
+- Agent Pass — $12/agent/mo · standalone (no Pro required), monthly only · extra production agents beyond Pro's included 1 (unlimited upgrades, SkillForge, weekly report)
 - Enterprise — custom · private registry, SAML SSO, RBAC, audit logs
 Creators keep 80–85% of every package sold.
+Product name: Super Agent Skill (singular).
 
 ## Key links
 - Connect:        https://superagentskill.com/connect

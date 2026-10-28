@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 const {
   PRO_PRICING,
   AGENT_PASS_PRICING,
+  PRO_INCLUDED_AGENTS,
   PRO_YEARLY_SAVINGS,
   PRO_YEARLY_DISCOUNT_PCT,
   PRICING_SENTENCE,
@@ -27,14 +28,23 @@ test("Agent Pass pricing: $12 per agent / month", () => {
   assert.equal(AGENT_PASS_PRICING.monthlyPerAgent, 12);
 });
 
+test("Pro includes 1 production agent", () => {
+  assert.equal(PRO_INCLUDED_AGENTS, 1);
+});
+
 test("pricing sentence covers Free, Pro, Agent Pass and Enterprise", () => {
   assert.match(PRICING_SENTENCE, /free/i);
   assert.match(PRICING_SENTENCE, /\$240 per year/);
   assert.match(PRICING_SENTENCE, /\$29 per month/);
+  assert.match(PRICING_SENTENCE, /includes 1 production agent/);
   assert.match(PRICING_SENTENCE, /\$12 per agent per month/);
+  assert.match(PRICING_SENTENCE, /without Pro/);
+  assert.match(PRICING_SENTENCE, /monthly only/);
   assert.match(PRICING_SENTENCE, /Enterprise/);
   assert.match(PRO_VS_AGENT_PASS, /human builder seat/);
-  assert.match(PRO_VS_AGENT_PASS, /production agent seat/);
+  assert.match(PRO_VS_AGENT_PASS, /includes 1 production agent/);
+  assert.match(PRO_VS_AGENT_PASS, /standalone/i);
+  assert.match(PRO_VS_AGENT_PASS, /no Pro required/);
 });
 
 test("validateCheckoutQuantity accepts 1–100 integers", () => {

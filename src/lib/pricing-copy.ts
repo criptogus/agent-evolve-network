@@ -19,9 +19,15 @@ export const AGENT_PASS_PRICING = {
   monthlyPerAgent: 12,
 } as const;
 
-/** Pro = human builder seat; Agent Pass = each production agent seat. */
+/** Production agents included with a Pro subscription. Extra seats are Agent Pass. */
+export const PRO_INCLUDED_AGENTS = 1;
+
+/**
+ * Pro = human builder seat + 1 included production agent.
+ * Agent Pass = standalone monthly seat ($12/agent) — no Pro required; also covers extras beyond Pro's included 1.
+ */
 export const PRO_VS_AGENT_PASS =
-  "Pro is the human builder seat (Agent Factory, Store, University, reviews). Agent Pass is each production agent seat (upgrades, SkillForge, weekly report).";
+  `Pro is the human builder seat (Agent Factory, Store, University, reviews) and includes ${PRO_INCLUDED_AGENTS} production agent. Extra production agents beyond that are Agent Pass at $${AGENT_PASS_PRICING.monthlyPerAgent}/agent/mo. Agent Pass is also sold standalone (monthly only, no Pro required) for people who only run agents.`;
 
 export const PRO_YEARLY_SAVINGS = PRO_PRICING.yearlyList - PRO_PRICING.yearly; // 108
 export const PRO_YEARLY_DISCOUNT_PCT = Math.round(
@@ -36,4 +42,4 @@ export const SAVE_BADGE = `Save $${PRO_YEARLY_SAVINGS} · ${PRO_YEARLY_DISCOUNT_
 export const SAVE_SHORT = `save $${PRO_YEARLY_SAVINGS}`;
 
 /** Canonical one-line answer reused in FAQ copy, meta descriptions and JSON-LD. */
-export const PRICING_SENTENCE = `Browsing and installing public capabilities is free — no account needed. Pro is ${PRICE_YEARLY} per year (down from ${PRICE_YEARLY_LIST}, ${PRO_YEARLY_DISCOUNT_PCT}% off) or ${PRICE_MONTHLY} per month for the human builder seat (Agent Factory, Agent Store, SAK University and unlimited tested reviews). Agent Pass is ${PRICE_AGENT_PASS} per agent per month for each production seat (unlimited upgrades, SkillForge and weekly report). Enterprise adds a private registry, SSO and audit logs.`;
+export const PRICING_SENTENCE = `Browsing and installing public capabilities is free — no account needed. Pro is ${PRICE_YEARLY} per year (down from ${PRICE_YEARLY_LIST}, ${PRO_YEARLY_DISCOUNT_PCT}% off) or ${PRICE_MONTHLY} per month for the human builder seat (Agent Factory, Agent Store, SAK University and unlimited tested reviews) and includes ${PRO_INCLUDED_AGENTS} production agent. Extra production agents are Agent Pass at ${PRICE_AGENT_PASS} per agent per month (monthly only) — buy Agent Pass without Pro if you only run agents. Enterprise adds a private registry, SSO and audit logs.`;

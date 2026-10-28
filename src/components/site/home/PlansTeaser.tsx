@@ -9,13 +9,15 @@ import {
 } from "@/lib/pricing-copy";
 
 const PRO_INCLUDED = [
+  "1 production agent included",
   "Agent Factory, Agent Store and SAK University",
   "Unlimited skill reviews with full graded reports",
   "Adversarial evaluation tools and version-specific reports",
 ];
 
 const AGENT_PASS_INCLUDED = [
-  "Unlimited upgrades per production agent",
+  "Standalone — no Pro required",
+  "Monthly only — unlimited upgrades per agent",
   "SkillForge AI and weekly report per seat",
 ];
 
@@ -33,8 +35,8 @@ export function PlansTeaser() {
             Free, Pro, and Agent Pass.
           </h2>
           <p className="mt-4 text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
-            Public capabilities stay free forever. Pro is the human builder seat. Agent Pass is each
-            production agent seat.
+            Public capabilities stay free forever. Pro includes 1 production agent. Agent Pass is
+            standalone (monthly only — no Pro required) for extra agents or agent-only use.
           </p>
         </div>
 
@@ -54,7 +56,8 @@ export function PlansTeaser() {
               {SAVE_BADGE}
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Or {PRICE_MONTHLY}/month. Human seat: Factory, Store, University, unlimited reviews.
+              Or {PRICE_MONTHLY}/month. Human seat + 1 production agent: Factory, Store, University,
+              unlimited reviews.
             </p>
             <ul className="mt-5 space-y-3 text-sm">
               {PRO_INCLUDED.map((f) => (
@@ -74,14 +77,15 @@ export function PlansTeaser() {
 
           <div className="overflow-hidden rounded-2xl border border-border bg-background p-7 md:p-9">
             <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
-              Agent Pass · per agent
+              Agent Pass · monthly · standalone
             </div>
             <div className="mt-4 flex items-end gap-2">
               <span className="text-5xl font-semibold tracking-tight">{PRICE_AGENT_PASS}</span>
               <span className="pb-2 text-sm text-muted-foreground">/ agent / month</span>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Each production agent seat: upgrades, SkillForge and a weekly report.
+              No Pro required. Buy Agent Pass alone if you only run agents — or add seats beyond
+              Pro&apos;s included 1.
             </p>
             <ul className="mt-5 space-y-3 text-sm">
               {AGENT_PASS_INCLUDED.map((f) => (

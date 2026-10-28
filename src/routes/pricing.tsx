@@ -19,7 +19,7 @@ import {
 } from "@/lib/pricing-copy";
 
 const TITLE = "Pricing — Free, Pro, Agent Pass, Enterprise | Super Agent Skill";
-const DESCRIPTION = `Public capabilities are free forever. Pro is ${PRICE_YEARLY}/year (${PRO_YEARLY_DISCOUNT_PCT}% off ${PRICE_YEARLY_LIST}) or ${PRICE_MONTHLY}/month for the human builder seat. Agent Pass is ${PRICE_AGENT_PASS}/agent/month for each production seat. Enterprise is custom.`;
+const DESCRIPTION = `Public capabilities are free forever. Pro is ${PRICE_YEARLY}/year (${PRO_YEARLY_DISCOUNT_PCT}% off ${PRICE_YEARLY_LIST}) or ${PRICE_MONTHLY}/month and includes 1 production agent. Agent Pass is ${PRICE_AGENT_PASS}/agent/month (standalone, monthly only — no Pro required). Enterprise is custom.`;
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -44,6 +44,7 @@ const FREE = [
 ];
 
 const PRO_INCLUDED = [
+  "1 production agent included",
   "Agent Factory — build a custom corporate agent from one prompt",
   "Agent Store — 33 ready-made agents with soul, guardrails and skills",
   "SAK University — diagnosis, adaptive curriculum, residency and credentials",
@@ -53,6 +54,8 @@ const PRO_INCLUDED = [
 ];
 
 const AGENT_PASS_INCLUDED = [
+  "Standalone — no Pro required",
+  "Monthly only — no yearly plan",
   "Unlimited upgrades per production agent",
   "SkillForge AI for each agent seat",
   "Weekly health report per agent",
@@ -119,8 +122,9 @@ function Pricing() {
             Free, Pro, Agent Pass, Enterprise.
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-pretty text-muted-foreground">
-            Super Agent Skill keeps public capabilities free forever. Pro is the human builder seat.
-            Agent Pass is each production agent seat. Enterprise covers fleet governance.
+            Super Agent Skill keeps public capabilities free forever. Pro includes 1 production
+            agent. Agent Pass is standalone (monthly only — no Pro required) for extra agents or
+            agent-only use. Enterprise covers fleet governance.
           </p>
         </div>
       </section>
@@ -159,7 +163,7 @@ function Pricing() {
             <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">Pro</div>
             <p className="mt-2 text-sm text-muted-foreground">
               Pro is the human plan: Agent Factory, Agent Store, University and unlimited adversarial
-              reviews to build and validate skills.
+              reviews — plus 1 production agent included. Extra agents are Agent Pass.
             </p>
 
             <div className="mt-4 flex w-fit items-center rounded-full border border-border bg-surface p-1 text-xs">
@@ -223,8 +227,8 @@ function Pricing() {
               Agent Pass
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Agent Pass is each production agent seat: unlimited upgrades, SkillForge and weekly
-              report per agent.
+              Standalone — no Pro required. Monthly only. Each seat: unlimited upgrades, SkillForge
+              and weekly report. Also covers extras beyond Pro&apos;s included agent.
             </p>
             <div className="mt-4 flex items-end gap-1">
               <span className="text-4xl font-semibold tracking-tight">{PRICE_AGENT_PASS}</span>
@@ -285,7 +289,7 @@ function Pricing() {
               Get Agent Pass →
             </button>
             <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-              Quantity can also be adjusted in Stripe Checkout.
+              Monthly billing only · buy without Pro · quantity adjustable in Checkout.
             </p>
           </div>
 

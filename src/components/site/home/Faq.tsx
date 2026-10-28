@@ -89,8 +89,9 @@ const ITEMS: { q: string; a: React.ReactNode }[] = [
         <span className="text-muted-foreground line-through">{PRICE_YEARLY_LIST}</span>{" "}
         <span className="font-semibold text-foreground">{PRICE_YEARLY} per year</span> (
         {PRO_YEARLY_DISCOUNT_PCT}% off) or {PRICE_MONTHLY} per month for the human builder seat
-        (Agent Factory, Store, University, unlimited reviews). Agent Pass is {PRICE_AGENT_PASS} per
-        agent per month for each production seat.{" "}
+        (Agent Factory, Store, University, unlimited reviews) and includes 1 production agent. Extra
+        agents are Agent Pass at {PRICE_AGENT_PASS} per agent per month (standalone, monthly only —
+        no Pro required).{" "}
         <Link to="/pricing" className="text-primary hover:underline">
           See pricing
         </Link>

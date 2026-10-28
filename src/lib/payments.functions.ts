@@ -105,6 +105,10 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
         ui_mode: "embedded_page",
         return_url: data.returnUrl,
         customer: customerId,
+        // Stripe Tax: collect a billing address and let Checkout compute tax.
+        automatic_tax: { enabled: true },
+        billing_address_collection: "required",
+        customer_update: { address: "auto" },
         ...(!isRecurring && { payment_intent_data: { description: productDescription } }),
         metadata: { userId },
         ...(isRecurring && { subscription_data: { metadata: { userId } } }),
