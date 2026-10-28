@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "superagentskill",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "description": "Agent skills and candidate workflows from Super Agent Skill. Published registry packages expose available trust and execution evidence; candidate workflows include offline fixtures.",
   "author": {
     "name": "Super Agent Skill",

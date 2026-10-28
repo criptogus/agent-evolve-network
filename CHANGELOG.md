@@ -11,6 +11,14 @@ Component artifacts are versioned and released independently via git tags:
 - **`super-agent` CLI** — `cli-v*` tags publish cross-platform binaries.
 - **`@superagentskill/sdk`** — versioned in `packages/sdk-ts/package.json`.
 
+## [0.9.7] — 2026-10-28 — *Genesis* (alpha) — Maintenance release
+
+### Changed
+
+- Disable automatic_tax until Stripe Tax supports this account country.
+- Clarify Pro includes 1 agent and enable Stripe Tax on checkout.
+- Split paid SKU into Pro and Agent Pass with sak_* lookup keys.
+
 ## [0.9.6] — 2026-10-28 — *Genesis* (alpha) — Maintenance release
 
 ### Changed
