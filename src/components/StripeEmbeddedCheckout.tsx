@@ -7,10 +7,16 @@ import { createCheckoutSession } from "@/lib/payments.functions";
 interface Props {
   priceId: string;
   quantity?: number;
+  adjustableQuantity?: boolean;
   returnUrl?: string;
 }
 
-export function StripeEmbeddedCheckout({ priceId, quantity, returnUrl }: Props) {
+export function StripeEmbeddedCheckout({
+  priceId,
+  quantity,
+  adjustableQuantity,
+  returnUrl,
+}: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchClientSecret = useCallback(async (): Promise<string> => {
@@ -19,6 +25,7 @@ export function StripeEmbeddedCheckout({ priceId, quantity, returnUrl }: Props) 
         data: {
           priceId,
           quantity,
+          adjustableQuantity,
           returnUrl: returnUrl || window.location.href,
           environment: getStripeEnvironment(),
         },
@@ -31,7 +38,7 @@ export function StripeEmbeddedCheckout({ priceId, quantity, returnUrl }: Props) 
       setError(message);
       throw new Error(message);
     }
-  }, [priceId, quantity, returnUrl]);
+  }, [priceId, quantity, adjustableQuantity, returnUrl]);
 
   if (error) {
     return (
