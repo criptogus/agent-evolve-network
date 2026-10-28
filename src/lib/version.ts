@@ -12,10 +12,10 @@
  * We are still pre-1.0: rapid evolution, no stability guarantees.
  */
 
-export const PLATFORM_VERSION = "0.9.5" as const;
+export const PLATFORM_VERSION = "0.9.6" as const;
 export const PLATFORM_CODENAME = "Genesis" as const;
 export const PLATFORM_STAGE: "alpha" | "beta" | "ga" = "alpha";
-export const PLATFORM_BUILD_DATE = "2026-10-26" as const;
+export const PLATFORM_BUILD_DATE = "2026-10-28" as const;
 
 export type ChangelogEntry = {
   version: string;
@@ -30,6 +30,13 @@ export type ChangelogEntry = {
  * Every deployed change appends a new entry (or amends the top one before shipping).
  */
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "0.9.6",
+    date: "2026-10-28",
+    kind: "patch",
+    title: "Maintenance release",
+    highlights: ["Add nonce CSP, framing protection, and security.txt"],
+  },
   {
     version: "0.9.5",
     date: "2026-10-26",
