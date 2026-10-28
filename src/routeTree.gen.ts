@@ -57,6 +57,7 @@ import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as WhitepaperRouteImport } from './routes/whitepaper'
 import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known.oauth-authorization-server'
 import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known.oauth-protected-resource'
+import { Route as DotwellKnownSecurityDottxtRouteImport } from './routes/[.]well-known.security[.]txt'
 import { Route as AccountAgentsRouteImport } from './routes/account.agents'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as AccountCloudSkillsRouteImport } from './routes/account.cloud-skills'
@@ -430,6 +431,12 @@ const DotwellKnownOauthProtectedResourceRoute =
   DotwellKnownOauthProtectedResourceRouteImport.update({
     id: '/.well-known/oauth-protected-resource',
     path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotwellKnownSecurityDottxtRoute =
+  DotwellKnownSecurityDottxtRouteImport.update({
+    id: '/.well-known/security.txt',
+    path: '/.well-known/security.txt',
     getParentRoute: () => rootRouteImport,
   } as any)
 const AccountAgentsRoute = AccountAgentsRouteImport.update({
@@ -1168,6 +1175,7 @@ export interface FileRoutesByFullPath {
   '/whitepaper': typeof WhitepaperRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
+  '/.well-known/security.txt': typeof DotwellKnownSecurityDottxtRoute
   '/account/agents': typeof AccountAgentsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
@@ -1349,6 +1357,7 @@ export interface FileRoutesByTo {
   '/whitepaper': typeof WhitepaperRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
+  '/.well-known/security.txt': typeof DotwellKnownSecurityDottxtRoute
   '/account/agents': typeof AccountAgentsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
@@ -1532,6 +1541,7 @@ export interface FileRoutesById {
   '/whitepaper': typeof WhitepaperRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
+  '/.well-known/security.txt': typeof DotwellKnownSecurityDottxtRoute
   '/account/agents': typeof AccountAgentsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
@@ -1716,6 +1726,7 @@ export interface FileRouteTypes {
     | '/whitepaper'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
+    | '/.well-known/security.txt'
     | '/account/agents'
     | '/account/billing'
     | '/account/cloud-skills'
@@ -1897,6 +1908,7 @@ export interface FileRouteTypes {
     | '/whitepaper'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
+    | '/.well-known/security.txt'
     | '/account/agents'
     | '/account/billing'
     | '/account/cloud-skills'
@@ -2079,6 +2091,7 @@ export interface FileRouteTypes {
     | '/whitepaper'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
+    | '/.well-known/security.txt'
     | '/account/agents'
     | '/account/billing'
     | '/account/cloud-skills'
@@ -2262,6 +2275,7 @@ export interface RootRouteChildren {
   WhitepaperRoute: typeof WhitepaperRoute
   DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRouteWithChildren
+  DotwellKnownSecurityDottxtRoute: typeof DotwellKnownSecurityDottxtRoute
   AccountAgentsRoute: typeof AccountAgentsRoute
   AccountBillingRoute: typeof AccountBillingRoute
   AccountCloudSkillsRoute: typeof AccountCloudSkillsRoute
@@ -2694,6 +2708,13 @@ declare module '@tanstack/react-router' {
       path: '/.well-known/oauth-protected-resource'
       fullPath: '/.well-known/oauth-protected-resource'
       preLoaderRoute: typeof DotwellKnownOauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/security.txt': {
+      id: '/.well-known/security.txt'
+      path: '/.well-known/security.txt'
+      fullPath: '/.well-known/security.txt'
+      preLoaderRoute: typeof DotwellKnownSecurityDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account/agents': {
@@ -3879,6 +3900,7 @@ const rootRouteChildren: RootRouteChildren = {
     DotwellKnownOauthAuthorizationServerRouteWithChildren,
   DotwellKnownOauthProtectedResourceRoute:
     DotwellKnownOauthProtectedResourceRouteWithChildren,
+  DotwellKnownSecurityDottxtRoute: DotwellKnownSecurityDottxtRoute,
   AccountAgentsRoute: AccountAgentsRoute,
   AccountBillingRoute: AccountBillingRoute,
   AccountCloudSkillsRoute: AccountCloudSkillsRoute,
