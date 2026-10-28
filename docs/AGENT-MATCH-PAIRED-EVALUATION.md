@@ -365,7 +365,6 @@ The next candidate requires literal catalog counterevidence before asserting ris
 
 `reconcile-match-no-generation.ts` verifies only the reviewed v8 early return against frozen source and consecutive native counters482/483, exact usage and preserved bills. The actual receipt released USD0.251853 of generator reservation only. Paid upper remains USD7.07125; other unknown holds total USD0.82931275; availability is USD2.09943725 under the unchanged USD10 cap. Unknown TypeSafe usage remains unknown. The v16 interrupted hold remains reserved despite adjacent metering diagnostics. Earlier ledgers and rejected histories are preserved.
 
-
 ## Preparação v32 com autorização de US$20
 
 A integração com main preserva os metadados de seleção e inclui as melhorias do roadmap.
@@ -380,7 +379,6 @@ novo e as observações continuam limitadas a quatro por ação, com reconcilia�
 
 A preparação v32 não executou inferência e foi sucedida pela v33 `b42da3942496ca2f1ff81bb67dcda2e5493ede7a1ca986a843cd33aa3e97ff2f` após integrar main 0.9.3 com o provedor Lovable de embeddings. Todos os seis campos originais continuam idênticos ao plano v31 recuperado. O journal v33 usa armazenamento separado.
 
-
 V33 stopped at its first baseline attempt: HTTP400 rejected provider-forbidden allOf
 inside why. No generated output or usage receipt was returned. The native AI counter
 advanced674→675, with Client error and unknown credits (dash, not zero). The immutable
@@ -393,7 +391,6 @@ The actual SDK wire regression failed before correction and passed after constru
 tightened why/role strings once, preserving min/max15/120 and5/60 without duplicate
 max constraints. No output was repaired and no quality criterion changed. New v34
 plan `62b5c0b49e2bd9cc2b1179396cb8d2be88405d79009031415d69aff8d1deb644` retains all six original plan fields and a separate journal.
-
 
 V34 stopped on its first baseline at the client deadline, with zero delivered
 observations. Native counter675→676 records Cancelled/Truncated,32723 input tokens,
@@ -419,7 +416,6 @@ A preparação v35 não executou inferência e foi sucedida antes de uso pela v3
 
 Plano v36: `2f979881aae792982de6c312529fc38e5d4a71a4c0b9fe7d560707dbe3e577bf`. Os seis campos originais permanecem idênticos e o armazenamento é separado.
 
-
 V36 delivered its first baseline in19837ms with gpt-5.2-2025-12-11,32723input,
 32512cached input and1740output tokens. Native counter676→677 confirms0.12credits
 and18.8seconds (USD0.02875–0.03125); delivery is now proven for this observation.
@@ -444,7 +440,6 @@ new source-bound candidate, not a repair of v36 output or a changed approval bar
 
 Plano v37: `04cf091bf71351779ab288532c3e8fc880c8350d646d7570a247dd8cfbd7aff4`. Todos os seis campos originais permanecem idênticos.
 
-
 V37 also stopped after its first baseline. Delivery succeeded in29452ms with
 32879input/0cached/1487output tokens and the unchanged gpt-5.2-2025-12-11 model.
 Native counter677→678 confirms0.31credits and16seconds: USD0.07625–0.07875.
@@ -462,3 +457,11 @@ quality, savings or p95. Filtering and production publication remain unapproved.
 A new generator-model qualification must be explicitly owner-authorized and kept
 separate from the original pinned GPT5.2 histories. Budget authority alone does
 not establish such model-migration approval.
+
+## Resumed by owner on 2026-10-28
+
+The owner explicitly requested resuming the original GPT-5.2 comparison under an accumulated USD10 ceiling. This supersedes the recorded stop decision for this candidate; it does not authorize GPT-5.4 or a USD20 limit. All later v33/v34 holds and v36/v37 native upper charges remain encumbered. Paid upper is USD7.18125; reserves USD1.48360875; availability USD1.33514125. The old v31 prepared batch is stale and must not run. Original cases, schedule, criteria, generator and all72 observations remain mandatory.
+
+The new prompt removes the ambiguous definition that gaps are capabilities not covered “well.” Its schema and instruction now distinguish genuinely uncovered requested operations from unspecified implementation details. Real uncovered operations remain reportable; there is no output repair, gap removal after generation or automatic primary approval. Actual Jev1.14 advisory review preferred the clearer definition and retained scope (both probability1.0;617input/89output tokens). This is diagnostic only, not proof of corrected GPT-5.2 behavior.
+
+Current main has been merged, preserving nonce CSP/security headers and the cancellable request timeout, along with managed semantic indexing RPCs and private match-cache RPCs. Run the full release batch and native preview preflight before the new source-bound cohort. Start at one observation while reviewing the historically failing baseline; partial evidence never qualifies publication.
