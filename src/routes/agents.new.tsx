@@ -184,7 +184,7 @@ function NewAgent() {
         <div className="mt-6 rounded-2xl border border-border bg-background p-5 shadow-sm sm:p-7">
           {!canBuild ? (
             <div className="rounded-xl border border-primary/40 bg-primary/5 p-4">
-              <p className="text-sm font-medium">Building agents is part of Agent Pass</p>
+              <p className="text-sm font-medium">Building agents is part of Pro</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Unlimited builds, the full Agent Store, and install straight into Claude, Hermes or
                 ChatGPT over MCP.

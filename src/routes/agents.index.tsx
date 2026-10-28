@@ -39,7 +39,7 @@ function AgentsIndex() {
       <Nav />
       <main className="container mx-auto px-4 py-12">
         <header className="mb-10 max-w-3xl">
-          <Badge variant="outline">Agent Pass</Badge>
+          <Badge variant="outline">Pro</Badge>
           <h1 className="mt-3 text-4xl font-bold tracking-tight">Agent Store</h1>
           <p className="mt-3 text-muted-foreground">
             Ready-to-use agents. Each one bundles an operating <strong>soul</strong> (identity,

@@ -6,6 +6,7 @@
 import type { CrmSnapshot } from "@/lib/crm/types";
 import type { TriggerId } from "@/lib/crm/segments";
 import { PATTERN_LABELS, patternHook, personalizedBullets } from "@/lib/crm/tool-profile";
+import { PRICE_MONTHLY, PRICE_YEARLY, PRO_PRICING } from "@/lib/pricing-copy";
 
 export type CrmMetric = { label: string; value: string; note?: string };
 
@@ -181,12 +182,12 @@ export function buildMessage(trigger: TriggerId, s: CrmSnapshot): CrmMessage {
       return {
         trigger,
         subject: s.roi.headroom_monthly_usd
-          ? `Pro pays for itself ${Math.max(1, Math.round(s.roi.headroom_monthly_usd / 19))}x on your current usage`
+          ? `Pro pays for itself ${Math.max(1, Math.round(s.roi.headroom_monthly_usd / PRO_PRICING.monthly))}x on your current usage`
           : "Pro, priced against your own numbers",
         preheader: "Batch reviews, the Agent Store and unlimited residency rounds.",
         heading: "You are already past the break-even point",
         intro: [
-          `You have run ${num(s.usage.reviews)} reviews. Pro is $19/month (or $140/year) and removes the limits you are hitting.`,
+          `You have run ${num(s.usage.reviews)} reviews. Pro is ${PRICE_MONTHLY}/month (or ${PRICE_YEARLY}/year) and removes the limits you are hitting.`,
           ...(s.roi.headroom_monthly_usd
             ? [
                 `Your own numbers show about ${usd(s.roi.headroom_monthly_usd)}/month of avoidable spend still in your skills.`,
@@ -194,10 +195,10 @@ export function buildMessage(trigger: TriggerId, s: CrmSnapshot): CrmMessage {
             : []),
         ],
         metrics: [
-          { label: "Pro monthly", value: "$19/month" },
+          { label: "Pro monthly", value: `${PRICE_MONTHLY}/month` },
           {
             label: "Pro yearly",
-            value: "$140/year",
+            value: `${PRICE_YEARLY}/year`,
             note: "auto-renews at the same discounted rate",
           },
           ...roiMetrics(s).slice(0, 2),
@@ -238,7 +239,7 @@ export function buildMessage(trigger: TriggerId, s: CrmSnapshot): CrmMessage {
             ? [{ label: `Where they land in ${tool.label}`, value: tool.path }]
             : [{ label: "Agent tools supported", value: "15" }]),
           { label: "How you use SAK", value: PATTERN_LABELS[s.pattern] },
-          { label: "Pro", value: "$19/month", note: "or $140/year" },
+          { label: "Pro", value: `${PRICE_MONTHLY}/month`, note: `or ${PRICE_YEARLY}/year` },
           ...roiMetrics(s).slice(0, 1),
         ],
         bullets: personalizedBullets(s.pattern, tool),

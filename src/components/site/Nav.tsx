@@ -53,7 +53,7 @@ const SKILLS: NavItem[] = [
 
 const AGENTS_MENU: NavItem[] = [
   { to: "/agents", label: "Agent Store", hint: "Ready-to-use corporate agents" },
-  { to: "/agents/new", label: "Build an agent", hint: "Agent Factory (Agent Pass)" },
+  { to: "/agents/new", label: "Build an agent", hint: "Agent Factory (Pro)" },
 ];
 
 const PUBLISH: NavItem[] = [

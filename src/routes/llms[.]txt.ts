@@ -82,10 +82,12 @@ client-managed: manifests never carry credentials.
 5. Guardrails always run last and may refuse.
 
 ## Pricing
-- Hacker — $0/mo · 3 installs, registry read, MCP gateway
-- Agent Pass — $19/agent/mo · unlimited upgrades, SkillForge AI, weekly reports
+- Free — $0 · browse and install public capabilities, MCP gateway
+- Pro — $29/mo or $240/yr · human builder seat + 1 production agent included (Agent Factory, Store, University, unlimited reviews)
+- Agent Pass — $12/agent/mo · standalone (no Pro required), monthly only · extra production agents beyond Pro's included 1 (unlimited upgrades, SkillForge, weekly report)
 - Enterprise — custom · private registry, SAML SSO, RBAC, audit logs
 Creators keep 80–85% of every package sold.
+Product name: Super Agent Skill (singular).
 
 ## Key links
 - Connect:        https://superagentskill.com/connect

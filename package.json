@@ -38,7 +38,7 @@
     "test": "npm run test:plain && npm run test:ts",
     "test:security-headers": "node --experimental-strip-types --test tests/response-security.test.ts",
     "test:plain": "node --experimental-strip-types --test tests/adversarial-harness.test.ts tests/trust.test.ts tests/release-signing.test.ts tests/cli-install.test.ts tests/trust-attestation.test.ts",
-    "test:ts": "node --experimental-strip-types --test tests/site-stats.test.ts tests/certify.test.ts tests/prompt-injection-guard.test.ts tests/audit-skills.test.ts tests/runtime.test.ts tests/integrations.test.ts tests/growth-revenue-split.test.ts tests/trust-badge.test.ts tests/bounties.test.ts tests/trust-scoring.test.ts tests/adversarial-holdout.test.ts tests/adversarial-judge.test.ts tests/paired-benchmark.test.ts tests/format-rubric.test.ts tests/lang-detect.test.ts tests/university.test.ts tests/package-signature.test.ts",
+    "test:ts": "node --experimental-strip-types --test tests/site-stats.test.ts tests/certify.test.ts tests/prompt-injection-guard.test.ts tests/audit-skills.test.ts tests/runtime.test.ts tests/integrations.test.ts tests/growth-revenue-split.test.ts tests/trust-badge.test.ts tests/bounties.test.ts tests/trust-scoring.test.ts tests/adversarial-holdout.test.ts tests/adversarial-judge.test.ts tests/paired-benchmark.test.ts tests/format-rubric.test.ts tests/lang-detect.test.ts tests/university.test.ts tests/package-signature.test.ts tests/pricing-copy.test.ts",
     "test:all": "node --experimental-strip-types --test tests/*.test.ts",
     "lint:strict": "eslint .",
     "check:navigation": "node scripts/check-navigation.mjs",
