@@ -100,6 +100,22 @@ export type PlatformFunctions = {
     Args: { p_scope_hash: string; p_cache_key: string; p_evidence: Json };
     Returns: boolean;
   };
+  get_search_embedding_attempt: {
+    Args: { _attempt: string };
+    Returns: { status: "active" | "completed"; receipt: Json | null }[];
+  };
+  reserve_search_embedding_batch: {
+    Args: { _model: string; _attempt: string };
+    Returns: string | null;
+  };
+  complete_search_embedding_batch: {
+    Args: { _attempt: string; _entries: Json; _receipt: Json };
+    Returns: number;
+  };
+  search_embedding_index_status: {
+    Args: { _model: string };
+    Returns: { eligible: number; indexed: number; ready: boolean; inflight: boolean }[];
+  };
   reserve_semantic_query: { Args: { _actor: string }; Returns: boolean };
   search_packages_semantic: {
     Args: { _query: string; _model: string; _limit?: number; _offset?: number; _type?: string };

@@ -1,8 +1,13 @@
 #!/usr/bin/env node
-import { createHash } from "node:crypto";
+import { toJson } from "../src/lib/json.ts";
+import { createHash, randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../src/integrations/supabase/database.ts";
-import { embedQuery, resolveEmbeddingConfig } from "../src/lib/search/embedding.ts";
+import {
+  embedQueries,
+  resolveEmbeddingConfig,
+  embeddingSourceInput,
+} from "../src/lib/search/embedding.ts";
 const args = process.argv.slice(2);
 const bound = Number(args[args.indexOf("--max-requests") + 1]);
 if (
@@ -38,7 +43,7 @@ const { data: existing, error: indexError } = await client
 if (indexError) throw new Error("Install the semantic index migration first");
 const pending = data
   .map((p) => {
-    const input = [p.name, p.description, p.long_description].join("\n").slice(0, 2000);
+    const input = embeddingSourceInput(p);
     return { p, input, hash: createHash("sha256").update(input).digest("hex") };
   })
   .filter(
@@ -57,13 +62,34 @@ if (!pending.length || pending.length > bound)
   );
 let completed = 0;
 for (const { p, input, hash } of pending) {
-  const vector = await embedQuery(input, config);
-  const { error: writeError } = await client.from("package_embeddings").upsert({
-    package_id: p.id,
-    version: p.latest_version,
-    model,
-    embedding: JSON.stringify(vector),
-    source_sha256: hash,
+  const requestId = randomUUID();
+  const { data: attempt, error: reserveError } = await client.rpc(
+    "reserve_search_embedding_batch",
+    { _model: model, _attempt: requestId },
+  );
+  if (reserveError || !attempt)
+    throw new Error("Unresolved index request; no new provider request started");
+  const receipt = await embedQueries([input], config);
+  const { error: writeError } = await client.rpc("complete_search_embedding_batch", {
+    _attempt: attempt,
+    _entries: toJson([
+      {
+        package_id: p.id,
+        version: p.latest_version,
+        source_sha256: hash,
+        embedding: JSON.stringify(receipt.vectors[0]),
+      },
+    ]),
+    _receipt: toJson({
+      requestId,
+      model,
+      reportedModel: receipt.reportedModel,
+      dimensions: 1536,
+      providerRequests: 1,
+      pendingBefore: pending.length - completed,
+      usage: receipt.usage,
+      slugs: [p.slug],
+    }),
   });
   if (writeError) throw new Error("Index write failed after a provider call; no automatic retry");
   completed++;

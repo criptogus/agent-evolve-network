@@ -57,6 +57,7 @@ import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as WhitepaperRouteImport } from './routes/whitepaper'
 import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known.oauth-authorization-server'
 import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known.oauth-protected-resource'
+import { Route as DotwellKnownSecurityDottxtRouteImport } from './routes/[.]well-known.security[.]txt'
 import { Route as AccountAgentsRouteImport } from './routes/account.agents'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as AccountCloudSkillsRouteImport } from './routes/account.cloud-skills'
@@ -90,6 +91,7 @@ import { Route as AdminReviewRouteImport } from './routes/admin.review'
 import { Route as AdminReviewAuditRouteImport } from './routes/admin.review-audit'
 import { Route as AdminReviewReportsRouteImport } from './routes/admin.review-reports'
 import { Route as AdminRoiRouteImport } from './routes/admin.roi'
+import { Route as AdminSearchIndexRouteImport } from './routes/admin.search-index'
 import { Route as AgentsIndexRouteImport } from './routes/agents.index'
 import { Route as AgentsSlugRouteImport } from './routes/agents.$slug'
 import { Route as AgentsMdRouteImport } from './routes/agents.md'
@@ -432,6 +434,12 @@ const DotwellKnownOauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DotwellKnownSecurityDottxtRoute =
+  DotwellKnownSecurityDottxtRouteImport.update({
+    id: '/.well-known/security.txt',
+    path: '/.well-known/security.txt',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AccountAgentsRoute = AccountAgentsRouteImport.update({
   id: '/account/agents',
   path: '/account/agents',
@@ -595,6 +603,11 @@ const AdminReviewReportsRoute = AdminReviewReportsRouteImport.update({
 const AdminRoiRoute = AdminRoiRouteImport.update({
   id: '/roi',
   path: '/roi',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSearchIndexRoute = AdminSearchIndexRouteImport.update({
+  id: '/search-index',
+  path: '/search-index',
   getParentRoute: () => AdminRoute,
 } as any)
 const AgentsIndexRoute = AgentsIndexRouteImport.update({
@@ -1168,6 +1181,7 @@ export interface FileRoutesByFullPath {
   '/whitepaper': typeof WhitepaperRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
+  '/.well-known/security.txt': typeof DotwellKnownSecurityDottxtRoute
   '/account/agents': typeof AccountAgentsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
@@ -1200,6 +1214,7 @@ export interface FileRoutesByFullPath {
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/admin/roi': typeof AdminRoiRoute
+  '/admin/search-index': typeof AdminSearchIndexRoute
   '/agents/$slug': typeof AgentsSlugRoute
   '/agents/md': typeof AgentsMdRoute
   '/agents/new': typeof AgentsNewRoute
@@ -1349,6 +1364,7 @@ export interface FileRoutesByTo {
   '/whitepaper': typeof WhitepaperRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
+  '/.well-known/security.txt': typeof DotwellKnownSecurityDottxtRoute
   '/account/agents': typeof AccountAgentsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
@@ -1381,6 +1397,7 @@ export interface FileRoutesByTo {
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/admin/roi': typeof AdminRoiRoute
+  '/admin/search-index': typeof AdminSearchIndexRoute
   '/agents/$slug': typeof AgentsSlugRoute
   '/agents/md': typeof AgentsMdRoute
   '/agents/new': typeof AgentsNewRoute
@@ -1532,6 +1549,7 @@ export interface FileRoutesById {
   '/whitepaper': typeof WhitepaperRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRouteWithChildren
+  '/.well-known/security.txt': typeof DotwellKnownSecurityDottxtRoute
   '/account/agents': typeof AccountAgentsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/cloud-skills': typeof AccountCloudSkillsRoute
@@ -1564,6 +1582,7 @@ export interface FileRoutesById {
   '/admin/review-audit': typeof AdminReviewAuditRoute
   '/admin/review-reports': typeof AdminReviewReportsRoute
   '/admin/roi': typeof AdminRoiRoute
+  '/admin/search-index': typeof AdminSearchIndexRoute
   '/agents/$slug': typeof AgentsSlugRoute
   '/agents/md': typeof AgentsMdRoute
   '/agents/new': typeof AgentsNewRoute
@@ -1716,6 +1735,7 @@ export interface FileRouteTypes {
     | '/whitepaper'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
+    | '/.well-known/security.txt'
     | '/account/agents'
     | '/account/billing'
     | '/account/cloud-skills'
@@ -1748,6 +1768,7 @@ export interface FileRouteTypes {
     | '/admin/review-audit'
     | '/admin/review-reports'
     | '/admin/roi'
+    | '/admin/search-index'
     | '/agents/$slug'
     | '/agents/md'
     | '/agents/new'
@@ -1897,6 +1918,7 @@ export interface FileRouteTypes {
     | '/whitepaper'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
+    | '/.well-known/security.txt'
     | '/account/agents'
     | '/account/billing'
     | '/account/cloud-skills'
@@ -1929,6 +1951,7 @@ export interface FileRouteTypes {
     | '/admin/review-audit'
     | '/admin/review-reports'
     | '/admin/roi'
+    | '/admin/search-index'
     | '/agents/$slug'
     | '/agents/md'
     | '/agents/new'
@@ -2079,6 +2102,7 @@ export interface FileRouteTypes {
     | '/whitepaper'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/oauth-protected-resource'
+    | '/.well-known/security.txt'
     | '/account/agents'
     | '/account/billing'
     | '/account/cloud-skills'
@@ -2111,6 +2135,7 @@ export interface FileRouteTypes {
     | '/admin/review-audit'
     | '/admin/review-reports'
     | '/admin/roi'
+    | '/admin/search-index'
     | '/agents/$slug'
     | '/agents/md'
     | '/agents/new'
@@ -2262,6 +2287,7 @@ export interface RootRouteChildren {
   WhitepaperRoute: typeof WhitepaperRoute
   DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRouteWithChildren
+  DotwellKnownSecurityDottxtRoute: typeof DotwellKnownSecurityDottxtRoute
   AccountAgentsRoute: typeof AccountAgentsRoute
   AccountBillingRoute: typeof AccountBillingRoute
   AccountCloudSkillsRoute: typeof AccountCloudSkillsRoute
@@ -2696,6 +2722,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotwellKnownOauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/security.txt': {
+      id: '/.well-known/security.txt'
+      path: '/.well-known/security.txt'
+      fullPath: '/.well-known/security.txt'
+      preLoaderRoute: typeof DotwellKnownSecurityDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/agents': {
       id: '/account/agents'
       path: '/account/agents'
@@ -2925,6 +2958,13 @@ declare module '@tanstack/react-router' {
       path: '/roi'
       fullPath: '/admin/roi'
       preLoaderRoute: typeof AdminRoiRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/search-index': {
+      id: '/admin/search-index'
+      path: '/search-index'
+      fullPath: '/admin/search-index'
+      preLoaderRoute: typeof AdminSearchIndexRouteImport
       parentRoute: typeof AdminRoute
     }
     '/agents/': {
@@ -3654,6 +3694,7 @@ interface AdminRouteChildren {
   AdminReviewAuditRoute: typeof AdminReviewAuditRoute
   AdminReviewReportsRoute: typeof AdminReviewReportsRoute
   AdminRoiRoute: typeof AdminRoiRoute
+  AdminSearchIndexRoute: typeof AdminSearchIndexRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminImportGithubRoute: typeof AdminImportGithubRoute
   AdminImportMarkdownRoute: typeof AdminImportMarkdownRoute
@@ -3678,6 +3719,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminReviewAuditRoute: AdminReviewAuditRoute,
   AdminReviewReportsRoute: AdminReviewReportsRoute,
   AdminRoiRoute: AdminRoiRoute,
+  AdminSearchIndexRoute: AdminSearchIndexRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminImportGithubRoute: AdminImportGithubRoute,
   AdminImportMarkdownRoute: AdminImportMarkdownRoute,
@@ -3879,6 +3921,7 @@ const rootRouteChildren: RootRouteChildren = {
     DotwellKnownOauthAuthorizationServerRouteWithChildren,
   DotwellKnownOauthProtectedResourceRoute:
     DotwellKnownOauthProtectedResourceRouteWithChildren,
+  DotwellKnownSecurityDottxtRoute: DotwellKnownSecurityDottxtRoute,
   AccountAgentsRoute: AccountAgentsRoute,
   AccountBillingRoute: AccountBillingRoute,
   AccountCloudSkillsRoute: AccountCloudSkillsRoute,

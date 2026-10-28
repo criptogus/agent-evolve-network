@@ -41,6 +41,7 @@ const NAV = [
   { to: "/admin/review-reports", label: "Reports" },
   { to: "/admin/review-audit", label: "Audit" },
   { to: "/admin/calibration", label: "Judge calibration" },
+  { to: "/admin/search-index", label: "Semantic search index" },
   { to: "/admin/meta-ads-pack", label: "Meta Ads Pack" },
 ];
 
