@@ -102,13 +102,23 @@ test("catalog counterevidence binds literal supplied sources without adding unse
     },
     gaps: [
       {
+        evidence: {
+          requested_quote: "Map target ERP lines",
+          basis: "outside_documented_subject",
+          source: {
+            kind: "package",
+            id: supplied[3].slug,
+            source_quote: supplied[3].description.slice(0, 180),
+          },
+          reason: "PDF extraction does not document ERP line mapping.",
+        },
         capability: "Target ERP line mapping",
         suggestion: "Specify the target ERP schema before authoring an adapter.",
         recommended_type: "skill",
       },
     ],
   };
-  const schema = buildMatchOutputSchema(supplied, desired);
+  const schema = buildMatchOutputSchema(supplied, desired, "Map target ERP lines");
   assert.equal(schema.safeParse(value).success, true);
   for (const bad of [
     [{ ...value.catalog_checks[0], id: "invented-source" }],
@@ -669,4 +679,91 @@ test("actual SDK wire schema avoids provider-forbidden allOf while retaining tig
     checked++;
   }
   assert.ok(checked > 0);
+});
+
+test("generated gaps require request-bound evidence and an exact supplied counterexample", async () => {
+  const brief = "Compare orchestral score notation against the supplied performance requirements.";
+  const checked = { kind: "package" as const, id: "good", source_quote: candidates[0].description };
+  const clean = sanitizeMatch(output(), candidates, desired);
+  const value = {
+    ...clean,
+    catalog_checks: [checked],
+    recommended_kit: { ...evidenceKit(clean.recommended_kit), work_domain: "runtime_work" },
+    gaps: [
+      {
+        capability: "Orchestral notation comparison",
+        suggestion: "Author a notation comparison skill.",
+        recommended_type: "skill",
+        evidence: {
+          requested_quote: "Compare orchestral score notation",
+          basis: "outside_documented_subject",
+          source: checked,
+          reason: "The supplied source documents analysis, not orchestral notation.",
+        },
+      },
+    ],
+  };
+  const schema = buildMatchOutputSchema(candidates, desired, brief);
+  assert.equal(schema.safeParse(value).success, true);
+  const evidence = value.gaps[0].evidence;
+  for (const invalid of [
+    undefined,
+    { ...evidence, requested_quote: "invented requested operation" },
+    { ...evidence, basis: "unknown_implementation" },
+    { ...evidence, source: { ...checked, id: "invented" } },
+    { ...evidence, source: { ...checked, source_quote: "rewritten description" } },
+  ])
+    assert.equal(
+      schema.safeParse({ ...value, gaps: [{ ...value.gaps[0], evidence: invalid }] }).success,
+      false,
+    );
+  assert.equal(buildMatchOutputSchema(candidates, desired).safeParse(value).success, false);
+  // Exercise the real provider SDK validator as well as the local parser.
+  // This custom transport has no network/key and is not model qualification.
+  let reply: unknown = value;
+  const provider = createOpenAICompatible({
+    name: "gap-evidence-fixture",
+    ...MATCH_PROVIDER_OPTIONS,
+    baseURL: "https://gateway.test/v1",
+    fetch: async () =>
+      new Response(
+        JSON.stringify({
+          id: "gap-fixture",
+          model: "gpt-5.2",
+          created: 1,
+          choices: [
+            {
+              index: 0,
+              message: { role: "assistant", content: JSON.stringify(reply) },
+              finish_reason: "stop",
+            },
+          ],
+          usage: {
+            prompt_tokens: 1,
+            completion_tokens: 1,
+            total_tokens: 2,
+            prompt_tokens_details: { cached_tokens: 0 },
+          },
+        }),
+        { headers: { "content-type": "application/json" } },
+      ),
+  });
+  const generate = () =>
+    generateText({
+      model: provider(MATCH_GENERATOR_MODEL),
+      ...matchGenerationOptions(),
+      prompt: brief,
+      output: Output.object({ schema: buildMatchWireSchema(candidates, desired, brief) }),
+    });
+  assert.equal((await generate()).finishReason, "stop");
+  reply = {
+    ...value,
+    gaps: [
+      {
+        ...value.gaps[0],
+        evidence: { ...evidence, requested_quote: "invented requested operation" },
+      },
+    ],
+  };
+  await assert.rejects(generate);
 });

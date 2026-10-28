@@ -72,7 +72,9 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
     const reservation = reserveGeneration(
       fullPrompt.system,
       fullPrompt.prompt,
-      JSON.stringify(await buildMatchWireSchema(data.candidates, data.desired).jsonSchema),
+      JSON.stringify(
+        await buildMatchWireSchema(data.candidates, data.desired, data.brief).jsonSchema,
+      ),
       data.remaining,
     );
     attempts.add(data.attempt);
@@ -205,7 +207,7 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
           system,
           prompt,
           output: Output.object({
-            schema: buildMatchWireSchema(selection.candidates, data.desired),
+            schema: buildMatchWireSchema(selection.candidates, data.desired, data.brief),
           }),
           ...matchGenerationOptions(),
           abortSignal: AbortSignal.any([signal, AbortSignal.timeout(180000)]),
@@ -215,9 +217,11 @@ export const generateBenchmarkObservation = createServerFn({ method: "POST" })
           outputTokens = usage.outputTokens,
           cached = usage.inputTokenDetails.cacheReadTokens;
         // Retain a completed transport even if schema/finish/metering fails. No output repair.
-        const parsed = buildMatchOutputSchema(selection.candidates, data.desired).safeParse(
-          JSON.parse(result.text),
-        );
+        const parsed = buildMatchOutputSchema(
+          selection.candidates,
+          data.desired,
+          data.brief,
+        ).safeParse(JSON.parse(result.text));
         const cost =
           inputTokens !== undefined && outputTokens !== undefined && cached !== undefined
             ? generatorCost(inputTokens, cached, outputTokens)

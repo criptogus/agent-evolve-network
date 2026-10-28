@@ -92,7 +92,9 @@ export const matchAgentToPackages = createServerFn({ method: "POST" })
         abortSignal: AbortSignal.any([signal, AbortSignal.timeout(180000)]),
         system,
         prompt,
-        output: Output.object({ schema: buildMatchWireSchema(candidates, data.desired) }),
+        output: Output.object({
+          schema: buildMatchWireSchema(candidates, data.desired, data.brief),
+        }),
       });
 
       const clean = sanitizeMatch(output, candidates, data.desired);

@@ -34,6 +34,29 @@ const CatalogChecks = z
     "Before writing any risks or gaps, cite at least one closest supplied source as factual counterevidence. Use an empty array only when both risks and gaps are empty. Availability evidence may be outside the selected kit; it assigns no role.",
   );
 
+const GapEvidence = z.object({
+  requested_quote: z
+    .string()
+    .min(5)
+    .max(240)
+    .describe(
+      "Copy the exact part of the original brief requiring this operation; no added requirements.",
+    ),
+  basis: z
+    .enum(["outside_documented_subject", "explicit_documented_limitation"])
+    .describe(
+      "Unknown implementation detail is neither basis. Use [] for gaps when evidence does not establish either basis.",
+    ),
+  source: CatalogChecks.element,
+  reason: z
+    .string()
+    .min(15)
+    .max(240)
+    .describe(
+      "Compare the requested operation to this source's documented subject or explicit limitation. Missing detail within the same documented job is uncertainty, not evidence of absence.",
+    ),
+});
+
 export const MatchSchema = z.object({
   agent_summary: z.object({
     one_liner: z.string().max(200),
@@ -61,6 +84,7 @@ export const MatchSchema = z.object({
   gaps: z
     .array(
       z.object({
+        evidence: GapEvidence.optional(),
         capability: z.string().max(160),
         suggestion: z.string().max(240),
         recommended_type: z.enum(["skill", "playbook", "soul", "guardrail"]),
@@ -87,7 +111,11 @@ export const MatchSchema = z.object({
 });
 
 // Constrain the original contract before generation, never repair a wrong-type item afterward.
-export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: DesiredKit) {
+export function buildMatchOutputSchema(
+  candidates: MatchCandidate[],
+  desired: DesiredKit,
+  brief = "",
+) {
   const makeLists = (type: (typeof MATCH_TYPES)[number]) => {
     const matching = candidates.filter((c) => c.type === type);
     const isSoftwareDelivery = (c: MatchCandidate) =>
@@ -145,6 +173,10 @@ export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: De
     guardrails = makeLists("guardrail");
   return MatchSchema.extend({
     catalog_checks: CatalogChecks,
+    gaps: z
+      .array(MatchSchema.shape.gaps.element.extend({ evidence: GapEvidence }))
+      .max(8)
+      .describe(MatchSchema.shape.gaps.description!),
     recommended_kit: z.union([
       z.object({
         work_domain: z.literal("runtime_work"),
@@ -182,6 +214,25 @@ export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: De
           });
       }
     }
+    for (const [index, gap] of output.gaps.entries()) {
+      const check = gap.evidence.source;
+      const source =
+        check.kind === "package"
+          ? candidates.find((candidate) => candidate.slug === check.id)
+          : getMcpById(check.id);
+      if (!brief || !brief.includes(gap.evidence.requested_quote))
+        ctx.addIssue({
+          code: "custom",
+          message: "Gap must quote an exact requested operation from the original brief",
+          path: ["gaps", index, "evidence", "requested_quote"],
+        });
+      if (!source || check.source_quote !== source.description.slice(0, 180))
+        ctx.addIssue({
+          code: "custom",
+          message: "Gap evidence must cite an exact supplied source",
+          path: ["gaps", index, "evidence", "source"],
+        });
+    }
     const checked = new Set<string>();
     for (const [index, check] of output.catalog_checks.entries()) {
       const identity = `${check.kind}:${check.id}`;
@@ -210,10 +261,14 @@ export function buildMatchOutputSchema(candidates: MatchCandidate[], desired: De
   });
 }
 
-export function buildMatchWireSchema(candidates: MatchCandidate[], desired: DesiredKit) {
+export function buildMatchWireSchema(
+  candidates: MatchCandidate[],
+  desired: DesiredKit,
+  brief = "",
+) {
   // Reuse the ordinary-slug enum in both branches; never duplicate >1000 values
   // or weaken strict decoding. The SDK retains the original Zod validation.
-  return zodSchema(buildMatchOutputSchema(candidates, desired), { useReferences: true });
+  return zodSchema(buildMatchOutputSchema(candidates, desired, brief), { useReferences: true });
 }
 
 export type AgentMatchResult = z.infer<typeof MatchSchema>;
@@ -270,6 +325,7 @@ Missing-capability claims in coverage.risks follow exactly the same source and c
 Before writing coverage.risks or gaps, fill catalog_checks with the closest existing package or MCP descriptions that could contradict an absence claim. Read unselected alternatives as well as selected items. Copy descriptions exactly; do not treat generic extraction/OCR as absent merely because it is not procurement-specific, or call a function missing just because it was not selected. Check only needs actually required by the brief; optional formats and vague wishes such as "robust" or "dedicated" do not establish a new missing operation. If a source covers part of the job, acknowledge that supported operation and name only the precise residual limitation. A literal quote is evidence, not proof of your later interpretation: semantic accuracy still matters.
 A brief about working with records or documents does not implicitly request acquiring them from another system. Treat supplied/intended inputs as inputs, not missing connectors. Data acquisition, automatic synchronization, extra formats and infrastructure are required capabilities only when the brief explicitly asks for them. Never turn an optional implementation choice into a coverage risk or a new package to author.
 Short metadata is not an exhaustive implementation specification. An unspecified detail is unknown, not proof that a capability or package is absent. If a selected package documents the requested subject and core outcome, do not propose a duplicate of that core job. A precise uncertainty about its implementation may be a risk to verify, but it is not an uncovered requested capability. Gaps may be empty; do not manufacture an authoring task to explain incomplete metadata.
+Every gap requires evidence before its capability: copy the exact requested operation from the brief, cite the closest supplied description, and identify either an outside documented subject or an explicit documented limitation. Short descriptions are summaries, not closed-world implementation lists. Missing detail within the same documented job supports only a risk to verify; it does not establish either gap basis. Do not choose a basis just to justify authoring. Genuine uncovered requested operations still belong in gaps. Literal identity and a basis label do not establish semantic truth; primary review remains required.
 catalog_checks are availability evidence and may cite supplied packages or MCPs outside the recommended kit. Coverage may name an unselected source only explicitly as available-but-not-selected counterevidence, never as an assigned kit role. Every operational package role, package named in rationale, and MCP pairing must still refer to the selected kit in its documented type.`;
 
   const prompt = `EXTERNAL MCP REGISTRY (${MCP_REGISTRY.length} servers):
