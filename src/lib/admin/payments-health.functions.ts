@@ -3,7 +3,8 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/middleware";
 import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
 
-const PRO_PRICE = "agent_pass_pro_monthly";
+/** New Pro SKU; also probe Agent Pass so missing live prices surface in admin health. */
+const HEALTH_LOOKUP_KEYS = ["sak_pro_monthly", "sak_agent_pass_monthly"] as const;
 
 export type EnvHealth = {
   environment: StripeEnv;
@@ -50,8 +51,12 @@ async function envHealth(environment: StripeEnv, probe: boolean): Promise<EnvHea
 
   try {
     const stripe = createStripeClient(environment);
-    const prices = await stripe.prices.list({ lookup_keys: [PRO_PRICE], limit: 1 });
-    const price = prices.data[0];
+    const prices = await stripe.prices.list({
+      lookup_keys: [...HEALTH_LOOKUP_KEYS],
+      limit: HEALTH_LOOKUP_KEYS.length,
+    });
+    const price =
+      prices.data.find((p) => p.lookup_key === "sak_pro_monthly") ?? prices.data[0] ?? undefined;
     if (price) {
       out.price = {
         id: price.id,

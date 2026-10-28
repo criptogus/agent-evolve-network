@@ -123,12 +123,12 @@ export function AgentFactory() {
                 }
                 className="inline-flex h-11 w-full items-center justify-center rounded-md border border-border px-5 text-sm font-medium transition-colors hover:bg-accent sm:w-auto"
               >
-                See Agent Pass
+                See Pro
               </Link>
             </div>
             <p className="mt-3 text-xs text-muted-foreground">
-              Custom agents are included in Agent Pass. Download as ZIP, single markdown file, or
-              install straight into your agent over MCP.
+              Custom agents are included in Pro. Download as ZIP, single markdown file, or install
+              straight into your agent over MCP.
             </p>
           </div>
         </div>
