@@ -127,7 +127,7 @@ function AgentDetail() {
                 <CardDescription>
                   {canDownload
                     ? "Included in your plan. Choose how you want to install it."
-                    : "The Agent Store is included with Agent Pass and Enterprise."}
+                    : "The Agent Store is included with Pro and Enterprise."}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">

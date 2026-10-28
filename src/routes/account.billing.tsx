@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { createPortalSession } from "@/lib/payments.functions";
+import { PRICE_MONTHLY } from "@/lib/pricing-copy";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/account/billing")({
@@ -54,7 +55,8 @@ function BillingPage() {
   const onSubscribe = () => {
     if (!user) return;
     openCheckout({
-      priceId: "agent_pass_pro_monthly",
+      // New Pro SKU — legacy agent_pass_pro_* are grandfather-only.
+      priceId: "sak_pro_monthly",
       returnUrl: `${window.location.origin}/account/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
     });
   };
@@ -103,7 +105,7 @@ function BillingPage() {
             <div>
               <div className="text-sm text-muted-foreground">Current plan</div>
               <div className="mt-1 text-2xl font-semibold tracking-tight">
-                {isActive ? "Agent Pass — Pro" : "Hacker (Free)"}
+                {isActive ? "Pro" : "Free"}
               </div>
               {subscription?.current_period_end && (
                 <div className="mt-1 text-xs text-muted-foreground">
@@ -136,7 +138,7 @@ function BillingPage() {
                   onClick={onSubscribe}
                   className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-95"
                 >
-                  Upgrade to Pro — $19/mo
+                  Upgrade to Pro — {PRICE_MONTHLY}/mo
                 </button>
               )}
             </div>

@@ -1,21 +1,27 @@
 import { Link } from "@tanstack/react-router";
 import { Check } from "lucide-react";
-import { PRICE_MONTHLY, PRICE_YEARLY, PRICE_YEARLY_LIST, SAVE_BADGE } from "@/lib/pricing-copy";
+import {
+  PRICE_AGENT_PASS,
+  PRICE_MONTHLY,
+  PRICE_YEARLY,
+  PRICE_YEARLY_LIST,
+  SAVE_BADGE,
+} from "@/lib/pricing-copy";
 
-// Keep in sync with /pricing: Free, Pro, Enterprise.
-const INCLUDED = [
+const PRO_INCLUDED = [
+  "Agent Factory, Agent Store and SAK University",
   "Unlimited skill reviews with full graded reports",
-  "The Agent Factory — build a custom corporate agent from a prompt",
-  "The Agent Store — 33 ready-made agents with soul, guardrails and skills",
-  "SAK University — diagnosis, adaptive curriculum, residency, credentials",
   "Adversarial evaluation tools and version-specific reports",
-  "Private packages, signed releases and mutual NDA on request",
+];
+
+const AGENT_PASS_INCLUDED = [
+  "Unlimited upgrades per production agent",
+  "SkillForge AI and weekly report per seat",
 ];
 
 /**
- * One decision, not three: Pro includes everything, billed yearly by default
- * with a monthly escape hatch. The free registry is stated as a fact, not as
- * a competing column.
+ * Landing teaser: Free + Pro + Agent Pass, with Enterprise as a footnote.
+ * Keep amounts in sync with /pricing via pricing-copy.
  */
 export function PlansTeaser() {
   return (
@@ -24,34 +30,16 @@ export function PlansTeaser() {
         <div className="mx-auto max-w-2xl text-center">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Pricing</span>
           <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-5xl">
-            One plan. Everything included.
+            Free, Pro, and Agent Pass.
           </h2>
           <p className="mt-4 text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
-            No tiers to compare and no add-ons. Browsing and installing public capabilities stays
-            free forever — Pro is for when you want your own capabilities tested, built and kept
-            current.
+            Public capabilities stay free forever. Pro is the human builder seat. Agent Pass is each
+            production agent seat.
           </p>
         </div>
 
-        <div className="mt-12 overflow-hidden rounded-2xl border border-primary/40 bg-background shadow-elevated md:grid md:grid-cols-[1.2fr_1fr]">
-          <div className="p-7 md:p-9">
-            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-              Everything in Super Agent Skill
-            </div>
-            <ul className="mt-5 space-y-3 text-sm">
-              {INCLUDED.map((f) => (
-                <li key={f} className="flex items-start gap-2.5">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-signal" aria-hidden />
-                  <span className="text-foreground/90">{f}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-6 text-xs text-muted-foreground">
-              Solo or team. Cancel in one click. Everything you create stays yours.
-            </p>
-          </div>
-
-          <div className="border-t border-border bg-surface/60 p-7 md:border-l md:border-t-0 md:p-9">
+        <div className="mt-12 grid gap-5 md:grid-cols-2">
+          <div className="overflow-hidden rounded-2xl border border-primary/40 bg-background shadow-elevated p-7 md:p-9">
             <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
               Pro · billed yearly
             </div>
@@ -66,14 +54,48 @@ export function PlansTeaser() {
               {SAVE_BADGE}
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Instead of <span className="text-foreground">{PRICE_YEARLY_LIST} / year</span> billed
-              monthly at {PRICE_MONTHLY}, which stays available if you prefer the flexibility.
+              Or {PRICE_MONTHLY}/month. Human seat: Factory, Store, University, unlimited reviews.
             </p>
+            <ul className="mt-5 space-y-3 text-sm">
+              {PRO_INCLUDED.map((f) => (
+                <li key={f} className="flex items-start gap-2.5">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-signal" aria-hidden />
+                  <span className="text-foreground/90">{f}</span>
+                </li>
+              ))}
+            </ul>
             <Link
               to="/pricing"
               className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-6 text-sm font-semibold text-primary-foreground transition-all hover:opacity-95"
             >
               Get Pro →
+            </Link>
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-border bg-background p-7 md:p-9">
+            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
+              Agent Pass · per agent
+            </div>
+            <div className="mt-4 flex items-end gap-2">
+              <span className="text-5xl font-semibold tracking-tight">{PRICE_AGENT_PASS}</span>
+              <span className="pb-2 text-sm text-muted-foreground">/ agent / month</span>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Each production agent seat: upgrades, SkillForge and a weekly report.
+            </p>
+            <ul className="mt-5 space-y-3 text-sm">
+              {AGENT_PASS_INCLUDED.map((f) => (
+                <li key={f} className="flex items-start gap-2.5">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-signal" aria-hidden />
+                  <span className="text-foreground/90">{f}</span>
+                </li>
+              ))}
+            </ul>
+            <Link
+              to="/pricing"
+              className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-md border border-border bg-surface-elevated px-6 text-sm font-semibold transition-colors hover:bg-accent"
+            >
+              Get Agent Pass →
             </Link>
             <Link
               to="/marketplace"

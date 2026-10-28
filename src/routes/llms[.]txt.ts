@@ -82,8 +82,9 @@ client-managed: manifests never carry credentials.
 5. Guardrails always run last and may refuse.
 
 ## Pricing
-- Hacker — $0/mo · 3 installs, registry read, MCP gateway
-- Agent Pass — $19/agent/mo · unlimited upgrades, SkillForge AI, weekly reports
+- Free — $0 · browse and install public capabilities, MCP gateway
+- Pro — $29/mo or $240/yr · human builder seat (Agent Factory, Store, University, unlimited reviews)
+- Agent Pass — $12/agent/mo · production agent seat (unlimited upgrades, SkillForge, weekly report)
 - Enterprise — custom · private registry, SAML SSO, RBAC, audit logs
 Creators keep 80–85% of every package sold.
 
