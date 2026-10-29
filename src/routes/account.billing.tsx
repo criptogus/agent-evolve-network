@@ -10,6 +10,7 @@ import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { createPortalSession } from "@/lib/payments.functions";
 import { PRICE_MONTHLY } from "@/lib/pricing-copy";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/account/billing")({
   head: () => ({
@@ -20,6 +21,10 @@ export const Route = createFileRoute("/account/billing")({
         content: "Manage your Super Agent Skill subscription, plan and invoices.",
       },
       { name: "robots", content: "noindex" },
+      { property: "og:title", content: "Billing — Super Agent Skill" },
+      { property: "og:description", content: "Manage your Super Agent Skill subscription, plan and invoices." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   validateSearch: (s: Record<string, unknown>): { checkout?: string; session_id?: string } => ({
@@ -32,7 +37,7 @@ export const Route = createFileRoute("/account/billing")({
 function BillingPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { subscription, isActive, environment, refetch } = useSubscription();
+  const { subscription, isActive, hasAgentPass, environment, refetch } = useSubscription();
   const { openCheckout, checkoutElement, isOpen, closeCheckout } = useStripeCheckout();
   const search = Route.useSearch();
 
@@ -105,7 +110,7 @@ function BillingPage() {
             <div>
               <div className="text-sm text-muted-foreground">Current plan</div>
               <div className="mt-1 text-2xl font-semibold tracking-tight">
-                {isActive ? "Pro" : "Free"}
+                {isActive ? (hasAgentPass ? "Pro + Agent Pass" : "Pro") : hasAgentPass ? "Agent Pass" : "Free"}
               </div>
               {subscription?.current_period_end && (
                 <div className="mt-1 text-xs text-muted-foreground">
@@ -117,7 +122,7 @@ function BillingPage() {
                 <div className="mt-1 text-xs">
                   <span
                     className={`inline-flex items-center rounded-full px-2 py-0.5 font-mono uppercase tracking-wider ${
-                      isActive ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"
+                      isActive || hasAgentPass ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {subscription.status}
@@ -126,29 +131,29 @@ function BillingPage() {
               )}
             </div>
             <div className="flex gap-2">
-              {isActive ? (
-                <button
+              {(isActive || hasAgentPass) && (
+                <Button
                   onClick={onManage}
-                  className="inline-flex h-10 items-center rounded-md border border-border bg-background px-4 text-sm font-medium hover:bg-surface"
+                  variant="outline"
                 >
                   Manage subscription
-                </button>
-              ) : (
-                <button
+                </Button>
+              )}
+              {!isActive && (
+                <Button
                   onClick={onSubscribe}
-                  className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-95"
                 >
                   Upgrade to Pro — {PRICE_MONTHLY}/mo
-                </button>
+                </Button>
               )}
             </div>
           </div>
 
           <div className="mt-6 grid gap-4 border-t border-border pt-6 sm:grid-cols-2">
-            <Feature title="Unlimited evolution upgrades" included={isActive} />
-            <Feature title="SkillForge AI included" included={isActive} />
-            <Feature title="Health scoring & weekly reports" included={isActive} />
-            <Feature title="All marketplace packages" included={isActive} />
+            <Feature title="Agent Factory" included={isActive} />
+            <Feature title="Agent Store downloads" included={isActive} />
+            <Feature title="Cloud Skills" included={isActive} />
+            <Feature title="Batch reviews" included={isActive} />
           </div>
         </div>
 
