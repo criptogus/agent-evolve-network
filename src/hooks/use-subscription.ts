@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironmentSafe } from "@/lib/stripe";
 import { useAuth } from "./use-auth";
+import { getSubscriptionEntitlements } from "@/lib/subscription-entitlements";
 
 type Sub = {
   status: string;
@@ -16,14 +17,14 @@ type Sub = {
 
 export function useSubscription() {
   const { user } = useAuth();
-  const [sub, setSub] = useState<Sub | null>(null);
+  const [subs, setSubs] = useState<Sub[]>([]);
   const [loading, setLoading] = useState(true);
 
   const env = getStripeEnvironmentSafe();
 
   const refetch = async () => {
     if (!user || !env) {
-      setSub(null);
+      setSubs([]);
       setLoading(false);
       return;
     }
@@ -34,10 +35,8 @@ export function useSubscription() {
       )
       .eq("user_id", user.id)
       .eq("environment", env)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    setSub(data as Sub | null);
+      .order("created_at", { ascending: false });
+    setSubs(data ?? []);
     setLoading(false);
   };
 
@@ -56,15 +55,9 @@ export function useSubscription() {
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?.id, env]);
 
-  const isActive =
-    !!sub &&
-    ((["active", "trialing", "past_due"].includes(sub.status) &&
-      (!sub.current_period_end || new Date(sub.current_period_end) > new Date())) ||
-      (sub.status === "canceled" &&
-        sub.current_period_end &&
-        new Date(sub.current_period_end) > new Date()));
-
-  return { subscription: sub, loading, isActive: !!isActive, environment: env, refetch };
+  const entitlements = getSubscriptionEntitlements(subs);
+  // Existing feature consumers use isActive as their Pro gate.
+  return { ...entitlements, loading, isActive: entitlements.isPro, environment: env, refetch };
 }
