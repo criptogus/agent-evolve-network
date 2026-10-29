@@ -1,3 +1,4 @@
+import { hasProSubscription } from "@/lib/auth/pro-subscription.server";
 import { decodeAgentBuild, encodeAgentBuildPatch, type AgentBuildPatch } from "./build-data";
 import { errorField } from "@/lib/errors";
 import type { AppDatabaseClient } from "@/integrations/supabase/database";
@@ -48,19 +49,10 @@ export const BUILD_STEPS: { status: AgentBuildStatus; label: string }[] = [
 ];
 
 async function assertPaid(supabase: AppDatabaseClient, userId: string) {
-  const { data: sub } = await supabase
-    .from("subscriptions")
-    .select("status,current_period_end")
-    .eq("user_id", userId)
-    .in("status", ["active", "trialing", "past_due"])
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  const active =
-    !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+  const active = await hasProSubscription(supabase, userId);
   if (!active) {
     throw new Response(
-      "The Agent Factory requires Agent Pass or Enterprise. Upgrade at /pricing.",
+      "The Agent Factory requires Pro. Upgrade at /pricing.",
       { status: 402 },
     );
   }
