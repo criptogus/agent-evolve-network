@@ -1,3 +1,4 @@
+import { hasProSubscription } from "@/lib/auth/pro-subscription.server";
 import { decodeAgentBuild } from "@/lib/agents/build-data";
 import { createFileRoute } from "@tanstack/react-router";
 import JSZip from "jszip";
@@ -20,18 +21,9 @@ async function authorize(authHeader: string | null) {
   const userId = u?.user?.id;
   if (!userId) return { ok: false as const, status: 401, msg: "Invalid session" };
 
-  const { data: sub } = await supabaseAdmin
-    .from("subscriptions")
-    .select("status,current_period_end")
-    .eq("user_id", userId)
-    .in("status", ["active", "trialing", "past_due"])
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  const active =
-    !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+  const active = await hasProSubscription(supabaseAdmin, userId);
   if (!active)
-    return { ok: false as const, status: 402, msg: "A paid plan is required to download agents." };
+    return { ok: false as const, status: 402, msg: "Pro is required to download agents." };
   return { ok: true as const, userId };
 }
 

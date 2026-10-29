@@ -1,3 +1,4 @@
+import { hasProSubscription } from "@/lib/auth/pro-subscription.server";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { extractBearer, verifyBearerDetailed } from "@/lib/auth/bearer.server";
 
@@ -39,24 +40,14 @@ export async function requirePaidBearer(request: Request): Promise<PaidCheck> {
   }
 
   const userId = verified.auth.user_id;
-  const { data: sub } = await supabaseAdmin
-    .from("subscriptions")
-    .select("status, current_period_end")
-    .eq("user_id", userId)
-    .in("status", ["active", "trialing", "past_due"])
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  const isActive =
-    !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+  const isActive = await hasProSubscription(supabaseAdmin, userId);
   if (!isActive) {
     return {
       ok: false,
       status: 403,
       error: "subscription_required",
       message:
-        "Batch review is an Agent Pass / Enterprise feature. Upgrade at superagentskill.com/pricing, or use the free single-document endpoint POST /api/public/review.",
+        "Batch review requires Pro. Upgrade at superagentskill.com/pricing, or use the free single-document endpoint POST /api/public/review.",
     };
   }
 

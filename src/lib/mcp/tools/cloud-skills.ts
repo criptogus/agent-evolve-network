@@ -1,3 +1,4 @@
+import { hasProSubscription } from "@/lib/auth/pro-subscription.server";
 import type { ToolExecutionContext } from "mcp-tanstack-start";
 import { defineTool } from "mcp-tanstack-start";
 import { z } from "zod";
@@ -33,23 +34,13 @@ export async function requirePaidUser(ctx: ToolExecutionContext): Promise<string
     );
   }
 
-  const { data: sub } = await supabaseAdmin
-    .from("subscriptions")
-    .select("status, current_period_end")
-    .eq("user_id", userId)
-    .in("status", ["active", "trialing", "past_due"])
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  const isActive =
-    !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+  const isActive = await hasProSubscription(supabaseAdmin, userId);
   if (!isActive) {
     throw new Error(
       json({
         error: "subscription_required",
         message:
-          "Cloud Skill Manager requires Agent Pass or Enterprise. Upgrade at superagentskill.com/pricing.",
+          "Cloud Skill Manager requires Pro. Upgrade at superagentskill.com/pricing.",
       }),
     );
   }

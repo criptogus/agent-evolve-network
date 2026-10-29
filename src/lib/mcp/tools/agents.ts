@@ -1,3 +1,4 @@
+import { hasProSubscription } from "@/lib/auth/pro-subscription.server";
 import { decodeAgentBuild } from "@/lib/agents/build-data";
 import type { ToolExecutionContext } from "mcp-tanstack-start";
 import { defineTool } from "mcp-tanstack-start";
@@ -19,22 +20,13 @@ async function requirePaidUser(ctx: ToolExecutionContext): Promise<string> {
       }),
     );
   }
-  const { data: sub } = await supabaseAdmin
-    .from("subscriptions")
-    .select("status,current_period_end")
-    .eq("user_id", userId)
-    .in("status", ["active", "trialing", "past_due"])
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  const active =
-    !!sub && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+  const active = await hasProSubscription(supabaseAdmin, userId);
   if (!active) {
     throw new Error(
       json({
         error: "subscription_required",
         message:
-          "The Agent Store requires Agent Pass or Enterprise. Upgrade at superagentskill.com/pricing.",
+          "The Agent Store requires Pro. Upgrade at superagentskill.com/pricing.",
       }),
     );
   }
