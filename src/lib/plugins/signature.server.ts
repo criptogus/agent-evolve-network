@@ -63,7 +63,9 @@ function trustedRing(ring: SigningKeyring = parseKeyring(configuredKeyring)): Si
   return ring;
 }
 
-export function signingKeyId(ring: SigningKeyring = parseKeyring(configuredKeyring)): string | null {
+export function signingKeyId(
+  ring: SigningKeyring = parseKeyring(configuredKeyring),
+): string | null {
   const pub = pem("SIGNING_PUBLIC_KEY");
   if (!pub) return null;
   try {
@@ -80,7 +82,10 @@ export function publicSigningKeyPem(): string | null {
 }
 
 /** Signs raw bytes. Never throws: an unsigned download beats a 500. */
-export function signBytes(bytes: Uint8Array, ring: SigningKeyring = parseKeyring(configuredKeyring)): PackageSignature {
+export function signBytes(
+  bytes: Uint8Array,
+  ring: SigningKeyring = parseKeyring(configuredKeyring),
+): PackageSignature {
   const sha256 = createHash("sha256").update(bytes).digest("hex");
   const base: PackageSignature = {
     algorithm: "ed25519",
@@ -143,7 +148,10 @@ export function contentDigest(files: Iterable<[string, string]>): {
 }
 
 /** Ed25519 is deterministic, so the same digest always yields the same signature. */
-export function signDigest(digestHex: string, ring: SigningKeyring = parseKeyring(configuredKeyring)): {
+export function signDigest(
+  digestHex: string,
+  ring: SigningKeyring = parseKeyring(configuredKeyring),
+): {
   signature: string | null;
   signing_key_id: string | null;
 } {

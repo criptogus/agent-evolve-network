@@ -22,10 +22,7 @@ export interface PackageSnapshot {
 }
 
 export type RugPullKind =
-  | "CONTENT_CHANGED_SAME_VERSION"
-  | "TOOL_SET_CHANGED"
-  | "PUBLISHER_CHANGED"
-  | "VERSION_ROLLBACK";
+  "CONTENT_CHANGED_SAME_VERSION" | "TOOL_SET_CHANGED" | "PUBLISHER_CHANGED" | "VERSION_ROLLBACK";
 
 export interface RugPullFinding {
   slug: string;

@@ -1,9 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import {
-  shouldEnableAdjustableQuantity,
-  validateCheckoutQuantity,
-} from "@/lib/checkout-quantity";
+import { shouldEnableAdjustableQuantity, validateCheckoutQuantity } from "@/lib/checkout-quantity";
 import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
 
 export type CheckoutSessionResult = { clientSecret: string } | { error: string };

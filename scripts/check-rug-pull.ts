@@ -25,7 +25,11 @@ import {
 const ROOT = new URL("..", import.meta.url).pathname;
 
 const args = parseArgs(process.argv.slice(2));
-const contentDir = join(ROOT, "content", typeof args.content === "string" ? args.content : "skills");
+const contentDir = join(
+  ROOT,
+  "content",
+  typeof args.content === "string" ? args.content : "skills",
+);
 const current = snapshotsFromContent(contentDir);
 
 if (args["write-manifest"]) {
@@ -76,9 +80,6 @@ function snapshotsFromContent(dir: string): PackageSnapshot[] {
   return out;
 }
 
-
-
-
 if (args["write-manifest"]) {
   const target = resolve(String(args["write-manifest"]));
   writeFileSync(target, `${JSON.stringify({ packages: current }, null, 2)}\n`);
@@ -90,7 +91,9 @@ let manifest: { packages?: PackageSnapshot[] };
 try {
   manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
 } catch (error) {
-  console.error(`Cannot read manifest ${manifestPath}: ${error instanceof Error ? error.message : error}`);
+  console.error(
+    `Cannot read manifest ${manifestPath}: ${error instanceof Error ? error.message : error}`,
+  );
   process.exit(2);
 }
 const published = Array.isArray(manifest) ? manifest : (manifest.packages ?? []);
@@ -115,7 +118,9 @@ if (findings === 0) {
   );
   process.exit(0);
 }
-console.log(`\n${findings} rug-pull finding(s). Same-version content changes are never legitimate.`);
+console.log(
+  `\n${findings} rug-pull finding(s). Same-version content changes are never legitimate.`,
+);
 process.exit(args["fail-on-findings"] ? 1 : 0);
 
 function parseArgs(argv: string[]): Record<string, string | boolean> {

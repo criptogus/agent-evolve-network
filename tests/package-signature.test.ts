@@ -27,8 +27,14 @@ const testRing = parseKeyring({
   ],
 });
 
-const { signBytes, signatureHeaders, signingKeyId, buildSidecar, contentDigest, buildEmbeddedSignature } =
-  await import("../src/lib/plugins/signature.server.ts");
+const {
+  signBytes,
+  signatureHeaders,
+  signingKeyId,
+  buildSidecar,
+  contentDigest,
+  buildEmbeddedSignature,
+} = await import("../src/lib/plugins/signature.server.ts");
 
 test("signs bytes and the signature verifies against the public key", () => {
   const bytes = new TextEncoder().encode("zip-bytes");
@@ -104,8 +110,12 @@ test("fail-closed: a key outside the registered keyring signs nothing", async ()
   const savedPub = process.env.SIGNING_PUBLIC_KEY;
   // Swap in a full stranger pair: public key is not in the ring, private does
   // not even pair with it — both defenses must refuse to sign.
-  process.env.SIGNING_PRIVATE_KEY = stranger.privateKey.export({ format: "pem", type: "pkcs8" }).toString();
-  process.env.SIGNING_PUBLIC_KEY = stranger.publicKey.export({ format: "pem", type: "spki" }).toString();
+  process.env.SIGNING_PRIVATE_KEY = stranger.privateKey
+    .export({ format: "pem", type: "pkcs8" })
+    .toString();
+  process.env.SIGNING_PUBLIC_KEY = stranger.publicKey
+    .export({ format: "pem", type: "spki" })
+    .toString();
   const sig = signBytes(new TextEncoder().encode("forgery-attempt"), testRing);
   assert.equal(sig.signature, null);
   assert.match(sig.unsigned_reason ?? "", /not registered in the deployment keyring/);

@@ -97,7 +97,13 @@ function main() {
   if (JSON_OUT) {
     console.log(JSON.stringify({ rejectAt: REJECT_AT, blocked, results }, null, 2));
   } else {
-    const C = { red: "\x1b[31m", yellow: "\x1b[33m", green: "\x1b[32m", dim: "\x1b[2m", reset: "\x1b[0m" };
+    const C = {
+      red: "\x1b[31m",
+      yellow: "\x1b[33m",
+      green: "\x1b[32m",
+      dim: "\x1b[2m",
+      reset: "\x1b[0m",
+    };
     if (!results.length) {
       console.log(
         `${C.green}✓${C.reset} No malicious or injection signals in any marketplace package.`,

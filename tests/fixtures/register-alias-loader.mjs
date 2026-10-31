@@ -5,4 +5,3 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 register(pathToFileURL(path.join(dir, "alias-loader.mjs")));
-

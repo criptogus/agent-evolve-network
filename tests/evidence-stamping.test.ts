@@ -1,9 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-const { stampEvidence, EVIDENCE_STAMP_SCHEMA_VERSION, REQUIRED_EVIDENCE_CHECKS } = await import(
-  "../src/lib/adversarial/stamping.ts"
-);
+const { stampEvidence, EVIDENCE_STAMP_SCHEMA_VERSION, REQUIRED_EVIDENCE_CHECKS } =
+  await import("../src/lib/adversarial/stamping.ts");
 
 const CLEAN = {
   expectedCases: 10,

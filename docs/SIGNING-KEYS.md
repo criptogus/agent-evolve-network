@@ -5,10 +5,10 @@ ships. Both follow the `sak-signing-keyring/v1` spec (see
 `src/lib/trust/keyring.ts`): at most **one active key per ring**, retired keys
 keep verifying historical artifacts, revoked keys verify nothing.
 
-| Ring | File | Signs | Key material |
-| --- | --- | --- | --- |
-| Site/trust/plugin ring | `security/signing-keys.json` | Trust attestations, benchmark signatures, agent-plugin packages (zip + signature sidecars) | GitHub secrets `SIGNING_PRIVATE_KEY` / `SIGNING_PUBLIC_KEY` + local `.env` |
-| Content release ring | `security/content-signing-keys.json` | Registry release bundles (`content-v*` tags) | GitHub secrets `CONTENT_SIGNING_PRIVATE_KEY` / `CONTENT_SIGNING_PUBLIC_KEY` |
+| Ring                   | File                                 | Signs                                                                                      | Key material                                                                |
+| ---------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| Site/trust/plugin ring | `security/signing-keys.json`         | Trust attestations, benchmark signatures, agent-plugin packages (zip + signature sidecars) | GitHub secrets `SIGNING_PRIVATE_KEY` / `SIGNING_PUBLIC_KEY` + local `.env`  |
+| Content release ring   | `security/content-signing-keys.json` | Registry release bundles (`content-v*` tags)                                               | GitHub secrets `CONTENT_SIGNING_PRIVATE_KEY` / `CONTENT_SIGNING_PUBLIC_KEY` |
 
 **Important:** since the site ring is registered (key id `25de98852a1efe47`,
 registered 2026-10-31), signing and verification are **fail-closed**: an env

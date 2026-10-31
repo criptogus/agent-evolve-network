@@ -44,7 +44,9 @@ export const securityScanTool = defineTool({
       .min(1)
       .max(100)
       .optional()
-      .describe("Cap on returned findings (default 25). The severity/verdict always reflect ALL findings."),
+      .describe(
+        "Cap on returned findings (default 25). The severity/verdict always reflect ALL findings.",
+      ),
   }),
   execute: async ({ content, reject_at, max_findings }) => {
     let pkg: Record<string, unknown> | null;

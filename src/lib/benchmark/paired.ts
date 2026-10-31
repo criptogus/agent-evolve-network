@@ -101,10 +101,7 @@ export const VERDICT_MIN_CASES = 5;
  * weakening of the sample auditable instead of silent.
  */
 export type ExclusionBasis =
-  | "INCLUDED"
-  | "EXCLUDED_ONLY_IN_BASELINE"
-  | "EXCLUDED_ONLY_IN_CERTIFIED"
-  | "EXCLUDED_JUDGE_MIXED";
+  "INCLUDED" | "EXCLUDED_ONLY_IN_BASELINE" | "EXCLUDED_ONLY_IN_CERTIFIED" | "EXCLUDED_JUDGE_MIXED";
 
 export interface PairedBasisRow {
   case_id: string;

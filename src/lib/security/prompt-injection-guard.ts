@@ -183,8 +183,7 @@ const RULES: Rule[] = [
     label: "memory poisoning — persist instructions in agent memory (SkillSpector MP1-MP3)",
     category: "memory_poisoning",
     severity: "high",
-    re:
-      /(\b(add|store|persist|save)\s+(this|that|it)\s+(to|in)\s+(your\s+)?(memory|context))|(\bpersist\s+[^.\n]{0,60}\b(across|between)\s+sessions?)|(\bremember\s+this\s+[^.\n]{0,80}\b(forever|every\s+session|all\s+future))/gi,
+    re: /(\b(add|store|persist|save)\s+(this|that|it)\s+(to|in)\s+(your\s+)?(memory|context))|(\bpersist\s+[^.\n]{0,60}\b(across|between)\s+sessions?)|(\bremember\s+this\s+[^.\n]{0,80}\b(forever|every\s+session|all\s+future))/gi,
   },
   {
     label: "memory poisoning — seed a credential into memory (SkillSpector MP1)",

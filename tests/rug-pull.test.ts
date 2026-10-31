@@ -1,9 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-const { detectRugPull, packageContentHash, canonicalJson } = await import(
-  "../src/lib/marketplace/rug-pull.ts"
-);
+const { detectRugPull, packageContentHash, canonicalJson } =
+  await import("../src/lib/marketplace/rug-pull.ts");
 
 const base = {
   slug: "code-reviewer",
@@ -45,7 +44,10 @@ test("rug-pull: silently added MCP tool under the same version is high", () => {
   assert.ok(f);
   assert.match(f.detail, /shell_exec/);
   // Order and duplicates are not changes.
-  const reordered = detectRugPull(base, { ...base, tools: ["post_comment", "read_file", "read_file"] });
+  const reordered = detectRugPull(base, {
+    ...base,
+    tools: ["post_comment", "read_file", "read_file"],
+  });
   assert.equal(reordered.rug_pull, false);
 });
 
@@ -62,6 +64,9 @@ test("rug-pull: publisher change and version rollback are flagged", () => {
 });
 
 test("canonicalJson: key order does not change the hash", () => {
-  assert.equal(canonicalJson({ b: 1, a: { y: 2, x: 3 } }), canonicalJson({ a: { x: 3, y: 2 }, b: 1 }));
+  assert.equal(
+    canonicalJson({ b: 1, a: { y: 2, x: 3 } }),
+    canonicalJson({ a: { x: 3, y: 2 }, b: 1 }),
+  );
   assert.equal(packageContentHash({ a: 1, b: 2 }), packageContentHash({ b: 2, a: 1 }));
 });

@@ -29,9 +29,7 @@ globalThis.fetch = async () => {
   throw new Error("fixture-network-forbidden");
 };
 
-const { handleMcpHttp, mcpInfoResponse, CORS_HEADERS } = await import(
-  "@/lib/mcp/http.server"
-);
+const { handleMcpHttp, mcpInfoResponse, CORS_HEADERS } = await import("@/lib/mcp/http.server");
 
 const RPC_URL = "https://fixture.invalid/api/mcp";
 
@@ -128,18 +126,32 @@ test("initialize handshake answers JSON-RPC with serverInfo and capabilities", a
 test("tools/list returns a unique, complete catalog with free bootstrapping tools", async () => {
   const init = await initialize(2);
   const sessionHeaders = {};
-  if (init.headers["mcp-session-id"]) sessionHeaders["mcp-session-id"] = init.headers["mcp-session-id"];
+  if (init.headers["mcp-session-id"])
+    sessionHeaders["mcp-session-id"] = init.headers["mcp-session-id"];
   const { status, body } = await rpc(jsonrpc(3, "tools/list", {}), sessionHeaders);
   assert.equal(status, 200);
   assert.equal(body.id, 3);
   const names = body.result.tools.map((t) => t.name);
   assert.equal(new Set(names).size, names.length, "tool names must be unique");
   // The advertised entry points must exist server-side, not just in docs.
-  for (const required of ["overview", "whoami", "search_registry", "get_package", "get_skill_trust", "review_skill"]) {
+  for (const required of [
+    "overview",
+    "whoami",
+    "search_registry",
+    "get_package",
+    "get_skill_trust",
+    "review_skill",
+  ]) {
     assert.ok(names.includes(required), `catalog must include "${required}"`);
   }
   // Free bootstrapping tools (quota-skipped) must all be delivered.
-  for (const free of ["overview", "whoami", "get_methodology", "report_execution", "resume_session"]) {
+  for (const free of [
+    "overview",
+    "whoami",
+    "get_methodology",
+    "report_execution",
+    "resume_session",
+  ]) {
     assert.ok(names.includes(free), `free tool "${free}" missing from catalog`);
   }
   // Every returned tool must declare a JSON-schema input contract.
@@ -152,8 +164,12 @@ test("tools/list returns a unique, complete catalog with free bootstrapping tool
 test("free tool (overview) executes anonymously and returns the promised intents map", async () => {
   const init = await initialize(4);
   const sessionHeaders = {};
-  if (init.headers["mcp-session-id"]) sessionHeaders["mcp-session-id"] = init.headers["mcp-session-id"];
-  const { status, body } = await rpc(jsonrpc(5, "tools/call", { name: "overview", arguments: {} }), sessionHeaders);
+  if (init.headers["mcp-session-id"])
+    sessionHeaders["mcp-session-id"] = init.headers["mcp-session-id"];
+  const { status, body } = await rpc(
+    jsonrpc(5, "tools/call", { name: "overview", arguments: {} }),
+    sessionHeaders,
+  );
   assert.equal(status, 200, "free tool must work with zero auth and zero quota");
   assert.equal(body.jsonrpc, "2.0");
   assert.equal(body.result.isError, undefined, "overview must not report an error");
@@ -186,9 +202,12 @@ test("foreign bearer token is rejected (fail-closed), with a diagnostic X-MCP-Au
 });
 
 test("free tools also reject a foreign token (auth gate beats quota-free)", async () => {
-  const { status, headers } = await rpc(jsonrpc(8, "tools/call", { name: "whoami", arguments: {} }), {
-    authorization: "Bearer sk-not-a-real-token",
-  });
+  const { status, headers } = await rpc(
+    jsonrpc(8, "tools/call", { name: "whoami", arguments: {} }),
+    {
+      authorization: "Bearer sk-not-a-real-token",
+    },
+  );
   assert.equal(status, 401);
   assert.match(headers["x-mcp-auth"] ?? "", /^rejected:/);
 });

@@ -67,7 +67,8 @@ export function stampEvidence(
     full_suite: options.expectedCases > 0 && report.total === options.expectedCases,
     holdout_included: options.holdoutIncluded === true,
     scan_clean: options.scanClean === true,
-    judge_source_recorded: typeof options.judgeSource === "string" && options.judgeSource.length > 0,
+    judge_source_recorded:
+      typeof options.judgeSource === "string" && options.judgeSource.length > 0,
   };
   const notes: EvidenceStamp["notes"] = {};
   for (const key of REQUIRED_EVIDENCE_CHECKS) {

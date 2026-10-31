@@ -104,7 +104,9 @@ export function computeTrustScore(inputs: TrustInputs): TrustBreakdown {
     : decayed(inputs.adversarial_weighted_score, inputs.adversarial_age_days);
   const realWorld = decayed(inputs.real_world_success_rate, inputs.real_world_age_days);
   if (stampUnworthy)
-    notes.push("evidence_stamp present but not certify-worthy: adversarial evidence treated as unproven");
+    notes.push(
+      "evidence_stamp present but not certify-worthy: adversarial evidence treated as unproven",
+    );
 
   const v = {
     schema: inputs.schema_valid ? 1 : 0,
