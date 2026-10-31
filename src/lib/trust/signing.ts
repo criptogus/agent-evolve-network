@@ -1,5 +1,5 @@
 import configuredKeyring from "../../../security/signing-keys.json" with { type: "json" };
-import { parseKeyring, assertTrustedKey } from "./keyring.ts";
+import { parseKeyring, assertTrustedKey, type SigningKeyring } from "./keyring.ts";
 import { createHash, createPrivateKey, createPublicKey, sign, verify } from "node:crypto";
 
 // Canonicalization: stable key ordering so two equivalent YAML payloads hash identically.
@@ -26,13 +26,30 @@ export interface SignedRelease {
   algorithm: "ed25519";
 }
 
+// Fails closed: with no trusted key registered, "verified by SuperAgentSkill"
+// would be forgeable by anyone, so both signing and verification abort with an
+// actionable error instead of silently operating anchor-less. Callers that run
+// against a different policy (tests, BYO deployments) may pass an explicit
+// ring; every production caller uses the committed one.
+function requireTrustedRing(ring: SigningKeyring): SigningKeyring {
+  if (!ring.keys.filter((k) => k.status === "active").length) {
+    throw new Error(
+      "No active key in security/signing-keys.json — register one first: " +
+        "openssl genpkey -algorithm ed25519 -> " +
+        "node scripts/manage-signing-keys.ts rotate security/signing-keys.json pub.pem " +
+        "(see docs/SIGNING-KEYS.md)",
+    );
+  }
+  return ring;
+}
+
 export function signRelease(
   payload: unknown,
   privateKeyPem: string,
   publicKeyPem: string,
+  ring: SigningKeyring = parseKeyring(configuredKeyring),
 ): SignedRelease {
-  const ring = parseKeyring(configuredKeyring);
-  if (ring.keys.length) assertTrustedKey(ring, publicKeyPem, "sign");
+  assertTrustedKey(requireTrustedRing(ring), publicKeyPem, "sign");
   const hash = contentHash(payload);
   const key = createPrivateKey(privateKeyPem);
   // Ed25519 signs the data directly (no separate hash function arg).
@@ -49,14 +66,12 @@ export function verifyRelease(
   payload: unknown,
   release: SignedRelease,
   publicKeyPem: string,
+  ring: SigningKeyring = parseKeyring(configuredKeyring),
 ): boolean {
-  const ring = parseKeyring(configuredKeyring);
-  if (ring.keys.length) {
-    try {
-      assertTrustedKey(ring, publicKeyPem, "verify");
-    } catch {
-      return false;
-    }
+  try {
+    assertTrustedKey(requireTrustedRing(ring), publicKeyPem, "verify");
+  } catch {
+    return false;
   }
   const hash = contentHash(payload);
   if (hash !== release.content_hash) return false;
