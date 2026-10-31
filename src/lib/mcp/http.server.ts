@@ -29,6 +29,7 @@ import {
   reviewSkillsBatchTool,
   submitFeedbackTool,
 } from "@/lib/mcp/tools/skills";
+import { securityScanTool } from "@/lib/mcp/tools/security";
 import {
   cloudSkillsTargetsTool,
   cloudSkillsSyncTool,
@@ -154,6 +155,7 @@ const mcp = createMcpServer({
     listSolutionsTool,
     compareTaskEvidenceTool,
     getMethodologyTool,
+    securityScanTool,
     reviewSkillTool,
     reviewSkillsBatchTool,
     searchRegistryTool,
@@ -309,6 +311,7 @@ const FREE_TOOLS = new Set([
   "overview",
   "whoami",
   "get_methodology",
+  "security_scan",
   "report_execution",
   "list_agents",
   "upload_status",

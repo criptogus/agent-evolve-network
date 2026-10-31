@@ -10,6 +10,12 @@ import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse as parseYaml } from "yaml";
 
+// Pure/exports-only modules from src, loaded the plain-node way (no "@/" alias).
+const { stampEvidence } = await import("../src/lib/adversarial/stamping.ts");
+// auditPackage is the same BLOCKING gate the CI content pipeline uses — the
+// stamp's scan_clean check must be the real gate, not a weaker duplicate.
+const { auditPackage } = await import("../src/lib/security/package-audit.ts");
+
 const ROOT = new URL("..", import.meta.url).pathname;
 
 // Regex fallback used only in --mock mode so the smoke test stays
@@ -87,6 +93,34 @@ for (const kase of cases) {
 const report = summarize(outcomes);
 report.duration_ms = Date.now() - t0;
 report.package = { type: pkgType, slug: pkgSlug, version: pkg.version };
+
+// Judge identity is part of the evidence (SkillEvaluator P0): re-running with
+// a different judge is a different experiment, and reports must say which was
+// used. The mock is recorded too — it is explicitly NOT publishable evidence.
+const judgeModel = args.mock
+  ? "mock-refusal-judge"
+  : process.env.AI_GATEWAY_JUDGE_MODEL || process.env.AI_GATEWAY_MODEL || "openai/gpt-4o-mini";
+report.judge_model = judgeModel;
+
+// Evidence stamp (see src/lib/adversarial/stamping.ts) — a run that sampled
+// the suite, skipped the content audit, or omitted judge identity must not
+// feed the trust score as certified evidence. Failures are recorded, never
+// silent.
+//
+// - full_suite: false when --vertical sliced the suite (a subset run does not
+//   certify the whole suite).
+// - holdout_included: TRUE by construction today — this runner executes every
+//   matched case and has no sampling flag, so the holdout subset is always in
+//   the run. If sampling is ever added here, wire this flag to it (that is the
+//   silent-evidence-dropping failure mode the stamp exists to catch).
+// - scan_clean: the audited package passed the content-security audit.
+const audit = auditPackage(pkg);
+report.evidence_stamp = stampEvidence(report, {
+  expectedCases: cases.length,
+  holdoutIncluded: true,
+  scanClean: !audit.blocked,
+  judgeSource: judgeModel,
+});
 
 if (args.out) {
   writeFileSync(args.out, JSON.stringify(report, null, 2));

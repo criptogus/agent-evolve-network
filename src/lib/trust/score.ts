@@ -15,6 +15,21 @@ export interface TrustInputs {
   // can't coast forever on a single old benchmark run.
   adversarial_age_days?: number;
   real_world_age_days?: number;
+  /**
+   * Evidence stamp from the eval run (src/lib/adversarial/stamping.ts).
+   * Present but NOT certify_worthy = the adversarial evidence came from a run
+   * that sampled the suite / skipped the audit / omitted the judge — it falls
+   * back to the unproven prior instead of feeding the score. Absent stamp =
+   * legacy evidence, treated as before (no penalty).
+   */
+  evidence_stamp?: { certify_worthy: boolean };
+  /**
+   * The content-security scan that covered this package did not finish
+   * (timeout, partial pattern coverage, engine crash). An incomplete analysis
+   * can never reach the green band no matter how good the measured signals
+   * look — "unknown" must not be scored as "probably fine".
+   */
+  scan_incomplete?: boolean;
 }
 
 export interface TrustBreakdown {
@@ -23,6 +38,10 @@ export interface TrustBreakdown {
   // How much of the score is backed by actual evidence vs. fallback priors.
   // 1 = every signal measured & fresh; lower = more unproven assumptions.
   confidence: number;
+  /** Versioned identity of this scoring policy; bumps whenever formulas change. */
+  policy: string;
+  /** Applied hard caps / special notes a consumer should surface. */
+  notes: string[];
 }
 
 // Conservative prior for an UNPROVEN signal. Absence of evidence is NOT
@@ -31,6 +50,16 @@ const UNPROVEN_PRIOR = 0.3;
 // Evidence older than this (days) is treated as fully unproven again; between
 // 0 and this it decays linearly from measured value toward UNPROVEN_PRIOR.
 const EVIDENCE_HALFLIFE_DAYS = 180;
+
+// Score ceiling when the security scan did not COMPLETE. 0.69 sits at the top
+// of the orange band (yellow starts at 0.7): a possibly-incomplete safety
+// picture must never be presented as green, and not even yellow.
+const SCAN_INCOMPLETE_CEILING = 0.69;
+
+// Versioned identity of this scoring policy — every constant and formula below
+// is covered by it. Changing any of them bumps this string so historical
+// trust breakdowns stay interpretable (see SkillEvaluator score policy).
+export const SCORE_POLICY_VERSION = "sak-trust-score-policy-v2";
 
 function clamp01(n: number) {
   return Math.max(0, Math.min(1, n));
@@ -60,9 +89,24 @@ const WEIGHTS = {
 } as const;
 
 export function computeTrustScore(inputs: TrustInputs): TrustBreakdown {
-  const advPass = decayed(inputs.adversarial_pass_rate, inputs.adversarial_age_days);
-  const advWeighted = decayed(inputs.adversarial_weighted_score, inputs.adversarial_age_days);
+  const notes: string[] = [];
+  const stampUnworthy = inputs.evidence_stamp != null && !inputs.evidence_stamp.certify_worthy;
+
+  // Uncertified evidence falls back to the prior — the same conservative
+  // treatment as absent evidence, because a stamp that says "this run did not
+  // satisfy the required checks" is not a smaller dose of evidence, it is a
+  // retracted one.
+  const advPass = stampUnworthy
+    ? { value: UNPROVEN_PRIOR, measured: false }
+    : decayed(inputs.adversarial_pass_rate, inputs.adversarial_age_days);
+  const advWeighted = stampUnworthy
+    ? { value: UNPROVEN_PRIOR, measured: false }
+    : decayed(inputs.adversarial_weighted_score, inputs.adversarial_age_days);
   const realWorld = decayed(inputs.real_world_success_rate, inputs.real_world_age_days);
+  if (stampUnworthy)
+    notes.push(
+      "evidence_stamp present but not certify-worthy: adversarial evidence treated as unproven",
+    );
 
   const v = {
     schema: inputs.schema_valid ? 1 : 0,
@@ -94,7 +138,23 @@ export function computeTrustScore(inputs: TrustInputs): TrustBreakdown {
     (realWorld.measured ? WEIGHTS.real_world : 0);
   const confidence = evidenceWeight > 0 ? measuredWeight / evidenceWeight : 1;
 
-  return { score: clamp01(score), components, confidence };
+  let finalScore = clamp01(score);
+  if (inputs.scan_incomplete) {
+    // Ceiling BEFORE the clamp-to-badge stage: incomplete analysis cannot
+    // reach the green band, whatever the measured components suggest.
+    finalScore = Math.min(finalScore, SCAN_INCOMPLETE_CEILING);
+    notes.push(
+      `scan incomplete: score capped at ${SCAN_INCOMPLETE_CEILING} — an unfinished security analysis cannot reach the green band`,
+    );
+  }
+
+  return {
+    score: finalScore,
+    components,
+    confidence,
+    policy: SCORE_POLICY_VERSION,
+    notes,
+  };
 }
 
 export function badgeColor(score: number): "green" | "yellow" | "orange" | "red" {

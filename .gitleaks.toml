@@ -1,0 +1,53 @@
+# Gitleaks configuration — extends the default ruleset with audited false
+# positives. Every entry below was hand-verified on the first secret scan
+# (2026-10-31: 60 findings, 0 real secrets). Add entries sparingly and document
+# WHY each value is safe to expose — an allowlist is an audit log, not a bypass.
+[extend]
+useDefault = true
+
+# NOTE: gitleaks matches `regexes` against the captured secret value itself,
+# while `paths` matches the file path. `condition = "AND"` requires BOTH to
+# hit, so these allowlists stay scoped to their exact context.
+
+[[allowlists]]
+description = "Supabase anon/publishable JWTs — public by design, also shipped inside every client bundle. Never extend this to service_role keys."
+regexes = [
+  '''^eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi''',
+]
+
+[[allowlists]]
+description = "SHA-256 file-content hashes recorded in model profiles (not credentials)."
+paths = [
+  '''(^|/)model-profile\.json$''',
+  '''(^|/)(playbook-)?model-profiles\.json$''',
+]
+regexes = [
+  '''^[0-9a-f]{64}$''',
+]
+condition = "AND"
+
+[[allowlists]]
+description = "Public Apify ACTOR identifiers inside .claude signal scripts (identifiers, not credentials)."
+paths = [
+  '''\.claude/skills/(community|event)-signals/scripts/(community_signals|event_signals)\.py$''',
+]
+regexes = [
+  '''^(oAuCIx3ItNrs2okjQ|qaDijpjO2HlVfLvoE)$''',
+]
+condition = "AND"
+
+[[allowlists]]
+description = "Migration deleting an mcp token: the value is the sha256 digest of a revoked token, retained for audit — not a usable secret."
+paths = [
+  '''supabase/migrations/20260730210507_728c169f-9e8a-44cf-85bf-327f62f843ba\.sql$''',
+]
+regexes = [
+  '''^71fea397e09bdef521aa3976cfc79c1d93c506a1a023abcba90d6988745b3322$''',
+]
+condition = "AND"
+
+[[allowlists]]
+description = "Adversarial fixtures explicitly named synthetic_* — used to teach redaction, not real secrets."
+regexes = [
+  '''^synthetic_[a-z_]{0,20}private_key_\d+\.?$''',
+]

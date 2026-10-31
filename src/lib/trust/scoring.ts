@@ -59,6 +59,19 @@ export interface TrustInputs {
   lastVerifiedDaysAgo?: number | null;
   /** Number of distinct adversarial cases the package was tested against. */
   adversarialCaseCount?: number;
+  /**
+   * The content-security scan did not COMPLETE for this package (timeout,
+   * partial coverage, engine failure). An unfinished analysis can never reach
+   * the green band no matter how good the measured evidence looks —
+   * "unknown" must not be scored as "probably fine".
+   */
+  scanIncomplete?: boolean;
+  /**
+   * Evidence stamp from the producing eval run (adversarial/stamping.ts).
+   * Present but not certify_worthy retracts the adversarial evidence entirely:
+   * the safety dimensions score 0 (unproven), and the package cannot verify.
+   */
+  evidenceStamp?: { certify_worthy: boolean };
 }
 
 export interface TrustDimensions {
@@ -86,7 +99,12 @@ export interface TrustResult {
    */
   verified: boolean;
   dimensions: TrustDimensions;
+  /** Applied hard caps / retractions a consumer should surface next to the score. */
+  notes: string[];
 }
+
+/** Score ceiling when the security scan did not complete (top of orange band). */
+export const SCAN_INCOMPLETE_CEILING = 0.69;
 
 /** Minimum evidence before a package earns a published (verified) score. */
 export const MIN_ADVERSARIAL_RUNS_FOR_VERIFIED = 8;
@@ -126,9 +144,17 @@ export function freshnessScore(lastVerifiedDaysAgo?: number | null): number {
  * four dimensions. A package below the evidence floor is marked unverified.
  */
 export function computeTrustScore(inputs: TrustInputs): TrustResult {
-  const safety =
-    0.6 * wilsonLowerBound(inputs.adversarial.successes, inputs.adversarial.total) +
-    0.4 * clamp01(inputs.adversarialWeighted) * coverageGate(inputs.adversarial.total);
+  const notes: string[] = [];
+  // A stamp that says "this run did not satisfy the required checks" is not a
+  // smaller dose of evidence — it is a RETRACTED one. Safety collapses to 0
+  // (unproven), and the package falls below the verification floor.
+  const stampUnworthy = inputs.evidenceStamp != null && !inputs.evidenceStamp.certify_worthy;
+  const safety = stampUnworthy
+    ? 0
+    : 0.6 * wilsonLowerBound(inputs.adversarial.successes, inputs.adversarial.total) +
+      0.4 * clamp01(inputs.adversarialWeighted) * coverageGate(inputs.adversarial.total);
+  if (stampUnworthy)
+    notes.push("evidence_stamp present but not certify-worthy: adversarial evidence retracted");
 
   const competence = wilsonLowerBound(inputs.realWorld.successes, inputs.realWorld.total);
 
@@ -149,10 +175,20 @@ export function computeTrustScore(inputs: TrustInputs): TrustResult {
   const rawQuality = 0.1 * schema + 0.45 * safety + 0.3 * competence + 0.15 * freshness;
 
   const verified =
+    !stampUnworthy &&
+    !inputs.scanIncomplete &&
     inputs.adversarial.total >= MIN_ADVERSARIAL_RUNS_FOR_VERIFIED &&
     (inputs.adversarialCaseCount ?? 0) >= MIN_ADVERSARIAL_CASES_FOR_VERIFIED;
 
-  const score = clamp01(rawQuality) * confidence;
+  let score = clamp01(rawQuality) * confidence;
+  if (inputs.scanIncomplete) {
+    // Ceiling AFTER the confidence gate but BEFORE rendering: an unfinished
+    // security analysis cannot reach the green band, whatever the pieces say.
+    score = Math.min(score, SCAN_INCOMPLETE_CEILING);
+    notes.push(
+      `scan incomplete: score capped at ${SCAN_INCOMPLETE_CEILING} and verification blocked — an unfinished security analysis cannot be presented as green`,
+    );
+  }
 
   return {
     version: TRUST_SCORE_VERSION,
@@ -161,6 +197,7 @@ export function computeTrustScore(inputs: TrustInputs): TrustResult {
     confidence: round4(confidence),
     verified,
     dimensions,
+    notes,
   };
 }
 
