@@ -105,3 +105,77 @@ test("computeTrustScore: a few perfect runs are NOT enough to verify", () => {
   assert.ok(r.score < 0.6, `tiny sample should not score high, got ${r.score}`);
   assert.ok(MIN_ADVERSARIAL_RUNS_FOR_VERIFIED > 3);
 });
+
+// ---- P0 (SkillEvaluator import): evidence stamping + incomplete-scan ceiling ----
+
+const WELL_EVIDENCED = {
+  schemaValid: true,
+  adversarial: { successes: 196, total: 200 },
+  adversarialWeighted: 0.97,
+  realWorld: { successes: 4800, total: 5000 },
+  signedReleases: 3,
+  ageDays: 200,
+  lastVerifiedDaysAgo: 5,
+  adversarialCaseCount: 40,
+};
+
+test("computeTrustScore: an uncertified evidence stamp retracts adversarial evidence", () => {
+  const stamped = computeTrustScore({
+    ...WELL_EVIDENCED,
+    evidenceStamp: { certify_worthy: false },
+  });
+  const clean = computeTrustScore(WELL_EVIDENCED);
+  assert.ok(stamped.score < clean.score, `uncertified stamp must lower score`);
+  assert.equal(stamped.dimensions.safety, 0, "safety must collapse to unproven, not decay");
+  assert.ok(stamped.notes.some((n) => /certify/.test(n)));
+});
+
+test("computeTrustScore: certify-worthy stamp leaves the score intact", () => {
+  const stamped = computeTrustScore({ ...WELL_EVIDENCED, evidenceStamp: { certify_worthy: true } });
+  const clean = computeTrustScore(WELL_EVIDENCED);
+  assert.equal(stamped.score, clean.score);
+  assert.equal(stamped.notes.length, 0);
+});
+
+test("computeTrustScore: incomplete scan caps the score below yellow and blocks verification", () => {
+  const r = computeTrustScore({ ...WELL_EVIDENCED, scanIncomplete: true });
+  assert.ok(r.score <= 0.69, `capped score, got ${r.score}`);
+  assert.equal(r.verified, false, "incomplete analysis must not verify");
+  assert.ok(r.notes.some((n) => /capped/.test(n)));
+});
+
+// ---- score.ts (the weighted variant exported from lib/trust/index) follows the same policy ----
+
+const weighted = await import("../src/lib/trust/score.ts");
+
+const WEIGHTED_FULL = {
+  schema_valid: true,
+  adversarial_pass_rate: 0.98,
+  adversarial_weighted_score: 0.97,
+  real_world_success_rate: 0.96,
+  signed_releases: 3,
+  age_days: 200,
+  has_owner_2fa: true,
+  contributor_count: 5,
+  adversarial_age_days: 0,
+  real_world_age_days: 0,
+};
+
+test("weighted score: uncertified stamp falls back to the unproven prior", () => {
+  const clean = weighted.computeTrustScore(WEIGHTED_FULL);
+  const stamped = weighted.computeTrustScore({
+    ...WEIGHTED_FULL,
+    evidence_stamp: { certify_worthy: false },
+  });
+  assert.ok(stamped.score < clean.score);
+  assert.ok(stamped.notes.some((n) => /certify/.test(n)));
+  assert.equal(stamped.policy, weighted.SCORE_POLICY_VERSION);
+});
+
+test("weighted score: incomplete scan ceilings at 0.69 (never green)", () => {
+  const r = weighted.computeTrustScore({ ...WEIGHTED_FULL, scan_incomplete: true });
+  assert.ok(r.score <= 0.69, `got ${r.score}`);
+  // And the same evidence without the ceiling would clearly exceed it.
+  const clean = weighted.computeTrustScore(WEIGHTED_FULL);
+  assert.ok(clean.score > 0.85);
+});
