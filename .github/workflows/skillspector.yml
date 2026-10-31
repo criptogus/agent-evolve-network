@@ -26,8 +26,13 @@ permissions:
 
 # Pin SkillSpector to a known-good ref so a surprise upstream change can't break
 # or silently weaken the gate. Bump deliberately.
+#
+# Pinned to the exact commit of the NVIDIA/SkillSpector v2.13.2 release
+# (fetched by SHA — a tag can be deleted/recreated, a SHA cannot).
+# To bump: pick the new release, git ls-remote the tag, replace the SHA AND the
+# version note below in the same commit.
 env:
-  SKILLSPECTOR_REF: main
+  SKILLSPECTOR_REF: abd82935b67f765a9541013c0866c6349251dcdf # v2.13.2
 
 jobs:
   scan:
@@ -46,7 +51,9 @@ jobs:
       - name: Install SkillSpector
         run: |
           python3 --version
-          git clone --depth 1 --branch "$SKILLSPECTOR_REF" https://github.com/NVIDIA/skillspector.git "$RUNNER_TEMP/skillspector"
+          git init "$RUNNER_TEMP/skillspector"
+          git -C "$RUNNER_TEMP/skillspector" fetch --depth 1 https://github.com/NVIDIA/skillspector.git "$SKILLSPECTOR_REF"
+          git -C "$RUNNER_TEMP/skillspector" checkout FETCH_HEAD
           pipx install uv || python3 -m pip install --user uv
           uv tool install --python 3.12 "$RUNNER_TEMP/skillspector"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
