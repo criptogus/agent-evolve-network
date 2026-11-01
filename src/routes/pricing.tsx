@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Check } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
+import { JsonLd } from "@/components/site/JsonLd";
 import { Footer } from "@/components/site/Footer";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useAuth } from "@/hooks/use-auth";
@@ -10,6 +11,12 @@ import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import {
   AGENT_PASS_PRICING,
   PRICE_AGENT_PASS,
+  PRICE_FREE,
+  PRICE_UPDATE_SENTENCE,
+  PRICING_FAQ_QUESTION,
+  PRICING_FAQ_ANSWER,
+  PRICING_SOFTWARE_LD,
+  PRICING_FAQ_LD,
   PRICE_MONTHLY,
   PRICE_YEARLY,
   PRICE_YEARLY_LIST,
@@ -111,6 +118,7 @@ function Pricing() {
 
   return (
     <div className="min-h-screen bg-background">
+      <JsonLd data={[PRICING_SOFTWARE_LD, PRICING_FAQ_LD]} />
       <PaymentTestModeBanner />
       <Nav />
 
@@ -130,6 +138,7 @@ function Pricing() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <p className="mb-8 text-center text-sm text-muted-foreground">{PRICE_UPDATE_SENTENCE}</p>
         <div className="grid gap-5 lg:grid-cols-4">
           {/* Free */}
           <div className="rounded-2xl border border-border bg-background p-6">
@@ -137,7 +146,7 @@ function Pricing() {
               Free forever
             </div>
             <div className="mt-4 flex items-end gap-1">
-              <span className="text-4xl font-semibold tracking-tight">$0</span>
+              <span className="text-4xl font-semibold tracking-tight">{PRICE_FREE}</span>
             </div>
             <p className="mt-3 text-sm text-muted-foreground">
               For exploring the registry and shipping your first agent.
@@ -160,10 +169,12 @@ function Pricing() {
 
           {/* Pro */}
           <div className="rounded-2xl border border-primary/40 bg-background p-6 shadow-elevated">
-            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">Pro</div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
+              Pro
+            </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Pro is the human plan: Agent Factory, Agent Store, University and unlimited adversarial
-              reviews — plus 1 production agent included. Extra agents are Agent Pass.
+              Pro is the human plan: Agent Factory, Agent Store, University and unlimited
+              adversarial reviews — plus 1 production agent included. Extra agents are Agent Pass.
             </p>
 
             <div className="mt-4 flex w-fit items-center rounded-full border border-border bg-surface p-1 text-xs">
@@ -269,8 +280,7 @@ function Pricing() {
               </div>
             </label>
             <p className="mt-2 text-sm text-muted-foreground">
-              Total{" "}
-              <span className="font-semibold text-foreground">${agentTotal}</span>
+              Total <span className="font-semibold text-foreground">${agentTotal}</span>
               /month
             </p>
 
@@ -320,6 +330,13 @@ function Pricing() {
             </a>
           </div>
         </div>
+
+        <section className="mt-14" aria-labelledby="pricing-faq-heading">
+          <h2 id="pricing-faq-heading" className="text-2xl font-semibold tracking-tight">
+            {PRICING_FAQ_QUESTION}
+          </h2>
+          <p className="mt-3 max-w-3xl text-muted-foreground">{PRICING_FAQ_ANSWER}</p>
+        </section>
 
         <div className="mt-14 rounded-2xl border border-border bg-surface p-8 md:flex md:items-center md:justify-between">
           <div>
