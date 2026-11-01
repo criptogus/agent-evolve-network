@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { USE_CASES } from "@/lib/seo/use-cases";
 import { COMPARISONS } from "@/lib/seo/comparisons";
+import { PRICES_UPDATED_ON_ISO } from "@/lib/pricing-copy";
 
 const supabaseAdmin = _supabaseAdmin;
 
@@ -9,7 +10,12 @@ const SITE = "https://superagentskill.com";
 
 // Static marketing routes only — auth/account pages (/login, /reset-password,
 // /account/*) are intentionally excluded from the sitemap.
-const STATIC_ROUTES: Array<{ path: string; priority: number; changefreq: string }> = [
+const STATIC_ROUTES: Array<{
+  path: string;
+  priority: number;
+  changefreq: string;
+  lastmod?: string;
+}> = [
   { path: "/", priority: 1.0, changefreq: "weekly" },
   { path: "/about", priority: 0.5, changefreq: "weekly" },
   { path: "/how-it-works", priority: 0.85, changefreq: "monthly" },
@@ -19,7 +25,7 @@ const STATIC_ROUTES: Array<{ path: string; priority: number; changefreq: string 
   { path: "/play", priority: 0.55, changefreq: "weekly" },
   { path: "/nda", priority: 0.3, changefreq: "yearly" },
   { path: "/connect", priority: 0.95, changefreq: "weekly" },
-  { path: "/pricing", priority: 0.9, changefreq: "weekly" },
+  { path: "/pricing", priority: 0.9, changefreq: "weekly", lastmod: PRICES_UPDATED_ON_ISO },
   { path: "/docs", priority: 0.9, changefreq: "weekly" },
   { path: "/agents.md", priority: 0.8, changefreq: "weekly" },
   { path: "/docs/mcp", priority: 0.85, changefreq: "weekly" },
@@ -110,6 +116,7 @@ export const Route = createFileRoute("/sitemap.xml")({
       GET: async () => {
         const staticUrls: UrlEntry[] = STATIC_ROUTES.map((r) => ({
           loc: `${SITE}${r.path}`,
+          lastmod: r.lastmod,
           priority: r.priority,
           changefreq: r.changefreq,
         }));
