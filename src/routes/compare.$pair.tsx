@@ -75,7 +75,7 @@ export const Route = createFileRoute("/compare/$pair")({
       const url = `${SITE_URL}/compare/${c.slug}`;
       return {
         meta: [
-          { title: `${c.title} — Super Agent Skill` },
+          { title: c.documentTitle ?? `${c.title} — Super Agent Skill` },
           { name: "description", content: c.metaDescription },
           { property: "og:title", content: c.title },
           { property: "og:description", content: c.metaDescription },
