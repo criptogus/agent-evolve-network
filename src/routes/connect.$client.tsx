@@ -251,6 +251,17 @@ function ConnectClientPage() {
           <CopyButton value={ENDPOINT} />
         </div>
 
+        <Link
+          to="/connect/quick"
+          className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm font-medium transition-colors hover:border-primary/60"
+        >
+          <span>
+            <span className="text-primary">⚡ Quick connect</span> — sign in once, get a free token
+            and configs with auth already injected.
+          </span>
+          <ArrowLeft className="h-4 w-4 rotate-180 text-muted-foreground" />
+        </Link>
+
         <ol className="mt-10 space-y-6">
           {profile.install.map((step, i) => (
             <li key={i} className="rounded-2xl border border-border bg-card p-5">

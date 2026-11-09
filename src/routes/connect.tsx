@@ -565,6 +565,18 @@ function ConnectPage() {
               you're wired. Claude, Cursor, Codex, VS Code, Zed, n8n and every other MCP-compatible
               client just below. Read tools are anonymous; write tools take a token.
             </p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <Link
+                to="/connect/quick"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-transform hover:scale-[1.02]"
+              >
+                <Zap className="h-4 w-4" />
+                Quick connect — free token in 10s
+              </Link>
+              <span className="text-xs text-muted-foreground">
+                sign in once → token + ready configs, auth already injected
+              </span>
+            </div>
           </div>
 
           {/* Endpoint card */}

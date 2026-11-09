@@ -105,6 +105,7 @@ import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as CompareIndexRouteImport } from './routes/compare.index'
 import { Route as ComparePairRouteImport } from './routes/compare.$pair'
 import { Route as ConnectClientRouteImport } from './routes/connect.$client'
+import { Route as ConnectQuickRouteImport } from './routes/connect.quick'
 import { Route as DocsMcpRouteImport } from './routes/docs.mcp'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as LegalDisclaimersRouteImport } from './routes/legal.disclaimers'
@@ -674,6 +675,11 @@ const ConnectClientRoute = ConnectClientRouteImport.update({
   path: '/$client',
   getParentRoute: () => ConnectRoute,
 } as any)
+const ConnectQuickRoute = ConnectQuickRouteImport.update({
+  id: '/quick',
+  path: '/quick',
+  getParentRoute: () => ConnectRoute,
+} as any)
 const DocsMcpRoute = DocsMcpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
@@ -1219,6 +1225,7 @@ export interface FileRoutesByFullPath {
   '/collections/$slug': typeof CollectionsSlugRoute
   '/compare/$pair': typeof ComparePairRoute
   '/connect/$client': typeof ConnectClientRoute
+  '/connect/quick': typeof ConnectQuickRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
@@ -1401,6 +1408,7 @@ export interface FileRoutesByTo {
   '/collections/$slug': typeof CollectionsSlugRoute
   '/compare/$pair': typeof ComparePairRoute
   '/connect/$client': typeof ConnectClientRoute
+  '/connect/quick': typeof ConnectQuickRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
@@ -1585,6 +1593,7 @@ export interface FileRoutesById {
   '/collections/$slug': typeof CollectionsSlugRoute
   '/compare/$pair': typeof ComparePairRoute
   '/connect/$client': typeof ConnectClientRoute
+  '/connect/quick': typeof ConnectQuickRoute
   '/docs/mcp': typeof DocsMcpRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/legal/disclaimers': typeof LegalDisclaimersRoute
@@ -1770,6 +1779,7 @@ export interface FileRouteTypes {
     | '/collections/$slug'
     | '/compare/$pair'
     | '/connect/$client'
+    | '/connect/quick'
     | '/docs/mcp'
     | '/email/unsubscribe'
     | '/legal/disclaimers'
@@ -1952,6 +1962,7 @@ export interface FileRouteTypes {
     | '/collections/$slug'
     | '/compare/$pair'
     | '/connect/$client'
+    | '/connect/quick'
     | '/docs/mcp'
     | '/email/unsubscribe'
     | '/legal/disclaimers'
@@ -2135,6 +2146,7 @@ export interface FileRouteTypes {
     | '/collections/$slug'
     | '/compare/$pair'
     | '/connect/$client'
+    | '/connect/quick'
     | '/docs/mcp'
     | '/email/unsubscribe'
     | '/legal/disclaimers'
@@ -3046,6 +3058,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConnectClientRouteImport
       parentRoute: typeof ConnectRoute
     }
+    '/connect/quick': {
+      id: '/connect/quick'
+      path: '/quick'
+      fullPath: '/connect/quick'
+      preLoaderRoute: typeof ConnectQuickRouteImport
+      parentRoute: typeof ConnectRoute
+    }
     '/docs/mcp': {
       id: '/docs/mcp'
       path: '/mcp'
@@ -3722,10 +3741,12 @@ const BountiesRouteWithChildren = BountiesRoute._addFileChildren(
 
 interface ConnectRouteChildren {
   ConnectClientRoute: typeof ConnectClientRoute
+  ConnectQuickRoute: typeof ConnectQuickRoute
 }
 
 const ConnectRouteChildren: ConnectRouteChildren = {
   ConnectClientRoute: ConnectClientRoute,
+  ConnectQuickRoute: ConnectQuickRoute,
 }
 
 const ConnectRouteWithChildren =
