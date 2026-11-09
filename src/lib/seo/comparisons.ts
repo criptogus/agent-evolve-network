@@ -20,7 +20,9 @@ export interface ComparisonFaq {
 
 export interface Comparison {
   slug: string; // URL: /compare/<slug>
-  title: string; // H1 + <title> keyword phrase
+  title: string; // H1 (+ default <title> keyword phrase when documentTitle is absent)
+  /** Full <title> including brand. When set, head uses this and leaves H1 as `title`. */
+  documentTitle?: string;
   metaDescription: string;
   lede: string;
   sections: ComparisonSection[];
@@ -278,8 +280,10 @@ export const COMPARISONS: Comparison[] = [
   {
     slug: "mcp-skills-vs-rag",
     title: "MCP skills vs RAG for domain expertise",
+    documentTitle:
+      "Skills vs RAG vs MCP: when to use each for AI agents | Super Agent Skill",
     metaDescription:
-      "RAG retrieves knowledge; MCP skills encode procedure. Learn when to use retrieval, when to install a tested skill, and how the two combine for domain-expert agents.",
+      "RAG retrieves knowledge. Skills encode procedure. MCP connects tools. A side-by-side on when to use each, how they combine, and how to test a skill before you trust it.",
     lede: "RAG and skills both make an agent 'know' your domain, but they carry different cargo. RAG delivers facts at query time; a skill delivers procedure — how to reason, what to check, which tools to call, what to refuse. Most production agents need both, in different places.",
     sections: [
       {
