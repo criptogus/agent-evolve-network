@@ -1,6 +1,6 @@
 import { errorField } from "../errors.ts";
 import configuredKeyring from "../../../security/signing-keys.json" with { type: "json" };
-import { parseKeyring, assertTrustedKey } from "../trust/keyring.ts";
+import { parseKeyring, assertTrustedKey, type SigningKeyring } from "../trust/keyring.ts";
 /**
  * Detached Ed25519 signatures for downloadable marketplace packages (.zip).
  *
@@ -50,12 +50,26 @@ function pem(name: "SIGNING_PRIVATE_KEY" | "SIGNING_PUBLIC_KEY"): string | undef
   return value.trim() ? value : undefined;
 }
 
-export function signingKeyId(): string | null {
+// The committed keyring is the production anchor of trust: with no active key
+// in it, "signed by SuperAgentSkill" would be forgeable with any env key, so
+// signing refuses and callers degrade to an explicit `unsigned_reason` instead
+// of emitting an anchor-less signature. Tests may pass their own ring.
+function trustedRing(ring: SigningKeyring = parseKeyring(configuredKeyring)): SigningKeyring {
+  if (!ring.keys.some((k) => k.status === "active")) {
+    throw new Error(
+      "No active key in security/signing-keys.json — register one first (see docs/SIGNING-KEYS.md)",
+    );
+  }
+  return ring;
+}
+
+export function signingKeyId(
+  ring: SigningKeyring = parseKeyring(configuredKeyring),
+): string | null {
   const pub = pem("SIGNING_PUBLIC_KEY");
   if (!pub) return null;
   try {
-    const ring = parseKeyring(configuredKeyring);
-    if (ring.keys.length) assertTrustedKey(ring, pub, "sign");
+    assertTrustedKey(trustedRing(ring), pub, "sign");
     const der = createPublicKey(pub).export({ format: "der", type: "spki" }) as Buffer;
     return createHash("sha256").update(der).digest("hex").slice(0, 16);
   } catch {
@@ -68,7 +82,10 @@ export function publicSigningKeyPem(): string | null {
 }
 
 /** Signs raw bytes. Never throws: an unsigned download beats a 500. */
-export function signBytes(bytes: Uint8Array): PackageSignature {
+export function signBytes(
+  bytes: Uint8Array,
+  ring: SigningKeyring = parseKeyring(configuredKeyring),
+): PackageSignature {
   const sha256 = createHash("sha256").update(bytes).digest("hex");
   const base: PackageSignature = {
     algorithm: "ed25519",
@@ -79,9 +96,14 @@ export function signBytes(bytes: Uint8Array): PackageSignature {
   };
 
   const priv = pem("SIGNING_PRIVATE_KEY");
-  const keyId = signingKeyId();
+  const keyId = signingKeyId(ring);
   if (!priv || !keyId) {
-    return { ...base, unsigned_reason: "signing keys are not configured on this deployment" };
+    return {
+      ...base,
+      unsigned_reason: !priv
+        ? "signing keys are not configured on this deployment"
+        : "signing key is not registered in the deployment keyring (security/signing-keys.json) — see docs/SIGNING-KEYS.md",
+    };
   }
   try {
     const expected = createPublicKey(pem("SIGNING_PUBLIC_KEY")!).export({
@@ -126,12 +148,15 @@ export function contentDigest(files: Iterable<[string, string]>): {
 }
 
 /** Ed25519 is deterministic, so the same digest always yields the same signature. */
-export function signDigest(digestHex: string): {
+export function signDigest(
+  digestHex: string,
+  ring: SigningKeyring = parseKeyring(configuredKeyring),
+): {
   signature: string | null;
   signing_key_id: string | null;
 } {
   const priv = pem("SIGNING_PRIVATE_KEY");
-  const keyId = signingKeyId();
+  const keyId = signingKeyId(ring);
   if (!priv || !keyId) return { signature: null, signing_key_id: null };
   try {
     return {
@@ -153,9 +178,10 @@ export function buildEmbeddedSignature(input: {
   version: string | null;
   files: Iterable<[string, string]>;
   publicKeyUrl: string;
+  ring?: SigningKeyring;
 }): string {
   const { digest, files } = contentDigest(input.files);
-  const signed = signDigest(digest);
+  const signed = signDigest(digest, input.ring);
   return `${JSON.stringify(
     {
       spec: "sak-package-signature/v1",

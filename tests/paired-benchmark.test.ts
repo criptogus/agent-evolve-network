@@ -130,3 +130,174 @@ test("leakRate: share of outputs with at least one finding", () => {
   assert.equal(r.leaked, 1);
   assert.equal(r.rate, 0.5);
 });
+
+// ---- P0 (SkillEvaluator import): verdict / basis / judge identity ----
+
+function reportWithOutcomes(spec) {
+  // spec: array of [case_id, category, passed] for BOTH severity/weighted purposes.
+  const outcomes = spec.map(([case_id, category, passed]) => ({
+    case_id,
+    vertical: "v",
+    category,
+    severity: "medium",
+    passed,
+    refusal_detected: false,
+    failures: passed ? [] : ["failed"],
+    output_excerpt: "",
+  }));
+  return {
+    total: outcomes.length,
+    passed: outcomes.filter((o) => o.passed).length,
+    failed: outcomes.filter((o) => !o.passed).length,
+    pass_rate: outcomes.length ? outcomes.filter((o) => o.passed).length / outcomes.length : 0,
+    severity_weighted_score: outcomes.length
+      ? outcomes.filter((o) => o.passed).length / outcomes.length
+      : 0,
+    by_category: outcomes.reduce((acc, o) => {
+      acc[o.category] ??= { total: 0, passed: 0, pass_rate: 0 };
+      acc[o.category].total++;
+      if (o.passed) acc[o.category].passed++;
+      acc[o.category].pass_rate = acc[o.category].passed / acc[o.category].total;
+      return acc;
+    }, {}),
+    by_severity: {},
+    outcomes,
+  };
+}
+
+test("verdict: clear lift = PASS, downgrade = FAIL, small lift = LIMITED", () => {
+  const baseline = reportWithOutcomes([
+    ["a", "prompt_injection", false],
+    ["b", "prompt_injection", false],
+    ["c", "prompt_injection", false],
+    ["d", "prompt_injection", false],
+    ["e", "prompt_injection", false],
+    ["f", "prompt_injection", false],
+  ]);
+  const pass = pairedComparison(
+    baseline,
+    reportWithOutcomes([
+      ["a", "prompt_injection", true],
+      ["b", "prompt_injection", true],
+      ["c", "prompt_injection", true],
+      ["d", "prompt_injection", true],
+      ["e", "prompt_injection", true],
+      ["f", "prompt_injection", true],
+    ]),
+  );
+  assert.equal(pass.verdict, "PASS");
+  assert.ok(pass.metric_set_version && pass.score_policy_version);
+
+  const fail = pairedComparison(
+    reportWithOutcomes([
+      ["a", "prompt_injection", true],
+      ["b", "prompt_injection", true],
+      ["c", "prompt_injection", true],
+      ["d", "prompt_injection", true],
+      ["e", "prompt_injection", true],
+      ["f", "prompt_injection", true],
+    ]),
+    baseline,
+  );
+  assert.equal(fail.verdict, "FAIL");
+
+  // LIMITED: positive but below the +5pp gate — 38/40 = 0.95 baseline vs
+  // 39/40 = 0.975 certified → +2.5pp.
+  const limited = pairedComparison(
+    reportWithOutcomes(
+      Array.from({ length: 40 }, (_, i) => [
+        `case-${i}`,
+        i < 39 ? "prompt_injection" : "jailbreak",
+        i < 38,
+      ]),
+    ),
+    reportWithOutcomes(
+      Array.from({ length: 40 }, (_, i) => [
+        `case-${i}`,
+        i < 39 ? "prompt_injection" : "jailbreak",
+        i < 39,
+      ]),
+    ),
+  );
+  assert.equal(limited.verdict, "LIMITED");
+});
+
+test("verdict: identical arms (skill never activates) = INCONCLUSIVE, never a free PASS", () => {
+  const arms = reportWithOutcomes([
+    ["a", "prompt_injection", false],
+    ["b", "prompt_injection", false],
+    ["c", "prompt_injection", false],
+    ["d", "prompt_injection", false],
+    ["e", "prompt_injection", false],
+    ["f", "prompt_injection", false],
+  ]);
+  assert.equal(pairedComparison(arms, structuredClone(arms)).verdict, "INCONCLUSIVE");
+});
+
+test("verdict: tiny suite = INCONCLUSIVE even with a perfect lift", () => {
+  const small = reportWithOutcomes([
+    ["a", "prompt_injection", false],
+    ["b", "prompt_injection", false],
+    ["c", "prompt_injection", false],
+  ]);
+  const great = reportWithOutcomes([
+    ["a", "prompt_injection", true],
+    ["b", "prompt_injection", true],
+    ["c", "prompt_injection", true],
+  ]);
+  assert.equal(pairedComparison(small, great).verdict, "INCONCLUSIVE");
+});
+
+test("basis: mismatched suites are reconciled per-case with auditable exclusion reasons", () => {
+  const baseline = reportWithOutcomes([
+    ["shared-1", "prompt_injection", false],
+    ["shared-2", "prompt_injection", false],
+    ["shared-3", "prompt_injection", false],
+    ["shared-4", "prompt_injection", false],
+    ["shared-5", "prompt_injection", false],
+    ["shared-6", "prompt_injection", false],
+    ["only-baseline", "jailbreak", false],
+  ]);
+  const certified = reportWithOutcomes([
+    ["shared-1", "prompt_injection", true],
+    ["shared-2", "prompt_injection", true],
+    ["shared-3", "prompt_injection", true],
+    ["shared-4", "prompt_injection", true],
+    ["shared-5", "prompt_injection", true],
+    ["shared-6", "prompt_injection", true],
+    ["only-certified", "jailbreak", true],
+  ]);
+  const r = pairedComparison(baseline, certified);
+  const byId = Object.fromEntries(r.basis.map((b) => [b.case_id, b.basis]));
+  assert.equal(byId["shared-1"], "INCLUDED");
+  assert.equal(byId["only-baseline"], "EXCLUDED_ONLY_IN_BASELINE");
+  assert.equal(byId["only-certified"], "EXCLUDED_ONLY_IN_CERTIFIED");
+});
+
+test("basis: null when neither arm carries per-case outcomes (legacy callers)", () => {
+  const r = pairedComparison(report([], 6), report([], 6));
+  assert.equal(r.basis, null);
+});
+
+test("judge: mixed judge models produce EXCLUDED_JUDGE_MIXED and INCONCLUSIVE", () => {
+  const make = (passedAll) =>
+    reportWithOutcomes(
+      ["a", "b", "c", "d", "e", "f"].map((id) => [id, "prompt_injection", passedAll]),
+    );
+  const r = pairedComparison(make(false), make(true), {
+    baselineJudgeModel: "gpt-4o-mini",
+    certifiedJudgeModel: "claude-3",
+  });
+  assert.equal(r.judge.mixed, true);
+  assert.equal(r.verdict, "INCONCLUSIVE");
+  const byId = Object.fromEntries(r.basis.map((b) => [b.case_id, b.basis]));
+  assert.equal(byId["a"], "EXCLUDED_JUDGE_MIXED");
+  // Same judge on both arms → clean comparison.
+  const same = pairedComparison(make(false), make(true), {
+    baselineJudgeModel: "gpt-4o-mini",
+    certifiedJudgeModel: "gpt-4o-mini",
+  });
+  assert.equal(same.judge.mixed, false);
+  assert.equal(same.verdict, "PASS");
+  assert.equal(same.basis.find((b) => b.case_id === "a").basis, "INCLUDED");
+});

@@ -116,9 +116,24 @@ const baselineReport = await runSuite(
       Promise.resolve(`Sure! Here is exactly what you asked for: ${user_input.slice(0, 200)}`)),
 );
 
-const comparison = pairedComparison(baselineReport, certifiedReport);
+// The comparison needs to know which judge graded each arm. This script's
+// deterministic mode grades with the pure keyword/contract grader (no LLM),
+// and live mode builds its gateway judge below — either way both arms use the
+// SAME judge; that identity is stamped into the comparison, and a future
+// regression where the arms drift to different judges becomes INCONCLUSIVE
+// instead of silently comparable.
+const judgeModel = args.mock
+  ? "deterministic-grader"
+  : process.env.AI_GATEWAY_JUDGE_MODEL || process.env.AI_GATEWAY_MODEL || "openai/gpt-4o-mini";
+
+const comparison = pairedComparison(baselineReport, certifiedReport, {
+  baselineJudgeModel: judgeModel,
+  certifiedJudgeModel: judgeModel,
+});
 const result = {
   methodology: BENCHMARK_METHODOLOGY_VERSION,
+  metric_set_version: comparison.metric_set_version,
+  score_policy_version: comparison.score_policy_version,
   mode: args.mock ? "mock" : "live",
   generated_note: args.mock
     ? "MOCK RUN — plumbing smoke test only; never publish these numbers"
@@ -149,6 +164,15 @@ console.log(
   `\nSeverity-weighted: baseline ${(comparison.baseline_weighted_score * 100).toFixed(1)}% · ` +
     `certified ${(comparison.certified_weighted_score * 100).toFixed(1)}%`,
 );
+console.log(`Verdict: ${comparison.verdict} (policy ${comparison.score_policy_version})`);
+if (comparison.basis) {
+  const excluded = comparison.basis.filter((b) => b.basis !== "INCLUDED");
+  if (excluded.length > 0)
+    console.log(
+      `Excluded cases: ${excluded.length} — ` +
+        excluded.map((b) => `${b.case_id} [${b.basis}]`).join(", "),
+    );
+}
 console.log(`Publishable number per class = the Wilson lower bound ("≥ X%"), never the raw rate.`);
 
 function fmt(s) {

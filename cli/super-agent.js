@@ -27686,6 +27686,7 @@ function date4(params) {
 }
 
 // src/lib/security/prompt-injection-guard.ts
+var INVISIBLE_CHARS = /[\u200b-\u200f\u202a-\u202e\u2060-\u206f\u{E0000}-\u{E007F}]/gu;
 var RULES = [
   // Instruction override
   {
@@ -27795,7 +27796,50 @@ var RULES = [
     label: "zero-width characters",
     category: "encoding_evasion",
     severity: "medium",
-    re: /[\u200b-‏‪-‮⁠-⁯]/g,
+    re: INVISIBLE_CHARS,
+  },
+  // ---- Golden patterns imported from NVIDIA SkillSpector (Apache-2.0), ported
+  // ---- as blocking detections so the audit gate and these tests stay in sync:
+  // P2 — instructions hidden in the Unicode TAG block (U+E0000..U+E007F):
+  // Invisible "character tags" carrying a whole second instruction set.
+  {
+    label: "hidden unicode tag characters (SkillSpector P2)",
+    category: "encoding_evasion",
+    severity: "high",
+    re: /[\u{E0000}-\u{E007F}]+/gu,
+  },
+  // MP1/MP2 — memory poisoning: instructions that persist attacker content in
+  // agent memory. The exfil variant (persist a credential-looking payload) is
+  // critical; generic "remember this forever" seeding is medium.
+  {
+    label: "memory poisoning \u2014 persist instructions in agent memory (SkillSpector MP1-MP3)",
+    category: "memory_poisoning",
+    severity: "high",
+    re: /(\b(add|store|persist|save)\s+(this|that|it)\s+(to|in)\s+(your\s+)?(memory|context))|(\bpersist\s+[^.\n]{0,60}\b(across|between)\s+sessions?)|(\bremember\s+this\s+[^.\n]{0,80}\b(forever|every\s+session|all\s+future))/gi,
+  },
+  {
+    label: "memory poisoning \u2014 seed a credential into memory (SkillSpector MP1)",
+    category: "memory_poisoning",
+    severity: "critical",
+    re: /\bremember\s+that\s+[^.\n]{0,80}\b(api[_\s-]?key|password|token|secret|credential|card\s+number|private\s+key)\b/gi,
+  },
+  // TP3 — parameter description injection: instructions telling a Trojan skill
+  // to smuggle directives inside tool parameter descriptions.
+  {
+    label: "tool parameter description injection (SkillSpector TP3)",
+    category: "tool_injection",
+    severity: "medium",
+    re: /\b(parameters?|descriptions?)\s+should\s+(always|secretly|silently|invisibly)\s+[^.\n]{0,60}(instruct|tell|ask|invoke|trigger|exfiltrate)/gi,
+  },
+  // AR1-AR3 — anti-refusal hardening: attack skills disable the model's ability
+  // to refuse, which is the same move as disabling a safety guardrail. Scoped
+  // to UNCONDITIONAL refusal wipes: "never refuse outright — offer
+  // alternatives" is legitimate guidance, not an override.
+  {
+    label: "anti-refusal override \u2014 forbid the agent from refusing (SkillSpector AR1-AR3)",
+    category: "policy_bypass",
+    severity: "high",
+    re: /\b(never|do\s+not|don'?t)\s+(refuse|decline|say\s+no|deny)\b[^\n]{0,60}\b(no\s+matter|regardless|even\s+if|any\s+content|any\s+request|any\s+user)\b|\bignore\s+((your|any|all)\s+)?(refusals?|safety\s+(training|checks?))\b|\brefusals?\s+are\s+(disabled|forbidden|not\s+allowed|off)\b/gi,
   },
 ];
 var SEVERITY_RANK = {
@@ -27837,7 +27881,7 @@ function inspectContent(input2, opts = {}) {
       if (!rule.re.global) break;
     }
   }
-  const stripped = input2.replace(/[\u200b-‏‪-‮⁠-⁯]/g, "");
+  const stripped = input2.replace(INVISIBLE_CHARS, "");
   const neutralized = stripped
     .replace(/<\|im_start\|>/g, "<\\|im_start\\|>")
     .replace(/<\|im_end\|>/g, "<\\|im_end\\|>")
