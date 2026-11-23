@@ -2,31 +2,19 @@ import { errorField } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
- * Hourly CRM cadence runner, called by pg_cron with the project apikey.
+ * Hourly CRM cadence runner, called by the managed scheduler with the private cron secret.
  * Evaluates every customer, sends at most one lifecycle email each, and
  * respects the global cadence caps (2 emails / 7 days, 48h apart).
  */
-function authorized(request: Request): boolean {
-  const expected = [
-    process.env["SUPABASE_PUBLISHABLE_KEY"],
-    process.env["SUPABASE_ANON_KEY"],
-    process.env["VITE_SUPABASE_PUBLISHABLE_KEY"],
-    process.env["SUPABASE_SERVICE_ROLE_KEY"],
-  ].filter(Boolean) as string[];
-  const url = new URL(request.url);
-  const provided =
-    request.headers.get("apikey") ??
-    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
-    url.searchParams.get("apikey") ??
-    "";
-  return !!provided && expected.includes(provided);
-}
 
 export const Route = createFileRoute("/api/public/crm/run")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        if (!authorized(request)) return Response.json({ error: "Unauthorized" }, { status: 401 });
+        // Only the scheduler holds the private cron secret; the public site key is not accepted.
+        const { authenticateCronRequest } = await import("@/integrations/supabase/cron-auth");
+        const denied = await authenticateCronRequest(request);
+        if (denied) return denied;
 
         let dryRun = false;
         let maxSends = 200;

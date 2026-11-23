@@ -84,12 +84,21 @@ export const runCompatibilitySweep = createServerFn({ method: "POST" })
 export const getCompatibility = createServerFn({ method: "GET" })
   .inputValidator((d: { slug: string }) => z.object({ slug: z.string().min(1) }).parse(d))
   .handler(async ({ data }) => {
+    // Public: only packages that are published and approved expose results.
+    const { data: pkg } = await supabaseAdmin
+      .from("packages")
+      .select("id")
+      .eq("slug", data.slug)
+      .eq("is_published", true)
+      .eq("review_status", "approved")
+      .maybeSingle();
+    if (!pkg) return { rows: [] };
     const { data: rows } = await supabaseAdmin
       .from("skill_compatibility")
       .select(
         "model,pass_rate,total_cases,passed_cases,judge_score,status,notes,version,evaluated_at",
       )
-      .eq("package_slug", data.slug)
+      .eq("package_id", pkg.id)
       .order("judge_score", { ascending: false });
     return { rows: rows ?? [] };
   });

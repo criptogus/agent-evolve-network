@@ -51,7 +51,8 @@ export const getEvaluationData = createServerFn({ method: "GET" }).handler(
         ok30d: Math.round(Number(w30.runs ?? 0) * Number(w30.success_rate ?? 0)),
         successRate30d: w30.success_rate != null ? Number(w30.success_rate) : null,
         p95Latency: w30.p95_latency_ms != null ? Number(w30.p95_latency_ms) : null,
-        lastRunAt: last?.[0]?.created_at ?? null,
+        // Day precision only: an exact timestamp could reveal one user's activity.
+        lastRunAt: last?.[0]?.created_at ? `${last[0].created_at.slice(0, 10)}T00:00:00Z` : null,
         trustScore: t.trust_score != null ? Number(t.trust_score) : null,
         criticalFindings: Number(t.findings_critical ?? 0),
         battleTested: !!t.battle_tested,
