@@ -18,14 +18,12 @@ export function shouldEnableAdjustableQuantity(input: {
   quantity?: number;
   adjustableQuantity?: boolean;
 }): boolean {
-  if (typeof input.adjustableQuantity === "boolean") return input.adjustableQuantity;
-  if (input.priceId.startsWith("sak_agent_pass_")) return true;
-  return typeof input.quantity === "number" && input.quantity > 0;
+  return isSeatPrice(input.priceId) && input.adjustableQuantity !== false;
 }
 
 /** Seat-based prices (one seat per production agent) are the only ones sold in quantity. */
 export function isSeatPrice(priceId: string): boolean {
-  return priceId.startsWith("sak_agent_pass_");
+  return priceId === "sak_agent_pass_monthly";
 }
 
 /**
@@ -48,13 +46,11 @@ const ALLOWED_RETURN_HOSTS = new Set([
 export function isAllowedReturnHost(hostname: string): boolean {
   const host = hostname.toLowerCase();
   if (ALLOWED_RETURN_HOSTS.has(host)) return true;
-  if (
-    (host.endsWith(".lovable.app") || host.endsWith(".lovableproject.com")) &&
-    host.includes(PROJECT_ID)
-  ) {
-    return true;
-  }
-  return host === "localhost" || host === "127.0.0.1";
+  return new Set([
+    `id-preview--${PROJECT_ID}.lovable.app`,
+    `preview--${PROJECT_ID}.lovable.app`,
+    `project--${PROJECT_ID}.lovable.app`,
+  ]).has(host);
 }
 
 /**
@@ -75,7 +71,7 @@ export function validateReturnUrl(returnUrl: unknown): string {
   if (url.protocol !== "https:" && !(local && url.protocol === "http:")) {
     throw new Error("Invalid return URL");
   }
-  if (url.username || url.password || !isAllowedReturnHost(url.hostname)) {
+  if (url.port || url.username || url.password || !isAllowedReturnHost(url.hostname)) {
     throw new Error("Invalid return URL");
   }
   return returnUrl;

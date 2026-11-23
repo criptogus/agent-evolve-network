@@ -1,3 +1,4 @@
+import { getVerifiedRequestUserId } from "@/lib/auth/request-user.server";
 import type { ErrorProfileEntry, Prescription } from "@/lib/university/types";
 import { createFileRoute } from "@tanstack/react-router";
 import { getDiagnosisForCurriculum } from "@/lib/university/university.server";
@@ -59,7 +60,11 @@ export const Route = createFileRoute("/api/public/curriculum/next")({
         let domain = typeof body.domain === "string" ? (body.domain as DomainId) : undefined;
 
         if (typeof body.diagnosis_id === "string") {
-          const d = await getDiagnosisForCurriculum(body.diagnosis_id);
+          const d = await getDiagnosisForCurriculum(
+            body.diagnosis_id,
+            await getVerifiedRequestUserId(request),
+          );
+          if (!d) return json({ ok: false, error: "diagnosis_unavailable" }, 404);
           if (d) {
             profile = d.error_profile;
             domain = domain ?? d.domain;
