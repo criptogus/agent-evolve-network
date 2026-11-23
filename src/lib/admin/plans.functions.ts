@@ -23,7 +23,9 @@ const PlanInput = z.object({
 export const listPlansPublic = createServerFn({ method: "GET" }).handler(async () => {
   const { data, error } = await anon
     .from("plans")
-    .select("*")
+    .select(
+      "id,slug,name,monthly_runs_limit,max_installed_packages,price_cents,features,sort_order,monthly_credits",
+    )
     .order("sort_order", { ascending: true });
   if (error) throw new Response(error.message, { status: 500 });
   return {
@@ -33,6 +35,20 @@ export const listPlansPublic = createServerFn({ method: "GET" }).handler(async (
     })),
   };
 });
+
+// Admin listing must include internal plans without publishing them anonymously.
+export const listPlansAdmin = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.from("plans").select("*").order("sort_order");
+    if (error) throw new Response(error.message, { status: 500 });
+    return {
+      plans: (data ?? []).map((plan) => ({
+        ...plan,
+        features: z.array(z.string()).parse(plan.features),
+      })),
+    };
+  });
 
 export const upsertPlan = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
