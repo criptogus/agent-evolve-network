@@ -25,8 +25,7 @@ async function requirePaidUser(ctx: ToolExecutionContext): Promise<string> {
     throw new Error(
       json({
         error: "subscription_required",
-        message:
-          "The Agent Store requires Pro. Upgrade at superagentskill.com/pricing.",
+        message: "The Agent Store requires Pro. Upgrade at superagentskill.com/pricing.",
       }),
     );
   }

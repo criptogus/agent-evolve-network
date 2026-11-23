@@ -22,7 +22,10 @@ export const Route = createFileRoute("/account/billing")({
       },
       { name: "robots", content: "noindex" },
       { property: "og:title", content: "Billing — Super Agent Skill" },
-      { property: "og:description", content: "Manage your Super Agent Skill subscription, plan and invoices." },
+      {
+        property: "og:description",
+        content: "Manage your Super Agent Skill subscription, plan and invoices.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -110,7 +113,13 @@ function BillingPage() {
             <div>
               <div className="text-sm text-muted-foreground">Current plan</div>
               <div className="mt-1 text-2xl font-semibold tracking-tight">
-                {isActive ? (hasAgentPass ? "Pro + Agent Pass" : "Pro") : hasAgentPass ? "Agent Pass" : "Free"}
+                {isActive
+                  ? hasAgentPass
+                    ? "Pro + Agent Pass"
+                    : "Pro"
+                  : hasAgentPass
+                    ? "Agent Pass"
+                    : "Free"}
               </div>
               {subscription?.current_period_end && (
                 <div className="mt-1 text-xs text-muted-foreground">
@@ -122,7 +131,9 @@ function BillingPage() {
                 <div className="mt-1 text-xs">
                   <span
                     className={`inline-flex items-center rounded-full px-2 py-0.5 font-mono uppercase tracking-wider ${
-                      isActive || hasAgentPass ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                      isActive || hasAgentPass
+                        ? "bg-primary/10 text-primary"
+                        : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {subscription.status}
@@ -132,19 +143,12 @@ function BillingPage() {
             </div>
             <div className="flex gap-2">
               {(isActive || hasAgentPass) && (
-                <Button
-                  onClick={onManage}
-                  variant="outline"
-                >
+                <Button onClick={onManage} variant="outline">
                   Manage subscription
                 </Button>
               )}
               {!isActive && (
-                <Button
-                  onClick={onSubscribe}
-                >
-                  Upgrade to Pro — {PRICE_MONTHLY}/mo
-                </Button>
+                <Button onClick={onSubscribe}>Upgrade to Pro — {PRICE_MONTHLY}/mo</Button>
               )}
             </div>
           </div>

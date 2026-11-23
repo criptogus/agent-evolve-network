@@ -39,8 +39,7 @@ export async function requirePaidUser(ctx: ToolExecutionContext): Promise<string
     throw new Error(
       json({
         error: "subscription_required",
-        message:
-          "Cloud Skill Manager requires Pro. Upgrade at superagentskill.com/pricing.",
+        message: "Cloud Skill Manager requires Pro. Upgrade at superagentskill.com/pricing.",
       }),
     );
   }

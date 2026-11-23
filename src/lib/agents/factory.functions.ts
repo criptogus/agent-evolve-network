@@ -51,10 +51,7 @@ export const BUILD_STEPS: { status: AgentBuildStatus; label: string }[] = [
 async function assertPaid(supabase: AppDatabaseClient, userId: string) {
   const active = await hasProSubscription(supabase, userId);
   if (!active) {
-    throw new Response(
-      "The Agent Factory requires Pro. Upgrade at /pricing.",
-      { status: 402 },
-    );
+    throw new Response("The Agent Factory requires Pro. Upgrade at /pricing.", { status: 402 });
   }
 }
 

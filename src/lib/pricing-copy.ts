@@ -26,8 +26,7 @@ export const PRO_INCLUDED_AGENTS = 1;
  * Pro = human builder seat + 1 included production agent.
  * Agent Pass = standalone monthly seat ($12/agent) — no Pro required; also covers extras beyond Pro's included 1.
  */
-export const PRO_VS_AGENT_PASS =
-  `Pro is the human builder seat (Agent Factory, Store, University, reviews) and includes ${PRO_INCLUDED_AGENTS} production agent. Extra production agents beyond that are Agent Pass at $${AGENT_PASS_PRICING.monthlyPerAgent}/agent/mo. Agent Pass is also sold standalone (monthly only, no Pro required) for people who only run agents.`;
+export const PRO_VS_AGENT_PASS = `Pro is the human builder seat (Agent Factory, Store, University, reviews) and includes ${PRO_INCLUDED_AGENTS} production agent. Extra production agents beyond that are Agent Pass at $${AGENT_PASS_PRICING.monthlyPerAgent}/agent/mo. Agent Pass is also sold standalone (monthly only, no Pro required) for people who only run agents.`;
 
 export const PRO_YEARLY_SAVINGS = PRO_PRICING.yearlyList - PRO_PRICING.yearly; // 108
 export const PRO_YEARLY_DISCOUNT_PCT = Math.round(

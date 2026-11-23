@@ -12,7 +12,10 @@ type MergeGenerated<T extends object, U extends object> = T & {
   [K in Exclude<keyof U, keyof T>]: U[K];
 };
 
-type MergedTables = MergeGenerated<GeneratedDatabase["public"]["Tables"], OptionalTables & PlatformTables>;
+type MergedTables = MergeGenerated<
+  GeneratedDatabase["public"]["Tables"],
+  OptionalTables & PlatformTables
+>;
 type MergedViews = MergeGenerated<GeneratedDatabase["public"]["Views"], OptionalViews>;
 type MergedFunctions = MergeGenerated<GeneratedDatabase["public"]["Functions"], PlatformFunctions>;
 
