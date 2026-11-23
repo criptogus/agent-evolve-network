@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { listPlansPublic, upsertPlan, deletePlan } from "@/lib/admin/plans.functions";
+import { listPlansAdmin, upsertPlan, deletePlan } from "@/lib/admin/plans.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ const empty: PlanRow = {
 };
 
 function PlansPage() {
-  const listFn = useServerFn(listPlansPublic);
+  const listFn = useServerFn(listPlansAdmin);
   const upsertFn = useServerFn(upsertPlan);
   const deleteFn = useServerFn(deletePlan);
   const qc = useQueryClient();

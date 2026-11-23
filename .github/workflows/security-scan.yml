@@ -13,7 +13,7 @@ name: security re-scan
 
 on:
   push:
-    branches: [main]
+    branches: [main, codex/jev-agent-match-usd10]
   pull_request:
   schedule:
     - cron: "0 6 * * *"
@@ -54,6 +54,9 @@ jobs:
 
       - name: Public access rules (blocking)
         run: npm run check:public-access
+
+      - name: RPC security boundaries (blocking)
+        run: npm run check:rpc-security
 
       - name: Summary
         if: always()
