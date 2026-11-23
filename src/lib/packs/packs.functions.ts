@@ -176,6 +176,19 @@ export const runCustomization = createServerFn({ method: "POST" })
       .single();
     if (cErr || !cust) throw new Response("Customization not found", { status: 404 });
     if (cust.status === "ready") return { status: "ready" as const };
+    // A run is only for a queued (or previously failed) request on a pack the
+    // caller has actually bought — re-checked here, never trusted from the row.
+    if (cust.status !== "queued" && cust.status !== "error") {
+      throw new Response("Customization already in progress", { status: 409 });
+    }
+    const { data: purchase } = await supabaseAdmin
+      .from("pack_purchases")
+      .select("id")
+      .eq("buyer_id", userId)
+      .eq("pack_id", cust.pack_id)
+      .maybeSingle();
+    if (!purchase)
+      throw new Response("You must purchase this pack before customizing it.", { status: 403 });
 
     // Load pack + items + latest version content
     const { data: pack } = await supabaseAdmin

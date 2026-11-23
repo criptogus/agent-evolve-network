@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
-const supabaseAdmin = _supabaseAdmin;
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { AppDatabaseClient } from "@/integrations/supabase/database";
 
 export type StarState = {
   packageId: string | null;
@@ -20,8 +19,15 @@ export type StarredPackage = {
   starred_at: string;
 };
 
-async function packageBySlug(slug: string): Promise<{ id: string; star_count: number } | null> {
-  const { data } = await supabaseAdmin
+/**
+ * Look a package up as the signed-in user, so database visibility rules apply:
+ * only published + approved packages (or the caller's own) are found.
+ */
+async function packageBySlug(
+  db: AppDatabaseClient,
+  slug: string,
+): Promise<{ id: string; star_count: number } | null> {
+  const { data } = await db
     .from("packages")
     .select("id, star_count")
     .eq("slug", slug)
@@ -38,10 +44,10 @@ export const toggleStar = createServerFn({ method: "POST" })
     return { slug: o.slug };
   })
   .handler(async ({ data, context }): Promise<StarState> => {
-    const pkg = await packageBySlug(data.slug);
+    const db = context.supabase;
+    const pkg = await packageBySlug(db, data.slug);
     if (!pkg) throw new Response("PACKAGE_NOT_FOUND", { status: 404 });
 
-    const db = context.supabase;
     const { data: existing } = await db
       .from("package_stars")
       .select("package_id")
@@ -66,7 +72,7 @@ export const toggleStar = createServerFn({ method: "POST" })
       }
     }
 
-    const fresh = await packageBySlug(data.slug);
+    const fresh = await packageBySlug(db, data.slug);
     return {
       packageId: pkg.id,
       starred: !existing,
@@ -83,9 +89,9 @@ export const isStarred = createServerFn({ method: "GET" })
     return { slug: o.slug };
   })
   .handler(async ({ data, context }): Promise<StarState> => {
-    const pkg = await packageBySlug(data.slug);
-    if (!pkg) return { packageId: null, starred: false, star_count: 0 };
     const db = context.supabase;
+    const pkg = await packageBySlug(db, data.slug);
+    if (!pkg) return { packageId: null, starred: false, star_count: 0 };
     const { data: row } = await db
       .from("package_stars")
       .select("package_id")
@@ -110,7 +116,8 @@ export const getMyStars = createServerFn({ method: "GET" })
     const rows = (stars ?? []) as { package_id: string; created_at: string }[];
     if (rows.length === 0) return { packages: [] };
 
-    const { data: pkgs, error: pkgErr } = await supabaseAdmin
+    // Read as the user: a star on a package the user cannot see returns nothing.
+    const { data: pkgs, error: pkgErr } = await db
       .from("packages")
       .select("id, slug, name, type, description, latest_version, star_count")
       .in(

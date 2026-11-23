@@ -73,6 +73,9 @@ export const Route = createFileRoute("/api/public/diagnose/submit")({
           return json({ ok: true, ...report });
         } catch (err) {
           const msg = err instanceof Error ? errorField(err, "message") : "error";
+          if (msg === "diagnosis_forbidden") {
+            return json({ ok: false, error: "diagnosis_forbidden" }, 403);
+          }
           if (msg === "unknown_domain") {
             return json(
               {

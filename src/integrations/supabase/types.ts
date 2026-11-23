@@ -2812,6 +2812,7 @@ export type Database = {
           tags: string[]
           type: Database["public"]["Enums"]["package_type"]
           updated_at: string
+          vertical: string | null
         }
         Insert: {
           author_handle?: string
@@ -2841,6 +2842,7 @@ export type Database = {
           tags?: string[]
           type: Database["public"]["Enums"]["package_type"]
           updated_at?: string
+          vertical?: string | null
         }
         Update: {
           author_handle?: string
@@ -2870,6 +2872,7 @@ export type Database = {
           tags?: string[]
           type?: Database["public"]["Enums"]["package_type"]
           updated_at?: string
+          vertical?: string | null
         }
         Relationships: []
       }
@@ -5205,6 +5208,7 @@ export type Database = {
         Returns: number
       }
       next_sas_code: { Args: never; Returns: string }
+      package_vertical_from_rules: { Args: { _rules: Json }; Returns: string }
       purchase_pack: { Args: { _pack_id: string }; Returns: Json }
       purchase_package: { Args: { _package_id: string }; Returns: Json }
       read_agent_match_selection_cache: {

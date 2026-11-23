@@ -18,14 +18,30 @@ const ReportInput = z.object({ slug: z.string() });
 const getForgeReport = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => ReportInput.parse(d))
   .handler(async ({ data }) => {
-    const { data: pkg } = await supabaseAdmin
+    const { data: row } = await supabaseAdmin
       .from("packages")
       .select(
-        "id,slug,name,type,description,long_description,latest_version,author_handle,created_at",
+        "id,slug,name,type,description,long_description,latest_version,author_handle,created_at,author_id,is_published,review_status",
       )
       .eq("slug", data.slug)
       .maybeSingle();
-    if (!pkg) throw new Response("Not found", { status: 404 });
+    if (!row) throw new Response("Not found", { status: 404 });
+
+    // Published + approved reports are public; anything else only for its
+    // author or an admin. Unauthorised callers get the same "Not found".
+    if (!(row.is_published && row.review_status === "approved")) {
+      const { getOptionalUserId, isAdminUser } = await import("@/lib/auth/optional-user.server");
+      const callerId = await getOptionalUserId();
+      const allowed =
+        (callerId !== null && callerId === row.author_id) || (await isAdminUser(callerId));
+      if (!allowed) throw new Response("Not found", { status: 404 });
+    }
+    const {
+      author_id: _authorId,
+      is_published: _published,
+      review_status: _reviewStatus,
+      ...pkg
+    } = row;
 
     const { data: versions } = await supabaseAdmin
       .from("package_versions")

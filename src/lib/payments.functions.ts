@@ -1,6 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { shouldEnableAdjustableQuantity, validateCheckoutQuantity } from "@/lib/checkout-quantity";
+import {
+  isSeatPrice,
+  resolveCheckoutQuantity,
+  shouldEnableAdjustableQuantity,
+  validateReturnUrl,
+} from "@/lib/checkout-quantity";
 import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
 
 export type CheckoutSessionResult = { clientSecret: string } | { error: string };
@@ -52,8 +57,21 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: CheckoutSessionInput) => {
     if (!/^[a-zA-Z0-9_-]+$/.test(data.priceId)) throw new Error("Invalid priceId");
-    const quantity = validateCheckoutQuantity(data.quantity);
-    return { ...data, quantity };
+    if (data.environment !== "sandbox" && data.environment !== "live") {
+      throw new Error("Invalid environment");
+    }
+    // Only seat-based prices can be bought in quantity; everything else is 1.
+    const quantity = resolveCheckoutQuantity(data.priceId, data.quantity);
+    const returnUrl = validateReturnUrl(data.returnUrl);
+    return {
+      priceId: data.priceId,
+      quantity,
+      ...(typeof data.adjustableQuantity === "boolean" && {
+        adjustableQuantity: data.adjustableQuantity,
+      }),
+      returnUrl,
+      environment: data.environment,
+    };
   })
   .handler(async ({ data, context }): Promise<CheckoutSessionResult> => {
     // Always derive identity from the verified session — never trust client input.
@@ -80,11 +98,13 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       }
 
       const quantity = data.quantity || 1;
-      const adjustable = shouldEnableAdjustableQuantity({
-        priceId: data.priceId,
-        quantity,
-        adjustableQuantity: data.adjustableQuantity,
-      });
+      const adjustable =
+        isSeatPrice(data.priceId) &&
+        shouldEnableAdjustableQuantity({
+          priceId: data.priceId,
+          quantity,
+          adjustableQuantity: data.adjustableQuantity,
+        });
 
       const session = await stripe.checkout.sessions.create({
         line_items: [
@@ -119,7 +139,15 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
 export const createPortalSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { returnUrl?: string; environment: StripeEnv }) => data)
+  .inputValidator((data: { returnUrl?: string; environment: StripeEnv }) => {
+    if (data.environment !== "sandbox" && data.environment !== "live") {
+      throw new Error("Invalid environment");
+    }
+    return {
+      environment: data.environment,
+      ...(data.returnUrl !== undefined && { returnUrl: validateReturnUrl(data.returnUrl) }),
+    };
+  })
   .handler(async ({ data, context }): Promise<PortalSessionResult> => {
     const { supabase: _sbCtx, userId } = context;
     const supabase = _sbCtx;

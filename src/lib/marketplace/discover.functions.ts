@@ -83,7 +83,7 @@ async function fetchTypeCatalog(type: DiscoverType): Promise<TypeCatalog> {
   const { data: pkgs, error } = await supabaseAdmin
     .from("packages")
     .select(
-      "id, slug, name, type, description, author_handle, author_verified, install_count, latest_version, price_credits, created_at",
+      "id, slug, name, type, description, author_handle, author_verified, install_count, latest_version, price_credits, created_at, vertical",
     )
     .eq("is_published", true)
     .eq("review_status", "approved")
@@ -93,22 +93,9 @@ async function fetchTypeCatalog(type: DiscoverType): Promise<TypeCatalog> {
 
   const verticalByPkg = new Map<string, string | null>();
   if (pkgs && pkgs.length) {
-    const ids = pkgs.map((r) => r.id);
-    const latestByPkg = new Map(pkgs.map((r) => [r.id, r.latest_version]));
-    const { data: vers } = await supabaseAdmin
-      .from("package_versions")
-      .select("package_id, version, rules")
-      .in("package_id", ids);
-    for (const v of vers ?? []) {
-      if (v.version !== latestByPkg.get(v.package_id)) continue;
-      const rules = (v.rules ?? {}) as Record<string, unknown>;
-      const vertical =
-        (typeof rules.vertical === "string" && rules.vertical) ||
-        (typeof rules.category === "string" && rules.category) ||
-        (typeof rules.domain === "string" && rules.domain) ||
-        null;
-      verticalByPkg.set(v.package_id, vertical || null);
-    }
+    // Classification is public package metadata, kept in sync from the
+    // latest version by the database — version content is never read here.
+    for (const p of pkgs ?? []) verticalByPkg.set(p.id, p.vertical ?? null);
   }
 
   const rows: CatalogRow[] = (pkgs ?? []).map((p) => {
