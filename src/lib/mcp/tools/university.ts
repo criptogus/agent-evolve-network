@@ -117,8 +117,8 @@ export const diagnoseSubmitTool = defineTool({
   }),
   execute: async (input, ctx) => {
     const report = await submitExam({
+      userId: userIdOf(ctx),
       diagnosisId: input.diagnosis_id ?? null,
-      callerId: userIdOf(ctx),
       domain: input.domain as DomainId | undefined,
       answers: input.answers,
       installedSkills: input.installed_skills,

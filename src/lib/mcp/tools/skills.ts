@@ -237,24 +237,30 @@ export const getPackageTool = defineTool({
   parameters: z.object({
     slug: z.string().describe("Package slug (e.g. cardiology-soul)"),
   }),
-  execute: async ({ slug }) => {
+  execute: async ({ slug }, ctx) => {
     const { data: pkg, error } = await supabaseAdmin
       .from("packages")
-      .select("id,slug,name,type,description,long_description,latest_version,author_handle")
+      .select(
+        "id,slug,name,type,description,long_description,latest_version,author_handle,author_id,price_credits",
+      )
       .eq("slug", slug)
       .eq("is_published", true)
       .eq("review_status", "approved")
       .maybeSingle();
     if (error) return json({ error: error.message });
     if (!pkg) return json({ error: "not_found" });
+    const { canReadPackageContent } = await import("@/lib/marketplace/content-access.server");
+    const userId = (ctx.auth?.claims as { user_id?: string } | undefined)?.user_id ?? null;
+    if (!(await canReadPackageContent(pkg, userId))) return json({ error: "purchase_required" });
     const { data: ver } = await supabaseAdmin
       .from("package_versions")
       .select("version,status,system_prompt,rules,examples,compatibility,notes")
       .eq("package_id", pkg.id)
-      .order("created_at", { ascending: false })
+      .eq("version", pkg.latest_version)
       .limit(1)
       .maybeSingle();
-    return json({ package: pkg, version: ver });
+    const { author_id: _authorId, ...publicPackage } = pkg;
+    return json({ package: publicPackage, version: ver });
   },
 });
 

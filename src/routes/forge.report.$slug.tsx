@@ -21,7 +21,7 @@ const getForgeReport = createServerFn({ method: "GET" })
     const { data: row } = await supabaseAdmin
       .from("packages")
       .select(
-        "id,slug,name,type,description,long_description,latest_version,author_handle,created_at,author_id,is_published,review_status",
+        "id,slug,name,type,description,long_description,latest_version,author_handle,created_at,author_id,is_published,review_status,price_credits",
       )
       .eq("slug", data.slug)
       .maybeSingle();
@@ -29,7 +29,7 @@ const getForgeReport = createServerFn({ method: "GET" })
 
     // Published + approved reports are public; anything else only for its
     // author or an admin. Unauthorised callers get the same "Not found".
-    if (!(row.is_published && row.review_status === "approved")) {
+    if (!(row.is_published && row.review_status === "approved" && row.price_credits === 0)) {
       const { getOptionalUserId, isAdminUser } = await import("@/lib/auth/optional-user.server");
       const callerId = await getOptionalUserId();
       const allowed =
