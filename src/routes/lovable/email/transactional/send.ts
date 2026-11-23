@@ -59,6 +59,13 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           return Response.json({ error: "Unauthorized" }, { status: 401 });
         }
 
+        const { data: isAdmin, error: roleError } = await supabase.rpc("has_role", {
+          _user_id: user.id,
+          _role: "admin",
+        });
+        if (roleError || isAdmin !== true)
+          return Response.json({ error: "Forbidden" }, { status: 403 });
+
         // Parse request body
         let templateName: string;
         let recipientEmail: string;
@@ -95,10 +102,17 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           );
         }
 
-        // Resolve effective recipient: template-level `to` takes precedence over
-        // the caller-provided recipientEmail. This allows notification templates
-        // to always send to a fixed address (e.g., site owner from env var).
-        const effectiveRecipient = template.to || recipientEmail;
+        // Resolve effective recipient: template-level `to` takes precedence.
+        // Otherwise a signed-in user may only email their OWN verified address —
+        // never a caller-chosen third party.
+        const ownEmail = user.email?.toLowerCase() ?? "";
+        if (!template.to && recipientEmail && recipientEmail.toLowerCase() !== ownEmail) {
+          return Response.json(
+            { error: "recipientEmail must be your own account email" },
+            { status: 403 },
+          );
+        }
+        const effectiveRecipient = template.to || ownEmail;
 
         if (!effectiveRecipient) {
           return Response.json(

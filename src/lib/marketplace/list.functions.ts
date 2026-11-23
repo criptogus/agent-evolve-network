@@ -36,7 +36,7 @@ async function fetchMarketplace(): Promise<ListPayload> {
   const { data: pkgs, error } = await supabaseAdmin
     .from("packages")
     .select(
-      "id, slug, name, type, description, author_handle, author_verified, install_count, latest_version, created_at, price_credits",
+      "id, slug, name, type, description, author_handle, author_verified, install_count, latest_version, created_at, price_credits, vertical",
     )
     .eq("is_published", true)
     .eq("review_status", "approved")
@@ -48,21 +48,9 @@ async function fetchMarketplace(): Promise<ListPayload> {
   const ids = (pkgs ?? []).map((p) => p.id);
   const verticalByPkg = new Map<string, string | null>();
   if (ids.length) {
-    const { data: vers } = await supabaseAdmin
-      .from("package_versions")
-      .select("package_id, version, rules")
-      .in("package_id", ids);
-    const latestByPkg = new Map((pkgs ?? []).map((p) => [p.id, p.latest_version]));
-    for (const v of vers ?? []) {
-      if (v.version !== latestByPkg.get(v.package_id)) continue;
-      const rules = (v.rules ?? {}) as Record<string, unknown>;
-      const vertical =
-        (typeof rules.vertical === "string" && rules.vertical) ||
-        (typeof rules.category === "string" && rules.category) ||
-        (typeof rules.domain === "string" && rules.domain) ||
-        null;
-      verticalByPkg.set(v.package_id, vertical || null);
-    }
+    // Classification is public package metadata, kept in sync from the
+    // latest version by the database — version content is never read here.
+    for (const p of pkgs ?? []) verticalByPkg.set(p.id, p.vertical ?? null);
   }
 
   // Aggregate ratings per package (single grouped query)

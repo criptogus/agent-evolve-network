@@ -115,8 +115,9 @@ export const diagnoseSubmitTool = defineTool({
       .min(1)
       .max(80),
   }),
-  execute: async (input) => {
+  execute: async (input, ctx) => {
     const report = await submitExam({
+      userId: userIdOf(ctx),
       diagnosisId: input.diagnosis_id ?? null,
       domain: input.domain as DomainId | undefined,
       answers: input.answers,
@@ -143,12 +144,12 @@ export const curriculumNextTool = defineTool({
       .optional()
       .describe("Max capabilities this agent should carry (default 14)."),
   }),
-  execute: async (input) => {
+  execute: async (input, ctx) => {
     let profile: ErrorProfileEntry[] | undefined;
     let installed = input.installed_skills;
     let domain = input.domain as DomainId | undefined;
     if (input.diagnosis_id) {
-      const d = await getDiagnosisForCurriculum(input.diagnosis_id);
+      const d = await getDiagnosisForCurriculum(input.diagnosis_id, userIdOf(ctx));
       if (d) {
         profile = d.error_profile;
         domain = domain ?? d.domain;

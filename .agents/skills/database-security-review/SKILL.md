@@ -13,3 +13,7 @@ Use repository scripts rather than rebuilding the audit. Read docs/security/2026
 - Apply only reviewed, authorized migration SQL, then run npm run check:security with backend URL/publishable key from the environment. Reports must be nonempty. Run npm run check:project and PR checks before merge and app deploy.
 - Re-run Lovable scans. Classify remaining intentional behavior only with specific guard evidence and tests. Do not ignore a whole group to hide unreviewed functions.
 - Verify the exact Git commit in Lovable's tracked branch and confirmed publication plus production health. Do not switch tracked branches, resize the database or change a plan as part of a security fix.
+
+For advanced application findings, also trace every HTTP, server-function and MCP entry point. Test identity binding and anonymous capabilities centrally; do not treat a database UUID as authorization. Keep public catalogue metadata separate from paid prompt contents. Caller telemetry cannot attest itself as verified. Checkout quantities must follow the exact product lookup key, and redirects must use an explicit origin allowlist.
+
+Run `node --experimental-strip-types --test tests/security-findings.test.ts` and `scripts/test-advanced-security.sql` after the corresponding migration inside a rolled-back transaction. Verify legitimate star increments/decrements as well as denied direct count updates. Check for concurrent Lovable edits before committing or applying migrations; preserve stronger guards already present. Re-scan the exact integrated commit before publishing.

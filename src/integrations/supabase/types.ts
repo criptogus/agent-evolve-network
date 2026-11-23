@@ -433,6 +433,30 @@ export type Database = {
           },
         ];
       };
+      agent_match_selection_cache: {
+        Row: {
+          cache_key: string;
+          created_at: string;
+          evidence: Json;
+          expires_at: string;
+          scope_hash: string;
+        };
+        Insert: {
+          cache_key: string;
+          created_at: string;
+          evidence: Json;
+          expires_at: string;
+          scope_hash: string;
+        };
+        Update: {
+          cache_key?: string;
+          created_at?: string;
+          evidence?: Json;
+          expires_at?: string;
+          scope_hash?: string;
+        };
+        Relationships: [];
+      };
       agent_onboarding_steps: {
         Row: {
           client_name: string | null;
@@ -1785,6 +1809,104 @@ export type Database = {
           },
         ];
       };
+      package_artifacts: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          files: Json;
+          package_id: string;
+          sha256: string;
+          version_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          files: Json;
+          package_id: string;
+          sha256: string;
+          version_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          files?: Json;
+          package_id?: string;
+          sha256?: string;
+          version_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "package_artifacts_package_id_fkey";
+            columns: ["package_id"];
+            isOneToOne: false;
+            referencedRelation: "package_rankings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "package_artifacts_package_id_fkey";
+            columns: ["package_id"];
+            isOneToOne: false;
+            referencedRelation: "packages";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "package_artifacts_version_id_fkey";
+            columns: ["version_id"];
+            isOneToOne: true;
+            referencedRelation: "package_versions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "package_artifacts_version_id_fkey";
+            columns: ["version_id"];
+            isOneToOne: true;
+            referencedRelation: "package_versions_public";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      package_embeddings: {
+        Row: {
+          created_at: string;
+          embedding: string;
+          model: string;
+          package_id: string;
+          source_sha256: string;
+          version: string;
+        };
+        Insert: {
+          created_at?: string;
+          embedding: string;
+          model: string;
+          package_id: string;
+          source_sha256: string;
+          version: string;
+        };
+        Update: {
+          created_at?: string;
+          embedding?: string;
+          model?: string;
+          package_id?: string;
+          source_sha256?: string;
+          version?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "package_embeddings_package_id_fkey";
+            columns: ["package_id"];
+            isOneToOne: true;
+            referencedRelation: "package_rankings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "package_embeddings_package_id_fkey";
+            columns: ["package_id"];
+            isOneToOne: true;
+            referencedRelation: "packages";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       package_evaluations: {
         Row: {
           adversarial_results: Json;
@@ -2684,6 +2806,7 @@ export type Database = {
           tags: string[];
           type: Database["public"]["Enums"]["package_type"];
           updated_at: string;
+          vertical: string | null;
         };
         Insert: {
           author_handle?: string;
@@ -2713,6 +2836,7 @@ export type Database = {
           tags?: string[];
           type: Database["public"]["Enums"]["package_type"];
           updated_at?: string;
+          vertical?: string | null;
         };
         Update: {
           author_handle?: string;
@@ -2742,6 +2866,7 @@ export type Database = {
           tags?: string[];
           type?: Database["public"]["Enums"]["package_type"];
           updated_at?: string;
+          vertical?: string | null;
         };
         Relationships: [];
       };
@@ -3391,6 +3516,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      semantic_index_attempts: {
+        Row: {
+          created_at: string;
+          id: string;
+          model: string;
+          receipt: Json | null;
+          status: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          model: string;
+          receipt?: Json | null;
+          status: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          model?: string;
+          receipt?: Json | null;
+          status?: string;
+        };
+        Relationships: [];
+      };
+      semantic_query_budget: {
+        Row: {
+          actor: string;
+          day: string;
+          queries: number;
+        };
+        Insert: {
+          actor: string;
+          day?: string;
+          queries: number;
+        };
+        Update: {
+          actor?: string;
+          day?: string;
+          queries?: number;
+        };
+        Relationships: [];
+      };
       share_promos: {
         Row: {
           body: string;
@@ -3418,6 +3585,117 @@ export type Database = {
           slug?: string;
           source?: string;
           type?: string;
+        };
+        Relationships: [];
+      };
+      skill_collection_followers: {
+        Row: {
+          collection_id: string;
+          followed_at: string;
+          user_id: string;
+        };
+        Insert: {
+          collection_id: string;
+          followed_at?: string;
+          user_id: string;
+        };
+        Update: {
+          collection_id?: string;
+          followed_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "skill_collection_followers_collection_id_fkey";
+            columns: ["collection_id"];
+            isOneToOne: false;
+            referencedRelation: "skill_collections";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      skill_collection_items: {
+        Row: {
+          added_at: string;
+          collection_id: string;
+          note: string | null;
+          package_id: string;
+          position: number;
+        };
+        Insert: {
+          added_at?: string;
+          collection_id: string;
+          note?: string | null;
+          package_id: string;
+          position?: number;
+        };
+        Update: {
+          added_at?: string;
+          collection_id?: string;
+          note?: string | null;
+          package_id?: string;
+          position?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "skill_collection_items_collection_id_fkey";
+            columns: ["collection_id"];
+            isOneToOne: false;
+            referencedRelation: "skill_collections";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "skill_collection_items_package_id_fkey";
+            columns: ["package_id"];
+            isOneToOne: false;
+            referencedRelation: "package_rankings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "skill_collection_items_package_id_fkey";
+            columns: ["package_id"];
+            isOneToOne: false;
+            referencedRelation: "packages";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      skill_collections: {
+        Row: {
+          cover_emoji: string | null;
+          created_at: string;
+          curator_share_bps: number;
+          curator_user_id: string;
+          description: string | null;
+          id: string;
+          is_public: boolean;
+          slug: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          cover_emoji?: string | null;
+          created_at?: string;
+          curator_share_bps?: number;
+          curator_user_id: string;
+          description?: string | null;
+          id?: string;
+          is_public?: boolean;
+          slug: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          cover_emoji?: string | null;
+          created_at?: string;
+          curator_share_bps?: number;
+          curator_user_id?: string;
+          description?: string | null;
+          id?: string;
+          is_public?: boolean;
+          slug?: string;
+          title?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -3916,6 +4194,245 @@ export type Database = {
         };
         Relationships: [];
       };
+      team_audit_events: {
+        Row: {
+          action: string;
+          actor_id: string;
+          created_at: string;
+          detail: Json;
+          id: string;
+          workspace_id: string;
+        };
+        Insert: {
+          action: string;
+          actor_id: string;
+          created_at?: string;
+          detail?: Json;
+          id?: string;
+          workspace_id: string;
+        };
+        Update: {
+          action?: string;
+          actor_id?: string;
+          created_at?: string;
+          detail?: Json;
+          id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "team_audit_events_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "team_workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      team_invites: {
+        Row: {
+          accepted_at: string | null;
+          created_by: string;
+          email: string;
+          expires_at: string;
+          id: string;
+          role: string;
+          token_hash: string;
+          workspace_id: string;
+        };
+        Insert: {
+          accepted_at?: string | null;
+          created_by: string;
+          email: string;
+          expires_at?: string;
+          id?: string;
+          role: string;
+          token_hash: string;
+          workspace_id: string;
+        };
+        Update: {
+          accepted_at?: string | null;
+          created_by?: string;
+          email?: string;
+          expires_at?: string;
+          id?: string;
+          role?: string;
+          token_hash?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "team_invites_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "team_workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      team_library: {
+        Row: {
+          package_id: string;
+          pinned_at: string;
+          pinned_by: string;
+          version_id: string;
+          workspace_id: string;
+        };
+        Insert: {
+          package_id: string;
+          pinned_at?: string;
+          pinned_by: string;
+          version_id: string;
+          workspace_id: string;
+        };
+        Update: {
+          package_id?: string;
+          pinned_at?: string;
+          pinned_by?: string;
+          version_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "team_library_package_id_fkey";
+            columns: ["package_id"];
+            isOneToOne: false;
+            referencedRelation: "package_rankings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "team_library_package_id_fkey";
+            columns: ["package_id"];
+            isOneToOne: false;
+            referencedRelation: "packages";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "team_library_version_id_fkey";
+            columns: ["version_id"];
+            isOneToOne: false;
+            referencedRelation: "package_versions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "team_library_version_id_fkey";
+            columns: ["version_id"];
+            isOneToOne: false;
+            referencedRelation: "package_versions_public";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "team_library_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "team_workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      team_members: {
+        Row: {
+          joined_at: string;
+          role: string;
+          user_id: string;
+          workspace_id: string;
+        };
+        Insert: {
+          joined_at?: string;
+          role: string;
+          user_id: string;
+          workspace_id: string;
+        };
+        Update: {
+          joined_at?: string;
+          role?: string;
+          user_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "team_members_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "team_workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      team_skill_versions: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          description: string;
+          files: Json;
+          id: string;
+          name: string;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          slug: string;
+          status: string;
+          version: string;
+          workspace_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by: string;
+          description: string;
+          files: Json;
+          id?: string;
+          name: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          slug: string;
+          status?: string;
+          version: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          description?: string;
+          files?: Json;
+          id?: string;
+          name?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          slug?: string;
+          status?: string;
+          version?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "team_skill_versions_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "team_workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      team_workspaces: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+          owner_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+          owner_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+          owner_id?: string;
+        };
+        Relationships: [];
+      };
       tenant_encrypted_objects: {
         Row: {
           byte_size: number;
@@ -4305,6 +4822,10 @@ export type Database = {
           step_id: string;
         }[];
       };
+      artifact_readable: {
+        Args: { _package: string; _version: string };
+        Returns: boolean;
+      };
       attach_execution_outcome: {
         Args: {
           _agent_fp?: string;
@@ -4328,9 +4849,20 @@ export type Database = {
           table_name: string;
         }[];
       };
+      check_security_boundaries: {
+        Args: never;
+        Returns: {
+          check_name: string;
+          passed: boolean;
+        }[];
+      };
       claim_referral: {
         Args: { _code: string; _package_slug?: string; _source_url?: string };
         Returns: Json;
+      };
+      complete_search_embedding_batch: {
+        Args: { _attempt: string; _entries: Json; _receipt: Json };
+        Returns: number;
       };
       compute_skill_drift: {
         Args: { _package_id: string; _window_days?: number };
@@ -4465,6 +4997,13 @@ export type Database = {
       get_pack_with_items: { Args: { _slug: string }; Returns: Json };
       get_package_ratings: { Args: { _package_id: string }; Returns: Json };
       get_review_eligibility: { Args: { _package_id: string }; Returns: Json };
+      get_search_embedding_attempt: {
+        Args: { _attempt: string };
+        Returns: {
+          receipt: Json;
+          status: string;
+        }[];
+      };
       get_skill_trust: { Args: { _slug: string }; Returns: Json };
       get_skill_uplift: {
         Args: { _days?: number; _slug: string };
@@ -4517,6 +5056,7 @@ export type Database = {
           verified_purchase: boolean;
         }[];
       };
+      manage_collection: { Args: { _payload: Json }; Returns: Json };
       mcp_check_and_log_call: {
         Args: {
           _identity: string;
@@ -4662,8 +5202,16 @@ export type Database = {
         Returns: number;
       };
       next_sas_code: { Args: never; Returns: string };
+      package_vertical_from_rules: { Args: { _rules: Json }; Returns: string };
       purchase_pack: { Args: { _pack_id: string }; Returns: Json };
       purchase_package: { Args: { _package_id: string }; Returns: Json };
+      read_agent_match_selection_cache: {
+        Args: { p_cache_key: string; p_scope_hash: string };
+        Returns: {
+          age_ms: number;
+          evidence: Json;
+        }[];
+      };
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number };
         Returns: {
@@ -4709,9 +5257,27 @@ export type Database = {
         };
         Returns: string;
       };
+      reserve_search_embedding_batch: {
+        Args: { _attempt: string; _model: string };
+        Returns: string;
+      };
+      reserve_semantic_query: { Args: { _actor: string }; Returns: boolean };
       resolve_report: {
         Args: { _report_id: string; _resolution?: string; _status: string };
         Returns: undefined;
+      };
+      search_embedding_index_status: {
+        Args: { _model: string };
+        Returns: {
+          eligible: number;
+          indexed: number;
+          inflight: boolean;
+          ready: boolean;
+        }[];
+      };
+      search_embedding_source: {
+        Args: { _description: string; _long_description: string; _name: string };
+        Returns: string;
       };
       search_packages: {
         Args: {
@@ -4730,11 +5296,52 @@ export type Database = {
           type: string;
         }[];
       };
+      search_packages_semantic: {
+        Args: {
+          _limit?: number;
+          _model: string;
+          _offset?: number;
+          _query: string;
+          _type?: string;
+        };
+        Returns: {
+          latest_version: string;
+          name: string;
+          score: number;
+          slug: string;
+          snippet: string;
+          type: string;
+        }[];
+      };
       seed_robustness_findings_for: {
         Args: { _package_id: string };
         Returns: number;
       };
+      skill_evidence: {
+        Args: {
+          _days?: number;
+          _experiment?: string;
+          _model?: string;
+          _slug: string;
+          _version?: string;
+        };
+        Returns: {
+          arm: string;
+          avg_latency_ms: number;
+          completed: number;
+          executions: number;
+          experiment_key: string;
+          measured: number;
+          model: string;
+          total_tokens: number;
+          version: string;
+        }[];
+      };
       snapshot_package_weekly_metrics: { Args: never; Returns: number };
+      submit_authored_package: {
+        Args: { _author: string; _document: Json };
+        Returns: Json;
+      };
       submit_package_feedback: {
         Args: {
           _agent_model?: string;
@@ -4756,6 +5363,11 @@ export type Database = {
         };
         Returns: string;
       };
+      team_action: {
+        Args: { _action: string; _payload?: Json; _workspace?: string };
+        Returns: Json;
+      };
+      team_role: { Args: { _workspace: string }; Returns: string };
       trust_saturate: { Args: { k: number; n: number }; Returns: number };
       wilson_lower_bound:
         | { Args: { successes: number; total: number }; Returns: number }
@@ -4763,6 +5375,10 @@ export type Database = {
             Args: { successes: number; total: number; z?: number };
             Returns: number;
           };
+      write_agent_match_selection_cache: {
+        Args: { p_cache_key: string; p_evidence: Json; p_scope_hash: string };
+        Returns: boolean;
+      };
     };
     Enums: {
       app_role: "admin" | "publisher" | "user";

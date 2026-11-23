@@ -5,7 +5,7 @@ DO $test$
 DECLARE failures text;
 BEGIN
  SELECT string_agg(check_name, ', ') INTO failures FROM public.check_security_boundaries() WHERE passed IS DISTINCT FROM true;
- IF failures IS NOT NULL OR (SELECT count(*) FROM public.check_security_boundaries()) <> 5 THEN
+ IF failures IS NOT NULL OR (SELECT count(*) FROM public.check_security_boundaries()) <> 8 THEN
    RAISE EXCEPTION 'Security boundary regression: %', failures;
  END IF;
 END $test$;

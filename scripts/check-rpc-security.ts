@@ -18,6 +18,9 @@ const expected = [
   "rls_invoker_reads",
   "authenticated_transactions",
   "plans_explicit_public_rows",
+  "account_reads_invoker",
+  "verified_telemetry_only",
+  "customization_purchase_required",
 ];
 if (
   error ||

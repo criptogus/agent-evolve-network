@@ -2,31 +2,19 @@ import { errorField } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
- * Weekly self-tuner, called by pg_cron with the project apikey.
+ * Weekly self-tuner, called by the managed scheduler with the private cron secret.
  * Recomputes variant statistics, pauses statistically losing copy variants and
  * drafts replacements that wait for human approval.
  */
-function authorized(request: Request): boolean {
-  const expected = [
-    process.env["SUPABASE_PUBLISHABLE_KEY"],
-    process.env["SUPABASE_ANON_KEY"],
-    process.env["VITE_SUPABASE_PUBLISHABLE_KEY"],
-    process.env["SUPABASE_SERVICE_ROLE_KEY"],
-  ].filter(Boolean) as string[];
-  const url = new URL(request.url);
-  const provided =
-    request.headers.get("apikey") ??
-    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
-    url.searchParams.get("apikey") ??
-    "";
-  return !!provided && expected.includes(provided);
-}
 
 export const Route = createFileRoute("/api/public/crm/tune")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        if (!authorized(request)) return Response.json({ error: "Unauthorized" }, { status: 401 });
+        // Only the scheduler holds the private cron secret; the public site key is not accepted.
+        const { authenticateCronRequest } = await import("@/integrations/supabase/cron-auth");
+        const denied = await authenticateCronRequest(request);
+        if (denied) return denied;
         let dryRun = false;
         try {
           const body = (await request.json()) as { dry_run?: boolean };

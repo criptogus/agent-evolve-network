@@ -35,13 +35,6 @@ export const getEvaluationData = createServerFn({ method: "GET" }).handler(
       const w30 = (t.window_30d ?? {}) as Record<string, unknown>;
       const lifetime = (t.lifetime ?? {}) as Record<string, unknown>;
 
-      const { data: last } = await supabaseAdmin
-        .from("skill_executions")
-        .select("created_at")
-        .eq("package_id", p.id)
-        .order("created_at", { ascending: false })
-        .limit(1);
-
       rows.push({
         slug: p.slug,
         name: p.name,
@@ -51,7 +44,7 @@ export const getEvaluationData = createServerFn({ method: "GET" }).handler(
         ok30d: Math.round(Number(w30.runs ?? 0) * Number(w30.success_rate ?? 0)),
         successRate30d: w30.success_rate != null ? Number(w30.success_rate) : null,
         p95Latency: w30.p95_latency_ms != null ? Number(w30.p95_latency_ms) : null,
-        lastRunAt: last?.[0]?.created_at ?? null,
+        lastRunAt: null, // Individual execution timing is private.
         trustScore: t.trust_score != null ? Number(t.trust_score) : null,
         criticalFindings: Number(t.findings_critical ?? 0),
         battleTested: !!t.battle_tested,

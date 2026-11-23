@@ -61,13 +61,16 @@ export const getPackageDetail = createServerFn({ method: "GET" })
       const { data: pkg, error } = await supabaseAdmin
         .from("packages")
         .select(
-          "id, slug, name, type, description, long_description, author_handle, author_verified, install_count, latest_version, price_credits, license, scopes, is_published, review_status",
+          "id, slug, name, type, description, long_description, author_handle, author_verified, install_count, latest_version, price_credits, license, scopes, is_published, review_status, vertical",
         )
         .eq("slug", data.slug)
         .maybeSingle();
       if (error) throw new Response(error.message, { status: 500 });
       if (!pkg || !pkg.is_published || pkg.review_status !== "approved") return null;
 
+      // Instructions (system prompt + rules) are public only for free packages;
+      // paid ones are delivered to purchasers through the install flow.
+      const isFree = (pkg.price_credits ?? 0) === 0;
       const { data: versions } = await supabaseAdmin
         .from("package_versions")
         .select(
@@ -92,8 +95,11 @@ export const getPackageDetail = createServerFn({ method: "GET" })
         supabaseAdmin.from("reviews").select("rating").eq("package_id", pkg.id),
       ]);
       const compatibility = normCompat(compatibilityData);
-      const examples = latest ? normExamples(latest.examples) : [];
-      const rules = (latest?.rules ?? {}) as Record<string, unknown>;
+      const examples = isFree && latest ? normExamples(latest.examples) : [];
+      // Read server-side (prompt hash for evidence) but returned only when free.
+      const rules = (isFree ? (latest.rules ?? {}) : {}) as Record<string, unknown>;
+      const systemPrompt =
+        isFree && typeof latest.system_prompt === "string" ? latest.system_prompt : undefined;
       const versionPerms = asArr<string>(latest?.permissions).filter(
         (s): s is string => typeof s === "string",
       );
@@ -134,10 +140,9 @@ export const getPackageDetail = createServerFn({ method: "GET" })
         license: (pkg.license as string) ?? "—",
         examples,
         metrics: [],
-        vertical: typeof rules.vertical === "string" ? (rules.vertical as string) : undefined,
+        vertical: pkg.vertical ?? undefined,
         reviewStatus: (pkg.review_status as string) ?? undefined,
-        systemPrompt:
-          typeof latest?.system_prompt === "string" ? (latest.system_prompt as string) : undefined,
+        systemPrompt,
       };
       return { pkg: out };
     });

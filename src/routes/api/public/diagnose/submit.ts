@@ -1,3 +1,4 @@
+import { getVerifiedRequestUserId } from "@/lib/auth/request-user.server";
 import { errorField } from "@/lib/errors";
 import { createFileRoute } from "@tanstack/react-router";
 import { submitExam } from "@/lib/university/university.server";
@@ -63,6 +64,7 @@ export const Route = createFileRoute("/api/public/diagnose/submit")({
 
         try {
           const report = await submitExam({
+            userId: await getVerifiedRequestUserId(request),
             diagnosisId: typeof body.diagnosis_id === "string" ? body.diagnosis_id : null,
             domain: typeof body.domain === "string" ? (body.domain as DomainId) : undefined,
             answers,
@@ -72,6 +74,8 @@ export const Route = createFileRoute("/api/public/diagnose/submit")({
           });
           return json({ ok: true, ...report });
         } catch (err) {
+          if (err instanceof Response)
+            return json({ ok: false, error: "diagnosis_unavailable" }, err.status);
           const msg = err instanceof Error ? errorField(err, "message") : "error";
           if (msg === "unknown_domain") {
             return json(
