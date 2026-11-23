@@ -1,3 +1,8 @@
+import {
+  canAccessDiagnosis,
+  diagnosisCapability,
+  diagnosisId as parseDiagnosisId,
+} from "./diagnosis-access";
 import { z } from "zod";
 import { ERROR_CLASSES } from "./types";
 const ErrorProfileSchema = z.array(
@@ -15,12 +20,11 @@ import type { ErrorProfileEntry, Prescription } from "@/lib/university/types";
  *
  * Rows are written with the admin client (the exam runs anonymously too), and
  * read back only through owner-scoped helpers — anonymous rows (user_id null)
- * are reachable only by whoever holds the diagnosis id.
+ * require a signed capability; knowing a row UUID alone is never authorization.
  */
 import { supabaseAdmin as _supabaseAdmin } from "@/integrations/supabase/client.server";
 import { buildReport, sampleExam } from "./diagnose";
 import { findCase } from "./cases";
-import { canAccessDiagnosis } from "./access";
 import type { CaseAnswer, DiagnosisReport, DomainId } from "./types.ts";
 
 const supabaseAdmin = _supabaseAdmin;
@@ -64,7 +68,10 @@ export async function startExam(args: {
   }
 
   return {
-    diagnosis_id: diagnosisId,
+    diagnosis_id:
+      diagnosisId && !args.userId
+        ? diagnosisCapability(diagnosisId, process.env.SUPABASE_SERVICE_ROLE_KEY ?? "")
+        : diagnosisId,
     domain: args.domain,
     case_count: cases.length,
     tasks: cases.map((c) => ({
@@ -77,7 +84,10 @@ export async function startExam(args: {
   };
 }
 
-export async function loadExam(diagnosisId: string): Promise<{
+export async function loadExam(
+  diagnosisId: string,
+  userId: string | null = null,
+): Promise<{
   domain: DomainId;
   case_ids: string[];
   installed_skills: string[];
@@ -86,9 +96,18 @@ export async function loadExam(diagnosisId: string): Promise<{
   const { data } = await supabaseAdmin
     .from("agent_diagnoses")
     .select("domain,case_ids,installed_skills,user_id")
-    .eq("id", diagnosisId)
+    .eq("id", parseDiagnosisId(diagnosisId) ?? "00000000-0000-0000-0000-000000000000")
     .maybeSingle();
-  if (!data) return null;
+  if (
+    !data ||
+    !canAccessDiagnosis(
+      data.user_id,
+      userId,
+      diagnosisId,
+      process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
+    )
+  )
+    return null;
   return {
     domain: data.domain as DomainId,
     case_ids: (data.case_ids ?? []) as string[],
@@ -99,8 +118,7 @@ export async function loadExam(diagnosisId: string): Promise<{
 
 export async function submitExam(args: {
   diagnosisId?: string | null;
-  /** Verified caller, or null for anonymous callers. */
-  callerId?: string | null;
+  userId?: string | null;
   domain?: DomainId;
   answers: CaseAnswer[];
   installedSkills?: string[];
@@ -109,16 +127,10 @@ export async function submitExam(args: {
   let caseIds: string[] | null = null;
   let installed = args.installedSkills ?? [];
 
-  let persist = false;
   if (args.diagnosisId) {
-    const exam = await loadExam(args.diagnosisId);
+    const exam = await loadExam(args.diagnosisId, args.userId ?? null);
+    if (!exam) throw new Response("Diagnosis not found", { status: 404 });
     if (exam) {
-      // An owned exam may only be scored by its owner; anonymous exams are
-      // scored once by whoever holds the id (see the one-shot update below).
-      if (!canAccessDiagnosis(exam.user_id, args.callerId ?? null)) {
-        throw new Error("diagnosis_forbidden");
-      }
-      persist = true;
       domain = exam.domain;
       caseIds = exam.case_ids;
       if (!args.installedSkills?.length) installed = exam.installed_skills;
@@ -139,11 +151,9 @@ export async function submitExam(args: {
     installed_skills: installed,
   });
 
-  if (args.diagnosisId && persist) {
-    const diagnosisId = args.diagnosisId;
+  if (args.diagnosisId) {
+    const diagnosisId = parseDiagnosisId(args.diagnosisId)!;
     try {
-      // One-shot: only an exam that is still open can be scored, so a scored
-      // result can never be overwritten by a later submission.
       const { data: updated } = await supabaseAdmin
         .from("agent_diagnoses")
         .update({
@@ -204,7 +214,7 @@ export async function listDiagnoses(userId: string, limit = 20): Promise<Diagnos
 
 export async function getDiagnosisForCurriculum(
   diagnosisId: string,
-  callerId: string | null = null,
+  userId: string | null = null,
 ): Promise<{
   domain: DomainId;
   error_profile: ErrorProfileEntry[];
@@ -213,11 +223,18 @@ export async function getDiagnosisForCurriculum(
   const { data } = await supabaseAdmin
     .from("agent_diagnoses")
     .select("domain,error_profile,installed_skills,user_id")
-    .eq("id", diagnosisId)
+    .eq("id", parseDiagnosisId(diagnosisId) ?? "00000000-0000-0000-0000-000000000000")
     .maybeSingle();
-  if (!data) return null;
-  // Owned diagnoses are readable only by their owner.
-  if (!canAccessDiagnosis(data.user_id ?? null, callerId)) return null;
+  if (
+    !data ||
+    !canAccessDiagnosis(
+      data.user_id,
+      userId,
+      diagnosisId,
+      process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
+    )
+  )
+    return null;
   return {
     domain: data.domain as DomainId,
     error_profile: ErrorProfileSchema.parse(data.error_profile ?? []),

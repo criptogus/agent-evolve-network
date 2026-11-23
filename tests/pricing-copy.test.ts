@@ -60,7 +60,7 @@ test("shouldEnableAdjustableQuantity defaults for Agent Pass lookup keys", () =>
     true,
   );
   assert.equal(shouldEnableAdjustableQuantity({ priceId: "sak_pro_monthly" }), false);
-  assert.equal(shouldEnableAdjustableQuantity({ priceId: "sak_pro_monthly", quantity: 2 }), true);
+  assert.equal(shouldEnableAdjustableQuantity({ priceId: "sak_pro_monthly", quantity: 2 }), false);
   assert.equal(
     shouldEnableAdjustableQuantity({
       priceId: "sak_pro_monthly",

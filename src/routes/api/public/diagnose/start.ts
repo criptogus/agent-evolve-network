@@ -1,3 +1,4 @@
+import { getVerifiedRequestUserId } from "@/lib/auth/request-user.server";
 import { createFileRoute } from "@tanstack/react-router";
 import { startExam } from "@/lib/university/university.server";
 import { DOMAINS, type DomainId } from "@/lib/university/types";
@@ -69,6 +70,7 @@ export const Route = createFileRoute("/api/public/diagnose/start")({
           : 40;
 
         const exam = await startExam({
+          userId: await getVerifiedRequestUserId(request),
           domain: domain as DomainId,
           installedSkills: installed,
           agentFp: typeof body.agent_fp === "string" ? body.agent_fp.slice(0, 120) : null,

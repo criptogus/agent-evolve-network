@@ -4,6 +4,8 @@ import type { ErrorProfileEntry, Prescription } from "@/lib/university/types";
  * Module scope holds only imports + createServerFn declarations (server-fn
  * splitting strips runtime siblings).
  */
+import { getRequest } from "@tanstack/react-start/server";
+import { getVerifiedRequestUserId } from "@/lib/auth/request-user.server";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
@@ -30,6 +32,7 @@ export const startDiagnosis = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) =>
     startExam({
+      userId: await getVerifiedRequestUserId(getRequest()),
       domain: data.domain as DomainId,
       installedSkills: data.installed_skills,
       agentFp: data.agent_fp ?? null,
@@ -40,7 +43,7 @@ export const submitDiagnosis = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z
       .object({
-        diagnosis_id: z.string().uuid().optional(),
+        diagnosis_id: z.string().max(140).optional(),
         domain: DomainEnum.optional(),
         installed_skills: z.array(z.string()).max(64).default([]),
         answers: z
@@ -59,6 +62,7 @@ export const submitDiagnosis = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) =>
     submitExam({
+      userId: await getVerifiedRequestUserId(getRequest()),
       diagnosisId: data.diagnosis_id ?? null,
       domain: data.domain as DomainId | undefined,
       answers: data.answers,
@@ -70,7 +74,7 @@ export const getCurriculumPlan = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z
       .object({
-        diagnosis_id: z.string().uuid().optional(),
+        diagnosis_id: z.string().max(140).optional(),
         domain: DomainEnum.optional(),
         failing: z
           .array(
@@ -95,7 +99,10 @@ export const getCurriculumPlan = createServerFn({ method: "POST" })
     let installed = data.installed_skills;
     let domain = data.domain as DomainId | undefined;
     if (data.diagnosis_id) {
-      const d = await getDiagnosisForCurriculum(data.diagnosis_id);
+      const d = await getDiagnosisForCurriculum(
+        data.diagnosis_id,
+        await getVerifiedRequestUserId(getRequest()),
+      );
       if (d) {
         profile = d.error_profile;
         domain = domain ?? d.domain;

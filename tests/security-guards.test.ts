@@ -1,10 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-const { resolveCheckoutQuantity, validateReturnUrl } = await import(
-  "../src/lib/checkout-quantity.ts"
-);
-const { canAccessDiagnosis } = await import("../src/lib/university/access.ts");
+const { resolveCheckoutQuantity, validateReturnUrl } =
+  await import("../src/lib/checkout-quantity.ts");
+const { canAccessDiagnosis } = await import("../src/lib/university/diagnosis-access.ts");
 
 test("Pro plans are always sold as quantity 1, whatever the caller asks", () => {
   assert.equal(resolveCheckoutQuantity("sak_pro_monthly", 50), 1);
@@ -29,8 +28,8 @@ test("checkout return links must point back at this site", () => {
 });
 
 test("an owned diagnosis is only reachable by its owner", () => {
-  assert.equal(canAccessDiagnosis("user-a", "user-a"), true);
-  assert.equal(canAccessDiagnosis("user-a", "user-b"), false);
-  assert.equal(canAccessDiagnosis("user-a", null), false);
-  assert.equal(canAccessDiagnosis(null, null), true);
+  assert.equal(canAccessDiagnosis("user-a", "user-a", "id", "secret"), true);
+  assert.equal(canAccessDiagnosis("user-a", "user-b", "id", "secret"), false);
+  assert.equal(canAccessDiagnosis("user-a", null, "id", "secret"), false);
+  assert.equal(canAccessDiagnosis(null, null, "id", "secret"), false);
 });

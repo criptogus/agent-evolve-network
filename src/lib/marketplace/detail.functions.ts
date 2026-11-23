@@ -95,7 +95,7 @@ export const getPackageDetail = createServerFn({ method: "GET" })
         supabaseAdmin.from("reviews").select("rating").eq("package_id", pkg.id),
       ]);
       const compatibility = normCompat(compatibilityData);
-      const examples = latest ? normExamples(latest.examples) : [];
+      const examples = isFree && latest ? normExamples(latest.examples) : [];
       // Read server-side (prompt hash for evidence) but returned only when free.
       const rules = (isFree ? (latest.rules ?? {}) : {}) as Record<string, unknown>;
       const systemPrompt =
