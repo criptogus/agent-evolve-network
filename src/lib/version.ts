@@ -12,7 +12,7 @@
  * We are still pre-1.0: rapid evolution, no stability guarantees.
  */
 
-export const PLATFORM_VERSION = "0.9.11" as const;
+export const PLATFORM_VERSION = "0.9.12" as const;
 export const PLATFORM_CODENAME = "Genesis" as const;
 export const PLATFORM_STAGE: "alpha" | "beta" | "ga" = "alpha";
 export const PLATFORM_BUILD_DATE = "2026-11-23" as const;
@@ -30,6 +30,17 @@ export type ChangelogEntry = {
  * Every deployed change appends a new entry (or amends the top one before shipping).
  */
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "0.9.12",
+    date: "2026-11-23",
+    kind: "patch",
+    title: "Maintenance release",
+    highlights: [
+      "preserve generated schema relationships on main",
+      "close advanced audit authorization and trust gaps",
+      "lock CRM jobs to scheduler secret, owner checks for diagnoses/reports/favorites, checkout guards, private package content, DB function grants and RLS hardening",
+    ],
+  },
   {
     version: "0.9.11",
     date: "2026-11-23",

@@ -11,6 +11,14 @@ Component artifacts are versioned and released independently via git tags:
 - **`super-agent` CLI** — `cli-v*` tags publish cross-platform binaries.
 - **`@superagentskill/sdk`** — versioned in `packages/sdk-ts/package.json`.
 
+## [0.9.12] — 2026-11-23 — *Genesis* (alpha) — Maintenance release
+
+### Changed
+
+- preserve generated schema relationships on main
+- close advanced audit authorization and trust gaps
+- lock CRM jobs to scheduler secret, owner checks for diagnoses/reports/favorites, checkout guards, private package content, DB function grants and RLS hardening
+
 ## [0.9.11] — 2026-11-23 — *Genesis* (alpha) — Maintenance release
 
 ### Changed
