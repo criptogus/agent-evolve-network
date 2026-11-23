@@ -11,10 +11,8 @@ const {
   PRO_VS_AGENT_PASS,
 } = await import("../src/lib/pricing-copy.ts");
 
-const {
-  validateCheckoutQuantity,
-  shouldEnableAdjustableQuantity,
-} = await import("../src/lib/checkout-quantity.ts");
+const { validateCheckoutQuantity, shouldEnableAdjustableQuantity } =
+  await import("../src/lib/checkout-quantity.ts");
 
 test("Pro pricing: $29/mo, $240/yr, list $348 → Save $108 · 31% off", () => {
   assert.equal(PRO_PRICING.monthly, 29);
@@ -61,14 +59,8 @@ test("shouldEnableAdjustableQuantity defaults for Agent Pass lookup keys", () =>
     shouldEnableAdjustableQuantity({ priceId: "sak_agent_pass_monthly", quantity: 3 }),
     true,
   );
-  assert.equal(
-    shouldEnableAdjustableQuantity({ priceId: "sak_pro_monthly" }),
-    false,
-  );
-  assert.equal(
-    shouldEnableAdjustableQuantity({ priceId: "sak_pro_monthly", quantity: 2 }),
-    true,
-  );
+  assert.equal(shouldEnableAdjustableQuantity({ priceId: "sak_pro_monthly" }), false);
+  assert.equal(shouldEnableAdjustableQuantity({ priceId: "sak_pro_monthly", quantity: 2 }), true);
   assert.equal(
     shouldEnableAdjustableQuantity({
       priceId: "sak_pro_monthly",

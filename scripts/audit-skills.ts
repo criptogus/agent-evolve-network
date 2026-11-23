@@ -21,12 +21,13 @@
 //         AUDIT_REJECT_AT=critical npm run audit:skills
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, basename } from "node:path";
-import { pathToFileURL } from "node:url";
+import { join, basename, resolve } from "node:path";
+import { createHash } from "node:crypto";
+import { pathToFileURL, fileURLToPath } from "node:url";
 import { parse as parseYaml } from "yaml";
 import { inspectContent } from "../src/lib/security/prompt-injection-guard.ts";
 
-const ROOT = new URL("..", import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const FOLDERS = ["skills", "playbooks", "souls", "integrations"];
 const REJECT_AT = process.env.AUDIT_REJECT_AT || "high";
 const JSON_OUT = process.argv.includes("--json");
@@ -212,6 +213,10 @@ function harvestFields(pkg) {
     "instructions",
     "steps",
     "body",
+    "when_to_use",
+    "contract",
+    "tools",
+    "permissions",
   ]) {
     if (pkg[k] == null) continue;
     let text = flatten(pkg[k], []).join("\n");
@@ -222,7 +227,9 @@ function harvestFields(pkg) {
 }
 
 // Audit a single parsed package object. Exported for unit tests.
-export function auditPackage(pkg) {
+export function auditPackage(pkg, rejectAt = REJECT_AT) {
+  if (!["low", "medium", "high", "critical"].includes(rejectAt))
+    throw new Error(`Invalid rejection threshold: ${rejectAt}`);
   const fields = harvestFields(pkg);
   const tags = Array.isArray(pkg.tags) ? pkg.tags.map((t) => String(t).toLowerCase()) : [];
   const isFixture = tags.some((t) => SECURITY_FIXTURE_TAGS.has(t));
@@ -233,11 +240,7 @@ export function auditPackage(pkg) {
     const code = scanCode(text);
     for (const f of [...inj.findings, ...code.findings]) {
       let sev = f.severity;
-      if (
-        isFixture &&
-        (field === "examples" || field === "description" || field === "long_description") &&
-        DEMOTE_IN_EXAMPLES.has(f.category)
-      ) {
+      if (isFixture && field === "examples" && DEMOTE_IN_EXAMPLES.has(f.category)) {
         sev = DEMOTE[sev];
       }
       if (sev === "none") continue;
@@ -245,79 +248,107 @@ export function auditPackage(pkg) {
       severity = worse(severity, sev);
     }
   }
-  const blocked = SEVERITY_RANK[severity] >= SEVERITY_RANK[REJECT_AT];
+  const blocked = SEVERITY_RANK[severity] >= SEVERITY_RANK[rejectAt];
   return { severity, blocked, findings };
 }
 
-function main() {
+// Hash the bytes that were actually inspected; do not infer runtime safety.
+export function auditContent(root = join(ROOT, "content"), rejectAt = REJECT_AT) {
+  if (!["low", "medium", "high", "critical"].includes(rejectAt))
+    throw new Error(`Invalid rejection threshold: ${rejectAt}`);
   const results = [];
-  let blocked = 0;
-  let totalFindings = 0;
-
+  const errors = [];
   for (const folder of FOLDERS) {
-    const dir = join(ROOT, "content", folder);
+    const dir = join(root, folder);
     let entries;
     try {
-      entries = readdirSync(dir);
+      entries = readdirSync(dir).sort();
     } catch {
+      errors.push({ file: folder, error: "Cannot read content directory" });
       continue;
     }
     for (const entry of entries) {
-      const full = join(dir, entry);
-      if (!statSync(full).isFile() || !/\.ya?ml$/i.test(entry)) continue;
-      if (basename(entry).startsWith("_")) continue;
-
-      let pkg;
+      if (!/\.ya?ml$/i.test(entry) || basename(entry).startsWith("_")) continue;
+      const file = join(folder, entry);
       try {
-        pkg = parseYaml(readFileSync(full, "utf8"));
-      } catch {
-        continue;
-      }
-      if (!pkg) continue;
-
-      const { severity, blocked: reject, findings } = auditPackage(pkg);
-      if (reject) blocked++;
-      totalFindings += findings.length;
-
-      if (findings.length) {
+        const full = join(root, file);
+        if (!statSync(full).isFile()) throw new Error("not a file");
+        const bytes = readFileSync(full);
+        const pkg = parseYaml(bytes.toString("utf8"));
+        if (!pkg || typeof pkg !== "object" || Array.isArray(pkg))
+          throw new Error("not a package object");
+        const fields = harvestFields(pkg);
+        if (!Object.values(fields).some((text) => text.trim()))
+          throw new Error("no auditable content");
+        const verdict = auditPackage(pkg, rejectAt);
         results.push({
-          file: full.replace(ROOT, ""),
+          file,
           slug: pkg.slug ?? basename(entry),
-          severity,
-          blocked: reject,
-          findings: findings.sort((a, b) => SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity]),
+          sha256: createHash("sha256").update(bytes).digest("hex"),
+          bytes: bytes.length,
+          ...verdict,
+          status: verdict.blocked ? "blocked" : verdict.findings.length ? "review" : "no_signals",
+        });
+      } catch {
+        // Parser diagnostics may contain source secrets. Keep reports content-free on errors.
+        errors.push({
+          file,
+          error: "Unreadable, invalid YAML, or missing auditable package content",
         });
       }
     }
   }
+  if (!results.length) errors.push({ file: ".", error: "No packages audited" });
+  const blocked = results.filter((r) => r.blocked).length;
+  return {
+    schemaVersion: 1,
+    scanner: "super-agent-local-heuristics",
+    rejectAt,
+    scope:
+      "Known instruction fields in content YAML only; referenced files and runtime behavior are not scanned",
+    scanned: results.length,
+    blocked,
+    failed: errors.length,
+    totalFindings: results.reduce((sum, r) => sum + r.findings.length, 0),
+    results,
+    errors,
+    exitCode: errors.length ? 2 : blocked ? 1 : 0,
+  };
+}
 
-  if (JSON_OUT) {
-    console.log(JSON.stringify({ rejectAt: REJECT_AT, blocked, results }, null, 2));
-  } else {
-    const C = { red: "[31m", yellow: "[33m", green: "[32m", dim: "[2m", reset: "[0m" };
-    if (!results.length) {
+function main() {
+  const args = process.argv.slice(2);
+  let root = join(ROOT, "content");
+  try {
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === "--json") continue;
+      if (args[i] === "--root" && args[i + 1] && !args[i + 1].startsWith("--")) {
+        root = resolve(args[++i]);
+        continue;
+      }
+      throw new Error(`Unknown or incomplete argument: ${args[i]}`);
+    }
+    const report = auditContent(root);
+    if (JSON_OUT) console.log(JSON.stringify(report, null, 2));
+    else {
+      for (const r of report.results.filter((r) => r.findings.length)) {
+        console.log(`\n${r.blocked ? "BLOCKED" : "REVIEW"} ${r.file} (${r.severity})`);
+        for (const f of r.findings)
+          console.log(`  [${f.severity}] ${f.category} — ${f.pattern} (${f.field}@${f.offset})`);
+      }
+      for (const e of report.errors) console.error(`ERROR ${e.file}: ${e.error}`);
       console.log(
-        `${C.green}✓${C.reset} No malicious or injection signals in any marketplace package.`,
+        `\nAudited ${report.scanned} packages: ${report.totalFindings} findings, ${report.blocked} blocked, ${report.failed} errors.`,
+      );
+      console.log(
+        "No signals is not proof of safety. Referenced files and runtime behavior require separate review.",
       );
     }
-    for (const r of results.sort((a, b) => SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity])) {
-      const tag = r.blocked ? `${C.red}BLOCKED${C.reset}` : `${C.yellow}WARN${C.reset}`;
-      console.log(`\n${tag} ${r.file} ${C.dim}(worst: ${r.severity})${C.reset}`);
-      for (const f of r.findings) {
-        const col = SEVERITY_RANK[f.severity] >= 3 ? C.red : C.yellow;
-        console.log(
-          `  ${col}[${f.severity}]${C.reset} ${f.category} — ${f.pattern} ${C.dim}(${f.field})${C.reset}`,
-        );
-        console.log(`    ${C.dim}@${f.offset}: …${f.excerpt}…${C.reset}`);
-      }
-    }
-    console.log(
-      `\nScanned content/{${FOLDERS.join(",")}} — ` +
-        `${totalFindings} finding(s), ${blocked} package(s) at/above "${REJECT_AT}".`,
-    );
+    process.exitCode = report.exitCode;
+  } catch (e) {
+    console.error(e.message);
+    process.exitCode = 2;
   }
-
-  process.exit(blocked > 0 ? 1 : 0);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) main();
