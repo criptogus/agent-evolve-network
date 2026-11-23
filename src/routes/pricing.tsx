@@ -160,10 +160,12 @@ function Pricing() {
 
           {/* Pro */}
           <div className="rounded-2xl border border-primary/40 bg-background p-6 shadow-elevated">
-            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">Pro</div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
+              Pro
+            </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Pro is the human plan: Agent Factory, Agent Store, University and unlimited adversarial
-              reviews — plus 1 production agent included. Extra agents are Agent Pass.
+              Pro is the human plan: Agent Factory, Agent Store, University and unlimited
+              adversarial reviews — plus 1 production agent included. Extra agents are Agent Pass.
             </p>
 
             <div className="mt-4 flex w-fit items-center rounded-full border border-border bg-surface p-1 text-xs">
@@ -269,8 +271,7 @@ function Pricing() {
               </div>
             </label>
             <p className="mt-2 text-sm text-muted-foreground">
-              Total{" "}
-              <span className="font-semibold text-foreground">${agentTotal}</span>
+              Total <span className="font-semibold text-foreground">${agentTotal}</span>
               /month
             </p>
 
