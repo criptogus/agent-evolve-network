@@ -68,3 +68,21 @@ Both checks also run locally and before deploy via `npm run check:security`
 fails loudly if they are absent rather than skipping the scan.
 
 Thank you for helping keep the ecosystem safe.
+
+## Reproducible package review
+
+Use [.agents/skills/package-trust-review/SKILL.md](.agents/skills/package-trust-review/SKILL.md)
+for repeatable reviews and optional threat-intelligence handling. The existing audit
+accepts an explicit content root and produces an aggregate artifact inventory:
+
+```sh
+node --experimental-strip-types scripts/audit-skills.ts --root content --json > audit-report.json
+```
+
+The report includes SHA-256 hashes of the exact YAML bytes inspected, all inspected
+packages (including those with no signals), coverage errors and finding locations.
+Exit 0 means the heuristic threshold was not exceeded; exit 1 means blocked packages;
+exit 2 means invalid configuration or incomplete inputs. Empty audits fail.
+`no_signals` is not a safety certification. Referenced code, dependencies, other
+content folders and runtime behavior need separate review. External reputation
+results never grant execution or publication authority.
